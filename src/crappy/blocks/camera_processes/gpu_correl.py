@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 import numpy as np
 from typing import Optional, List, Union
 from pathlib import Path
@@ -27,8 +26,6 @@ class GPUCorrelProcess(CameraProcess):
   """
 
   def __init__(self,
-               log_queue: Queue,
-               log_level: int = 20,
                discard_limit: float = 3,
                discard_ref: int = 5,
                calc_res: bool = False,
@@ -44,10 +41,6 @@ class GPUCorrelProcess(CameraProcess):
     """Sets the arguments and initializes the parent class.
     
     Args:
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       discard_limit: If ``calc_res`` is :obj:`True`, the result of the
         correlation is not sent to the downstream Blocks if the residuals for
         the current image are greater than ``discard_limit`` times the average
@@ -119,8 +112,7 @@ class GPUCorrelProcess(CameraProcess):
         used in this class.
     """
 
-    super().__init__(log_queue=log_queue, log_level=log_level,
-                     display_freq=bool(verbose))
+    super().__init__()
 
     self._gpu_correl_kw = dict(context=None,
                                verbose=verbose,

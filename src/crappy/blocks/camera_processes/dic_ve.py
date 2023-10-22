@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 from typing import Optional
 import numpy as np
 import logging
@@ -28,8 +27,6 @@ class DICVEProcess(CameraProcess):
 
   def __init__(self,
                patches: SpotsBoxes,
-               log_queue: Queue,
-               log_level: int = 20,
                method: str = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
@@ -42,8 +39,7 @@ class DICVEProcess(CameraProcess):
                border: float = 0.2,
                safe: bool = True,
                follow: bool = True,
-               raise_on_exit: bool = True,
-               display_freq: bool = False) -> None:
+               raise_on_exit: bool = True) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -52,10 +48,6 @@ class DICVEProcess(CameraProcess):
         containing the coordinates of the patches to track. This argument is
         passed to the :obj:`~crappy.tool.image_processing.DICVETool` and not
         used in this class.
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       method: The method to use to calculate the displacement. `Disflow` uses
         opencv's DISOpticalFlow and `Lucas Kanade` uses opencv's
         calcOpticalFlowPyrLK, while all other methods are based on a basic
@@ -117,13 +109,9 @@ class DICVEProcess(CameraProcess):
       raise_on_exit: If :obj:`True`, raises an exception and stops the test
         when losing the patches. Otherwise, simply stops processing but lets 
         the test go on.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
     """
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     display_freq=display_freq)
+    super().__init__()
 
     self._dic_ve_kw = dict(patches=patches,
                            method=method,

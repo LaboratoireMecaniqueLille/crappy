@@ -310,9 +310,7 @@ class GPUCorrel(Camera):
     """
 
     # Instantiating the GPUCorrelProcess
-    self.process_proc = GPUCorrelProcess(log_queue=self._log_queue,
-                                         log_level=self._log_level,
-                                         **self._gpu_correl_kw)
+    self.process_proc = GPUCorrelProcess(**self._gpu_correl_kw)
 
     super().prepare()
 

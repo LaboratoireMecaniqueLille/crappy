@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 from csv import DictWriter
 import numpy as np
 from typing import Optional, Union
@@ -41,20 +40,13 @@ class ImageSaver(CameraProcess):
   """
 
   def __init__(self,
-               log_queue: Queue,
-               log_level: int = 20,
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None,
-               display_freq: bool = False) -> None:
+               save_backend: Optional[str] = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       img_extension: The file extension for the recorded images, as a
         :obj:`str` and without the dot. Common file extensions include `tiff`,
         `png`, `jpg`, etc.
@@ -74,13 +66,9 @@ class ImageSaver(CameraProcess):
         :mod:`PIL` (Pillow Fork), and :mod:`numpy`. Depending on the machine,
         some may be faster or slower. The ``img_extension`` is ignored for the
         backend ``'npy'``, that saves the images as raw numpy arrays.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
     """
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     display_freq=display_freq)
+    super().__init__()
 
     # Trying the different possible backends and checking if the given one
     # is correct

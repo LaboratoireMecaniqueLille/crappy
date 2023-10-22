@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 from typing import Optional
 import logging
 import logging.handlers
@@ -28,10 +27,7 @@ class VideoExtensoProcess(CameraProcess):
 
   def __init__(self,
                detector: SpotsDetector,
-               log_queue: Queue,
-               log_level: int = 20,
-               raise_on_lost_spot: bool = True,
-               display_freq: bool = False) -> None:
+               raise_on_lost_spot: bool = True) -> None:
     """Sets the arguments and initializes the parent class.
     
     Args:
@@ -41,20 +37,12 @@ class VideoExtensoProcess(CameraProcess):
         argument is passed to the
         :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`
         and not used in this class.
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       raise_on_lost_spot: If :obj:`True`, raises an exception when losing the
         spots to track, which stops the test. Otherwise, stops the tracking but
         lets the test go on and silently sleeps.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
     """
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     display_freq=display_freq)
+    super().__init__()
 
     self._ve: Optional[VideoExtensoTool] = None
     self._detector = detector

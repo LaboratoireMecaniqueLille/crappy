@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 from threading import Thread
 from math import log2, ceil
 import numpy as np
@@ -42,10 +41,7 @@ class Displayer(CameraProcess):
   def __init__(self,
                title: str,
                framerate: float,
-               log_queue: Queue,
-               log_level: int = 20,
-               backend: Optional[str] = None,
-               display_freq: bool = False) -> None:
+               backend: Optional[str] = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -53,15 +49,9 @@ class Displayer(CameraProcess):
         window border.
       framerate: The target framerate for the display. The actual achieved
         framerate might be lower, but never greater than this value.
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       backend: The module to use for displaying the images. Can be either
         ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` or
         :mod:`matplotlib`.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
     """
 
     # The thread must be initialized later for compatibility with Windows
@@ -69,9 +59,7 @@ class Displayer(CameraProcess):
     self._overlay: Iterable[Overlay] = list()
     self._stop_thread = False
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     display_freq=display_freq)
+    super().__init__()
 
     self._title = title
     self._framerate = framerate

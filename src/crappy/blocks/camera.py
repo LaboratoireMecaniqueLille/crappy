@@ -307,18 +307,12 @@ class Camera(Block):
     # instantiating the ImageSaver CameraProcess
     if self._save_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the saver process")
-      self._save_proc = ImageSaver(log_queue=self._log_queue,
-                                   log_level=self._log_level,
-                                   display_freq=self.display_freq,
-                                   **self._save_proc_kw)
+      self._save_proc = ImageSaver(**self._save_proc_kw)
 
     # instantiating the Displayer CameraProcess
     if self._display_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the displayer process")
-      self._display_proc = Displayer(log_queue=self._log_queue,
-                                     log_level=self._log_level,
-                                     display_freq=self.display_freq,
-                                     **self._display_proc_kw)
+      self._display_proc = Displayer(**self._display_proc_kw)
 
     # Creating the Barrier for the synchronization of the CameraProcesses
     n_proc = sum(int(proc is not None) for proc in (self.process_proc,
@@ -399,7 +393,10 @@ class Camera(Block):
                                    dtype=self._img_dtype,
                                    to_draw_conn=overlay_conn,
                                    outputs=self.outputs,
-                                   labels=labels)
+                                   labels=labels,
+                                   log_queue=self._log_queue,
+                                   log_level=self._log_level,
+                                   display_freq=self.display_freq)
       self.log(logging.INFO, "Starting the image processing process")
       self.process_proc.start()
 
@@ -412,9 +409,14 @@ class Camera(Block):
                                  lock=self._save_lock,
                                  barrier=self._cam_barrier,
                                  event=self._stop_event_cam,
-                                 shape=self._img_shape, dtype=self._img_dtype,
-                                 to_draw_conn=None, outputs=list(),
-                                 labels=list())
+                                 shape=self._img_shape,
+                                 dtype=self._img_dtype,
+                                 to_draw_conn=None,
+                                 outputs=list(),
+                                 labels=list(),
+                                 log_queue=self._log_queue,
+                                 log_level=self._log_level,
+                                 display_freq=self.display_freq)
       self.log(logging.INFO, "Starting the image saver process")
       self._save_proc.start()
 
@@ -430,7 +432,11 @@ class Camera(Block):
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
                                     to_draw_conn=self._overlay_conn_out,
-                                    outputs=list(), labels=list())
+                                    outputs=list(),
+                                    labels=list(),
+                                    log_queue=self._log_queue,
+                                    log_level=self._log_level,
+                                    display_freq=self.display_freq)
       self.log(logging.INFO, "Starting the image displayer process")
       self._display_proc.start()
 

@@ -46,29 +46,17 @@ class CameraProcess(Process):
   themselves.
   """
 
-  def __init__(self,
-               log_queue: Queue,
-               log_level: Optional[int] = 20,
-               display_freq: bool = False) -> None:
-    """Sets the arguments and initializes the parent class.
-    
-    Args:
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
-    """
+  def __init__(self) -> None:
+    """Initializes the parent class and all the instance attributes."""
 
     super().__init__()
     self.name = f"{current_process().name}.{type(self).__name__}"
     self._system = system()
 
     # Logging-related objects
-    self._log_queue = log_queue
+    self._log_queue: Optional[Queue] = None
     self._logger: Optional[logging.Logger] = None
-    self._log_level = log_level
+    self._log_level: Optional[int] = None
 
     # These objects will be shared later by the Camera Block
     self._img_array: Optional[SynchronizedArray] = None
@@ -88,7 +76,7 @@ class CameraProcess(Process):
     # Other attribute for internal use
     self._last_warn = time()
     self.fps_count = 0
-    self._display_freq = display_freq
+    self._display_freq: Optional[bool] = None
     self._last_fps = time()
 
   def set_shared(self,
@@ -101,7 +89,10 @@ class CameraProcess(Process):
                  dtype,
                  to_draw_conn: Optional[Connection],
                  outputs: List[Link],
-                 labels: Optional[List[str]]) -> None:
+                 labels: Optional[List[str]],
+                 log_queue: Queue,
+                 log_level: Optional[int] = 20,
+                 display_freq: bool = False) -> None:
     """Method allowing the :class:`~crappy.blocks.Camera` Block to share
     :mod:`multiprocessing` synchronization objects with this class.
     
@@ -130,6 +121,12 @@ class CameraProcess(Process):
         downstream Blocks. They are the same as those owned by the Camera 
         Block.
       labels: The labels to use when sending data to downstream Blocks.
+      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
+        to the main :obj:`~logging.Logger`, only used in Windows.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
+      display_freq: If :obj:`True`, the looping frequency of this class will be
+        displayed while running.
     """
 
     self._img_array = array
@@ -142,6 +139,11 @@ class CameraProcess(Process):
     self._to_draw_conn = to_draw_conn
     self._outputs = outputs
     self._labels = labels
+
+    # Logging related attributes
+    self._log_queue = log_queue
+    self._log_level = log_level
+    self._display_freq = display_freq
 
     self.img = np.empty(shape=shape, dtype=dtype)
 

@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 import numpy as np
 from typing import Optional, List
 import logging
@@ -26,9 +25,7 @@ class DISCorrelProcess(CameraProcess):
   """
 
   def __init__(self,
-               log_queue: Queue,
                patch: Box,
-               log_level: int = 20,
                fields: Optional[List[str]] = None,
                alpha: float = 3,
                delta: float = 1,
@@ -39,20 +36,15 @@ class DISCorrelProcess(CameraProcess):
                init: bool = True,
                patch_size: int = 8,
                patch_stride: int = 3,
-               residual: bool = False,
-               display_freq: bool = False) -> None:
+               residual: bool = False) -> None:
     """Sets the arguments and initializes the parent class.
     
     Args:
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
       patch: An instance of the
         :class:`~crappy.tool.camera_config.config_tools.Box` class, containing
         the coordinates of the ROI to perform DIS on. This argument is passed
         to the :obj:`~crappy.tool.image_processing.DISCorrelTool` and not used
         in this class.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       fields: The base of fields to use for the projection, given as a
         :obj:`list` of :obj:`str`. The available fields are :
         ::
@@ -103,13 +95,9 @@ class DISCorrelProcess(CameraProcess):
       residual: If :obj:`True`, the residuals will be computed at each new
         frame and sent to downstream Blocks, by default under the ``'res'``
         label.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
     """
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     display_freq=display_freq)
+    super().__init__()
 
     self._dis_correl_kw = dict(box=patch,
                                fields=fields,

@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 import numpy as np
 from typing import Optional, Tuple, List, Union
 from pathlib import Path
@@ -35,8 +34,6 @@ class GPUVEProcess(CameraProcess):
 
   def __init__(self,
                patches: List[Tuple[int, int, int, int]],
-               log_queue: Queue,
-               log_level: int = 20,
                verbose: int = 0,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
@@ -49,10 +46,6 @@ class GPUVEProcess(CameraProcess):
         track, as a :obj:`tuple` for each patch. Each tuple should contain
         exactly `4` elements, giving in pixels the `y` origin, `x` origin,
         height and width of the patch.
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
         is displayed that it slows the code down. This argument is passed to
@@ -85,8 +78,7 @@ class GPUVEProcess(CameraProcess):
         used in this class.
     """
 
-    super().__init__(log_queue=log_queue, log_level=log_level,
-                     display_freq=bool(verbose))
+    super().__init__()
 
     # Making a CUDA context common to all the patches
     pycuda.driver.init()

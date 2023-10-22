@@ -299,10 +299,7 @@ class VideoExtenso(Camera):
     # Instantiating the VideoExtensoProcess
     self.process_proc = VideoExtensoProcess(
       detector=self._spot_detector,
-      log_queue=self._log_queue,
-      log_level=self._log_level,
-      raise_on_lost_spot=self._raise_on_lost_spot,
-      display_freq=self.display_freq)
+      raise_on_lost_spot=self._raise_on_lost_spot)
 
     super().prepare()
 
