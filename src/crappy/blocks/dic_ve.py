@@ -332,26 +332,25 @@ class DICVE(Camera):
     self._raise_on_exit = raise_on_patch_exit
     self._patches_int = list(patches) if patches is not None else None
 
-    # These arguments or for the DICVEProcess
-    self._dic_ve_kw = dict(method=method,
-                           alpha=alpha,
-                           delta=delta,
-                           gamma=gamma,
-                           finest_scale=finest_scale,
-                           iterations=iterations,
-                           gradient_iterations=gradient_iterations,
-                           patch_size=patch_size,
-                           patch_stride=patch_stride,
-                           border=border,
-                           safe=safe,
-                           follow=follow,
-                           raise_on_exit=raise_on_patch_exit)
+    # These arguments are for the DICVEProcess
+    self._method = method
+    self._alpha = alpha
+    self._delta = delta
+    self._gamma = gamma
+    self._finest_scale = finest_scale
+    self._iterations = iterations
+    self._gradient_iterations = gradient_iterations
+    self._patch_size = patch_size
+    self._patch_stride = patch_stride
+    self._border = border
+    self._safe = safe
+    self._follow = follow
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare` 
     method of the parent class.
     
-    In addition to that is instantiates the
+    In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.DICVEProcess` object that performs
     the image correlation and the tracking.
     """
@@ -363,11 +362,21 @@ class DICVE(Camera):
       self._patches.save_length()
 
     # Instantiating the DICVEProcess
-    self._process_proc = DICVEProcess(log_queue=self._log_queue,
-                                      log_level=self._log_level,
-                                      display_freq=self.display_freq,
-                                      patches=self._patches,
-                                      **self._dic_ve_kw)
+    self.process_proc = DICVEProcess(
+        patches=self._patches,
+        method=self._method,
+        alpha=self._alpha,
+        delta=self._delta,
+        gamma=self._gamma,
+        finest_scale=self._finest_scale,
+        iterations=self._iterations,
+        gradient_iterations=self._gradient_iterations,
+        patch_size=self._patch_size,
+        patch_stride=self._patch_stride,
+        border=self._border,
+        safe=self._safe,
+        follow=self._follow,
+        raise_on_exit=self._raise_on_exit)
 
     super().prepare()
 

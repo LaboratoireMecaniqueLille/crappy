@@ -276,33 +276,37 @@ class VideoExtenso(Camera):
     self._raise_on_lost_spot = raise_on_lost_spot
     self._spot_detector = SpotsDetector()
 
-    self._detector_kw = dict(white_spots=white_spots,
-                             num_spots=num_spots,
-                             min_area=min_area,
-                             blur=blur,
-                             update_thresh=update_thresh,
-                             safe_mode=safe_mode,
-                             border=border)
+    # These arguments are for the SpotsDetector
+    self._white_spots = white_spots
+    self._num_spots = num_spots
+    self._min_area = min_area
+    self._blur = blur
+    self._update_thresh = update_thresh
+    self._safe_mode = safe_mode
+    self._border = border
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
     method of the parent class.
 
-    In addition to that is instantiates the
+    In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` object that
     performs the video-extensometry and the tracking.
     """
 
     # Instantiating the SpotsDetector containing the spots to track
-    self._spot_detector = SpotsDetector(**self._detector_kw)
+    self._spot_detector = SpotsDetector(white_spots=self._white_spots,
+                                        num_spots=self._num_spots,
+                                        min_area=self._min_area,
+                                        blur=self._blur,
+                                        update_thresh=self._update_thresh,
+                                        safe_mode=self._safe_mode,
+                                        border=self._border)
 
     # Instantiating the VideoExtensoProcess
-    self._process_proc = VideoExtensoProcess(
+    self.process_proc = VideoExtensoProcess(
       detector=self._spot_detector,
-      log_queue=self._log_queue,
-      log_level=self._log_level,
-      raise_on_lost_spot=self._raise_on_lost_spot,
-      display_freq=self.display_freq)
+      raise_on_lost_spot=self._raise_on_lost_spot)
 
     super().prepare()
 

@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 import numpy as np
 from typing import Optional, List, Union
 from pathlib import Path
@@ -27,8 +26,6 @@ class GPUCorrelProcess(CameraProcess):
   """
 
   def __init__(self,
-               log_queue: Queue,
-               log_level: int = 20,
                discard_limit: float = 3,
                discard_ref: int = 5,
                calc_res: bool = False,
@@ -44,10 +41,6 @@ class GPUCorrelProcess(CameraProcess):
     """Sets the arguments and initializes the parent class.
     
     Args:
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       discard_limit: If ``calc_res`` is :obj:`True`, the result of the
         correlation is not sent to the downstream Blocks if the residuals for
         the current image are greater than ``discard_limit`` times the average
@@ -67,7 +60,7 @@ class GPUCorrelProcess(CameraProcess):
         this class.
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
-        is displayed that is slows the code down. This argument is passed to
+        is displayed that it slows the code down. This argument is passed to
         the :class:`~crappy.tool.image_processing.GPUCorrelTool` and not used
         in this class.
       levels: Number of levels of the pyramid. More levels may help converging
@@ -119,20 +112,19 @@ class GPUCorrelProcess(CameraProcess):
         used in this class.
     """
 
-    super().__init__(log_queue=log_queue, log_level=log_level,
-                     display_freq=bool(verbose))
+    super().__init__()
 
-    self._gpu_correl_kw = dict(context=None,
-                               verbose=verbose,
-                               levels=levels,
-                               resampling_factor=resampling_factor,
-                               kernel_file=kernel_file,
-                               iterations=iterations,
-                               fields=fields,
-                               ref_img=img_ref,
-                               mask=mask,
-                               mul=mul)
+    # Arguments to pass to the GPUCorrelTool
+    self._verbose = verbose
+    self._levels = levels
+    self._resampling_factor = resampling_factor
+    self._kernel_file = kernel_file
+    self._iterations = iterations
+    self._fields = fields
+    self._mask = mask
+    self._mul = mul
 
+    # Other attributes
     self._correl: Optional[GPUCorrelTool] = None
     self._img_ref = img_ref
     self._img0_set = img_ref is not None
@@ -142,25 +134,34 @@ class GPUCorrelProcess(CameraProcess):
     self._discard_ref = discard_ref
     self._calc_res = calc_res
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Initializes the GPUCorrelTool, and set its reference image if a
     ``img_ref`` argument was provided."""
 
     # Instantiating the GPUCorrelTool
-    self._log(logging.INFO, "Instantiating the GPUCorrel tool")
-    self._gpu_correl_kw.update(logger_name=self.name)
-    self._correl = GPUCorrelTool(**self._gpu_correl_kw)
+    self.log(logging.INFO, "Instantiating the GPUCorrel tool")
+    self._correl = GPUCorrelTool(logger_name=self.name,
+                                 context=None,
+                                 verbose=self._verbose,
+                                 levels=self._levels,
+                                 resampling_factor=self._resampling_factor,
+                                 kernel_file=self._kernel_file,
+                                 iterations=self._iterations,
+                                 fields=self._fields,
+                                 ref_img=self._img_ref,
+                                 mask=self._mask,
+                                 mul=self._mul)
 
     # Setting the reference image if it was given as an argument
     if self._img_ref is not None:
-      self._log(logging.INFO, "Initializing the GPUCorrel tool with the "
-                              "given reference image")
+      self.log(logging.INFO, "Initializing the GPUCorrel tool with the "
+                             "given reference image")
       self._correl.set_img_size(self._img_ref.shape)
       self._correl.set_orig(self._img_ref.astype(np.float32))
-      self._log(logging.INFO, "Preparing the GPUCorrel tool")
+      self.log(logging.INFO, "Preparing the GPUCorrel tool")
       self._correl.prepare()
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
     :class:`~crappy.tool.image_processing.GPUCorrelTool`. Then sends the result
     of the correlation to the downstream Blocks.
@@ -172,53 +173,47 @@ class GPUCorrelProcess(CameraProcess):
     provided limit. Otherwise, just drops the calculated data.
     """
 
-    # Nothing to do if no new frame was grabbed
-    if not self._get_data():
-      return
-
-    self.fps_count += 1
-
     # Setting the reference image with the first received frame if it was not
     # given as an argument
     if not self._img0_set:
-      self._log(logging.INFO, "Setting the reference image")
-      self._correl.set_img_size(self._img.shape)
-      self._correl.set_orig(self._img.astype(np.float32))
+      self.log(logging.INFO, "Setting the reference image")
+      self._correl.set_img_size(self.img.shape)
+      self._correl.set_orig(self.img.astype(np.float32))
       self._correl.prepare()
       self._img0_set = True
       return
 
     # Performing the image correlation
-    self._log(logging.DEBUG, "Processing the received image")
-    data = [self._metadata['t(s)'], self._metadata]
-    data += self._correl.get_disp(self._img.astype(np.float32)).tolist()
+    self.log(logging.DEBUG, "Processing the received image")
+    data = [self.metadata['t(s)'], self.metadata]
+    data += self._correl.get_disp(self.img.astype(np.float32)).tolist()
 
     # Calculating the residuals if requested
     if self._calc_res:
-      self._log(logging.DEBUG, "Calculating the residuals")
+      self.log(logging.DEBUG, "Calculating the residuals")
       res = self._correl.get_res()
       data.append(res)
 
       # Checking that the residuals are within the given limit, otherwise
       # dropping the calculated data
       if self._discard_limit:
-        self._log(logging.DEBUG, "Adding residuals to the residuals "
-                                 "history")
+        self.log(logging.DEBUG, "Adding residuals to the residuals "
+                                "history")
         self._res_history.append(res)
         self._res_history = self._res_history[-self._discard_ref - 1:]
 
         if res > self._discard_limit * np.average(self._res_history[:-1]):
-          self._log(logging.WARNING, "Residual too high, not sending "
-                                     "values")
+          self.log(logging.WARNING, "Residual too high, not sending "
+                                    "values")
           return
 
     # Sending the data to downstream Blocks
-    self._send(data)
+    self.send(data)
 
-  def _finish(self) -> None:
+  def finish(self) -> None:
     """Performs cleanup on the
     :class:`~crappy.tool.image_processing.GPUCorrelTool`."""
 
     if self._correl is not None:
-      self._log(logging.INFO, "Cleaning up the GPUCorrel tool")
+      self.log(logging.INFO, "Cleaning up the GPUCorrel tool")
       self._correl.clean()
