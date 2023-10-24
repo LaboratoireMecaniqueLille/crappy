@@ -644,13 +644,11 @@ class CameraConfig(tk.Tk):
       cam_set.tk_var = tk.IntVar(value=cam_set.value)
     else:
       cam_set.tk_var = tk.DoubleVar(value=cam_set.value)
-    res = 1 if cam_set.type == int else (cam_set.highest -
-                                         cam_set.lowest) / 1000
 
     cam_set.tk_obj = tk.Scale(self._canvas_frame,
                               label=f'{cam_set.name} :',
                               variable=cam_set.tk_var,
-                              resolution=res,
+                              resolution=cam_set.step,
                               orient='horizontal',
                               from_=cam_set.lowest,
                               to=cam_set.highest)

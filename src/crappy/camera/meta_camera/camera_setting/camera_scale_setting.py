@@ -27,7 +27,8 @@ class CameraScaleSetting(CameraSetting):
                highest: NbrType,
                getter: Optional[Callable[[], NbrType]] = None,
                setter: Optional[Callable[[NbrType], None]] = None,
-               default: Optional[NbrType] = None) -> None:
+               default: Optional[NbrType] = None,
+               step: Optional[NbrType] = None) -> None:
     """Sets the attributes.
 
     Args:
@@ -37,18 +38,45 @@ class CameraScaleSetting(CameraSetting):
       getter: The method for getting the current value of the setting.
       setter: The method for setting the current value of the setting.
       default: The default value to assign to the setting.
+      step: The step value for the variation of the setting values.
     """
 
     self.lowest = lowest
     self.highest = highest
-    self.type = int if isinstance(lowest + highest, int) else float
+    self.step = step
+    self.type = int if isinstance(self.lowest + self.highest, int) else float
 
     if default is None:
-      default = self.type((lowest + highest) / 2)
+      default = self.type((self.lowest + self.highest) / 2)
     else:
       default = self.type(default)
 
     super().__init__(name, getter, setter, default)
+
+    if self.step:
+      if self.type == int and isinstance(self.step, float):
+        self.step = int(self.step)
+        self.log(logging.WARNING, f"Could not set {self.name} steps to "
+                                  f"{step} (lowest: int, step: float), "
+                                  f"the step is now {self.step} !")
+      if self.step > (self.highest - self.lowest):
+        self.step = 1 if self.type == int else (self.highest -
+                                                self.lowest) / 1000
+        self.log(logging.WARNING, f"Could not set {self.name} steps to "
+                                  f"{step}, the step is now {self.step} !")
+      if (self.highest - self.lowest) % self.step:
+        i = 1
+        new_high = lowest
+        while abs(new_high - highest) > step:
+          new_high = lowest + i * step
+          i += 1
+        self.highest = new_high
+        self.log(logging.WARNING, f"Could not set {self.name} highest to "
+                                  f"{highest} with this step {self.step},"
+                                  f" the highest is now {self.highest} !")
+    else:
+      self.step = 1 if self.type == int else (self.highest -
+                                              self.lowest) / 1000
 
   @property
   def value(self) -> NbrType:

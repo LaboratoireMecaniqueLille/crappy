@@ -186,7 +186,8 @@ class Camera(metaclass=MetaCamera):
                         highest: NbrType,
                         getter: Optional[Callable[[], NbrType]] = None,
                         setter: Optional[Callable[[NbrType], None]] = None,
-                        default: Optional[NbrType] = None) -> None:
+                        default: Optional[NbrType] = None,
+                        step: Optional[NbrType] = None) -> None:
     """Adds a scale setting, whose value is an :obj:`int` or a :obj:`float`
     lying between two boundaries.
 
@@ -216,6 +217,7 @@ class Camera(metaclass=MetaCamera):
         given, the value to be set is simply stored.
       default: The default value to assign to the setting. If not given, will
         be the average of ``lowest`` and ``highest``.
+      step: The step value for the variation of the setting values.
     """
 
     # Checking if the given name is valid
@@ -226,7 +228,7 @@ class Camera(metaclass=MetaCamera):
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} scale setting")
     self.settings[name] = CameraScaleSetting(name, lowest, highest, getter,
-                                             setter, default)
+                                             setter, default, step)
 
   def add_choice_setting(self,
                          name: str,
