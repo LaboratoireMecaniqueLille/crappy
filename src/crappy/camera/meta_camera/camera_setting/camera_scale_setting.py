@@ -53,7 +53,7 @@ class CameraScaleSetting(CameraSetting):
 
     super().__init__(name, getter, setter, default)
 
-    if self.step:
+    if self.step is not None:
       if self.type == int and isinstance(self.step, float):
         self.step = int(self.step)
         self.log(logging.WARNING, f"Could not set {self.name} steps to "
@@ -64,16 +64,12 @@ class CameraScaleSetting(CameraSetting):
                                                 self.lowest) / 1000
         self.log(logging.WARNING, f"Could not set {self.name} steps to "
                                   f"{step}, the step is now {self.step} !")
-      if (self.highest - self.lowest) % self.step:
-        i = 1
-        new_high = lowest
-        while abs(new_high - highest) > step:
-          new_high = lowest + i * step
-          i += 1
-        self.highest = new_high
-        self.log(logging.WARNING, f"Could not set {self.name} highest to "
-                                  f"{highest} with this step {self.step},"
-                                  f" the highest is now {self.highest} !")
+      if self.type == int:
+        if (self.highest - self.lowest) % self.step:
+          self.highest -= (self.highest - self.lowest) % self.step
+          self.log(logging.WARNING, f"Could not set {self.name} highest to "
+                                    f"{highest} with this step {self.step},"
+                                    f" the highest is now {self.highest} !")
     else:
       self.step = 1 if self.type == int else (self.highest -
                                               self.lowest) / 1000
