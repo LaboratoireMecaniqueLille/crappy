@@ -53,25 +53,7 @@ class CameraScaleSetting(CameraSetting):
 
     super().__init__(name, getter, setter, default)
 
-    if self.step is not None:
-      if self.type == int and isinstance(self.step, float):
-        self.step = int(self.step)
-        self.log(logging.WARNING, f"Could not set {self.name} steps to "
-                                  f"{step} (lowest: int, step: float), "
-                                  f"the step is now {self.step} !")
-      if self.step > (self.highest - self.lowest):
-        self.step = 1 if self.type == int else (self.highest -
-                                                self.lowest) / 1000
-        self.log(logging.WARNING, f"Could not set {self.name} steps to "
-                                  f"{step}, the step is now {self.step} !")
-      if self.type == int and (self.highest - self.lowest) % self.step:
-          self.highest -= (self.highest - self.lowest) % self.step
-          self.log(logging.WARNING, f"Could not set {self.name} highest to "
-                                    f"{highest} with this step {self.step},"
-                                    f" the highest is now {self.highest} !")
-    else:
-      self.step = 1 if self.type == int else (self.highest -
-                                              self.lowest) / 1000
+    self._check_value()
 
   @property
   def value(self) -> NbrType:
@@ -110,22 +92,53 @@ class CameraScaleSetting(CameraSetting):
              lowest: NbrType,
              highest: NbrType,
              value: NbrType,
-             default: Optional[NbrType] = None) -> None:
-    """Allows modifying the limits of the scale bar once it is already
-    instantiated."""
+             default: Optional[NbrType] = None,
+             step: Optional[NbrType] = None) -> None:
+    """Allows modifying the limits and the step of the scale bar
+    once it is already instantiated."""
 
     self.log(logging.DEBUG, f"Reloading the setting {self.name}")
 
-    # Updating the lowest, highest, and default values
+    # Updating the lowest, highest, step and default values
     self.lowest = lowest
     self.highest = highest
+    self.step = step
+
     if default is not None:
       self.default = self.type(default)
     else:
       self.default = self.type((lowest + highest) / 2)
 
+    self._check_value()
+
     # Updating the slider limits and the setting value
     if self.tk_obj is not None:
-      self.tk_obj.configure(to=self.highest, from_=self.lowest)
+      self.tk_obj.configure(to=self.highest,
+                            from_=self.lowest,
+                            resolution=self.step)
     if self.tk_var is not None:
       self.tk_var.set(value)
+
+  def _check_value(self) -> None:
+    """Checks if the step value is compatible with the limit values and
+    types of the scale settings"""
+
+    if self.step is not None:
+      if self.type == int and isinstance(self.step, float):
+        self.step = max(int(self.step), 1)
+        self.log(logging.WARNING, f"Could not set {self.name} step "
+                                  f"(lowest: int, step: float), "
+                                  f"the step is now {self.step} !")
+      if self.step > (self.highest - self.lowest):
+        self.step = 1 if self.type == int else (self.highest -
+                                                self.lowest) / 1000
+        self.log(logging.WARNING, f"Could not set {self.name} step, "
+                                  f"the step is now {self.step} !")
+      if self.type == int and (self.highest - self.lowest) % self.step:
+          self.highest -= (self.highest - self.lowest) % self.step
+          self.log(logging.WARNING, f"Could not set {self.name} highest "
+                                    f"with this step {self.step},"
+                                    f" the highest is now {self.highest} !")
+    else:
+      self.step = 1 if self.type == int else (self.highest -
+                                              self.lowest) / 1000
