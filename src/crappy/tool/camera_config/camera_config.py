@@ -135,7 +135,7 @@ class CameraConfig(tk.Tk):
     while self._run:
       # Remaining below the max allowed frequency
       if self._max_freq is None or \
-          self._n_loops / (time() - start_time) < self._max_freq:
+         self._n_loops / (time() - start_time) < self._max_freq:
         # Update the image, the histogram and the information
         self._update_img()
 
@@ -260,6 +260,12 @@ class CameraConfig(tk.Tk):
                                              text='Auto range',
                                              variable=self._auto_range)
     self._auto_range_button.pack(expand=False, fill='none', anchor='n',
+                                 side='top')
+
+    self._auto_apply_button = tk.Checkbutton(self._info_frame,
+                                             text='Auto apply',
+                                             variable=self._auto_apply)
+    self._auto_apply_button.pack(expand=False, fill='none', anchor='n',
                                  side='top')
 
     self._min_max_label = tk.Label(self._info_frame,
@@ -622,7 +628,8 @@ class CameraConfig(tk.Tk):
     cam_set.tk_var = tk.BooleanVar(value=cam_set.value)
     cam_set.tk_obj = tk.Checkbutton(self._canvas_frame,
                                     text=cam_set.name,
-                                    variable=cam_set.tk_var)
+                                    variable=cam_set.tk_var,
+                                    command=self._auto_apply_bool_settings)
 
     cam_set.tk_obj.pack(anchor='w', side='top', expand=False, fill='none',
                         padx=5, pady=2)
@@ -637,16 +644,16 @@ class CameraConfig(tk.Tk):
       cam_set.tk_var = tk.IntVar(value=cam_set.value)
     else:
       cam_set.tk_var = tk.DoubleVar(value=cam_set.value)
-    res = 1 if cam_set.type == int else (cam_set.highest -
-                                         cam_set.lowest) / 1000
 
     cam_set.tk_obj = tk.Scale(self._canvas_frame,
                               label=f'{cam_set.name} :',
                               variable=cam_set.tk_var,
-                              resolution=res,
+                              resolution=cam_set.step,
                               orient='horizontal',
                               from_=cam_set.lowest,
                               to=cam_set.highest)
+
+    cam_set.tk_obj.bind("<ButtonRelease-1>", self._auto_apply_scale_settings)
 
     cam_set.tk_obj.pack(anchor='center', side='top', expand=False,
                         fill='x', padx=5, pady=2)
@@ -660,13 +667,17 @@ class CameraConfig(tk.Tk):
     label = tk.Label(self._canvas_frame, text=f'{cam_set.name} :')
     label.pack(anchor='w', side='top', expand=False, fill='none',
                padx=12, pady=2)
+
     for value in cam_set.choices:
       tk_obj = tk.Radiobutton(self._canvas_frame,
                               text=value,
                               variable=cam_set.tk_var,
-                              value=value)
+                              value=value,
+                              command=self._auto_apply_choice_settings)
+
       tk_obj.pack(anchor='w', side='top', expand=False,
                   fill='none', padx=5, pady=2)
+
       cam_set.tk_obj.append(tk_obj)
 
   def _set_variables(self) -> None:
@@ -683,6 +694,9 @@ class CameraConfig(tk.Tk):
 
     # The variable for enabling or disabling the auto range
     self._auto_range = tk.BooleanVar(value=False)
+
+    # The variable for enabling or disabling the auto apply
+    self._auto_apply = tk.BooleanVar(value=False)
 
     # The minimum and maximum pixel value counters
     self._min_pixel = tk.IntVar(value=0)
@@ -728,6 +742,8 @@ class CameraConfig(tk.Tk):
     self._y_pos.trace_add('write', self._update_reticle)
     self._reticle_val.trace_add('write', self._update_reticle)
 
+    self._auto_apply.trace_add('write', self._update_apply_settings)
+
   def _update_fps(self, _, __, ___) -> None:
     """Auto-update of the FPS display."""
 
@@ -757,6 +773,14 @@ class CameraConfig(tk.Tk):
                           f'Y: {self._y_pos.get():d}, '
                           f'V: {self._reticle_val.get():d}')
 
+  def _update_apply_settings(self, _, __, ___) -> None:
+    """Disable the Apply Settings button when Auto apply button is checked."""
+
+    if self._auto_apply.get():
+      self._update_button['state'] = 'disabled'
+    else:
+      self._update_button['state'] = 'normal'
+
   def _update_settings(self) -> None:
     """Tries to update the settings values upon clicking on the Apply Settings
     button, and checks that the settings have been correctly set."""
@@ -768,6 +792,36 @@ class CameraConfig(tk.Tk):
 
       # Reading the actual value of all the settings
       setting.tk_var.set(setting.value)
+
+  def _auto_apply_scale_settings(self, _: tk.Event):
+    """Applies the settings without clicking on the Apply Settings
+     button when the Auto apply button is checked.
+
+     The scale settings will be applied when the slicer is released.
+     """
+
+    if self._auto_apply.get():
+      self._update_settings()
+
+  def _auto_apply_bool_settings(self):
+    """Applies the settings without clicking on the Apply Settings
+     button when the Auto apply button is checked.
+
+     The bool settings will be applied when the bool button is checked.
+     """
+
+    if self._auto_apply.get():
+      self._update_settings()
+
+  def _auto_apply_choice_settings(self):
+    """Applies the settings without clicking on the Apply Settings
+     button when the Auto apply button is checked.
+
+     The choice settings will be applied when the choice button is checked.
+     """
+
+    if self._auto_apply.get():
+      self._update_settings()
 
   def _cast_img(self, img: np.ndarray) -> None:
     """Casts the image to 8-bits as a greater precision is not required.

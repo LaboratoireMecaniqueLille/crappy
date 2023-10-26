@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 from typing import Optional
 import logging
 import logging.handlers
@@ -28,10 +27,7 @@ class VideoExtensoProcess(CameraProcess):
 
   def __init__(self,
                detector: SpotsDetector,
-               log_queue: Queue,
-               log_level: int = 20,
-               raise_on_lost_spot: bool = True,
-               display_freq: bool = False) -> None:
+               raise_on_lost_spot: bool = True) -> None:
     """Sets the arguments and initializes the parent class.
     
     Args:
@@ -41,32 +37,24 @@ class VideoExtensoProcess(CameraProcess):
         argument is passed to the
         :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`
         and not used in this class.
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       raise_on_lost_spot: If :obj:`True`, raises an exception when losing the
         spots to track, which stops the test. Otherwise, stops the tracking but
         lets the test go on and silently sleeps.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
     """
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     display_freq=display_freq)
+    super().__init__()
 
     self._ve: Optional[VideoExtensoTool] = None
     self._detector = detector
     self._raise_on_lost_spot = raise_on_lost_spot
     self._lost_spots = False
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Instantiates the 
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` and
     starts tracking the spots."""
 
-    self._log(logging.INFO, "Instantiating the VideoExtenso tool")
+    self.log(logging.INFO, "Instantiating the VideoExtenso tool")
     self._ve = VideoExtensoTool(spots=self._detector.spots,
                                 thresh=self._detector.thresh,
                                 log_level=self._log_level,
@@ -77,11 +65,11 @@ class VideoExtensoProcess(CameraProcess):
                                 border=self._detector.border,
                                 blur=self._detector.blur)
 
-    self._log(logging.INFO, "Starting the VideoExtenso spot tracker "
-                            "processes")
+    self.log(logging.INFO, "Starting the VideoExtenso spot tracker "
+                           "processes")
     self._ve.start_tracking()
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`. Then
     sends the strain and displacement data to the downstream Blocks.
@@ -92,51 +80,47 @@ class VideoExtensoProcess(CameraProcess):
     the :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.
     """
 
-    # Nothing to do if no new frame was grabbed
-    if not self._get_data():
-      return
-
     # Processing only if the spots haven't been lost
     if not self._lost_spots:
-      self.fps_count += 1
       
       # Processing the received frame
       try:
-        self._log(logging.DEBUG, "Processing the received image")
-        data = self._ve.get_data(self._img)
+        self.log(logging.DEBUG, "Processing the received image")
+        data = self._ve.get_data(self.img)
         
         # Sending the results to the downstream Blocks
         if data is not None:
-          self._send([self._metadata['t(s)'], self._metadata, *data])
+          self.send([self.metadata['t(s)'], self.metadata, *data])
 
         # Sending the detected spots to the Displayer for display
-        self._send_box(self._ve.spots)
+        self.send_to_draw(self._ve.spots)
 
       # In case the spots were just lost
       except LostSpotError:
-        self._log(logging.INFO, "Spots lost, stopping the spot trackers")
+        self.log(logging.INFO, "Spots lost, stopping the spot trackers")
         self._ve.stop_tracking()
         # Raising if specified by the user
         if self._raise_on_lost_spot:
-          self._log(logging.ERROR, "Spots lost, stopping the VideoExtenso "
-                                   "process")
+          self.log(logging.ERROR, "Spots lost, stopping the VideoExtenso "
+                                  "process")
           raise
         # Otherwise, simply setting a flag so that no additional
         # processing is performed
         else:
           self._lost_spots = True
-          self._log(logging.WARNING, "Spots lost, VideoExtenso staying "
-                                     "idle until the test ends")
+          self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
+                                    "idle until the test ends")
     
     # If the spots were lost, avoid spamming the CPU in vain
     else:
+      self.fps_count -= 1
       sleep(0.1)
 
-  def _finish(self) -> None:
+  def finish(self) -> None:
     """Indicates the 
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` to
     stop tracking the spots."""
 
     if self._ve is not None:
-      self._log(logging.INFO, "Stopping the spot trackers before returning")
+      self.log(logging.INFO, "Stopping the spot trackers before returning")
       self._ve.stop_tracking()

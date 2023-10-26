@@ -17,7 +17,7 @@ from platform import system
 
 from ...links import Link
 from ..._global import LinkDataError
-from ...tool.camera_config import SpotsBoxes
+from ...tool.camera_config import Overlay
 
 
 class CameraProcess(Process):
@@ -46,29 +46,17 @@ class CameraProcess(Process):
   themselves.
   """
 
-  def __init__(self,
-               log_queue: Queue,
-               log_level: Optional[int] = 20,
-               display_freq: bool = False) -> None:
-    """Sets the arguments and initializes the parent class.
-    
-    Args:
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
-    """
+  def __init__(self) -> None:
+    """Initializes the parent class and all the instance attributes."""
 
     super().__init__()
     self.name = f"{current_process().name}.{type(self).__name__}"
     self._system = system()
 
     # Logging-related objects
-    self._log_queue = log_queue
+    self._log_queue: Optional[Queue] = None
     self._logger: Optional[logging.Logger] = None
-    self._log_level = log_level
+    self._log_level: Optional[int] = None
 
     # These objects will be shared later by the Camera Block
     self._img_array: Optional[SynchronizedArray] = None
@@ -77,18 +65,18 @@ class CameraProcess(Process):
     self._cam_barrier: Optional[Barrier] = None
     self._stop_event: Optional[Event] = None
     self._shape: Optional[Tuple[int, int]] = None
-    self._box_conn: Optional[Connection] = None
+    self._to_draw_conn: Optional[Connection] = None
     self._outputs: List[Link] = list()
     self._labels: List[str] = list()
-    self._img: Optional[np.ndarray] = None
+    self.img: Optional[np.ndarray] = None
     self._dtype = None
-    self._metadata = {'ImageUniqueID': None}
+    self.metadata = {'ImageUniqueID': None}
     self._img0_set = False
 
     # Other attribute for internal use
     self._last_warn = time()
     self.fps_count = 0
-    self.display_freq = display_freq
+    self._display_freq: Optional[bool] = None
     self._last_fps = time()
 
   def set_shared(self,
@@ -99,9 +87,12 @@ class CameraProcess(Process):
                  event: Event,
                  shape: Tuple[int, int],
                  dtype,
-                 box_conn: Optional[Connection],
+                 to_draw_conn: Optional[Connection],
                  outputs: List[Link],
-                 labels: List[str]) -> None:
+                 labels: Optional[List[str]],
+                 log_queue: Queue,
+                 log_level: Optional[int] = 20,
+                 display_freq: bool = False) -> None:
     """Method allowing the :class:`~crappy.blocks.Camera` Block to share
     :mod:`multiprocessing` synchronization objects with this class.
     
@@ -123,13 +114,19 @@ class CameraProcess(Process):
         necessary as the frames are shared as a one-dimensional array.
       dtype: The expected dtype of the image. It is necessary for 
         reconstructing the image from the one-dimensional shared array.
-      box_conn: A :obj:`~multiprocessing.Connection` for sending or receiving
-        :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` objects to
-        draw on top of the displayed image.
+      to_draw_conn: A :obj:`~multiprocessing.Connection` for sending or
+        receiving :class:`~crappy.tool.camera_config.config_tools.Overlay`
+        objects to draw on top of the displayed image.
       outputs: The :class:`~crappy.links.Link` objects for sending data to
         downstream Blocks. They are the same as those owned by the Camera 
         Block.
       labels: The labels to use when sending data to downstream Blocks.
+      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
+        to the main :obj:`~logging.Logger`, only used in Windows.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
+      display_freq: If :obj:`True`, the looping frequency of this class will be
+        displayed while running.
     """
 
     self._img_array = array
@@ -139,11 +136,16 @@ class CameraProcess(Process):
     self._stop_event = event
     self._shape = shape
     self._dtype = dtype
-    self._box_conn = box_conn
+    self._to_draw_conn = to_draw_conn
     self._outputs = outputs
     self._labels = labels
 
-    self._img = np.empty(shape=shape, dtype=dtype)
+    # Logging related attributes
+    self._log_queue = log_queue
+    self._log_level = log_level
+    self._display_freq = display_freq
+
+    self.img = np.empty(shape=shape, dtype=dtype)
 
   def run(self) -> None:
     """This method is the core of the :obj:`~multiprocessing.Process`.
@@ -161,65 +163,69 @@ class CameraProcess(Process):
     try:
       # First thing, setting the Logger
       self._set_logger()
-      self._log(logging.INFO, "Logger configured")
+      self.log(logging.INFO, "Logger configured")
 
       # Initializing the CameraProcess, and breaking the Barrier to warn the
       # other CameraProcesses in case something goes wrong
       try:
-        self._init()
+        self.init()
       except (Exception,):
         self._cam_barrier.abort()
-        self._log(logging.ERROR, "Breaking the barrier due to caught exception"
-                                 " while preparing")
+        self.log(logging.ERROR, "Breaking the barrier due to caught exception"
+                                " while preparing")
         raise
 
       # Waiting for all other CameraProcess to be ready
-      self._log(logging.INFO, "Waiting for the other Camera processes to be "
-                              "ready")
+      self.log(logging.INFO, "Waiting for the other Camera processes to be "
+                             "ready")
       self._cam_barrier.wait()
-      self._log(logging.INFO, "All Camera processes ready now")
+      self.log(logging.INFO, "All Camera processes ready now")
 
       self._last_fps = time()
 
       # Looping forever until told to stop or an exception is raised
       while not self._stop_event.is_set():
-        self._loop()
+        # Only looping if a new image is available
+        if self._get_data():
+          self.log(logging.DEBUG, "Running the loop method")
+          self.loop()
+          self.fps_count += 1
 
         # Displaying the looping frequency is required
-        if self.display_freq:
+        if self._display_freq:
           t = time()
           if t - self._last_fps > 2:
-            self._log(logging.INFO, f"Images processed /s: "
-                                    f"{self.fps_count / (t - self._last_fps)}")
+            self.log(logging.INFO, f"Images processed /s: "
+                                   f"{self.fps_count / (t - self._last_fps)}")
             self._last_fps = t
             self.fps_count = 0
 
-      self._log(logging.INFO, "Stop event set, stopping the processing")
+      self.log(logging.INFO, "Stop event set, stopping the processing")
 
     # Case when CTRL+C was pressed
     except KeyboardInterrupt:
-      self._log(logging.INFO, "KeyboardInterrupt caught, stopping the "
-                              "processing")
+      self.log(logging.INFO, "KeyboardInterrupt caught, stopping the "
+                             "processing")
 
     # Case when another CameraProcess raised an exception while initializing
     except BrokenBarrierError:
-      self._log(logging.WARNING,
-                "Exception raised in another Camera process while waiting "
-                "for all Camera processes to be ready, stopping")
+      self.log(logging.WARNING,
+               "Exception raised in another Camera process while waiting "
+               "for all Camera processes to be ready, stopping")
 
     # Handling any other unexpected exception
     except (Exception,) as exc:
       self._logger.exception("Exception caught wile running !", exc_info=exc)
-      self._log(logging.ERROR, "Setting the stop event to stop the other "
-                               "Camera processes")
+      self.log(logging.ERROR, "Setting the stop event to stop the other "
+                              "Camera processes")
       self._stop_event.set()
       raise
 
     # Always calling finish in the end
     finally:
-      self._finish()
+      self.finish()
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """This method should perform any action required for initializing the
     CameraProcess.
 
@@ -232,49 +238,14 @@ class CameraProcess(Process):
 
     ...
 
-  def _get_data(self) -> bool:
-    """This method allows to grab the latest available frame.
-    
-    It first acquired the :obj:`~multiprocessing.RLock` protecting the shared
-    :obj:`~multiprocessing.Array` containing the image, then copies the image
-    locally and releases the Lock. It also copies the metadata associated to 
-    the image.
-    
-    Returns:
-      :obj:`True` in case a frame was acquired and needs to be handled, or
-      :obj:`False` if no frame was grabbed and nothing should be done.
-    """
-
-    # Acquiring the Lock to avoid conflicts with other CameraProcesses
-    with self._lock:
-
-      # In case there's no frame grabbed yet
-      if 'ImageUniqueID' not in self._data_dict:
-        return False
-
-      # In case the frame in buffer was already handled during a previous loop
-      if self._data_dict['ImageUniqueID'] == self._metadata['ImageUniqueID']:
-        return False
-
-      # Copying the metadata
-      self._metadata = self._data_dict.copy()
-
-      self._log(logging.DEBUG, f"Got new image to process with id "
-                               f"{self._metadata['ImageUniqueID']}")
-
-      # Copying the frame
-      np.copyto(self._img,
-                np.frombuffer(self._img_array.get_obj(),
-                              dtype=self._dtype).reshape(self._shape))
-
-    return True
-
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method is the main loop of the CameraProcess.
     
     It is called repeatedly until the :obj:`~multiprocessing.Process` is told
     to stop. It should perform the desired action for handling the latest
-    available frame, that can be grabbed by calling :meth:`_get_data`.
+    available frame, stored in the *self.img* attribute. The latest available
+    metadata containing at least the timestamp and frame index of the latest
+    image is stored in *self.metadata*.
     
     This method is meant to be overwritten by children classes, at is otherwise 
     does not perform any action.
@@ -282,7 +253,7 @@ class CameraProcess(Process):
 
     ...
 
-  def _finish(self) -> None:
+  def finish(self) -> None:
     """This method should perform any action required for properly exiting the
     CameraProcess.
 
@@ -295,8 +266,8 @@ class CameraProcess(Process):
 
     ...
 
-  def _send(self, data: Optional[Union[Dict[str, Any],
-                                       Iterable[Any]]]) -> None:
+  def send(self, data: Optional[Union[Dict[str, Any],
+                                      Iterable[Any]]]) -> None:
     """This method allows sending data to downstream Blocks.
 
     It is similar to the :meth:`~crappy.blocks.Block.send` method of the
@@ -332,33 +303,82 @@ class CameraProcess(Process):
       self._logger.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
 
-  def _send_box(self, boxes: SpotsBoxes) -> None:
-    """This method sends
-    :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` objects to the
+  def send_to_draw(self, to_draw: Iterable[Overlay]) -> None:
+    """This method sends a collection of
+    :class:`~crappy.tool.camera_config.config_tools.Overlay` objects to the
     :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.
 
-    The boxes are sent by the CameraProcess performing the image processing, so
-    that the area(s) of interest can be displayed simultaneously.
+    The overlays are sent by the CameraProcess performing the image processing,
+    so that the area(s) of interest can be displayed simultaneously.
     """
 
     # Not sending if there's no Connection to send data through
-    if self._box_conn is None:
+    if self._to_draw_conn is None:
       return
 
-    self._log(logging.DEBUG, "Sending the box(es) to the displayer process")
+    self.log(logging.DEBUG, "Sending the overlays to the displayer process")
 
-    # Sending the boxes
+    # Sending the overlay
     if self._system == 'Linux':
-      if select([], [self._box_conn], [], 0)[1]:
+      if select([], [self._to_draw_conn], [], 0)[1]:
         # Can only check on Linux if a pipe is full
-        self._box_conn.send(boxes)
+        self._to_draw_conn.send(to_draw)
       elif time() - self._last_warn > 1:
         # Warning in case the pipe is full
-          self._last_warn = time()
-          self._log(logging.WARNING, f"Cannot send the box(es) to draw to the "
-                                     f"Displayer process, the Pipe is full !")
+        self._last_warn = time()
+        self.log(logging.WARNING, f"Cannot send the overlay to draw to the "
+                                  f"Displayer process, the Pipe is full !")
     else:
-      self._box_conn.send(boxes)
+      self._to_draw_conn.send(to_draw)
+
+  def log(self, level: int, msg: str) -> None:
+    """Sends a log message to the :obj:`~logging.Logger`.
+
+    Args:
+      level: The logging level, as an :obj:`int`.
+      msg: The message to log, as a :obj:`str`.
+    """
+
+    if self._logger is None:
+      return
+    self._logger.log(level, msg)
+
+  def _get_data(self) -> bool:
+    """This method allows to grab the latest available frame.
+
+    It first acquired the :obj:`~multiprocessing.RLock` protecting the shared
+    :obj:`~multiprocessing.Array` containing the image, then copies the image
+    locally and releases the Lock. It also copies the metadata associated to
+    the image.
+
+    Returns:
+      :obj:`True` in case a frame was acquired and needs to be handled, or
+      :obj:`False` if no frame was grabbed and nothing should be done.
+    """
+
+    # Acquiring the Lock to avoid conflicts with other CameraProcesses
+    with self._lock:
+
+      # In case there's no frame grabbed yet
+      if 'ImageUniqueID' not in self._data_dict:
+        return False
+
+      # In case the frame in buffer was already handled during a previous loop
+      if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID']:
+        return False
+
+      # Copying the metadata
+      self.metadata = self._data_dict.copy()
+
+      self.log(logging.DEBUG, f"Got new image to process with id "
+                              f"{self.metadata['ImageUniqueID']}")
+
+      # Copying the frame
+      np.copyto(self.img,
+                np.frombuffer(self._img_array.get_obj(),
+                              dtype=self._dtype).reshape(self._shape))
+
+    return True
 
   def _set_logger(self) -> None:
     """Initializes the :obj:`~logging.Logger` for the CameraProcess.
@@ -383,15 +403,3 @@ class CameraProcess(Process):
       logger.addHandler(queue_handler)
 
     self._logger = logger
-
-  def _log(self, level: int, msg: str) -> None:
-    """Sends a log message to the :obj:`~logging.Logger`.
-
-    Args:
-      level: The logging level, as an :obj:`int`.
-      msg: The message to log, as a :obj:`str`.
-    """
-
-    if self._logger is None:
-      return
-    self._logger.log(level, msg)

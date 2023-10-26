@@ -67,13 +67,19 @@ Configurator Tools
 Box
 """
 .. autoclass:: crappy.tool.camera_config.config_tools.Box
-   :members: no_points, reset, sorted
-   :special-members: __init__
+   :members: no_points, reset, sorted, draw
+   :special-members: __init__, __post_init__
 
 Histogram Process
 """""""""""""""""
 .. autoclass:: crappy.tool.camera_config.config_tools.HistogramProcess
    :members: run, log
+   :special-members: __init__
+
+Overlay
+"""""""
+.. autoclass:: crappy.tool.camera_config.config_tools.Overlay
+   :members: draw, log
    :special-members: __init__
 
 Spots Boxes
