@@ -123,6 +123,7 @@ class CameraGstreamer(Camera):
     self._img_depth: int = 8
     self._formats: List[str] = list()
     self._app_sink = None
+    self.parameters = []
 
   def open(self,
            device: Optional[Union[int, str]] = None,
@@ -282,16 +283,13 @@ videoconvert ! autovideosink
                                   setter=self._set_format)
 
       # Trying to run v4l2-ctl to get the available settings
-      command = ['v4l2-ctl', '-l'] if device is None \
-          else ['v4l2-ctl', '-d', device, '-l']
+      command = ['v4l2-ctl', '-L'] if device is None \
+          else ['v4l2-ctl', '-d', device, '-L']
       self.log(logging.INFO, f"Getting the available image settings with "
                              f"command {command}")
       try:
         check = run(command, capture_output=True, text=True)
       except FileNotFoundError:
-        self.log(logging.WARNING, "The performance of the CameraOpencv "
-                                  "class could be improved if v4l-utils "
-                                  "was installed !")
         check = None
       check = check.stdout if check is not None else ''
 
@@ -303,44 +301,44 @@ videoconvert ! autovideosink
                        r'(default=(-?\d+)\s+)?'
                        r'value=(-?\d+)\s*'
                        r'(flags=([^\\n]+))?')
-      parameters = []
+
       # Extract the different parameters and their information
       matches = finditer(param_pattern, check)
       for match in matches:
-        param_info = {
-          'name': match.group(1),
-          'type': match.group(2),
-          'min': int(match.group(4)) if match.group(4) else None,
-          'max': int(match.group(6)) if match.group(6) else None,
-          'step': int(match.group(8)) if match.group(8) else None,
-          'default': int(match.group(10)) if match.group(10) else None,
-          'value': int(match.group(11)),
-          'flags': match.group(13) if match.group(13) else None
-        }
-        parameters.append(param_info)
-      for param in parameters:
-        if not param['flags']:
-          if param['type'] == 'int':
-            self.add_scale_setting(name=param['name'],
-                                   lowest=int(param['min']),
-                                   highest=int(param['max']),
-                                   getter=self._add_scale_getter(
-                                     param['name']),
-                                   setter=self._add_setter(param['name']),
-                                   default=int(param['default']))
-          elif param['type'] == 'bool':
-            self.add_bool_setting(name=param['name'],
-                                  getter=self._add_bool_getter(param['name']),
-                                  setter=self._add_setter(param['name']),
-                                  default=bool(int(param['default'])))
-          elif param['type'] == 'menu':
-            self.add_choice_setting(name=param['name'],
-                                    choices=tuple(str(i) for i in range(
-                                      int(param['min']), int(param['max'])+1)),
-                                    getter=self._add_menu_getter(
-                                      param['name']),
-                                    setter=self._add_setter(param['name']),
-                                    default=param['default'])
+        self.parameters.append(Parameter.parse_info(match))
+
+      # Regex to extract the different options in a menu
+      menu_options = finditer(
+        r'(\w+ \w+ \(menu\))([\s\S]+?)(?=\n\s*\w+ \w+ \(.+?\)|$)', check)
+
+      # Extract the different options
+      for menu_option in menu_options:
+        for param in self.parameters:
+          param.add_options(menu_option)
+
+      # Create the different settings
+      for param in self.parameters:
+        if not param.flags:
+          if param.type == 'int':
+            self.add_scale_setting(name=param.name,
+                                   lowest=int(param.min),
+                                   highest=int(param.max),
+                                   getter=self._add_scale_getter(param.name),
+                                   setter=self._add_setter(param.name),
+                                   default=param.default,
+                                   step=param.step)
+          elif param.type == 'bool':
+            self.add_bool_setting(name=param.name,
+                                  getter=self._add_bool_getter(param.name),
+                                  setter=self._add_setter(param.name),
+                                  default=bool(int(param.default)))
+          elif param.type == 'menu':
+            if param.options:
+              self.add_choice_setting(name=param.name,
+                                      choices=param.options,
+                                      getter=self._add_menu_getter(param.name),
+                                      setter=self._add_setter(param.name),
+                                      default=param.default)
 
       self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
 
@@ -583,13 +581,22 @@ videoconvert ! autovideosink
       """The method to set the value of a setting running v4l2-ctl.
       """
 
-      if self._device is not None:
-        command = ['v4l2-ctl', '-d', self._device, '--set-ctrl',
-                   name+f'={int(value)}']
+      if isinstance(value, str):
+        if self._device is not None:
+          command = ['v4l2-ctl', '-d', self._device, '--set-ctrl',
+                     name+f'={int(value[0])}']
+        else:
+          command = ['v4l2-ctl', '--set-ctrl', name+f'={int(value[0])}']
+        self.log(logging.DEBUG, "Setting "+name+f" with command {command}")
+        run(command, capture_output=True, text=True)
       else:
-        command = ['v4l2-ctl', '--set-ctrl', name+f'={int(value)}']
-      self.log(logging.DEBUG, "Setting "+name+f" with command {command}")
-      run(command, capture_output=True, text=True)
+        if self._device is not None:
+          command = ['v4l2-ctl', '-d', self._device, '--set-ctrl',
+                     name+f'={int(value)}']
+        else:
+          command = ['v4l2-ctl', '--set-ctrl', name+f'={int(value)}']
+        self.log(logging.DEBUG, "Setting "+name+f" with command {command}")
+        run(command, capture_output=True, text=True)
     return setter
 
   def _add_scale_getter(self, name: str) -> Callable:
@@ -668,6 +675,11 @@ videoconvert ! autovideosink
       try:
         self.log(logging.DEBUG, "Getting " + name + f" with command {command}")
         value = run(command, capture_output=True, text=True).stdout.split()[-1]
+        for param in self.parameters:
+          if param.name == name:
+            for option in param.options:
+              if value == option[0]:
+                value = option
       except FileNotFoundError:
         value = None
       return value
