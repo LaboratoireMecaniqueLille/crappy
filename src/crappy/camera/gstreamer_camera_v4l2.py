@@ -1,12 +1,14 @@
 # coding: utf-8
 
+from __future__ import annotations
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
 from typing import Tuple, Optional, Union, List, Callable
 from subprocess import Popen, PIPE, run
-from re import findall, split, search, finditer
+from re import findall, split, search, finditer, Match
 import logging
 from fractions import Fraction
+from dataclasses import dataclass
 
 from .meta_camera import Camera
 from .._global import OptionalModule
@@ -24,6 +26,61 @@ try:
   from gi.repository import Gst, GstApp
 except (ImportError, ModuleNotFoundError, ValueError):
   Gst = GstApp = OptionalModule('PyGObject')
+
+
+@dataclass
+class Parameter:
+  """A class for the different parameters the user can adjust """
+
+  name: str
+  type: str
+  min: Optional[str] = None
+  max: Optional[str] = None
+  step: Optional[str] = None
+  default: Optional[str] = None
+  value: Optional[str] = None
+  flags: Optional[str] = None
+  options: Optional[Tuple[str, ...]] = None
+
+  @classmethod
+  def parse_info(cls, match: Match) -> Parameter:
+    """Instantiates the class Parameter, according to the information
+     collected with v4l2-ctl.
+
+    Args:
+      match: Match object returned by successful matches of the regex with
+      a string.
+
+    Returns:
+      The instantiated class.
+    """
+
+    return cls(name=match.group(1),
+               type=match.group(2),
+               min=match.group(4) if match.group(4) else None,
+               max=match.group(6) if match.group(6) else None,
+               step=match.group(8) if match.group(8) else None,
+               default=match.group(10) if match.group(10) else None,
+               value=match.group(11),
+               flags=match.group(13) if match.group(13) else None)
+
+  def add_options(self, match: Match) -> None:
+    """Adds the different possible options for a menu parameter.
+
+    Args:
+      match: Match object returned by successful matches of the regex with
+      a string.
+    """
+
+    menu_info = match.group(1)
+    menu_values = match.group(2)
+    menu_name = search(r'(\w+) \w+ \(menu\)', menu_info).group(1)
+    if self.name == menu_name:
+      options = findall(r'\d+: .+?(?=\n|$)', menu_values)
+      self.options = tuple(options)
+      for option in self.options:
+        if self.default == option[0]:
+          self.default = option
 
 
 class CameraGstreamer(Camera):
