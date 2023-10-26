@@ -3,11 +3,9 @@
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
 from typing import Tuple, Optional, Union, List
-from subprocess import Popen, PIPE, run
+from subprocess import Popen, PIPE
 from platform import system
-from re import findall, search
 import logging
-from fractions import Fraction
 
 from .meta_camera import Camera
 from .._global import OptionalModule
@@ -186,16 +184,9 @@ videoconvert ! autovideosink
       self._formats = ['Default', 'MJPG']
 
       # Creating the parameter if applicable
-      # The format integrates the size selection
-      if ' ' in self._formats[0]:
-        self.add_choice_setting(name='format',
-                                choices=tuple(self._formats),
-                                getter=self._get_format,
-                                setter=self._set_format)
-      # The size is independent of the format
-      else:
-        self.add_choice_setting(name='format', choices=tuple(self._formats),
-                                setter=self._set_format)
+      self.add_choice_setting(name='format',
+                              choices=tuple(self._formats),
+                              setter=self._set_format)
 
       # These settings are always available no matter the platform
       self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
@@ -207,11 +198,6 @@ videoconvert ! autovideosink
                              setter=self._set_hue, default=0.)
       self.add_scale_setting(name='saturation', lowest=0., highest=2.,
                              setter=self._set_saturation, default=1.)
-
-      # Adding the software ROI selection settings
-      if self._formats and ' ' in self._formats[0]:
-        width, height = search(r'(\d+)x(\d+)', self._get_format()).groups()
-        self.add_software_roi(int(width), int(height))
 
     # Setting up GStreamer and the callback
     self.log(logging.INFO, "Initializing the GST pipeline")
@@ -341,37 +327,17 @@ videoconvert ! autovideosink
 
     # Getting the format index
     img_format = img_format if img_format is not None else self.format
-
-    try:
-      format_name, img_size, fps = findall(r"(\w+)\s(\w+)\s\((\d+.\d+) fps\)",
-                                           img_format)
-    except ValueError:
-      format_name, img_size, fps = img_format, None, None
+    format_name, img_size, fps = img_format, None, None
 
     # Adding a mjpeg decoder to the pipeline if needed
-    if format_name == 'MJPG':
+    if format_name == 'Default':
+      img_format = '! decodebin'
+    elif format_name == 'MJPG':
       img_format = '! jpegdec'
-    elif format_name == 'H264':
-      img_format = '! h264parse ! avdec_h264'
-
-    # Getting the width and height from the second half of the string
-    if img_size is not None:
-      width, height = map(int, img_size.split('x'))
-    else:
-      width, height = None, None
-
-    # Including the dimensions and the fps in the pipeline
-    img_size = f',width={width},height={height}' if width else ''
-    if fps is not None:
-      fps = Fraction(fps)
-      fps_str = f',framerate={fps.numerator}/{fps.denominator}'
-    else:
-      fps_str = ''
 
     # Finally, generate a single pipeline containing all the user settings
     return f"""{source} {device} name=source {img_format} ! videoconvert ! 
-           video/x-raw,format=BGR{img_size}{fps_str} ! 
-           videobalance 
+           video/x-raw,format=BGR ! videobalance 
            brightness={brightness if brightness is not None 
                        else self.brightness:.3f} 
            contrast={contrast if contrast is not None else self.contrast:.3f} 
@@ -453,30 +419,3 @@ videoconvert ! autovideosink
     """Sets the image encoding and dimensions."""
 
     self._restart_pipeline(self._get_pipeline(img_format=img_format))
-
-    # Reloading the software ROI selection settings
-    if self._soft_roi_set and self._formats and ' ' in self._formats[0]:
-      width, height = search(r'(\d+)x(\d+)', img_format).groups()
-      self.reload_software_roi(int(width), int(height))
-
-  def _get_format(self) -> str:
-    """Parses the ``v4l2-ctl -V`` command to get the current image format as an
-    index."""
-
-    # Sending the v4l2-ctl command
-    if self._device is not None:
-      command = ['v4l2-ctl', '-d', str(self._device), '--all']
-    else:
-      command = ['v4l2-ctl', '--all']
-    check = run(command, capture_output=True, text=True).stdout
-
-    # Parsing the answer
-    format_ = width = height = fps = ''
-    if search(r"Pixel Format\s*:\s*'(\w+)'", check) is not None:
-      format_, *_ = search(r"Pixel Format\s*:\s*'(\w+)'", check).groups()
-    if search(r"Width/Height\s*:\s*(\d+)/(\d+)", check) is not None:
-      width, height = search(r"Width/Height\s*:\s*(\d+)/(\d+)", check).groups()
-    if search(r"Frames per second\s*:\s*(\d+.\d+)", check) is not None:
-      fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", check).groups()
-
-    return f'{format_} {width}x{height} ({fps} fps)'
