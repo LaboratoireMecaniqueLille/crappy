@@ -23,10 +23,10 @@ class FakeCamera(Camera):
     super().__init__()
     self._frame_nr = -1
 
-    self.add_scale_setting('width', 1, 4096, None, self._gen_image, 1280)
-    self.add_scale_setting('height', 1, 4096, None, self._gen_image, 720)
-    self.add_scale_setting('speed', 0., 800., None, None, 100.)
-    self.add_scale_setting('fps', 0.1, 100., None, None, 50.)
+    self.add_scale_setting('width', 1, 4096, None, self._gen_image, 1280, 1)
+    self.add_scale_setting('height', 1, 4096, None, self._gen_image, 720, 1)
+    self.add_scale_setting('speed', 0., 800., None, None, 400., 0.8)
+    self.add_scale_setting('fps', 0.1, 100., None, None, 50., 0.1)
 
     self._t0 = time()
     self._t = self._t0

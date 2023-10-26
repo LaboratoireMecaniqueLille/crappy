@@ -186,7 +186,8 @@ class Camera(metaclass=MetaCamera):
                         highest: NbrType,
                         getter: Optional[Callable[[], NbrType]] = None,
                         setter: Optional[Callable[[NbrType], None]] = None,
-                        default: Optional[NbrType] = None) -> None:
+                        default: Optional[NbrType] = None,
+                        step: Optional[NbrType] = None) -> None:
     """Adds a scale setting, whose value is an :obj:`int` or a :obj:`float`
     lying between two boundaries.
 
@@ -216,6 +217,7 @@ class Camera(metaclass=MetaCamera):
         given, the value to be set is simply stored.
       default: The default value to assign to the setting. If not given, will
         be the average of ``lowest`` and ``highest``.
+      step: The step value for the variation of the setting values.
     """
 
     # Checking if the given name is valid
@@ -226,7 +228,7 @@ class Camera(metaclass=MetaCamera):
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} scale setting")
     self.settings[name] = CameraScaleSetting(name, lowest, highest, getter,
-                                             setter, default)
+                                             setter, default, step)
 
   def add_choice_setting(self,
                          name: str,
@@ -367,16 +369,16 @@ class Camera(metaclass=MetaCamera):
     self.log(logging.INFO, "Adding the software ROI settings")
     self.settings[self.roi_x_name] = CameraScaleSetting(
         name=self.roi_x_name, lowest=0, highest=width - 2, getter=None,
-        setter=None, default=0)
+        setter=None, default=0, step=1)
     self.settings[self.roi_y_name] = CameraScaleSetting(
         name=self.roi_y_name, lowest=0, highest=height - 2, getter=None,
-        setter=None, default=0)
+        setter=None, default=0, step=1)
     self.settings[self.roi_width_name] = CameraScaleSetting(
         name=self.roi_width_name, lowest=2, highest=width, getter=None,
-        setter=None, default=width)
+        setter=None, default=width, step=1)
     self.settings[self.roi_height_name] = CameraScaleSetting(
         name=self.roi_height_name, lowest=2, highest=height, getter=None,
-        setter=None, default=height)
+        setter=None, default=height, step=1)
 
     self._soft_roi_set = True
 
