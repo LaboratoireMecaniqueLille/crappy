@@ -271,6 +271,21 @@ videoconvert ! autovideosink
 
       # Finally, creating the parameter if applicable
       if self._formats:
+        if not run(['gst-inspect-1.0', 'avdec_h264'],
+                   capture_output=True, text=True).stdout:
+          self._formats = [form for form in self._formats
+                           if form.split()[0] != 'H264']
+          self.log(logging.WARNING, "The format H264 is not available"
+                                    "It could be if gstreamer1.0-libav "
+                                    "was installed !")
+        if not run(['gst-inspect-1.0', 'avdec_h265'],
+                   capture_output=True, text=True).stdout:
+          self._formats = [form for form in self._formats
+                           if form.split()[0] != 'HEVC']
+          self.log(logging.WARNING, "The format HEVC is not available"
+                                    "It could be if gstreamer1.0-libav "
+                                    "was installed !")
+
         # The format integrates the size selection
         if ' ' in self._formats[0]:
           self.add_choice_setting(name='format',
