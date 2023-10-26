@@ -354,6 +354,11 @@ videoconvert ! autovideosink
                                       getter=self._add_menu_getter(param.name),
                                       setter=self._add_setter(param.name),
                                       default=param.default)
+          else:
+            self.log(logging.ERROR, f'The type {param.type} is not yet'
+                                    f' implemented. Only int, bool and menu '
+                                    f'type are implemented. ')
+            raise NotImplementedError
 
       self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
 
