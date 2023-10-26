@@ -389,7 +389,309 @@ will change in future releases !
 5. Custom Camera Blocks
 -----------------------
 
-Custom Camera processing
+On the previous tutorial page, :ref:`a section <5. Custom Blocks>` was
+dedicated to the instantiation of custom :ref:`Blocks`. Always moving one step
+further into customization, we're going to see in this section how you can
+create your own subclass of a particular subclass of Block, namely the
+:class:`~crappy.blocks.Camera` Block !
+
+Basically, the Camera Block provides three functionalities. First, it acquires
+images by driving a :ref:`Camera` object. Then, it can optionally display the
+acquired images in a dedicated window. And third, it can optionally record the
+acquired images. The great advantage of this Block is that it can perform these
+three operations in parallel, and therefore optimize the framerate for each
+functionality. The counterpart is that these three operations must be embedded
+into a single Block, rather than performed separately by three different
+Blocks. More details about the implementation of the Camera Block can be found
+in the :ref:`Developers <Camera-related Blocks>` section of the documentation.
+
+In the Camera Block, some lines of code provide the possibility to perform a
+fourth operation in parallel : image processing on the acquired images. While
+the Camera Block itself does not make use of this possibility, children of
+Camera can use it very easily and implement parallelized image processing. For
+instance, the :ref:`Video Extenso` and the :ref:`DIC VE` Blocks are children of
+Camera that implement real-time video-extensometry on the acquired images. So,
+in most cases, the Camera Block should be subclassed by users wishing to
+implement their own custom image processing method in Crappy.
+
+Now, in practice, how to write your own subclass of Camera ? As mentioned
+above, the base Camera Block already handles the acquisition, the display, and
+the recording of the images. All that's left for you to define is how to
+correctly process the images, and what results to send to downstream Blocks.
+But remember that just like the other functionalities, the processing is also
+parallelized ! This means that it cannot be performed directly in the custom
+Camera Block, but rather in another object : a
+:class:`~crappy.blocks.camera_processes.CameraProcess`. So, anyone who wants to
+implement their own image processing in Crappy must create two new classes :
+one child of :class:`~crappy.blocks.Camera`, and one child of
+:class:`~crappy.blocks.camera_processes.CameraProcess` !
+
+5.a. The CameraProcess class
+++++++++++++++++++++++++++++
+
+Just like the other custom objects that you can instantiate in Crappy, there is
+a template for the :class:`~crappy.blocks.camera_processes.CameraProcess` :
+
+.. code-block:: python
+
+   import crappy
+
+   class MyCameraProcess(crappy.blocks.camera_processes.CameraProcess):
+
+       def __init__():
+           super().__init__()
+
+       def init(self):
+           ...
+
+       def loop(self):
+           ...
+
+       def finish(self):
+           ...
+
+Let's review one by one the methods that you can define :
+
+- In :meth:`~crappy.blocks.camera_processes.CameraProcess.__init__` you should
+  only handle the arguments that your CameraProcess accepts, nothing more ! The
+  reason for that is that this method runs in a separate "context" than the
+  following ones, so as little as possible should be performed there.
+- :meth:`~crappy.blocks.camera_processes.CameraProcess.init` is where you can
+  instantiate and initialize the various objects that you will use for the
+  image processing. It is fine to leave this method undefined.
+- :meth:`~crappy.blocks.camera_processes.CameraProcess.loop` is called
+  repeatedly, and is the equivalent of the :meth:`~crappy.blocks.Block.loop`
+  method of the Block. It should handle the received images, process them, and
+  send the result to downstream Blocks. The methods and objects to use for that
+  are detailed below.
+- :meth:`~crappy.blocks.camera_processes.CameraProcess.finish` is the
+  equivalent of the :meth:`~crappy.blocks.Block.finish` method of the Block. It
+  is called at the very end when Crappy finishes, and should de-initialize the
+  objects used for the image processing. It is fine to leave this method
+  undefined.
+
+The Base CameraProcess class handles the calls to these methods, as well as the
+exceptions that might be raised. All the user has to do is to define them. In
+addition to the methods that the user has to define, there are three other
+methods that can be called and provide extra functionalities :
+
+- :meth:`~crappy.blocks.camera_processes.CameraProcess.send` is the equivalent
+  of the :meth:`~crappy.blocks.Block.send` method of the Block, of which it is
+  almost an exact copy. It allows to send data to downstream Block, and takes
+  one argument either as a :obj:`dict` or as an
+  :obj:`~collections.abc.Iterable` if the :py:`self._labels` attribute is
+  defined (and not :py:`self.labels` like in the Block). Refer to the method of
+  Block for more information.
+- :meth:`~crappy.blocks.camera_processes.CameraProcess.send_to_draw` allows to
+  send :class:`~crappy.tool.camera_config.config_tools.Overlay` objects for the
+  displayer to show as an overlay on top of the displayed images. It is
+  discussed in more details in a :ref:`next subsection
+  <5.c. Sending an overlay to the Displayer>`.
+- :meth:`~crappy.blocks.camera_processes.CameraProcess.log` is the equivalent
+  of the :meth:`~crappy.blocks.Block.log` method of the Block, and allows
+  handling log messages without resorting to the :obj:`print` function.
+
+On top of that, two very useful attributes are defined by the CameraProcess
+class :
+
+- :py:`self.img` contains the latest image captured by the Camera Block, as a
+  :mod:`numpy` array. It is updated automatically, so users just have to use it
+  as is. Also note that the
+  :meth:`~crappy.blocks.camera_processes.CameraProcess.loop` method is only
+  called again if a new image was received since the last call, so
+  :py:`self.img` should be a different image at every call !
+- :py:`self.metadata` contains the metadata associated with the image stored in
+  :py:`self.img`. The metadata is in the format described in :ref:`the
+  dedicated section <4.c. Manage the metadata of the images>`. It is especially
+  useful for retrieving the timestamp and the frame index of the processed
+  image.
+
+Now that you have a general overview of the methods and attribute that the
+CameraProcess exposes, it is time to demonstrate how to use them in a demo
+CameraProcess :
+
+.. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
+   :language: python
+   :lines: 1-6, 31-53, 60-61
+
+In the example code, the defined class uses OpenCV to detect eyes on the
+received images. It returns the timestamp of the image, and an object
+containing the coordinates of the detected eyes. Here, the
+:meth:`~crappy.blocks.camera_processes.CameraProcess.finish` method is missing,
+because there is nothing to de-initialize. As described above, the
+:meth:`~crappy.blocks.camera_processes.CameraProcess.__init__` method only
+handles the given arguments,
+:meth:`~crappy.blocks.camera_processes.CameraProcess.init` makes the class
+ready for looping, and
+:meth:`~crappy.blocks.camera_processes.CameraProcess.loop` performs the main
+detection task. The :py:`self.img` attribute is used as an argument to the eye
+detection function, and :py:`self.metadata` is used for returning the timestamp
+of the current image to downstream Blocks. This class alone is not enough for
+running the eye detection with Crappy, a corresponding custom
+:class:`~crappy.blocks.Camera` Block now has to be defined in the next
+subsection !
+
+.. Note::
+   By default, the :meth:`~crappy.blocks.camera_processes.CameraProcess.loop`
+   method is called every time a new image is grabbed by the CameraProcess. It
+   is possible to tune this behavior by overriding the
+   :meth:`~crappy.blocks.camera_processes.CameraProcess._get_data` method. See
+   the :class:`~crappy.blocks.camera_processes.ImageSaver` Process for an
+   example.
+
+.. Note::
+   By default, a counter accessible via the :py:`self.fps_count` attribute is
+   incremented every time a new image is grabbed by the CameraProcess. It is
+   only used in case the :py:`display_freq` argument of the
+   :class:`~crappy.blocks.Camera` Block is set to :obj:`True`, to keep track of
+   the framerate achieved by the CameraProcess. If you have specific situations
+   to handle (e.g. a call to
+   :meth:`~crappy.blocks.camera_processes.CameraProcess.loop` that does not
+   actually process the new image), you can access the :py:`self.fps_count`
+   attribute and decrement or modify it yourself.
+
+5.b. Writing the custom Camera Block
+++++++++++++++++++++++++++++++++++++
+
+To be able to use your freshly defined custom
+:class:`~crappy.blocks.camera_processes.CameraProcess`, you now have to create
+a custom :class:`~crappy.blocks.Camera` Block that makes use of the
+CameraProcess. Since most of the complexity is handled in the base parent
+class, the template for a child of the Camera Block is pretty basic :
+
+.. code-block:: python
+
+   import crappy
+
+   class MyCameraBlock(crappy.blocks.Camera):
+
+       def __init__(self,
+                    camera,
+                    transform=None,
+                    config=True,
+                    display_images=False,
+                    displayer_backend=None,
+                    displayer_framerate=5,
+                    software_trig_label=None,
+                    display_freq=False,
+                    freq=200,
+                    debug=False,
+                    save_images=False,
+                    img_extension="tiff",
+                    save_folder=None,
+                    save_period=1,
+                    save_backend=None,
+                    image_generator=None,
+                    img_shape=None,
+                    img_dtype=None,
+                    **kwargs):
+
+           super().__init__(camera=camera,
+                            transform=transform,
+                            config=config,
+                            display_images=display_images,
+                            displayer_backend=displayer_backend,
+                            displayer_framerate=displayer_framerate,
+                            software_trig_label=software_trig_label,
+                            display_freq=display_freq,
+                            freq=freq,
+                            debug=debug,
+                            save_images=save_images,
+                            img_extension=img_extension,
+                            save_folder=save_folder,
+                            save_period=save_period,
+                            save_backend=save_backend,
+                            image_generator=image_generator,
+                            img_shape=img_shape,
+                            img_dtype=img_dtype,
+                            **kwargs)
+
+       def prepare(self):
+           self.process_proc = CustomCameraProcess()
+
+Notice that since your new :meth:`~crappy.blocks.Camera.__init__` method
+overrides the one from the parent class, you have to handle all the parameters
+of the parent class in addition to the ones that you might add ! As usual,
+:meth:`~crappy.blocks.Camera.__init__` should instantiate all the objects that
+will be used in your class and handle the arguments. In simple cases,
+:meth:`~crappy.blocks.Camera.prepare` is very basic and is only used for
+setting the CameraProcess to use. Except for that, there is nothing more to
+do on the Camera Block side !
+
+.. Note::
+   If you use the :class:`~crappy.blocks.VideoExtenso` Block for example, you
+   have to select spots to track in the configuration window. To achieve such
+   a behavior, you'll need to override the
+   :meth:`~crappy.blocks.Camera._configure` method in your child Camera Block,
+   and to define your own version of
+   :class:`~crappy.tool.camera_config.CameraConfig`. This possibility is very
+   specific, so it is not described in the tutorials.
+
+5.c. Sending an overlay to the Displayer
+++++++++++++++++++++++++++++++++++++++++
+
+Because the :class:`~crappy.blocks.camera_processes.CameraProcess` deals with
+images, it can be interesting to have a real-time display of how the processing
+is performing. To do so, the base CameraProcess class provides the
+:meth:`~crappy.blocks.camera_processes.CameraProcess.send_to_draw` method that
+allows to send objects to the
+:class:`~crappy.blocks.camera_processes.Displayer` Process to draw overlays on
+top of the displayed images. Of course, it will only work if the
+:py:`display_images` argument of the Camera Block is set to :obj:`True`.
+
+The objects indicating what to draw should be children of the
+:class:`~crappy.tool.camera_config.config_tools.Overlay` class. They only need
+to define the :meth:`~crappy.tool.camera_config.config_tools.Overlay.draw`
+method, that takes the image to display as an argument and draws the overlay on
+top of it. Here is what it looks like for displaying a black ellipse :
+
+.. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
+   :language: python
+   :lines: 1-29
+
+To transmit the overlay to the Displayer Process, the
+:meth:`~crappy.blocks.camera_processes.CameraProcess.send_to_draw` should send
+a collection of instances of Overlays. It is as simple as that ! Crappy only
+comes with one predefined Overlay object, the
+:class:`~crappy.tool.camera_config.config_tools.Box`, but it is easy enough to
+define your own ones. Here is what the custom CameraProcess defined in the
+previous sub-section looks like after integrating the code for sending
+overlays :
+
+.. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
+   :language: python
+   :lines: 1-6, 31-61
+
+5.d. Final runnable example
++++++++++++++++++++++++++++
+
+It is now time to put together all the custom classes that were defined in the
+previous sub-sections. There is first the custom
+:class:`~crappy.tool.camera_config.config_tools.Overlay` class for drawing an
+ellipse overlay on top of the displayed images. It is used by the custom
+:class:`~crappy.blocks.camera_processes.CameraProcess` that performs eye
+detection on the acquired images. This custom CameraProcess is itself
+instantiated by a custom child of the :class:`~crappy.blocks.Camera` Block,
+that is the final object called by the user in its script. Based on these
+development, here is a final runnable code performing eye detection and adding
+the detected eyes on the displayed images :
+
+.. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
+   :language: python
+
+.. Note::
+   To run this example, you'll need to have the *opencv-python* and *Pillow*
+   Python modules installed.
+
+You can :download:`download this custom Camera Block example
+</downloads/complex_custom_objects/custom_camera_block.py>` to run it locally
+on your machine. Note that the :py:`'Webcam'` camera is used here, so this
+example will require a camera readable by OpenCV to be plugged to the computer.
+The instantiation of custom image processing in Crappy is definitely one of the
+most advanced things you can perform, but it is totally worth it if you want to
+have your processing parallelized with the acquisition and the display and/or
+recording of the images. There will likely be changes and improvements on these
+aspects in future releases.
 
 6. Sharing custom objects and Blocks
 ------------------------------------
