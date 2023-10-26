@@ -341,7 +341,7 @@ videoconvert ! autovideosink
                                    getter=self._add_scale_getter(param.name),
                                    setter=self._add_setter(param.name),
                                    default=param.default,
-                                   step=param.step)
+                                   step=int(param.step))
           elif param.type == 'bool':
             self.add_bool_setting(name=param.name,
                                   getter=self._add_bool_getter(param.name),
