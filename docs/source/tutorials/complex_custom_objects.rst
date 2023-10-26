@@ -685,7 +685,7 @@ the detected eyes on the displayed images :
 
 This custom Camera Block script is based on an example that you can find in the
 `examples folder on GitHub  <https://github.com/LaboratoireMecaniqueLille/
-crappy/examples/custom_objects>`_. You can :download:`download it
+crappy/examples/custom_objects>`__. You can :download:`download it
 </downloads/complex_custom_objects/custom_camera_block.py>` to run it locally
 on your machine. Note that the :py:`'Webcam'` camera is used here, so this
 example will require a camera readable by OpenCV to be plugged to the computer.
