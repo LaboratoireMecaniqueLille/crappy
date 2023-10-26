@@ -121,7 +121,7 @@ class CameraScaleSetting(CameraSetting):
 
   def _check_value(self) -> None:
     """Checks if the step value is compatible with the limit values and
-    types of the scale settings"""
+    types of the scale settings."""
 
     if self.step is not None:
       if self.type == int and isinstance(self.step, float):
