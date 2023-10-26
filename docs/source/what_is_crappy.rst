@@ -5,6 +5,7 @@ What is Crappy ?
 |Downloads|
 |Documentation status|
 |PyPi version|
+|PyPI pyversions|
 
 Overview
 --------
@@ -91,3 +92,6 @@ won't be able to help you. So Crappy is **NOT for you** if :
 
 .. |PyPi version| image:: https://badgen.net/pypi/v/crappy/
    :target: https://pypi.org/project/crappy
+
+.. |PyPI pyversions| image:: https://img.shields.io/pypi/pyversions/crappy.svg
+   :target: https://pypi.python.org/pypi/crappy/

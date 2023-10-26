@@ -128,7 +128,8 @@ class CustomActuator(crappy.actuator.Actuator):
     ...
 
   def _update(self) -> None:
-    """"""
+    """This method updates the current position and speed of the Actuator, for
+    the get_speed and get_position methods to return."""
 
     # First updating the time information
     t = time()
