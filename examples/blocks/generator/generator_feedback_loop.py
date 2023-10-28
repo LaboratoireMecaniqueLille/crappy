@@ -15,7 +15,7 @@ here the stop condition of the Generator path depends on the value of a label,
 whereas in the basic example a delay is given instead.
 
 After starting this script, you can visualize the shape of the generated signal
-in the Grapher window. This script ends after 32s. You can also hit CTRL+C to
+in the Grapher window. This script ends after 62s. You can also hit CTRL+C to
 stop it earlier, but it is not a clean way to stop Crappy. You can then restart
 it with different parameters for the Generator path.
 """
