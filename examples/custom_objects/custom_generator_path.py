@@ -41,8 +41,6 @@ class CustomPath(Path):
   """
 
   def __init__(self,
-               _last_time: float,
-               _last_cmd: float,
                amplitude: float,
                freq: float,
                power: int,
@@ -55,10 +53,6 @@ class CustomPath(Path):
     where the arguments are passed to the Path by the Generator Block.
 
     Args:
-      _last_time: This argument is for internal use only, it must always be
-        present but should not be modified.
-      _last_cmd: This argument is for internal use only, it must always be
-        present but should not be modified.
       amplitude: The peak to peak amplitude of the sine wave.
       freq: The frequency of the sine wave in Hz.
       power: The power to elevate the sine wave to, as an integer.
@@ -67,9 +61,7 @@ class CustomPath(Path):
     """
 
     # Mandatory line usually at the very beginning of the __init__ method
-    # The parent class takes the _last_time and _last_cmd parameters as
-    # arguments, they are mandatory to give
-    super().__init__(_last_time, _last_cmd)
+    super().__init__()
 
     # The parse_condition method allows to parse a condition given as a string
     # or as a callable or None, and returns a callable that can be used later

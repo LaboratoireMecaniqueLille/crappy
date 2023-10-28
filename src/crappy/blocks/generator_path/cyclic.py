@@ -18,8 +18,6 @@ class Cyclic(Path):
   """
 
   def __init__(self,
-               _last_time: float,
-               _last_cmd: float,
                condition1: Union[str, ConditionType],
                condition2: Union[str, ConditionType],
                value1: float,
@@ -30,10 +28,6 @@ class Cyclic(Path):
     The Path always starts with ``value1``, and then switches to ``value2``.
 
     Args:
-      _last_time: The last timestamp when a command was generated. For internal
-        use only, do not overwrite.
-      _last_cmd: The last sent command. For internal use only, do not
-        overwrite.
       condition1: The condition for switching to ``value2``. Refer to
         :class:`~crappy.blocks.generator_path.meta_path.Path` for more
         information.
@@ -58,7 +52,7 @@ class Cyclic(Path):
         {'type': 'Constant', 'value': 0, 'condition': 'AIN1<1'}] * 5
     """
 
-    super().__init__(_last_time, _last_cmd)
+    super().__init__()
 
     # Creates an interator object with a given length
     if cycles > 0:

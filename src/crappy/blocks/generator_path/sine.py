@@ -13,8 +13,6 @@ class Sine(Path):
   is met."""
 
   def __init__(self,
-               _last_time: float,
-               _last_cmd: float,
                condition: Union[str, ConditionType],
                freq: float,
                amplitude: float,
@@ -23,10 +21,6 @@ class Sine(Path):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      _last_time: The last timestamp when a command was generated. For internal
-        use only, do not overwrite.
-      _last_cmd: The last sent command. For internal use only, do not
-        overwrite.
       condition: The condition for switching to the next Path. Refer to
         :class:`~crappy.blocks.generator_path.meta_path.Path` for more
         information.
@@ -36,7 +30,7 @@ class Sine(Path):
       phase: The phase of the sine (in radians).
     """
 
-    super().__init__(_last_time, _last_cmd)
+    super().__init__()
 
     # Setting the attributes
     self._condition = self.parse_condition(condition)

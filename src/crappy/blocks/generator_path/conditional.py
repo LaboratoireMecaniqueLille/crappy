@@ -16,8 +16,6 @@ class Conditional(Path):
   """
 
   def __init__(self,
-               _last_time: float,
-               _last_cmd: float,
                condition1: Union[str, ConditionType],
                condition2: Union[str, ConditionType],
                value1: float,
@@ -26,10 +24,6 @@ class Conditional(Path):
     """Sets the args and initializes the parent class.
 
     Args:
-      _last_time: The last timestamp when a command was generated. For internal
-        use only, do not overwrite.
-      _last_cmd: The last sent command. For internal use only, do not
-        overwrite.
       condition1: The first condition checked by the Path. Refer to
         :class:`~crappy.blocks.generator_path.meta_path.Path` for more
         information.
@@ -46,7 +40,7 @@ class Conditional(Path):
       This Generator Path never ends, it doesn't have a stop condition.
     """
 
-    super().__init__(_last_time, _last_cmd)
+    super().__init__()
 
     # Setting the attributes
     self._value0 = value0

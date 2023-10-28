@@ -18,11 +18,10 @@ class Path(metaclass=MetaPath):
   generate signals.
   """
 
-  def __init__(self,
-               _last_time: float,
-               _last_cmd: Optional[float] = None,
-               *_,
-               **__) -> None:
+  t0: Optional[float] = None
+  last_cmd: Optional[float] = None
+
+  def __init__(self, *_, **__) -> None:
     """Here, the arguments given to the Path should be handled.
 
     If the Path accepts one or more conditions, (e.g. stop conditions for
@@ -37,8 +36,6 @@ class Path(metaclass=MetaPath):
     previous :class:`~crappy.blocks.generator_path.meta_path.Path`.
     """
 
-    self.t0 = _last_time
-    self.last_cmd = _last_cmd if _last_cmd is not None else 0
     self._logger: Optional[logging.Logger] = None
 
   def get_cmd(self, data: Dict[str, list]) -> Optional[float]:

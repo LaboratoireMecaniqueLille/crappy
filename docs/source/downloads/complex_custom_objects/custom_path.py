@@ -9,15 +9,13 @@ from math import pi
 class CustomPath(crappy.blocks.generator_path.meta_path.Path):
 
   def __init__(self,
-               _last_time,
-               _last_cmd,
                low_value,
                high_value,
                duty_cycle,
                freq,
                condition):
 
-    super().__init__(_last_time, _last_cmd)
+    super().__init__()
 
     # Getting the min and max values, and the frequency
     self._low = min(low_value, high_value)

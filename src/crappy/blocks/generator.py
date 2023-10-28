@@ -7,7 +7,7 @@ from copy import deepcopy
 import logging
 
 from .meta_block import Block
-from .generator_path.meta_path import paths_dict
+from .generator_path.meta_path import paths_dict, Path
 from .._global import GeneratorStop
 
 
@@ -206,10 +206,9 @@ class Generator(Block):
     path_name = next_path_dict.pop('type')
     self._check_path_exists(path_name)
     path_type = paths_dict[path_name]
-    self._current_path = path_type(
-      _last_time=self._last_t if self._last_t is not None else self.t0,
-      _last_cmd=self._last_cmd,
-      **next_path_dict)
+    Path.t0 = self._last_t if self._last_t is not None else self.t0
+    Path.last_cmd = self._last_cmd
+    self._current_path = path_type(**next_path_dict)
 
   def _check_path_validity(self, path: Iterator[Dict[str, Any]]) -> None:
     """Simply instantiates all the Paths in a row to check no error is
@@ -219,8 +218,10 @@ class Generator(Block):
       next_dict = deepcopy(next_dict)
       path_name = next_dict.pop('type')
       self._check_path_exists(path_name)
+      Path.t0 = 0
+      Path.last_cmd = None if i == 0 else 0
       path_type = paths_dict[path_name]
-      path_type(_last_time=0, _last_cmd=None if i == 0 else 0, **next_dict)
+      path_type(**next_dict)
 
   @staticmethod
   def _check_path_exists(name: str) -> None:
