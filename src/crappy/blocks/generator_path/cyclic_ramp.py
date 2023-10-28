@@ -17,8 +17,6 @@ class CyclicRamp(Path):
   """
 
   def __init__(self,
-               _last_time: float,
-               _last_cmd: float,
                condition1: Union[str, ConditionType],
                condition2: Union[str, ConditionType],
                speed1: float,
@@ -30,10 +28,6 @@ class CyclicRamp(Path):
     The path always starts with ``speed1``, and then switches to ``speed2``.
 
     Args:
-      _last_time: The last timestamp when a command was generated. For internal
-        use only, do not overwrite.
-      _last_cmd: The last sent command. For internal use only, do not
-        overwrite.
       condition1: The condition for switching to ``speed2``. Refer to
         :class:`~crappy.blocks.generator_path.meta_path.Path` for more
         information.
@@ -61,9 +55,9 @@ class CyclicRamp(Path):
         {'type': 'Ramp', 'value': -2, 'condition': 'AIN1<1'}] * 5
     """
 
-    super().__init__(_last_time, _last_cmd)
+    super().__init__()
 
-    if init_value is None and _last_cmd is None:
+    if init_value is None and self.last_cmd is None:
       raise ValueError('For the first path, an init_value must be given !')
 
     # Creates an interator object with a given length
@@ -85,7 +79,7 @@ class CyclicRamp(Path):
     self._speed = None
 
     # The last extreme command sent
-    self._last_peak_cmd = _last_cmd if init_value is None else init_value
+    self._last_peak_cmd = self.last_cmd if init_value is None else init_value
 
   def get_cmd(self, data: Dict[str, list]) -> float:
     """Returns the current value of the signal and raises :exc:`StopIteration`

@@ -17,8 +17,6 @@ class Custom(Path):
   """
 
   def __init__(self,
-               _last_time: float,
-               _last_cmd: float,
                file_name: Union[str, pathlib.Path],
                delimiter: str = ',') -> None:
     """Loads the file and sets the arguments.
@@ -27,10 +25,6 @@ class Custom(Path):
     file.
 
     Args:
-      _last_time: The last timestamp when a command was generated. For internal
-        use only, do not overwrite.
-      _last_cmd: The last sent command. For internal use only, do not
-        overwrite.
       file_name: Path to the file containing the information on the Generator
         Path. Can be either a :obj:`str` or a :obj:`pathlib.Path`. The file
         must contain two columns: the first one containing timestamps (starting
@@ -38,7 +32,7 @@ class Custom(Path):
       delimiter: The delimiter between columns in the file, usually a coma.
     """
 
-    super().__init__(_last_time, _last_cmd)
+    super().__init__()
 
     self.log(logging.DEBUG, f"Extracting data from file {file_name}")
     array = loadtxt(pathlib.Path(file_name), delimiter=delimiter)
@@ -61,4 +55,4 @@ class Custom(Path):
     if t - self.t0 > self._timestamps[-1]:
       self.log(logging.DEBUG, "Stop condition met")
       raise StopIteration
-    return interp(t - self.t0, self._timestamps, self._values)
+    return float(interp(t - self.t0, self._timestamps, self._values))

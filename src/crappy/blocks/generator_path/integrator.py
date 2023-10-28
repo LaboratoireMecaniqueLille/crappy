@@ -19,8 +19,6 @@ class Integrator(Path):
   """
 
   def __init__(self,
-               _last_time: float,
-               _last_cmd: float,
                condition: Union[str, ConditionType],
                inertia: float,
                func_label: str,
@@ -29,10 +27,6 @@ class Integrator(Path):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      _last_time: The last timestamp when a command was generated. For internal
-        use only, do not overwrite.
-      _last_cmd: The last sent command. For internal use only, do not
-        overwrite.
       condition: The condition for switching to the next Path. Refer to
         :class:`~crappy.blocks.generator_path.meta_path.Path` for more
         information.
@@ -47,9 +41,9 @@ class Integrator(Path):
         given !
     """
 
-    super().__init__(_last_time, _last_cmd)
+    super().__init__()
 
-    if init_value is None and _last_cmd is None:
+    if init_value is None and self.last_cmd is None:
       raise ValueError('For the first path, an init_value must be given !')
 
     # Setting the attributes
@@ -57,7 +51,7 @@ class Integrator(Path):
     self._time_label = time_label
     self._func_label = func_label
     self._inertia = inertia
-    self._value = _last_cmd if init_value is None else init_value
+    self._value = self.last_cmd if init_value is None else init_value
     self._last_t = None
     self._last_val = None
 
