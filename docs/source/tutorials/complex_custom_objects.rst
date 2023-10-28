@@ -33,22 +33,19 @@ custom Paths and the Paths have to be children of
 
    class MyPath(crappy.blocks.generator_path.meta_path.Path):
 
-       def __init__(self, _last_time, _last_cmd, *_, **__):
-           super().__init__(_last_time, _last_cmd)
+       def __init__():
+           super().__init__()
 
        def get_cmd(self, data):
            ...
 
-As you can see, there are only two methods to define ! Unlike for the other
+As you can see, there are only two methods to define ! Just like for the other
 custom objects, :meth:`~crappy.blocks.generator_path.meta_path.Path.__init__`
-has two mandatory positional arguments that must always be handled and passed
-to the parent class for initialization. They represent the last time when a
-command was sent by the :ref:`Generator` Block, and the last sent value. In
-addition to these two mandatory arguments, users can define as many other
-arguments as needed. Note that these two arguments are used for defining the
-:py:`t0` and :py:`last_cmd` attributes. that have the same values as
-:py:`_last_time` and :py:`_last_cmd` but can be accessed from anywhere in the
-Path.
+should initialize the parent class. It can also accept arguments, that will
+correspond to the keys and values given in the :obj:`dict` passed to the
+:ref:`Generator` Block. Note that in addition to these arguments, the value of
+the last command sent by the Generator and the moment when it was sent are
+accessible through the :py:`self.t0` and :py:`self.last_cmd` attributes.
 
 The :meth:`~crappy.blocks.generator_path.meta_path.Path.get_cmd` method is for
 generating the next command for the Generator to send. It must return the next
@@ -97,15 +94,14 @@ either fixed or controlled by the value of an input label :
 
 .. literalinclude:: /downloads/complex_custom_objects/custom_path.py
    :language: python
-   :emphasize-lines: 20, 37, 42-43, 51, 54-55
+   :emphasize-lines: 35, 40-41, 49, 52-53
 
 .. Note::
    To run this example, you'll need to have the *matplotlib* and *scipy* Python
    modules installed.
 
 This example contains all the ingredients described above. The parent class is
-initialized with the two mandatory arguments, then the :py:`condition` argument
-is parsed with
+initialized, then the :py:`condition` argument is parsed with
 :meth:`~crappy.blocks.generator_path.meta_path.Path.parse_condition`. In
 :meth:`~crappy.blocks.generator_path.meta_path.Path.get_cmd`, the given
 condition is checked based on the latest received data from upstream Blocks,
