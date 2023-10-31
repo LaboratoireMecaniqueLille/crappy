@@ -645,7 +645,7 @@ videoconvert ! autovideosink
       try:
         self.log(logging.DEBUG, f"Getting {name} with command {command}")
         value = run(command, capture_output=True, text=True).stdout
-        value = search(r': (\d+)', value).group(1)
+        value = search(r': (-?\d+)', value).group(1)
       except FileNotFoundError:
         value = None
       return int(value)
