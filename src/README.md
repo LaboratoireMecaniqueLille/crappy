@@ -1,4 +1,4 @@
-SOURCES
+Sources
 =======
 
 This folder contains the source files of CRAPPY. **crappy** contains the files
