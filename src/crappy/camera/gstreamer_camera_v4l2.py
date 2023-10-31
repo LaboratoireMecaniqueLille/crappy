@@ -1,13 +1,14 @@
 # coding: utf-8
 
+from __future__ import annotations
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
-from typing import Tuple, Optional, Union, List
+from typing import Tuple, Optional, Union, List, Callable
 from subprocess import Popen, PIPE, run
-from platform import system
-from re import findall, split, search
+from re import findall, split, search, finditer, Match
 import logging
 from fractions import Fraction
+from dataclasses import dataclass
 
 from .meta_camera import Camera
 from .._global import OptionalModule
@@ -27,8 +28,64 @@ except (ImportError, ModuleNotFoundError, ValueError):
   Gst = GstApp = OptionalModule('PyGObject')
 
 
+@dataclass
+class Parameter:
+  """A class for the different parameters the user can adjust."""
+
+  name: str
+  type: str
+  min: Optional[str] = None
+  max: Optional[str] = None
+  step: Optional[str] = None
+  default: Optional[str] = None
+  value: Optional[str] = None
+  flags: Optional[str] = None
+  options: Optional[Tuple[str, ...]] = None
+
+  @classmethod
+  def parse_info(cls, match: Match) -> Parameter:
+    """Instantiates the class Parameter, according to the information
+     collected with v4l2-ctl.
+
+    Args:
+      match: Match object returned by successful matches of the regex with
+      a string.
+
+    Returns:
+      The instantiated class.
+    """
+
+    return cls(name=match.group(1),
+               type=match.group(2),
+               min=match.group(4) if match.group(4) else None,
+               max=match.group(6) if match.group(6) else None,
+               step=match.group(8) if match.group(8) else None,
+               default=match.group(10) if match.group(10) else None,
+               value=match.group(11),
+               flags=match.group(13) if match.group(13) else None)
+
+  def add_options(self, match: Match) -> None:
+    """Adds the different possible options for a menu parameter.
+
+    Args:
+      match: Match object returned by successful matches of the regex with
+      a string.
+    """
+
+    menu_info = match.group(1)
+    menu_values = match.group(2)
+    menu_name = search(r'(\w+) \w+ \(menu\)', menu_info).group(1)
+    if self.name == menu_name:
+      options = findall(r'\d+: .+?(?=\n|$)', menu_values)
+      num_options = findall(r'(\d+): .+?(?=\n|$)', menu_values)
+      self.options = tuple(options)
+      for i in range(len(num_options)):
+        if self.default == num_options[i]:
+          self.default = options[i]
+
+
 class CameraGstreamer(Camera):
-  """A class for reading images from a video device using Gstreamer.
+  """A class for reading images from a video device using Gstreamer in Linux.
 
   It can read images from the default video source, or a video device can be
   specified. In this case, the user has access to a range of parameters for
@@ -41,9 +98,7 @@ class CameraGstreamer(Camera):
   installation of GStreamer is however less straightforward than the one of
   OpenCV.
 
-  Note:
-    For a better performance of this class in Linux, it is recommended to have
-    `v4l-utils` installed.
+  To use this class, `v4l-utils` must be installed.
 
   Note:
     This Camera requires the module :mod:`PyGObject` to be installed, as well
@@ -60,7 +115,6 @@ class CameraGstreamer(Camera):
     self._frame_nr = 0
 
     # These attributes will be set later
-    self._exposure_mode: Optional[str] = None
     self._pipeline = None
     self._process: Optional[Popen] = None
     self._img: Optional[ndarray] = None
@@ -68,10 +122,9 @@ class CameraGstreamer(Camera):
     self._user_pipeline: Optional[str] = None
     self._nb_channels: int = 3
     self._img_depth: int = 8
-    self._exposure_setting: str = ''
-    self._exposure_auto: str = ''
     self._formats: List[str] = list()
     self._app_sink = None
+    self.parameters = []
 
   def open(self,
            device: Optional[Union[int, str]] = None,
@@ -114,8 +167,7 @@ videoconvert ! autovideosink
 
     Args:
       device: The video device to open, if the device opened by default isn't
-        the right one. In Linux, should be a path like `/dev/video0`. In
-        Windows and Mac, should be the index of the video device. This argument
+        the right one. It should be a path like `/dev/video0`. This argument
         is ignored if a ``user_pipeline`` is given.
       user_pipeline: A custom pipeline that can optionally be given as a
         :obj:`str`. If given, the ``device`` argument is ignored. The pipeline
@@ -131,13 +183,6 @@ videoconvert ! autovideosink
     """
 
     # Checking the validity of the arguments
-    if device is not None and system() == 'Linux' and not isinstance(device,
-                                                                     str):
-      raise ValueError("In Linux, device should be a string !")
-    elif device is not None and system() in ['Darwin', 'Windows'] and not \
-            isinstance(device, int):
-      raise ValueError("In Windows and Mac, device should be an integer !")
-
     if img_depth is not None and img_depth not in [8, 16]:
       raise ValueError('The img_depth must be either 8 or 16 (bits)')
 
@@ -190,105 +235,58 @@ videoconvert ! autovideosink
     # Defining the settings in case no custom pipeline was given
     if user_pipeline is None:
 
-      # First, determine if the exposure can be set (Linux only)
-      if system() == "Linux":
+      # Trying to get the available image encodings and formats
+      self._formats = []
 
-        # Trying to run v4l2-ctl to get the available settings
-        command = ['v4l2-ctl', '-l'] if device is None \
-          else ['v4l2-ctl', '-d', device, '-l']
-        self.log(logging.INFO, f"Getting the available image settings with "
-                               f"command {command}")
-        try:
-          check = run(command, capture_output=True, text=True)
-        except FileNotFoundError:
-          self.log(logging.WARNING, "The performance of the CameraOpencv "
-                                    "class could be improved if v4l-utils "
-                                    "was installed !")
-          check = None
-        check = check.stdout if check is not None else ''
+      # Trying to run v4l2-ctl to get the available formats
+      command = ['v4l2-ctl', '--list-formats-ext'] if device is None \
+          else ['v4l2-ctl', '-d', device, '--list-formats-ext']
+      self.log(logging.INFO, f"Getting the available image formats with "
+                             f"command {command}")
+      try:
+        check = run(command, capture_output=True, text=True)
+      except FileNotFoundError:
+        check = None
+      check = check.stdout if check is not None else ''
 
-        # Trying to find the exposure parameters in the returned string
-        expo = search(r'(?=.*\sexposure\s.*).+min=(?P<min>\d+)\s'
-                      r'max=(?P<max>\d+).+default=(\d+)',
-                      check)
-        expo_auto = search(r'(?=.*exposure.*)(?=.*auto.*)(?=.*menu.*)\s+'
-                           r'\s(\w+)\s', check)
-        expo_abso = search(r'(?=.*absolute.*)(?=.*exposure.*)(?=.*int.*)\s+'
-                           r'\s(\w+)\s.+min=(\d+)\smax=(\d+).+default=(\d+)',
-                           check)
-
-        # If there's an exposure parameter, getting its upper and lower limits
-        if expo:
-          expo_min, expo_max, default = map(int, expo.groups())
-          self._exposure_mode = 'direct'
-          self._exposure_setting = 'exposure'
-
-        # If there's an exposure parameter, getting its upper and lower limits
-        elif expo_auto and expo_abso:
-          self._exposure_mode = 'manual'
-          self._exposure_setting = expo_abso.groups()[0]
-          self._exposure_auto = expo_auto.groups()[0]
-          expo_min, expo_max, default = map(int, expo_abso.groups()[1:])
-
-        else:
-          expo_min = None
-          expo_max = None
-          default = None
-
-        # Creating the parameter if applicable
-        if expo_min is not None:
-          self.add_scale_setting(name='exposure', lowest=expo_min,
-                                 highest=expo_max, getter=self._get_exposure,
-                                 setter=self._set_exposure, default=default)
-
-      # Then, trying to get the available image encodings and formats
-      if system() == 'Linux':
-
-        self._formats = []
-
-        # Trying to run v4l2-ctl to get the available formats
-        command = ['v4l2-ctl', '--list-formats-ext'] if device is None \
-            else ['v4l2-ctl', '-d', device, '--list-formats-ext']
-        self.log(logging.INFO, f"Getting the available image formats with "
-                               f"command {command}")
-        try:
-          check = run(command, capture_output=True, text=True)
-        except FileNotFoundError:
-          check = None
-        check = check.stdout if check is not None else ''
-
-        # Splitting the returned string to isolate each encoding
-        if findall(r'\[\d+]', check):
-          check = split(r'\[\d+]', check)[1:]
-        elif findall(r'Pixel\sFormat', check):
-          check = split(r'Pixel\sFormat', check)[1:]
-        else:
-          check = []
-
-        if check:
-          for img_format in check:
-            # For each encoding, finding its name
-            name, *_ = search(r"'(\w+)'", img_format).groups()
-            sizes = findall(r'\d+x\d+', img_format)
-            fps_sections = split(r'\d+x\d+', img_format)[1:]
-
-            # For each name, finding the available sizes
-            for size, fps_section in zip(sizes, fps_sections):
-              fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
-              for fps in fps_list:
-                self._formats.append(f'{name} {size} ({fps} fps)')
-
-        else:
-          # If v4l-utils is not installed, proposing two encodings without
-          # further detail
-          self._formats = ['Default', 'MJPG']
-
-      # For Windows and Mac proposing two encodings without further detail
+      # Splitting the returned string to isolate each encoding
+      if findall(r'\[\d+]', check):
+        check = split(r'\[\d+]', check)[1:]
+      elif findall(r'Pixel\sFormat', check):
+        check = split(r'Pixel\sFormat', check)[1:]
       else:
-        self._formats = ['Default', 'MJPG']
+        check = []
+
+      if check:
+        for img_format in check:
+          # For each encoding, finding its name
+          name, *_ = search(r"'(\w+)'", img_format).groups()
+          sizes = findall(r'\d+x\d+', img_format)
+          fps_sections = split(r'\d+x\d+', img_format)[1:]
+
+          # For each name, finding the available sizes
+          for size, fps_section in zip(sizes, fps_sections):
+            fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
+            for fps in fps_list:
+              self._formats.append(f'{name} {size} ({fps} fps)')
 
       # Finally, creating the parameter if applicable
       if self._formats:
+        if not run(['gst-inspect-1.0', 'avdec_h264'],
+                   capture_output=True, text=True).stdout:
+          self._formats = [form for form in self._formats
+                           if form.split()[0] != 'H264']
+          self.log(logging.WARNING, "The format H264 is not available"
+                                    "It could be if gstreamer1.0-libav "
+                                    "was installed !")
+        if not run(['gst-inspect-1.0', 'avdec_h265'],
+                   capture_output=True, text=True).stdout:
+          self._formats = [form for form in self._formats
+                           if form.split()[0] != 'HEVC']
+          self.log(logging.WARNING, "The format HEVC is not available"
+                                    "It could be if gstreamer1.0-libav "
+                                    "was installed !")
+
         # The format integrates the size selection
         if ' ' in self._formats[0]:
           self.add_choice_setting(name='format',
@@ -300,16 +298,70 @@ videoconvert ! autovideosink
           self.add_choice_setting(name='format', choices=tuple(self._formats),
                                   setter=self._set_format)
 
-      # These settings are always available no matter the platform
+      # Trying to run v4l2-ctl to get the available settings
+      command = ['v4l2-ctl', '-L'] if device is None \
+          else ['v4l2-ctl', '-d', device, '-L']
+      self.log(logging.INFO, f"Getting the available image settings with "
+                             f"command {command}")
+      try:
+        check = run(command, capture_output=True, text=True)
+      except FileNotFoundError:
+        check = None
+      check = check.stdout if check is not None else ''
+
+      # Regex to extract the different parameters and their information
+      param_pattern = (r'(\w+)\s+0x\w+\s+\((\w+)\)\s+:\s*'
+                       r'(min=(-?\d+)\s+)?'
+                       r'(max=(-?\d+)\s+)?'
+                       r'(step=(\d+)\s+)?'
+                       r'(default=(-?\d+)\s+)?'
+                       r'value=(-?\d+)\s*'
+                       r'(flags=([^\\n]+))?')
+
+      # Extract the different parameters and their information
+      matches = finditer(param_pattern, check)
+      for match in matches:
+        self.parameters.append(Parameter.parse_info(match))
+
+      # Regex to extract the different options in a menu
+      menu_options = finditer(
+        r'(\w+ \w+ \(menu\))([\s\S]+?)(?=\n\s*\w+ \w+ \(.+?\)|$)', check)
+
+      # Extract the different options
+      for menu_option in menu_options:
+        for param in self.parameters:
+          param.add_options(menu_option)
+
+      # Create the different settings
+      for param in self.parameters:
+        if not param.flags:
+          if param.type == 'int':
+            self.add_scale_setting(name=param.name,
+                                   lowest=int(param.min),
+                                   highest=int(param.max),
+                                   getter=self._add_scale_getter(param.name),
+                                   setter=self._add_setter(param.name),
+                                   default=param.default,
+                                   step=int(param.step))
+          elif param.type == 'bool':
+            self.add_bool_setting(name=param.name,
+                                  getter=self._add_bool_getter(param.name),
+                                  setter=self._add_setter(param.name),
+                                  default=bool(int(param.default)))
+          elif param.type == 'menu':
+            if param.options:
+              self.add_choice_setting(name=param.name,
+                                      choices=param.options,
+                                      getter=self._add_menu_getter(param.name),
+                                      setter=self._add_setter(param.name),
+                                      default=param.default)
+          else:
+            self.log(logging.ERROR, f'The type {param.type} is not yet'
+                                    f' implemented. Only int, bool and menu '
+                                    f'type are implemented. ')
+            raise NotImplementedError
+
       self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
-      self.add_scale_setting(name='brightness', lowest=-1., highest=1.,
-                             setter=self._set_brightness, default=0.)
-      self.add_scale_setting(name='contrast', lowest=0., highest=2.,
-                             setter=self._set_contrast, default=1.)
-      self.add_scale_setting(name='hue', lowest=-1., highest=1.,
-                             setter=self._set_hue, default=0.)
-      self.add_scale_setting(name='saturation', lowest=0., highest=2.,
-                             setter=self._set_saturation, default=1.)
 
       # Adding the software ROI selection settings
       if self._formats and ' ' in self._formats[0]:
@@ -373,14 +425,11 @@ videoconvert ! autovideosink
       self.log(logging.INFO, "Stopping the image generating process")
       self._process.terminate()
 
-  def _restart_pipeline(self,
-                        pipeline: str,
-                        exposure: Optional[int] = None) -> None:
+  def _restart_pipeline(self, pipeline: str) -> None:
     """Stops the current pipeline, redefines it, and restarts it.
 
     Args:
       pipeline: The new pipeline to use, as a :obj:`str`.
-      exposure: The new exposure value to set, as an :obj:`int`.
     """
 
     # Stops the previous pipeline
@@ -395,46 +444,16 @@ videoconvert ! autovideosink
     self._app_sink.set_property("emit-signals", True)
     self._app_sink.connect("new-sample", self._on_new_sample)
 
-    # There's an extra step to set the exposure
-    if system() == "Linux" and exposure is not None and \
-            self._exposure_mode is not None:
-      # Two different ways of setting the exposure
-      if self._exposure_mode == 'direct':
-        extra_args = (f"controls,"
-                      f"""exposure={exposure if exposure is not None 
-                                else self.exposure}""")
-      else:
-        extra_args = (f"controls,{self._exposure_auto}=1,"
-                      f"{self._exposure_setting}="
-                      f"{exposure if exposure is not None else self.exposure}")
-
-      # Setting the exposure is done via the 'extra-controls' property of the
-      # 'v4l2src' source
-      self._app_source = self._pipeline.get_by_name('source')
-      structure, _ = Gst.Structure.from_string(extra_args)
-      self._app_source.set_property('extra-controls', structure)
-
     # Restarts the pipeline
     self.log(logging.INFO, "Starting the GST pipeline")
     self._pipeline.set_state(Gst.State.PLAYING)
 
-  def _get_pipeline(self,
-                    brightness: Optional[float] = None,
-                    contrast: Optional[float] = None,
-                    hue: Optional[float] = None,
-                    saturation: Optional[float] = None,
-                    img_format: Optional[int] = None) -> str:
+  def _get_pipeline(self, img_format: Optional[int] = None) -> str:
     """Method that generates a pipeline, according to the given settings.
 
     If a user-defined pipeline was given, it will always be returned.
 
     Args:
-      brightness: The brightness value to set, as a :obj:`float` between -1 and
-        1.
-      contrast: The contrast value to set, as a :obj:`float` between 0 and 2.
-      hue: The hue value to set, as a :obj:`float` between -1 and 1.
-      saturation: The saturation value to set, as a :obj:`float` between 0 and
-        2.
       img_format: The image format to set, as a :obj:`str` containing the name
         of the encoding and optionally both the width and height in pixels.
 
@@ -446,21 +465,9 @@ videoconvert ! autovideosink
     if self._user_pipeline is not None:
       return self._user_pipeline
 
-    # Choosing the source according to the platform
-    if system() == "Linux":
-      source = 'v4l2src'
-    elif system() == 'Windows':
-      source = 'ksvideosrc'
-    elif system() == 'Darwin':
-      source = 'vfsvideosrc'
-    else:
-      source = 'autovideosrc'
-
     # The source argument is handled differently according to the platform
-    if system() == 'Linux' and self._device is not None:
+    if self._device is not None:
       device = f'device={self._device}'
-    elif system() in ['Darwin', 'Windows'] and self._device is not None:
-      device = f'device-index={self._device}'
     else:
       device = ''
 
@@ -478,6 +485,10 @@ videoconvert ! autovideosink
       img_format = '! jpegdec'
     elif format_name == 'H264':
       img_format = '! h264parse ! avdec_h264'
+    elif format_name == 'HEVC':
+      img_format = '! h265parse ! avdec_h265'
+    elif format_name == 'YUYV':
+      img_format = ''
 
     # Getting the width and height from the second half of the string
     if img_size is not None:
@@ -494,16 +505,8 @@ videoconvert ! autovideosink
       fps_str = ''
 
     # Finally, generate a single pipeline containing all the user settings
-    return f"""{source} {device} name=source {img_format} ! videoconvert ! 
-           video/x-raw,format=BGR{img_size}{fps_str} ! 
-           videobalance 
-           brightness={brightness if brightness is not None 
-                       else self.brightness:.3f} 
-           contrast={contrast if contrast is not None else self.contrast:.3f} 
-           hue={hue if hue is not None else self.hue:.3f}
-           saturation={saturation if saturation is not None 
-                       else self.saturation:.3f} ! 
-           appsink name=sink"""
+    return f"""v4l2src {device} name=source {img_format} ! videoconvert ! 
+           video/x-raw,format=BGR{img_size}{fps_str} ! appsink name=sink"""
 
   def _on_new_sample(self, app_sink):
     """Callback that reads every new frame and puts it into a buffer.
@@ -554,59 +557,6 @@ videoconvert ! autovideosink
 
     return Gst.FlowReturn.OK
 
-  def _set_brightness(self, brightness: float) -> None:
-    """Sets the image brightness."""
-
-    self._restart_pipeline(self._get_pipeline(brightness=brightness))
-
-  def _set_contrast(self, contrast: float) -> None:
-    """Sets the image contrast."""
-
-    self._restart_pipeline(self._get_pipeline(contrast=contrast))
-
-  def _set_hue(self, hue: float) -> None:
-    """Sets the image hue."""
-
-    self._restart_pipeline(self._get_pipeline(hue=hue))
-
-  def _set_saturation(self, saturation: float) -> None:
-    """Sets the image saturation."""
-
-    self._restart_pipeline(self._get_pipeline(saturation=saturation))
-
-  def _set_exposure(self, exposure: int) -> None:
-    """Sets the exposure using v4l2.
-
-    Only works when the platform is Linux.
-    """
-
-    self._restart_pipeline(self._get_pipeline(), exposure=exposure)
-
-  def _get_exposure(self) -> int:
-    """Returns the current exposure value.
-
-    Only works when the platform is Linux.
-    """
-
-    # Trying to run v4l2-ctl to get the exposure value
-    if self._device is not None:
-      command = ['v4l2-ctl', '-d', self._device, '--all']
-    else:
-      command = ['v4l2-ctl', '--all']
-    try:
-      self.log(logging.DEBUG, f"Getting exposure with command {command}")
-      expo = run(command, capture_output=True, text=True)
-    except FileNotFoundError:
-      expo = None
-
-    # Extracting the exposure from the returned string
-    expo = expo.stdout if expo is not None else ''
-    expo = search(rf'(?=.*\s{self._exposure_setting}\s.*).+value=(\d+)', expo)
-    if expo:
-      return int(expo.groups()[0])
-    else:
-      raise IOError("Couldn't read exposure value from v4l2 !")
-
   def _set_format(self, img_format) -> None:
     """Sets the image encoding and dimensions."""
 
@@ -638,3 +588,126 @@ videoconvert ! autovideosink
       fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", check).groups()
 
     return f'{format_} {width}x{height} ({fps} fps)'
+
+  def _add_setter(self, name: str) -> Callable:
+    """Creates a setter function for a setting named 'name'.
+    Args:
+      name: Name of the setting.
+
+    Returns:
+      The setter function.
+    """
+
+    def setter(value) -> None:
+      """The method to set the value of a setting running v4l2-ctl.
+      """
+
+      if isinstance(value, str):
+        # The value to set the menu parameter is just the int
+        # at the beginning the string
+        value = search(r'(\d+): ', value).group(1)
+        if self._device is not None:
+          command = ['v4l2-ctl', '-d', self._device, '--set-ctrl',
+                     f'{name}={value}']
+        else:
+          command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value[0])}']
+        self.log(logging.DEBUG, f"Setting {name} with command {command}")
+        run(command, capture_output=True, text=True)
+      else:
+        if self._device is not None:
+          command = ['v4l2-ctl', '-d', self._device, '--set-ctrl',
+                     name+f'={int(value)}']
+        else:
+          command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value)}']
+        self.log(logging.DEBUG, f"Setting {name} with command {command}")
+        run(command, capture_output=True, text=True)
+    return setter
+
+  def _add_scale_getter(self, name: str) -> Callable:
+    """Creates a getter function for a setting named 'name'.
+    Args:
+      name: Name of the setting.
+
+    Returns:
+      The getter function.
+    """
+
+    def getter() -> int:
+      """The method to get the current value of a scale setting
+      running v4l2-ctl.
+      """
+
+      # Trying to run v4l2-ctl to get the value
+      if self._device is not None:
+        command = ['v4l2-ctl', '-d', self._device, '--get-ctrl', name]
+      else:
+        command = ['v4l2-ctl', '--get-ctrl', name]
+      try:
+        self.log(logging.DEBUG, f"Getting {name} with command {command}")
+        value = run(command, capture_output=True, text=True).stdout
+        value = search(r': (-?\d+)', value).group(1)
+      except FileNotFoundError:
+        value = None
+      return int(value)
+    return getter
+
+  def _add_bool_getter(self, name: str) -> Callable:
+    """Creates a getter function for a setting named 'name'.
+    Args:
+      name: Name of the setting.
+
+    Returns:
+      The getter function.
+    """
+
+    def getter() -> bool:
+      """The method to get the current value of a bool setting
+      running v4l2-ctl.
+      """
+
+      # Trying to run v4l2-ctl to get the value
+      if self._device is not None:
+        command = ['v4l2-ctl', '-d', self._device, '--get-ctrl', name]
+      else:
+        command = ['v4l2-ctl', '--get-ctrl', name]
+      try:
+        self.log(logging.DEBUG, f"Getting {name} with command {command}")
+        value = run(command, capture_output=True, text=True).stdout
+        value = search(r': (\d+)', value).group(1)
+      except FileNotFoundError:
+        value = None
+      return bool(int(value))
+    return getter
+
+  def _add_menu_getter(self, name: str) -> Callable:
+    """Creates a getter function for a setting named 'name'.
+    Args:
+      name: Name of the setting.
+
+    Returns:
+      The getter function.
+    """
+
+    def getter() -> str:
+      """The method to get the current value of a choice setting
+      running v4l2-ctl.
+      """
+
+      # Trying to run v4l2-ctl to get the value
+      if self._device is not None:
+        command = ['v4l2-ctl', '-d', self._device, '--get-ctrl', name]
+      else:
+        command = ['v4l2-ctl', '--get-ctrl', name]
+      try:
+        self.log(logging.DEBUG, f"Getting {name} with command {command}")
+        value = run(command, capture_output=True, text=True).stdout
+        value = search(r': (\d+)', value).group(1)
+        for param in self.parameters:
+          if param.name == name:
+            for option in param.options:
+              if value == search(r'(\d+):', option).group(1):
+                value = option
+      except FileNotFoundError:
+        value = None
+      return value
+    return getter
