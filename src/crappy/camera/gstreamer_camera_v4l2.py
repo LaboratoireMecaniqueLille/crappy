@@ -30,7 +30,7 @@ except (ImportError, ModuleNotFoundError, ValueError):
 
 @dataclass
 class Parameter:
-  """A class for the different parameters the user can adjust """
+  """A class for the different parameters the user can adjust."""
 
   name: str
   type: str
@@ -606,16 +606,16 @@ videoconvert ! autovideosink
           command = ['v4l2-ctl', '-d', self._device, '--set-ctrl',
                      name+f'={int(value[0])}']
         else:
-          command = ['v4l2-ctl', '--set-ctrl', name+f'={int(value[0])}']
-        self.log(logging.DEBUG, "Setting "+name+f" with command {command}")
+          command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value[0])}']
+        self.log(logging.DEBUG, f"Setting {name} with command {command}")
         run(command, capture_output=True, text=True)
       else:
         if self._device is not None:
           command = ['v4l2-ctl', '-d', self._device, '--set-ctrl',
                      name+f'={int(value)}']
         else:
-          command = ['v4l2-ctl', '--set-ctrl', name+f'={int(value)}']
-        self.log(logging.DEBUG, "Setting "+name+f" with command {command}")
+          command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value)}']
+        self.log(logging.DEBUG, f"Setting {name} with command {command}")
         run(command, capture_output=True, text=True)
     return setter
 
@@ -639,8 +639,8 @@ videoconvert ! autovideosink
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
       try:
-        self.log(logging.DEBUG, "Getting "+name+f" with command {command}")
         value = run(command, capture_output=True, text=True).stdout.split()[-1]
+        self.log(logging.DEBUG, f"Getting {name} with command {command}")
       except FileNotFoundError:
         value = None
       return int(value)
@@ -666,8 +666,8 @@ videoconvert ! autovideosink
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
       try:
-        self.log(logging.DEBUG, "Getting " + name + f" with command {command}")
         value = run(command, capture_output=True, text=True).stdout.split()[-1]
+        self.log(logging.DEBUG, f"Getting {name} with command {command}")
       except FileNotFoundError:
         value = None
       return bool(int(value))
@@ -693,8 +693,8 @@ videoconvert ! autovideosink
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
       try:
-        self.log(logging.DEBUG, "Getting " + name + f" with command {command}")
         value = run(command, capture_output=True, text=True).stdout.split()[-1]
+        self.log(logging.DEBUG, f"Getting {name} with command {command}")
         for param in self.parameters:
           if param.name == name:
             for option in param.options:
