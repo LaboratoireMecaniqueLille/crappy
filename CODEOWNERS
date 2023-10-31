@@ -1,1 +1,5 @@
+# Global owner for the entire repo
 *       @WeisLeDocto
+
+# PIERROOOTT owns the Gstreamer cameras
+/src/crappy/camera/gstreamer_* @WeisLeDocto @PIERROOOTT
