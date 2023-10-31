@@ -12,8 +12,6 @@ from os import popen, walk
 import platform
 from pathlib import Path
 
-# Change long description
-
 # Reading version from __version__.py file
 with open('src/crappy/__version__.py') as file:
   for line in file:
@@ -21,7 +19,7 @@ with open('src/crappy/__version__.py') as file:
       __version__ = line.split("'")[1]
 
 # Get the long description from the relevant file
-long_description = Path('docs/source/what_is_crappy.rst').read_text()
+long_description = Path('README.md').read_text()
 
 # Getting the current version of Python
 py_ver = '.'.join(platform.python_version().split('.')[:2])
@@ -101,7 +99,7 @@ setup(
   version=__version__,
   description='Command and Real-time Acquisition in Parallelized Python',
   long_description=long_description,
-  long_description_content_type='text/x-rst',
+  long_description_content_type='text/markdown',
   keywords='control,command,acquisition,multiprocessing',
   license='GPL V2',
   classifiers=['Development Status :: 4 - Beta ',
