@@ -77,10 +77,11 @@ class Parameter:
     menu_name = search(r'(\w+) \w+ \(menu\)', menu_info).group(1)
     if self.name == menu_name:
       options = findall(r'\d+: .+?(?=\n|$)', menu_values)
+      num_options = findall(r'(\d+): .+?(?=\n|$)', menu_values)
       self.options = tuple(options)
-      for option in self.options:
-        if self.default == option[0]:
-          self.default = option
+      for i in range(len(num_options)):
+        if self.default == num_options[i]:
+          self.default = options[i]
 
 
 class CameraGstreamer(Camera):
@@ -602,9 +603,12 @@ videoconvert ! autovideosink
       """
 
       if isinstance(value, str):
+        # The value to set the menu parameter is just the int
+        # at the beginning the string
+        value = search(r'(\d+): ', value).group(1)
         if self._device is not None:
           command = ['v4l2-ctl', '-d', self._device, '--set-ctrl',
-                     name+f'={int(value[0])}']
+                     f'{name}={value}']
         else:
           command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value[0])}']
         self.log(logging.DEBUG, f"Setting {name} with command {command}")
@@ -698,7 +702,7 @@ videoconvert ! autovideosink
         for param in self.parameters:
           if param.name == name:
             for option in param.options:
-              if value == option[0]:
+              if value == search(r'(\d+):', option).group(1):
                 value = option
       except FileNotFoundError:
         value = None
