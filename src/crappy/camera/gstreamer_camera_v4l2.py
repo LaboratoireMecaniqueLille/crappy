@@ -643,8 +643,9 @@ videoconvert ! autovideosink
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
       try:
-        value = run(command, capture_output=True, text=True).stdout.split()[-1]
         self.log(logging.DEBUG, f"Getting {name} with command {command}")
+        value = run(command, capture_output=True, text=True).stdout
+        value = search(r': (\d+)', value).group(1)
       except FileNotFoundError:
         value = None
       return int(value)
@@ -670,8 +671,9 @@ videoconvert ! autovideosink
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
       try:
-        value = run(command, capture_output=True, text=True).stdout.split()[-1]
         self.log(logging.DEBUG, f"Getting {name} with command {command}")
+        value = run(command, capture_output=True, text=True).stdout
+        value = search(r': (\d+)', value).group(1)
       except FileNotFoundError:
         value = None
       return bool(int(value))
@@ -697,8 +699,9 @@ videoconvert ! autovideosink
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
       try:
-        value = run(command, capture_output=True, text=True).stdout.split()[-1]
         self.log(logging.DEBUG, f"Getting {name} with command {command}")
+        value = run(command, capture_output=True, text=True).stdout
+        value = search(r': (\d+)', value).group(1)
         for param in self.parameters:
           if param.name == name:
             for option in param.options:
