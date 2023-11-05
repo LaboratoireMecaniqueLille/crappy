@@ -11,6 +11,7 @@ from ast import literal_eval
 from pickle import loads, dumps, UnpicklingError
 from socket import timeout, gaierror
 from itertools import chain
+from warnings import warn
 
 try:
   import paho.mqtt.client as mqtt
@@ -185,6 +186,12 @@ class Client_server(Block):
           ('sign',)
 
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    warn("The Client_server Block will be renamed to ClientServer in version "
+         "2.0.0", FutureWarning)
 
     Block.__init__(self)
     self.niceness = -10

@@ -3,6 +3,7 @@
 from typing import Callable, Optional, Tuple, Union, Any, Dict
 from time import sleep
 import numpy as np
+from warnings import warn
 
 from .._global import DefinitionError
 
@@ -50,6 +51,9 @@ class Cam_setting:
       setter: The method for setting the current value of the setting.
       default: The default value to assign to the setting.
     """
+
+    warn("The Cam_setting class will be renamed to CameraSetting in version "
+         "2.0.0", DeprecationWarning)
 
     # Attributes shared by all the settings
     self.name = name
@@ -103,6 +107,9 @@ class Cam_bool_setting(Cam_setting):
       default: The default value to assign to the setting.
     """
 
+    warn("The Cam_bool_setting class will be renamed to CameraBoolSetting in "
+         "version 2.0.0", DeprecationWarning)
+
     super().__init__(name, getter, setter, default)
 
 
@@ -131,6 +138,9 @@ class Cam_scale_setting(Cam_setting):
       setter: The method for setting the current value of the setting.
       default: The default value to assign to the setting.
     """
+
+    warn("The Cam_scale_setting class will be renamed to CameraScaleSetting "
+         "in version 2.0.0", DeprecationWarning)
 
     self.lowest = lowest
     self.highest = highest
@@ -183,6 +193,9 @@ class Cam_choice_setting(Cam_setting):
       setter: The method for setting the current value of the setting.
       default: The default value to assign to the setting.
     """
+
+    warn("The Cam_choice_setting class will be renamed to CameraChoiceSetting "
+         "in version 2.0.0", DeprecationWarning)
 
     self.choices = choices
 

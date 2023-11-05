@@ -2,6 +2,7 @@
 
 from time import time
 from typing import Optional, List
+from warnings import warn
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
@@ -169,6 +170,12 @@ class Mcp9600(Usb_server, InOut):
         serial number of the ft232h to use for communication.
 
     """
+
+    warn("The Mcp9600 InOut will be renamed to MCP9600 in version 2.0.0",
+         FutureWarning)
+    if ft232h_ser_num is not None:
+      warn("The ft232h_ser_num argument will be removed in version 2.0.0",
+           FutureWarning)
 
     if not isinstance(backend, str) or backend not in Mcp9600_backends:
       raise ValueError("backend should be in {}".format(Mcp9600_backends))

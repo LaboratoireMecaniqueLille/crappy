@@ -3,6 +3,7 @@
 import numpy as np
 from typing import Callable, Optional, Union, List, Dict, Any
 from pathlib import Path
+from warnings import warn
 
 from ..tool import DISCorrel as Dis
 from ..tool import DISConfig, Box
@@ -150,6 +151,13 @@ class DISCorrel(Camera):
         given.
       **kwargs: Any additional argument to pass to the camera.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if img_name:
+      warn("The img_name argument will be replaced by img_extension in "
+           "version 2.0.0", FutureWarning)
 
     super().__init__(camera=camera,
                      transform=transform,
@@ -242,6 +250,9 @@ class DISCorrel(Camera):
   def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Getting the updated values from the correlation and updating the
     displayer."""
+
+    warn("The _additional_loop method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     data = self._dis.get_data(img, self._residual)
     self.send([meta['t(s)'], meta] + data)

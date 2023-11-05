@@ -6,6 +6,7 @@ from .camera import Camera
 from .._global import OptionalModule
 import numpy as np
 from threading import Thread, RLock
+from warnings import warn
 
 try:
   import cv2
@@ -35,6 +36,9 @@ class Picamera(Camera):
 
   def __init__(self) -> None:
     """Instantiates the available settings."""
+
+    warn("The Picamera Camera will be renamed to RaspberryPiCamera in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
     self._cam = PiCamera()

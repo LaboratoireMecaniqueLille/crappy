@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Optional, Dict, Any
+from warnings import warn
 from .modifier import Modifier
 
 
@@ -26,6 +27,9 @@ class Trig_on_change(Modifier):
   def evaluate(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Compares the received value with the last sent one, and if they're
     different sends the received data and stores the latest value."""
+
+    warn("The evaluate method will be renamed to __call__ in version 2.0.0",
+         FutureWarning)
 
     # Storing the first received value and returning the data
     if self._last is None:

@@ -4,6 +4,7 @@ from time import time, sleep
 from typing import Dict, List, Any, Optional, Iterator
 from itertools import cycle
 from copy import deepcopy
+from warnings import warn
 
 from .block import Block
 from . import generator_path
@@ -75,6 +76,13 @@ class Generator(Block):
       type, any applicable parameter(s), and the stop condition(s). Refer to
       the documentation of each signal shape to which information to give.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if cycle_label != 'cycle':
+      warn("The cycle_label argument will be replaced by path_index_label in "
+           "version 2.0.0", FutureWarning)
 
     Block.__init__(self)
 

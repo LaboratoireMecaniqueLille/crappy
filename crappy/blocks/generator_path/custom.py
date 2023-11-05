@@ -4,6 +4,7 @@ from time import time
 from numpy import loadtxt, interp
 from typing import Dict, Union
 import pathlib
+from warnings import warn
 
 from .path import Path
 
@@ -36,6 +37,9 @@ class Custom(Path):
         containing the values.
       delimiter: The delimiter between columns in the file, usually a coma.
     """
+
+    warn("The _last_time and _last_cmd arguments will be removed in version "
+         "2.0.0", DeprecationWarning)
 
     Path.__init__(self, _last_time, _last_cmd)
 

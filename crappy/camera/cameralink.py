@@ -6,6 +6,7 @@
 from time import time
 from typing import Optional, Tuple
 import numpy as np
+from warnings import warn
 
 from .camera import Camera
 from .._global import OptionalModule
@@ -33,6 +34,9 @@ class Cl_camera(Camera):
       Using a config file is recommended over changing all settings manually.
     """
 
+    warn("The Cl_camera Camera will be renamed to BaslerIronmanCameraLink in "
+         "version 2.0.0", FutureWarning)
+
     super().__init__()
 
     self.add_scale_setting("framespersec", 1, 200, self._get_framespersec,
@@ -44,6 +48,9 @@ class Cl_camera(Camera):
            camera_type: Optional[str] = None,
            **kwargs) -> None:
     """Opens the camera."""
+
+    warn("The numdevice argument of open will be renamed to num_device in "
+         "version 2.0.0", FutureWarning)
 
     if camera_type is None and config_file is not None:
       with open(config_file, 'r') as file:

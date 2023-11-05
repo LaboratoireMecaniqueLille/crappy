@@ -2,6 +2,7 @@
 
 from time import time
 from typing import List, Optional, Tuple
+from warnings import warn
 
 from .block import Block
 
@@ -53,6 +54,13 @@ class PID(Block):
       freq: The block will try to loop at this frequency.
       verbose: If :obj:`True`, prints the looping frequency of the block.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if target_label != 'cmd':
+      warn("The target_label argument will be renamed to setpoint_label in "
+           "version 2.0.0", FutureWarning)
 
     # Attributes of the parent class
     super().__init__()

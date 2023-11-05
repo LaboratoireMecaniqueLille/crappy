@@ -2,6 +2,7 @@
 
 from time import time
 from typing import Dict, List, Any, Optional
+from warnings import warn
 
 from .block import Block
 from ..actuator import actuator_list
@@ -59,6 +60,10 @@ class Machine(Block):
           return the value of :meth:`get_speed` under this label. This key is
           not mandatory.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
 
     super().__init__()
     self.freq = freq

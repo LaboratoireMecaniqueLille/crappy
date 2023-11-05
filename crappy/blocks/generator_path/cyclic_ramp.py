@@ -3,6 +3,7 @@
 from time import time
 from typing import Union, Dict, Optional
 from itertools import cycle, islice
+from warnings import warn
 
 from .path import Path, condition_type
 
@@ -56,6 +57,11 @@ class Cyclic_ramp(Path):
         [{'type': 'ramp', 'speed': 5,'condition': 'AIN0>2'},
         {'type': 'ramp', 'value': -2, 'condition': 'AIN1<1'}] * 5
     """
+
+    warn("The Cyclic_ramp Path will be renamed to CyclicRamp in version 2.0.0",
+         FutureWarning)
+    warn("The _last_time and _last_cmd arguments will be removed in version "
+         "2.0.0", DeprecationWarning)
 
     Path.__init__(self, _last_time, _last_cmd)
 

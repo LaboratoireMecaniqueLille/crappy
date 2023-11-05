@@ -2,6 +2,7 @@
 
 from typing import Dict, Any, List
 from time import time
+from warnings import warn
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -68,6 +69,9 @@ class Pijuice(InOut):
       address(:obj:`int`, optional): The I2C address of the piJuice. The
         default address is 0x14.
     """
+
+    warn("The Pijuice InOut will be renamed to PiJuice in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
     if not isinstance(i2c_port, int):

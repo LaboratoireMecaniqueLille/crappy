@@ -3,6 +3,7 @@
 from time import time, strftime, gmtime
 from typing import Tuple, Optional, Dict, Any
 import numpy as np
+from warnings import warn
 from .camera import Camera
 
 
@@ -17,6 +18,9 @@ class Fake_camera(Camera):
 
   def __init__(self) -> None:
     """Initializes the parent class and instantiates the settings."""
+
+    warn("The Fake_camera Camera will be renamed to FakeCamera in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
     self._frame_nr = -1

@@ -3,6 +3,7 @@
 from time import time
 from typing import Callable, Union, Dict, Optional
 from re import split, IGNORECASE, match
+from warnings import warn
 
 condition_type = Callable[[Dict[str, list]], bool]
 
@@ -17,6 +18,9 @@ class Path:
                _last_time: float,
                _last_cmd: Optional[float] = None) -> None:
     """Simply sets the arguments."""
+
+    warn("The _last_time and _last_cmd arguments will be removed in version "
+         "2.0.0", DeprecationWarning)
 
     self.t0 = _last_time
     self.last_cmd = _last_cmd if _last_cmd is not None else 0

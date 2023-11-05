@@ -3,6 +3,7 @@
 import tkinter as tk
 from typing import Optional
 from copy import deepcopy
+from warnings import warn
 from .cameraConfigBoxes import Camera_config_with_boxes
 from .cameraConfigTools import Box
 
@@ -16,6 +17,9 @@ class DISConfig(Camera_config_with_boxes):
 
   def __init__(self, camera) -> None:
     """Initializes the parent class and sets the correl box."""
+
+    warn("The DISConfig class will be renamed to DISCorrelConfig in version "
+         "2.0.0", DeprecationWarning)
 
     self._correl_box = Box()
     self._draw_correl_box = True
@@ -31,6 +35,9 @@ class DISConfig(Camera_config_with_boxes):
   def _bind_canvas_left_click(self) -> None:
     """Binds the left mouse button click for drawing the box on which the
     correlation will be performed."""
+
+    warn("The _bind_canvas_left_click method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     self._img_canvas.bind('<ButtonPress-1>', self._start_box)
     self._img_canvas.bind('<B1-Motion>', self._extend_box)

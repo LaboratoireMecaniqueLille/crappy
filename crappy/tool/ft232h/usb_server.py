@@ -6,6 +6,7 @@ import multiprocessing.synchronize
 from _io import FileIO
 from tempfile import TemporaryFile
 from typing import List, Dict, Any
+from warnings import warn
 from ..._global import OptionalModule
 try:
   from usb.core import find, Device, USBTimeoutError
@@ -53,6 +54,19 @@ class Server_process(Process):
         connected ft232h and values are the associated :mod:`pyusb` Device
         objects.
     """
+
+    warn("The Server_process class will be renamed to USBServer in version "
+         "2.0.0", DeprecationWarning)
+    warn("The new_block_recv argument will be removed in version 2.0.0",
+         DeprecationWarning)
+    warn("The current_file argument will be removed in version 2.0.0",
+         DeprecationWarning)
+    warn("The lock_pool argument will be removed in version 2.0.0",
+         DeprecationWarning)
+    warn("The current_lock argument will be removed in version 2.0.0",
+         DeprecationWarning)
+    warn("The dev_dict argument will be removed in version 2.0.0",
+         DeprecationWarning)
 
     super().__init__()
 
@@ -289,6 +303,10 @@ class Usb_server:
       backend (:obj:`str`): The server won't be started if the chosen backend
         is not ``'ft232h'``.
     """
+
+    warn("The Usb_server class will be removed in version 2.0.0, and fused "
+         "with the Server_process class into the USBServer class",
+         DeprecationWarning)
 
     self._serial_nr = serial_nr
     self._backend = backend

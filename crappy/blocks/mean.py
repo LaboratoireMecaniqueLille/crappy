@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import List, Optional
+from warnings import warn
 
 from .block import Block
 
@@ -37,6 +38,12 @@ class Mean_block(Block):
       verbose: If :obj:`True`, prints the looping frequency of the block.
       freq: The block will try to loop at this frequency.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    warn("The Mean_block Block will be renamed to MeanBlock in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
     self.verbose = verbose

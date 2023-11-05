@@ -4,6 +4,7 @@ import numpy as np
 from time import time
 from typing import List, Optional
 from dataclasses import dataclass
+from warnings import warn
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -114,6 +115,9 @@ class Daqmx(InOut):
       case, all the given lists are treated as if they had the same length
       as the shortest given list.
     """
+
+    warn("The Daqmx InOut will be renamed to DAQmx in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
 

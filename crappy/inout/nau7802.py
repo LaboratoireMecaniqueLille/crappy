@@ -2,6 +2,7 @@
 
 from time import time, sleep
 from typing import Union, Optional, List
+from warnings import warn
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
@@ -176,6 +177,14 @@ class Nau7802(Usb_server, InOut):
       ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
         serial number of the ft232h to use for communication.
     """
+
+    warn("The Nau7802 InOut will be renamed to NAU7802 in version 2.0.0",
+         FutureWarning)
+    warn('The backend argument will be removed in version 2.0.0',
+         FutureWarning)
+    if ft232h_ser_num is not None:
+      warn("The ft232h_ser_num argument will be removed in version 2.0.0",
+           FutureWarning)
 
     if backend not in NAU7802_Backends:
       raise ValueError("backend should be in {}".format(NAU7802_Backends))

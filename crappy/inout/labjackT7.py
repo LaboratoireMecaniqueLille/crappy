@@ -4,6 +4,7 @@ from time import time
 from typing import List, Optional, Dict, Any, Union, Tuple
 from itertools import chain
 from dataclasses import dataclass, field
+from warnings import warn
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -196,6 +197,9 @@ class Labjack_t7(InOut):
       go beyond/below the given values, but this is not meant to replace
       hardware safety !
     """
+
+    warn("The Labjack_t7 InOut will be renamed to LabjackT7 in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
 

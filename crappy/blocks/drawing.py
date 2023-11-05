@@ -3,6 +3,7 @@
 from datetime import timedelta
 from time import time
 from typing import Tuple, List, Dict, Any, Optional
+from warnings import warn
 
 from .block import Block
 from .._global import OptionalModule
@@ -71,6 +72,9 @@ class Dot_text:
           normalized on the ``crange`` of the block and the dot will change
           color from blue to red depending on this value.
     """
+
+    warn("The Dot_text class will be renamed to DotText in version 2.0.0", 
+         DeprecationWarning)
 
     x, y = coord
     self._text = text
@@ -172,6 +176,12 @@ class Drawing(Block):
           in the incoming links. The ``text`` will then be updated with this
           data.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    warn("The Drawing Block will be renamed to Canvas in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
     self.freq = freq

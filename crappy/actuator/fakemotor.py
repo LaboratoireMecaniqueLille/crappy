@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from warnings import warn
 
 from .actuator import Actuator
 
@@ -38,6 +39,13 @@ class Fake_motor(Actuator):
       initial_pos(:obj:`float`, optional): (turns)
     """
 
+    warn("The Fake_motor Actuator will be renamed to FakeDCMotor in version "
+         "2.0.0", FutureWarning)
+
+    if sim_speed != 1:
+      warn("The sim_speed argument will be renamed to simulation_speed in "
+           "version 2.0.0", FutureWarning)
+
     super().__init__()
     self.inertia = inertia
     self.torque = torque
@@ -67,6 +75,9 @@ class Fake_motor(Actuator):
     Note:
       Supposes `u` is constant for the interval `dt`.
     """
+
+    warn("The update method will be renamed to _update in version 2.0.0",
+         FutureWarning)
 
     t1 = time() * self.sim_speed
     dt = (t1 - self.t)

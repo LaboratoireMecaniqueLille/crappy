@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Optional, Iterable
+from warnings import warn
 
 
 class i2c_msg_ft232h:
@@ -22,6 +23,9 @@ class i2c_msg_ft232h:
       buf (:obj:`list`, optional): For a write message, the list of bytes to be
         written.
     """
+
+    warn("The i2c_msg_ft232h class will be renamed to I2CMessage in version "
+         "2.0.0", DeprecationWarning)
 
     if type_ not in ['r', 'w']:
       raise ValueError("type_ should be either 'r' or 'w' !")

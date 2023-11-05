@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import List, Tuple
+from warnings import warn
 from .._global import OptionalModule
 from .cameraConfigTools import Spot_boxes, Box
 
@@ -70,6 +71,9 @@ class DISVE:
       follow: It :obj:`True`, the patches will move to follow the displacement
         of the image.
     """
+
+    warn("The DISVE class will be renamed to DICVETool in version 2.0.0",
+         DeprecationWarning)
 
     # These attributes are accessed by the parent class
     self._patches = patches

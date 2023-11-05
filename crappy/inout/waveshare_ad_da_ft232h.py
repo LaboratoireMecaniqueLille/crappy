@@ -3,6 +3,7 @@
 from time import time, sleep
 from re import fullmatch, findall
 from typing import List, Union, Optional
+from warnings import warn
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 
@@ -192,6 +193,12 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
         value has no influence on the ADC behaviour as it is always powered
         up with `5V`. Same goes for the DAC.
     """
+
+    warn("The Waveshare_ad_da_ft232h InOut will be renamed to "
+         "WaveshareADDAFT232H in version 2.0.0", FutureWarning)
+    if ft232h_ser_num is not None:
+      warn("The ft232h_ser_num argument will be removed in version 2.0.0, and "
+           "should now be passed to the IOBlock", FutureWarning)
 
     Usb_server.__init__(self,
                         serial_nr=ft232h_ser_num if ft232h_ser_num else '',

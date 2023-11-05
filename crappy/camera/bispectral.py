@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import Tuple
+from warnings import warn
 from .cameralink import Cl_camera
 
 table = (0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
@@ -64,6 +65,9 @@ class Bispectral(Cl_camera):
 
   def __init__(self) -> None:
     """"""
+
+    warn("The Bispectral Camera will be renamed to BiSpectral in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
     self.add_scale_setting('width', 1, 640, self._get_w, self._set_w, 640)
@@ -136,6 +140,10 @@ class Bispectral(Cl_camera):
     self.set_it(self._get_it1(), val)
 
   def send_cmd(self, cmd: str) -> str:
+
+    warn("The send_cmd method will be renamed to _send_cmd in version 2.0.0",
+         FutureWarning)
+
     r = self.cap.serialWrite(add_crc(cmd))
     if not check_crc(r) or r[1] != 'Y':
       print('WARNING! Incorrect reply!')
@@ -145,12 +153,19 @@ class Bispectral(Cl_camera):
     """Sets the external trigger to val by toggling the value of the 3rd bit
     of register 102."""
 
+    warn("The set_external_trigger method will be renamed to "
+         "_set_external_trigger in version 2.0.0", FutureWarning)
+
     if val:
       self.send_cmd('@W1027C')  # 3rd bit to 1
     else:
       self.send_cmd('@W10274')  # 3rd bit to 0
 
   def get_roi(self) -> tuple:
+
+    warn("The get_roi method will be renamed to _get_roi in version 2.0.0",
+         FutureWarning)
+
     x1min_lsb = self.send_cmd("@R1D0")
     x1min_msb = self.send_cmd("@R1D1")
     y1min_lsb = self.send_cmd("@R1D2")
@@ -166,6 +181,10 @@ class Bispectral(Cl_camera):
     return xmin, ymin, xmax, ymax
 
   def set_roi(self, xmin: int, ymin: int, xmax: int, ymax: int) -> None:
+
+    warn("The set_roi method will be renamed to _set_roi in version 2.0.0",
+         FutureWarning)
+
     if (xmin, xmax, ymin, ymax) != (0, 0, 639, 511):
       self.send_cmd('@W1A080')  # Set to windowed mode
     else:
@@ -189,6 +208,10 @@ class Bispectral(Cl_camera):
     self.send_cmd("@W1D7" + msb_ymax)
 
   def get_it(self) -> tuple:
+
+    warn("The get_it method will be renamed to _get_it in version 2.0.0",
+         FutureWarning)
+
     mc = 10.35  # MHz
     it1_lsb = self.send_cmd("@R1B4")
     it1_mid = self.send_cmd("@R1B5")
@@ -201,6 +224,10 @@ class Bispectral(Cl_camera):
     return it1 / mc, it2 / mc  # IT in µs
 
   def set_it(self, it1: int, it2: int) -> None:
+
+    warn("The set_it method will be renamed to _set_it in version 2.0.0",
+         FutureWarning)
+
     mc = 10.35
     it1 = int(mc * it1)
     it2 = int(mc * it2)
@@ -222,6 +249,10 @@ class Bispectral(Cl_camera):
     self.send_cmd("@W1BA" + it2_msb)
 
   def get_trigg_freq(self) -> float:
+
+    warn("The get_trigg_freq method will be renamed to _get_trigg_freq in "
+         "version 2.0.0", FutureWarning)
+
     mc = 10350000  # Hz
     p_lsb = self.send_cmd("@R1B0")
     p_mid = self.send_cmd("@R1B1")
@@ -230,6 +261,10 @@ class Bispectral(Cl_camera):
     return mc / p
 
   def set_trigg_freq(self, freq: float) -> None:
+
+    warn("The set_trigg_freq method will be renamed to _set_trigg_freq in "
+         "version 2.0.0", FutureWarning)
+
     mc = 10350000  # Hz
     period = int(mc / freq)
     p_lsb = hexlify(period % 256)
@@ -244,6 +279,9 @@ class Bispectral(Cl_camera):
   def get_sensor_temperature(self) -> float:
     """Returns sensor temperature in Kelvin."""
 
+    warn("The get_sensor_temperature method will be removed in version 2.0.0",
+         FutureWarning)
+
     gain = .01
     lsb = self.send_cmd('@R160')
     msb = self.send_cmd('@R161')
@@ -251,6 +289,9 @@ class Bispectral(Cl_camera):
 
   def get_ambiant_temperature(self) -> float:
     """Returns temperature of the board in °C."""
+
+    warn("The get_ambiant_temperature method will be removed in version 2.0.0",
+         FutureWarning)
 
     t = self.send_cmd('@R173')
     return int(t, 16)

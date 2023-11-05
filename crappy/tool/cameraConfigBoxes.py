@@ -2,6 +2,7 @@
 
 import numpy as np
 import tkinter as tk
+from warnings import warn
 from .cameraConfig import Camera_config
 from .cameraConfigTools import Box, Spot_boxes
 
@@ -17,6 +18,9 @@ class Camera_config_with_boxes(Camera_config):
 
   def __init__(self, camera) -> None:
     """Initializes the parent class and sets the spots container."""
+
+    warn("The Camera_config_with_boxes class will be renamed to "
+         "CameraConfigBoxes in version 2.0.0", DeprecationWarning)
 
     self._spots = Spot_boxes()
     self._select_box = Box()

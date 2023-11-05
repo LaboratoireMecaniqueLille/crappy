@@ -1,5 +1,8 @@
 # coding:utf-8
 
+from warnings import warn
+
+
 class OptionalModule:
   """Placeholder for optional dependencies when not installed
 
@@ -28,7 +31,10 @@ Please install it and try again""".format(self.mname)
 class CrappyStop(Exception):
   """Error to raise when Crappy is terminating"""
 
-  pass
+  def __init__(self):
+    warn("The CrappyStop Exception will be removed in version 2.0.0",
+         DeprecationWarning)
+    super().__init__()
 
 
 class DefinitionError(Exception):

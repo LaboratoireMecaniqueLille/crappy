@@ -2,6 +2,7 @@
 
 from time import time
 from typing import Union, Optional, List
+from warnings import warn
 from .inout import InOut
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h, Usb_server, i2c_msg_ft232h
@@ -83,6 +84,12 @@ class Mprls(Usb_server, InOut):
       ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
         serial number of the FT232H to use for communication.
     """
+
+    warn("The Mprls InOut will be renamed to MPRLS in version 2.0.0",
+         FutureWarning)
+    if ft232h_ser_num is not None:
+      warn("The ft232h_ser_num argument will be removed in version 2.0.0",
+           FutureWarning)
 
     if not isinstance(backend, str) or backend not in mprls_backends:
       raise ValueError("backend should be in {}".format(mprls_backends))

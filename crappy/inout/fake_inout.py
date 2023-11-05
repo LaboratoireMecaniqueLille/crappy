@@ -2,6 +2,7 @@
 
 from time import time
 from typing import List
+from warnings import warn
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -20,6 +21,9 @@ class Fake_inout(InOut):
 
   def __init__(self) -> None:
     """Not much to do here."""
+
+    warn("The Fake_inout InOut will be renamed to FakeInOut in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
 

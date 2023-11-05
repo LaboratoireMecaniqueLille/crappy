@@ -2,6 +2,7 @@
 
 from time import time
 from typing import List
+from warnings import warn
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -27,6 +28,9 @@ class Opsens(InOut):
       device: Address of the serial connection for communicating with the
         PicoSens.
     """
+
+    warn("The Opsens InOut will be renamed to HandySens in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
 

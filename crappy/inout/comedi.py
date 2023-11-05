@@ -3,6 +3,7 @@
 from time import time
 from typing import Optional, List
 from dataclasses import dataclass
+from warnings import warn
 
 from .inout import InOut
 from ..tool import comedi_bind as comedi
@@ -112,6 +113,11 @@ class Comedi(InOut):
       case, all the given lists are treated as if they had the same length
       as the shortest given list.
     """
+
+    warn("The subdevice argument will be renamed to sub_device in version "
+         "2.0.0", FutureWarning)
+    warn("The out_subdevice argument will be renamed to out_sub_device in "
+         "version 2.0.0", FutureWarning)
 
     super().__init__()
 

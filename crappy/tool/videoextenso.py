@@ -6,6 +6,7 @@ from typing import Optional, Tuple, List
 import numpy as np
 from itertools import combinations
 from time import sleep
+from warnings import warn
 from .._global import OptionalModule
 from .cameraConfigBoxes import Spot_boxes, Box
 
@@ -90,6 +91,13 @@ class VideoExtenso:
         noise, but also takes a bit more time compared to no blurring.
     """
 
+    warn("The VideoExtenso class will be renamed to VideoExtensoTool in "
+         "version 2.0.0", DeprecationWarning)
+    warn("The num_spots argument will be removed in version 2.0.0",
+         DeprecationWarning)
+    warn("The min_area argument will be removed in version 2.0.0",
+         DeprecationWarning)
+
     if num_spots is not None and num_spots not in range(1, 5):
       raise ValueError("num_spots should be either None, 1, 2, 3 or 4 !")
     self._num_spots = num_spots
@@ -133,6 +141,9 @@ class VideoExtenso:
     Returns:
       A Spot_boxes object containing all the detected spots.
     """
+
+    warn("The detect_spots method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # First, blurring the image if asked to
     if self._blur is not None and self._blur > 1:
@@ -213,6 +224,9 @@ class VideoExtenso:
 
   def save_length(self) -> bool:
     """Saves the initial length in x and y between the detected spots."""
+
+    warn("The save_length method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # Cannot determine a length if no spots was detected
     if self.spots.empty():

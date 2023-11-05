@@ -3,6 +3,7 @@
 import numpy as np
 from typing import Optional
 from time import time
+from warnings import warn
 from .._global import OptionalModule
 
 try:
@@ -52,6 +53,10 @@ class Displayer:
           'cv2', 'mpl'
     """
 
+    warn("The Displayer class will be moved to "
+         "crappy.blocks.camera_processes.Displayer in version 2.0.0",
+         DeprecationWarning)
+
     self._title = title
     self._framerate = framerate
 
@@ -80,6 +85,9 @@ class Displayer:
   def prepare(self) -> None:
     """Calls the right prepare method depending on the chosen backend."""
 
+    warn("The prepare method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     if self._backend == 'cv2':
       self._prepare_cv2()
     elif self._backend == 'mpl':
@@ -92,6 +100,9 @@ class Displayer:
     Args:
       img: The image to display on the displayer.
     """
+
+    warn("The update method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # Making sure the image is not being refreshed too often
     if time() - self._last_upd < 1 / self._framerate:

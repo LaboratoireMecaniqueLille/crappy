@@ -7,6 +7,7 @@ from pkg_resources import resource_filename
 from typing import Any, Tuple, Optional, Union, List
 from pathlib import Path
 from itertools import chain
+from warnings import warn
 
 from .fields import get_field
 from .._global import OptionalModule
@@ -538,6 +539,9 @@ class GPUCorrel:
         recommended to tune this value for each application so that the
         convergence is neither too slow nor too fast.
     """
+
+    warn("The GPUCorrel class will be renamed to GPUCorrelTool in version "
+         "2.0.0", DeprecationWarning)
 
     self._context = context
 

@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import Optional, Tuple
+from warnings import warn
 from _tkinter import TclError
 
 from .block import Block
@@ -82,6 +83,13 @@ class Grapher(Block):
 
       will plot a dynamic graph displaying the last 30 chunks of data.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if maxpt != 20000:
+      warn("The maxpt argument will be renamed to max_pt in version 2.0.0",
+           FutureWarning)
 
     Block.__init__(self)
     self.niceness = 10
@@ -212,6 +220,10 @@ class Grapher(Block):
     plt.close("all")
 
   def _clear(self, *_, **__) -> None:
+
+    warn("The _clear method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     for line in self._lines:
       line.set_xdata([])
       line.set_ydata([])
@@ -219,6 +231,10 @@ class Grapher(Block):
     self.counter = [0 for _ in self._labels]
 
   def on_press(self, event):
+
+    warn("The on_press method will be renamed to _on_press in version 2.0.0",
+         DeprecationWarning)
+
     if event.key == 'c':
         self._clear()
  

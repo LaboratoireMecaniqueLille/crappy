@@ -3,6 +3,7 @@
 import numpy as np
 from typing import Union, Optional
 from pathlib import Path
+from warnings import warn
 
 from .._global import OptionalModule
 
@@ -54,6 +55,12 @@ class Hdf_recorder(Block):
       freq: The block will try to loop at this frequency.
       verbose: If :obj:`True`, prints the looping frequency of the block.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    warn("The Hdf_recorder Block will be renamed to HDFRecorder in version "
+         "2.0.0", FutureWarning)
 
     Block.__init__(self)
     if freq is not None:

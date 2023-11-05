@@ -2,6 +2,7 @@
 
 from numpy import trapz
 from typing import Union, Dict
+from warnings import warn
 
 from .path import Path, condition_type
 
@@ -47,6 +48,11 @@ class Inertia(Path):
         path is the first one in the list of dicts, this argument must be
         given !
     """
+
+    warn("The Inertia Path will be renamed to Integrator in version 2.0.0",
+         FutureWarning)
+    warn("The _last_time and _last_cmd arguments will be removed in version "
+         "2.0.0", DeprecationWarning)
 
     Path.__init__(self, _last_time, _last_cmd)
 

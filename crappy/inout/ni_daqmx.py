@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from re import fullmatch
 from collections import defaultdict
 from itertools import chain
+from warnings import warn
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -120,6 +121,9 @@ class Nidaqmx(InOut):
           analog input channels of type `'voltage'`, the `'min_val'` and
           `'max_val'` arguments are internally set by default to `0` and `5`.
     """
+
+    warn("The Nidaqmx InOut will be renamed to NIDAQmx in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
 

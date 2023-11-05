@@ -2,6 +2,7 @@
 
 from .modifier import Modifier
 from typing import Optional, Tuple, Dict, Any, Union, List
+from warnings import warn
 
 
 class Trig_on_value(Modifier):
@@ -33,6 +34,9 @@ class Trig_on_value(Modifier):
   def evaluate(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Checks if the value of ``label`` is in the predefined set of accepted
     values, and if so transmits the data."""
+
+    warn("The evaluate method will be renamed to __call__ in version 2.0.0",
+         FutureWarning)
 
     if data[self._label] in self._values:
       return data
