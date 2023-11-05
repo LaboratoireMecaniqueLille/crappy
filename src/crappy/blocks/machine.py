@@ -6,7 +6,7 @@ from dataclasses import dataclass, fields
 import logging
 
 from .meta_block import Block
-from ..actuator import actuator_dict, Actuator
+from ..actuator import actuator_dict, Actuator, deprecated_actuators
 from ..tool.ft232h import USBServer
 
 
@@ -143,6 +143,15 @@ class Machine(Block):
 
     # The list of all the Actuator types to instantiate
     self._types = [actuator['type'] for actuator in actuators]
+
+    # Checking for deprecated names
+    deprecated = [type_ for type_ in self._types
+                  if type_ in deprecated_actuators]
+    for type_ in deprecated:
+      raise NotImplementedError(
+          f"The {type_} Actuator was deprecated in version 2.0.0, and renamed "
+          f"to {deprecated_actuators[type_]} ! Please update your code "
+          f"accordingly and check the documentation for more information")
 
     # Checking that all the given actuators are valid
     if not all(type_ in actuator_dict for type_ in self._types):

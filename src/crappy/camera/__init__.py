@@ -27,4 +27,5 @@ if system() == 'Linux':
 else:
   from .gstreamer_camera_basic import CameraGstreamer
 
+from ._deprecated import deprecated_cameras
 camera_dict: Dict[str, Type[Camera]] = MetaCamera.classes

@@ -34,4 +34,5 @@ from .ft232h import WaveshareADDAFT232H
 from .meta_inout import InOut, MetaIO
 
 # All the inout objects
+from ._deprecated import deprecated_inouts
 inout_dict: Dict[str, Type[InOut]] = MetaIO.classes
