@@ -30,3 +30,7 @@ from .video_extenso import VideoExtenso
 
 from . import generator_path
 from . import camera_processes
+
+from ._deprecated import (AutoDrive, Client_server, Displayer, DISVE, Drawing,
+                          Fake_machine, GUI, Hdf_recorder, Mean_block,
+                          Multiplex, Reader, Video_extenso)
