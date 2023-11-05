@@ -13,7 +13,7 @@ import logging
 
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
-from ..camera import camera_dict, Camera as BaseCam
+from ..camera import camera_dict, Camera as BaseCam, deprecated_cameras
 from ..tool.camera_config import CameraConfig
 from .._global import CameraPrepareError, CameraRuntimeError, CameraConfigError
 
@@ -205,6 +205,13 @@ class Camera(Block):
     self.freq = freq
     self.niceness = -10
     self.debug = debug
+
+    # Checking for deprecated names
+    if camera in deprecated_cameras:
+      raise NotImplementedError(
+          f"The {camera} Camera was deprecated in version 2.0.0, and renamed "
+          f"to {deprecated_cameras[camera]} ! Please update your code "
+          f"accordingly and check the documentation for more information")
 
     # Checking if the requested camera exists in Crappy
     if image_generator is None:
