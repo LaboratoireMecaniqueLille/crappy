@@ -23,7 +23,7 @@ if __name__ == "__main__":
                                cmd_label='cmd')
 
   io = crappy.blocks.IOBlock(name, labels=['t(s)', 'chan0'],
-                             cmd_labels=['cmd'], out_channels=0, verbose=True)
+                             cmd_labels=['cmd'], verbose=True)
   crappy.link(sg, io)
 
   g = crappy.blocks.Grapher(('t(s)', 'chan0'))

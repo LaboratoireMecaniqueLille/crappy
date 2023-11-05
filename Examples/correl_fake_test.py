@@ -70,8 +70,8 @@ if __name__ == "__main__":
 
   # The block performing the DIC
   dis = crappy.blocks.DISCorrel('', show_image=True,
-                                labels=['t(s)', 'x', 'y', 'measured_Exx(%)',
-                                        'measured_Eyy(%)'],
+                                labels=['t(s)', 'meta', 'x', 'y',
+                                        'measured_Exx(%)', 'measured_Eyy(%)'],
                                 image_generator=Apply_strain_img(img),
                                 verbose=True, display_images=True)
   # This modifier will generate an image with the values of strain
