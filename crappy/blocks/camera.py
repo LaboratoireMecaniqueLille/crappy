@@ -339,7 +339,7 @@ class Camera(Block):
     warn("The _draw_box method will be removed in version 2.0.0",
          DeprecationWarning)
 
-    if box.no_points():
+    if box is None or box.no_points():
       return
 
     x_top, x_bottom, y_left, y_right = box.sorted()
