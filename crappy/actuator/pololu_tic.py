@@ -4,6 +4,7 @@ from subprocess import check_output
 from threading import Thread, RLock
 from time import sleep
 from typing import Union, Dict
+from warnings import warn
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -429,6 +430,9 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         ``crappy`` before starting the assay, in the `ticgui`.
     """
 
+    warn("The Pololu_tic Actuator will be renamed to PololuTic in version "
+         "2.0.0", FutureWarning)
+
     Actuator.__init__(self)
 
     if backend not in Tic_backends:
@@ -747,6 +751,9 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         may remain slower if it doesn't have time to do so before reaching the
         given position.
     """
+
+    warn("The speed argument of set_position will not be optional anymore in "
+         "version 2.0.0, and will be None if no speed is set", FutureWarning)
 
     if speed is not None:
       self._set_max_speed(speed)

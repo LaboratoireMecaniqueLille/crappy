@@ -4,6 +4,7 @@ from pkg_resources import resource_string, resource_filename
 from numpy import frombuffer, uint8
 from ._global import OptionalModule
 from webbrowser import open
+from warnings import warn
 
 from . import actuator
 from . import camera
@@ -17,9 +18,16 @@ from .__version__ import __version__
 # For compatibility (deprecated!)
 condition = modifier
 
+warn("Version 1.5.11 of Crappy is the last one before 2.0.0, that will "
+     "contain many breaking changes.\nThe warnings displayed in the terminal "
+     "should help you identify how to modify your scripts when upgrading to "
+     "2.0.0.", FutureWarning)
+
 
 # Quick access to documentation
 def doc():
+  warn("The doc function will be renamed to docs in version 2.0.0",
+       FutureWarning)
   open('https://crappy.readthedocs.io/en/latest/')
 
 

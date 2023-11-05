@@ -2,6 +2,7 @@
 
 from typing import Optional
 import tkinter as tk
+from warnings import warn
 from .cameraConfigBoxes import Camera_config_with_boxes
 from .cameraConfigTools import Box, Spot_boxes
 
@@ -20,6 +21,9 @@ class DISVE_config(Camera_config_with_boxes):
       camera: The camera object in charge of acquiring the images.
       patches: The patches to follow for image correlation.
     """
+
+    warn("The DISVE_config class will be renamed to DICVEConfig in version "
+         "2.0.0", DeprecationWarning)
 
     super().__init__(camera)
 

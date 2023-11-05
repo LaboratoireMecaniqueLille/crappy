@@ -6,6 +6,7 @@ from numpy import ndarray
 from platform import system
 from subprocess import run
 from re import findall, split, search
+from warnings import warn
 from .camera import Camera
 from .._global import OptionalModule
 
@@ -34,6 +35,9 @@ class Camera_opencv(Camera):
 
   def __init__(self) -> None:
     """Sets variables and adds the channels setting."""
+
+    warn("The Camera_opencv Camera will be renamed to CameraOpencv in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
     self._cap = None

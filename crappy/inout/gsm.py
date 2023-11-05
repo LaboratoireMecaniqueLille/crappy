@@ -2,6 +2,7 @@
 
 from time import sleep
 from typing import List
+from warnings import warn
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -38,6 +39,9 @@ class Gsm(InOut):
       port (:obj:`str`, optional): Serial port the GSM is connected to.
       baudrate(:obj:`int`, optional): Serial baudrate, between 1200 and 115200.
     """
+
+    warn("The Gsm InOut will be renamed to Sim868 in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
     try:
@@ -82,6 +86,9 @@ class Gsm(InOut):
     Args:
       message: The text message to send.
     """
+
+    warn("The _send_mess method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     for number in self._numbers:
       count = 0

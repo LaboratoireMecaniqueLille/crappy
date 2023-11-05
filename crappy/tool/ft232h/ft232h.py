@@ -4,6 +4,7 @@ from enum import IntEnum
 from collections import namedtuple
 from struct import calcsize, unpack, pack
 from typing import Union, Callable, Optional
+from warnings import warn
 
 from ..._global import OptionalModule
 try:
@@ -114,6 +115,8 @@ class Find_serial_number:
      the usb.core.find method."""
 
   def __init__(self, serial_number: str) -> None:
+    warn("The Find_serial_number class will be renamed to FindSerialNumber in "
+         "version 2.0.0", DeprecationWarning)
     self.serial_number = serial_number
 
   def __call__(self, device) -> bool:
@@ -213,6 +216,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         do so will most likely raise an error or lead to inconsistent behavior.
 
     """
+
+    warn("The ft232h class will be renamed to FT232H in version 2.0.0",
+         DeprecationWarning)
 
     if mode not in ft232h_modes:
       raise ValueError("mode should be in {}".format(ft232h_modes))

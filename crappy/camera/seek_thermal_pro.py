@@ -5,6 +5,7 @@ from .camera import Camera
 from .._global import OptionalModule
 import numpy as np
 from time import time
+from warnings import warn
 
 try:
   import usb.util
@@ -65,6 +66,9 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
 
   def __init__(self) -> None:
     """Selects the right USB device."""
+
+    warn("The Seek_thermal_pro Camera will be renamed to SeekThermalPro in "
+         "version 2.0.0", FutureWarning)
 
     super().__init__()
     self._calib = None

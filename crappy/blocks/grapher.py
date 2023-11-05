@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import Optional, Tuple
+from warnings import warn
 from _tkinter import TclError
 
 from .block import Block
@@ -9,10 +10,8 @@ from .._global import OptionalModule
 
 try:
   import matplotlib.pyplot as plt
-  from matplotlib.widgets import Button
 except (ModuleNotFoundError, ImportError):
   plt = OptionalModule("matplotlib")
-  Button = OptionalModule("matplotlib")
 
 
 class Grapher(Block):
@@ -84,6 +83,13 @@ class Grapher(Block):
 
       will plot a dynamic graph displaying the last 30 chunks of data.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if maxpt != 20000:
+      warn("The maxpt argument will be renamed to max_pt in version 2.0.0",
+           FutureWarning)
 
     Block.__init__(self)
     self.niceness = 10
@@ -108,6 +114,8 @@ class Grapher(Block):
     self._figure = plt.figure(figsize=self._window_size)
     self._canvas = self._figure.canvas
     self._ax = self._figure.add_subplot(111)
+    self._figure.canvas.mpl_connect('key_press_event', self.on_press)
+    self._ax.set_title('(Press c to clear the graph)', fontsize='small',loc='right')
 
     # Add the lines or the dots
     self._lines = []
@@ -132,16 +140,13 @@ class Grapher(Block):
     # Add a grid
     plt.grid()
 
-    # Adds a button for clearing the graph
-    self._clear_button = Button(plt.axes([.8, .02, .15, .05]), 'Clear')
-    self._clear_button.on_clicked(self._clear)
-
     # Set the dimensions if required
     if self._window_pos:
       mng = plt.get_current_fig_manager()
       mng.window.wm_geometry("+%s+%s" % self._window_pos)
 
     # Ready to show the window
+    plt.tight_layout()
     plt.show(block=False)
     plt.pause(.001)
 
@@ -215,8 +220,22 @@ class Grapher(Block):
     plt.close("all")
 
   def _clear(self, *_, **__) -> None:
+
+    warn("The _clear method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     for line in self._lines:
       line.set_xdata([])
       line.set_ydata([])
     self.factor = [1 for _ in self._labels]
     self.counter = [0 for _ in self._labels]
+
+  def on_press(self, event):
+
+    warn("The on_press method will be renamed to _on_press in version 2.0.0",
+         DeprecationWarning)
+
+    if event.key == 'c':
+        self._clear()
+ 
+ 

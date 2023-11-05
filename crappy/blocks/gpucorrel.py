@@ -3,6 +3,7 @@
 import numpy as np
 from typing import Callable, Union, Optional, List, Dict, Any
 from pathlib import Path
+from warnings import warn
 
 from ..tool import GPUCorrel as GPUCorrel_tool
 from .camera import Camera
@@ -147,6 +148,13 @@ class GPUCorrel(Camera):
         along with the other information under the label ``'res'``.
       **kwargs: Any additional argument to pass to the camera.
     """
+    
+    if img_name:
+      warn("The img_name argument will be replaced by img_extension in "
+           "version 2.0.0", FutureWarning)
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
 
     super().__init__(camera=camera,
                      transform=transform,
@@ -245,6 +253,9 @@ class GPUCorrel(Camera):
     Optionally, also checks if the residuals are low enough for safely sending
     the data.
     """
+
+    warn("The _additional_loop method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     out = [meta['t(s)'], meta]
     out += self._correl.get_disp(img.astype(np.float32)).tolist()

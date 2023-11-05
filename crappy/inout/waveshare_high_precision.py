@@ -3,6 +3,7 @@
 from time import time, sleep
 from re import fullmatch, findall
 from typing import Union, List, Optional
+from warnings import warn
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -185,6 +186,9 @@ class Waveshare_high_precision(InOut):
       above 4.7V or under 0.3V. For example a 2.8V signal read with a gain of 2
       would be read as 4.7V after the PGA, not 4.8V ! Beware !
     """
+
+    warn("The Waveshare_high_precision InOut will be renamed to "
+         "WaveshareHighPrecision in version 2.0.0", FutureWarning)
 
     super().__init__()
     self._gain = gain

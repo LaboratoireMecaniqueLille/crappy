@@ -3,6 +3,7 @@
 from time import time
 from typing import Union, Dict
 from itertools import cycle, islice
+from warnings import warn
 
 from .path import Path, condition_type
 
@@ -53,6 +54,9 @@ class Cyclic(Path):
         [{'type': 'constant', 'value': 1,'condition': 'AIN0>2'},
         {'type': 'constant', 'value': 0, 'condition': 'AIN1<1'}] * 5
     """
+
+    warn("The _last_time and _last_cmd arguments will be removed in version "
+         "2.0.0", DeprecationWarning)
 
     Path.__init__(self, _last_time, _last_cmd)
 

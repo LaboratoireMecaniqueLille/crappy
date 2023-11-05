@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Union, Dict
+from warnings import warn
 from .path import Path, condition_type
 
 
@@ -24,6 +25,9 @@ class Constant(Path):
         :ref:`generator path` for more info.
       value: The value to send.
     """
+
+    warn("The _last_time and _last_cmd arguments will be removed in version "
+         "2.0.0", DeprecationWarning)
 
     Path.__init__(self, _last_time, _last_cmd)
 

@@ -5,6 +5,7 @@ import numpy as np
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from itertools import chain
+from warnings import warn
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -132,6 +133,9 @@ class T7_streamer(InOut):
             0.01, 0.1, 1, 10
 
     """
+
+    warn("The T7_streamer InOut will be renamed to T7Streamer in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
 

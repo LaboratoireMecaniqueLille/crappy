@@ -21,7 +21,7 @@ if __name__ == "__main__":
                                             type='thrmcpl',
                                             thermocouple_type='K')
                                        for c_name in chan_names],
-                             samplerate=14. / len(channels),
+                             sample_rate=14. / len(channels),
                              labels=['t(s)', 'stream'] if STREAMER else labels,
                              streamer=STREAMER)
 

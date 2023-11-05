@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Union, Dict
+from warnings import warn
 from .path import Path, condition_type
 
 
@@ -41,6 +42,11 @@ class Protection(Path):
     Note:
       This generator path never ends, it doesn't have a stop condition.
     """
+
+    warn("The Protection Path will be renamed to Conditional in version 2.0.0",
+         FutureWarning)
+    warn("The _last_time and _last_cmd arguments will be removed in version "
+         "2.0.0", DeprecationWarning)
 
     Path.__init__(self, _last_time, _last_cmd)
 

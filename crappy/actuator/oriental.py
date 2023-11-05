@@ -2,6 +2,7 @@
 
 from time import sleep
 from typing import Optional
+from warnings import warn
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -31,6 +32,9 @@ class Oriental(Actuator):
       gain (:obj:`float`, optional): The gain for speed commands.
     """
 
+    warn("The Oriental Actuator will be renamed to OrientalARDK in version "
+         "2.0.0", FutureWarning)
+
     Actuator.__init__(self)
     self.baudrate = baudrate
     self.port = port
@@ -53,6 +57,9 @@ class Oriental(Actuator):
     self.ser.write(b"TD " + ACCEL+b'\n')  # Deceleration time
 
   def clear_errors(self) -> None:
+
+    warn("The clear_errors method will be renamed to _clear_errors in version "
+         "2.0.0", FutureWarning)
     self.ser.write(b"ALMCLR\n")
 
   def close(self) -> None:
@@ -68,6 +75,9 @@ class Oriental(Actuator):
     self.speed = 0
 
   def reset(self) -> None:
+
+    warn("The reset method will be removed in version 2.0.0", FutureWarning)
+
     self.clear_errors()
     self.ser.write(b"RESET\n")
     self.ser.write("TALK{}\n".format(self.num_device).encode('ASCII'))
@@ -101,9 +111,16 @@ class Oriental(Actuator):
     self.speed = signed_speed
 
   def set_home(self) -> None:
+
+    warn("The set_home method will be removed in version 2.0.0", FutureWarning)
+
     self.ser.write(b'preset\n')
 
   def move_home(self) -> None:
+
+    warn("The move_home method will be removed in version 2.0.0",
+         FutureWarning)
+
     self.ser.write(b'EHOME\n')
 
   def set_position(self,

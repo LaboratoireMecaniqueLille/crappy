@@ -24,6 +24,7 @@ if __name__ == "__main__":
     "type": "ramp",
     "speed": SPEED / 60,  # Convert to mm/s (in ramps, speed is always
     # in unit/s)
+    'init_value': 0,
     "condition": None}  # No exit condition: we will stop the test manually
 
   # Let's create the first block: the generator

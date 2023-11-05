@@ -3,6 +3,7 @@
 import numpy as np
 from time import time
 from typing import List, Optional
+from warnings import warn
 from .inout import InOut
 from ..tool import pyspcm as spc
 
@@ -44,6 +45,9 @@ class Spectrum(InOut):
       notify_size: The size of each chunk of data to copy from the card, in
         bytes. The default is 65kB.
     """
+
+    warn("The Spectrum InOut will be renamed to SpectrumM2I4711 in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
 

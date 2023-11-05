@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import Dict, Any, Union, List, Tuple
+from warnings import warn
 
 from .modifier import Modifier
 
@@ -53,6 +54,9 @@ class Demux(Modifier):
   def evaluate(self, data: Dict[str, np.ndarray]) -> Dict[str, Any]:
     """Retrieves for each label its value in the stream, also gets the
     corresponding timestamp, and returns them."""
+
+    warn("The evaluate method will be renamed to __call__ in version 2.0.0",
+         FutureWarning)
 
     # If there are no rows or no column, cannot perform the demux
     if 0 in data[self._stream_label].shape:

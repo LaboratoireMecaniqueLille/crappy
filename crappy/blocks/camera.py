@@ -6,6 +6,7 @@ import numpy as np
 from time import time, strftime, gmtime
 from re import fullmatch
 from types import MethodType
+from warnings import warn
 
 from .block import Block
 from .displayer import Displayer
@@ -124,6 +125,13 @@ class Camera(Block):
         examples, and isn't meant to be used in an actual test.
       **kwargs: Any additional argument to pass to the camera.
     """
+
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if img_name:
+      warn("The img_name argument will be replaced by img_extension in "
+           "version 2.0.0", FutureWarning)
 
     super().__init__()
 
@@ -305,6 +313,9 @@ class Camera(Block):
     """Simply saves the given image to the given path using the selected
     backend."""
 
+    warn("The _save method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     if self._save_backend == 'sitk':
       Sitk.WriteImage(Sitk.GetImageFromArray(img), path)
 
@@ -318,13 +329,17 @@ class Camera(Block):
     """Additional action to perform in the loop, used by subclasses of the
     Camera block."""
 
-    ...
+    warn("The _additional_loop method will be removed in version 2.0.0",
+         DeprecationWarning)
 
   @staticmethod
   def _draw_box(img: np.ndarray, box: Box) -> None:
     """Draws a box on top of an image."""
 
-    if box.no_points():
+    warn("The _draw_box method will be removed in version 2.0.0",
+         DeprecationWarning)
+
+    if box is None or box.no_points():
       return
 
     x_top, x_bottom, y_left, y_right = box.sorted()

@@ -6,6 +6,7 @@ from time import sleep, time, localtime, strftime
 from weakref import WeakSet
 from pickle import UnpicklingError
 from typing import Union, Optional, List, Dict, Any
+from warnings import warn
 
 from ..links import Link
 from .._global import CrappyStop
@@ -108,12 +109,16 @@ class Block(Process):
 
   @classmethod
   def get_status(cls) -> List[str]:
+    warn("The get_status classmethod will be removed in version 2.0.0",
+         DeprecationWarning)
     return [x.status for x in cls.instances]
 
   @classmethod
   def all_are(cls, s: str) -> bool:
     """Returns :obj:`True` only if all processes status are `s`."""
 
+    warn("The all_are classmethod will be removed in version 2.0.0",
+         DeprecationWarning)
     lst = cls.get_status()
     return len(set(lst)) == 1 and s in lst
 
@@ -130,6 +135,9 @@ class Block(Process):
       lower the niceness of processes.
     """
 
+    warn("The high_prio argument of renice_all will be renamed to allow_root "
+         "in version 2.0.0", DeprecationWarning)
+
     if "win" in platform:
       # Not supported on Windows yet
       return
@@ -142,6 +150,10 @@ class Block(Process):
   def prepare_all(cls, verbose: bool = True) -> None:
     """Starts all the blocks processes (``block.prepare``), but not the main
     loop."""
+
+    warn("The verbose argument of prepare_all will be renamed to log_level "
+         "in version 2.0.0, and its type will be int and not bool",
+         DeprecationWarning)
 
     if verbose:
       def vprint(*args):
@@ -161,6 +173,10 @@ class Block(Process):
                  t0: Optional[float] = None,
                  verbose: bool = True,
                  bg: bool = False) -> None:
+
+    warn("The t0, verbose, and bg arguments of launch_all will be removed in "
+         "version 2.0.0", DeprecationWarning)
+
     if verbose:
       def vprint(*args):
         print("[launch]", *args)
@@ -211,6 +227,10 @@ class Block(Process):
       print("Crappy terminated, blocks status:")
       for b in cls.instances:
         print(b, b.status)
+    warn("Version 1.5.11 of Crappy is the last one before 2.0.0, that will "
+         "contain many breaking changes.\nThe warnings displayed in the "
+         "terminal should help you identify how to modify your scripts when "
+         "upgrading to 2.0.0.", FutureWarning)
 
   @classmethod
   def start_all(cls,
@@ -218,6 +238,15 @@ class Block(Process):
                 verbose: bool = True,
                 bg: bool = False,
                 high_prio: bool = False) -> None:
+
+    warn("The t0 and bg arguments of start_all will be removed in version "
+         "2.0.0", DeprecationWarning)
+    warn("The verbose argument of start_all will be renamed to log_level in "
+         "version 2.0.0, and will expect an int type instead of a bool",
+         DeprecationWarning)
+    warn("The high_prio argument of start_all will be renamed to allow_root "
+         "in version 2.0.0", DeprecationWarning)
+
     cls.prepare_all(verbose)
     if high_prio and any([b.niceness < 0 for b in cls.instances]):
       print("[start] High prio: root permission needed to renice")
@@ -227,6 +256,9 @@ class Block(Process):
   @classmethod
   def stop_all(cls, verbose: bool = True) -> None:
     """Stops all the blocks (``crappy.stop``)."""
+
+    warn("The verbose argument of stop_all will be removed in version 2.0.0",
+         DeprecationWarning)
 
     if verbose:
       def vprint(*args):
@@ -272,6 +304,9 @@ class Block(Process):
     """For block with a given number of `loops/s` (use ``freq`` attribute to
     set it)."""
 
+    warn("The handle_freq method will be renamed to _handle_freq in version "
+         "2.0.0", DeprecationWarning)
+
     self._MB_loops += 1
     t = time()
     if hasattr(self, 'freq') and self.freq:
@@ -300,6 +335,9 @@ class Block(Process):
         in seconds after epoch).
     """
 
+    warn("The launch method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     if self.status == "idle":
       print(self, ": Called launch on unprepared process!")
       self.start()
@@ -321,6 +359,9 @@ class Block(Process):
       - `"error"`: An error occurred and the block stopped.
     """
 
+    warn("The status property will be removed in version 2.0.0",
+         DeprecationWarning)
+
     if self.pid is not None:
       while self.pipe1.poll():
         try:
@@ -340,6 +381,10 @@ class Block(Process):
 
   @status.setter
   def status(self, s: str) -> None:
+
+    warn("The status property will be removed in version 2.0.0",
+         DeprecationWarning)
+
     assert self.pid is not None, "Cannot set status from outside of the " \
                                  "process!"
     self.pipe2.send(s)
@@ -391,6 +436,9 @@ class Block(Process):
       If the same label comes from multiple links, it may be overridden !
     """
 
+    warn("The recv_all method will be renamed to recv_data in version 2.0.0",
+         DeprecationWarning)
+
     r = {}
     for i in self.inputs:
       if i.poll():
@@ -403,6 +451,8 @@ class Block(Process):
     Returns True if l.poll() is True for any input link l.
     """
 
+    warn("The poll method will be renamed to data_available in version "
+         "2.0.0", DeprecationWarning)
     return any((link.poll for link in self.inputs))
 
   def recv_all_last(self) -> Dict[str, float]:
@@ -411,6 +461,9 @@ class Block(Process):
     This method avoids Pipe congestion that can be induced by recv_all when the
     receiving block is slower than the block upstream
     """
+
+    warn("The recv_all_last method will be renamed to recv_last_data in "
+         "version 2.0.0", DeprecationWarning)
 
     ret = {}
     for link in self.inputs:
@@ -436,6 +489,9 @@ class Block(Process):
       The first call may be blocking until it receives data, all the others
       will return instantaneously, giving the latest known reading.
     """
+
+    warn("The get_last method will be renamed to recv_all_data in version "
+         "2.0.0", DeprecationWarning)
 
     # Initializing the buffer
     if self._last_values is None:
@@ -471,6 +527,9 @@ class Block(Process):
         received for each label.
     """
 
+    warn("The get_all_last method will be renamed to recv_all_data in version "
+         "2.0.0", DeprecationWarning)
+
     if self._all_last_values is None:
       self._all_last_values = {link: dict() for link in self.inputs}
 
@@ -501,6 +560,9 @@ class Block(Process):
       A :obj:`list` where each entry is what would have been returned by
       :meth:`Link.recv_chunk` on each link.
     """
+
+    warn("The recv_all_delay method will be renamed to recv_all_data_raw in "
+         "version 2.0.0", DeprecationWarning)
 
     def poll(inputs: List[Link],
              rcv: List[Dict[str, list]]) -> None:
@@ -546,6 +608,9 @@ class Block(Process):
     instantly.
     """
 
+    warn("The drop method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     if num is None:
       num = range(len(self.inputs))
     elif not isinstance(num, list):
@@ -585,4 +650,7 @@ class Block(Process):
       print("[%r] Stopped correctly" % self)
 
   def __repr__(self) -> str:
+
+    warn("The __repr__ method will be removed in version 2.0.0",
+         DeprecationWarning)
     return str(type(self)) + " (" + str(self.pid or "Not running") + ")"

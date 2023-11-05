@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import Dict, Any
+from warnings import warn
 from .modifier import Modifier
 
 
@@ -27,6 +28,9 @@ class Moving_med(Modifier):
   def evaluate(self, data: Dict[str, Any]) -> Dict[str, Any]:
     """Receives data from the upstream block, computes the median of every
     label and replaces the original data with it."""
+
+    warn("The evaluate method will be renamed to __call__ in version 2.0.0",
+         FutureWarning)
 
     # Initializing the buffer
     if self._buf is None:

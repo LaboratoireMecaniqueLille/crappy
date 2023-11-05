@@ -4,6 +4,7 @@ import time
 from time import sleep, time
 from re import fullmatch, findall
 from typing import Union, Optional, List
+from warnings import warn
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -189,6 +190,9 @@ class Waveshare_ad_da(InOut):
         value has no influence on the ADC behaviour as it is always powered
         up with `5V`. Same goes for the DAC.
     """
+
+    warn("The Waveshare_ad_da InOut will be renamed to WaveshareADDA in "
+         "version 2.0.0", FutureWarning)
 
     InOut.__init__(self)
 

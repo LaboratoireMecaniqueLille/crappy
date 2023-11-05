@@ -3,6 +3,7 @@
 from time import time
 from re import findall
 from typing import Union, List, Optional
+from warnings import warn
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
@@ -170,6 +171,12 @@ class Ads1115(Usb_server, InOut):
       `GND-0.3V`. Setting high ``v_range`` values does not allow measuring
       voltages higher than `VDD` !!
     """
+
+    warn("The Ads1115 InOut will be renamed to ADS1115 in version 2.0.0",
+         FutureWarning)
+    if ft232h_ser_num is not None:
+      warn("The ft232h_ser_num argument will be removed in version 2.0.0",
+           FutureWarning)
 
     if not isinstance(backend, str) or backend not in Ads1115_backends:
       raise ValueError("backend should be in {}".format(Ads1115_backends))

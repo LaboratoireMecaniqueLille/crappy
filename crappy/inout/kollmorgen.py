@@ -3,6 +3,7 @@
 from time import time
 from struct import pack, unpack
 from typing import List
+from warnings import warn
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -56,6 +57,9 @@ class Koll(InOut):
       port: The network port over which to communicate with the variator, as
         an :obj:`int`.
     """
+
+    warn("The Koll InOut will be renamed to KollmorgenAKDPDMM in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
 

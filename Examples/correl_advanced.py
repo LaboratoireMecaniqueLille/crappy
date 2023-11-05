@@ -52,15 +52,13 @@ if __name__ == "__main__":
                                      'uxx', 'uyy', 'uxy',   # Quadratic def (x)
                                      'vxx', 'vyy', 'vxy'],  # Quadratic def (y)
                                    verbose=2,  # To print info
-                                   show_diff=True,  # Display the residual
-                                   # (slow!)
-                                   drop=False,  # Disable data picker
                                    mask=mask,
                                    levels=4,  # Reduce the number of levels
                                    iterations=3,  # and of iteration
                                    resampling_factor=2.5,  # aggressive
                                    # resampling
                                    labels=[  # Needed to name our custom field
+                                     't(s)', 'meta',
                                      'x', 'y', 'r', 'Exx', 'Eyy', 'Exy',
                                      'Ux2', 'Uy2', 'Uxy',
                                      'Vx2', 'Vy2', 'Vxy'],

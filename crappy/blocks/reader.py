@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Optional
+from warnings import warn
 from .block import Block
 
 
@@ -20,6 +21,12 @@ class Reader(Block):
       freq: The block will try to loop at this frequency.
       verbose: If :obj:`True`, the looping frequency will be printed every 2s.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    warn("The Reader Block will be renamed to LinkReader in version 2.0.0",
+         FutureWarning)
 
     Block.__init__(self)
     self.freq = freq
@@ -41,6 +48,9 @@ class Reader(Block):
   @classmethod
   def _instance_index(cls) -> int:
     """Returns the index of the current instance."""
+
+    warn("The _additional_loop method will be renamed to _get_index in "
+         "version 2.0.0", DeprecationWarning)
 
     cls._index += 1
     return cls._index

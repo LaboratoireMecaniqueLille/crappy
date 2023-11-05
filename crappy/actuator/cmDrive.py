@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Optional
+from warnings import warn
 
 from .actuator import Actuator
 from .._global import OptionalModule
@@ -22,6 +23,9 @@ class CM_drive(Actuator):
       port (:obj:`str`, optional): Path to connect to the serial port.
       baudrate (:obj:`int`, optional): Set the corresponding baud rate.
     """
+
+    warn("The CM_drive Actuator will be renamed to SchneiderMDrive23 in "
+         "version 2.0.0", FutureWarning)
 
     Actuator.__init__(self)
     self.port = port
@@ -75,6 +79,9 @@ class CM_drive(Actuator):
   def clear_errors(self) -> None:
     """Reset errors."""
 
+    warn("The clear_errors method will be removed in version 2.0.0",
+         FutureWarning)
+
     self.ser.write("CLRFAULT\r\n")
     self.ser.write("OPMODE 0\r\n EN\r\n")
 
@@ -99,6 +106,12 @@ class CM_drive(Actuator):
     """Pilot in position mode, needs speed and final position to run
     (in `mm/min` and `mm`)."""
 
+    warn("The speed argument of set_position will not be optional anymore in "
+         "version 2.0.0, and will be None if no speed is set", FutureWarning)
+
+    warn("The motion_type argument of set_position will be removed in version "
+         "2.0.0 ", FutureWarning)
+
     self.ser.close()  # close serial connection before to avoid errors
     self.ser.open()  # open serial port
 
@@ -113,6 +126,9 @@ class CM_drive(Actuator):
 
   def move_home(self) -> None:
     """Reset the position to zero."""
+
+    warn("The move_home method will be removed in version 2.0.0",
+         FutureWarning)
 
     self.ser.open()  # open serial port
     # send 'MH' ASCII characters for requesting to the motor to return at pos 0

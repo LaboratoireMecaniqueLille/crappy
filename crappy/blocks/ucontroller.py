@@ -4,6 +4,7 @@ from .block import Block
 from .._global import OptionalModule
 from struct import unpack
 from time import time
+from warnings import warn
 try:
   from serial import Serial
   from serial.serialutil import SerialException
@@ -65,6 +66,10 @@ class UController(Block):
         information.
       freq (:obj:`float`, optional): The looping frequency of the block.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
 
     super().__init__()
 

@@ -5,6 +5,7 @@ from typing import Tuple, Union, Optional
 import numpy as np
 from pathlib import Path
 from re import fullmatch
+from warnings import warn
 
 from .camera import Camera
 from .._global import OptionalModule, CrappyStop
@@ -37,6 +38,9 @@ class File_reader(Camera):
 
   def __init__(self) -> None:
     """Initializes the parent class and sets a few attributes."""
+
+    warn("The File_reader Camera will be renamed to FileReader in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
 

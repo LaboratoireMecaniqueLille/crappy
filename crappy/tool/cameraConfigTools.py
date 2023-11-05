@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from typing import Optional, Tuple, List
+from warnings import warn
 
 
 @dataclass
@@ -128,6 +129,9 @@ class Box:
     """Returns the information of the box in the patch format, for
     compatibility with other blocks."""
 
+    warn("The get_patch method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     return (self.y_start, self.x_start, self.y_end - self.y_start,
             self.x_end - self.x_start)
 
@@ -161,6 +165,11 @@ class Spot_boxes:
   spot_4: Optional[Box] = None
 
   _index = -1
+
+  def __post_init__(self) -> None:
+
+    warn("The Spot_boxes class will be renamed to SpotsBoxes in version 2.0.0",
+         DeprecationWarning)
 
   def __getitem__(self, i: int) -> Optional[Box]:
     if i == 0:

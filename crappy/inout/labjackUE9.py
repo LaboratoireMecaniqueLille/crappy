@@ -3,6 +3,7 @@
 from time import time
 from typing import Optional, List
 from dataclasses import dataclass
+from warnings import warn
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -73,6 +74,9 @@ class Labjack_ue9(InOut):
       same length. If that's not the case, all the given lists are treated as
       if they had the same length as the shortest given list.
     """
+
+    warn("The Labjack_ue9 InOut will be renamed to LabjackUE9 in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
 

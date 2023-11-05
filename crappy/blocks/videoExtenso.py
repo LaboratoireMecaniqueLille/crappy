@@ -3,6 +3,7 @@
 from typing import Callable, Union, Optional, List, Dict, Any
 import numpy as np
 from pathlib import Path
+from warnings import warn
 
 from ..tool.videoextenso import LostSpotError, VideoExtenso as Ve
 from ..tool.videoextensoConfig import VE_config
@@ -150,6 +151,15 @@ class Video_extenso(Camera):
         noise, but also takes a bit more time compared to no blurring.
       **kwargs: Any additional argument to pass to the camera.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if img_name:
+      warn("The img_name argument will be replaced by img_extension in "
+           "version 2.0.0", FutureWarning)
+    warn("The Video_extenso Block will be renamed to VideoExtenso in version "
+         "2.0.0", FutureWarning)
 
     super().__init__(camera=camera,
                      transform=transform,
@@ -222,6 +232,9 @@ class Video_extenso(Camera):
   def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Gets the data from the latest image, sends it, and updates the
     display."""
+
+    warn("The _additional_loop method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # Trying to process the incoming images
     if not self._lost_spots:

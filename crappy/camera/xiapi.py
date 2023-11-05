@@ -8,6 +8,7 @@
 from time import time
 from typing import Optional, Tuple
 import numpy as np
+from warnings import warn
 
 from .camera import Camera
 from .._global import OptionalModule
@@ -24,6 +25,9 @@ class Xiapi(Camera):
   def __init__(self) -> None:
     """"""
 
+    warn("The Xiapi Camera will be renamed to XiAPI in version 2.0.0", 
+         FutureWarning)
+
     super().__init__()
 
     self._cam = xiapi.Camera()
@@ -38,6 +42,10 @@ class Xiapi(Camera):
 
     Else, it will open any camera.
     """
+    
+    if sn is not None:
+      warn("The sn argument of open will be renamed to serial_number in "
+           "version 2.0.0", FutureWarning)
 
     if sn is not None:
       self._cam.open_device_by_SN(sn)
@@ -133,6 +141,10 @@ class Xiapi(Camera):
     self._cam.set_param('aeag', int(aeag))
 
   def _set_extt(self, trig: bool) -> None:
+
+    warn("The _set_extt method will be renamed to _set_ext_trig in version "
+         "2.0.0", DeprecationWarning)
+
     if trig:
       self._cam.set_gpi_mode('XI_GPI_TRIGGER')
       self._cam.set_trigger_source('XI_TRG_EDGE_RISING')

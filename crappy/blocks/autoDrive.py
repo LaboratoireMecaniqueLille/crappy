@@ -2,6 +2,7 @@
 
 from time import time
 from typing import Dict, Any, Optional
+from warnings import warn
 
 from .block import Block
 from ..actuator import actuator_list
@@ -50,6 +51,12 @@ class AutoDrive(Block):
       freq: The block will try to loop at this frequency.
       verbose: If :obj:`True`, prints the looping frequency of the block.
     """
+
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    warn("The AutoDrive Block will be renamed to AutoDriveVideoExtenso in "
+         "version 2.0.0", FutureWarning)
 
     super().__init__()
     self.labels = ['t(s)', 'diff(pix)']

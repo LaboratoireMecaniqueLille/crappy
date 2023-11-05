@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Union, List, Optional
+from warnings import warn
 from .block import Block
 from ..inout import inout_dict
 
@@ -70,6 +71,10 @@ class IOBlock(Block):
       verbose: If :obj:`True`, prints the looping frequency of the block.
       **kwargs: The arguments to be passed to the :ref:`In / Out` class.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
 
     super().__init__()
     self.niceness = -10

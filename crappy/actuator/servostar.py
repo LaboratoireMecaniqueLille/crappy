@@ -2,6 +2,7 @@
 
 from multiprocessing import Lock
 from typing import Union
+from warnings import warn
 
 from .actuator import Actuator
 from .._global import OptionalModule
@@ -27,6 +28,9 @@ class Servostar(Actuator):
       baudrate (:obj:`int`, optional): Set the corresponding baud rate.
       mode (:obj:`str`, optional): Can be `'analog'` or `'serial'`.
     """
+
+    warn("The Servostar Actuator will be renamed to ServoStar300 in version "
+         "2.0.0", FutureWarning)
 
     Actuator.__init__(self)
     self.devname = device
@@ -58,6 +62,11 @@ class Servostar(Actuator):
                    acc: float = 200,
                    dec: float = 200) -> None:
     """Go to the position specified at the given speed and acceleration."""
+
+    warn("The speed argument of set_position will not be optional anymore in "
+         "version 2.0.0, and will be None if no speed is set", FutureWarning)
+    warn("The acc and dec arguments of set_position will be removed in "
+         "version 2.0.0", FutureWarning)
 
     if self.last is pos:
       return
@@ -107,6 +116,9 @@ class Servostar(Actuator):
   def set_mode_serial(self) -> None:
     """Sets the serial input as setpoint."""
 
+    warn("The set_mode_serial method will be renamed to _set_mode_serial in "
+         "version 2.0.0", FutureWarning)
+
     self.lock.acquire()
     self.ser.flushInput()
     self.ser.write('OPMODE 8\r\n')
@@ -115,6 +127,9 @@ class Servostar(Actuator):
 
   def set_mode_analog(self) -> None:
     """Sets the analog input as setpoint."""
+
+    warn("The set_mode_analog method will be renamed to _set_mode_analog in "
+         "version 2.0.0", FutureWarning)
 
     self.last = None
     self.lock.acquire()
@@ -125,6 +140,9 @@ class Servostar(Actuator):
 
   def clear_errors(self) -> None:
     """Clears error in motor registers."""
+
+    warn("The clear_errors method will be removed in version 2.0.0",
+         FutureWarning)
 
     self.ser.flushInput()
     self.ser.write("CLRFAULT\r\n")

@@ -2,6 +2,7 @@
 
 from .modifier import Modifier
 from typing import Optional, Dict, Any
+from warnings import warn
 
 
 class Diff(Modifier):
@@ -32,6 +33,9 @@ class Diff(Modifier):
   def evaluate(self, data: Dict[str, Any]) -> Dict[str, Any]:
     """Gets the data from the upstream block, updates the differentiation value
     and returns it."""
+
+    warn("The evaluate method will be renamed to __call__ in version 2.0.0",
+         FutureWarning)
 
     # For the first received data, storing it and returning 0
     if self._last_t is None or self._last_val is None:

@@ -8,6 +8,7 @@ from typing import Tuple, Optional, Union
 from subprocess import Popen, PIPE, run
 from platform import system
 from re import findall, split, search
+from warnings import warn
 
 try:
   import cv2
@@ -47,6 +48,9 @@ class Camera_gstreamer(Camera):
 
   def __init__(self) -> None:
     """Simply initializes the instance attributes."""
+
+    warn("The Camera_gstreamer Camera will be renamed to CameraGstreamer in "
+         "version 2.0.0", FutureWarning)
 
     super().__init__()
     Gst.init(None)
@@ -346,6 +350,9 @@ videoconvert ! autovideosink
       exposure (:obj:`int`, optional): The new exposure value to set.
     """
 
+    warn("The exposure argument of _restart_pipeline will be removed in "
+         "version 2.0.0", DeprecationWarning)
+
     # Stops the previous pipeline
     self._pipeline.set_state(Gst.State.NULL)
 
@@ -527,6 +534,9 @@ videoconvert ! autovideosink
     Only works when the platform is Linux.
     """
 
+    warn("The _set_exposure method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     self._restart_pipeline(self._get_pipeline(), exposure=exposure)
 
   def _get_exposure(self) -> int:
@@ -534,6 +544,9 @@ videoconvert ! autovideosink
 
     Only works when the platform is Linux.
     """
+
+    warn("The _get_exposure method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # Trying to run v4l2-ctl to get the exposure value
     if self._device is not None:
@@ -565,6 +578,9 @@ videoconvert ! autovideosink
   def _get_format(self) -> str:
     """Parses the v4l2-ctl -V command to get the current image format as an
     index."""
+
+    warn("The _get_format method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # Sending the v4l2-ctl command
     if self._device is not None:

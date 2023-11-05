@@ -3,6 +3,7 @@
 import numpy as np
 from typing import Callable, Optional, List, Union, Tuple, Dict, Any
 from pathlib import Path
+from warnings import warn
 
 from .._global import OptionalModule
 from ..tool import GPUCorrel as GPUCorrel_tool
@@ -114,6 +115,13 @@ class GPUVE(Camera):
         convergence is neither too slow nor too fast.
       **kwargs: Any additional argument to pass to the camera.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if img_name:
+      warn("The img_name argument will be replaced by img_extension in "
+           "version 2.0.0", FutureWarning)
 
     # Setting now the pycuda context to avoid setting it multiple times
     pycuda.driver.init()
@@ -200,6 +208,9 @@ class GPUVE(Camera):
   def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Gets the updated positions of the patches, and sends it to the
     downstream blocks."""
+
+    warn("The _additional_loop method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     out = [meta['t(s)'], meta]
     for correl, (oy, ox, h, w) in zip(self._correls, self._patches):

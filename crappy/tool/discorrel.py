@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import List, Optional
+from warnings import warn
 from .._global import OptionalModule
 from .cameraConfigTools import Box
 from .fields import get_res, get_field, allowed_fields
@@ -57,6 +58,9 @@ class DISCorrel:
       patch_stride: Stride between neighbor patches in DisFlow. Must be
         less than patch size.
     """
+
+    warn("The DISCorrel class will be renamed to DISCorrelTool in version "
+         "2.0.0", DeprecationWarning)
 
     if fields is not None and not all((field in allowed_fields
                                        for field in fields)):

@@ -3,6 +3,7 @@
 from time import time
 from numpy import sin, pi
 from typing import Union, Dict
+from warnings import warn
 
 from .path import Path, condition_type
 
@@ -33,6 +34,9 @@ class Sine(Path):
       offset: The offset of the sine (average value).
       phase: The phase of the sine (in radians).
     """
+
+    warn("The _last_time and _last_cmd arguments will be removed in version "
+         "2.0.0", DeprecationWarning)
 
     Path.__init__(self, _last_time, _last_cmd)
 

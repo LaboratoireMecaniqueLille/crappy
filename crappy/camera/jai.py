@@ -2,6 +2,7 @@
 
 from typing import Optional, Tuple
 import numpy as np
+from warnings import warn
 
 from .cameralink import Cl_camera
 from .._global import OptionalModule
@@ -24,6 +25,9 @@ class Jai8(Cl_camera):
 
   def __init__(self) -> None:
     """"""
+
+    warn("The Jai8 Camera will be renamed to JaiGO5000CPMCL8Bits in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
 
@@ -80,6 +84,9 @@ class Jai(Jai8):
 
   def __init__(self) -> None:
     """"""
+
+    warn("The Jai Camera will be renamed to JaiGO5000CPMCL in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
     self.add_choice_setting('data_format', ('10 bits', '12 bits'),

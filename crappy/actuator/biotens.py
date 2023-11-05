@@ -3,6 +3,7 @@
 from struct import pack, unpack
 from typing import Union, Optional
 import time
+from warnings import warn
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -57,6 +58,10 @@ class Biotens(Actuator):
       port (:obj:`str`, optional): Path to connect to the serial port.
       baudrate (:obj:`int`, optional): Set the corresponding baud rate.
     """
+
+    if baudrate != 19200:
+      warn("The baudrate argument will be removed in version 2.0.0",
+           FutureWarning)
 
     Actuator.__init__(self)
     self.port = port
@@ -134,6 +139,8 @@ class Biotens(Actuator):
   def reset(self) -> None:
     """"""
 
+    warn("The reset method will be removed in version 2.0.0", FutureWarning)
+
     pass
 
   def stop(self) -> None:
@@ -154,6 +161,9 @@ class Biotens(Actuator):
 
   def clear_errors(self) -> None:
     """Clears error in motor registers."""
+
+    warn("The clear_errors method will be removed in version 2.0.0",
+         FutureWarning)
 
     command = b'\x52\x52\x52\xFF\x00' +\
         convert_to_byte(35, 'B') +\
@@ -213,6 +223,9 @@ class Biotens(Actuator):
                    speed: Optional[float] = None) -> None:
     """Pilot in position mode, needs speed and final position to run
     (in `mm/min` and `mm`)."""
+
+    warn("The speed argument of set_position will not be optional anymore in "
+         "version 2.0.0, and will be None if no speed is set", FutureWarning)
 
     if speed is None:
       raise ValueError("The Biotens actuator needs both a position and a speed"
@@ -287,6 +300,10 @@ class Biotens(Actuator):
     raise IOError("Could not read biotens pos!")
 
   def _get_position(self) -> Union[float, None]:
+
+    warn("The _get_position method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     try:
       self.ser.readlines()
     except serial.SerialException:

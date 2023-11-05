@@ -2,6 +2,7 @@
 
 import tkinter as tk
 from typing import Optional
+from warnings import warn
 from .cameraConfigBoxes import Camera_config_with_boxes
 from .cameraConfigTools import Box
 
@@ -22,12 +23,20 @@ class VE_config(Camera_config_with_boxes):
       video_extenso: The video extenso tool in charge of tracking the spots.
     """
 
+    warn("The VE_config class will be renamed to VideoExtensoConfig in "
+         "version 2.0.0", DeprecationWarning)
+    warn("The video_extenso argument will be removed in version 2.0.0",
+         DeprecationWarning)
+
     self._video_extenso = video_extenso
     super().__init__(camera)
 
   def _bind_canvas_left_click(self) -> None:
     """Binds the left mouse button click for drawing the box in which the spots
     will be searched."""
+
+    warn("The _bind_canvas_left_click method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     self._img_canvas.bind('<ButtonPress-1>', self._start_box)
     self._img_canvas.bind('<B1-Motion>', self._extend_box)

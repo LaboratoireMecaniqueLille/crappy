@@ -5,6 +5,7 @@ from time import time
 from threading import Thread
 from copy import copy
 from typing import Callable, Union, Any, Dict, Optional, List
+from warnings import warn
 
 from .._global import CrappyStop
 from ..modifier import Modifier
@@ -55,6 +56,22 @@ class Link:
         in the order in which they are instantiated in the code.
     """
 
+    if input_block is None:
+      warn("input_block will become a mandatory argument of Link in version "
+           "2.0.0", FutureWarning)
+    if output_block is None:
+      warn("output_block will become a mandatory argument of Link in version "
+           "2.0.0", FutureWarning)
+    if conditions is not None:
+      warn("The conditions argument of Link will be removed in version 2.0.0, "
+           "use modifiers instead", FutureWarning)
+    if timeout != 1:
+      warn("The timeout argument of Link will be removed in version 2.0.0",
+           FutureWarning)
+    if action != 'warn':
+      warn("The action argument of Link will be removed in version 2.0.0",
+           FutureWarning)
+
     # For compatibility (condition is deprecated, use modifier)
     if conditions is not None:
       if modifiers is not None:
@@ -78,6 +95,9 @@ class Link:
   @classmethod
   def _count_links(cls) -> int:
     """Simply increments the link count and returns it."""
+
+    warn("The _count_links method will be renamed to _get_count in version "
+         "2.0.0", DeprecationWarning)
 
     cls.count += 1
     return cls.count
@@ -123,6 +143,9 @@ class Link:
 
   def _send_timeout(self, value: Union[Dict[str, Any], str]) -> None:
     """Method for sending data with a given timeout on the link."""
+
+    warn("The _send_timeout method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     try:
       # Sending if the value is None or a string
@@ -172,6 +195,9 @@ class Link:
       pipe is empty.
     """
 
+    warn("The blocking argument will be removed in version 2.0.0",
+         DeprecationWarning)
+
     try:
       if blocking or self.poll():
         # Simply collecting the data to receive
@@ -215,6 +241,9 @@ class Link:
   def clear(self) -> None:
     """Flushes the link."""
 
+    warn("The clear method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     while self.poll():
       self._in.recv_bytes()
 
@@ -230,6 +259,9 @@ class Link:
     Warning:
       Unlike :meth:`recv`, default is non blocking.
     """
+
+    warn("The blocking argument will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # First, block if necessary
     data = self.recv(blocking)
@@ -253,6 +285,9 @@ class Link:
 
       If ``blocking`` is :obj:`True`, will wait for at least one data.
     """
+
+    warn("The blocking argument will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # First, block if necessary and return if the link is empty
     ret = self.recv(blocking)
@@ -299,6 +334,9 @@ class Link:
       Also, it will return at least one reading.
     """
 
+    warn("The recv_delay method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     t_init = time()
     # This first call to recv is blocking
     ret = self.recv(blocking=True)
@@ -329,6 +367,9 @@ class Link:
   def recv_chunk_no_stop(self) -> Optional[Dict[str, List[Any]]]:
     """Experimental feature, to be used in :meth:`finish` methods to recover
     the final remaining data (possibly after a stop signal)."""
+
+    warn("The recv_chunk_no_stop method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # First, collecting all the remaining data
     recv = []
@@ -383,6 +424,15 @@ def link(in_block,
       If no specific name is given, the links are anyway numbered in the order
       in which they are instantiated in the code.
   """
+
+  if condition is not None:
+    warn("The condition argument will be removed in version 2.0.0, use "
+         "modifier instead", FutureWarning)
+  if timeout != 1:
+    warn("The timeout argument will be removed in version 2.0.0",
+         FutureWarning)
+  if action != 'warn':
+    warn("The action argument will be removed in version 2.0.0", FutureWarning)
 
   # Forcing the conditions and modifiers into lists
   if condition is not None and not isinstance(condition, list):

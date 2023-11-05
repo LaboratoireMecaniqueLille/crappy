@@ -2,6 +2,7 @@
 
 from time import sleep
 from typing import Optional
+from warnings import warn
 
 from .._global import DefinitionError
 
@@ -63,6 +64,9 @@ class Actuator(metaclass=MetaActuator):
     """This method should drive the actuator so that it reaches the desired
     position. A speed value can optionally be provided for specifying the speed
     at which the actuator should move for getting to the desired position."""
+
+    warn("The speed argument of set_position will not be optional anymore in "
+         "version 2.0.0, and will be None if no speed is set", FutureWarning)
 
     print(f"WARNING ! Trying to drive the Actuator {type(self).__name__} in "
           f"position but it does not define a set_position method !\n"

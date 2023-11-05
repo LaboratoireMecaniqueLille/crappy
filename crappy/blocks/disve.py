@@ -3,6 +3,7 @@
 from typing import List, Tuple, Optional, Callable, Union, Dict, Any
 import numpy as np
 from pathlib import Path
+from warnings import warn
 from ..tool import DISVE as VE, DISVE_config, Spot_boxes
 from .camera import Camera
 from .displayer import Displayer
@@ -146,6 +147,15 @@ class DISVE(Camera):
         of the image.
       **kwargs: Any additional argument to pass to the camera.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if img_name:
+      warn("The img_name argument will be replaced by img_extension in "
+           "version 2.0.0", FutureWarning)
+    warn("The DISVE Block will be renamed to DICVE in version 2.0.0",
+         FutureWarning)
 
     self._patches = Spot_boxes()
     self._patches.set_spots(patches)
@@ -230,6 +240,9 @@ class DISVE(Camera):
 
   def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Simply calculates the displacement and sends it to downstream blocks."""
+
+    warn("The _additional_loop method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     ret = self._ve.calculate_displacement(img)
     self.send([meta['t(s)'], meta] + ret)

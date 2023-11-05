@@ -2,6 +2,7 @@
 
 from time import sleep
 from re import findall
+from warnings import warn
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -32,6 +33,10 @@ class Tra6ppd(Actuator):
       baudrate: The serial baud rate.
       port: Path to the serial port to connect to.
     """
+
+    warn("The Tra6ppd Actuator will be renamed to NewportTRA6PPD in version "
+         "2.0.0", FutureWarning)
+
     self._max_speed = 0.2
     self._min_position = 0
     self._max_position = 6
@@ -73,6 +78,9 @@ class Tra6ppd(Actuator):
       speed: The speed at which the actuator should move. Should be between 0
         and 0.2 mm/s.
     """
+
+    warn("The speed argument of set_position will not be optional anymore in "
+         "version 2.0.0, and will be None if no speed is set", FutureWarning)
 
     # Clamping the speed command into the allowed interval
     speed_clamped = max(min(self._max_speed, speed), 0)

@@ -3,6 +3,7 @@
 from struct import pack_into
 from time import sleep
 from typing import Union
+from warnings import warn
 from .actuator import Actuator
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h, Usb_server
@@ -80,6 +81,9 @@ class DC_motor_hat:
         when the hat is controlled from a PC through an FT232H rather than by a
         board.
     """
+
+    warn("The DC_motor_hat class will be removed in version 2.0.0",
+         FutureWarning)
 
     if not all(i in range(1, 5) for i in motor_nrs):
       raise ValueError("The DC motor hat can only drive up to 4 DC motors at "
@@ -200,6 +204,12 @@ class Motorkit_pump(Usb_server, Actuator):
       ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
         serial number of the ft232h to use for communication.
     """
+
+    warn("The Motorkit_pump Actuator will be renamed to DCMotorHat in version "
+         "2.0.0", FutureWarning)
+    if ft232h_ser_num is not None:
+      warn("The ft232h_ser_num argument of the Motorkit_pump Actuator will be "
+           "removed in version 2.0.0")
 
     if not isinstance(backend, str) or backend not in motor_hat_backends:
       raise ValueError("backend should be in {}".format(motor_hat_backends))

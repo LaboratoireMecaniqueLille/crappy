@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Dict, Any, List, Union, Tuple
+from warnings import warn
 
 from .modifier import Modifier
 
@@ -56,6 +57,9 @@ class Offset(Modifier):
   def evaluate(self, data: Dict[str, Any]) -> Dict[str, Any]:
     """If the compensations are not set, sets them, anf then offsets the
     required labels."""
+
+    warn("The evaluate method will be renamed to __call__ in version 2.0.0",
+         FutureWarning)
 
     # During the first loop, calculating the compensation values
     if not self._compensated:

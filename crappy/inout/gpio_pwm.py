@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Optional
+from warnings import warn
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -56,6 +57,9 @@ class Gpio_pwm(InOut):
         support hardware PWM. Trying to get a PWM output from other pins might
         work but may decrease the available frequency range.
     """
+
+    warn("The Gpio_pwm InOut will be renamed to GPIOPWM in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
 

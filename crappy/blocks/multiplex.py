@@ -2,6 +2,7 @@
 
 from numpy import interp, array, searchsorted, concatenate
 from itertools import chain
+from warnings import warn
 
 from .block import Block
 
@@ -37,6 +38,12 @@ class Multiplex(Block):
       verbose: If :obj:`True`, prints information about the looping frequency
         of the block.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    warn("The Multiplex Block will be renamed to Multiplexer in version 2.0.0",
+         FutureWarning)
 
     Block.__init__(self)
 
@@ -109,6 +116,9 @@ class Multiplex(Block):
   def _get_data(self) -> None:
     """Receives data from the upstream links."""
 
+    warn("The _get_data method will be removed in version 2.0.0",
+         DeprecationWarning)
+
     for link in self.inputs:
       # Receiving data from each link, non-blocking to prevent accumulation
       data = link.recv_chunk(blocking=False)
@@ -125,6 +135,9 @@ class Multiplex(Block):
   def _send_data(self) -> None:
     """Interpolates the previously received data, and sends the result to the
     downstream blocks."""
+
+    warn("The _send_data method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # Making sure all the necessary data has been received for interpolating
     if all(timestamp[-1] > self._t for timestamp

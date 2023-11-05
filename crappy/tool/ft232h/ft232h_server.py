@@ -6,6 +6,7 @@ from typing import Union, List, Tuple, Optional, Callable
 from _io import FileIO
 from multiprocessing.synchronize import RLock
 from time import time, sleep
+from warnings import warn
 
 from .ft232h import ft232h
 from ..._global import OptionalModule
@@ -197,6 +198,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         do so will most likely raise an error or lead to inconsistent behavior.
 
         """
+
+    warn("The ft232h_server class will be renamed to FT232HServer in version "
+         "2.0.0", DeprecationWarning)
+    warn("The block_number argument will be renamed to block_index in version "
+         "2.0.0", DeprecationWarning)
+    warn("The current_lock argument will be renamed to shared_lock in version "
+         "2.0.0", DeprecationWarning)
 
     self._block_number = block_number
     self._current_file = current_file

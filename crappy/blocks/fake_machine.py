@@ -3,6 +3,7 @@
 from time import time
 import numpy as np
 from typing import Callable, Dict, Optional
+from warnings import warn
 
 from .block import Block
 
@@ -58,6 +59,15 @@ class Fake_machine(Block):
       freq: The block will try to loop at this frequency.
       verbose: If :obj:`True`, prints the looping frequency of the block.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    if k != 8.4E6:
+      warn("The k argument will be replaced by rigidity in version 2.0.0",
+           FutureWarning)
+    warn("The Fake_machine Block will be renamed to FakeMachine in version "
+         "2.0.0", FutureWarning)
 
     super().__init__()
     self.freq = freq

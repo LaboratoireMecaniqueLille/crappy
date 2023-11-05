@@ -2,6 +2,7 @@
 
 from time import time
 from typing import Union, Dict, Optional
+from warnings import warn
 
 from .path import Path, condition_type
 
@@ -30,6 +31,9 @@ class Ramp(Path):
         starting point for the ramp. In the specific case when this path is the
         first one in the list of dicts, this argument must be given !
     """
+
+    warn("The _last_time and _last_cmd arguments will be removed in version "
+         "2.0.0", DeprecationWarning)
 
     Path.__init__(self, _last_time, _last_cmd)
 

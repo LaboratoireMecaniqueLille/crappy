@@ -3,6 +3,7 @@
 from time import sleep
 from typing import List, Optional, Dict, Any, Union
 from pathlib import Path
+from warnings import warn
 
 from .block import Block
 
@@ -36,6 +37,12 @@ class Recorder(Block):
       freq: The block will try to loop at this frequency.
       verbose: If :obj:`True`, prints the looping frequency of the block.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
+    warn("The filename argument will be renamed to file_name in version 2.0.0",
+         FutureWarning)
 
     super().__init__()
     self.niceness = -5
@@ -107,6 +114,9 @@ class Recorder(Block):
 
   def _save(self, data: Dict[str, List[Any]]):
     """Saves only the data carried by the specified labels to the file."""
+
+    warn("The _save method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     # Keeping only the data that needs to be saved
     data = {key: val for key, val in data.items() if key in self._labels}

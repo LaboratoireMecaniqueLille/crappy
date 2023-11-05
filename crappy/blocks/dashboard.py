@@ -2,6 +2,7 @@
 
 from typing import List
 import tkinter as tk
+from warnings import warn
 
 from .block import Block
 
@@ -11,6 +12,9 @@ class Dashboard_window(tk.Tk):
 
   def __init__(self, labels: List[str]) -> None:
     """Initializes the GUI and sets the layout."""
+
+    warn("The Dashboard_window class will be renamed to DashboardWindow in "
+         "version 2.0.0", DeprecationWarning)
 
     super().__init__()
     self.title('Dashboard')
@@ -68,6 +72,10 @@ class Dashboard(Block):
       verbose: If :obj:`True`, prints the looping frequency of the block.
       freq: If set, the block will try to loop at this frequency.
     """
+    
+    if verbose:
+      warn("The verbose argument will be replaced by display_freq and debug "
+           "in version 2.0.0", FutureWarning)
 
     super().__init__()
     self.verbose = verbose

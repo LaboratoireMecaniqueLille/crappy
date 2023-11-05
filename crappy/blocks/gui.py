@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from warnings import warn
 
 from .block import Block
 from .._global import OptionalModule
@@ -26,6 +27,9 @@ class GUI(Block):
                freq: float = 50,
                spam: bool = False,) -> None:
     """Sets the args and initializes the parent class."""
+
+    warn("The GUI Block will be renamed to Button in version 2.0.0",
+         FutureWarning)
 
     Block.__init__(self)
     self.freq = freq

@@ -6,6 +6,7 @@ import numpy as np
 from time import time, sleep
 from typing import Optional, Tuple
 from functools import partial
+from warnings import warn
 
 from .._global import OptionalModule
 from .cameraConfigTools import Zoom
@@ -38,6 +39,9 @@ class Camera_config(tk.Tk):
     Args:
       camera: The camera object in charge of acquiring the images.
     """
+
+    warn("The Camera_config class will be renamed to CameraConfig in version "
+         "2.0.0", DeprecationWarning)
 
     super().__init__()
     self._camera = camera
@@ -253,7 +257,8 @@ class Camera_config(tk.Tk):
     """This method is meant to simplify the modification of the left button
     behavior in subclasses."""
 
-    pass
+    warn("The _bind_canvas_left_click method will be removed in version 2.0.0",
+         DeprecationWarning)
 
   def _bind_mouse(self, _: tk.Event) -> None:
     """Binds the mousewheel to the settings canvas scrollbar when the user
@@ -756,6 +761,9 @@ class Camera_config(tk.Tk):
   def _hist_func(x: np.ndarray, _: np.ndarray, histo: np.ndarray):
     """Function passed to the :meth:`np.fromfunction` method for building the
     histogram."""
+
+    warn("The _hist_func method will be removed in version 2.0.0",
+         DeprecationWarning)
 
     return np.where(x <= histo, 0, 255)
 
