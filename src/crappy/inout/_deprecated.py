@@ -1,0 +1,21 @@
+# coding: utf-8
+
+deprecated_inouts = {'Ads1115': 'ADS1115',
+                     'Daqmx': 'DAQmx',
+                     'Fake_inout': 'FakeInOut',
+                     'Gpio_pwm': 'GPIOPWM',
+                     'Gpio_switch': 'GPIOSwitch',
+                     'Gsm': 'Sim868',
+                     'Koll': 'KollmorgenAKDPDMM',
+                     'Labjack_t7': 'LabjackT7',
+                     'Labjack_ue9': 'LabjackUE9',
+                     'Mcp9600': 'MCP9600',
+                     'Mprls': 'MPRLS',
+                     'Nau7802': 'NAU7802',
+                     'Nidaqmx': 'NIDAQmx',
+                     'Opsens': 'HandySens',
+                     'Pijuice': 'PiJuice',
+                     'Spectrum': 'SpectrumM2I4711',
+                     'T7_streamer': 'T7Streamer',
+                     'Waveshare_ad_da': 'WaveshareADDA',
+                     'Waveshare_high_precision': 'WaveshareHighPrecision'}

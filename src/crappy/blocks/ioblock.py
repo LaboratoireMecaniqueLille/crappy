@@ -4,7 +4,7 @@ from typing import Union, Optional, Iterable, Any
 import logging
 
 from .meta_block import Block
-from ..inout import inout_dict, InOut
+from ..inout import inout_dict, InOut, deprecated_inouts
 from ..tool.ft232h import USBServer
 
 
@@ -155,6 +155,13 @@ class IOBlock(Block):
                          "there are in cmd_labels !")
 
     self._trig_label = trigger_label
+
+    # Checking for deprecated names
+    if name in deprecated_inouts:
+      raise NotImplementedError(
+          f"The {name} InOut was deprecated in version 2.0.0, and renamed "
+          f"to {deprecated_inouts[name]} ! Please update your code "
+          f"accordingly and check the documentation for more information")
 
     # Checking that all the given actuators are valid
     if name not in inout_dict:
