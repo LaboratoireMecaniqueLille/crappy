@@ -13,7 +13,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class Webcam(Camera):
+class CameraOpencv(Camera):
   """A basic class for reading images from a USB camera (including webcams).
 
   It relies on the OpenCv library. Note that it was purposely kept extremely
