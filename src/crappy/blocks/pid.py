@@ -178,7 +178,7 @@ class PID(Block):
     # Calculating the three PID terms
     p_term = self._kp * error
     self._i_term += self._ki * error * delta_t
-    d_term = - self._kd * d_input / delta_t
+    d_term = - self._kd * d_input / delta_t if delta_t > 0 else 0
 
     self._prev_t = t
     self._last_input = input_
