@@ -223,15 +223,8 @@ class ClientServer(Block):
     self._port = port
     self._spam = spam
     self._init_output = init_output if init_output is not None else dict()
-    self._reader = Thread(target=self._output_reader)
 
     self._stop_mosquitto = False
-
-    # Instantiating the client
-    self._client = mqtt.Client(str(time()))
-    self._client.on_connect = self._on_connect
-    self._client.on_message = self._on_message
-    self._client.reconnect_delay_set(max_delay=10)
     
     # These attributes may be set later
     self._topics: Optional[List[Tuple[str, ...]]] = None
@@ -252,9 +245,6 @@ class ClientServer(Block):
 
       # The last out vals are given for each label, not each topic
       self._last_out_val = {label: None for label in chain(*self._topics)}
-
-      # The buffer for received data is a dictionary of queues
-      self._buffer_output = {topic: Queue() for topic in self._topics}
 
     # Preparing for publishing data
     if cmd_labels is not None:
@@ -286,15 +276,30 @@ class ClientServer(Block):
     if self._cmd_labels is not None and not self.inputs:
       raise ValueError("cmd_labels are specified but there's no input link !")
 
+    # Setting the buffer here because Queue objects cannot be set during
+    # __init__ in spawn multiprocessing mode
+    if self._topics is not None:
+      # The buffer for received data is a dictionary of queues
+      self._buffer_output = {topic: Queue() for topic in self._topics}
+
     # Starting the broker
     if self._broker:
       self.log(logging.INFO, f"Starting the Mosquitto broker on port "
                              f"{self._port}")
       self._launch_mosquitto()
+      # Creating and starting a Thread reading the stdout of the broker
+      self._reader = Thread(target=self._output_reader)
       self._reader.start()
       sleep(2)
       self.log(logging.INFO, "Waiting for Mosquitto to start")
       sleep(2)
+
+    # Instantiating the client here as it cannot be set during __init__ in
+    # spawn multiprocessing mode
+    self._client = mqtt.Client(str(time()))
+    self._client.on_connect = self._on_connect
+    self._client.on_message = self._on_message
+    self._client.reconnect_delay_set(max_delay=10)
 
     # Connecting to the broker
     try_count = 15
