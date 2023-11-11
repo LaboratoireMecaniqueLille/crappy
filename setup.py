@@ -28,6 +28,8 @@ py_ver = '.'.join(platform.python_version().split('.')[:2])
 extensions = []
 
 # Now finding the extensions to install
+install_camera_link = False
+install_py_fgen = False
 if platform.system() == "Linux":
   # Find the latest runtime version of SiliconSoftware install
   try:
@@ -48,16 +50,10 @@ if platform.system() == "Linux":
                        "-l", "clsersis", "-l", "fglib5"],
       include_dirs=[f'/usr/local/lib/python{py_ver}/dist-packages/numpy/'
                     f'core/include'])
+
     p = popen("lsmod | grep menable")
-    if p.read():
-      if input("would you like to install CameraLink module? ([y]/n)") != "n":
-        print("menable kernel module found, installing CameraLink module.")
-        extensions.append(cl_module)
-      else:
-        print("menable kernel module found, but not installing")
-    else:
-      print("Cannot find menable kernel module, CameraLink module won't be "
-            "available.")
+    if p.read() and install_camera_link:
+      extensions.append(cl_module)
 
 if platform.system() == "Windows":
 
@@ -71,7 +67,7 @@ if platform.system() == "Windows":
     library_dirs=["C:\\Program Files\\IVI Foundation\\IVI\\Lib_x64\\msc"],
     extra_compile_args=["/EHsc", "/WX"])
 
-  if input("would you like to install pyFgen module? ([y]/n)") != "n":
+  if install_py_fgen:
     extensions.append(py_fgen_module)
 
   cl_path = "C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\"
@@ -86,12 +82,8 @@ if platform.system() == "Windows":
     extra_compile_args=["/EHsc", "/WX"])
 
   p = popen('driverquery /NH | findstr "me4"')
-  if p.read():
-    if input("would you like to install CameraLink module? ([y]/n)") != "n":
-      extensions.append(cl_module)
-  else:
-    print("Can't find microEnable4 Device driver, clModule will not be "
-          "compiled")
+  if p.read() and install_camera_link:
+    extensions.append(cl_module)
 
 setup(
   # Description of the project
