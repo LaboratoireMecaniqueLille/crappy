@@ -134,8 +134,8 @@ class CameraConfig(tk.Tk):
 
     while self._run:
       # Remaining below the max allowed frequency
-      if self._max_freq is None or \
-         self._n_loops / (time() - start_time) < self._max_freq:
+      if self._max_freq is None or (self._n_loops <
+                                    self._max_freq * (time() - start_time)):
         # Update the image, the histogram and the information
         self._update_img()
 
