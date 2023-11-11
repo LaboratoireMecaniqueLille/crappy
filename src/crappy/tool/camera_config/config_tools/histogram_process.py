@@ -3,7 +3,6 @@
 import numpy as np
 from multiprocessing import Process, current_process, get_start_method
 from multiprocessing.synchronize import Event
-from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 import logging
 import logging.handlers
@@ -26,8 +25,8 @@ class HistogramProcess(Process):
   def __init__(self,
                stop_event: Event,
                processing_event: Event,
-               img_in: Connection,
-               img_out: Connection,
+               img_in: Queue,
+               img_out: Queue,
                log_level: Optional[int],
                log_queue: Queue) -> None:
     """Sets the arguments and initializes the parent class.
@@ -38,9 +37,9 @@ class HistogramProcess(Process):
       processing_event: An :obj:`multiprocessing.Event` set by the
         :obj:`multiprocessing.Process` to indicate that it's currently
         processing an image. Avoids having images to process piling up.
-      img_in: The :obj:`~multiprocessing.connection.Connection` through which 
+      img_in: The :obj:`~multiprocessing.queues.Queue` through which
         the images to process are received.
-      img_out: The :obj:`~multiprocessing.connection.Connection` through which 
+      img_out: The :obj:`~multiprocessing.queues.Queue` through which
         the calculated histograms are sent back.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
@@ -56,8 +55,8 @@ class HistogramProcess(Process):
 
     self._stop_event: Event = stop_event
     self._processing_event: Event = processing_event
-    self._img_in: Connection = img_in
-    self._img_out: Connection = img_out
+    self._img_in: Queue = img_in
+    self._img_out: Queue = img_out
 
   def run(self) -> None:
     """The main method being run by the HistogramProcess.
@@ -78,11 +77,12 @@ class HistogramProcess(Process):
       while not self._stop_event.is_set():
 
         # Setting the processing event when busy processing an image
-        if self._img_in.poll():
+        if not self._img_in.empty():
           self._processing_event.set()
           # Receiving the image to process as well as additional parameters
-          while self._img_in.poll():
-            img, auto_range, low_thresh, high_thresh = self._img_in.recv()
+          while not self._img_in.empty():
+            (img, auto_range,
+             low_thresh, high_thresh) = self._img_in.get_nowait()
 
           self.log(logging.DEBUG, "Received image from CameraConfig")
 
@@ -103,7 +103,7 @@ class HistogramProcess(Process):
             out_img[:, round(2 * high_thresh)] = 127
 
           # Sending back the histogram
-          self._img_out.send(out_img)
+          self._img_out.put_nowait(out_img)
           self._processing_event.clear()
           self.log(logging.DEBUG, "Sent the histogram back to the "
                                   "CameraConfig")
