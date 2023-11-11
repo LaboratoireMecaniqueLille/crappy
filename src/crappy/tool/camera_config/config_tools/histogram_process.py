@@ -116,6 +116,11 @@ class HistogramProcess(Process):
 
     except KeyboardInterrupt:
       self.log(logging.INFO, "Caught KeyboardInterrupt, stopping")
+    except (Exception,) as exc:
+      self._logger.exception("Caught Exception while running, stopping !",
+                             exc_info=exc)
+    finally:
+      self.log(logging.INFO, "HistogramProcess finished")
 
   @staticmethod
   def _hist_func(x: np.ndarray,
