@@ -17,7 +17,7 @@ from .._global import OptionalModule
 try:
   import paho.mqtt.client as mqtt
 except (ModuleNotFoundError, ImportError):
-  mqtt = OptionalModule("paho.mqtt.client")
+  mqtt = OptionalModule("paho-mqtt")
 
 TopicsType = Iterable[Union[str, Iterable[str]]]
 
