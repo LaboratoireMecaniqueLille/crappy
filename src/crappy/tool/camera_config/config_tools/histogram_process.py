@@ -71,6 +71,9 @@ class HistogramProcess(Process):
     try:
       self._processing_event.clear()
 
+      # Initializing the variables
+      img, auto_range, low_thresh, high_thresh = None, None, None, None
+
       # Looping until told to stop or an exception is raised
       while not self._stop_event.is_set():
 
