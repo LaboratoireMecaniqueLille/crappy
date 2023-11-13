@@ -138,10 +138,11 @@ class CameraOpencv(Camera):
     else:
       check = []
 
-      if check:
-        for img_format in check:
-          # For each encoding, finding its name
-          name, *_ = search(r"'(\w+)'", img_format).groups()
+    if check:
+      for img_format in check:
+        # For each encoding, finding its name
+        name, *_ = search(r"'(\w+)'", img_format).groups()
+        if name == 'MJPG' or name == 'YUYV':
           sizes = findall(r'\d+x\d+', img_format)
           fps_sections = split(r'\d+x\d+', img_format)[1:]
 
