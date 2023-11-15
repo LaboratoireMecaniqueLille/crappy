@@ -51,7 +51,7 @@ modified dictionary in the function !
    :lines: 1-3, 5-12, 32-41, 43-45, 47-48
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 In this first example, you can see that instead of replacing the value of the
@@ -107,7 +107,7 @@ Integrate Modifier :
    :lines: 1-6, 13-39, 42-44, 46-48
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 As you can see, compared to the template, several features have been added.
@@ -286,7 +286,7 @@ context to make it run :
    :language: python
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 You can :download:`download this custom Actuator example
@@ -389,7 +389,7 @@ new stored values. Let's now integrate the InOut into a runnable code :
    :language: python
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 In order to obtain two commands from a single :ref:`Generator`, a
@@ -497,7 +497,7 @@ the previous sub-section :
    :emphasize-lines: 5, 25-35, 52, 54-55, 61-62
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 The first difference is that the module :mod:`numpy` must be used, but that is
@@ -649,8 +649,8 @@ management :
    :lines: 1-12, 21-97
 
 .. Note::
-   To run this example, you'll need to have the *opencv-python*, *matplotlib*
-   and *Pillow* Python modules installed.
+   To run this example, you'll need to have the *opencv-python*,
+   :mod:`matplotlib` and *Pillow* Python modules installed.
 
 After the changes, notice that the :meth:`~crappy.camera.Camera.get_image`
 method remains unchanged. The values of the settings, that were previously
@@ -792,7 +792,7 @@ tutorial ! Here is the full code :
    :emphasize-lines: 13-22, 46, 97, 127
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 In this Block, only the :meth:`~crappy.blocks.Block.begin` method is not

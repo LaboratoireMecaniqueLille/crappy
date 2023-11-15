@@ -132,8 +132,8 @@ class InOut(metaclass=MetaIO):
 
   def get_stream(self) -> Optional[Union[Iterable[np.ndarray],
                                          Dict[str, np.ndarray]]]:
-    """This method should acquire a stream as a numpy array, and return it
-    along with an array carrying the timestamps.
+    """This method should acquire a stream as a :obj:`numpy.array`, and return
+    it along with another array carrying the timestamps.
 
     Two arrays should be created: one of dimension `(m,)` carrying the
     timestamps, and one of dimension `(m, n)` carrying the acquired data. They

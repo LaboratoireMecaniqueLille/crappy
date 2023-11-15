@@ -16,10 +16,10 @@ class Demux(Modifier):
   the stream to make it readable by most Blocks, and also splits the stream in
   several labels if necessary.
 
-  It takes a stream as an input, i.e. a :obj:`dict` whose values are numpy
-  arrays, and outputs another :obj:`dict` whose values are :obj:`float`. If the
-  numpy arrays contains several columns (corresponding to several acquired
-  channels), it splits them into several labels.
+  It takes a stream as an input, i.e. a :obj:`dict` whose values are
+  :obj:`numpy.array`, and outputs another :obj:`dict` whose values are
+  :obj:`float`. If the numpy arrays contains several columns (corresponding to
+  several acquired channels), it splits them into several labels.
 
   Important:
     In the process of converting the stream data to regular labeled data, much

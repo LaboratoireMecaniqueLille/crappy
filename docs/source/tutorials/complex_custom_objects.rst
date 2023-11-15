@@ -97,8 +97,8 @@ either fixed or controlled by the value of an input label :
    :emphasize-lines: 35, 40-41, 49, 52-53
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* and *scipy* Python
-   modules installed.
+   To run this example, you'll need to have the :mod:`matplotlib` and *scipy*
+   Python modules installed.
 
 This example contains all the ingredients described above. The parent class is
 initialized, then the :py:`condition` argument is parsed with

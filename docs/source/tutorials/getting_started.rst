@@ -59,7 +59,7 @@ In this second part of the tutorials, we're going to **write step-by-step an**
 following tutorials will also follow the same principle. If a script would not
 work as expected, please signal it to the developers (see the
 :ref:`Troubleshooting` page). Note that this first example script requires the
-`matplotlib <https://matplotlib.org/>`_ Python module to run.
+:mod:`matplotlib` Python module to run.
 
 The first thing to do when writing a script for Crappy is to open a new *.py*
 file. In this new file, you should start by **importing the module Crappy** :
@@ -211,7 +211,7 @@ let's take a closer look at it :
    :lines: 1-11
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 As you can see, the first argument of the Generator is its *path*. It describes
@@ -309,8 +309,8 @@ looks like :
    :lines: 1-13
 
 .. Note::
-   To run this example, you'll need to have the *opencv-python*, *matplotlib*
-   and *Pillow* Python modules installed.
+   To run this example, you'll need to have the *opencv-python*,
+   :mod:`matplotlib` and *Pillow* Python modules installed.
 
 The first given argument is the name of the :class:`~crappy.camera.Camera` to
 use for acquiring the images. In this demo, the :ref:`Fake Camera` is used so
@@ -416,8 +416,8 @@ device. Here's an example of code featuring an IOBlock for data acquisition :
    :lines: 1-6, 15, 17-23, 25-27
 
 .. Note::
-   To run this example, you'll need to have the *psutil* and *matplotlib*
-   Python modules installed.
+   To run this example, you'll need to have the :mod:`psutil` and
+   :mod:`matplotlib` Python modules installed.
 
 As you can see, the base syntax is quite simple for acquiring data with an
 IOBlock. You first have to specify the :class:`~crappy.inout.InOut` that you

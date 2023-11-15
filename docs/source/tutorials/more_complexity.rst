@@ -55,7 +55,7 @@ Block together consistently :
    :emphasize-lines: 39-40, 42, 44-45
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 Can you see it ? We have both :py:`crappy.link(mot, pid)` and
@@ -103,7 +103,7 @@ Machine Block and pointing towards a new :ref:`Grapher` for the position :
    :emphasize-lines: 39, 49-51
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 As you can see, the Modifiers are expected to be given to the :py:`'modifier'`
@@ -177,7 +177,7 @@ breaks, no matter the elongation speed. The code is as follows :
    :emphasize-lines: 9, 26
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 You can :download:`download this advanced Generator example
@@ -236,8 +236,8 @@ them together :
    :emphasize-lines: 20-24
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* and *psutil*
-   Python modules installed.
+   To run this example, you'll need to have the :mod:`matplotlib` and
+   :mod:`psutil` Python modules installed.
 
 Compared to the regular IOBlock usage, this is when things get a bit more
 complicated ! As the IOBlock and HDFRecorder are both meant to handle stream
@@ -423,7 +423,7 @@ This is not very interesting to watch, let's add some visualization :
    :emphasize-lines: 4, 12-13
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* and
+   To run this example, you'll need to have the :mod:`matplotlib` and
    *opencv-python* Python modules installed.
 
 You can :download:`download this FakeCamera example
