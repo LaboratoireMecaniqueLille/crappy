@@ -47,6 +47,58 @@ class CameraOpencv(Camera):
     self.log(logging.INFO, "Opening the image stream from the camera")
     self._cap = cv2.VideoCapture(device_num)
 
+    self._cap.set(cv2.CAP_PROP_BRIGHTNESS, 99999)
+    max_brightness = int(self._cap.get(cv2.CAP_PROP_BRIGHTNESS))
+    self._cap.set(cv2.CAP_PROP_BRIGHTNESS, -99999)
+    min_brightness = int(self._cap.get(cv2.CAP_PROP_BRIGHTNESS))
+    if min_brightness == max_brightness:
+      self._cap.set(cv2.CAP_PROP_BRIGHTNESS, 0)
+      min_brightness = int(self._cap.get(cv2.CAP_PROP_BRIGHTNESS))
+    self.add_scale_setting(name='brightness',
+                           lowest=min_brightness,
+                           highest=max_brightness,
+                           getter=self._get_brightness,
+                           setter=self._set_brightness)
+
+    self._cap.set(cv2.CAP_PROP_CONTRAST, 99999)
+    max_contrast = int(self._cap.get(cv2.CAP_PROP_CONTRAST))
+    self._cap.set(cv2.CAP_PROP_CONTRAST, -99999)
+    min_contrast = int(self._cap.get(cv2.CAP_PROP_CONTRAST))
+    if min_contrast == max_contrast:
+      self._cap.set(cv2.CAP_PROP_CONTRAST, 0)
+      min_contrast = int(self._cap.get(cv2.CAP_PROP_CONTRAST))
+    self.add_scale_setting(name='contrast',
+                           lowest=min_contrast,
+                           highest=max_contrast,
+                           getter=self._get_contrast,
+                           setter=self._set_contrast)
+
+    self._cap.set(cv2.CAP_PROP_HUE, 99999)
+    max_hue = int(self._cap.get(cv2.CAP_PROP_HUE))
+    self._cap.set(cv2.CAP_PROP_HUE, -99999)
+    min_hue = int(self._cap.get(cv2.CAP_PROP_HUE))
+    if min_hue == max_hue:
+      self._cap.set(cv2.CAP_PROP_HUE, 0)
+      min_hue = int(self._cap.get(cv2.CAP_PROP_HUE))
+    self.add_scale_setting(name='hue',
+                           lowest=min_hue,
+                           highest=max_hue,
+                           getter=self._get_hue,
+                           setter=self._set_hue)
+
+    self._cap.set(cv2.CAP_PROP_SATURATION, 99999)
+    max_saturation = int(self._cap.get(cv2.CAP_PROP_SATURATION))
+    self._cap.set(cv2.CAP_PROP_SATURATION, -99999)
+    min_saturation = int(self._cap.get(cv2.CAP_PROP_SATURATION))
+    if min_saturation == max_saturation:
+      self._cap.set(cv2.CAP_PROP_SATURATION, 0)
+      min_saturation = int(self._cap.get(cv2.CAP_PROP_SATURATION))
+    self.add_scale_setting(name='saturation',
+                           lowest=min_saturation,
+                           highest=max_saturation,
+                           getter=self._get_saturation,
+                           setter=self._set_saturation)
+
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
@@ -74,3 +126,43 @@ class CameraOpencv(Camera):
     if self._cap is not None:
       self.log(logging.INFO, "Closing the image stream from the camera")
       self._cap.release()
+
+  def _get_brightness(self) -> int:
+    """Gets the image brightness."""
+
+    return int(self._cap.get(cv2.CAP_PROP_BRIGHTNESS))
+
+  def _get_contrast(self) -> int:
+    """Gets the image contrast."""
+
+    return int(self._cap.get(cv2.CAP_PROP_CONTRAST))
+
+  def _get_hue(self) -> int:
+    """Gets the image hue."""
+
+    return int(self._cap.get(cv2.CAP_PROP_HUE))
+
+  def _get_saturation(self) -> int:
+    """Gets the image saturation."""
+
+    return int(self._cap.get(cv2.CAP_PROP_SATURATION))
+
+  def _set_brightness(self, brightness: int) -> None:
+    """Sets the image brightness."""
+
+    self._cap.set(cv2.CAP_PROP_BRIGHTNESS, brightness)
+
+  def _set_contrast(self, contrast: int) -> None:
+    """Sets the image contrast."""
+
+    self._cap.set(cv2.CAP_PROP_CONTRAST, contrast)
+
+  def _set_hue(self, hue: int) -> None:
+    """Sets the image hue."""
+
+    self._cap.set(cv2.CAP_PROP_HUE, hue)
+
+  def _set_saturation(self, saturation: int) -> None:
+    """Sets the image saturation."""
+
+    self._cap.set(cv2.CAP_PROP_SATURATION, saturation)
