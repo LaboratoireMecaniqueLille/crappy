@@ -406,7 +406,8 @@ cases :
 
 - If all the Blocks are not done running at the end of this phase.
 - If an :exc:`Exception` was caught during Crappy's execution.
-- If Crappy was stopped using CTRL+C, resulting in a :exc:`KeyboardInterrupt`.
+- If Crappy was stopped using :kbd:`Control-c`, resulting in a
+  :exc:`KeyboardInterrupt`.
 
 The goal of this exception is to stop the execution of the ``__main__``
 Process, to avoid any more code to be executed in case something went wrong in

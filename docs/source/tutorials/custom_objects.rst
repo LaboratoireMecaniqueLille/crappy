@@ -770,8 +770,8 @@ used :
   short timeout (at most a few seconds), and do not use infinite loops that
   could never end. That is because in the smooth termination scenarios, the
   Blocks are only told to terminate once their current method call returns.
-  Otherwise, you'll have to use CTRL+C to stop your script, which is now
-  considered an invalid way to stop Crappy.
+  Otherwise, you'll have to use :kbd:`Control-c` to stop your script, which is
+  now considered an invalid way to stop Crappy.
 
 Now that the possible methods have been described, it is time to put them into
 application in an example. However, as the Block object is quite complex, such

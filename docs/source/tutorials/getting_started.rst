@@ -175,10 +175,10 @@ the same level as the script that was just started. It contains the data being
 acquired by the Recorder Block. As mentioned earlier, the execution of the
 script will stop after 40s as specified to the Generator Block. The script can
 also stop earlier if an error occurs (e.g. missing dependency), or if the user
-hits CTRL+C. Note that this last way of ending a script should only be used in
-case something goes wrong, e.g. if the script crashes. You can find more about
-the different ways to stop a script in Crappy in :ref:`a later section <3.
-Properly stopping a script>`.
+hits :kbd:`Control-c`. Note that this last way of ending a script should only
+be used in case something goes wrong, e.g. if the script crashes. You can find
+more about the different ways to stop a script in Crappy in :ref:`a later
+section <3. Properly stopping a script>`.
 
 **You now know learned the very basics of writing scripts for Crappy** ! You
 can :download:`download this first example
@@ -278,10 +278,10 @@ The script should run in the exact same way as the one of the previous section,
 except this time there should be two cycles of stretching and relaxation before
 the final step of stretching until failure. **That reflects the changes we**
 **made to the path of the Generator Block**. Just like previously, the script
-will stop by itself. You can stop it earlier with CTRL+C, but this is not
-considered as a clean way to stop Crappy. :download:`Download this Generator
-example </downloads/getting_started/tuto_generator.py>` to run it locally on
-your machine !
+will stop by itself. You can stop it earlier with :kbd:`Control-c`, but this is
+not considered as a clean way to stop Crappy. :download:`Download this
+Generator example </downloads/getting_started/tuto_generator.py>` to run it
+locally on your machine !
 
 **You should now be able to build an run a variety of patterns for your**
 **Generator Blocks** ! It is after all just a matter of reading the API,
@@ -336,9 +336,9 @@ lines. In particular, unlike the :ref:`Generator` Block, the Camera does not
 automatically stop after a condition is met. To allow the script to stop in a
 proper way, a :ref:`Stop Button` Block should be added. It will display a
 button, that will stop the execution of the script when clicked upon. It is
-always possible to stop Crappy using CTRL+C, but this is not considered a
-proper way of ending the script. After inserting the stop button, here's the
-final runnable script :
+always possible to stop Crappy using :kbd:`Control-c`, but this is not
+considered a proper way of ending the script. After inserting the stop button,
+here's the final runnable script :
 
 .. literalinclude:: /downloads/getting_started/tuto_camera.py
    :language: python
@@ -527,16 +527,17 @@ So, what should you *not* do to stop a script ? Obviously, you should **avoid**
 extreme solutions for the (very unlikely) situations when Crappy would become
 totally unresponsive...
 
-Starting from version 2.0.0, hitting CTRL+C to stop Crappy (i.e. raising
-:exc:`KeyboardInterrupt`) is also considered as an invalid behavior.
-**However**, unlike more aggressive methods, CTRL+C is still handled internally
-and **should lead to a proper termination of the Blocks**. As it might lead to
-unexpected behavior, and to deter users from using it, we chose to have CTRL+C
-raise an Exception once all the Blocks are correctly stopped. This behavior can
-be tuned, see the :ref:`7. Advanced control over the runtime` section of the
-tutorials. The take-home message about CTRL+C is : **using CTRL+C to stop a**
-**script is fine in most cases but it is preferable to do otherwise, so it**
-**will by default raise an error even if everything went fine** !
+Starting from version 2.0.0, hitting :kbd:`Control-c` to stop Crappy (i.e.
+raising :exc:`KeyboardInterrupt`) is also considered as an invalid behavior.
+**However**, unlike more aggressive methods, :kbd:`Control-c` is still handled
+internally and **should lead to a proper termination of the Blocks**. As it
+might lead to unexpected behavior, and to deter users from using it, we chose
+to have :kbd:`Control-c` raise an Exception once all the Blocks are correctly
+stopped. This behavior can be tuned, see the :ref:`7. Advanced control over the
+runtime` section of the tutorials. The take-home message about :kbd:`Control-c`
+is : **using :kbd:`Control-c` to stop a script is fine in most cases but it**
+**is preferable to do otherwise, so it will by default raise an error even if**
+**everything went fine** !
 
 Now that we know what are the forbidden and not recommended ways of stopping
 Crappy, let's review the 100% approved ones ! As you should have noticed in the
@@ -554,9 +555,9 @@ is also an option.
 .. Note::
    A test in Crappy will also end if an unexpected Exception is raised anywhere
    in the module. In that case, all Blocks will instantly stop and, just like
-   with CTRL+C, an error will be raised once all the Blocks are stopped. The
-   unexpected Exception will still be handled and all Blocks should terminate
-   properly if the problem is not too serious.
+   with :kbd:`Control-c`, an error will be raised once all the Blocks are
+   stopped. The unexpected Exception will still be handled and all Blocks
+   should terminate properly if the problem is not too serious.
 
 When writing a script, first determine which termination way seems more
 appropriate. **If you want to be able to stop the test anytime, opt for the**

@@ -515,12 +515,12 @@ Finally, the :py:`'no_raise'` argument is a :obj:`bool` that allows to disable
 the exceptions raised at the end of a script. The default behavior of Crappy is
 to raise an exception when it stops, if either an unexpected error was raised
 during its execution or if a :exc:`KeyboardInterrupt` was caught (script
-stopped using CTRL+C). The purpose of this behavior is to prevent the execution
-of any line of code that would come after :meth:`crappy.start()`, since it
-might not be safe to run it after Crappy has failed or the user interrupted the
-test. By setting :py:`'no_raise'` to :obj:`True`, the exceptions are disabled
-and Python goes on after Crappy finishes, even if it crashed. **Use this**
-**feature with caution, as it can lead to unexpected or even unsafe**
-**behavior** ! This argument can be changed by users who would prefer to use
-CTRL+C to stop tests but don't want exceptions to be raised, although we
-discourage using this strategy.
+stopped using :kbd:`Control-c`). The purpose of this behavior is to prevent the
+execution of any line of code that would come after :meth:`crappy.start()`,
+since it might not be safe to run it after Crappy has failed or the user
+interrupted the test. By setting :py:`'no_raise'` to :obj:`True`, the
+exceptions are disabled and Python goes on after Crappy finishes, even if it
+crashed. **Use this feature with caution, as it can lead to unexpected or**
+**even unsafe behavior** ! This argument can be changed by users who would
+prefer to use :kbd:`Control-c` to stop tests but don't want exceptions to be
+raised, although we discourage using this strategy.
