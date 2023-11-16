@@ -2,6 +2,8 @@
 Getting started : writing scripts in Crappy
 ===========================================
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 .. role:: py(code)
   :language: python
   :class: highlight
@@ -12,6 +14,8 @@ level in Python is required, don't worry !
 
 0. General concepts
 -------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 This first section of the tutorials introduces the very basic concepts of
 Crappy. No code is involved for now, it only describes the general way data can
@@ -53,6 +57,8 @@ Block 3 that's using it !
 
 1. Understanding Crappy's syntax
 --------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In this second part of the tutorials, we're going to **write step-by-step an**
 **actual script for Crappy** that you can run locally on your machine ! All the
@@ -188,6 +194,8 @@ there's still much more to learn in the following sections !
 
 2. The most used Blocks
 -----------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In this third section, you will **learn how to handle the most used Blocks of**
 **Crappy**. These Blocks are all essential, and you'll come across at least one
@@ -508,6 +516,8 @@ found in the `examples folder on GitHub
 
 3. Properly stopping a script
 -----------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In the previous sections, several different ways to stop a script in Crappy
 have been presented. In this section, **you will learn about the best**

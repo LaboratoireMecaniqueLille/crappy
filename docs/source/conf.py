@@ -37,7 +37,7 @@ autodoc_member_order = 'bysource'
 # Including undocumented features
 autodoc_default_options = {'undoc-members': True}
 # The codeauthor and sectionauthor directives do produce output
-show_authors = True
+show_authors = False
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom

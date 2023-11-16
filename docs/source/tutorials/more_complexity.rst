@@ -2,6 +2,8 @@
 Towards more complexity
 =======================
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 .. role:: py(code)
   :language: python
   :class: highlight
@@ -14,6 +16,8 @@ complexity. So, make sure to read this page until the end !
 
 1. Using feedback loops
 -----------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In the previous tutorials page, we only used linear data flow patterns. Here,
 we're going to **introduce the concept of feedback loops in a script**. The
@@ -70,6 +74,8 @@ how the PID will react.
 
 2. Using Modifiers
 ------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 One of Crappy's most powerful features is the possibility to **use**
 :ref:`Modifiers` **to alter the data flowing through the** :ref:`Links`. The
@@ -129,6 +135,8 @@ your machine. The Modifiers distributed with Crappy are also showcased in the
 
 3. Advanced Generator condition
 -------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In :ref:`a previous section <2.a. The Generator Block and its Paths>`, the
 :ref:`Generator` Block and its :ref:`Generator Paths` were introduced. In that
@@ -193,6 +201,8 @@ the Generator, you are now ready to use this block to its full extent !
 
 4. Dealing with streams
 -----------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In :ref:`the tutorial section dedicated to IOBlocks <2.e. The IOBlock Block>`,
 only the regular usage mode of the :ref:`IOBlock` was presented. In this mode,
@@ -259,6 +269,8 @@ if you would have trouble using it !
 
 5. Writing scripts efficiently
 ------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Because Crappy requires script with a specific syntax to run, users may forget
 that they can still make use of Python's great flexibility and tools even
@@ -376,6 +388,8 @@ Using :mod:`pathlib`, write instead :
 6. Using Crappy objects outside of a Crappy test
 ------------------------------------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 In the new section of the tutorial, let's see how you can use the classes
 distributed with Crappy to interact freely with hardware outside the context of
 a Crappy test (i.e. without calling :ref:`crappy.start()` or an equivalent
@@ -436,6 +450,8 @@ used here because it is more visual.
 
 7. Advanced control over the runtime
 ------------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 For the last section of this tutorial page, let's see how you can achieve a
 finer-grained control over Crappy's runtime. **There are two ways to control**

@@ -9,6 +9,8 @@ Developers information
 Contributing to Crappy
 ----------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 If you want to help developing Crappy with us, we'll be more than happy to
 welcome you in the community ! Here you'll find some practical information on
 **how Crappy works under the hood, and a few guidelines for contributors**.
@@ -39,6 +41,8 @@ directly committed to.
 
 Technical description of Crappy
 -------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 .. note::
   This is a very simplified overview of how the module actually works. Only the
@@ -247,6 +251,8 @@ the examples.
 
 Detailed runtime sequence of Crappy
 -----------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Crappy's main strength lies in the use of massive parallelization to maximize
 the performance of the module. Unfortunately, this means we had to cope with

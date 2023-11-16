@@ -2,6 +2,8 @@
 Creating and using custom objects in Crappy
 ===========================================
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 .. role:: py(code)
   :language: python
   :class: highlight
@@ -18,6 +20,8 @@ custom object instantiation.
 
 1. Custom Modifiers
 -------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 The first type of custom objects that we'll cover here are the
 :ref:`Modifiers`, because they are by far the simplest objects ! **The**
@@ -144,6 +148,8 @@ custom Modifiers ! They stand after all among the simplest objects in Crappy.
 
 2. Custom Actuators
 -------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 After introducing how custom Modifiers work in the first section, this second
 section will focus on the use of custom :ref:`Actuators`. Knowing how to add
@@ -314,6 +320,8 @@ see how the implementation of real-life Actuators looks like.
 
 3. Custom InOuts
 ----------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Creating custom :ref:`In / Out` objects is extremely similar to creating custom
 :ref:`Actuators`, so make sure to first read and understand the previous
@@ -543,6 +551,8 @@ and in the `InOuts distributed with Crappy
 4. Custom Cameras
 -----------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 Now that you're getting familiar with the instantiation of custom objects in
 Crappy, adding your own :ref:`Cameras` to Crappy should not present any
 particular difficulty. **The camera management is one of the big strengths of**
@@ -713,6 +723,8 @@ how they are implemented.
 
 5. Custom Blocks
 ----------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 For the last section of this tutorial page, we are going to **cover the most**
 **difficult but also most interesting and powerful object that you can**

@@ -2,6 +2,8 @@
 More about custom objects in Crappy
 ===================================
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 .. role:: py(code)
   :language: python
   :class: highlight
@@ -14,6 +16,8 @@ understanding of the module, or users with a specific need.
 
 1. Custom Generator Paths
 -------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Starting from version 2.0.0, **it is now possible for users to create their**
 **own** :ref:`Generator Paths` ! There are two reasons why this possibility was
@@ -146,6 +150,8 @@ labels).
 2. More about custom InOuts
 ---------------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 In addition to what was described in the tutorial section about :ref:`how to
 create custom InOut objects <3. Custom InOuts>`, there is one more minor
 feature that the :ref:`In / Out` possess and that is worth describing in the
@@ -183,6 +189,8 @@ users to override it.
 
 3. More about custom Actuators
 ------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In the tutorial section about :ref:`how to create custom Actuator objects
 <2. Custom Actuators>`, then entire speed management aspect in :py:`position`
@@ -227,6 +235,8 @@ examples/blocks>`_.
 
 4. More about custom Cameras
 ----------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Because image acquisition is such a complex topic, the
 :class:`~crappy.camera.Camera` object is by far the richest of the classes
@@ -388,6 +398,8 @@ will change in future releases !
 
 5. Custom Camera Blocks
 -----------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 On the previous tutorial page, :ref:`a section <5. Custom Blocks>` was
 dedicated to the instantiation of custom :ref:`Blocks`. Always moving one step
@@ -701,6 +713,8 @@ aspects in future releases.
 
 6. Sharing custom objects and Blocks
 ------------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 You have been through all the tutorials of Crappy and have now become a master
 at creating and using your own objects, and you now **want to share your**
