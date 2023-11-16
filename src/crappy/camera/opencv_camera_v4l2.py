@@ -1,15 +1,14 @@
 # coding: utf-8
 
-from __future__ import annotations
 from time import time, sleep
-from typing import Tuple, List, Optional, Callable
+from typing import Tuple, List, Optional
 from numpy import ndarray
 from subprocess import run
-from re import findall, split, search, finditer, Match
+from re import findall, search
 import logging
-from dataclasses import dataclass
 
 from .meta_camera import Camera
+from ._v4l2_base import V4L2
 from .._global import OptionalModule
 
 try:
@@ -18,63 +17,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-@dataclass
-class Parameter:
-  """A class for the different parameters the user can adjust."""
-
-  name: str
-  type: str
-  min: Optional[str] = None
-  max: Optional[str] = None
-  step: Optional[str] = None
-  default: Optional[str] = None
-  value: Optional[str] = None
-  flags: Optional[str] = None
-  options: Optional[Tuple[str, ...]] = None
-
-  @classmethod
-  def parse_info(cls, match: Match) -> Parameter:
-    """Instantiates the class Parameter, according to the information
-     collected with v4l2-ctl.
-
-    Args:
-      match: Match object returned by successful matches of the regex with
-      a string.
-
-    Returns:
-      The instantiated class.
-    """
-
-    return cls(name=match.group(1),
-               type=match.group(2),
-               min=match.group(4) if match.group(4) else None,
-               max=match.group(6) if match.group(6) else None,
-               step=match.group(8) if match.group(8) else None,
-               default=match.group(10) if match.group(10) else None,
-               value=match.group(11),
-               flags=match.group(13) if match.group(13) else None)
-
-  def add_options(self, match: Match) -> None:
-    """Adds the different possible options for a menu parameter.
-
-    Args:
-      match: Match object returned by successful matches of the regex with
-      a string.
-    """
-
-    menu_info = match.group(1)
-    menu_values = match.group(2)
-    menu_name = search(r'(\w+) \w+ \(menu\)', menu_info).group(1)
-    if self.name == menu_name:
-      options = findall(r'\d+: .+?(?=\n|$)', menu_values)
-      num_options = findall(r'(\d+): .+?(?=\n|$)', menu_values)
-      self.options = tuple(options)
-      for i in range(len(num_options)):
-        if self.default == num_options[i]:
-          self.default = options[i]
-
-
-class CameraOpencv(Camera):
+class CameraOpencv(Camera, V4L2):
   """A class for reading images from any camera able to interface with OpenCv.
 
   The number of the video device to read images from can be specified. It is
@@ -90,16 +33,12 @@ class CameraOpencv(Camera):
   def __init__(self) -> None:
     """Sets variables and adds the channels setting."""
 
-    super().__init__()
+    Camera.__init__(self)
+    V4L2.__init__(self)
 
     self._cap = None
     self._device_num: Optional[int] = None
     self._formats: List[str] = list()
-    self.parameters = []
-
-    self.add_choice_setting(name="channels",
-                            choices=('1', '3'),
-                            default='1')
 
   def open(self, device_num: int = 0, **kwargs) -> None:
     """Opens the video stream and sets any user-specified settings.
@@ -118,40 +57,10 @@ class CameraOpencv(Camera):
     self._cap = cv2.VideoCapture(device_num)
     self._device_num = device_num
 
-    self._formats = []
-
-    # Trying to run v4l2-ctl to get the available formats
-    command = ['v4l2-ctl', '-d', str(device_num), '--list-formats-ext']
-    try:
-      self.log(logging.INFO, f"Getting the available image formats with "
-                             f"command {command}")
-      check = run(command, capture_output=True, text=True)
-    except FileNotFoundError:
-      check = None
-    check = check.stdout if check is not None else ''
-
-    # Splitting the returned string to isolate each encoding
-    if findall(r'\[\d+]', check):
-      check = split(r'\[\d+]', check)[1:]
-    elif findall(r'Pixel\sFormat', check):
-      check = split(r'Pixel\sFormat', check)[1:]
-    else:
-      check = []
-
-    if check:
-      for img_format in check:
-        # For each encoding, finding its name
-        name, *_ = search(r"'(\w+)'", img_format).groups()
-        if name == 'MJPG' or name == 'YUYV':
-          sizes = findall(r'\d+x\d+', img_format)
-          fps_sections = split(r'\d+x\d+', img_format)[1:]
-
-          # For each name, finding the available sizes
-          for size, fps_section in zip(sizes, fps_sections):
-            fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
-            for fps in fps_list:
-              self._formats.append(f'{name} {size} ({fps} fps)')
-
+    self._get_available_formats(device_num)
+    self._formats = [_format for _format in self._formats
+                     if _format.split()[0] == 'MJPG' or
+                     _format.split()[0] == 'YUYV']
     if self._formats:
       # The format integrates the size selection
       if ' ' in self._formats[0]:
@@ -166,68 +75,44 @@ class CameraOpencv(Camera):
                                 getter=self._get_fourcc,
                                 setter=self._set_format)
 
-    # Trying to run v4l2-ctl to get the available settings
-    command = ['v4l2-ctl', '-L'] if device_num is None \
-        else ['v4l2-ctl', '-d', str(device_num), '-L']
-    self.log(logging.INFO, f"Getting the available image settings with "
-                           f"command {command}")
-    try:
-      check = run(command, capture_output=True, text=True)
-    except FileNotFoundError:
-      check = None
-    check = check.stdout if check is not None else ''
-
-    # Regex to extract the different parameters and their information
-    param_pattern = (r'(\w+)\s+0x\w+\s+\((\w+)\)\s+:\s*'
-                     r'(min=(-?\d+)\s+)?'
-                     r'(max=(-?\d+)\s+)?'
-                     r'(step=(\d+)\s+)?'
-                     r'(default=(-?\d+)\s+)?'
-                     r'value=(-?\d+)\s*'
-                     r'(flags=([^\\n]+))?')
-
-    # Extract the different parameters and their information
-    matches = finditer(param_pattern, check)
-    for match in matches:
-      self.parameters.append(Parameter.parse_info(match))
-
-    # Regex to extract the different options in a menu
-    menu_options = finditer(
-      r'(\w+ \w+ \(menu\))([\s\S]+?)(?=\n\s*\w+ \w+ \(.+?\)|$)', check)
-
-    # Extract the different options
-    for menu_option in menu_options:
-      for param in self.parameters:
-        param.add_options(menu_option)
+    self._get_param(device_num)
 
     # Create the different settings
-    for param in self.parameters:
+    for param in self._parameters:
       if not param.flags:
         if param.type == 'int':
-          self.add_scale_setting(name=param.name,
-                                 lowest=int(param.min),
-                                 highest=int(param.max),
-                                 getter=self._add_scale_getter(param.name),
-                                 setter=self._add_setter(param.name),
-                                 default=param.default,
-                                 step=int(param.step))
+          self.add_scale_setting(
+            name=param.name,
+            lowest=int(param.min),
+            highest=int(param.max),
+            getter=self._add_scale_getter(param.name, self._device_num),
+            setter=self._add_setter(param.name, self._device_num),
+            default=param.default,
+            step=int(param.step))
+
         elif param.type == 'bool':
-          self.add_bool_setting(name=param.name,
-                                getter=self._add_bool_getter(param.name),
-                                setter=self._add_setter(param.name),
-                                default=bool(int(param.default)))
+          self.add_bool_setting(
+            name=param.name,
+            getter=self._add_bool_getter(param.name, self._device_num),
+            setter=self._add_setter(param.name, self._device_num),
+            default=bool(int(param.default)))
+
         elif param.type == 'menu':
           if param.options:
-            self.add_choice_setting(name=param.name,
-                                    choices=param.options,
-                                    getter=self._add_menu_getter(param.name),
-                                    setter=self._add_setter(param.name),
-                                    default=param.default)
+            self.add_choice_setting(
+              name=param.name,
+              choices=param.options,
+              getter=self._add_menu_getter(param.name, self._device_num),
+              setter=self._add_setter(param.name, self._device_num),
+              default=param.default)
+
         else:
           self.log(logging.ERROR, f'The type {param.type} is not yet'
                                   f' implemented. Only int, bool and menu '
                                   f'type are implemented. ')
           raise NotImplementedError
+
+    self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
 
     # Adding the software ROI selection settings
     if 'width' in self.settings and 'height' in self.settings:
@@ -352,126 +237,3 @@ class CameraOpencv(Camera):
       fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", check).groups()
 
     return f'{format_} {width}x{height} ({fps} fps)'
-
-  def _add_setter(self, name: str) -> Callable:
-    """Creates a setter function for a setting named 'name'.
-    Args:
-      name: Name of the setting.
-
-    Returns:
-      The setter function.
-    """
-
-    def setter(value) -> None:
-      """The method to set the value of a setting running v4l2-ctl.
-      """
-
-      if isinstance(value, str):
-        # The value to set the menu parameter is just the int
-        # at the beginning the string
-        value = search(r'(\d+): ', value).group(1)
-        if self._device_num is not None:
-          command = ['v4l2-ctl', '-d', str(self._device_num), '--set-ctrl',
-                     f'{name}={value}']
-        else:
-          command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value[0])}']
-        self.log(logging.DEBUG, f"Setting {name} with command {command}")
-        run(command, capture_output=True, text=True)
-      else:
-        if self._device_num is not None:
-          command = ['v4l2-ctl', '-d', str(self._device_num), '--set-ctrl',
-                     name+f'={int(value)}']
-        else:
-          command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value)}']
-        self.log(logging.DEBUG, f"Setting {name} with command {command}")
-        run(command, capture_output=True, text=True)
-    return setter
-
-  def _add_scale_getter(self, name: str) -> Callable:
-    """Creates a getter function for a setting named 'name'.
-    Args:
-      name: Name of the setting.
-
-    Returns:
-      The getter function.
-    """
-
-    def getter() -> int:
-      """The method to get the current value of a scale setting
-      running v4l2-ctl.
-      """
-
-      # Trying to run v4l2-ctl to get the value
-      if self._device_num is not None:
-        command = ['v4l2-ctl', '-d', str(self._device_num), '--get-ctrl', name]
-      else:
-        command = ['v4l2-ctl', '--get-ctrl', name]
-      try:
-        self.log(logging.DEBUG, f"Getting {name} with command {command}")
-        value = run(command, capture_output=True, text=True).stdout
-        value = search(r': (-?\d+)', value).group(1)
-      except FileNotFoundError:
-        value = None
-      return int(value)
-    return getter
-
-  def _add_bool_getter(self, name: str) -> Callable:
-    """Creates a getter function for a setting named 'name'.
-    Args:
-      name: Name of the setting.
-
-    Returns:
-      The getter function.
-    """
-
-    def getter() -> bool:
-      """The method to get the current value of a bool setting
-      running v4l2-ctl.
-      """
-
-      # Trying to run v4l2-ctl to get the value
-      if self._device_num is not None:
-        command = ['v4l2-ctl', '-d', str(self._device_num), '--get-ctrl', name]
-      else:
-        command = ['v4l2-ctl', '--get-ctrl', name]
-      try:
-        self.log(logging.DEBUG, f"Getting {name} with command {command}")
-        value = run(command, capture_output=True, text=True).stdout
-        value = search(r': (\d+)', value).group(1)
-      except FileNotFoundError:
-        value = None
-      return bool(int(value))
-    return getter
-
-  def _add_menu_getter(self, name: str) -> Callable:
-    """Creates a getter function for a setting named 'name'.
-    Args:
-      name: Name of the setting.
-
-    Returns:
-      The getter function.
-    """
-
-    def getter() -> str:
-      """The method to get the current value of a choice setting
-      running v4l2-ctl.
-      """
-
-      # Trying to run v4l2-ctl to get the value
-      if self._device_num is not None:
-        command = ['v4l2-ctl', '-d', str(self._device_num), '--get-ctrl', name]
-      else:
-        command = ['v4l2-ctl', '--get-ctrl', name]
-      try:
-        self.log(logging.DEBUG, f"Getting {name} with command {command}")
-        value = run(command, capture_output=True, text=True).stdout
-        value = search(r': (\d+)', value).group(1)
-        for param in self.parameters:
-          if param.name == name:
-            for option in param.options:
-              if value == search(r'(\d+):', option).group(1):
-                value = option
-      except FileNotFoundError:
-        value = None
-      return value
-    return getter
