@@ -21,7 +21,7 @@ __version__ = '2.0.0-rc.0'
 # -- Project information -----------------------------------------------------
 
 project = 'Crappy'
-author = 'Antoine Weisrock'
+author = 'LaMcube and contributors'
 copyright = f"{strftime('%Y', gmtime())}, {author}"
 version = match(r'\d+\.\d+', __version__).group()
 release = __version__
