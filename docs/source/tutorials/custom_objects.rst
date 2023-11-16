@@ -120,8 +120,12 @@ consecutive calls is exactly what was desired when using classes as Modifiers !
 The two examples presented in this section can finally be merged into a single
 big one :
 
-.. literalinclude:: /downloads/custom_objects/custom_modifier.py
-   :language: python
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_modifier.py
+      :language: python
+
+|
 
 You can :download:`download this custom Modifier example
 </downloads/custom_objects/custom_modifier.py>` to run it locally on your
@@ -282,8 +286,12 @@ the current one, as well as the :py:`get_position` method since the position
 is also measurable. Now that the Actuator is defined, it is time to add some
 context to make it run :
 
-.. literalinclude:: /downloads/custom_objects/custom_actuator.py
-   :language: python
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_actuator.py
+      :language: python
+
+|
 
 .. Note::
    To run this example, you'll need to have the :mod:`matplotlib` Python module
@@ -385,8 +393,12 @@ called, it simply returns these two values as well as a timestamp. When,
 :py:`set_cmd` is called, it expects two arguments and sets their values as the
 new stored values. Let's now integrate the InOut into a runnable code :
 
-.. literalinclude:: /downloads/custom_objects/custom_inout.py
-   :language: python
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_inout.py
+      :language: python
+
+|
 
 .. Note::
    To run this example, you'll need to have the :mod:`matplotlib` Python module
@@ -492,9 +504,13 @@ you. A short example should help you understand it, it's not as difficult as it
 first seems ! The following example is the continuation of the one presented in
 the previous sub-section :
 
-.. literalinclude:: /downloads/custom_objects/custom_inout_streamer.py
-   :language: python
-   :emphasize-lines: 5, 25-35, 52, 54-55, 61-62
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_inout_streamer.py
+      :language: python
+      :emphasize-lines: 5, 25-35, 52, 54-55, 61-62
+
+|
 
 .. Note::
    To run this example, you'll need to have the :mod:`matplotlib` Python module
@@ -597,10 +613,14 @@ should look like in an actual script, inspired from an `example available on
 GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/examples/
 custom_objects>`_ :
 
-.. literalinclude:: /downloads/custom_objects/custom_camera.py
-   :language: python
-   :emphasize-lines: 8-41
-   :lines: 1-17, 52-76, 86-97
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_camera.py
+      :language: python
+      :emphasize-lines: 8-41
+      :lines: 1-17, 52-76, 86-97
+
+|
 
 In this first example, the Camera object generates a random image with several
 settings that can be adjusted in the :meth:`~crappy.camera.Camera.__init__`
@@ -643,10 +663,14 @@ internally like any other attribute. Every setting can be accessed by calling
 spaces. Let's now modify the first example to include a better setting
 management :
 
-.. literalinclude:: /downloads/custom_objects/custom_camera.py
-   :language: python
-   :emphasize-lines: 13, 15-42, 69-71, 73-75
-   :lines: 1-12, 21-97
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_camera.py
+      :language: python
+      :emphasize-lines: 13, 15-42, 69-71, 73-75
+      :lines: 1-12, 21-97
+
+|
 
 .. Note::
    To run this example, you'll need to have the *opencv-python*,
@@ -787,9 +811,13 @@ provides this functionality using MQTT. The demo Block is really not advanced
 enough to be distributed with Crappy, but it will do just fine for this
 tutorial ! Here is the full code :
 
-.. literalinclude:: /downloads/custom_objects/custom_block.py
-   :language: python
-   :emphasize-lines: 13-22, 46, 97, 127
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_block.py
+      :language: python
+      :emphasize-lines: 13-22, 46, 97, 127
+
+|
 
 .. Note::
    To run this example, you'll need to have the :mod:`matplotlib` Python module
@@ -908,10 +936,14 @@ meaning :
 In the presented example, you may have recognized a few of the presented
 attributes. They are highlighted here for convenience :
 
-.. literalinclude:: /downloads/custom_objects/custom_block.py
-   :language: python
-   :emphasize-lines: 27-29, 49, 74
-   :lines: 1-96
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_block.py
+      :language: python
+      :emphasize-lines: 27-29, 49, 74
+      :lines: 1-96
+
+|
 
 There is not much more to say about the available attributes of the Block that
 you can use, you'll see for yourself which ones you need and which ones you

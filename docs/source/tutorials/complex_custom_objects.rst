@@ -92,9 +92,13 @@ clearer how to create a custom Generator Path and how to handle the
 conditions. This example generates a square wave, whose duty cycle can be
 either fixed or controlled by the value of an input label :
 
-.. literalinclude:: /downloads/complex_custom_objects/custom_path.py
-   :language: python
-   :emphasize-lines: 35, 40-41, 49, 52-53
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/complex_custom_objects/custom_path.py
+      :language: python
+      :emphasize-lines: 35, 40-41, 49, 52-53
+
+|
 
 .. Note::
    To run this example, you'll need to have the :mod:`matplotlib` and *scipy*
@@ -672,8 +676,12 @@ that is the final object called by the user in its script. Based on these
 development, here is a final runnable code performing eye detection and adding
 the detected eyes on the displayed images :
 
-.. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
-   :language: python
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
+      :language: python
+
+|
 
 .. Note::
    To run this example, you'll need to have the *opencv-python* and *Pillow*

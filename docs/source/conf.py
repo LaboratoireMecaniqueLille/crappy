@@ -52,7 +52,8 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.duration',
     'sphinx_copybutton',
-    'sphinx_tabs.tabs'
+    'sphinx_tabs.tabs',
+    'sphinx_toolbox.collapse'
 ]
 
 # Tabs settings
