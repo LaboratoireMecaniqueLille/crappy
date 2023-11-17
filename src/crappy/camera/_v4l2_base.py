@@ -64,7 +64,7 @@ class Parameter:
 
 
 class V4L2:
-  """A class for getting parameters available in a camera by using v4l2-utils.
+  """A class for getting parameters available in a camera by using v4l-utils.
   """
 
   def __init__(self):
