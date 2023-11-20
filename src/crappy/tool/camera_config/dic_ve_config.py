@@ -29,6 +29,9 @@ class DICVEConfig(CameraConfigBoxes):
   It relies on the :class:`~crappy.tool.camera_config.config_tools.Box` and 
   :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` tools. It is
   meant to be used for configuring the :class:`~crappy.blocks.DICVE` Block.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0 renamed from DISVE_config to DICVEConfig
   """
 
   def __init__(self,
@@ -52,6 +55,8 @@ class DICVEConfig(CameraConfigBoxes):
       patches: An instance of
         :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` containing
         the patches to follow for image correlation.
+    
+    .. versionadded:: 2.0.0 *log_queue*, *log_level* and *max_freq* arguments
     """
 
     self._patch_size: Optional[CameraScaleSetting] = None
@@ -67,6 +72,8 @@ class DICVEConfig(CameraConfigBoxes):
     Check that patches were selected on the image. If not, warns the user and
     prevents him from exiting except with CTRL+C. If not already done by the
     user, also saves the initial length between the patches.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._spots.empty():

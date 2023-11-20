@@ -16,6 +16,8 @@ class Path(metaclass=MetaPath):
 
   The Path object are used by the :class:`~crappy.blocks.Generator` Block to
   generate signals.
+  
+  .. versionadded:: 1.4.0
   """
 
   t0: Optional[float] = None
@@ -34,6 +36,10 @@ class Path(metaclass=MetaPath):
     previous :class:`~crappy.blocks.generator_path.meta_path.Path` was sent,
     and the ``self.last_cmd`` stores the value of the last command of the
     previous :class:`~crappy.blocks.generator_path.meta_path.Path`.
+
+    .. versionchanged:: 1.5.10 renamed *time* argument to *_last_time*
+    .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
+    .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 
     self._logger: Optional[logging.Logger] = None
@@ -84,6 +90,8 @@ class Path(metaclass=MetaPath):
     Args:
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:

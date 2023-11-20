@@ -45,7 +45,10 @@ class DCMotorHatFT232H(Actuator):
 
   Note:
     The DC Motor Hat can also drive stepper motors, but this feature isn't
-    included here."""
+    included here.
+
+  .. versionadded:: 2.0.0
+  """
 
   ft232h = True
 

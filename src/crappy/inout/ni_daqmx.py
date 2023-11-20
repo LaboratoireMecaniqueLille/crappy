@@ -69,6 +69,9 @@ class NIDAQmx(InOut):
   of data from analog channels, and set the voltage of analog and digital
   output channels. For analog input channels, several types of acquisition can
   be performed, like voltage, resistance, current, etc.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Nidaqmx to NIDAQmx
   """
 
   def __init__(self,
@@ -125,6 +128,9 @@ class NIDAQmx(InOut):
           internally. Also note that for the analog output channels and the
           analog input channels of type `'voltage'`, the `'min_val'` and
           `'max_val'` arguments are internally set by default to `0` and `5`.
+    
+    .. versionchanged:: 1.5.10 renamed *samplerate* argument to *sample_rate*
+    .. versionchanged:: 1.5.10 renamed *nsamples* argument to *n_samples*
     """
 
     super().__init__()

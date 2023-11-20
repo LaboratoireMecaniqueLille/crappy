@@ -36,6 +36,9 @@ class ClientServer(Block):
   microcontrollers) acquiring data in enclosed areas or rotating parts, data
   transfer between machines to delegate processing, communication with other
   programs on a same machine, etc.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Client_server to ClientServer
   """
 
   def __init__(self,
@@ -205,6 +208,9 @@ class ClientServer(Block):
 
           ('sign',)
 
+    .. versionadded:: 1.5.10 *verbose*, *freq* and *spam* arguments
+    .. versionadded:: 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._client: Optional[mqtt.Client] = None

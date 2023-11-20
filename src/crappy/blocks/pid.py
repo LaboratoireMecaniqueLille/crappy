@@ -21,6 +21,8 @@ class PID(Block):
   a :class:`~crappy.blocks.Machine` or :class:`~crappy.blocks.IOBlock` Block
   driving a physical system. This latter Block takes the command as input, and
   returns to the PID the measured value to be compared to the target.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -90,6 +92,13 @@ class PID(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionadded:: 1.5.10 *verbose* argument
+    .. versionadded 2.0.0 
+       *debug*, *kp_label*, *kd_label* and *ki_label* arguments
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+    .. versionchanged:: 2.0.0
+       renamed *target_label* argument to *setpoint_label*
     """
 
     # Attributes of the parent class

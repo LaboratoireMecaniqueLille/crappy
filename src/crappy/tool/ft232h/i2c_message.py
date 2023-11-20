@@ -10,6 +10,9 @@ class I2CMessage:
   It is used for communication with the
   :class:`~crappy.tool.ft232h.FT232HServer`, only by the
   :class:`~crappy.inout.MPRLS` InOut.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0 renamed from i2c_msg_ft232h to I2CMessage
   """
 
   def __init__(self,

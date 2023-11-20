@@ -23,6 +23,9 @@ class Sim868(InOut):
   Important:
     This InOut should be associated with a :class:`~crappy.modifier.Modifier`
     to manage the messages to send.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Gsm to Sim868
   """
 
   def __init__(self,
@@ -45,6 +48,8 @@ class Sim868(InOut):
       pin_code: Optionally, a pin code to use for activating the SIM card.
       registration_timeout: The maximum number of seconds to allow for the
         Sim868 to register to a network once the SIM card has the ready status.
+    
+    .. versionadded:: 2.0.0 *pin_code* and *registration_timeout* arguments
     """
 
     self._ser = None

@@ -62,6 +62,8 @@ class DCMotorHat(Actuator):
   Note:
     The DC Motor Hat can also drive stepper motors, but this feature isn't
     included here.
+  
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self,

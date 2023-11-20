@@ -8,7 +8,10 @@ from .meta_modifier import Modifier
 
 class Integrate(Modifier):
   """This Modifier integrates the data of a label over time and adds the
-  integration value to the returned data."""
+  integration value to the returned data.
+  
+  .. versionadded:: 1.4.0
+  """
 
   def __init__(self,
                label: str,
@@ -21,6 +24,8 @@ class Integrate(Modifier):
       time_label: The label carrying the time information.
       out_label: The label carrying the integration value. If not given,
         defaults to ``'i_<label>'``.
+
+    .. versionchanged:: 1.5.10 renamed *time* argument to *time_label*
     """
 
     super().__init__()
@@ -34,7 +39,10 @@ class Integrate(Modifier):
 
   def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
     """Gets the data from the upstream Block, updates the integration value,
-    adds it to the data and returns the data."""
+    adds it to the data and returns the data.
+    
+    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    """
 
     self.log(logging.DEBUG, f"Received {data}")
 

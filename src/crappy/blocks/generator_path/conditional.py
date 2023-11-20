@@ -13,6 +13,8 @@ class Conditional(Path):
   It is especially useful for controlling processes that need to behave
   differently based on input values, e.g. for preventing a heating element
   from overheating, or a motor from driving too far.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -38,6 +40,12 @@ class Conditional(Path):
 
     Note:
       This Generator Path never ends, it doesn't have a stop condition.
+
+    .. versionchanged:: 1.5.10 renamed *time* argument to *_last_time*
+    .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
+    .. versionremoved:: 1.5.10 *verbose* argument
+    .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
+    .. versionchanged:: 2.0.0 renamed from Protection to Conditional
     """
 
     super().__init__()

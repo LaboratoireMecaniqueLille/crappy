@@ -19,6 +19,9 @@ class SpectrumM2I4711(InOut):
 
   This class can only acquire data by streaming, it cannot acquire single data
   points.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Spectrum to SpectrumM2I4711
   """
 
   def __init__(self,
@@ -46,6 +49,9 @@ class SpectrumM2I4711(InOut):
         the data from the card, in bytes. The default is 67MB.
       notify_size: The size of each chunk of data to copy from the card, in
         bytes. The default is 65kB.
+    
+    .. versionchanged:: 1.5.10 renamed *samplerate* argument to *sample_rate*
+    .. versionremoved:: 1.5.10 *split_chan* argument
     """
 
     self._spectrum = None

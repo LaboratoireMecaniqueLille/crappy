@@ -17,6 +17,8 @@ class Overlay:
 
   It is mainly useful for providing the :meth:`log` method, and creating a
   clear architecture. It is also relevant to use for type-hinting.
+
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self) -> None:

@@ -10,7 +10,10 @@ from .meta_path import Path, ConditionType
 
 class Sine(Path):
   """This Path generates a sine wave varying with time until the stop condition
-  is met."""
+  is met.
+  
+  .. versionadded:: 1.4.0
+  """
 
   def __init__(self,
                condition: Union[str, ConditionType],
@@ -28,6 +31,10 @@ class Sine(Path):
       amplitude: The amplitude of the sine wave (peak to peak).
       offset: The offset of the sine (average value).
       phase: The phase of the sine (in radians).
+    
+    .. versionchanged:: 1.5.10 renamed *time* argument to *_last_time*
+    .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
+    .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 
     super().__init__()

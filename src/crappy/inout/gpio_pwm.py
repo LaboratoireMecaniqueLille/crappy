@@ -21,6 +21,9 @@ class GPIOPWM(InOut):
 
   Warning:
     Only works on Raspberry Pi !
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Gpio_pwm to GPIOPWM
   """
 
   def __init__(self,

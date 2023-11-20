@@ -65,6 +65,9 @@ class T7Streamer(InOut):
     The ``streamer`` argument of the IOBlock controlling this InOut must be set
     to :obj:`True` to enable streaming in this class. Otherwise, only single
     point acquisition can be performed.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from T7_streamer to T7Streamer
   """
 
   def __init__(self,
@@ -215,6 +218,8 @@ class T7Streamer(InOut):
 
     It simply performs the regular zeroing, and resets the compensation for the
     channels that shouldn't be zeroed.
+    
+    .. versionadded:: 1.5.10
     """
 
     # No need to acquire data if no channel should be zeroed

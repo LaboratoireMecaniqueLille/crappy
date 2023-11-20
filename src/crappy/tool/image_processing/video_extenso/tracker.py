@@ -37,6 +37,8 @@ class Tracker(Process):
   returns the updated position of the detected spot. It is meant to be used in
   association with the 
   :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
+  
+  .. versionadded:: 2.0.0
   """
 
   names = list()

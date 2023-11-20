@@ -20,6 +20,9 @@ class DISCorrelTool:
   Dense Inverse Search correlation on each new image to get fields of interest. 
   It relies on DISFlow for the image correlation, handles the projection of the 
   image on the chosen fields, and calculates the residuals.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from DISCorrel to DISCorrelTool
   """
 
   def __init__(self,
@@ -62,6 +65,10 @@ class DISCorrelTool:
         (in pixels).
       patch_stride: Stride between neighbor patches in DISFlow. Must be
         less than patch size.
+    
+    .. versionchanged:: 1.5.10
+       renamed *gditerations* argument to *gradient_iterations*
+    .. versionadded:: 2.0.0 *box* argument
     """
 
     if fields is not None and not all((field in allowed_fields
@@ -91,7 +98,10 @@ class DISCorrelTool:
     self._dis.setPatchStride(patch_stride)
 
   def set_img0(self, img0: np.ndarray) -> None:
-    """Sets the initial image to use for the correlation."""
+    """Sets the initial image to use for the correlation.
+    
+    .. versionadded:: 1.5.10
+    """
 
     self._img0 = img0
     self._height, self._width, *_ = img0.shape
@@ -99,7 +109,11 @@ class DISCorrelTool:
 
   def set_box(self) -> None:
     """Sets the region of interest to use for the correlation, and initializes
-    other attributes."""
+    other attributes.
+
+    .. versionadded:: 1.5.10
+    .. versionremoved:: 2.0.0 *box* argument
+    """
 
     # Sets the bounding box
     x_top, x_bottom, y_left, y_right = self.box.sorted()
@@ -131,6 +145,8 @@ class DISCorrelTool:
     Returns:
       A :obj:`list` containing the data to calculate, and the residuals at the
       end if requested.
+
+    .. versionadded:: 1.5.10
     """
 
     # Making sure the reference image and the base fields were set

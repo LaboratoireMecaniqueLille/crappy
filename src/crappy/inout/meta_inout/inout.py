@@ -16,12 +16,17 @@ class InOut(metaclass=MetaIO):
 
   The InOut objects are helper classes used by the
   :class:`~crappy.blocks.IOBlock` to interface with hardware.
+  
+  .. versionadded:: 1.4.0
   """
 
   ft232h: bool = False
 
   def __init__(self, *_, **__) -> None:
-    """Sets the attributes."""
+    """Sets the attributes.
+    
+    .. versionchanged:: 2.0.0 now accepts args and kwargs
+    """
 
     self._compensations: List[float] = list()
     self._compensations_dict: Dict[str, float] = dict()
@@ -35,6 +40,8 @@ class InOut(metaclass=MetaIO):
     Args:
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:
@@ -54,6 +61,8 @@ class InOut(metaclass=MetaIO):
     Blocks.
 
     It is fine for this method not to perform anything.
+
+    .. versionadded:: 1.5.10
     """
 
     ...
@@ -93,6 +102,8 @@ class InOut(metaclass=MetaIO):
 
     It is alright for this method to return :obj:`None` if there's no data to
     acquire.
+    
+    .. versionadded:: 1.5.10
     """
 
     self.log(logging.WARNING,
@@ -116,6 +127,8 @@ class InOut(metaclass=MetaIO):
       If ``{'t(s)': 20.5, 'value_1': 1.5, 'value_2': 3.6, 'value_3': 'OK'}`` is
       received from upstream Blocks, and ``cmd_labels=('value_3', 'value_1')``,
       then the call will be ``set_cmd('OK', 1.5)``.
+
+    .. versionadded:: 1.5.10
     """
 
     self.log(logging.WARNING,
@@ -125,7 +138,10 @@ class InOut(metaclass=MetaIO):
     return
 
   def start_stream(self) -> None:
-    """This method should start the acquisition of the stream."""
+    """This method should start the acquisition of the stream.
+
+    .. versionadded:: 1.5.10
+    """
 
     self.log(logging.WARNING, "The start_stream method was called but is not "
                               "defined !")
@@ -161,6 +177,8 @@ class InOut(metaclass=MetaIO):
       It is technically  possible to return more than two arrays, or even
       objects that are not arrays, but it is not the intended use for this
       method and might interfere with some functionalities of Crappy.
+
+    .. versionadded:: 1.5.10
     """
 
     self.log(logging.WARNING, "The get_stream method was called but is not "
@@ -169,7 +187,10 @@ class InOut(metaclass=MetaIO):
     return
 
   def stop_stream(self) -> None:
-    """This method should stop the acquisition of the stream."""
+    """This method should stop the acquisition of the stream.
+
+    .. versionadded:: 1.5.10
+    """
 
     self.log(logging.WARNING, "The stop_stream method was called but is not "
                               "defined !")
@@ -184,6 +205,8 @@ class InOut(metaclass=MetaIO):
     path, or because an exception was raised in any of the Blocks).
 
     It is fine for this method not to perform anything.
+
+    .. versionadded:: 1.5.10
     """
 
     ...
@@ -199,6 +222,8 @@ class InOut(metaclass=MetaIO):
       This method uses :meth:`get_data` for acquiring the values, so it doesn't
       work for pure streams. It also doesn't work if the acquired values do not
       support arithmetic operations (like :obj:`str`).
+
+    .. versionadded:: 1.5.10
     """
 
     buf = []
@@ -260,7 +285,10 @@ class InOut(metaclass=MetaIO):
   def return_data(self) -> Optional[Union[List[Any], Dict[str, Any]]]:
     """Returns the data from :meth:`get_data`, corrected by an offset if the
     ``make_zero_delay`` argument of the :class:`~crappy.blocks.IOBlock` is
-    set."""
+    set.
+
+    .. versionadded:: 1.5.10
+    """
 
     data = self.get_data()
 
@@ -313,7 +341,10 @@ class InOut(metaclass=MetaIO):
                                             Dict[str, np.ndarray]]]:
     """Returns the data from :meth:`get_stream`, corrected by an offset if the
     ``make_zero_delay`` argument of the :class:`~crappy.blocks.IOBlock` is
-    set."""
+    set.
+
+    .. versionadded:: 1.5.10
+    """
 
     data = self.get_stream()
 

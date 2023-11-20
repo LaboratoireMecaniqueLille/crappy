@@ -23,6 +23,8 @@ class DICVEProcess(CameraProcess):
   that the :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` are sent
   to the :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess for
   display.
+  
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self,

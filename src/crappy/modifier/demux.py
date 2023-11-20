@@ -26,6 +26,8 @@ class Demux(Modifier):
     information is lost ! This Modifier is intended to format the stream data
     for low-frequency plotting, or low-frequency decision-making. To save all
     the stream data, use the :class:`~crappy.blocks.HDFRecorder` Block.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -49,6 +51,8 @@ class Demux(Modifier):
       time_label: The label carrying the time information.
       transpose: If :obj:`True`, each label corresponds to a row in the stream.
         Otherwise, a label corresponds to a column in the stream.
+    
+    .. versionchanged:: 1.5.10 renamed *stream* argument to *stream_label*
     """
 
     super().__init__()
@@ -64,7 +68,12 @@ class Demux(Modifier):
 
   def __call__(self, data: Dict[str, np.ndarray]) -> Dict[str, Any]:
     """Retrieves for each label its value in the stream, also gets the
-    corresponding timestamp, and returns them."""
+    corresponding timestamp, and returns them.
+    
+    .. versionchanged:: 1.5.10 
+       merge evaluate_mean and evaluate_nomean methods into evaluate
+    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    """
 
     self.log(logging.DEBUG, f"Received {data}")
 

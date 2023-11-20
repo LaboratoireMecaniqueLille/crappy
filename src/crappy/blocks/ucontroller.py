@@ -25,6 +25,8 @@ class UController(Block):
   MicroPython template located in the `tool` folder of Crappy, even though it
   is not mandatory. A given syntax needs to be followed for any data to be
   exchanged.
+  
+  .. versionadded:: 1.5.8
   """
 
   def __init__(self,
@@ -79,6 +81,9 @@ class UController(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionadded:: 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._bus = None

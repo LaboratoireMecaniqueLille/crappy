@@ -105,6 +105,8 @@ class NAU7802FT232H(InOut):
   that can read up to 320 samples per second. It communicates over the I2C
   protocol. The returned value of the InOut is in Volts by default, but can be
   converted to Newtons using the ``gain`` and ``offset`` arguments.
+
+  .. versionadded:: 2.0.0
   """
 
   ft232h = True

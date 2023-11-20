@@ -53,7 +53,8 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx_copybutton',
     'sphinx_tabs.tabs',
-    'sphinx_toolbox.collapse'
+    'sphinx_toolbox.collapse',
+    'sphinx_toolbox.changeset'
 ]
 
 # Tabs settings

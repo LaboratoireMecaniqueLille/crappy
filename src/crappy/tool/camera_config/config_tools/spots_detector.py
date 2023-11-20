@@ -33,6 +33,8 @@ class SpotsDetector:
   the detected spots, to pass them later on to the
   :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` along
   with other variables once the CameraConfig window is closed.
+
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self,

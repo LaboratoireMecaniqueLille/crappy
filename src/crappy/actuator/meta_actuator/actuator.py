@@ -15,6 +15,8 @@ class Actuator(metaclass=MetaActuator):
   The Actuator objects are helper classes used by the
   :class:`~crappy.blocks.Machine` Block to communicate with motors or other
   actuators.
+
+  .. versionadded:: 1.4.0
   """
 
   ft232h: bool = False
@@ -32,6 +34,8 @@ class Actuator(metaclass=MetaActuator):
     Args:
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:
@@ -51,6 +55,8 @@ class Actuator(metaclass=MetaActuator):
     Blocks.
 
     It is fine for this method not to perform anything.
+
+    .. versionadded:: 2.0.0
     """
 
     ...
@@ -68,6 +74,8 @@ class Actuator(metaclass=MetaActuator):
 
     Args:
       speed: The speed to reach, as a :obj:`float`.
+
+    .. versionadded:: 1.5.10
     """
 
     self.log(logging.WARNING, f"The set_speed method was called but is not "
@@ -109,6 +117,10 @@ class Actuator(metaclass=MetaActuator):
       position: The position to reach, as a :obj:`float`.
       speed: The speed at which to move to the desired position, as a
         :obj:`float`, or :obj:`None` if no speed is specified.
+
+    .. versionadded:: 1.5.10
+    .. versionchanged:: 2.0.0
+       *speed* is now a mandatory argument even if it is :obj:`None`
     """
 
     self.log(logging.WARNING, f"The set_position method was called but is not "
@@ -124,7 +136,10 @@ class Actuator(metaclass=MetaActuator):
     :class:`~crappy.blocks.Machine` Block.
 
     It is also fine for this method to return :obj:`None` if the speed could
-    not be acquired."""
+    not be acquired.
+
+    .. versionadded:: 1.5.10
+    """
 
     self.log(logging.WARNING, f"The get_speed method as called but is not "
                               f"defined ! Define such a method, don't set the "
@@ -142,7 +157,10 @@ class Actuator(metaclass=MetaActuator):
     :class:`~crappy.blocks.Machine` Block.
 
     It is also fine for this method to return :obj:`None` if the position could
-    not be acquired."""
+    not be acquired.
+
+    .. versionadded:: 1.5.10
+    """
 
     self.log(logging.WARNING, f"The get_position method as called but is not "
                               f"defined ! Define such a method, don't set the "
@@ -162,6 +180,8 @@ class Actuator(metaclass=MetaActuator):
     default behavior is to call :meth:`set_speed` to set the speed to `0`. This
     method doesn't need to be overriden if the actuator doesn't have any
     feature for stopping other than speed control.
+
+    .. versionadded:: 2.0.0
     """
 
     self.set_speed(0)
@@ -176,6 +196,8 @@ class Actuator(metaclass=MetaActuator):
     path, or because an exception was raised in any of the Blocks).
 
     It is fine for this method not to perform anything.
+
+    .. versionadded:: 2.0.0
     """
 
     ...
