@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from __future__ import annotations
 from typing import Tuple, Optional, Callable, Union
 from re import findall, search, finditer, split, Match
