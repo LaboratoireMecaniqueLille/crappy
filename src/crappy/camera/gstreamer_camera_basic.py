@@ -29,15 +29,22 @@ class CameraGstreamer(Camera):
   """A class for reading images from a video device using Gstreamer.
 
   It can read images from the default video source, or a video device can be
-  specified. In this case, the user has access to a range of parameters for
-  tuning the image. Alternatively, it is possible to give a custom GStreamer
-  pipeline as an argument. In this case no settings are available, and it is up
-  to the user to ensure the validity of the pipeline.
+  specified. The user has access to a range of parameters for tuning the image,
+  depending on the capability of the hardware. Alternatively, it is possible to
+  give a custom GStreamer pipeline as an argument. In this case no settings are
+  available, and it is up to the user to ensure the validity of the pipeline.
 
   This class uses less resources and is compatible with more cameras than the
   :class:`~crappy.camera.CameraOpencv` camera, that relies on OpenCV. The
   installation of GStreamer is however less straightforward than the one of
-  OpenCV.
+  OpenCV, especially on Windows !
+
+  Warning:
+    There are two classes for CameraGstreamer, one for Linux based on
+    `v4l-utils`, and another one for Linux (without `v4l-utils`) and other OS.
+    Depending on the installation of `v4l-utils` and the OS, the correct class
+    will be automatically imported. The version using `v4l-utils` allows tuning
+    more parameters than the basic version.
 
   Note:
     This Camera requires the module :mod:`PyGObject` to be installed, as well

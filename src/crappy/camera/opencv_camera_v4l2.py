@@ -3,12 +3,12 @@
 from time import time, sleep
 from typing import Tuple, List, Optional
 from numpy import ndarray
-from platform import system
 from subprocess import run
-from re import findall, split, search
+from re import findall, search
 import logging
 
 from .meta_camera import Camera
+from ._v4l2_base import V4L2Helper
 from .._global import OptionalModule
 
 try:
@@ -17,33 +17,36 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class CameraOpencv(Camera):
-  """A class for reading images from any camera able to interface with OpenCv.
+class CameraOpencv(Camera, V4L2Helper):
+  """A class for reading images from any camera able to interface with OpenCV.
 
-  The number of the video device to read images from can be specified. It is
-  then also possible to tune the encoding format and the size.
+  The number of the video device to read images from can be specified.
 
   This camera class is less performant than the
   :class:`~crappy.camera.CameraGstreamer` one that relies on GStreamer, but the
-  installation of OpenCv is way easier than the one of GStreamer.
+  installation of OpenCV is way easier than the one of GStreamer, especially on
+  Windows !
 
-  Note:
-    For a better performance of this class in Linux, it is recommended to have
-    `v4l-utils` installed.
+  Warning:
+    There are two classes for CameraOpencv, one for Linux based on
+    `v4l-utils`, and another one for Linux (without `v4l-utils`) and other OS.
+    Depending on the installation of `v4l-utils` and the OS, the correct class
+    will be automatically imported. The version using `v4l-utils` allows tuning
+    more parameters than the basic version.
+
+  .. versionadded:: 1.5.9
+  .. versionchanged:: 2.0.0 renamed from Camera_opencv to CameraOpencv
   """
 
   def __init__(self) -> None:
     """Sets variables and adds the channels setting."""
 
-    super().__init__()
+    Camera.__init__(self)
+    V4L2Helper.__init__(self)
 
     self._cap = None
     self._device_num: Optional[int] = None
     self._formats: List[str] = list()
-
-    self.add_choice_setting(name="channels",
-                            choices=('1', '3'),
-                            default='1')
 
   def open(self, device_num: int = 0, **kwargs) -> None:
     """Opens the video stream and sets any user-specified settings.
@@ -61,67 +64,15 @@ class CameraOpencv(Camera):
     self.log(logging.INFO, "Opening the image stream from the camera")
     self._cap = cv2.VideoCapture(device_num)
     self._device_num = device_num
-    fourcc = self._get_fourcc()
 
-    if system() == 'Linux':
-      self._formats = []
-
-      # Trying to run v4l2-ctl to get the available formats
-      command = ['v4l2-ctl', '-d', str(device_num), '--list-formats-ext']
-      try:
-        self.log(logging.INFO, f"Getting the available image formats with "
-                               f"command {command}")
-        check = run(command, capture_output=True, text=True)
-      except FileNotFoundError:
-        self.log(logging.WARNING, "The performance of the CameraOpencv class "
-                                  "could be improved if v4l-utils was "
-                                  "installed !")
-        check = None
-      check = check.stdout if check is not None else ''
-
-      # Splitting the returned string to isolate each encoding
-      if findall(r'\[\d+]', check):
-        check = split(r'\[\d+]', check)[1:]
-      elif findall(r'Pixel\sFormat', check):
-        check = split(r'Pixel\sFormat', check)[1:]
-      else:
-        check = []
-
-      if check:
-        for img_format in check:
-          # For each encoding, finding its name
-          name, *_ = search(r"'(\w+)'", img_format).groups()
-          sizes = findall(r'\d+x\d+', img_format)
-          fps_sections = split(r'\d+x\d+', img_format)[1:]
-
-          # For each name, finding the available sizes
-          for size, fps_section in zip(sizes, fps_sections):
-            fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
-            for fps in fps_list:
-              self._formats.append(f'{name} {size} ({fps} fps)')
-
-      else:
-        # If v4l-utils is not installed, proposing two encodings without
-        # further detail
-        self._formats = [fourcc, 'MJPG']
-
-        # Still letting the user choose the size
-        self.add_scale_setting(name='width', lowest=1, highest=1920,
-                               getter=self._get_width, setter=self._set_width)
-        self.add_scale_setting(name='height', lowest=1, highest=1080,
-                               getter=self._get_height,
-                               setter=self._set_height)
-
-    else:
-      # On Windows the fourcc management is even messier than on Linux
-      self._formats = []
-
-      # Still letting the user choose the size
-      self.add_scale_setting(name='width', lowest=1, highest=1920,
-                             getter=self._get_width, setter=self._set_width)
-      self.add_scale_setting(name='height', lowest=1, highest=1080,
-                             getter=self._get_height, setter=self._set_height)
-
+    self._get_available_formats(device_num)
+    supported = ('MJPG', 'YUYV')
+    unavailable_formats = set([_format.split()[0] for _format in self._formats
+                               if _format.split()[0] not in supported])
+    self.log(logging.INFO, f"The formats {', '.join(unavailable_formats)} are "
+                           f"available but not implemented in Crappy")
+    self._formats = [_format for _format in self._formats
+                     if _format.split()[0] in supported]
     if self._formats:
       # The format integrates the size selection
       if ' ' in self._formats[0]:
@@ -135,6 +86,45 @@ class CameraOpencv(Camera):
                                 choices=tuple(self._formats),
                                 getter=self._get_fourcc,
                                 setter=self._set_format)
+
+    self._get_param(device_num)
+
+    # Create the different settings
+    for param in self._parameters:
+      if not param.flags:
+        if param.type == 'int':
+          self.add_scale_setting(
+            name=param.name,
+            lowest=int(param.min),
+            highest=int(param.max),
+            getter=self._add_scale_getter(param.name, self._device_num),
+            setter=self._add_setter(param.name, self._device_num),
+            default=param.default,
+            step=int(param.step))
+
+        elif param.type == 'bool':
+          self.add_bool_setting(
+            name=param.name,
+            getter=self._add_bool_getter(param.name, self._device_num),
+            setter=self._add_setter(param.name, self._device_num),
+            default=bool(int(param.default)))
+
+        elif param.type == 'menu':
+          if param.options:
+            self.add_choice_setting(
+              name=param.name,
+              choices=param.options,
+              getter=self._add_menu_getter(param.name, self._device_num),
+              setter=self._add_setter(param.name, self._device_num),
+              default=param.default)
+
+        else:
+          self.log(logging.ERROR, f'The type {param.type} is not yet'
+                                  f' implemented. Only int, bool and menu '
+                                  f'type are implemented. ')
+          raise NotImplementedError
+
+    self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
 
     # Adding the software ROI selection settings
     if 'width' in self.settings and 'height' in self.settings:

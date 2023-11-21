@@ -3,3 +3,6 @@
 
 # PIERROOOTT owns the Gstreamer cameras
 /src/crappy/camera/gstreamer_* @WeisLeDocto @PIERROOOTT
+
+# PIERROOOTT owns the Opencv cameras
+/src/crappy/camera/opencv_* @WeisLeDocto @PIERROOOTT
