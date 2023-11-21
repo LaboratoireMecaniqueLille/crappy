@@ -23,6 +23,17 @@ class Parameter:
   flags: Optional[str] = None
   options: Optional[Tuple[str, ...]] = None
 
+  # Regex to extract the different parameters and their information
+  param_pattern = (r'(\w+)\s+0x\w+\s+\((\w+)\)\s+:\s*'
+                   r'(min=(-?\d+)\s+)?'
+                   r'(max=(-?\d+)\s+)?'
+                   r'(step=(\d+)\s+)?'
+                   r'(default=(-?\d+)\s+)?'
+                   r'value=(-?\d+)\s*'
+                   r'(flags=([^\\n]+))?')
+
+  option_pattern = r'(\w+ \w+ \(menu\))([\s\S]+?)(?=\n\s*\w+ \w+ \(.+?\)|$)'
+
   @classmethod
   def parse_info(cls, match: Match) -> Parameter:
     """Instantiates the class Parameter, according to the information
@@ -91,23 +102,13 @@ class V4L2:
       check = None
     check = check.stdout if check is not None else ''
 
-    # Regex to extract the different parameters and their information
-    param_pattern = (r'(\w+)\s+0x\w+\s+\((\w+)\)\s+:\s*'
-                     r'(min=(-?\d+)\s+)?'
-                     r'(max=(-?\d+)\s+)?'
-                     r'(step=(\d+)\s+)?'
-                     r'(default=(-?\d+)\s+)?'
-                     r'value=(-?\d+)\s*'
-                     r'(flags=([^\\n]+))?')
-
     # Extract the different parameters and their information
-    matches = finditer(param_pattern, check)
+    matches = finditer(Parameter.param_pattern, check)
     for match in matches:
       self._parameters.append(Parameter.parse_info(match))
 
     # Regex to extract the different options in a menu
-    menu_options = finditer(
-      r'(\w+ \w+ \(menu\))([\s\S]+?)(?=\n\s*\w+ \w+ \(.+?\)|$)', check)
+    menu_options = finditer(Parameter.option_pattern, check)
 
     # Extract the different options
     for menu_option in menu_options:
