@@ -96,10 +96,7 @@ class V4L2Helper:
         else ['v4l2-ctl', '-d', str(device), '-L']
     self.log(logging.INFO, f"Getting the available image settings with "
                            f"command {command}")
-    try:
-      check = run(command, capture_output=True, text=True)
-    except FileNotFoundError:
-      check = None
+    check = run(command, capture_output=True, text=True)
     check = check.stdout if check is not None else ''
 
     # Extract the different parameters and their information
@@ -124,10 +121,7 @@ class V4L2Helper:
         else ['v4l2-ctl', '-d', str(device), '--list-formats-ext']
     self.log(logging.INFO, f"Getting the available image formats with "
                            f"command {command}")
-    try:
-      check = run(command, capture_output=True, text=True)
-    except FileNotFoundError:
-      check = None
+    check = run(command, capture_output=True, text=True)
     check = check.stdout if check is not None else ''
 
     # Splitting the returned string to isolate each encoding
@@ -208,11 +202,8 @@ class V4L2Helper:
         command = ['v4l2-ctl', '-d', str(device), '--get-ctrl', name]
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
-      try:
-        value = run(command, capture_output=True, text=True).stdout
-        value = search(r': (-?\d+)', value).group(1)
-      except FileNotFoundError:
-        value = None
+      value = run(command, capture_output=True, text=True).stdout
+      value = search(r': (-?\d+)', value).group(1)
       return int(value)
     return getter
 
@@ -237,11 +228,8 @@ class V4L2Helper:
         command = ['v4l2-ctl', '-d', str(device), '--get-ctrl', name]
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
-      try:
-        value = run(command, capture_output=True, text=True).stdout
-        value = search(r': (\d+)', value).group(1)
-      except FileNotFoundError:
-        value = None
+      value = run(command, capture_output=True, text=True).stdout
+      value = search(r': (\d+)', value).group(1)
       return bool(int(value))
     return getter
 
@@ -266,16 +254,13 @@ class V4L2Helper:
         command = ['v4l2-ctl', '-d', str(device), '--get-ctrl', name]
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
-      try:
-        value = run(command, capture_output=True, text=True).stdout
-        value = search(r': (\d+)', value).group(1)
-        for param in self._parameters:
-          if param.name == name:
-            for option in param.options:
-              if value == search(r'(\d+):', option).group(1):
-                value = option
-      except FileNotFoundError:
-        value = None
+      value = run(command, capture_output=True, text=True).stdout
+      value = search(r': (\d+)', value).group(1)
+      for param in self._parameters:
+        if param.name == name:
+          for option in param.options:
+            if value == search(r'(\d+):', option).group(1):
+              value = option
       return value
     return getter
 
