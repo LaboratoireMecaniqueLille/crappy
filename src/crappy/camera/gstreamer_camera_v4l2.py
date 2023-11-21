@@ -9,7 +9,7 @@ import logging
 from fractions import Fraction
 
 from .meta_camera import Camera
-from ._v4l2_base import V4L2
+from ._v4l2_base import V4L2Helper
 from .._global import OptionalModule
 
 try:
@@ -27,7 +27,7 @@ except (ImportError, ModuleNotFoundError, ValueError):
   Gst = GstApp = OptionalModule('PyGObject')
 
 
-class CameraGstreamer(Camera, V4L2):
+class CameraGstreamer(Camera, V4L2Helper):
   """A class for reading images from a video device using Gstreamer in Linux.
 
   It can read images from the default video source, or a video device can be
@@ -52,7 +52,7 @@ class CameraGstreamer(Camera, V4L2):
     """Simply initializes the instance attributes."""
 
     Camera.__init__(self)
-    V4L2.__init__(self)
+    V4L2Helper.__init__(self)
 
     Gst.init(None)
     self._last_frame_nr = 0

@@ -8,7 +8,7 @@ from re import findall, search
 import logging
 
 from .meta_camera import Camera
-from ._v4l2_base import V4L2
+from ._v4l2_base import V4L2Helper
 from .._global import OptionalModule
 
 try:
@@ -17,7 +17,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class CameraOpencv(Camera, V4L2):
+class CameraOpencv(Camera, V4L2Helper):
   """A class for reading images from any camera able to interface with OpenCv.
 
   The number of the video device to read images from can be specified. It is
@@ -34,7 +34,7 @@ class CameraOpencv(Camera, V4L2):
     """Sets variables and adds the channels setting."""
 
     Camera.__init__(self)
-    V4L2.__init__(self)
+    V4L2Helper.__init__(self)
 
     self._cap = None
     self._device_num: Optional[int] = None

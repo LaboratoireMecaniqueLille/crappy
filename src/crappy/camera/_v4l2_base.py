@@ -10,7 +10,7 @@ from multiprocessing import current_process
 
 
 @dataclass
-class Parameter:
+class V4L2Parameter:
   """A class for the different parameters the user can adjust."""
 
   name: str
@@ -35,7 +35,7 @@ class Parameter:
   option_pattern = r'(\w+ \w+ \(menu\))([\s\S]+?)(?=\n\s*\w+ \w+ \(.+?\)|$)'
 
   @classmethod
-  def parse_info(cls, match: Match) -> Parameter:
+  def parse_info(cls, match: Match) -> V4L2Parameter:
     """Instantiates the class Parameter, according to the information
      collected with v4l2-ctl.
 
@@ -76,7 +76,7 @@ class Parameter:
           self.default = opt
 
 
-class V4L2:
+class V4L2Helper:
   """A class for getting parameters available in a camera by using
   v4l-utils."""
 
@@ -103,12 +103,12 @@ class V4L2:
     check = check.stdout if check is not None else ''
 
     # Extract the different parameters and their information
-    matches = finditer(Parameter.param_pattern, check)
+    matches = finditer(V4L2Parameter.param_pattern, check)
     for match in matches:
-      self._parameters.append(Parameter.parse_info(match))
+      self._parameters.append(V4L2Parameter.parse_info(match))
 
     # Regex to extract the different options in a menu
-    menu_options = finditer(Parameter.option_pattern, check)
+    menu_options = finditer(V4L2Parameter.option_pattern, check)
 
     # Extract the different options
     for menu_option in menu_options:
