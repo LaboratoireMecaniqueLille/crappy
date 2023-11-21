@@ -29,6 +29,9 @@ class CameraOpencv(Camera):
     Depending on the installation of `v4l-utils` and the OS, the correct class
     will be automatically imported. The version using `v4l-utils` allows tuning
     more parameters than the basic version.
+
+  .. versionadded:: 1.5.9
+  .. versionchanged:: 2.0.0 renamed from Camera_opencv to CameraOpencv
   """
 
   def __init__(self) -> None:

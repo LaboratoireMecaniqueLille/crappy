@@ -78,7 +78,10 @@ class V4L2Parameter:
 
 class V4L2Helper:
   """A class for getting parameters available in a camera by using
-  v4l-utils."""
+  v4l-utils.
+
+  .. versionadded:: 2.0.0
+  """
 
   def __init__(self):
     """Simply initializes the instance attributes."""

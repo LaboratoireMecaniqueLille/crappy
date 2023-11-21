@@ -21,6 +21,8 @@ class Webcam(Camera):
   :class:`~crappy.camera.CameraOpencv` and
   :class:`~crappy.camera.CameraGstreamer` for classes giving a finer control
   over the camera.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self) -> None:
@@ -41,6 +43,8 @@ class Webcam(Camera):
       device_num: The index of the device to open, as an :obj:`int`.
       **kwargs: Any additional setting to set before opening the configuration
         window.
+
+    .. versionchanged:: 1.5.9 renamed *numdevice* argument to *device_num*
     """
 
     # Opening the videocapture device
