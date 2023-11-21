@@ -77,8 +77,8 @@ class Parameter:
 
 
 class V4L2:
-  """A class for getting parameters available in a camera by using v4l-utils.
-  """
+  """A class for getting parameters available in a camera by using
+  v4l-utils."""
 
   def __init__(self):
     """Simply initializes the instance attributes."""
@@ -88,8 +88,8 @@ class V4L2:
     self._logger: Optional[logging.Logger] = None
 
   def _get_param(self, device: Optional[Union[str, int]]) -> None:
-    """Extracts the different parameters and their information
-     by parsing v4l2-ctl with regex."""
+    """Extracts the different parameters and their information by parsing
+    v4l2-ctl with regex."""
 
     # Trying to run v4l2-ctl to get the available settings
     command = ['v4l2-ctl', '-L'] if device is None \
@@ -116,8 +116,8 @@ class V4L2:
         param.add_options(menu_option)
 
   def _get_available_formats(self, device: Optional[Union[str, int]]) -> None:
-    """Extracts the different formats available
-    by parsing v4l2-ctl with regex."""
+    """Extracts the different formats available by parsing v4l2-ctl with
+    regex."""
 
     # Trying to run v4l2-ctl to get the available formats
     command = ['v4l2-ctl', '--list-formats-ext'] if device is None \
@@ -155,6 +155,7 @@ class V4L2:
                   name: str,
                   device: Optional[Union[int, str]]) -> Callable:
     """Creates a setter function for a setting named 'name'.
+
     Args:
       name: Name of the setting.
 
@@ -163,8 +164,7 @@ class V4L2:
     """
 
     def setter(value) -> None:
-      """The method to set the value of a setting running v4l2-ctl.
-      """
+      """The method to set the value of a setting running v4l2-ctl."""
 
       if isinstance(value, str):
         # The value to set the menu parameter is just the int
@@ -191,6 +191,7 @@ class V4L2:
   def _add_scale_getter(name: str,
                         device: Optional[Union[int, str]]) -> Callable:
     """Creates a getter function for a setting named 'name'.
+
     Args:
       name: Name of the setting.
 
@@ -199,9 +200,8 @@ class V4L2:
     """
 
     def getter() -> int:
-      """The method to get the current value of a scale setting
-      running v4l2-ctl.
-      """
+      """The method to get the current value of a scale setting running
+       v4l2-ctl."""
 
       # Trying to run v4l2-ctl to get the value
       if device is not None:
@@ -220,6 +220,7 @@ class V4L2:
   def _add_bool_getter(name: str,
                        device: Optional[Union[int, str]]) -> Callable:
     """Creates a getter function for a setting named 'name'.
+
     Args:
       name: Name of the setting.
 
@@ -228,9 +229,8 @@ class V4L2:
     """
 
     def getter() -> bool:
-      """The method to get the current value of a bool setting
-      running v4l2-ctl.
-      """
+      """The method to get the current value of a bool setting running
+      v4l2-ctl."""
 
       # Trying to run v4l2-ctl to get the value
       if device is not None:
@@ -249,6 +249,7 @@ class V4L2:
                        name: str,
                        device: Optional[Union[int, str]]) -> Callable:
     """Creates a getter function for a setting named 'name'.
+
     Args:
       name: Name of the setting.
 
@@ -258,8 +259,7 @@ class V4L2:
 
     def getter() -> str:
       """The method to get the current value of a choice setting
-      running v4l2-ctl.
-      """
+      running v4l2-ctl."""
 
       # Trying to run v4l2-ctl to get the value
       if device is not None:
