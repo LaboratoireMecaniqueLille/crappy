@@ -56,32 +56,48 @@ class CameraOpencv(Camera):
     self._cap = cv2.VideoCapture(device_num)
 
     min_bright, max_bright = self._get_min_max(cv2.CAP_PROP_BRIGHTNESS)
-    self.add_scale_setting(name='brightness',
-                           lowest=min_bright,
-                           highest=max_bright,
-                           getter=self._get_brightness,
-                           setter=self._set_brightness)
+    if min_bright != max_bright:
+      self.add_scale_setting(name='brightness',
+                             lowest=min_bright,
+                             highest=max_bright,
+                             getter=self._get_brightness,
+                             setter=self._set_brightness)
+    else:
+      self.log(logging.INFO, "Could not add Brightness as scale setting,"
+                             "the detected min and max values are identical")
 
     min_cont, max_cont = self._get_min_max(cv2.CAP_PROP_CONTRAST)
-    self.add_scale_setting(name='contrast',
-                           lowest=min_cont,
-                           highest=max_cont,
-                           getter=self._get_contrast,
-                           setter=self._set_contrast)
+    if min_cont != max_cont:
+      self.add_scale_setting(name='contrast',
+                             lowest=min_cont,
+                             highest=max_cont,
+                             getter=self._get_contrast,
+                             setter=self._set_contrast)
+    else:
+      self.log(logging.INFO, "Could not add Contrast as scale setting,"
+                             "the detected min and max values are identical")
 
     min_hue, max_hue = self._get_min_max(cv2.CAP_PROP_HUE)
-    self.add_scale_setting(name='hue',
-                           lowest=min_hue,
-                           highest=max_hue,
-                           getter=self._get_hue,
-                           setter=self._set_hue)
+    if min_hue != max_hue:
+      self.add_scale_setting(name='hue',
+                             lowest=min_hue,
+                             highest=max_hue,
+                             getter=self._get_hue,
+                             setter=self._set_hue)
+    else:
+      self.log(logging.INFO, "Could not add HUE as scale setting,"
+                             "the detected min and max values are identical")
 
     min_sat, max_sat = self._get_min_max(cv2.CAP_PROP_SATURATION)
-    self.add_scale_setting(name='saturation',
-                           lowest=min_sat,
-                           highest=max_sat,
-                           getter=self._get_saturation,
-                           setter=self._set_saturation)
+    if min_sat != max_sat:
+      self.add_scale_setting(name='saturation',
+                             lowest=min_sat,
+                             highest=max_sat,
+                             getter=self._get_saturation,
+                             setter=self._set_saturation)
+    else:
+      self.log(logging.INFO, "Could not add Saturation as scale setting,"
+                             "the detected min and max values are identical")
 
     # Setting the kwargs if any
     self.set_all(**kwargs)
