@@ -33,6 +33,9 @@ class LabjackUE9(InOut):
   UE9. The UE9 model has been discontinued, and replaced by the T7 model (see
   :class:`~crappy.inout.LabjackT7`). It is thus likely that this class won't be
   further improved in the future.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Labjack_ue9 to LabjackUE9
   """
 
   def __init__(self,
@@ -110,6 +113,8 @@ class LabjackUE9(InOut):
 
     It simply performs the regular zeroing, and resets the compensation to
     zero for the channels that shouldn't be zeroed.
+    
+    .. versionadded:: 1.5.10
     """
 
     # No need to acquire data if no channel should be zeroed

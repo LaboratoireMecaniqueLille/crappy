@@ -6,7 +6,12 @@ from ..._global import DefinitionError
 class MetaActuator(type):
   """Metaclass ensuring that two Actuators don't have the same name, and
   keeping track of all the :class:`~crappy.actuator.Actuator` classes. It also
-  allows including the user-defined Actuators."""
+  allows including the user-defined Actuators.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0
+     not checking anymore for mandatory methods in :meth:`__init__`
+  """
 
   classes = {}
 

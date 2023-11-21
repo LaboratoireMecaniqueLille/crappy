@@ -22,6 +22,8 @@ class Recorder(Block):
   be used instead. Alternatively, a :class:`~crappy.modifier.Demux` Modifier 
   can be placed between the IOBlock and the Recorder, but most of the acquired
   data won't be saved.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -49,6 +51,11 @@ class Recorder(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionadded 1.5.10 *freq* and *verbose* arguments
+    .. versionadded 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+    .. versionchanged:: 2.0.0 renamed *filename* argument to *file_name*
     """
 
     super().__init__()

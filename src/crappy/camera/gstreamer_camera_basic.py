@@ -42,6 +42,9 @@ class CameraGstreamer(Camera):
   Note:
     This Camera requires the module :mod:`PyGObject` to be installed, as well
     as GStreamer.
+  
+  .. versionadded:: 1.5.9
+  .. versionchanged:: 2.0.0 renamed from Camera_gstreamer to CameraGstreamer
   """
 
   def __init__(self) -> None:

@@ -2,6 +2,8 @@
 Creating and using custom objects in Crappy
 ===========================================
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 .. role:: py(code)
   :language: python
   :class: highlight
@@ -18,6 +20,8 @@ custom object instantiation.
 
 1. Custom Modifiers
 -------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 The first type of custom objects that we'll cover here are the
 :ref:`Modifiers`, because they are by far the simplest objects ! **The**
@@ -51,7 +55,7 @@ modified dictionary in the function !
    :lines: 1-3, 5-12, 32-41, 43-45, 47-48
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 In this first example, you can see that instead of replacing the value of the
@@ -107,7 +111,7 @@ Integrate Modifier :
    :lines: 1-6, 13-39, 42-44, 46-48
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 As you can see, compared to the template, several features have been added.
@@ -120,8 +124,12 @@ consecutive calls is exactly what was desired when using classes as Modifiers !
 The two examples presented in this section can finally be merged into a single
 big one :
 
-.. literalinclude:: /downloads/custom_objects/custom_modifier.py
-   :language: python
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_modifier.py
+      :language: python
+
+|
 
 You can :download:`download this custom Modifier example
 </downloads/custom_objects/custom_modifier.py>` to run it locally on your
@@ -140,6 +148,8 @@ custom Modifiers ! They stand after all among the simplest objects in Crappy.
 
 2. Custom Actuators
 -------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 After introducing how custom Modifiers work in the first section, this second
 section will focus on the use of custom :ref:`Actuators`. Knowing how to add
@@ -282,11 +292,15 @@ the current one, as well as the :py:`get_position` method since the position
 is also measurable. Now that the Actuator is defined, it is time to add some
 context to make it run :
 
-.. literalinclude:: /downloads/custom_objects/custom_actuator.py
-   :language: python
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_actuator.py
+      :language: python
+
+|
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 You can :download:`download this custom Actuator example
@@ -306,6 +320,8 @@ see how the implementation of real-life Actuators looks like.
 
 3. Custom InOuts
 ----------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Creating custom :ref:`In / Out` objects is extremely similar to creating custom
 :ref:`Actuators`, so make sure to first read and understand the previous
@@ -385,11 +401,15 @@ called, it simply returns these two values as well as a timestamp. When,
 :py:`set_cmd` is called, it expects two arguments and sets their values as the
 new stored values. Let's now integrate the InOut into a runnable code :
 
-.. literalinclude:: /downloads/custom_objects/custom_inout.py
-   :language: python
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_inout.py
+      :language: python
+
+|
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 In order to obtain two commands from a single :ref:`Generator`, a
@@ -492,12 +512,16 @@ you. A short example should help you understand it, it's not as difficult as it
 first seems ! The following example is the continuation of the one presented in
 the previous sub-section :
 
-.. literalinclude:: /downloads/custom_objects/custom_inout_streamer.py
-   :language: python
-   :emphasize-lines: 5, 25-35, 52, 54-55, 61-62
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_inout_streamer.py
+      :language: python
+      :emphasize-lines: 5, 25-35, 52, 54-55, 61-62
+
+|
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 The first difference is that the module :mod:`numpy` must be used, but that is
@@ -526,6 +550,8 @@ and in the `InOuts distributed with Crappy
 
 4. Custom Cameras
 -----------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Now that you're getting familiar with the instantiation of custom objects in
 Crappy, adding your own :ref:`Cameras` to Crappy should not present any
@@ -597,10 +623,14 @@ should look like in an actual script, inspired from an `example available on
 GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/examples/
 custom_objects>`_ :
 
-.. literalinclude:: /downloads/custom_objects/custom_camera.py
-   :language: python
-   :emphasize-lines: 8-41
-   :lines: 1-17, 52-76, 86-97
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_camera.py
+      :language: python
+      :emphasize-lines: 8-41
+      :lines: 1-17, 52-76, 86-97
+
+|
 
 In this first example, the Camera object generates a random image with several
 settings that can be adjusted in the :meth:`~crappy.camera.Camera.__init__`
@@ -643,14 +673,18 @@ internally like any other attribute. Every setting can be accessed by calling
 spaces. Let's now modify the first example to include a better setting
 management :
 
-.. literalinclude:: /downloads/custom_objects/custom_camera.py
-   :language: python
-   :emphasize-lines: 13, 15-42, 69-71, 73-75
-   :lines: 1-12, 21-97
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_camera.py
+      :language: python
+      :emphasize-lines: 13, 15-42, 69-71, 73-75
+      :lines: 1-12, 21-97
+
+|
 
 .. Note::
-   To run this example, you'll need to have the *opencv-python*, *matplotlib*
-   and *Pillow* Python modules installed.
+   To run this example, you'll need to have the *opencv-python*,
+   :mod:`matplotlib` and *Pillow* Python modules installed.
 
 After the changes, notice that the :meth:`~crappy.camera.Camera.get_image`
 method remains unchanged. The values of the settings, that were previously
@@ -689,6 +723,8 @@ how they are implemented.
 
 5. Custom Blocks
 ----------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 For the last section of this tutorial page, we are going to **cover the most**
 **difficult but also most interesting and powerful object that you can**
@@ -770,8 +806,8 @@ used :
   short timeout (at most a few seconds), and do not use infinite loops that
   could never end. That is because in the smooth termination scenarios, the
   Blocks are only told to terminate once their current method call returns.
-  Otherwise, you'll have to use CTRL+C to stop your script, which is now
-  considered an invalid way to stop Crappy.
+  Otherwise, you'll have to use :kbd:`Control-c` to stop your script, which is
+  now considered an invalid way to stop Crappy.
 
 Now that the possible methods have been described, it is time to put them into
 application in an example. However, as the Block object is quite complex, such
@@ -787,12 +823,16 @@ provides this functionality using MQTT. The demo Block is really not advanced
 enough to be distributed with Crappy, but it will do just fine for this
 tutorial ! Here is the full code :
 
-.. literalinclude:: /downloads/custom_objects/custom_block.py
-   :language: python
-   :emphasize-lines: 13-22, 46, 97, 127
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_block.py
+      :language: python
+      :emphasize-lines: 13-22, 46, 97, 127
+
+|
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 In this Block, only the :meth:`~crappy.blocks.Block.begin` method is not
@@ -908,10 +948,14 @@ meaning :
 In the presented example, you may have recognized a few of the presented
 attributes. They are highlighted here for convenience :
 
-.. literalinclude:: /downloads/custom_objects/custom_block.py
-   :language: python
-   :emphasize-lines: 27-29, 49, 74
-   :lines: 1-96
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/custom_objects/custom_block.py
+      :language: python
+      :emphasize-lines: 27-29, 49, 74
+      :lines: 1-96
+
+|
 
 There is not much more to say about the available attributes of the Block that
 you can use, you'll see for yourself which ones you need and which ones you

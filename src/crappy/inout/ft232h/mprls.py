@@ -21,6 +21,8 @@ class MPRLSFT232H(InOut):
   converter.
 
   It communicates over I2C with the sensor.
+
+  .. versionadded:: 2.0.0
   """
 
   ft232h = True

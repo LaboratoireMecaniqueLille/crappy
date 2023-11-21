@@ -81,6 +81,8 @@ class WaveshareADDAFT232H(InOut):
   read values from the 8-channels ADC and/or to set the 2-channels DAC. The hat
   can acquire up to 30000 samples per second, although this data rate is
   impossible to achieve using Crappy.
+
+  .. versionadded:: 2.0.0
   """
 
   ft232h = True

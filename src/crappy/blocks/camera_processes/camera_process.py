@@ -44,6 +44,8 @@ class CameraProcess(Process):
   managed by the parent :class:`~crappy.blocks.Camera` Block, depending on the
   provided arguments. Users should normally not need to call this class
   themselves.
+  
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self) -> None:

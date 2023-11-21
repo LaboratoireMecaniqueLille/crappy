@@ -30,6 +30,9 @@ class Multiplexer(Block):
     should only be used with care as an input to a decision-making Block. This
     is especially true when the upstream Blocks have very different sampling
     rates.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Multiplex to Multiplexer
   """
 
   def __init__(self,
@@ -59,6 +62,11 @@ class Multiplexer(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+
+    .. versionadded:: 1.5.9 *verbose* argument
+    .. versionchanged:: 1.5.10 renamed *key* argument to *time_label*
+    .. versionadded 2.0.0 *debug*, *out_labels* and *interp_freq* arguments
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     super().__init__()

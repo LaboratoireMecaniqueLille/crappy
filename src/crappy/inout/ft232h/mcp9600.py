@@ -72,6 +72,8 @@ class MCP9600FT232H(InOut):
   operating mode that returns Volts. Several parameters can be tuned, like the
   thermocouple type, the reading resolution or the filter coefficient. Note
   that the MCP9600 can only achieve a data rate of a few Hz.
+
+  .. versionadded:: 2.0.0
   """
 
   ft232h = True

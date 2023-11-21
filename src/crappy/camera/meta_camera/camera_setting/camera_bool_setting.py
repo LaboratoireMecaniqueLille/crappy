@@ -10,6 +10,10 @@ class CameraBoolSetting(CameraSetting):
 
   It is a child of
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0
+     renamed from Camera_bool_setting to CameraBoolSetting
   """
 
   def __init__(self,

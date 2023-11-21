@@ -28,6 +28,8 @@ class GPUVE(Camera):
   have a much greater accuracy. The :class:`~crappy.blocks.VideoExtenso` Block
   also performs video-extensometry, but it does so by tracking spots instead
   of textured patches, and it is not GPU-accelerated.
+
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -110,7 +112,7 @@ class GPUVE(Camera):
         on the camera.
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
-        is displayed that is slows the code down. This argument allows to
+        is displayed that it slows the code down. This argument allows to
         adjust the precision of the log messages, while the ``debug`` argument
         is for enabling or disabling logging.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
@@ -201,6 +203,17 @@ class GPUVE(Camera):
       **kwargs: Any additional argument will be passed to the
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.
+
+    .. versionadded:: 1.5.10
+       *freq*, *save_images*, *image_generator*, *img_ref*, *kernel_file*,
+       *iterations* and *mul* arguments
+    .. versionremoved:: 1.5.10
+       *fps_label*, *ext*, *input_label*, *config* and *cam_kwargs* arguments
+    .. versionadded:: 2.0.0
+       *display_images*, *displayer_framerate*, *displayer_backend*, *debug*,
+       *software_trig_label*, *img_extension*, *img_shape* and *img_dtype*
+       arguments
+    .. versionremoved:: 2.0.0 *img_name* argument
     """
 
     super().__init__(camera=camera,
@@ -258,6 +271,9 @@ class GPUVE(Camera):
     In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.GPUVEProcess` object that
     performs the GPU-accelerated image correlation.
+    
+    .. versionchanged:: 1.5.5 now accepting args and kwargs
+    .. versionchanged:: 1.5.10 not accepting arguments anymore
     """
 
     # Instantiating the GPUVEProcess

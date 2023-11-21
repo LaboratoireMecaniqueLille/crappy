@@ -49,6 +49,9 @@ class PiJuice(InOut):
 
   Warning:
     Only available on Raspberry Pi !
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Pijuice to PiJuice
   """
 
   def __init__(self,
@@ -67,6 +70,8 @@ class PiJuice(InOut):
         `'pijuice'` backend is based on the :mod:`pijuice` module.
       i2c_port: The I2C port over which the PiJuice should communicate.
       address: The I2C address of the piJuice. The default address is `0x14`.
+    
+    .. versionadded:: 1.5.10 *backend* argument
     """
 
     self._bus = None

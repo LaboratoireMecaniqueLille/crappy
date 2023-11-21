@@ -20,6 +20,8 @@ class Box(Overlay):
 
   It can represent either the box drawn when selecting a region, or the
   bounding box of a tracked area.
+  
+  .. versionadded:: 2.0.0
   """
 
   x_start: Optional[int] = None

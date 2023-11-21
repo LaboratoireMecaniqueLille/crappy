@@ -16,6 +16,8 @@ class ApplyStrainToImage:
 
   Its main use case is for generating example scripts that do not require any
   hardware to run.
+  
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self,

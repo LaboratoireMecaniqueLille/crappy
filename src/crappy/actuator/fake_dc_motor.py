@@ -10,6 +10,9 @@ class FakeDCMotor(Actuator):
   voltage.
 
   It is mainly intended for testing scripts without requiring any hardware.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 Renamed from Fake_motor to FakeDCMotor
   """
 
   def __init__(self,
@@ -33,6 +36,9 @@ class FakeDCMotor(Actuator):
         it down.
       initial_speed: The initial speed of the motor, in RPM.
       initial_pos: The initial position of the motor, in turns.
+    
+    .. versionchanged:: 2.0.0
+       renamed *sim_speed* argument to *simulation_speed*
     """
 
     super().__init__()
@@ -66,7 +72,10 @@ class FakeDCMotor(Actuator):
     return self._rpm
 
   def get_position(self) -> float:
-    """Returns the position of the motor, in rounds."""
+    """Returns the position of the motor, in rounds.
+
+    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    """
 
     self._update()
     return self._pos

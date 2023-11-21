@@ -8,7 +8,11 @@ from .meta_block import Block
 
 
 class DashboardWindow(tk.Tk):
-  """The GUI for displaying the label values."""
+  """The GUI for displaying the label values.
+  
+  .. versionadded:: 1.5.7
+  .. versionchanged:: 2.0.0 renamed from Dashboard_window to DashboardWindow
+  """
 
   def __init__(self, labels: List[str]) -> None:
     """Initializes the GUI and sets the layout."""
@@ -63,6 +67,8 @@ class Dashboard(Block):
   :class:`~crappy.blocks.LinkReader` Block. For displaying the evolution of a
   label over time, the :class:`~crappy.blocks.Grapher` Block should be used
   instead.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -84,6 +90,10 @@ class Dashboard(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionadded:: 1.5.7 *verbose* and *freq* arguments
+    .. versionadded:: 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._dashboard: Optional[DashboardWindow] = None
@@ -98,7 +108,10 @@ class Dashboard(Block):
 
   def prepare(self) -> None:
     """Checks that there's at least one incoming :class:`~crappy.links.Link`,
-    and starts the GUI."""
+    and starts the GUI.
+    
+    .. versionadded:: 1.5.7
+    """
 
     if not self.inputs:
       raise IOError("No Link pointing towards the Dashboard Block !")
@@ -109,7 +122,10 @@ class Dashboard(Block):
 
   def loop(self) -> None:
     """Receives the data from the incoming :class:`~crappy.links.Link` and
-    displays it."""
+    displays it.
+    
+    .. versionadded:: 1.5.7
+    """
 
     data = self.recv_last_data(fill_missing=False)
 
@@ -133,7 +149,10 @@ class Dashboard(Block):
       pass
 
   def finish(self) -> None:
-    """Closes the display."""
+    """Closes the display.
+
+    .. versionadded:: 1.5.7
+    """
 
     # In case the GUI has been destroyed, don't raise an error
     try:

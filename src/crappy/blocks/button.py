@@ -25,6 +25,9 @@ class Button(Block):
   triggering actions based on an experimenter's decision. It can be handy for
   taking pictures at precise moments, or when an action should only begin after
   the experimenter has completed a task, for example.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from GUI to Button
   """
 
   def __init__(self,
@@ -55,6 +58,9 @@ class Button(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionadded:: 1.5.10 *send_0* and *time_label* arguments
+    .. versionadded:: 2.0.0 *display_freq* and *debug* arguments
     """
 
     self._root: Optional[tk.Tk] = None

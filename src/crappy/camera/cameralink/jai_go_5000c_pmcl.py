@@ -33,6 +33,9 @@ class JaiGO5000CPMCL8Bits(BaslerIronmanCameraLink):
     This Camera relies on a custom-written C library that hasn't been tested in
     a long time. It might not be functional anymore. This Camera also requires
     proprietary drivers to be installed.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Jai8 to JaiGO5000CPMCL8Bits
   """
 
   def __init__(self) -> None:
@@ -58,6 +61,9 @@ class JaiGO5000CPMCL8Bits(BaslerIronmanCameraLink):
         them in a persistent way.
       camera_type: The type of camera to drive, as a :obj:`str`.
       **kwargs: All the settings to set on the camera.
+
+    .. versionadded:: 1.5.10
+       explicitly listing the *config_file* and *camera_type* arguments
     """
 
     super().open(config_file=config_file,
@@ -116,6 +122,9 @@ class JaiGO5000CPMCL(JaiGO5000CPMCL8Bits):
     This Camera relies on a custom-written C library that hasn't been tested in
     a long time. It might not be functional anymore. This Camera also requires
     proprietary drivers to be installed.
+
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Jai to JaiGO5000CPMCL
   """
 
   def __init__(self) -> None:
@@ -134,6 +143,8 @@ class JaiGO5000CPMCL(JaiGO5000CPMCL8Bits):
     Args:
       camera_type: The type of camera to drive, as a :obj:`str`.
       **kwargs: All the settings to set on the camera.
+
+    .. versionadded:: 1.5.10 explicitly listing the *camera_type* argument
     """
 
     super().open(camera_type=camera_type, **kwargs)

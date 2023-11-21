@@ -19,6 +19,10 @@ class CameraScaleSetting(CameraSetting):
   well as settings that can take :obj:`float` value. The type used is
   :obj:`int` is both of the given lowest or highest values are :obj:`int`,
   otherwise :obj:`float` is used.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0
+     renamed from Camera_scale_setting to CameraScaleSetting
   """
 
   def __init__(self,
@@ -39,6 +43,8 @@ class CameraScaleSetting(CameraSetting):
       setter: The method for setting the current value of the setting.
       default: The default value to assign to the setting.
       step: The step value for the variation of the setting values.
+      
+    .. versionadded:: 2.0.0 add *step* argument
     """
 
     self.lowest = lowest
@@ -94,8 +100,11 @@ class CameraScaleSetting(CameraSetting):
              value: NbrType,
              default: Optional[NbrType] = None,
              step: Optional[NbrType] = None) -> None:
-    """Allows modifying the limits and the step of the scale bar
-    once it is already instantiated."""
+    """Allows modifying the limits and the step of the scale bar once it is 
+    already instantiated.
+    
+    .. versionadded:: 2.0.0
+    """
 
     self.log(logging.DEBUG, f"Reloading the setting {self.name}")
 
@@ -121,7 +130,10 @@ class CameraScaleSetting(CameraSetting):
 
   def _check_value(self) -> None:
     """Checks if the step value is compatible with the limit values and
-    types of the scale settings."""
+    types of the scale settings.
+    
+    .. versionadded:: 2.0.0
+    """
 
     if self.step is not None:
       if self.type == int and isinstance(self.step, float):

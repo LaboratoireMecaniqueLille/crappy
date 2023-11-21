@@ -14,6 +14,8 @@ class Custom(Path):
 
   The file can be in any text format, including the most common `.csv` and
   `.txt` extensions.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -30,6 +32,11 @@ class Custom(Path):
         must contain two columns: the first one containing timestamps (starting
         from 0), the other one containing the values.
       delimiter: The delimiter between columns in the file, usually a coma.
+    
+    .. versionchanged:: 1.5.10 renamed *time* argument to *_last_time*
+    .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
+    .. versionchanged:: 2.0.0 renamed *filename* argument to *file_name*
+    .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 
     super().__init__()

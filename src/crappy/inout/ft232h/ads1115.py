@@ -52,6 +52,8 @@ class ADS1115FT232H(InOut):
 
   Various settings can be adjusted, like the sample rate, the input mode or the
   voltage range.
+  
+  .. versionadded:: 2.0.0
   """
 
   ft232h = True

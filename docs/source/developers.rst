@@ -9,6 +9,8 @@ Developers information
 Contributing to Crappy
 ----------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 If you want to help developing Crappy with us, we'll be more than happy to
 welcome you in the community ! Here you'll find some practical information on
 **how Crappy works under the hood, and a few guidelines for contributors**.
@@ -39,6 +41,8 @@ directly committed to.
 
 Technical description of Crappy
 -------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 .. note::
   This is a very simplified overview of how the module actually works. Only the
@@ -248,6 +252,8 @@ the examples.
 Detailed runtime sequence of Crappy
 -----------------------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 Crappy's main strength lies in the use of massive parallelization to maximize
 the performance of the module. Unfortunately, this means we had to cope with
 Python's notoriously complex :mod:`multiprocessing` architecture, and come up
@@ -406,7 +412,8 @@ cases :
 
 - If all the Blocks are not done running at the end of this phase.
 - If an :exc:`Exception` was caught during Crappy's execution.
-- If Crappy was stopped using CTRL+C, resulting in a :exc:`KeyboardInterrupt`.
+- If Crappy was stopped using :kbd:`Control-c`, resulting in a
+  :exc:`KeyboardInterrupt`.
 
 The goal of this exception is to stop the execution of the ``__main__``
 Process, to avoid any more code to be executed in case something went wrong in

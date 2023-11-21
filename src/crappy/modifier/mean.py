@@ -13,6 +13,8 @@ class Mean(Modifier):
 
   Unlike :class:`~crappy.modifier.MovingAvg`, it only returns a value once
   every ``n_points`` points.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self, n_points: int = 100) -> None:
@@ -20,6 +22,8 @@ class Mean(Modifier):
 
     Args:
       n_points: The number of points on which to compute the average.
+    
+    .. versionchanged:: 1.5.10 renamed *npoints* argument to *n_points*
     """
 
     super().__init__()
@@ -32,6 +36,8 @@ class Mean(Modifier):
     buffer and returns the averages.
 
     If there are not enough points, doesn't return anything.
+    
+    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
     """
 
     self.log(logging.DEBUG, f"Received {data}")

@@ -22,6 +22,9 @@ class AutoDriveVideoExtenso(Block):
   It also outputs the difference between the center of the image and the middle
   of the spots, along with a timestamp, over the ``'t(s)'`` and ``'diff(pix)'``
   labels. It can then be used by downstream Blocks.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from AutoDrive to AutoDriveVideoExtenso
   """
 
   def __init__(self,
@@ -61,6 +64,10 @@ class AutoDriveVideoExtenso(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionchanged:: 1.5.10 renamed *P* argument to *gain*
+    .. versionchanged:: 1.5.10 renamed *range* argument to *pixel_range*
+    .. versionadded:: 2.0.0 *display_freq* and *debug* arguments
     """
 
     self._device: Optional[Actuator] = None

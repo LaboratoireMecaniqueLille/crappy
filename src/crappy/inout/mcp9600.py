@@ -97,6 +97,9 @@ class MCP9600(InOut):
   operating mode that returns Volts. Several parameters can be tuned, like the
   thermocouple type, the reading resolution or the filter coefficient. Note
   that the MCP9600 can only achieve a data rate of a few Hz.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Mcp9600 to MCP9600
   """
 
   def __init__(self,
@@ -164,6 +167,7 @@ class MCP9600(InOut):
           'Cold Junction Temperature',
           'Raw Data ADC'
 
+    .. versionremoved:: 2.0.0 *ft232h_ser_num* argument
     """
 
     self._bus = None

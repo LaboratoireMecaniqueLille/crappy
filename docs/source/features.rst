@@ -2,6 +2,8 @@
 Current functionalities
 =======================
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 On this page are listed all the objects currently distributed with Crappy and
 exposed to the users. Information on how to use them can be found in the
 :ref:`Tutorials`, as well as guidelines for creating your own objects. For most
@@ -13,6 +15,8 @@ can click on its name to open the complete documentation given in the
 
 Functionalities (Blocks)
 ------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 The Blocks are the base bricks of Crappy, that fulfill various functions. In
 the tutorials, you can learn more about :ref:`how to use Blocks
@@ -365,6 +369,8 @@ Others
 
 Supported hardware (Cameras, InOuts, Actuators)
 -----------------------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Supported Cameras
 +++++++++++++++++
@@ -809,6 +815,8 @@ LaMcube-specific hardware
 
 On-the-fly data modification (Modifiers)
 ----------------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 - :ref:`Demux`
 

@@ -2,6 +2,8 @@
 Getting started : writing scripts in Crappy
 ===========================================
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 .. role:: py(code)
   :language: python
   :class: highlight
@@ -12,6 +14,8 @@ level in Python is required, don't worry !
 
 0. General concepts
 -------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 This first section of the tutorials introduces the very basic concepts of
 Crappy. No code is involved for now, it only describes the general way data can
@@ -54,12 +58,14 @@ Block 3 that's using it !
 1. Understanding Crappy's syntax
 --------------------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 In this second part of the tutorials, we're going to **write step-by-step an**
 **actual script for Crappy** that you can run locally on your machine ! All the
 following tutorials will also follow the same principle. If a script would not
 work as expected, please signal it to the developers (see the
 :ref:`Troubleshooting` page). Note that this first example script requires the
-`matplotlib <https://matplotlib.org/>`_ Python module to run.
+:mod:`matplotlib` Python module to run.
 
 The first thing to do when writing a script for Crappy is to open a new *.py*
 file. In this new file, you should start by **importing the module Crappy** :
@@ -175,10 +181,10 @@ the same level as the script that was just started. It contains the data being
 acquired by the Recorder Block. As mentioned earlier, the execution of the
 script will stop after 40s as specified to the Generator Block. The script can
 also stop earlier if an error occurs (e.g. missing dependency), or if the user
-hits CTRL+C. Note that this last way of ending a script should only be used in
-case something goes wrong, e.g. if the script crashes. You can find more about
-the different ways to stop a script in Crappy in :ref:`a later section <3.
-Properly stopping a script>`.
+hits :kbd:`Control-c`. Note that this last way of ending a script should only
+be used in case something goes wrong, e.g. if the script crashes. You can find
+more about the different ways to stop a script in Crappy in :ref:`a later
+section <3. Properly stopping a script>`.
 
 **You now know learned the very basics of writing scripts for Crappy** ! You
 can :download:`download this first example
@@ -188,6 +194,8 @@ there's still much more to learn in the following sections !
 
 2. The most used Blocks
 -----------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In this third section, you will **learn how to handle the most used Blocks of**
 **Crappy**. These Blocks are all essential, and you'll come across at least one
@@ -211,7 +219,7 @@ let's take a closer look at it :
    :lines: 1-11
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* Python module
+   To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
 As you can see, the first argument of the Generator is its *path*. It describes
@@ -278,10 +286,10 @@ The script should run in the exact same way as the one of the previous section,
 except this time there should be two cycles of stretching and relaxation before
 the final step of stretching until failure. **That reflects the changes we**
 **made to the path of the Generator Block**. Just like previously, the script
-will stop by itself. You can stop it earlier with CTRL+C, but this is not
-considered as a clean way to stop Crappy. :download:`Download this Generator
-example </downloads/getting_started/tuto_generator.py>` to run it locally on
-your machine !
+will stop by itself. You can stop it earlier with :kbd:`Control-c`, but this is
+not considered as a clean way to stop Crappy. :download:`Download this
+Generator example </downloads/getting_started/tuto_generator.py>` to run it
+locally on your machine !
 
 **You should now be able to build an run a variety of patterns for your**
 **Generator Blocks** ! It is after all just a matter of reading the API,
@@ -309,8 +317,8 @@ looks like :
    :lines: 1-13
 
 .. Note::
-   To run this example, you'll need to have the *opencv-python*, *matplotlib*
-   and *Pillow* Python modules installed.
+   To run this example, you'll need to have the *opencv-python*,
+   :mod:`matplotlib` and *Pillow* Python modules installed.
 
 The first given argument is the name of the :class:`~crappy.camera.Camera` to
 use for acquiring the images. In this demo, the :ref:`Fake Camera` is used so
@@ -336,9 +344,9 @@ lines. In particular, unlike the :ref:`Generator` Block, the Camera does not
 automatically stop after a condition is met. To allow the script to stop in a
 proper way, a :ref:`Stop Button` Block should be added. It will display a
 button, that will stop the execution of the script when clicked upon. It is
-always possible to stop Crappy using CTRL+C, but this is not considered a
-proper way of ending the script. After inserting the stop button, here's the
-final runnable script :
+always possible to stop Crappy using :kbd:`Control-c`, but this is not
+considered a proper way of ending the script. After inserting the stop button,
+here's the final runnable script :
 
 .. literalinclude:: /downloads/getting_started/tuto_camera.py
    :language: python
@@ -416,8 +424,8 @@ device. Here's an example of code featuring an IOBlock for data acquisition :
    :lines: 1-6, 15, 17-23, 25-27
 
 .. Note::
-   To run this example, you'll need to have the *psutil* and *matplotlib*
-   Python modules installed.
+   To run this example, you'll need to have the :mod:`psutil` and
+   :mod:`matplotlib` Python modules installed.
 
 As you can see, the base syntax is quite simple for acquiring data with an
 IOBlock. You first have to specify the :class:`~crappy.inout.InOut` that you
@@ -509,6 +517,8 @@ found in the `examples folder on GitHub
 3. Properly stopping a script
 -----------------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 In the previous sections, several different ways to stop a script in Crappy
 have been presented. In this section, **you will learn about the best**
 **practices for stopping Crappy** and the right objects to use.
@@ -527,16 +537,17 @@ So, what should you *not* do to stop a script ? Obviously, you should **avoid**
 extreme solutions for the (very unlikely) situations when Crappy would become
 totally unresponsive...
 
-Starting from version 2.0.0, hitting CTRL+C to stop Crappy (i.e. raising
-:exc:`KeyboardInterrupt`) is also considered as an invalid behavior.
-**However**, unlike more aggressive methods, CTRL+C is still handled internally
-and **should lead to a proper termination of the Blocks**. As it might lead to
-unexpected behavior, and to deter users from using it, we chose to have CTRL+C
-raise an Exception once all the Blocks are correctly stopped. This behavior can
-be tuned, see the :ref:`7. Advanced control over the runtime` section of the
-tutorials. The take-home message about CTRL+C is : **using CTRL+C to stop a**
-**script is fine in most cases but it is preferable to do otherwise, so it**
-**will by default raise an error even if everything went fine** !
+Starting from version 2.0.0, hitting :kbd:`Control-c` to stop Crappy (i.e.
+raising :exc:`KeyboardInterrupt`) is also considered as an invalid behavior.
+**However**, unlike more aggressive methods, :kbd:`Control-c` is still handled
+internally and **should lead to a proper termination of the Blocks**. As it
+might lead to unexpected behavior, and to deter users from using it, we chose
+to have :kbd:`Control-c` raise an Exception once all the Blocks are correctly
+stopped. This behavior can be tuned, see the :ref:`7. Advanced control over the
+runtime` section of the tutorials. The take-home message about :kbd:`Control-c`
+is : **using :kbd:`Control-c` to stop a script is fine in most cases but it**
+**is preferable to do otherwise, so it will by default raise an error even if**
+**everything went fine** !
 
 Now that we know what are the forbidden and not recommended ways of stopping
 Crappy, let's review the 100% approved ones ! As you should have noticed in the
@@ -554,9 +565,9 @@ is also an option.
 .. Note::
    A test in Crappy will also end if an unexpected Exception is raised anywhere
    in the module. In that case, all Blocks will instantly stop and, just like
-   with CTRL+C, an error will be raised once all the Blocks are stopped. The
-   unexpected Exception will still be handled and all Blocks should terminate
-   properly if the problem is not too serious.
+   with :kbd:`Control-c`, an error will be raised once all the Blocks are
+   stopped. The unexpected Exception will still be handled and all Blocks
+   should terminate properly if the problem is not too serious.
 
 When writing a script, first determine which termination way seems more
 appropriate. **If you want to be able to stop the test anytime, opt for the**

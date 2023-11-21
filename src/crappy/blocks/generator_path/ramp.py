@@ -9,7 +9,10 @@ from .meta_path import Path, ConditionType
 
 class Ramp(Path):
   """Sends a ramp signal varying linearly over time, until the stop condition
-  is met."""
+  is met.
+  
+  .. versionadded:: 1.4.0
+  """
 
   def __init__(self,
                condition: Union[str, ConditionType],
@@ -25,6 +28,11 @@ class Ramp(Path):
       init_value: If given, overwrites the last value of the signal as the
         starting point for the ramp. In the specific case when this path is the
         first one in the Generator Paths, this argument must be given !
+    
+    .. versionchanged:: 1.5.10 renamed *time* argument to *_last_time*
+    .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
+    .. versionadded:: 1.5.10 *init_value* argument
+    .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 
     super().__init__()

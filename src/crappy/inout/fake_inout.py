@@ -19,6 +19,9 @@ class FakeInOut(InOut):
 
   It can read and/or modify (to a certain extent) the memory usage of the
   computer.
+  
+  .. versionadded:: 1.5.5
+  .. versionchanged:: 2.0.0 renamed from Fake_inout to FakeInOut
   """
 
   def __init__(self) -> None:
@@ -64,12 +67,18 @@ class FakeInOut(InOut):
     return [time(), virtual_memory().percent]
 
   def start_stream(self) -> None:
-    """Defining this method to avoid getting warnings in the logs."""
+    """Defining this method to avoid getting warnings in the logs.
+    
+    .. versionadded:: 2.0.0
+    """
 
     ...
 
   def stop_stream(self) -> None:
-    """Defining this method to avoid getting warnings in the logs."""
+    """Defining this method to avoid getting warnings in the logs.
+
+    .. versionadded:: 2.0.0
+    """
 
     ...
 
@@ -78,6 +87,8 @@ class FakeInOut(InOut):
     10 values at once in the streamer format.
 
     It is just a demo for showcasing the use of the streamer mode.
+    
+    .. versionadded:: 2.0.0
     """
 
     values = np.array([self.get_data() for _ in range(10)])

@@ -28,6 +28,9 @@ class DISCorrelConfig(CameraConfigBoxes):
   It relies on the :class:`~crappy.tool.camera_config.config_tools.Box` tool. 
   It is meant to be used for configuring the :class:`~crappy.blocks.DISCorrel` 
   Block.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from DISConfig to DISCorrelConfig
   """
 
   def __init__(self,
@@ -51,6 +54,9 @@ class DISCorrelConfig(CameraConfigBoxes):
       patch: The :class:`~crappy.tool.camera_config.config_tools.Box` container
         that will save the information on the patch where to perform image
         correlation.
+        
+    .. versionadded:: 2.0.0
+       *patch*, *log_queue*, *log_level* and *max_freq* arguments
     """
 
     self._correl_box = patch
@@ -61,7 +67,10 @@ class DISCorrelConfig(CameraConfigBoxes):
   @property
   def box(self) -> Box:
     """Returns the :class:`~crappy.tool.camera_config.config_tools.Box` object
-    containing the region of interest."""
+    containing the region of interest.
+    
+    .. versionadded:: 1.5.10
+    """
 
     return self._correl_box
 
@@ -70,6 +79,8 @@ class DISCorrelConfig(CameraConfigBoxes):
 
     Checks that a patch was selected on the image. If not, warns the user and
     prevents him from exiting except with CTRL+C.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self.box.no_points():

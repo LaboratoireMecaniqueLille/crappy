@@ -13,6 +13,10 @@ class CameraChoiceSetting(CameraSetting):
 
   It is a child of
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0
+     renamed from Camera_choice_setting to CameraChoiceSetting
   """
 
   def __init__(self,
@@ -50,6 +54,8 @@ class CameraChoiceSetting(CameraSetting):
     cannot vary. It is thus not possible to propose more choices than those
     initially proposed. Reversely, if fewer new options ar proposed then some
     radio buttons won't be affected a value.
+    
+    .. versionadded:: 2.0.0
     """
 
     self.log(logging.DEBUG, f"Reloading the setting {self.name}")

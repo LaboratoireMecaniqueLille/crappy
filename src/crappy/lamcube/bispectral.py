@@ -83,6 +83,9 @@ class BiSpectral(BaslerIronmanCameraLink):
     This Camera relies on a custom-written C library that hasn't been tested in
     a long time. It might not be functional anymore. This Camera also requires
     proprietary drivers to be installed.
+    
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Bispectral to BiSpectral
   """
 
   def __init__(self) -> None:
@@ -102,7 +105,10 @@ class BiSpectral(BaslerIronmanCameraLink):
   def open(self,
            camera_type: str = 'SingleAreaGray2DShading',
            **kwargs) -> None:
-    """Opens the Camera and sends initialization commands."""
+    """Opens the Camera and sends initialization commands.
+    
+    .. versionadded:: 1.5.10 explicitly listing *camera_type* argument
+    """
 
     super().open(camera_type=camera_type, **kwargs)
 
