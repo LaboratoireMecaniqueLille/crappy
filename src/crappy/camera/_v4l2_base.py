@@ -71,9 +71,9 @@ class Parameter:
       options = findall(r'\d+: .+?(?=\n|$)', menu_values)
       num_options = findall(r'(\d+): .+?(?=\n|$)', menu_values)
       self.options = tuple(options)
-      for i in range(len(num_options)):
-        if self.default == num_options[i]:
-          self.default = options[i]
+      for num, opt in zip(num_options, options):
+        if self.default == num:
+          self.default = opt
 
 
 class V4L2:
