@@ -94,10 +94,10 @@ class V4L2Helper:
     # Trying to run v4l2-ctl to get the available settings
     command = ['v4l2-ctl', '-L'] if device is None \
         else ['v4l2-ctl', '-d', str(device), '-L']
-    self.log(logging.INFO, f"Getting the available image settings with "
-                           f"command {command}")
+    self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
     check = run(command, capture_output=True, text=True)
     check = check.stdout if check is not None else ''
+    self.log(logging.DEBUG, f"Got {check} from the previous command")
 
     # Extract the different parameters and their information
     matches = finditer(V4L2Parameter.param_pattern, check)
@@ -119,10 +119,10 @@ class V4L2Helper:
     # Trying to run v4l2-ctl to get the available formats
     command = ['v4l2-ctl', '--list-formats-ext'] if device is None \
         else ['v4l2-ctl', '-d', str(device), '--list-formats-ext']
-    self.log(logging.INFO, f"Getting the available image formats with "
-                           f"command {command}")
+    self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
     check = run(command, capture_output=True, text=True)
     check = check.stdout if check is not None else ''
+    self.log(logging.DEBUG, f"Got {check} from the previous command")
 
     # Splitting the returned string to isolate each encoding
     if findall(r'\[\d+]', check):
@@ -169,20 +169,22 @@ class V4L2Helper:
                      f'{name}={value}']
         else:
           command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value[0])}']
-        self.log(logging.DEBUG, f"Setting {name} with command {command}")
+        self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
         run(command, capture_output=True, text=True)
+        self.log(logging.DEBUG, f"Set {name} to {int(value[0])}")
       else:
         if device is not None:
           command = ['v4l2-ctl', '-d', str(device), '--set-ctrl',
                      f'{name}={int(value)}']
         else:
           command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value)}']
-        self.log(logging.DEBUG, f"Setting {name} with command {command}")
+        self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
         run(command, capture_output=True, text=True)
+        self.log(logging.DEBUG, f"Set {name} to {int(value)}")
     return setter
 
-  @staticmethod
-  def _add_scale_getter(name: str,
+  def _add_scale_getter(self,
+                        name: str,
                         device: Optional[Union[int, str]]) -> Callable:
     """Creates a getter function for a setting named 'name'.
 
@@ -202,13 +204,15 @@ class V4L2Helper:
         command = ['v4l2-ctl', '-d', str(device), '--get-ctrl', name]
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
+      self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
       value = run(command, capture_output=True, text=True).stdout
       value = search(r': (-?\d+)', value).group(1)
+      self.log(logging.DEBUG, f"Got {name}: {int(value)}")
       return int(value)
     return getter
 
-  @staticmethod
-  def _add_bool_getter(name: str,
+  def _add_bool_getter(self,
+                       name: str,
                        device: Optional[Union[int, str]]) -> Callable:
     """Creates a getter function for a setting named 'name'.
 
@@ -228,8 +232,10 @@ class V4L2Helper:
         command = ['v4l2-ctl', '-d', str(device), '--get-ctrl', name]
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
+      self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
       value = run(command, capture_output=True, text=True).stdout
       value = search(r': (\d+)', value).group(1)
+      self.log(logging.DEBUG, f"Got {name}: {bool(int(value))}")
       return bool(int(value))
     return getter
 
@@ -254,6 +260,7 @@ class V4L2Helper:
         command = ['v4l2-ctl', '-d', str(device), '--get-ctrl', name]
       else:
         command = ['v4l2-ctl', '--get-ctrl', name]
+      self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
       value = run(command, capture_output=True, text=True).stdout
       value = search(r': (\d+)', value).group(1)
       for param in self._parameters:
@@ -261,6 +268,7 @@ class V4L2Helper:
           for option in param.options:
             if value == search(r'(\d+):', option).group(1):
               value = option
+      self.log(logging.DEBUG, f"Got {name}: {value}")
       return value
     return getter
 
