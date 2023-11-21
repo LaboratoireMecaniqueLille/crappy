@@ -58,9 +58,13 @@ class CameraOpencv(Camera, V4L2Helper):
     self._device_num = device_num
 
     self._get_available_formats(device_num)
+    supported = ('MJPG', 'YUYV')
+    unavailable_formats = set([_format.split()[0] for _format in self._formats
+                               if _format.split()[0] not in supported])
+    self.log(logging.INFO, f"The formats {', '.join(unavailable_formats)} are "
+                           f"available but not implemented in Crappy")
     self._formats = [_format for _format in self._formats
-                     if _format.split()[0] == 'MJPG' or
-                     _format.split()[0] == 'YUYV']
+                     if _format.split()[0] in supported]
     if self._formats:
       # The format integrates the size selection
       if ' ' in self._formats[0]:
