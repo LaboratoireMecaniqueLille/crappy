@@ -174,7 +174,7 @@ class V4L2Helper:
       else:
         if device is not None:
           command = ['v4l2-ctl', '-d', str(device), '--set-ctrl',
-                     name+f'={int(value)}']
+                     f'{name}={int(value)}']
         else:
           command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value)}']
         self.log(logging.DEBUG, f"Setting {name} with command {command}")
