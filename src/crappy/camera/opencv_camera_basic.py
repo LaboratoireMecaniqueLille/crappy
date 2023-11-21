@@ -14,13 +14,21 @@ except (ModuleNotFoundError, ImportError):
 
 
 class CameraOpencv(Camera):
-  """A basic class for reading images from a USB camera (including webcams).
+  """A class for reading images from any camera able to interface with OpenCV.
 
-  It relies on the OpenCv library. Note that it was purposely kept extremely
-  simple as it is mainly used as a demo. See
-  :class:`~crappy.camera.CameraOpencv` and
-  :class:`~crappy.camera.CameraGstreamer` for classes giving a finer control
-  over the camera.
+  The number of the video device to read images from can be specified.
+
+  This camera class is less performant than the
+  :class:`~crappy.camera.CameraGstreamer` one that relies on GStreamer, but the
+  installation of OpenCV is way easier than the one of GStreamer, especially on
+  Windows !
+
+  Warning:
+    There are two classes for CameraOpencv, one for Linux based on
+    `v4l-utils`, and another one for Linux (without `v4l-utils`) and other OS.
+    Depending on the installation of `v4l-utils` and the OS, the correct class
+    will be automatically imported. The version using `v4l-utils` allows tuning
+    more parameters than the basic version.
   """
 
   def __init__(self) -> None:
