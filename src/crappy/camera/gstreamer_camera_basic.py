@@ -284,7 +284,7 @@ videoconvert ! autovideosink
                     contrast: Optional[float] = None,
                     hue: Optional[float] = None,
                     saturation: Optional[float] = None,
-                    img_format: Optional[int] = None) -> str:
+                    img_format: Optional[str] = None) -> str:
     """Method that generates a pipeline, according to the given settings.
 
     If a user-defined pipeline was given, it will always be returned.
