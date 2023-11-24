@@ -3,7 +3,9 @@
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
 from typing import Tuple, Optional, Union, List
-from subprocess import Popen, PIPE
+from re import findall, search
+from subprocess import Popen, PIPE, run
+from fractions import Fraction
 from platform import system
 import logging
 
@@ -181,12 +183,49 @@ videoconvert ! autovideosink
     # Defining the settings in case no custom pipeline was given
     if user_pipeline is None:
 
-      self._formats = ['Default', 'MJPG']
+      # Checking the available formats with the Gst device monitor
+      cam = None
+      form = ''
+      device_monitor = Gst.DeviceMonitor.new()
+      device_monitor.start()
 
-      # Creating the parameter if applicable
-      self.add_choice_setting(name='format',
-                              choices=tuple(self._formats),
-                              setter=self._set_format)
+      devices = device_monitor.get_devices()
+      for device in devices:
+        # Finding the camera
+        if device.get_device_class() == "Video/Source":
+          properties = device.get_properties()
+          api = properties.get_value('device.api')
+          if properties.get_value('object.path') == f'{api}:{self._device}':
+            cam = device
+
+      if cam is not None:
+        # Getting the formats
+        caps = cam.get_caps()
+        nb_formats = caps.get_size()
+        for i in range(nb_formats):
+          struct = caps.get_structure(i)
+          if struct.get_name() == 'image/jpeg':
+            form = 'MJPG'
+          elif struct.get_name() == 'video/x-h264':
+            form = 'H264'
+          elif struct.get_name() == 'video/x-hevc':
+            form = 'HEVC'
+          elif struct.get_name() == 'video/x-raw':
+            form = struct.get_value('format')
+
+          if form:
+            width = struct.get_value('width')
+            height = struct.get_value('height')
+            framerates = findall(r'(\d+/\d+)', struct.to_string())
+            for fps in framerates:
+              self._formats.append(f"{form} {width}x{height} ({fps} fps)")
+
+      device_monitor.stop()
+      if self._formats:
+        # Creating the format parameter
+        self.add_choice_setting(name='format',
+                                choices=tuple(self._formats),
+                                setter=self._set_format)
 
       # These settings are always available no matter the platform
       self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
@@ -327,17 +366,39 @@ videoconvert ! autovideosink
 
     # Getting the format index
     img_format = img_format if img_format is not None else self.format
-    format_name, img_size, fps = img_format, None, None
 
-    # Adding a mjpeg decoder to the pipeline if needed
-    if format_name == 'Default':
-      img_format = '! decodebin'
-    elif format_name == 'MJPG':
+    try:
+      format_name, img_size, fps = findall(r"(\w+)\s(\w+)\s\((\d+.\d+) fps\)",
+                                           img_format)[0]
+    except ValueError:
+      format_name, img_size, fps = img_format, None, None
+
+    # Adding the decoder to the pipeline if needed
+    if format_name == 'MJPG':
       img_format = '! jpegdec'
+    elif format_name == 'H264':
+      img_format = '! h264parse ! avdec_h264'
+    elif format_name == 'HEVC':
+      img_format = '! h265parse ! avdec_h265'
+    elif format_name == 'YUYV' or format_name == 'YUY2':
+      img_format = ''
 
+    # Getting the width and height from the second half of the string
+    if img_size is not None:
+      width, height = map(int, img_size.split('x'))
+    else:
+      width, height = None, None
+
+    # Including the dimensions and the fps in the pipeline
+    img_size = f',width={width},height={height}' if width else ''
+    if fps is not None:
+      fps = Fraction(fps)
+      fps_str = f',framerate={fps.numerator}/{fps.denominator}'
+    else:
+      fps_str = ''
     # Finally, generate a single pipeline containing all the user settings
     return f"""{source} {device} name=source {img_format} ! videoconvert ! 
-           video/x-raw,format=BGR ! videobalance 
+           video/x-raw,format=BGR{img_size}{fps_str} ! videobalance 
            brightness={brightness if brightness is not None 
                        else self.brightness:.3f} 
            contrast={contrast if contrast is not None else self.contrast:.3f} 
@@ -419,3 +480,8 @@ videoconvert ! autovideosink
     """Sets the image encoding and dimensions."""
 
     self._restart_pipeline(self._get_pipeline(img_format=img_format))
+
+    # Reloading the software ROI selection settings
+    if self._soft_roi_set and self._formats and ' ' in self._formats[0]:
+      width, height = search(r'(\d+)x(\d+)', img_format).groups()
+      self.reload_software_roi(int(width), int(height))
