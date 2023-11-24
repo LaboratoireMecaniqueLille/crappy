@@ -221,6 +221,24 @@ videoconvert ! autovideosink
               self._formats.append(f"{form} {width}x{height} ({fps} fps)")
 
       device_monitor.stop()
+
+      # Checking if the formats are applicable
+      if self._formats:
+        if not run(['gst-inspect-1.0', 'avdec_h264'],
+                   capture_output=True, text=True).stdout:
+          self._formats = [form for form in self._formats
+                           if form.split()[0] != 'H264']
+          self.log(logging.WARNING, "The format H264 is not available"
+                                    "It could be if gstreamer1.0-libav "
+                                    "was installed !")
+        if not run(['gst-inspect-1.0', 'avdec_h265'],
+                   capture_output=True, text=True).stdout:
+          self._formats = [form for form in self._formats
+                           if form.split()[0] != 'HEVC']
+          self.log(logging.WARNING, "The format HEVC is not available"
+                                    "It could be if gstreamer1.0-libav "
+                                    "was installed !")
+
       if self._formats:
         # Creating the format parameter
         self.add_choice_setting(name='format',
