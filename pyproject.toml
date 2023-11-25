@@ -1,3 +1,87 @@
 [build-system]
-requires = ["setuptools>=42"]
+requires = ["setuptools >= 61.0", "numpy >= 1.21"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "crappy"
+dynamic = ["version", "readme"]
+description = "Command and Real-time Acquisition in Parallelized Python"
+license = {file = "LICENSE"}
+keywords = ["control", "command", "acquisition", "multiprocessing"]
+dependencies = ["numpy"]
+requires-python = ">=3.7"
+authors = [{name = "LaMcube", email = "antoine.weisrock1@centralelille.fr"}]
+maintainers = [{name = "Antoine Weisrock", email = "antoine.weisrock@gmail.com"}]
+classifiers = [
+    "Development Status :: 4 - Beta ",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Embedded Systems"
+]
+
+[project.urls]
+Homepage = "https://github.com/LaboratoireMecaniqueLille/crappy"
+Documentation = "https://crappy.readthedocs.io/en/latest/index.html"
+Repository = "https://github.com/LaboratoireMecaniqueLille/crappy.git"
+Issues = "https://github.com/LaboratoireMecaniqueLille/crappy/issues"
+Download = "https://pypi.org/project/crappy/#files"
+
+[project.optional-dependencies]
+SBC = [
+    "smbus2",
+    "spidev",
+    "Adafruit-Blinka",
+    "adafruit-circuitpython-ads1x15",
+    "adafruit-circuitpython-motorkit",
+    "adafruit-circuitpython-mprls",
+    "adafruit-circuitpython-busdevice"
+]
+image = [
+    "opencv-python>=4.0",
+    "Pillow>=8.0.0",
+    "matplotlib>=3.3.0",
+    "SimpleITK>=2.0.0",
+    "scikit-image>=0.18.0"
+]
+hardware = [
+    "pyusb>=1.1.0",
+    "pyserial>=3.4",
+    "pyyaml>=5.3"
+]
+main = [
+    "matplotlib>=3.3.0",
+    "opencv-python>=4.0",
+    "pyserial>=3.4"
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "crappy.__version__"}
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[tool.setuptools.package-dir]
+crappy = "src/crappy"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+exclude = []
+namespaces = false
+
+[tool.setuptools.package-data]
+crappy = [
+    "tool/data/*",
+    "tool/microcontroller.*",
+    "tool/image_processing/kernels.cu"]
