@@ -10,16 +10,6 @@ https://github.com/pypa/sampleproject
 from setuptools import setup, Extension
 from os import popen, walk
 import platform
-from pathlib import Path
-
-# Reading version from __version__.py file
-with open('src/crappy/__version__.py') as file:
-  for line in file:
-    if line.startswith('__version__'):
-      __version__ = line.split("'")[1]
-
-# Get the long description from the relevant file
-long_description = Path('README.md').read_text()
 
 # Getting the current version of Python
 py_ver = '.'.join(platform.python_version().split('.')[:2])
