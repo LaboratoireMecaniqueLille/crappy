@@ -254,7 +254,10 @@ videoconvert ! autovideosink
                                   f'type are implemented. ')
           raise NotImplementedError
 
-      self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
+      # No need to add the channels setting if there's only one channel
+      if self._nb_channels > 1:
+        self.add_choice_setting(name="channels", choices=('1', '3'),
+                                default='1')
 
       # Adding the software ROI selection settings
       if self._formats:
@@ -439,7 +442,9 @@ videoconvert ! autovideosink
                       "the format.\n(here BGR would be for 3 channels)")
 
     # Converting to gray level if needed
-    if self._user_pipeline is None and self.channels == '1':
+    if (self._user_pipeline is None
+        and hasattr(self, 'channels')
+        and self.channels == '1'):
       numpy_frame = cv2.cvtColor(numpy_frame, cv2.COLOR_BGR2GRAY)
 
     # Cleaning up the buffer mapping
