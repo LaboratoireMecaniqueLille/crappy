@@ -222,38 +222,37 @@ videoconvert ! autovideosink
 
       # Creating the different settings
       for param in self._parameters:
-        if not param.flags:
-          if param.type == 'int':
-            self.add_scale_setting(
+        if param.type == 'int':
+          self.add_scale_setting(
+            name=param.name,
+            lowest=int(param.min),
+            highest=int(param.max),
+            getter=self._add_scale_getter(param.name, self._device),
+            setter=self._add_setter(param.name, self._device),
+            default=param.default,
+            step=int(param.step))
+
+        elif param.type == 'bool':
+          self.add_bool_setting(
+            name=param.name,
+            getter=self._add_bool_getter(param.name, self._device),
+            setter=self._add_setter(param.name, self._device),
+            default=bool(int(param.default)))
+
+        elif param.type == 'menu':
+          if param.options:
+            self.add_choice_setting(
               name=param.name,
-              lowest=int(param.min),
-              highest=int(param.max),
-              getter=self._add_scale_getter(param.name, self._device),
+              choices=param.options,
+              getter=self._add_menu_getter(param.name, self._device),
               setter=self._add_setter(param.name, self._device),
-              default=param.default,
-              step=int(param.step))
+              default=param.default)
 
-          elif param.type == 'bool':
-            self.add_bool_setting(
-              name=param.name,
-              getter=self._add_bool_getter(param.name, self._device),
-              setter=self._add_setter(param.name, self._device),
-              default=bool(int(param.default)))
-
-          elif param.type == 'menu':
-            if param.options:
-              self.add_choice_setting(
-                name=param.name,
-                choices=param.options,
-                getter=self._add_menu_getter(param.name, self._device),
-                setter=self._add_setter(param.name, self._device),
-                default=param.default)
-
-          else:
-            self.log(logging.ERROR, f'The type {param.type} is not yet'
-                                    f' implemented. Only int, bool and menu '
-                                    f'type are implemented. ')
-            raise NotImplementedError
+        else:
+          self.log(logging.ERROR, f'The type {param.type} is not yet'
+                                  f' implemented. Only int, bool and menu '
+                                  f'type are implemented. ')
+          raise NotImplementedError
 
       self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
 
