@@ -276,7 +276,9 @@ videoconvert ! autovideosink
                                 setter=self._set_format)
 
       # These settings are always available no matter the platform
-      self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
+      if self._nb_channels > 1:
+        self.add_choice_setting(name="channels", choices=('1', '3'),
+                                default='1')
       self.add_scale_setting(name='brightness', lowest=-1., highest=1.,
                              setter=self._set_brightness, default=0.)
       self.add_scale_setting(name='contrast', lowest=0., highest=2.,
@@ -493,7 +495,9 @@ videoconvert ! autovideosink
                       "the format.\n(here BGR would be for 3 channels)")
 
     # Converting to gray level if needed
-    if self._user_pipeline is None and self.channels == '1':
+    if (self._user_pipeline is None
+        and hasattr(self, 'channels')
+        and self.channels == '1'):
       numpy_frame = cv2.cvtColor(numpy_frame, cv2.COLOR_BGR2GRAY)
 
     # Cleaning up the buffer mapping
