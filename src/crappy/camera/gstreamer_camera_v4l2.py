@@ -340,7 +340,7 @@ videoconvert ! autovideosink
     self.log(logging.INFO, "Starting the GST pipeline")
     self._pipeline.set_state(Gst.State.PLAYING)
 
-  def _get_pipeline(self, img_format: Optional[int] = None) -> str:
+  def _get_pipeline(self, img_format: Optional[str] = None) -> str:
     """Method that generates a pipeline, according to the given settings.
 
     If a user-defined pipeline was given, it will always be returned.
