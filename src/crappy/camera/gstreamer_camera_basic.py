@@ -185,30 +185,30 @@ videoconvert ! autovideosink
 
       # Checking the available formats with the Gst device monitor
       cam = None
-      form = ''
-      cam_id = []
       device_monitor = Gst.DeviceMonitor.new()
       device_monitor.start()
-
       devices = device_monitor.get_devices()
-      for (id_, device) in enumerate(devices):
-        # Finding the camera
-        if device.get_device_class() == "Video/Source":
-          properties = device.get_properties()
-          api = properties.get_value('device.api')
-          dev = properties.get_value('object.path')
-          cam_id.append((id_, dev))
-          if dev == f'{api}:{self._device}':
-            cam = device
 
-      # Defining a default camera if the device is not found or not specified
-      if cam is None:
-        cam = devices[cam_id[0][0]]
-        default_device = cam_id[0][1].split(':')[1]
-        self.log(logging.WARNING, f"The device has not been found or is None. "
-                                  f"Using device: {default_device}.")
+      # Finding the specified device in the available ones
+      if self._device is not None:
+        for device in devices:
+          if device.get_device_class() == "Video/Source":
+            properties = device.get_properties()
+            api = properties.get_value('device.api')
+            dev = properties.get_value('object.path')
+            if dev == f'{api}:{self._device}':
+              cam = device
+              break
 
-      # Getting the formats
+
+      # Defining a default camera if the device is not specified
+      if self._device is None:
+        cam = devices[0]
+        path = cam.get_properties().get_value('object.path')
+        self.log(logging.WARNING, f"No specific camera to open specified, "
+                                  f"opening {path.split(':')[1]} by default")
+
+      # Getting the available image formats
       caps = cam.get_caps()
       nb_formats = caps.get_size()
       for i in range(nb_formats):
