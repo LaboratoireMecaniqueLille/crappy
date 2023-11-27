@@ -189,6 +189,11 @@ videoconvert ! autovideosink
       device_monitor.start()
       devices = device_monitor.get_devices()
 
+      # Stop right here if there is no connected camera
+      if not devices:
+        self.log(logging.ERROR, "No camera devices available for reading !")
+        raise IOError
+
       # Finding the specified device in the available ones
       if self._device is not None:
         for device in devices:
@@ -200,6 +205,11 @@ videoconvert ! autovideosink
               cam = device
               break
 
+      # Raising an exception if the specified device cannot be found
+      if self._device is not None and cam is None:
+        self.log(logging.ERROR, f"Could not open the specified camera "
+                                f"at: {self._device}")
+        raise IOError
 
       # Defining a default camera if the device is not specified
       if self._device is None:
