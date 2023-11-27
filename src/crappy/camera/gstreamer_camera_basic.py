@@ -197,7 +197,8 @@ videoconvert ! autovideosink
       cam = None
       device_monitor = Gst.DeviceMonitor.new()
       device_monitor.start()
-      devices = device_monitor.get_devices()
+      devices = [device for device in device_monitor.get_devices()
+                 if device.get_device_class() == "Video/Source"]
 
       # Stop right here if there is no connected camera
       if not devices:
@@ -207,13 +208,12 @@ videoconvert ! autovideosink
       # Finding the specified device in the available ones
       if self._device is not None:
         for device in devices:
-          if device.get_device_class() == "Video/Source":
-            properties = device.get_properties()
-            api = properties.get_value('device.api')
-            dev = properties.get_value('object.path')
-            if dev == f'{api}:{self._device}':
-              cam = device
-              break
+          properties = device.get_properties()
+          api = properties.get_value('device.api')
+          dev = properties.get_value('object.path')
+          if dev == f'{api}:{self._device}':
+            cam = device
+            break
 
       # Raising an exception if the specified device cannot be found
       if self._device is not None and cam is None:
