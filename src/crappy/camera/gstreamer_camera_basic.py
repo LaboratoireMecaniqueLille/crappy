@@ -186,39 +186,48 @@ videoconvert ! autovideosink
       # Checking the available formats with the Gst device monitor
       cam = None
       form = ''
+      cam_id = []
       device_monitor = Gst.DeviceMonitor.new()
       device_monitor.start()
 
       devices = device_monitor.get_devices()
-      for device in devices:
+      for (id_, device) in enumerate(devices):
         # Finding the camera
         if device.get_device_class() == "Video/Source":
           properties = device.get_properties()
           api = properties.get_value('device.api')
-          if properties.get_value('object.path') == f'{api}:{self._device}':
+          dev = properties.get_value('object.path')
+          cam_id.append((id_, dev))
+          if dev == f'{api}:{self._device}':
             cam = device
 
-      if cam is not None:
-        # Getting the formats
-        caps = cam.get_caps()
-        nb_formats = caps.get_size()
-        for i in range(nb_formats):
-          struct = caps.get_structure(i)
-          if struct.get_name() == 'image/jpeg':
-            form = 'MJPG'
-          elif struct.get_name() == 'video/x-h264':
-            form = 'H264'
-          elif struct.get_name() == 'video/x-hevc':
-            form = 'HEVC'
-          elif struct.get_name() == 'video/x-raw':
-            form = struct.get_value('format')
+      # Defining a default camera if the device is not found or not specified
+      if cam is None:
+        cam = devices[cam_id[0][0]]
+        default_device = cam_id[0][1].split(':')[1]
+        self.log(logging.WARNING, f"The device has not been found or is None. "
+                                  f"Using device: {default_device}.")
 
-          if form:
-            width = struct.get_value('width')
-            height = struct.get_value('height')
-            framerates = findall(r'(\d+/\d+)', struct.to_string())
-            for fps in framerates:
-              self._formats.append(f"{form} {width}x{height} ({fps} fps)")
+      # Getting the formats
+      caps = cam.get_caps()
+      nb_formats = caps.get_size()
+      for i in range(nb_formats):
+        struct = caps.get_structure(i)
+        if struct.get_name() == 'image/jpeg':
+          form = 'MJPG'
+        elif struct.get_name() == 'video/x-h264':
+          form = 'H264'
+        elif struct.get_name() == 'video/x-hevc':
+          form = 'HEVC'
+        elif struct.get_name() == 'video/x-raw':
+          form = struct.get_value('format')
+
+        if form:
+          width = struct.get_value('width')
+          height = struct.get_value('height')
+          framerates = findall(r'(\d+/\d+)', struct.to_string())
+          for fps in framerates:
+            self._formats.append(f"{form} {width}x{height} ({fps} fps)")
 
       device_monitor.stop()
 
