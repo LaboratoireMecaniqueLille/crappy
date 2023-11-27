@@ -242,7 +242,8 @@ videoconvert ! autovideosink
           width = struct.get_value('width')
           height = struct.get_value('height')
           framerates = findall(r'(\d+/\d+)', struct.to_string())
-          for fps in framerates:
+          for fps_str in framerates:
+            fps = f"{float(Fraction(fps_str)):.3f}"
             self._formats.append(f"{form} {width}x{height} ({fps} fps)")
 
       device_monitor.stop()
