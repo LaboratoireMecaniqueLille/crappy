@@ -95,20 +95,22 @@ class V4L2Helper:
     v4l2-ctl with regex."""
 
     # Trying to run v4l2-ctl to get the available settings
-    command = ['v4l2-ctl', '-L'] if device is None \
-        else ['v4l2-ctl', '-d', str(device), '-L']
-    self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
-    check = run(command, capture_output=True, text=True)
-    check = check.stdout if check is not None else ''
-    self.log(logging.DEBUG, f"Got {check} from the previous command")
+    if device is None:
+      command = ['v4l2-ctl', '-L']
+    else:
+      command = ['v4l2-ctl', '-d', str(device), '-L']
+    self.log(logging.DEBUG, f"Getting the available image settings with "
+                            f"command {' '.join(command)}")
+    ret = run(command, capture_output=True, text=True).stdout
+    self.log(logging.DEBUG, f"Got the following image settings: {ret}")
 
     # Extract the different parameters and their information
-    matches = finditer(V4L2Parameter.param_pattern, check)
+    matches = finditer(V4L2Parameter.param_pattern, ret)
     for match in matches:
       self._parameters.append(V4L2Parameter.parse_info(match))
 
     # Regex to extract the different options in a menu
-    menu_options = finditer(V4L2Parameter.option_pattern, check)
+    menu_options = finditer(V4L2Parameter.option_pattern, ret)
 
     # Extract the different options
     for menu_option in menu_options:
@@ -120,29 +122,31 @@ class V4L2Helper:
     regex."""
 
     # Trying to run v4l2-ctl to get the available formats
-    command = ['v4l2-ctl', '--list-formats-ext'] if device is None \
-        else ['v4l2-ctl', '-d', str(device), '--list-formats-ext']
-    self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
-    check = run(command, capture_output=True, text=True)
-    check = check.stdout if check is not None else ''
-    self.log(logging.DEBUG, f"Got {check} from the previous command")
+    if device is None:
+      command = ['v4l2-ctl', '--list-formats-ext']
+    else:
+      command = ['v4l2-ctl', '-d', str(device), '--list-formats-ext']
+    self.log(logging.DEBUG, f"Getting the available image formats with "
+                            f"command {' '.join(command)}")
+    ret = run(command, capture_output=True, text=True).stdout
+    self.log(logging.DEBUG, f"Got the following image formats: {ret}")
 
     # Splitting the returned string to isolate each encoding
-    if findall(r'\[\d+]', check):
-      check = split(r'\[\d+]', check)[1:]
-    elif findall(r'Pixel\sFormat', check):
-      check = split(r'Pixel\sFormat', check)[1:]
+    if findall(r'\[\d+]', ret):
+      formats = split(r'\[\d+]', ret)[1:]
+    elif findall(r'Pixel\sFormat', ret):
+      formats = split(r'Pixel\sFormat', ret)[1:]
     else:
-      check = []
+      formats = list()
 
-    if check:
-      for img_format in check:
-        # For each encoding, finding its name
+    # For each encoding, finding its name, available sizes and framerates
+    if formats:
+      for img_format in formats:
         name, *_ = search(r"'(\w+)'", img_format).groups()
         sizes = findall(r'\d+x\d+', img_format)
         fps_sections = split(r'\d+x\d+', img_format)[1:]
 
-        # For each name, finding the available sizes
+        # Formatting the detected sizes and framerates into strings
         for size, fps_section in zip(sizes, fps_sections):
           fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
           for fps in fps_list:
@@ -160,7 +164,7 @@ class V4L2Helper:
       The setter function.
     """
 
-    def setter(value) -> None:
+    def setter(value: Union[str, int, bool]) -> None:
       """The method to set the value of a setting running v4l2-ctl."""
 
       if isinstance(value, str):
@@ -209,9 +213,9 @@ class V4L2Helper:
         command = ['v4l2-ctl', '--get-ctrl', name]
       self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
       value = run(command, capture_output=True, text=True).stdout
-      value = search(r': (-?\d+)', value).group(1)
-      self.log(logging.DEBUG, f"Got {name}: {int(value)}")
-      return int(value)
+      value = int(search(r':\s(-?\d+)', value).group(1))
+      self.log(logging.DEBUG, f"Got {name}: {value}")
+      return value
     return getter
 
   def _add_bool_getter(self,
@@ -237,9 +241,9 @@ class V4L2Helper:
         command = ['v4l2-ctl', '--get-ctrl', name]
       self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
       value = run(command, capture_output=True, text=True).stdout
-      value = search(r': (\d+)', value).group(1)
-      self.log(logging.DEBUG, f"Got {name}: {bool(int(value))}")
-      return bool(int(value))
+      value = bool(int(search(r':\s(\d+)', value).group(1)))
+      self.log(logging.DEBUG, f"Got {name}: {value}")
+      return value
     return getter
 
   def _add_menu_getter(self,
@@ -265,7 +269,7 @@ class V4L2Helper:
         command = ['v4l2-ctl', '--get-ctrl', name]
       self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
       value = run(command, capture_output=True, text=True).stdout
-      value = search(r': (\d+)', value).group(1)
+      value = search(r':\s(\d+)', value).group(1)
       for param in self._parameters:
         if param.name == name:
           for option in param.options:
