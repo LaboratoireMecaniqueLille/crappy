@@ -69,10 +69,11 @@ class CameraOpencv(Camera, V4L2Helper):
     # supported ones
     self._get_available_formats(device_num)
     supported = ('MJPG', 'YUYV')
-    unavailable_formats = set([_format.split()[0] for _format in self._formats
-                               if _format.split()[0] not in supported])
-    self.log(logging.INFO, f"The formats {', '.join(unavailable_formats)} are "
-                           f"available but not implemented in Crappy")
+    unavailable = set([_format.split()[0] for _format in self._formats
+                       if _format.split()[0] not in supported])
+    if unavailable:
+      self.log(logging.WARNING, f"The formats {', '.join(unavailable)} "
+                                f"are available but not implemented in Crappy")
     self._formats = [_format for _format in self._formats
                      if _format.split()[0] in supported]
 
