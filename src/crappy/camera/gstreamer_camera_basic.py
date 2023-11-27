@@ -427,6 +427,8 @@ videoconvert ! autovideosink
     except ValueError:
       format_name, img_size, fps = img_format, None, None
 
+    # Default color is BGR in most cases
+    color = 'BGR'
     # Adding the decoder to the pipeline if needed
     if format_name == 'MJPG':
       img_format = '! jpegdec'
@@ -434,7 +436,15 @@ videoconvert ! autovideosink
       img_format = '! h264parse ! avdec_h264'
     elif format_name == 'HEVC':
       img_format = '! h265parse ! avdec_h265'
-    elif format_name == 'YUYV' or format_name == 'YUY2':
+    elif format_name in ('YUYV', 'YUY2'):
+      img_format = ''
+    elif format_name == 'GRAY8':
+      img_format = ''
+      color = 'GRAY8'
+    else:
+      self.log(logging.WARNING, f"Unsupported format name: {format_name}, "
+                                f"trying without explicitly setting the "
+                                f"decoder in the pipeline")
       img_format = ''
 
     # Getting the width and height from the second half of the string
@@ -452,7 +462,7 @@ videoconvert ! autovideosink
       fps_str = ''
     # Finally, generate a single pipeline containing all the user settings
     return f"""{source} {device} name=source {img_format} ! videoconvert ! 
-           video/x-raw,format=BGR{img_size}{fps_str} ! videobalance 
+           video/x-raw,format={color}{img_size}{fps_str} ! videobalance 
            brightness={brightness if brightness is not None 
                        else self.brightness:.3f} 
            contrast={contrast if contrast is not None else self.contrast:.3f} 
