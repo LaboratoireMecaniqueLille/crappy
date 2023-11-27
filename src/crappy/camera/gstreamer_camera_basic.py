@@ -414,8 +414,12 @@ videoconvert ! autovideosink
     else:
       device = ''
 
-    # Getting the format index
-    img_format = img_format if img_format is not None else self.format
+    # Getting the format string if not provided as an argument
+    if img_format is None and hasattr(self, 'format'):
+      img_format = self.format
+    # In case it goes wrong, just try without specifying the format
+    if img_format is None:
+      img_format = ''
 
     try:
       format_name, img_size, fps = findall(r"(\w+)\s(\w+)\s\((\d+.\d+) fps\)",
