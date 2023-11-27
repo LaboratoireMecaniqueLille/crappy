@@ -222,17 +222,23 @@ videoconvert ! autovideosink
       caps = cam.get_caps()
       nb_formats = caps.get_size()
       for i in range(nb_formats):
+        form = None
         struct = caps.get_structure(i)
-        if struct.get_name() == 'image/jpeg':
+        name = struct.get_name()
+        if name == 'image/jpeg':
           form = 'MJPG'
-        elif struct.get_name() == 'video/x-h264':
+        elif name == 'video/x-h264':
           form = 'H264'
-        elif struct.get_name() == 'video/x-hevc':
+        elif name == 'video/x-hevc':
           form = 'HEVC'
-        elif struct.get_name() == 'video/x-raw':
+        elif name == 'video/x-raw':
           form = struct.get_value('format')
+        else:
+          self.log(logging.WARNING, f"Found unsupported cap format: {name}, "
+                                    f"ignoring it")
 
-        if form:
+        # Formatting the format into the v4l2 syntax
+        if form is not None:
           width = struct.get_value('width')
           height = struct.get_value('height')
           framerates = findall(r'(\d+/\d+)', struct.to_string())
