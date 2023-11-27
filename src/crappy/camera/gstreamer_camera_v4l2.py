@@ -376,14 +376,24 @@ videoconvert ! autovideosink
     except ValueError:
       format_name, img_size, fps = img_format, None, None
 
-    # Adding a mjpeg decoder to the pipeline if needed
+    # Default color is BGR in most cases
+    color = 'BGR'
+    # Adding the decoder to the pipeline if needed
     if format_name == 'MJPG':
       img_format = '! jpegdec'
     elif format_name == 'H264':
       img_format = '! h264parse ! avdec_h264'
     elif format_name == 'HEVC':
       img_format = '! h265parse ! avdec_h265'
-    elif format_name == 'YUYV':
+    elif format_name in ('YUYV', 'YUY2'):
+      img_format = ''
+    elif format_name == 'GREY':
+      img_format = ''
+      color = 'GRAY8'
+    else:
+      self.log(logging.WARNING, f"Unsupported format name: {format_name}, "
+                                f"trying without explicitly setting the "
+                                f"decoder in the pipeline")
       img_format = ''
 
     # Getting the width and height from the second half of the string
@@ -402,7 +412,7 @@ videoconvert ! autovideosink
 
     # Finally, generate a single pipeline containing all the user settings
     return f"""v4l2src {device} name=source {img_format} ! videoconvert ! 
-           video/x-raw,format=BGR{img_size}{fps_str} ! appsink name=sink"""
+           video/x-raw,format={color}{img_size}{fps_str} ! appsink name=sink"""
 
   def _on_new_sample(self, app_sink):
     """Callback that reads every new frame and puts it into a buffer.
