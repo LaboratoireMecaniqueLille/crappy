@@ -188,22 +188,26 @@ videoconvert ! autovideosink
 
       self._get_available_formats(self._device)
 
-      # Finally, creating the parameter if applicable
+      # Checking if the formats are supported with the installed libraries
       if self._formats:
-        if not run(['gst-inspect-1.0', 'avdec_h264'],
-                   capture_output=True, text=True).stdout:
+        h264_available = bool(run(['gst-inspect-1.0', 'avdec_h264'],
+                                  capture_output=True, text=True).stdout)
+        h265_available = bool(run(['gst-inspect-1.0', 'avdec_h265'],
+                                  capture_output=True, text=True).stdout)
+        if not h264_available and any(form.split()[0] == 'H264'
+                                      for form in self._formats):
           self._formats = [form for form in self._formats
                            if form.split()[0] != 'H264']
-          self.log(logging.WARNING, "The format H264 is not available"
-                                    "It could be if gstreamer1.0-libav "
-                                    "was installed !")
-        if not run(['gst-inspect-1.0', 'avdec_h265'],
-                   capture_output=True, text=True).stdout:
+          self.log(logging.WARNING, "The video format H264 could be available "
+                                    "for the selected camera if "
+                                    "gstreamer1.0-libav was installed !")
+        if not h265_available and any(form.split()[0] == 'HEVC'
+                                      for form in self._formats):
           self._formats = [form for form in self._formats
                            if form.split()[0] != 'HEVC']
-          self.log(logging.WARNING, "The format HEVC is not available"
-                                    "It could be if gstreamer1.0-libav "
-                                    "was installed !")
+          self.log(logging.WARNING, "The video format H265 could be available "
+                                    "for the selected camera if "
+                                    "gstreamer1.0-libav was installed !")
 
         # The format integrates the size selection
         if ' ' in self._formats[0]:
