@@ -186,6 +186,7 @@ videoconvert ! autovideosink
     # Defining the settings in case no custom pipeline was given
     if user_pipeline is None:
 
+      # Getting the available formats for the selected device
       self._get_available_formats(self._device)
 
       # Checking if the formats are supported with the installed libraries
@@ -209,20 +210,17 @@ videoconvert ! autovideosink
                                     "for the selected camera if "
                                     "gstreamer1.0-libav was installed !")
 
-        # The format integrates the size selection
-        if ' ' in self._formats[0]:
-          self.add_choice_setting(name='format',
-                                  choices=tuple(self._formats),
-                                  getter=self._get_format,
-                                  setter=self._set_format)
-        # The size is independent of the format
-        else:
-          self.add_choice_setting(name='format', choices=tuple(self._formats),
-                                  setter=self._set_format)
+      # If there are remaining image formats, adding the corresponding setting
+      if self._formats:
+        self.add_choice_setting(name='format',
+                                choices=tuple(self._formats),
+                                getter=self._get_format,
+                                setter=self._set_format)
 
+      # Getting the available parameters for the camera
       self._get_param(self._device)
 
-      # Create the different settings
+      # Creating the different settings
       for param in self._parameters:
         if not param.flags:
           if param.type == 'int':
@@ -260,7 +258,7 @@ videoconvert ! autovideosink
       self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
 
       # Adding the software ROI selection settings
-      if self._formats and ' ' in self._formats[0]:
+      if self._formats:
         width, height = search(r'(\d+)x(\d+)', self._get_format()).groups()
         self.add_software_roi(int(width), int(height))
 
@@ -459,7 +457,7 @@ videoconvert ! autovideosink
     self._restart_pipeline(self._get_pipeline(img_format=img_format))
 
     # Reloading the software ROI selection settings
-    if self._soft_roi_set and self._formats and ' ' in self._formats[0]:
+    if self._soft_roi_set and self._formats:
       width, height = search(r'(\d+)x(\d+)', img_format).groups()
       self.reload_software_roi(int(width), int(height))
 
@@ -472,15 +470,18 @@ videoconvert ! autovideosink
       command = ['v4l2-ctl', '-d', str(self._device), '--all']
     else:
       command = ['v4l2-ctl', '--all']
-    check = run(command, capture_output=True, text=True).stdout
+      self.log(logging.DEBUG, f"Getting the current image formats with "
+                              f"command {' '.join(command)}")
+    ret = run(command, capture_output=True, text=True).stdout
+    self.log(logging.DEBUG, f"Got the following image formats: {ret}")
 
     # Parsing the answer
     format_ = width = height = fps = ''
-    if search(r"Pixel Format\s*:\s*'(\w+)'", check) is not None:
-      format_, *_ = search(r"Pixel Format\s*:\s*'(\w+)'", check).groups()
-    if search(r"Width/Height\s*:\s*(\d+)/(\d+)", check) is not None:
-      width, height = search(r"Width/Height\s*:\s*(\d+)/(\d+)", check).groups()
-    if search(r"Frames per second\s*:\s*(\d+.\d+)", check) is not None:
-      fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", check).groups()
+    if search(r"Pixel Format\s*:\s*'(\w+)'", ret) is not None:
+      format_, *_ = search(r"Pixel Format\s*:\s*'(\w+)'", ret).groups()
+    if search(r"Width/Height\s*:\s*(\d+)/(\d+)", ret) is not None:
+      width, height = search(r"Width/Height\s*:\s*(\d+)/(\d+)", ret).groups()
+    if search(r"Frames per second\s*:\s*(\d+.\d+)", ret) is not None:
+      fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", ret).groups()
 
     return f'{format_} {width}x{height} ({fps} fps)'
