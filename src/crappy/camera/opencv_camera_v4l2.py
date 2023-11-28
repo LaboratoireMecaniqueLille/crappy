@@ -65,72 +65,66 @@ class CameraOpencv(Camera, V4L2Helper):
     self._cap = cv2.VideoCapture(device_num)
     self._device_num = device_num
 
+    # Getting the available formats for the selected device and filtering the
+    # supported ones
     self._get_available_formats(device_num)
     supported = ('MJPG', 'YUYV')
-    unavailable_formats = set([_format.split()[0] for _format in self._formats
-                               if _format.split()[0] not in supported])
-    self.log(logging.INFO, f"The formats {', '.join(unavailable_formats)} are "
-                           f"available but not implemented in Crappy")
+    unavailable = set([_format.split()[0] for _format in self._formats
+                       if _format.split()[0] not in supported])
+    if unavailable:
+      self.log(logging.WARNING, f"The formats {', '.join(unavailable)} "
+                                f"are available but not implemented in Crappy")
     self._formats = [_format for _format in self._formats
                      if _format.split()[0] in supported]
-    if self._formats:
-      # The format integrates the size selection
-      if ' ' in self._formats[0]:
-        self.add_choice_setting(name='format',
-                                choices=tuple(self._formats),
-                                getter=self._get_format_size,
-                                setter=self._set_format)
-      # The size is independent of the format
-      else:
-        self.add_choice_setting(name='format',
-                                choices=tuple(self._formats),
-                                getter=self._get_fourcc,
-                                setter=self._set_format)
 
+    # Instantiating the format setting if there are formats left
+    if self._formats:
+      self.add_choice_setting(name='format',
+                              choices=tuple(self._formats),
+                              getter=self._get_format_size,
+                              setter=self._set_format)
+
+    # Getting the available parameters for the camera
     self._get_param(device_num)
 
-    # Create the different settings
+    # Creating the different settings
     for param in self._parameters:
-      if not param.flags:
-        if param.type == 'int':
-          self.add_scale_setting(
+      if param.type == 'int':
+        self.add_scale_setting(
+          name=param.name,
+          lowest=int(param.min),
+          highest=int(param.max),
+          getter=self._add_scale_getter(param.name, self._device_num),
+          setter=self._add_setter(param.name, self._device_num),
+          default=param.default,
+          step=int(param.step))
+
+      elif param.type == 'bool':
+        self.add_bool_setting(
+          name=param.name,
+          getter=self._add_bool_getter(param.name, self._device_num),
+          setter=self._add_setter(param.name, self._device_num),
+          default=bool(int(param.default)))
+
+      elif param.type == 'menu':
+        if param.options:
+          self.add_choice_setting(
             name=param.name,
-            lowest=int(param.min),
-            highest=int(param.max),
-            getter=self._add_scale_getter(param.name, self._device_num),
+            choices=param.options,
+            getter=self._add_menu_getter(param.name, self._device_num),
             setter=self._add_setter(param.name, self._device_num),
-            default=param.default,
-            step=int(param.step))
+            default=param.default)
 
-        elif param.type == 'bool':
-          self.add_bool_setting(
-            name=param.name,
-            getter=self._add_bool_getter(param.name, self._device_num),
-            setter=self._add_setter(param.name, self._device_num),
-            default=bool(int(param.default)))
-
-        elif param.type == 'menu':
-          if param.options:
-            self.add_choice_setting(
-              name=param.name,
-              choices=param.options,
-              getter=self._add_menu_getter(param.name, self._device_num),
-              setter=self._add_setter(param.name, self._device_num),
-              default=param.default)
-
-        else:
-          self.log(logging.ERROR, f'The type {param.type} is not yet'
-                                  f' implemented. Only int, bool and menu '
-                                  f'type are implemented. ')
-          raise NotImplementedError
+      else:
+        self.log(logging.ERROR, f'The type {param.type} is not yet'
+                                f' implemented. Only int, bool and menu '
+                                f'type are implemented. ')
+        raise NotImplementedError
 
     self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
 
     # Adding the software ROI selection settings
-    if 'width' in self.settings and 'height' in self.settings:
-      width, height = self._get_width(), self._get_height()
-      self.add_software_roi(width, height)
-    elif 'format' in self.settings:
+    if 'format' in self.settings:
       width, height = search(r'(\d+)x(\d+)', self._get_format_size()).groups()
       self.add_software_roi(int(width), int(height))
 
@@ -161,13 +155,6 @@ class CameraOpencv(Camera, V4L2Helper):
     if self._cap is not None:
       self.log(logging.INFO, "Closing the image stream from the camera")
       self._cap.release()
-
-  def _get_fourcc(self) -> str:
-    """Returns the current fourcc string of the video encoding."""
-
-    fcc = int(self._cap.get(cv2.CAP_PROP_FOURCC))
-    return f"{fcc & 0xFF:c}{(fcc >> 8) & 0xFF:c}" \
-           f"{(fcc >> 16) & 0xFF:c}{(fcc >> 24) & 0xFF:c}"
 
   def _get_width(self) -> int:
     """Returns the current image width."""
@@ -204,26 +191,22 @@ class CameraOpencv(Camera, V4L2Helper):
   def _set_format(self, img_format: str) -> None:
     """Sets the format of the image according to the user's choice."""
 
-    # The format might be made of a name and a dimension, or just a name
-    try:
-      format_name, img_size, fps = findall(r"(\w+)\s(\w+)\s\((\d+.\d+) fps\)",
-                                           img_format)[0]
-    except ValueError:
-      format_name, img_size, fps = img_format, None, None
+    # The format is made of a name, a size and a framerate
+    format_name, img_size, fps = findall(r"(\w+)\s(\w+)\s\((\d+.\d+) fps\)",
+                                         img_format)[0]
 
     # Setting the format
     self._cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*format_name))
 
-    if img_size is not None:
-      # Getting the width and height from the second half of the string
-      width, height = map(int, img_size.split('x'))
+    # Getting the width and height from the second half of the string
+    width, height = map(int, img_size.split('x'))
 
-      # Setting the size
-      self._set_width(width)
-      self._set_height(height)
+    # Setting the size
+    self._set_width(width)
+    self._set_height(height)
 
-    if fps is not None:
-      self._cap.set(cv2.CAP_PROP_FPS, float(fps))
+    # Setting the acquisition frequency
+    self._cap.set(cv2.CAP_PROP_FPS, float(fps))
 
     # Reloading the software ROI selection settings
     if self._soft_roi_set:
@@ -232,20 +215,23 @@ class CameraOpencv(Camera, V4L2Helper):
       self.reload_software_roi(int(width), int(height))
 
   def _get_format_size(self) -> str:
-    """Parses the ``v4l2-ctl -V`` command to get the current image format as a
-    :obj:`str`."""
+    """Parses the ``v4l2-ctl -all`` command to get the current image format as
+    a :obj:`str`."""
 
     # Sending the v4l2-ctl command
     command = ['v4l2-ctl', '-d', str(self._device_num), '--all']
-    check = run(command, capture_output=True, text=True).stdout
+    self.log(logging.DEBUG, f"Getting the current image formats with "
+                            f"command {' '.join(command)}")
+    ret = run(command, capture_output=True, text=True).stdout
+    self.log(logging.DEBUG, f"Got the following image formats: {ret}")
 
     # Parsing the answer
     format_ = width = height = fps = ''
-    if search(r"Pixel Format\s*:\s*'(\w+)'", check) is not None:
-      format_, *_ = search(r"Pixel Format\s*:\s*'(\w+)'", check).groups()
-    if search(r"Width/Height\s*:\s*(\d+)/(\d+)", check) is not None:
-      width, height = search(r"Width/Height\s*:\s*(\d+)/(\d+)", check).groups()
-    if search(r"Frames per second\s*:\s*(\d+.\d+)", check) is not None:
-      fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", check).groups()
+    if search(r"Pixel Format\s*:\s*'(\w+)'", ret) is not None:
+      format_, *_ = search(r"Pixel Format\s*:\s*'(\w+)'", ret).groups()
+    if search(r"Width/Height\s*:\s*(\d+)/(\d+)", ret) is not None:
+      width, height = search(r"Width/Height\s*:\s*(\d+)/(\d+)", ret).groups()
+    if search(r"Frames per second\s*:\s*(\d+.\d+)", ret) is not None:
+      fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", ret).groups()
 
     return f'{format_} {width}x{height} ({fps} fps)'
