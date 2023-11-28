@@ -680,16 +680,6 @@ Sensors
   Reads voltages from Sparfun's `'Qwiic Scale' NAU7802 <https://www.sparkfun.
   com/products/15242>`_ load cell conditioner. Communicates over I2C.
 
-- :ref:`PiJuice`
-
-  Reads the charging status and battery level of Kubii's `PiJuice <https://
-  www.kubii.com/fr/14-chargeurs-alimentations-raspberry/2019-pijuice-hat-kubii
-  -3272496008793.html>`_ Raspberry Pi power supply.
-
-  .. Important::
-     This InOut was written for a specific application, so it may not be
-     usable as-is in the general case.
-
 - :ref:`OpSens HandySens`
 
   Reads data from OpSens' `single channel signal conditioner <https://opsens-
@@ -700,6 +690,26 @@ Sensors
   .. Important::
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
+
+- :ref:`Phidget Wheatstone Bridge`
+
+  Reads volatges from Phidget's `Wheatstone Bridge <https://www.phidgets.com/
+  ?prodid=957>`_ load cell conditioner, by using several Phidget libraries.
+
+  .. Important::
+     This InOut must be connected to Phidget's VINT Hub to work. See the
+     following link `<https://www.phidgets.com/?prodid=957#Tab_User_Guide>`_ to
+     connect properly to the Hub.
+
+- :ref:`PiJuice`
+
+  Reads the charging status and battery level of Kubii's `PiJuice <https://
+  www.kubii.com/fr/14-chargeurs-alimentations-raspberry/2019-pijuice-hat-kubii
+  -3272496008793.html>`_ Raspberry Pi power supply.
+
+  .. Important::
+     This InOut was written for a specific application, so it may not be
+     usable as-is in the general case.
 
 - :ref:`Spectrum M2I 4711`
 

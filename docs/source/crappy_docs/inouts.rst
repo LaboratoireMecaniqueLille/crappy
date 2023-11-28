@@ -104,6 +104,12 @@ OpSens HandySens
    :members: open, get_data, close
    :special-members: __init__
 
+Phidget Wheatstone Bridge
++++++++++++++++++++++++++
+.. autoclass:: crappy.inout.PhidgetWheatstoneBridge
+   :members: open, get_data, close
+   :special-members: __init__
+
 PiJuice
 +++++++
 .. autoclass:: crappy.inout.PiJuice
