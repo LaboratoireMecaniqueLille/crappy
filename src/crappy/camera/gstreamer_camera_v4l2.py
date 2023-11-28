@@ -251,7 +251,7 @@ videoconvert ! autovideosink
         else:
           self.log(logging.ERROR, f'The type {param.type} is not yet'
                                   f' implemented. Only int, bool and menu '
-                                  f'type are implemented. ')
+                                  f'type are implemented.')
           raise NotImplementedError
 
       # No need to add the channels setting if there's only one channel

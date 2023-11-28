@@ -10,8 +10,8 @@ from typing import Optional, Tuple
 from pkg_resources import resource_string
 from io import BytesIO
 import logging
-from multiprocessing import current_process, Event, Pipe
-from multiprocessing.queues import Queue
+from multiprocessing import current_process, Event, Queue
+from multiprocessing.queues import Queue as MPQueue
 
 from .config_tools import Zoom, HistogramProcess
 from ...camera.meta_camera.camera_setting import CameraBoolSetting, \
@@ -58,7 +58,7 @@ class CameraConfig(tk.Tk):
 
   def __init__(self,
                camera: Camera,
-               log_queue: Queue,
+               log_queue: MPQueue,
                log_level: Optional[int],
                max_freq: Optional[float]) -> None:
     """Initializes the interface and displays it.
@@ -86,11 +86,11 @@ class CameraConfig(tk.Tk):
     # Instantiating objects for the process managing the histogram calculation
     self._stop_event = Event()
     self._processing_event = Event()
-    self._img_in, img_in_proc = Pipe()
-    img_out_proc, self._img_out = Pipe()
+    self._img_in = Queue(maxsize=0)
+    self._img_out = Queue(maxsize=0)
     self._histogram_process = HistogramProcess(
         stop_event=self._stop_event, processing_event=self._processing_event,
-        img_in=img_in_proc, img_out=img_out_proc, log_level=log_level,
+        img_in=self._img_in, img_out=self._img_out, log_level=log_level,
         log_queue=log_queue)
 
     # Attributes containing the several images and histograms
@@ -142,8 +142,8 @@ class CameraConfig(tk.Tk):
 
     while self._run:
       # Remaining below the max allowed frequency
-      if self._max_freq is None or \
-         self._n_loops / (time() - start_time) < self._max_freq:
+      if self._max_freq is None or (self._n_loops <
+                                    self._max_freq * (time() - start_time)):
         # Update the image, the histogram and the information
         self._update_img()
 
@@ -967,12 +967,12 @@ class CameraConfig(tk.Tk):
 
       # Sending the image to the histogram process
       self.log(logging.DEBUG, "Sending image for histogram calculation")
-      self._img_in.send((hist_img, self._auto_range.get(),
-                         self._low_thresh, self._high_thresh))
+      self._img_in.put_nowait((hist_img, self._auto_range.get(),
+                               self._low_thresh, self._high_thresh))
 
     # Checking if a histogram is available for display
-    while self._img_out.poll():
-      self._hist = self._img_out.recv()
+    while not self._img_out.empty():
+      self._hist = self._img_out.get_nowait()
       self.log(logging.DEBUG, "Received histogram from histogram process")
 
   def _resize_hist(self) -> None:

@@ -15,4 +15,6 @@ from .offset import Offset
 from .trig_on_change import TrigOnChange
 from .trig_on_value import TrigOnValue
 
+from ._deprecated import Moving_avg, Moving_med, Trig_on_change, Trig_on_value
+
 modifier_dict: Dict[str, Type[Modifier]] = MetaModifier.classes
