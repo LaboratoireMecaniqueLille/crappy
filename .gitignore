@@ -14,6 +14,5 @@ crappy.egg-info/
 .idea/
 *.swp
 docs/build/
-tests/
 .directory
 venv/

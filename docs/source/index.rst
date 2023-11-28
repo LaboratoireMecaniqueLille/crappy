@@ -2,20 +2,21 @@
 Crappy
 ======
 
-This package aims to provide easy-to-use and open-source tools for command and
-acquisition on complex experimental setups.
+Crappy is a **Python module** that aims to provide easy-to-use and open-source
+tools for **command and data acquisition on complex experimental setups**. It
+is designed to let users drive most setups in **less than 100 lines of code**.
+Crappy comes with a collection of `directly runnable examples
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_,
+and an extensive documentation that you can explore here !
 
 .. toctree::
   :maxdepth: 2
 
-  whatiscrappy
-  installation
-  tutorials
-  embedded
-  features
-  blocklist
-  documentation
-  developers
-  citing
-  bugs
-  license
+  what_is_crappy.rst
+  installation.rst
+  tutorials.rst
+  features.rst
+  api.rst
+  developers.rst
+  citing.rst
+  troubleshooting.rst

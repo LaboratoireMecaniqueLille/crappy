@@ -2,18 +2,26 @@
 Installation
 ============
 
+.. role:: shell(code)
+  :language: shell-session
+  :class: highlight
+
 Requirements
 ------------
 
-You can install Crappy on the three main OS : Windows, Mac and Linux. Note that
-Crappy is developed and tested on the latest OS versions, and no particular
-effort is made to ensure compatibility with previous ones. It is thus preferable
-to install it on a recent and up-to-date OS version.
+Crappy was successfully installed and tested on **Linux** (Ubuntu 18.04 and
+higher), **Windows** (8 and higher) and **MacOS** (Sierra and higher). It was
+also successfully installed on **Raspberry Pi** 3B+ and 4B. As a Python module,
+Crappy can probably be installed on other systems able to run Python, but that
+was not tested.
 
-To install Crappy, you will need Python 3 (3.6 or higher) with the following
-modules :
+.. note::
+  We develop Crappy on recent OS versions, and no particular effort is made to
+  ensure compatibility with older OS versions.
 
-- `numpy <https://numpy.org/>`_ (1.19.0 or higher)
+Crappy requires **Python 3.6 or later**, as well as the following module :
+
+- `numpy <https://numpy.org/>`_ (1.21.0 or higher)
 
 The following modules are not mandatory but will provide additional
 functionalities (this list is not exhaustive) :
@@ -21,213 +29,195 @@ functionalities (this list is not exhaustive) :
 - `matplotlib <https://matplotlib.org/>`_ (1.5.3 or higher, for plotting graphs
   and displaying images)
 - `opencv <https://opencv.org/>`_ (3.0 or higher, to perform image acquisition
-  and analysis)
+  and processing)
 - `pyserial <https://pypi.org/project/pyserial/>`_ (To interface with serial
   sensors and actuators)
 - `Tk <https://docs.python.org/3/library/tkinter.html>`_ (For the configuration
   interface of cameras)
 - `scikit-image <https://scikit-image.org/>`_ (0.11 or higher)
-- `xiApi <https://www.ximea.com/support/wiki/apis/xiapi>`_ (for Ximea cameras)
-- `labjack <https://labjack.com/pages/support?doc=/software-driver/example-
-  codewrappers/python-for-ljm-windows-mac-linux/>`_ (for Labjack support)
-- `Simple-ITK <https://simpleitk.org/>`_ (for faster image saving)
-- `PyCUDA <https://documen.tician.de/pycuda/>`_ (for real-time correlation)
-- `Comedi <https://www.comedi.org/>`_ driver (for Comedi acquisition boards,
-  Linux only)
-- `PyDaqmx <https://pythonhosted.org/PyDAQmx/>`_ (for National Instrument
-  boards, Windows only)
-- `niFgen <https://www.ni.com/fr-fr/support/downloads/drivers/
-  download.ni-fgen.html>`_ (package from National Instrument, Windows only)
-- `openDAQ <https://pypi.org/project/opendaq/>`_ (for opendaq boards)
+- `Simple-ITK <https://simpleitk.org/>`_ (for faster image recording)
+- `PyCUDA <https://documen.tician.de/pycuda/>`_ (for GPU accelerated features)
 
 .. note::
   Knowing which modules are needed for a given setup is easy. Just write the
   script and start it, if a module is missing Crappy will simply tell you !
 
-A. For Linux users
-------------------
-These steps have been tested for Ubuntu 18.04 and 20.04 but should work on other
-distributions as well, as long as Python 3.6 is installed.
+1. Check your Python version
+----------------------------
 
-**1.** First make sure that you have ``pip`` installed.
-
-.. code-block:: shell-session
-
-   sudo apt update
-   sudo apt upgrade
-   sudo apt install python3-pip
-
-**2.** Then it's time to install Crappy ! There are three possible ways.
-
-**2.a.** For **regular users**, install Crappy in a ``virtualenv`` (recommended) :
-
-.. code-block:: shell-session
-
-  workon myenv
-  pip3 install crappy
-
-If you're not familiar with virtual environments,
-`here <https://virtualenv.pypa.io/en/latest/>`_'s more documentation.
-
-**2.b.** For **regular users**, install Crappy on the system :
-
-.. code-block:: shell-session
-
-  pip3 install crappy
-
-**2.c.** For **developers**, get the sources using ``git`` and use ``setup``
-script :
-::
-
-  cd <path>
-  git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
-  cd crappy
-  sudo python3 setup.py install
-
-This installation can also be done in a virtual environment.
-If you're not familiar with ``git``, documentation can be found
-`there <https://git-scm.com/doc>`_.
-
-.. important::
-  For adding C/C++ modules to Crappy you **must** run a ``setup`` install, so
-  you need to get Crappy from ``git``.
-
-**3.** Finally, you can install additional packages to extend Crappy's functionalities.
-
-**3.a.** In a ``virtualenv`` :
-
-.. code-block:: shell-session
-
-  workon myenv
-  pip3 install <module>
-
-**3.b.** Or system-wide :
-
-.. code-block:: shell-session
-
-  pip3 install <module>
-
-**3.c** It is also possible to use the extras for installing additional
-dependencies directly along with Crappy :
-
-.. code-block:: shell-session
-
-  pip3 install crappy[<extra>]
-
-Currently, the available extras are ``SBC``, ``image``, ``hardware`` and ``main``.
-They contain respectively modules for interfacing with single board computers,
-for recording and displaying images and videos, for interfacing with hardware over
-serial or USB, and ``main`` contains the three most used modules in Crappy
-after the mandatory Numpy.
+Before installing Crappy, first check that you have **a compatible version of**
+**Python** installed. You can get the current version of Python by running
+:shell:`python --version` in a console. The version should then be displayed,
+e.g. :shell:`Python 3.9.7`.
 
 .. note::
-  - Replace ``<module>`` by the name of the module you want to install.
-  - Replace ``<path>`` by the path where you want Crappy to be located.
-  - Replace ``<extra>`` by the name of the extra to install.
+  On Windows, Python is not natively installed and might not be present at
+  all ! In this case, the given command will display an error message.
 
-B. For Windows users
---------------------
-These steps have been tested for Windows 8.1 and 10 but should work with other
-versions as well. If you want to load C++ modules, make sure to use the x64
-version of Python.
-
-**1.** Install the dependencies :
-
-.. code-block:: shell-session
-
-  pip install <module>
-
-This will works for most modules, but some may fail and need a wheel file built
-for Windows. Once you've found a binary wheel, simply run :
-
-.. code-block:: shell-session
-
-  pip install <wheel_file.whl>
-
-**2.** Also, you will need Visual C++ for Python 3.x (your version of python) if
-you want to compile C++ modules.  If you want to use Ximea cameras, don't
-forget to install XiAPI and add ``c:\XIMEA\API\x64`` to your path.
-
-**3.** Then you can install Crappy.
-
-If you're a **regular user** :
-
-.. code-block:: shell-session
-
-  pip install crappy
-
-Or if you're a **developer** :
-
-.. code-block:: shell-session
-
-  cd <path>
-  git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
-  cd crappy
-  setup.py install
-
-If you're not familiar with ``git``, documentation can be found
-`there <https://git-scm.com/doc>`_.
-
-.. important::
-  For adding C/C++ modules to Crappy you **must** run a ``setup`` install, which
-  will be way more convenient if you get Crappy from ``git``.
+If the current version of Python is not compatible with Crappy (requires Python
+>=3.6), or if Python is not installed, you will first need to **install a**
+**compatible version of Python**. The precise installation steps for each OS
+are beyond the scope of this documentation.
 
 .. note::
-  - Replace ``<module>`` by the name of the module you want to install.
-  - Replace ``<path>`` by the path where you want Crappy to be located.
+  On Linux and MacOS, you will likely need to install the new version of Python
+  alongside the original version. Never uninstall the original version, or your
+  system will break !
 
-C. For macOS users
-------------------
-These steps have been tested on macOS Sierra (10.12.6), but should work with
-other versions as well.
+2. Deploy a virtual environment (optional)
+------------------------------------------
 
-**1.** Install the dependencies :
+It is **recommended** to install Crappy in a `virtual environment
+<https://docs.python.org/3/library/venv.html>`_, to avoid conflicts with other
+Python packages installed at the user or system level. This step is however not
+mandatory,and it is possible to install and run Crappy at the user level.
 
-.. code-block:: shell-session
-
-  pip3 install <module>
-
-**2.** Then you can install Crappy.
-
-If you're a **regular user** :
+To create an virtual environment called `venv_crappy`, run the following
+command at the location of your choice.
 
 .. code-block:: shell-session
 
-  pip3 install crappy
+   python -m venv venv_crappy
 
-Or if you're a **developer** :
+This should create a new folder called `venv_crappy` at the location of your
+console, containing an independent install of Python.
+
+3. Install Crappy
+-----------------
+
+Once you have a compatible version of Python installed, and after optionally
+setting up a virtual environment, you're **ready to install Crappy**. A single
+line of code is necessary to install Crappy :
+
+.. tabs::
+
+   .. group-tab:: Without virtual environment
+
+      .. code-block:: shell-session
+
+         python -m pip install crappy
+
+   .. group-tab:: In a virtual environment
+
+      .. tabs::
+
+         .. group-tab:: Linux & MacOS
+
+            Assuming your console is at the location of the virtual
+            environment :
+
+            .. code-block:: shell-session
+
+               venv_crappy/bin/python -m pip install crappy
+
+         .. group-tab:: Windows
+
+            Assuming your console is at the location of the virtual
+            environment :
+
+            .. code-block:: shell-session
+
+               venv_crappy\Scripts\python.exe -m pip install crappy
+
+Following th same pattern, you can also **install any additional module** that
+you would need to use along with Crappy. For example :
 
 .. code-block:: shell-session
 
-  cd <path>
-  git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
-  cd crappy
-  setup.py install
-
-If you're not familiar with ``git``, documentation can be found
-`there <https://git-scm.com/doc>`_.
+   python -m pip install matplotlib
 
 .. note::
-  - Replace ``<module>`` by the name of the module you want to install.
-  - Replace ``<path>`` by the path where you want Crappy to be located.
+  You can install at once most of the modules necessary for a specific use of
+  Crappy by using the so-called extras. To do so, simply run :
 
-D. Troubleshooting
-------------------
+  .. code-block:: shell-session
 
-The imaging module is not natively included in Tk. Some user may have to install
-it manually to use the camera configuration GUI.
+     python -m pip install crappy[<extra>]
 
-For Ubuntu, you can do :
+  The available extras are ``SBC``, ``image``, ``hardware`` and ``main``. They
+  contain respectively modules for interfacing with single board computers, for
+  recording and displaying images and videos, for interfacing with hardware
+  over serial or USB, and ``main`` contains the three most used modules in
+  Crappy after the mandatory Numpy.
 
-.. code-block:: shell-session
+4. Check your install
+---------------------
 
-  sudo apt install python3-pil.imagetk
+Once you have installed Crappy, you can **run a few checks** to make sure it
+works fine on your system. First, try to simply import it :
 
-Also, you may face some issues with matplotlib backends not managing to open
-multiple windows in some desktop environment. We set the default backend to
-``TkAgg``, which works fine in most situations. If you encounter backend issues,
-you can specify another backend for matplotlib in the grapher blocks :
+.. tabs::
 
-.. code-block:: shell-session
+   .. group-tab:: Without virtual environment
 
-  graph = crappy.bocks.Grapher(<args, kwargs>, backend='TkAgg')
+      .. code-block:: shell-session
+
+         python -c "import crappy;print(crappy.__version__)"
+
+   .. group-tab:: In a virtual environment
+
+      .. tabs::
+
+         .. group-tab:: Linux & MacOS
+
+            Assuming your console is at the location of the virtual
+            environment :
+
+            .. code-block:: shell-session
+
+               venv_crappy/bin/python -c "import crappy;print(crappy.__version__)"
+
+         .. group-tab:: Windows
+
+            Assuming your console is at the location of the virtual
+            environment :
+
+            .. code-block:: shell-session
+
+               venv_crappy\Scripts\python.exe -c "import crappy;print(crappy.__version__)"
+
+This command should return without an error and print the installed version of
+Crappy. If that is not the case, please refer to the :ref:`Troubleshooting`
+page of the documentation.
+
+If you can successfully import Crappy, you can then try to run a few examples
+to confirm that Crappy operates as expected. The `examples folder
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_ of
+the GitHub repository contains a wide collection of readily-runnable examples.
+To execute a test script called :file:`example.py`, run the following lines in
+a console :
+
+.. tabs::
+
+   .. group-tab:: Without virtual environment
+
+      .. code-block:: shell-session
+
+         python example.py
+
+   .. group-tab:: In a virtual environment
+
+      .. tabs::
+
+         .. group-tab:: Linux & MacOS
+
+            Assuming your console is at the location of the virtual environment
+            and that :file:`example.py` is at the same level as the virtual
+            environment :
+
+            .. code-block:: shell-session
+
+               venv_crappy/bin/python example.py
+
+         .. group-tab:: Windows
+
+            Assuming your console is at the location of the virtual environment
+            and that :file:`example.py` is at the same level as the virtual
+            environment :
+
+            .. code-block:: shell-session
+
+               venv_crappy\Scripts\python.exe example.py
+
+If you're successful with all these steps, congratulations ! You just installed
+Crappy on your machine ! We wish you success in your work.

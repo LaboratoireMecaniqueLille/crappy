@@ -1,2 +1,5 @@
-include crappy/tool/kernels.cu
-include crappy/tool/data/*
+include src/crappy/tool/image_processing/kernels.cu
+include src/crappy/tool/data/no_image.png
+include src/crappy/tool/data/pad.png
+include src/crappy/tool/data/speckle.png
+include src/crappy/tool/data/ve_markers.tif

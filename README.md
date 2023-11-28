@@ -4,83 +4,87 @@ Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)
 [![Downloads](https://pepy.tech/badge/crappy)](https://pepy.tech/project/crappy)
 [![Documentation Status](https://readthedocs.org/projects/crappy/badge/?version=latest)](https://crappy.readthedocs.io/en/latest/?badge=latest)
 [![PyPi version](https://badgen.net/pypi/v/crappy/)](https://pypi.org/project/crappy)
+[![Python version](https://img.shields.io/pypi/pyversions/crappy.svg)](https://pypi.python.org/pypi/crappy/)
 
-This package aims to provide an open-source software canvas for developing 
-experimental tests in a versatile and accessible way.
+CRAPPY aims to provide a free and open-source software canvas for driving 
+experimental setups in a versatile and accessible way.
 
 Presentation
 ------------
 
+Setups in experimental research tend to get increasingly complex, and require 
+to drive a variety of actuators, sensors, and cameras from various suppliers. 
+However, as researchers are one step ahead of industrials, the commercially 
+available testing solutions are not always well-suited to their objectives. 
+Developing a custom software interface is also not always an option, as the 
+synchronization of the devices and the optimization of the computer resources
+can prove challenging even to experienced developers.
+
+The purpose of CRAPPY is to provide a framework for driving experimental 
+setups, in which even the most complex designs can be controlled in usually 
+less than a hundred lines of code. CRAPPY is:
+
+- A free and open source Python module
+- Written in pure Python, to make it easily understandable and editable by a 
+large audience
+- Highly modular and versatile, and can adapt to almost any setup
+- Distributed with a wide collection of ready-to-run [examples](https://github.com/LaboratoireMecaniqueLille/crappy/examples)
+- Heavily optimized, to make the most of your computer's resources
+- Distributed with a collection of powerful tools for performing real-time data
+and image processing
+
 Crappy is developed at the [LaMCube](https://lamcube.univ-lille.fr/), a
-mechanical research laboratory based in Lille, France to provide a powerful and
-easy-to-use framework for materials testing.
+mechanical research laboratory based in Lille, France, where it is used mainly 
+for materials testing.
 
-In order to understand the mechanical behaviour of materials, we tend to perform
-tests with more and more sensors and actuators from various suppliers. There's
-thus an increasing need to drive these devices in a synchronized way while
-managing the high complexity of the setups.
+Requirements
+------------
 
-As we are one step ahead of industrials, the commercially available testing
-solutions may also not be well-suited to our objectives. Custom software
-solutions thus need to be developed in order to further improve our tests.
+CRAPPY can run with Python 3.7 to 3.10, and has been tested on Windows, Linux, 
+Raspberry Pi and macOS. It can probably run on other operating systems 
+supporting the required Python versions. 
 
-These are the original purposes of Crappy : providing a framework for
-controlling tests and driving hardware in a synchronized and
-supplier-independent software environment.
+CRAPPY has only one requirement: [Numpy](https://numpy.org/) (1.21 or higher).
+In addition, other modules can be necessary depending on which features you 
+want to use. The main ones are [Matplotlib](https://matplotlib.org/),
+[openCV](https://opencv.org/), [pyserial](https://pypi.org/project/pyserial/)
+and [Pillow](https://python-pillow.org/).
+
+Installation
+------------
+
+CRAPPY is distributed on PyPI, and can be installed on the supported operating 
+systems simply by running the following command in a terminal:
+
+    python -m pip install crappy
+
+You'll find more details in the dedicated [installation section](https://crappy.readthedocs.io/en/latest/installation.html) 
+of the documentation, as well as alternative installation methods.
 
 Citing Crappy
 -------------
 
 If Crappy has been of help in your research, please reference it in your 
-academic publications by citing the following article :
+academic publications by citing one or both of the following articles:
 
 - Couty V., Witz J-F., Martel C. et al., *Command and Real-Time Acquisition in 
 Parallelized Python, a Python module for experimental setups*, SoftwareX 16, 
 2021, DOI: 10.1016/j.softx.2021.100848. 
-([publisher link](https://www.sciencedirect.com/science/article/pii/S2352711021001278))
-
-Requirements
-------------
-
-To install Crappy you will need Python 3 (3.6 or higher) with the following 
-modules :
-- [Numpy](https://numpy.org/) (1.19.0 or higher)
-
-In addition, other modules are necessary for a wide range of applications in Crappy 
-without being mandatory for installing the module. The main ones are [Matplotlib](https://matplotlib.org/),
-[openCV](https://opencv.org/), [pyserial](https://pypi.org/project/pyserial/)
-and [Tk](https://docs.python.org/3/library/tkinter.html).
-
-Installation
-------------
-
-Tested on Windows 10, Ubuntu 18.04 and 20.04, and MacOS Sierra.
-Simply run in a terminal (with Python installed) :
-
-    pip install crappy
-
-or
-
-    pip3 install crappy
-
-Refer to the dedicated [installation section](https://crappy.readthedocs.io/en/latest/installation.html) 
-of the documentation for more details.
+([link to Couty et al.](https://www.sciencedirect.com/science/article/pii/S2352711021001278))
+- Weisrock A., Couty V., Witz J-F. et al., *CRAPPY goes embedded: Including 
+low-cost hardware in experimental setups*, SoftwareX 22, 2023, DOI: 
+10.1016/j.softx.2023.101348. 
+([link to Weisrock et al.](https://www.sciencedirect.com/science/article/pii/S2352711023000444))
 
 Documentation
 -------------
 
 The latest versions of the documentation can be accessed on our
-[ReadTheDocs](https://crappy.readthedocs.io/) page. It contains descriptions of
-Crappy's features, tutorials, and other useful information.
+[ReadTheDocs](https://crappy.readthedocs.io/) page. It contains a description 
+of Crappy's features, tutorials, and other useful information.
 
-Bug reports
------------
+License
+-------
 
-Please report bugs, issues, ask for help or give feedback in the [dedicated github section](https://github.com/LaboratoireMecaniqueLille/crappy/issues).
-
-License information
--------------------
-
-Refer to the file [``LICENSE.txt``](https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/LICENSE) 
-for information on the history of this software, terms & conditions for usage, 
-and a disclaimer of all warranties.
+[GNU GPLv2](https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/LICENSE) 
+&copy; 2015, Laboratoire Mécanique de Lille & contributors
