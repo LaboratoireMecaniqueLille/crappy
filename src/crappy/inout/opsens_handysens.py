@@ -19,6 +19,9 @@ class HandySens(InOut):
 
   It can read data from various fiber optics sensors like temperature,
   pressure, position or strain.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Opsens to HandySens
   """
 
   def __init__(self,

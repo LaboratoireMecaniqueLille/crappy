@@ -28,6 +28,8 @@ class IOBlock(Block):
   ``make_zero_delay`` argument allows offsetting the acquired values to zero at
   the beginning of the test. Refer to the documentation of each argument for a
   more detailed description.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -95,6 +97,12 @@ class IOBlock(Block):
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
       **kwargs: The arguments to be passed to the :class:`~crappy.inout.InOut`.
+
+    .. versionchanged:: 1.5.10 renamed *trigger* argument to *trigger_label*
+    .. versionchanged:: 1.5.10 renamed *exit_values* argument to *exit_cmd*
+    .. versionadded:: 1.5.10 *make_zero_delay* argument
+    .. versionadded 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._device: Optional[InOut] = None

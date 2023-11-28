@@ -113,6 +113,10 @@ class WaveshareHighPrecision(InOut):
   The Waveshare HAT is originally meant to be used with a Raspberry Pi, but it
   can be used with any device supporting SPI as long as the wiring is correct
   and the 3.3 and 5V power are supplied.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0
+     renamed from Waveshare_high_precision to WaveshareHighPrecision
   """
 
   def __init__(self,

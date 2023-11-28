@@ -35,6 +35,10 @@ class FileReader(Camera):
   be that the images cannot be read fast enough to match the original
   framerate, in which case the images are read as fast as possible and the
   delay keeps growing.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 1.5.10 renamed from Streamer to File_reader
+  .. versionchanged:: 2.0.0 renamed from File_reader to FileReader
   """
 
   def __init__(self) -> None:
@@ -68,6 +72,10 @@ class FileReader(Camera):
       stop_at_end: If :obj:`True` (the default), stops the Crappy script once
         the available images are all exhausted. Otherwise, simply remains idle
         while waiting for the test to finish.
+    
+    .. versionchanged:: 1.5.10 renamed *path* argument to *reader_folder*
+    .. versionadded:: 1.5.10 *reader_backend* and *stop_at_end* arguments
+    .. deprecated:: 1.5.10 *pattern*, *start_delay* and *modifier* arguments
     """
 
     # Selecting an  available backend between first sitk and then cv2

@@ -13,6 +13,8 @@ class Median(Modifier):
 
   Unlike :class:`~crappy.modifier.MovingMed`, it only returns a value once
   every ``n_points`` points.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self, n_points: int = 100) -> None:
@@ -20,6 +22,8 @@ class Median(Modifier):
 
     Args:
       n_points: The number of points on which to compute the median.
+
+    .. versionchanged:: 1.5.10 renamed *npoints* argument to *n_points*
     """
 
     super().__init__()
@@ -32,6 +36,8 @@ class Median(Modifier):
     buffer and returns the medians.
 
     If there are not enough points, doesn't return anything.
+    
+    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
     """
 
     self.log(logging.DEBUG, f"Received {data}")

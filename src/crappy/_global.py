@@ -8,6 +8,8 @@ class OptionalModule:
   """Placeholder for optional dependencies that are not installed.
 
   Will display a message and raise an error when trying to use them.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -23,8 +25,10 @@ class OptionalModule:
         missing (as a :obj:`str`). If not provided, a generic message will be
         displayed.
       lazy_import: If :obj:`True`, the module won't be imported directly even
-        if it is installed. In stead, it will be imported only when necessary.
+        if it is installed. Instead, it will be imported only when necessary.
         Allows reducing the import time, especially on Window.
+    
+    .. versionadded:: 2.0.0 *lazy_import* argument
     """
 
     self._name = module_name

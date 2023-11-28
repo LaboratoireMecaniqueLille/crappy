@@ -29,6 +29,9 @@ class XiAPI(Camera):
   Note:
     Both the Python module and the camera drivers have to be installed from
     Ximea's website in order for this class to run.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Xiapi to XiAPI
   """
 
   def __init__(self) -> None:
@@ -58,6 +61,8 @@ class XiAPI(Camera):
         several cameras are available, one of them will be opened randomly.
       **kwargs: Values of the settings to set before opening the camera. Mostly
        useful if the configuration window is not used.
+    
+    .. versionchanged:: 2.0.0 renamed *sn* argument to *serial_number*
     """
 
     if serial_number is not None:

@@ -17,6 +17,9 @@ class SchneiderMDrive23(Actuator):
   and in position.
 
   It communicates with the motor over a serial connection.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from CM_drive to SchneiderMDrive23
   """
 
   def __init__(self,
@@ -69,6 +72,9 @@ class SchneiderMDrive23(Actuator):
     Args:
       position: The target position to reach, in `mm`.
       _: The speed argument is ignored.
+    
+    .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
+    .. deprecated:: 2.0.0 *motion_type* argument
     """
 
     # Closing and reopening to get rid of errors
@@ -82,7 +88,10 @@ class SchneiderMDrive23(Actuator):
     self._ser.readline()
 
   def get_position(self) -> float:
-    """Reads, displays and returns the current position in `mm`."""
+    """Reads, displays and returns the current position in `mm`.
+    
+    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    """
 
     # Closing and reopening to get rid of errors
     self._ser.close()

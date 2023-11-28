@@ -21,6 +21,10 @@ class CameraConfigBoxes(CameraConfig):
   implements useful methods for drawing one or several Boxes. If instantiated,
   this class behaves the exact same way as its parent class. It is not used as
   is by any Block in Crappy.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0
+     renamed from Camera_config_with_boxes to CameraConfigBoxes
   """
 
   def __init__(self,
@@ -40,6 +44,8 @@ class CameraConfigBoxes(CameraConfig):
       max_freq: The maximum frequency this window is allowed to loop at. It is
         simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
         Block.
+
+    .. versionadded:: 2.0.0 *log_queue*, *log_level* and *max_freq* arguments
     """
 
     self._spots = SpotsBoxes()

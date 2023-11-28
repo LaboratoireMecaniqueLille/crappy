@@ -33,6 +33,9 @@ class FakeMachine(Block):
   This Block was originally designed for proposing examples that do not require
   any hardware to run, but still display the possibilities of Crappy. It can
   also be used to test a script without actually interacting with hardware.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Fake_machine to FakeMachine
   """
 
   def __init__(self,
@@ -74,6 +77,12 @@ class FakeMachine(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionchanged:: 1.5.10 renamed *maxstrain* argument to *max_strain*
+    .. versionadded:: 1.5.10 *freq* and *verbose* arguments
+    .. versionadded:: 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *k* argument to *rigidity*
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     super().__init__()

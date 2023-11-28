@@ -21,7 +21,7 @@ __version__ = '2.0.0'
 # -- Project information -----------------------------------------------------
 
 project = 'Crappy'
-author = 'Antoine Weisrock'
+author = 'LaMcube and contributors'
 copyright = f"{strftime('%Y', gmtime())}, {author}"
 version = match(r'\d+\.\d+', __version__).group()
 release = __version__
@@ -37,7 +37,7 @@ autodoc_member_order = 'bysource'
 # Including undocumented features
 autodoc_default_options = {'undoc-members': True}
 # The codeauthor and sectionauthor directives do produce output
-show_authors = True
+show_authors = False
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -52,7 +52,9 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.duration',
     'sphinx_copybutton',
-    'sphinx_tabs.tabs'
+    'sphinx_tabs.tabs',
+    'sphinx_toolbox.collapse',
+    'sphinx_toolbox.changeset'
 ]
 
 # Tabs settings
@@ -232,4 +234,8 @@ epub_exclude_files = ['search.html']
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {
+  'python': ('https://docs.python.org/3', None),
+  'numpy': ('https://numpy.org/doc/stable/', None),
+  'matplotlib': ('https://matplotlib.org/stable/', None),
+  'psutil': ('https://psutil.readthedocs.io/en/latest/',  None)}

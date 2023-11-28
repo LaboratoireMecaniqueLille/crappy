@@ -15,6 +15,8 @@ class GPIOSwitchFT232H(InOut):
 
   When the command value is `1` the GPIO is turned high, when the command is
   `0` it is turned low. Any value other than `0` and `1` raises an error.
+  
+  .. versionadded:: 2.0.0
   """
 
   ft232h = True

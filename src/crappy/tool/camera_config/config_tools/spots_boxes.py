@@ -16,6 +16,8 @@ class SpotsBoxes:
 
   It can also instantiate the Box objects by parsing a list of tuples
   containing enough information.
+
+  .. versionadded:: 2.0.0
   """
 
   spot_1: Optional[Box] = None

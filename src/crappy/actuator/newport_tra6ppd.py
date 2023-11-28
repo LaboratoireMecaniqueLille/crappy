@@ -24,6 +24,9 @@ class NewportTRA6PPD(Actuator):
 
   Note:
     This Actuator ignores new position commands while it is moving.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0 renamed from TRA6PPD to NewportTRA6PPD
   """
 
   def __init__(self,

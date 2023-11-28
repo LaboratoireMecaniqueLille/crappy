@@ -34,6 +34,8 @@ class GPUCorrel(Camera):
   correlation is performed on the entire image. It is however possible to set
   a mask, so that only part of the image is considered when running the
   correlation.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -242,6 +244,22 @@ class GPUCorrel(Camera):
       **kwargs: Any additional argument will be passed to the
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.
+    
+    .. versionadded:: 1.5.10 
+       *transform*, *display_images*, *displayer_backend*, 
+       *displayer_framerate*, *freq*, *save_images*, *image_generator*, 
+       *levels*, *resampling_factor*, *kernel_file*, *iterations*, *mask*, 
+       *mul* and *res* arguments
+    .. versionchanged:: 1.5.10 
+       renamed *discard_lim* argument to *discard_limit*
+    .. versionchanged:: 1.5.10 
+       renamed *imgref* argument to *img_ref*
+    .. versionremoved:: 1.5.10
+       *fps_label*, *ext*, *input_label*, *config* and *cam_kwargs* arguments
+    .. versionadded:: 2.0.0 
+       *debug*, *software_trig_label*, *img_extension*, *img_shape* and
+       *img_dtype* arguments
+    .. versionremoved:: 2.0.0 *img_name* argument
     """
 
     super().__init__(camera=camera,
@@ -307,6 +325,9 @@ class GPUCorrel(Camera):
     In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.GPUCorrelProcess` object that
     performs the GPU-accelerated image correlation.
+    
+    .. versionchanged:: 1.5.5 now accepting args and kwargs
+    .. versionchanged:: 1.5.10 not accepting arguments anymore
     """
 
     # Instantiating the GPUCorrelProcess

@@ -21,6 +21,8 @@ class Agilent34420a(InOut):
 
   May also work on similar devices from the same manufacturer, although that
   was not tested.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,

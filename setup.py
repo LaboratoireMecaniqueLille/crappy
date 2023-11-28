@@ -7,19 +7,9 @@ https://packaging.python.org/en/latest/distributing.html
 https://github.com/pypa/sampleproject
 """
 
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, Extension
 from os import popen, walk
 import platform
-from pathlib import Path
-
-# Reading version from __version__.py file
-with open('src/crappy/__version__.py') as file:
-  for line in file:
-    if line.startswith('__version__'):
-      __version__ = line.split("'")[1]
-
-# Get the long description from the relevant file
-long_description = Path('README.md').read_text()
 
 # Getting the current version of Python
 py_ver = '.'.join(platform.python_version().split('.')[:2])
@@ -85,74 +75,4 @@ if platform.system() == "Windows":
   if p.read() and install_camera_link:
     extensions.append(cl_module)
 
-setup(
-  # Description of the project
-  name='crappy',
-  version=__version__,
-  description='Command and Real-time Acquisition in Parallelized Python',
-  long_description=long_description,
-  long_description_content_type='text/markdown',
-  keywords='control,command,acquisition,multiprocessing',
-  license='GPL V2',
-  classifiers=['Development Status :: 4 - Beta ',
-               'Intended Audience :: Science/Research',
-               'License :: OSI Approved :: GNU General Public License v2 or '
-               'later (GPLv2+)',
-               'Natural Language :: English',
-               'Operating System :: OS Independent',
-               'Programming Language :: Python :: 3.7',
-               'Programming Language :: Python :: 3.8',
-               'Programming Language :: Python :: 3.9',
-               'Programming Language :: Python :: 3.10',
-               'Programming Language :: Python :: 3.11',
-               'Programming Language :: Python :: 3.12',
-               'Topic :: Scientific/Engineering',
-               'Topic :: Software Development :: Build Tools',
-               'Topic :: Software Development :: Embedded Systems'],
-
-  # URLs of the project
-  url='https://github.com/LaboratoireMecaniqueLille/crappy',
-  download_url='https://pypi.org/project/crappy/#files',
-  project_urls={'Documentation':
-                'https://crappy.readthedocs.io/en/latest/index.html'},
-
-  # Information on the author
-  author='LaMcube',
-  author_email='antoine.weisrock1@centralelille.fr',
-  maintainer='Antoine Weisrock',
-  maintainer_email='antoine.weisrock@gmail.com',
-
-  # Packaging information
-  packages=find_packages('src'),
-  package_dir={'crappy': 'src/crappy'},
-  include_package_data=True,
-  package_data={'crappy': ['tool/data/*', 'tool/microcontroller.*',
-                           'tool/image_processing/kernels.cu']},
-  ext_package='crappy',
-  ext_modules=extensions,
-
-  # Installation requirements
-  python_requires=">=3.7",
-  install_requires=["numpy>=1.21.0"],
-  extras_require={'SBC': ['smbus2',
-                          'spidev',
-                          'Adafruit-Blinka',
-                          'adafruit-circuitpython-ads1x15',
-                          'adafruit-circuitpython-motorkit',
-                          'adafruit-circuitpython-mprls',
-                          'adafruit-circuitpython-busdevice'],
-                  'image': ['opencv-python>=4.0',
-                            'Pillow>=8.0.0',
-                            'matplotlib>=3.3.0',
-                            'SimpleITK>=2.0.0',
-                            'scikit-image>=0.18.0'],
-                  'hardware': ['pyusb>=1.1.0',
-                               'pyserial>=3.4',
-                               'pyyaml>=5.3'],
-                  'main': ['matplotlib>=3.3.0',
-                           'opencv-python>=4.0',
-                           'pyserial>=3.4']},
-
-  # Others
-  zip_safe=False,
-)
+setup(ext_package='crappy', ext_modules=extensions)

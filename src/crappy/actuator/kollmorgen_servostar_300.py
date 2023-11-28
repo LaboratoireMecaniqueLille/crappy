@@ -19,6 +19,9 @@ class ServoStar300(Actuator):
   It communicates with the servomotor over a serial connection. The
   :class:`~crappy.lamcube.Biaxe` Actuator can drive the same hardware, but only
   in speed.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Servostar to ServoStar300
   """
 
   def __init__(self,
@@ -33,6 +36,9 @@ class ServoStar300(Actuator):
       mode: The driving mode to use when starting the test. Can be `'analog'`
         or `'serial'`. It can be changed afterward while the test is running,
         by sending the right command.
+    
+    .. deprecated:: 2.0.0 *device argument*
+    .. versionchanged:: 2.0.0 use *port* instead of *device*
     """
 
     self._ser = None
@@ -84,6 +90,9 @@ class ServoStar300(Actuator):
         sets the driving mode to analog.
       speed: The speed at which the actuator should reach its target position.
         If no speed is specified, the default is `20000`.
+    
+    .. deprecated:: 2.0.0 remove *acc* and *dec* arguments
+    .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
     """
 
     if speed is None:
@@ -118,7 +127,10 @@ class ServoStar300(Actuator):
     self._last_pos = pos
 
   def get_position(self) -> Optional[float]:
-    """Reads and returns the current position of the motor."""
+    """Reads and returns the current position of the motor.
+
+    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    """
 
     # Requesting a position reading
     self._ser.flushInput()

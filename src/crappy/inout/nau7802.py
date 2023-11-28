@@ -111,6 +111,9 @@ class NAU7802(InOut):
   that can read up to 320 samples per second. It communicates over the I2C
   protocol. The returned value of the InOut is in Volts by default, but can be
   converted to Newtons using the ``gain`` and ``offset`` arguments.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Nau7802 to NAU7802
   """
 
   def __init__(self,
@@ -151,6 +154,9 @@ class NAU7802(InOut):
         :math:`output = gain * tension + offset`.
       offset: Allows to tune the output value according to the formula :
         :math:`output = gain * tension + offset`.
+      
+    .. versionadded:: 1.5.8 *int_pin* argument
+    .. versionremoved:: 2.0.0 *backend* and *ft232h_ser_num* arguments
     """
 
     self._bus = None

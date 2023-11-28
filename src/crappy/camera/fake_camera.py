@@ -15,6 +15,9 @@ class FakeCamera(Camera):
   The generated images are just a gradient of grey levels, with a line moving
   as a function of time. It is possible to tune the dimension of the image, the
   frame rate and the speed of the moving line.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Fake_camera to FakeCamera
   """
 
   def __init__(self) -> None:
@@ -44,6 +47,9 @@ class FakeCamera(Camera):
       height: The height of the image to generate in pixels.
       speed: The evolution speed of the image, in pixels per second.
       fps: The maximum update frequency of the generated images.
+    
+    .. versionadded:: 2.0.0
+       *width*, *height*, *speed* and *fps* arguments explicitly listed
     """
 
     self.set_all(width=width, height=height, speed=speed, fps=fps)

@@ -20,6 +20,8 @@ class HistogramProcess(Process):
   its children to delegate and parallelize the calculation of the histogram. It
   allows to gain a few frames per second on the display in the configuration
   window.
+  
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self,

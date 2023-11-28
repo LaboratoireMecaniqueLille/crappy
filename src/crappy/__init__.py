@@ -46,6 +46,9 @@ def docs():
   """Opens the online documentation of Crappy.
 
   It opens the latest version, and of course requires an internet access.
+  
+  .. versionadded:: 1.5.5
+  .. versionchanged:: 2.0.0 renamed from doc to docs
   """
 
   open('https://crappy.readthedocs.io/en/latest/')
@@ -58,6 +61,8 @@ class resources:
 
   These aliases are then used in the examples provided on the GitHub
   repository, but could also be used in custom user scripts.
+
+  .. versionadded:: 1.5.3
   """
 
   try:

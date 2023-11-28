@@ -29,6 +29,9 @@ class BaslerIronmanCameraLink(Camera):
     This Camera relies on a custom-written C library that hasn't been tested in
     a long time. It might not be functional anymore. This Camera also requires
     proprietary drivers to be installed.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Cl_camera to BaslerIronmanCameraLink
   """
 
   def __init__(self) -> None:
@@ -57,6 +60,11 @@ class BaslerIronmanCameraLink(Camera):
         them in a persistent way.
       camera_type: The type of camera to drive, as a :obj:`str`.
       **kwargs: All the settings to set on the camera.
+    
+    .. versionadded:: 1.5.10
+       explicitly listing the *num_device*, *config_file* and *camera_type*
+       arguments
+    .. versionchanged:: 2.0.0 renamed *numdevice* argument to *num_device*
     """
 
     # Reading the camera type from the config file, if applicable

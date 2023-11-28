@@ -5,7 +5,12 @@ from ..._global import DefinitionError
 
 class MetaModifier(type):
   """Metaclass keeping track of all the Modifiers, including the custom
-  user-defined ones."""
+  user-defined ones.
+
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 1.5.10
+     not checking anymore for mandatory method in :meth:`__init__`
+  """
 
   classes = {}
 

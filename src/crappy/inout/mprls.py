@@ -43,6 +43,9 @@ class MPRLS(InOut):
   """This class can read values from an MPRLS pressure sensor.
 
   It communicates over I2C with the sensor.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Mprls to MPRLS
   """
 
   def __init__(self,
@@ -76,6 +79,11 @@ class MPRLS(InOut):
         another address.
       i2c_port: The I2C port over which the MPRLS should communicate. On most
         Raspberry Pi models the default I2C port is `1`.
+    
+    .. versionadded:: 1.5.8
+       *backend*, *eoc_pin*, *device_address*, *i2c_port* and *ft232h_ser_num*
+       arguments
+    .. versionremoved:: 2.0.0 *ft232h_ser_num* argument
     """
 
     self._bus = None
