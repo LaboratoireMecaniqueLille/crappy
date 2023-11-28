@@ -555,6 +555,17 @@ Supported Actuators
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
 
+- :ref:`Phidget Stepper4A`
+
+  Drives 4A bipolar stepper motors using Phidget's `Stepper4A <https://
+  www.phidgets.com/?prodid=1278>`_ in speed or in position, by using several
+  Phidget libraries.
+
+  .. Important::
+     This Actuator must be connected to Phidget's VINT Hub to work. See the
+     following link `<https://www.phidgets.com/?prodid=1278#Tab_User_Guide>`_
+     to connect properly to the Hub.
+
 - :ref:`Pololu Tic`
 
   Drives Pololu's `Tic <https://www.pololu.com/category/212/tic-stepper-motor-

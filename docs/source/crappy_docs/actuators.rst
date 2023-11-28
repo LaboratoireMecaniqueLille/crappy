@@ -49,6 +49,13 @@ Oriental ARD-K
    :members: open, get_position, set_speed, set_position, stop, close
    :special-members: __init__
 
+Phidget Stepper4A
++++++++++++++++++
+.. autoclass:: crappy.actuator.Phidget4AStepper
+   :members: open, set_speed, set_position, get_speed, get_position, stop,
+             close
+   :special-members: __init__
+
 Pololu Tic
 ++++++++++
 .. autoclass:: crappy.actuator.PololuTic
