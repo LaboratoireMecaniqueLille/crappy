@@ -549,11 +549,13 @@ class XiAPI(Camera):
     """sets the requested data format."""
 
     if self._started:
+      self.log(logging.DEBUG, "Stopping the image acquisition")
       self._cam.stop_acquisition()
 
     self._cam.set_imgdataformat(DATA_FORMATS_INV[self._model][fmt])
 
     if self._started:
+      self.log(logging.DEBUG, "Starting the image acquisition")
       self._cam.start_acquisition()
 
   def _set_exp(self, exposure: float) -> None:
@@ -603,12 +605,14 @@ class XiAPI(Camera):
       self.x_offset = self.settings['image_width'].highest - width
 
     if self._started:
+      self.log(logging.DEBUG, "Stopping the image acquisition")
       self._cam.stop_acquisition()
 
     # Setting the requested width and reloading the X offset
     self._cam.set_width(width)
 
     if self._started:
+      self.log(logging.DEBUG, "Starting the image acquisition")
       self._cam.start_acquisition()
 
     self.settings['x_offset'].reload(self._cam.get_offsetX_minimum(),
@@ -625,12 +629,14 @@ class XiAPI(Camera):
       self.y_offset = self.settings['image_height'].highest - height
 
     if self._started:
+      self.log(logging.DEBUG, "Stopping the image acquisition")
       self._cam.stop_acquisition()
 
     # Setting the requested height and reloading the Y offset
     self._cam.set_height(height)
 
     if self._started:
+      self.log(logging.DEBUG, "Starting the image acquisition")
       self._cam.start_acquisition()
 
     self.settings['y_offset'].reload(self._cam.get_offsetY_minimum(),
@@ -643,22 +649,26 @@ class XiAPI(Camera):
     """Sets the `x` offset in pixels for selecting a region of interest."""
 
     if self._started:
+      self.log(logging.DEBUG, "Stopping the image acquisition")
       self._cam.stop_acquisition()
 
     self._cam.set_offsetX(x_offset)
 
     if self._started:
+      self.log(logging.DEBUG, "Starting the image acquisition")
       self._cam.start_acquisition()
 
   def _set_oy(self, y_offset: int) -> None:
     """Sets the `y` offset in pixels for selecting a region of interest."""
 
     if self._started:
+      self.log(logging.DEBUG, "Stopping the image acquisition")
       self._cam.stop_acquisition()
 
     self._cam.set_offsetY(y_offset)
 
     if self._started:
+      self.log(logging.DEBUG, "Starting the image acquisition")
       self._cam.start_acquisition()
 
   def _set_ext_trig(self, trig: str) -> None:
@@ -670,6 +680,7 @@ class XiAPI(Camera):
     """
 
     if self._started:
+      self.log(logging.DEBUG, "Stopping the image acquisition")
       self._cam.stop_acquisition()
 
     if trig == 'Hardware':
@@ -681,6 +692,7 @@ class XiAPI(Camera):
       
     self._trig = trig
     if self._started:
+      self.log(logging.DEBUG, "Starting the image acquisition")
       self._cam.start_acquisition()
 
   def _set_framerate_mode(self, mode: str) -> None:
@@ -707,11 +719,13 @@ class XiAPI(Camera):
     """Sets the downsampling mode on the camera."""
 
     if self._started:
+      self.log(logging.DEBUG, "Stopping the image acquisition")
       self._cam.stop_acquisition()
 
     self._cam.set_downsampling(DOWNSAMPLING_MODES_INV[self._model][mode])
 
     if self._started:
+      self.log(logging.DEBUG, "Starting the image acquisition")
       self._cam.start_acquisition()
 
     self.settings['image_width'].reload(self._cam.get_width_minimum(),
