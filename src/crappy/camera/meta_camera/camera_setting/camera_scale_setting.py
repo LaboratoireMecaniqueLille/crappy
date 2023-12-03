@@ -141,7 +141,7 @@ class CameraScaleSetting(CameraSetting):
         self.log(logging.WARNING, f"Could not set {self.name} step "
                                   f"(lowest: int, step: float), "
                                   f"the step is now {self.step} !")
-      if self.step > (self.highest - self.lowest):
+      if self.highest > self.lowest and self.step > self.highest - self.lowest:
         self.step = 1 if self.type == int else (self.highest -
                                                 self.lowest) / 1000
         self.log(logging.WARNING, f"Could not set {self.name} step, "
