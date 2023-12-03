@@ -2,6 +2,8 @@
 
 from .meta_modifier import Modifier
 
+# Do not forget to revert changes in MetaModifier
+
 
 class Moving_avg(Modifier):
   """Empty class for signaling an object of version 1.5 whose name changed in

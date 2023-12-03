@@ -124,8 +124,8 @@ you to have a look at the section detailing :ref:`how to code your own
 Modifiers <1. Custom Modifiers>`. You can :download:`download this Modifier
 example </downloads/more_complexity/tuto_modifiers.py>` to run it locally on
 your machine. The Modifiers distributed with Crappy are also showcased in the
-`examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/modifiers>`_.
+`examples folder on GitHub <https://github.com/LaboratoireMecaniqueLille/
+crappy/tree/master/examples/modifiers>`_.
 
 3. Advanced Generator condition
 -------------------------------
