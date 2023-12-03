@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from time import time
-from typing import Optional, Tuple
+from time import time, strftime, gmtime
+from typing import Optional, Tuple, Dict, Any
 import numpy as np
 import logging
 
@@ -244,15 +244,54 @@ class XiAPI(Camera):
     self._cam.start_acquisition()
     self._started = True
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
-    """Reads a frame from the camera, and returns it along with its
-    timestamp."""
+  def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
+    """Reads a frame from the camera, and returns it along with its metadata.
+
+    The acquired metadata contains the following fields :
+
+    * `'t(s)'`: The current timestamp as returned by :obj:`time.time`.
+    * `'DateTimeOriginal'`: The current date up to the second as a valid exif
+      tag, based on the value of `'t(s)'`.
+    * `'SubsecTimeOriginal'`: The sub-second part of the current date as a
+      valid exif tag, based on the value of `'t(s)'`.
+    * `'XimeaSec'`: The number of seconds the camera has been up.
+    * `'XimeaUSec'`: The decimal part of the above field, value in µs.
+    * `'ImageWidth'`: The width of the acquired image, in pixels.
+    * `'ImageHeight'`: The height of the acquired image, in pixels.
+    * `'ExposureTime'`: The exposure time of the acquired image, in µs.
+    * `'AbsoluteOffsetX'`: The offset of the acquired ROI along the X axis, in
+      pixels.
+    * `'AbsoluteOffsetY'`: The offset of the acquired ROI along the Y axis, in
+      pixels.
+    * `'DownsamplingX'`: The downsampling factor along the X axis.
+    * `'DownsamplingY'`: The downsampling factor along the Y axis.
+    * `'ImageUniqueID'`: The index of the acquired image, as returned by the
+      camera.
+
+    """
 
     if self._timeout is not None:
       self._cam.get_image(self._img, timeout=self._timeout)
     else:
       self._cam.get_image(self._img)
-    return time(), self._img.get_image_data_numpy()
+
+    # Returning metadata from the camera long with the captured image
+    t = time()
+    metadata = {'t(s)': t,
+                'DateTimeOriginal': strftime("%Y:%m:%d %H:%M:%S", gmtime(t)),
+                'SubsecTimeOriginal': f'{t % 1:.6f}',
+                'XimeaSec': self._img.tsSec,
+                'XimeaUSec': self._img.tsUSec,
+                'ImageWidth': self._img.width,
+                'ImageHeight': self._img.height,
+                'ExposureTime': self._img.exposure_time_us,
+                'AbsoluteOffsetX': self._img.AbsoluteOffsetX,
+                'AbsoluteOffsetY': self._img.AbsoluteOffsetY,
+                'DownsamplingX': self._img.DownsamplingX,
+                'DownsamplingY': self._img.DownsamplingY,
+                'ImageUniqueID': self._img.acq_nframe}
+
+    return metadata, self._img.get_image_data_numpy()
 
   def close(self) -> None:
     """Closes the connection to the camera and releases the resources."""
