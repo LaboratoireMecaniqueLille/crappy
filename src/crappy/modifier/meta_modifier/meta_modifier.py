@@ -20,6 +20,11 @@ class MetaModifier(type):
   def __init__(cls, name: str, bases: tuple, dct: dict) -> None:
     super().__init__(name, bases, dct)
 
+    if hasattr(cls, 'evaluate'):
+      raise DefinitionError("The evaluate method is deprecated for Modifiers "
+                            "since version 2.0.0, just rename it to __call__ "
+                            "to get your Modifier working again.")
+
     # Checking that a Modifier with the same name doesn't already exist
     if name in cls.classes:
       raise DefinitionError(f"The {name} class is already defined !")

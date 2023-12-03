@@ -97,7 +97,7 @@ won't be able to help you. So Crappy is **NOT for you** if :
    :target: https://crappy.readthedocs.io/en/latest/?badge=latest
 
 .. |PyPi version| image:: https://badgen.net/pypi/v/crappy/
-   :target: https://pypi.org/project/crappy
+   :target: https://pypi.org/project/crappy/
 
 .. |PyPI pyversions| image:: https://img.shields.io/pypi/pyversions/crappy.svg
-   :target: https://pypi.python.org/pypi/crappy/
+   :target: https://pypi.org/project/crappy/

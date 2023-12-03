@@ -387,9 +387,9 @@ Actuators. The new methods are :
   labels in :py:`cmd_labels`.
 
 Once again, let's switch to practice by writing a custom InOut class. We'll
-keep it very basic, you can browse the `InOuts distributed with Crappy
-<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/inout>`_ to
-have an overview of what a real-life InOut looks like.
+keep it very basic, you can browse the `collection of InOuts distributed with
+Crappy <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/src/
+crappy/inout>`_ to have an overview of what a real-life InOut looks like.
 
 .. literalinclude:: /downloads/custom_objects/custom_inout.py
    :language: python
