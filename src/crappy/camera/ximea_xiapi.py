@@ -4,6 +4,7 @@ from time import time, strftime, gmtime
 from typing import Optional, Tuple, Dict, Any
 import numpy as np
 import logging
+from warnings import warn
 
 from .meta_camera import Camera
 from .._global import OptionalModule
@@ -81,7 +82,26 @@ class XiAPI(Camera):
   def open(self,
            serial_number: Optional[str] = None,
            timeout: Optional[int] = None,
-           **kwargs) -> None:
+           data_format: Optional[str] = None,
+           exposure_time_us: Optional[int] = None,
+           gain: Optional[float] = None,
+           auto_exposure_auto_gain: Optional[bool] = None,
+           gamma_y: Optional[float] = None,
+           gamma_c: Optional[float] = None,
+           sharpness: Optional[float] = None,
+           image_width: Optional[int] = None,
+           image_height: Optional[int] = None,
+           x_offset: Optional[int] = None,
+           y_offset: Optional[int] = None,
+           framerate_mode: Optional[str] = None,
+           framerate: Optional[float] = None,
+           downsampling_mode: Optional[str] = None,
+           width: Optional[int] = None,
+           height: Optional[int] = None,
+           xoffset: Optional[int] = None,
+           yoffset: Optional[int] = None,
+           exposure: Optional[float] = None,
+           AEAG: Optional[bool] = None) -> None:
     """Opens the connection to the camera, instantiates the available settings
     and starts the acquisition.
 
@@ -92,15 +112,147 @@ class XiAPI(Camera):
       serial_number: A :obj:`str` containing the serial number of the camera to
         open, in case several cameras are connected. If not provided and
         several cameras are available, one of them will be opened randomly.
+
+        .. versionchanged:: 2.0.0 renamed from *sn* to *serial_number*
+
       timeout: The number of milliseconds the camera is allowed to wait for an
         image before raising a :exc:`TimeoutError`, as an :obj:`int`. Mostly
         useful when using an external trigger, or a very long exposure time.
         The default is 5000ms.
-      **kwargs: Values of the settings to set before opening the camera. Mostly
-       useful if the configuration window is not used.
-    
-    .. versionchanged:: 2.0.0 renamed *sn* argument to *serial_number*
+
+        .. versionadded:: 2.0.2
+
+      data_format: The data format to use for acquisition as a :obj:`str` (e.g.
+        `'Mono (8 bits)'`). The available formats depend on the model of the
+        camera. This setting is only implemented for a subset of all the Ximea
+        cameras, get in touch with the maintainers to implement in on other
+        models.
+
+        .. versionadded:: 2.0.2
+
+      exposure_time_us: The exposure time to use for acquiring images, in µs.
+        Only has an effect if ``auto_exposure_auto_gain`` is set to
+        :obj:`False`, and if ``framerate_mode`` is not in `'Free run'`.
+        Depending on the camera might set the *target* or the *limit*
+        framerate. The range of values depends on the model of the driven
+        camera. This setting is only implemented for a subset of all the Ximea
+        cameras, get in touch with the maintainers to implement in on other
+        models.
+
+        .. versionadded:: 2.0.2
+
+      gain: The gain in dB to apply to the acquired images, as a :obj:`float`.
+        Only has an effect if ``auto_exposure_auto_gain`` is set to
+        :obj:`False`. The valid range of values depends on the model of the
+        driven camera.
+      auto_exposure_auto_gain: When set to :obj:`True`, overwrites the
+        ``exposure_time_us`` and ``gain`` values and drives the exposure and
+        the gain automatically.
+
+        .. versionadded:: 2.0.2
+
+      gamma_y: The luminosity gamma value, for color images only, as a
+        :obj:`float`. The valid range of values depends on the model of the
+        driven camera.
+
+        .. versionadded:: 2.0.2
+
+      gamma_c: The chromaticity gamma value, for color images only, as a
+        :obj:`float`. The valid range of values depends on the model of the
+        driven camera.
+
+        .. versionadded:: 2.0.2
+
+      sharpness: The sharpness strength value, for color images only, as a
+        :obj:`float`. The valid range of values depends on the model of the
+        driven camera.
+        
+        .. versionadded:: 2.0.2
+
+      image_width: The width of the ROI to acquire in pixels, as an :obj:`int`.
+        The valid range of values depends on the model of the driven camera, 
+        and on the ``downsampling_mode`` if supported.
+        
+        .. versionadded:: 2.0.2
+        
+      image_height: The height of the ROI to acquire in pixels, as an 
+        :obj:`int`. The valid range of values depends on the model of the 
+        driven camera, and on the ``downsampling_mode`` if supported.
+        
+        .. versionadded:: 2.0.2
+        
+      x_offset: The X offset of the ROI to acquire in pixels, as an :obj:`int`. 
+        The valid range of values depends on the model of the driven camera, 
+        on the selected ``width``, and on the ``downsampling_mode`` if 
+        supported.
+        
+        .. versionadded:: 2.0.2
+        
+      y_offset: The Y offset of the ROI to acquire in pixels, as an :obj:`int`. 
+        The valid range of values depends on the model of the driven camera, 
+        on the selected ``height``, and on the ``downsampling_mode`` if 
+        supported.
+        
+        .. versionadded:: 2.0.2
+        
+      framerate_mode: The mode for driving the acquisition framerate. Can be 
+        one of `'Free run'`, `'Framerate target'` or `'Framerate limit'`, 
+        but not all camera models support the three options. This setting is 
+        only implemented for a subset of all the Ximea cameras, get in touch 
+        with the maintainers to implement in on other models.
+        
+        .. versionadded:: 2.0.2
+        
+      framerate: Either the target or the limit framerate for image 
+        acquisition, depending on the ``framerate_mode`` value, as a 
+        :obj:`float`. The valid range of values depends on the model of the 
+        driven camera, and on the ``exposure_time_us`` value. Only has an 
+        effect if ``framerate_mode`` is not set to `'Free run'`. This setting 
+        is only implemented for a subset of all the Ximea cameras, get in touch 
+        with the maintainers to implement in on other models.
+        
+        .. versionadded:: 2.0.2
+        
+      downsampling_mode: The downsampling mode to apply to the acquired images,
+        as a :obj:`str` (e.g. `'2x2'`). This setting is only implemented for a 
+        subset of all the Ximea cameras, get in touch with the maintainers to 
+        implement in on other models.
+        
+        .. versionadded:: 2.0.2
+        
+      width: .. deprecated:: 2.0.2 Use ``image_width`` instead.
+      height: .. deprecated:: 2.0.2 Use ``image_height`` instead.
+      xoffset: .. deprecated:: 2.0.2 Use ``x_offset`` instead.
+      yoffset: .. deprecated:: 2.0.2 Use ``y_offset`` instead.
+      exposure: .. deprecated:: 2.0.2 Use ``exposure_time_us`` instead.
+      AEAG: .. deprecated:: 2.0.2 Use ``auto_exposure_auto_gain`` instead.
     """
+
+    # Managing the deprecated arguments
+    if width is not None:
+      warn("The width argument is deprecated for the XiAPI camera, use "
+           "image_width instead !", FutureWarning)
+      image_width = width
+    if height is not None:
+      warn("The height argument is deprecated for the XiAPI camera, use "
+           "image_height instead !", FutureWarning)
+      image_height = height
+    if xoffset is not None:
+      warn("The xoffset argument is deprecated for the XiAPI camera, use "
+           "x_offset instead !", FutureWarning)
+      x_offset = xoffset
+    if yoffset is not None:
+      warn("The yoffset argument is deprecated for the XiAPI camera, use "
+           "y_offset instead !", FutureWarning)
+      y_offset = yoffset
+    if exposure is not None:
+      warn("The exposure argument is deprecated for the XiAPI camera, use "
+           "exposure_time_us instead !", FutureWarning)
+      exposure_time_us = exposure
+    if AEAG is not None:
+      warn("The AEAG argument is deprecated for the XiAPI camera, use "
+           "auto_exposure_auto_gain instead !", FutureWarning)
+      auto_exposure_auto_gain = AEAG
 
     self._timeout = timeout
 
@@ -237,7 +389,15 @@ class XiAPI(Camera):
                               self._set_downsampling_mode,
                               self._get_downsampling_mode())
 
-    self.set_all(**kwargs)
+    # Collecting the kwargs to set and setting them
+    to_set = {name: arg for name, arg in zip(
+        ('exposure_time_us', 'gain', 'auto_exposure_auto_gain', 'gamma_y',
+         'gamma_c', 'sharpness', 'image_width', 'image_height', 'x_offset',
+         'y_offset', 'framerate_mode', 'framerate', 'downsampling_mode'),
+        (exposure_time_us, gain, auto_exposure_auto_gain, gamma_y, gamma_c,
+         sharpness, image_width, image_height, x_offset, y_offset,
+         framerate_mode, framerate, downsampling_mode)) if arg is not None}
+    self.set_all(**to_set)
 
     # Starting the acquisition
     self.log(logging.INFO, "Starting the image acquisition")
