@@ -169,7 +169,7 @@ beginning of the test. It also works for streams, provided that the number of
 channels acquired in *streamer* mode is the same as the number of channels
 acquired by :meth:`~crappy.inout.InOut.get_data`.
 
-**Thing get a bit trickier when the hardware can handle and tune offsets for**
+**Things get a bit trickier when the hardware can handle and tune offsets for**
 **its channels** ! In such a case, it might be advantageous to set the zeroing
 offsets directly on the device rather than relying on Crappy. To achieve that,
 the :meth:`~crappy.inout.InOut.make_zero` method of the base
@@ -181,8 +181,9 @@ these values on the hardware and resets the offsets on Crappy's side. This
 kind of implementation can be found in the :ref:`Labjack T7` or the
 :ref:`Comedi` InOuts. Check their code to see how it looks ! There is also a
 very basic example of offsetting in the `examples on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/custom_objects>`_
-where the method is overriden and the offsets are simply doubled.
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+custom_objects>`_ where the method is overriden and the offsets are simply
+doubled.
 
 There is no need for a specific example in this sub-section, it is mostly
 included to signal the existence of the zeroing feature and the possibility for
@@ -323,7 +324,8 @@ acquired image in order for it to be effective. It returns the cropped image,
 or :obj:`None` if there's nothing left to display (shouldn't happen). You can
 find examples of usage for the software ROI in
 :class:`~crappy.camera.CameraOpencv`, or in the `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+blocks>`_.
 
 4.b. Reload slider and choice settings
 ++++++++++++++++++++++++++++++++++++++
@@ -701,9 +703,9 @@ the detected eyes on the displayed images :
    Python modules installed.
 
 This custom Camera Block script is based on an example that you can find in the
-`custom objects examples folder on GitHub  <https://github.com/
-LaboratoireMecaniqueLille/crappy/examples/custom_objects>`__. You can
-:download:`download it
+`custom objects examples folder on GitHub <https://github.com/
+LaboratoireMecaniqueLille/crappy/tree/master/examples/custom_objects>`__. You
+can :download:`download it
 </downloads/complex_custom_objects/custom_camera_block.py>` to run it locally
 on your machine. Note that the :py:`'Webcam'` camera is used here, so this
 example will require a camera readable by OpenCV to be plugged to the computer.

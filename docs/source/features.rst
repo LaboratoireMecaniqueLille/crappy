@@ -53,8 +53,8 @@ Data display
   persistent and allows to visualize the history of a label.
 
   The examples folder on GitHub contains `one example of the Grapher Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  dashboard.py>`_ specifically, but it is also used in most of the other
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/dashboard.py>`_ specifically, but it is also used in most of the other
   examples.
 
   :ref:`A tutorial section <2.c. The Grapher Block>` is also dedicated to the

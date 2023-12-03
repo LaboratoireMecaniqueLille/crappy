@@ -135,8 +135,8 @@ You can :download:`download this custom Modifier example
 </downloads/custom_objects/custom_modifier.py>` to run it locally on your
 machine. An extra example of a custom Modifier can also be found in the
 `examples folder on GitHub <https://github.com/LaboratoireMecaniqueLille/
-crappy/examples/custom_objects>`_. Except fot what was detailed in this
-section, there is actually not much more to know about the definition of
+crappy/tree/master/examples/custom_objects>`__. Except fot what was detailed in
+this section, there is actually not much more to know about the definition of
 custom Modifiers ! They stand after all among the simplest objects in Crappy.
 
 .. Note::
@@ -274,7 +274,7 @@ the Actuator won't work ! At that point, you should **use your working draft**
 obtain a working Actuator in no time! To give you a better idea of what the
 result could look like, here's an example inspired from the custom Actuator in
 the `examples folder on GitHub <https://github.com/LaboratoireMecaniqueLille/
-crappy/examples/custom_objects>`_ :
+crappy/tree/master/examples/custom_objects>`__ :
 
 .. literalinclude:: /downloads/custom_objects/custom_actuator.py
    :language: python
@@ -308,8 +308,8 @@ You can :download:`download this custom Actuator example
 machine. **The concepts presented in this section will be re-used for all the**
 **other types of custom objects**, so make sure to understand them well ! You
 can also have a look at the `Actuators distributed with Crappy
-<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/actuator>`_ to
-see how the implementation of real-life Actuators looks like.
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/src/crappy/
+actuator>`_ to see how the implementation of real-life Actuators looks like.
 
 .. Note::
    If you want to have debug information displayed in the terminal from your
@@ -421,8 +421,8 @@ the IOBlock. And in the end it all works fine together ! You can
 :download:`download this custom InOut example
 </downloads/custom_objects/custom_inout.py>` to run it locally on your
 machine, and have a look at the `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/custom_objects>`_
-to find more examples of custom InOut objects.
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+custom_objects>`_ to find more examples of custom InOut objects.
 
 .. Note::
    If you want to have debug information displayed in the terminal from your
@@ -544,9 +544,10 @@ You can :download:`download this custom streamer InOut example
 machine. The only real difficulty with the instantiation of custom InOuts
 supporting the *streamer* mode is building the arrays to return, but you can
 find an additional example of a custom InOut in the `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/custom_objects>`_
-and in the `InOuts distributed with Crappy
-<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/inout>`_.
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+custom_objects>`__ and in the `InOuts distributed with Crappy
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/src/crappy/
+inout>`_.
 
 4. Custom Cameras
 -----------------
@@ -620,8 +621,8 @@ bits indifferently.
 
 As always, let's write a basic example to make it clear how the implementation
 should look like in an actual script, inspired from an `example available on
-GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/examples/
-custom_objects>`_ :
+GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
+examples/custom_objects>`_ :
 
 .. collapse:: (Expand to see the full code)
 
@@ -711,8 +712,8 @@ You can :download:`download this custom Camera example
 machine. Cameras are quite complex objects, so **there's much more to**
 **discover by reading the documentation of the** :class:`~crappy.camera.Camera`
 in the API. You can also have a look at the `Cameras distributed with Crappy
-<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/inout>`_ to see
-how they are implemented.
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/src/crappy/
+inout>`_ to see how they are implemented.
 
 .. Note::
    If you want to have debug information displayed in the terminal from your
@@ -1088,7 +1089,7 @@ and the previous ones, **you should now be ready to use Crappy at a**
 that the module is far from being simple, and that there are many things to
 keep in mind when using it. This is why we're trying to keep the documentation
 as extensive as possible, and we provide a wide variety of `ready-to-run
-examples  <https://github.com/LaboratoireMecaniqueLille/crappy/examples>`_. At
-that point of the tutorials, there are still a few uncovered topics only
-relevant to advanced users. You can check them on the :ref:`next and last page
-of the tutorials <More about custom objects in Crappy>`.
+examples <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
+examples>`_. At that point of the tutorials, there are still a few uncovered
+topics only relevant to advanced users. You can check them on the :ref:`next
+and last page of the tutorials <More about custom objects in Crappy>`.

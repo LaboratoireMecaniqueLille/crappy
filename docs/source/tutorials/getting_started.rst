@@ -298,7 +298,8 @@ argument of the Generator Block with the correct parameters. As mentioned
 earlier in this section, more information about the Generator Paths can be
 found in :ref:`another tutorial section <3. Advanced Generator condition>`.
 More examples of the Generator Block can be found in the `examples folder on
-GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
+examples/blocks>`__.
 
 2.b. The Camera Block
 +++++++++++++++++++++
@@ -360,7 +361,8 @@ documentation. **The children of the Camera Block that perform image**
 **processing work on the exact sample principle**, except they accept extra
 arguments and can output data to downstream Blocks. More examples of the Camera
 Block and its children can be found in the `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+blocks>`__.
 
 2.c. The Grapher Block
 ++++++++++++++++++++++
@@ -389,8 +391,8 @@ Block takes up quite much CPU and memory, so it is better not to have too many
 of its instances in a script. You can :download:`download this Grapher example
 </downloads/getting_started/tuto_grapher.py>` to run it locally on your
 machine. Another example of the Grapher Block can be found in the `examples
-folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+folder on GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/
+master/examples/blocks>`__.
 
 2.d. The Recorder Block
 +++++++++++++++++++++++
@@ -401,10 +403,10 @@ one upstream Block, and will **save all the data it receives from it in a**
 *.csv* **(or equivalent text format) file**. This Block is quite basic, so the
 first example given above should be enough for you to understand its syntax.
 Another example of the Recorder Block can be found in the `examples folder on
-GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_. Note
-that for recording streams, the :ref:`HDF Recorder` Block should be used
-instead (see :ref:`this later section <4. Dealing with streams>`).
+GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
+examples/blocks>`__. Note that for recording streams, the :ref:`HDF Recorder`
+Block should be used instead (see :ref:`this later section
+<4. Dealing with streams>`).
 
 2.e. The IOBlock Block
 ++++++++++++++++++++++
@@ -461,11 +463,11 @@ Notice how the two functionalities of the IOBlock integrate seamlessly into a
 single common script. You can :download:`download this IOBlock example
 </downloads/getting_started/tuto_ioblock.py>` to run it locally on your
 machine. More examples of the IOBlock can be found in the `examples folder on
-GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
-Note that the *streamer* mode of the IOBlock is presented in :ref:`a dedicated
-section <4. Dealing with streams>`, and same goes for the :ref:`make_zero
-functionality <2. More about custom InOuts>`. Directly check the documentation
-of the IOBlock to learn more about it.
+GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
+examples/blocks>`_. Note that the *streamer* mode of the IOBlock is presented
+in :ref:`a dedicated section <4. Dealing with streams>`, and same goes for the
+:ref:`make_zero functionality <2. More about custom InOuts>`. Directly check
+the documentation of the IOBlock to learn more about it.
 
 2.f. The Machine Block
 ++++++++++++++++++++++
@@ -511,8 +513,8 @@ machine. It should last only 20s before stopping by itself. The Grapher window
 that appears displays the current speed of the Actuator driven by the Machine
 Block, and responding to the voltage command (treated as a speed by the
 Machine) received from the Generator. More examples of the Machine Block can be
-found in the `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+found in the `examples folder on GitHub <https://github.com/
+LaboratoireMecaniqueLille/crappy/tree/master/examples/blocks>`__.
 
 3. Properly stopping a script
 -----------------------------
