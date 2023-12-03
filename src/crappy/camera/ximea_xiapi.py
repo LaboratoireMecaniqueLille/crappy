@@ -82,6 +82,7 @@ class XiAPI(Camera):
   def open(self,
            serial_number: Optional[str] = None,
            timeout: Optional[int] = None,
+           trigger: Optional[str] = None,
            data_format: Optional[str] = None,
            exposure_time_us: Optional[int] = None,
            gain: Optional[float] = None,
@@ -101,7 +102,8 @@ class XiAPI(Camera):
            xoffset: Optional[int] = None,
            yoffset: Optional[int] = None,
            exposure: Optional[float] = None,
-           AEAG: Optional[bool] = None) -> None:
+           AEAG: Optional[bool] = None,
+           external_trig: Optional[bool] = None,) -> None:
     """Opens the connection to the camera, instantiates the available settings
     and starts the acquisition.
 
@@ -121,6 +123,12 @@ class XiAPI(Camera):
         The default is 5000ms.
 
         .. versionadded:: 2.0.2
+
+      trigger: Drives the trigger status of the camera. Can be either
+        `'Free run'`, `'Hdw after config'`, or `'Hardware'`. The default is
+        `'Free run'`.
+
+        .. versionadded:: 2.0.0
 
       data_format: The data format to use for acquisition as a :obj:`str` (e.g.
         `'Mono (8 bits)'`). The available formats depend on the model of the
@@ -226,6 +234,7 @@ class XiAPI(Camera):
       yoffset: .. deprecated:: 2.0.2 Use ``y_offset`` instead.
       exposure: .. deprecated:: 2.0.2 Use ``exposure_time_us`` instead.
       AEAG: .. deprecated:: 2.0.2 Use ``auto_exposure_auto_gain`` instead.
+      external_trig: .. deprecated:: 2.0.0 Use ``trigger`` instead.
     """
 
     # Managing the deprecated arguments
@@ -253,6 +262,10 @@ class XiAPI(Camera):
       warn("The AEAG argument is deprecated for the XiAPI camera, use "
            "auto_exposure_auto_gain instead !", FutureWarning)
       auto_exposure_auto_gain = AEAG
+    if external_trig is not None:
+      warn("The external_trig argument is deprecated for the XiAPI camera, use"
+           " trigger instead !", FutureWarning)
+      trigger = 'Hdw after config'
 
     self._timeout = timeout
 
@@ -393,10 +406,12 @@ class XiAPI(Camera):
     to_set = {name: arg for name, arg in zip(
         ('exposure_time_us', 'gain', 'auto_exposure_auto_gain', 'gamma_y',
          'gamma_c', 'sharpness', 'image_width', 'image_height', 'x_offset',
-         'y_offset', 'framerate_mode', 'framerate', 'downsampling_mode'),
+         'y_offset', 'framerate_mode', 'framerate', 'downsampling_mode',
+         'trigger'),
         (exposure_time_us, gain, auto_exposure_auto_gain, gamma_y, gamma_c,
          sharpness, image_width, image_height, x_offset, y_offset,
-         framerate_mode, framerate, downsampling_mode)) if arg is not None}
+         framerate_mode, framerate, downsampling_mode, trigger))
+              if arg is not None}
     self.set_all(**to_set)
 
     # Starting the acquisition
