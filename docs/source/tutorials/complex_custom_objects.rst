@@ -114,9 +114,10 @@ self-explanatory by just reading the code and the comments. You can
 :download:`download this custom Path example
 </downloads/complex_custom_objects/custom_path.py>` to run it locally on your
 machine. You should see that the duty cycle of the generated square signal
-varies according to the target duty cycle, as expected. In the `examples on
-GitHub  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/
-custom_objects>`_, you'll find another example of a custom Generator Path.
+varies according to the target duty cycle, as expected. In the `custom objects
+examples on GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/
+master/examples/custom_objects>`_, you'll find another example of a custom
+Generator Path.
 
 .. Note::
    If you want to have debug information displayed in the terminal from your
@@ -213,12 +214,12 @@ It is passed no matter its value, so it might be equal to :obj:`None` ! It is
 your duty to handle the two situations when it has or hasn't an actual value.
 For hardware that doesn't support speed adjustment when operated in position
 mode, this argument can always be ignored. You can have a look at the
-`Actuators distributed with Crappy
-<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/actuator>`_
-to see how the various :meth:`~crappy.actuator.Actuator.set_position` methods
-implement the speed management in position mode. Also, an example of a
-:ref:`Machine` Block with a variable target speed can be found in the `examples
-folder on GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/
+`Actuators distributed with Crappy <https://github.com/
+LaboratoireMecaniqueLille/crappy/tree/master/src/crappy/actuator>`_ to see how
+the various :meth:`~crappy.actuator.Actuator.set_position` methods implement
+the speed management in position mode. Also, an example of a :ref:`Machine`
+Block with a variable target speed can be found in the `blocks examples folder
+on GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
 examples/blocks>`_.
 
 4. More about custom Cameras
@@ -680,8 +681,9 @@ the detected eyes on the displayed images :
    Python modules installed.
 
 This custom Camera Block script is based on an example that you can find in the
-`examples folder on GitHub  <https://github.com/LaboratoireMecaniqueLille/
-crappy/examples/custom_objects>`__. You can :download:`download it
+`custom objects examples folder on GitHub  <https://github.com/
+LaboratoireMecaniqueLille/crappy/examples/custom_objects>`__. You can
+:download:`download it
 </downloads/complex_custom_objects/custom_camera_block.py>` to run it locally
 on your machine. Note that the :py:`'Webcam'` camera is used here, so this
 example will require a camera readable by OpenCV to be plugged to the computer.

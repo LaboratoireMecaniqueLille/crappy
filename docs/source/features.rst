@@ -7,9 +7,9 @@ exposed to the users. Information on how to use them can be found in the
 :ref:`Tutorials`, as well as guidelines for creating your own objects. For most
 Blocks, one or several directly runnable example scripts are available
 in the `examples folder <https://github.com/LaboratoireMecaniqueLille/crappy/
-examples>`_ of the GitHub repository. For each object listed on this page, you
-can click on its name to open the complete documentation given in the
-:ref:`API`.
+tree/master/examples>`_ of the GitHub repository. For each object listed on
+this page, you can click on its name to open the complete documentation given
+in the :ref:`API`.
 
 Functionalities (Blocks)
 ------------------------
@@ -28,8 +28,8 @@ Data display
   real-time temperature map.
 
   The examples folder on GitHub contains `one example of the Canvas Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  canvas.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/canvas.py>`_.
 
 - :ref:`Dashboard`
 
@@ -38,8 +38,8 @@ Data display
   displayed for each label.
 
   The examples folder on GitHub contains `one example of the Dashboard Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  dashboard.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/dashboard.py>`_.
 
 - :ref:`Grapher`
 
@@ -61,8 +61,8 @@ Data display
   Prints the values it receives in the terminal. Mostly useful for debugging.
 
   The examples folder on GitHub contains `one example of the Link Reader Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  link_reader.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/link_reader.py>`_.
 
 Data recording
 ++++++++++++++
@@ -74,8 +74,8 @@ Data recording
   recording any other type of data.
 
   The examples folder on GitHub contains `one example of the HDF Recorder Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  hdf5_recorder.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/hdf5_recorder.py>`_.
 
 - :ref:`Recorder`
 
@@ -85,8 +85,8 @@ Data recording
   instead in this situation.
 
   The examples folder on GitHub contains `one example of the Recorder Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  recorder.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/recorder.py>`_.
 
   :ref:`A tutorial section <2.d. The Recorder Block>` is also dedicated to the
   Recorder Block.
@@ -102,8 +102,8 @@ Data processing
   computationally-intensive :ref:`Multiplexer`.
 
   The examples folder on GitHub contains `one example of the Mean Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  mean.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/mean.py>`_.
 
 - :ref:`Multiplexer`
 
@@ -114,8 +114,8 @@ Data processing
   post-processing.
 
   The examples folder on GitHub contains `one example of the Multiplexer Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  multiplexer.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/multiplexer.py>`_.
 
 Real-time image correlation
 +++++++++++++++++++++++++++
@@ -129,8 +129,8 @@ Real-time image correlation
   sent to downstream Blocks.
 
   The examples folder on GitHub contains `several examples of the DIS Correl
-  Block <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  dis_correl>`_.
+  Block <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
+  examples/blocks/dis_correl>`_.
 
 - :ref:`GPU Correl`
 
@@ -158,8 +158,8 @@ Video-extensometry
   Block as its input.
 
   The examples folder on GitHub contains `one example of the Auto Drive Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  auto_drive_video_extenso.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/auto_drive_video_extenso.py>`_.
 
 - :ref:`DIC VE`
 
@@ -172,8 +172,8 @@ Video-extensometry
   patch playing the same role as a dot.
 
   The examples folder on GitHub contains `several examples of the DIC VE Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  dic_ve>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+  blocks/dic_ve>`_.
 
 - :ref:`GPU VE`
 
@@ -200,8 +200,8 @@ Video-extensometry
   areas.
 
   The examples folder on GitHub contains `one example of the Video Extenso
-  Block <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  video_extenso.py>`_.
+  Block <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/
+  examples/blocks/video_extenso.py>`_.
 
 Signal generation
 +++++++++++++++++
@@ -213,8 +213,8 @@ Signal generation
   Useful for triggering a behavior at a user-chosen moment during a test.
 
   The examples folder on GitHub contains `one example of the Button Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  button.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/button.py>`_.
 
 - :ref:`Generator`
 
@@ -223,9 +223,9 @@ Signal generation
   can only output a combination of :ref:`Generator Paths`.
 
   The examples folder on GitHub contains `several examples of the Generator
-  Block <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  generator>`_ specifically, but it is also used in many of the other
-  examples.
+  Block <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
+  examples/blocks/generator>`_ specifically, but it is also used in many of the
+  other examples.
 
   :ref:`A tutorial section <2.a. The Generator Block and its Paths>` is also
   dedicated to the Generator Block, and :ref:`another one
@@ -241,8 +241,8 @@ Signal generation
   exact characteristics are unknown or can vary.
 
   The examples folder on GitHub contains `one example of the PID Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  pid.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/pid.py>`_.
 
 Hardware control
 ++++++++++++++++
@@ -255,8 +255,8 @@ Hardware control
   Block usually doesn't have input nor output Links.
 
   The examples folder on GitHub contains `several examples of the Camera Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  camera>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+  blocks/camera>`_.
 
   :ref:`A tutorial section <2.b. The Camera Block>` is also dedicated to the
   Camera Block, and :ref:`another one <4. Custom Cameras>` is dedicated to the
@@ -271,8 +271,8 @@ Hardware control
   Links when setting commands.
 
   The examples folder on GitHub contains `several examples of the IOBlock Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  ioblock>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+  blocks/ioblock>`_.
 
   :ref:`A tutorial section <2.e. The IOBlock Block>` is also dedicated to the
   IOBlock Block, and :ref:`another one <3. Custom InOuts>` is dedicated to the
@@ -286,8 +286,8 @@ Hardware control
   is intended for driving motors and similar devices.
 
   The examples folder on GitHub contains `several examples of the Machine Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  machine>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+  blocks/machine>`_.
 
   :ref:`A tutorial section <2.f. The Machine Block>` is also dedicated to the
   Machine Block, and :ref:`another one <2. Custom Actuators>` is dedicated to
@@ -301,8 +301,8 @@ Hardware control
   microcontroller, send commands, and receive data.
 
   The examples folder on GitHub contains `on example of the UController Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  ucontroller>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+  blocks/ucontroller>`_.
 
 Others
 ++++++
@@ -315,8 +315,8 @@ Others
   controlling a test.
 
   The examples folder on GitHub contains `on example of the Client Server Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  client_server>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+  blocks/client_server>`_.
 
 - :ref:`Fake Machine`
 
@@ -326,16 +326,16 @@ Others
   debugging or prototyping.
 
   The examples folder on GitHub contains `on example of the Fake Machine Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  fake_machine.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/fake_machine.py>`_.
 
 - :ref:`Sink`
 
   Discards any received data. Used for prototyping and debugging only.
 
   The examples folder on GitHub contains `on example of the Sink Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  sink.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/sink.py>`_.
 
 - :ref:`Stop Block`
 
@@ -343,8 +343,8 @@ Others
   criteria. One of the clean ways to stop a script in Crappy.
 
   The examples folder on GitHub contains `on example of the Stop Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  stop_block.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/stop_block.py>`_.
 
   Refer to the :ref:`dedicated tutorial section
   <3. Properly stopping a script>` to learn more about how to properly stop a
@@ -356,8 +356,8 @@ Others
   One of the clean ways to stop a script in Crappy.
 
   The examples folder on GitHub contains `on example of the Stop Button Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  stop_button.py>`_.
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/stop_button.py>`_.
 
   Refer to the :ref:`dedicated tutorial section
   <3. Properly stopping a script>` to learn more about how to properly stop a
@@ -372,9 +372,9 @@ Supported Cameras
 - :ref:`Basler Ironman Camera Link`
 
   Allows reading images from a camera communicating over Camera Link plugged to
-  a `microEnable 5 ironman AD8-PoCL <https://www.baslerweb.com/en/products/
-  acquisition-cards/microenable-5-ironman/>`_ PCIexpress board. May as well
-  work with similar boards.
+  a `microEnable 5 ironman AD8-PoCL <https://www.baslerweb.com/en/
+  acquisition-cards/frame-grabbers/>`_ PCIexpress board. May as well work with
+  similar boards.
 
   .. Important::
      This Camera object relies on C++ libraries, which are not distributed with
