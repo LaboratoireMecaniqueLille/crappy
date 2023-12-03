@@ -70,6 +70,7 @@ class XiAPI(Camera):
     self._cam = None
     self._started: bool = False
     self._model: Optional[str] = None
+    self._timeout: Optional[int] = None
 
     self._cam = xiapi.Camera()
     self._img = xiapi.Image()
@@ -77,7 +78,10 @@ class XiAPI(Camera):
     # Stores the last requested or read trigger mode value
     self._trig = 'Free run'
 
-  def open(self, serial_number: Optional[str] = None, **kwargs) -> None:
+  def open(self,
+           serial_number: Optional[str] = None,
+           timeout: Optional[int] = None,
+           **kwargs) -> None:
     """Opens the connection to the camera, instantiates the available settings
     and starts the acquisition.
 
@@ -88,11 +92,17 @@ class XiAPI(Camera):
       serial_number: A :obj:`str` containing the serial number of the camera to
         open, in case several cameras are connected. If not provided and
         several cameras are available, one of them will be opened randomly.
+      timeout: The number of milliseconds the camera is allowed to wait for an
+        image before raising a :exc:`TimeoutError`, as an :obj:`int`. Mostly
+        useful when using an external trigger, or a very long exposure time.
+        The default is 5000ms.
       **kwargs: Values of the settings to set before opening the camera. Mostly
        useful if the configuration window is not used.
     
     .. versionchanged:: 2.0.0 renamed *sn* argument to *serial_number*
     """
+
+    self._timeout = timeout
 
     # First, checking if there are connected cameras
     num_dev = self._cam.get_number_devices()
@@ -238,7 +248,10 @@ class XiAPI(Camera):
     """Reads a frame from the camera, and returns it along with its
     timestamp."""
 
-    self._cam.get_image(self._img)
+    if self._timeout is not None:
+      self._cam.get_image(self._img, timeout=self._timeout)
+    else:
+      self._cam.get_image(self._img)
     return time(), self._img.get_image_data_numpy()
 
   def close(self) -> None:
