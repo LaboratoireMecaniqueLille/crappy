@@ -959,8 +959,8 @@ class CameraConfig(tk.Tk):
       hist_img = Image.fromarray(self._original_img)
       if hist_img.width > 320 or hist_img.height > 240:
         factor = min(320 / hist_img.width, 240 / hist_img.height)
-        hist_img = hist_img.resize((int(hist_img.width * factor),
-                                    int(hist_img.height * factor)))
+        hist_img = hist_img.resize((max(int(hist_img.width * factor), 1),
+                                    max(int(hist_img.height * factor), 1)))
       # The histogram is calculated on a grey level image
       if len(self._original_img.shape) == 3:
         hist_img = hist_img.convert('L')
