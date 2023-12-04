@@ -3,6 +3,7 @@
 from time import time
 from typing import List
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -169,6 +170,11 @@ class MCP9600(InOut):
 
     .. versionremoved:: 2.0.0 *ft232h_ser_num* argument
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._bus = None
     self._mcp = None

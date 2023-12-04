@@ -4,6 +4,7 @@ from time import time, sleep
 from re import fullmatch, findall
 from typing import Union, List, Optional, Iterable
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -184,6 +185,11 @@ class WaveshareHighPrecision(InOut):
       above 4.7V or under 0.3V. For example a 2.8V signal read with a gain of 2
       would be read as 4.7V after the PGA, not 4.8V ! Beware !
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._bus = None
 
