@@ -104,6 +104,8 @@ class DelayedKeyboardInterrupt:
 
   It is meant to avoid having a I2C or SPI communication interrupted, which 
   could cause devices to bug and not be able to properly finish.
+  
+  .. versionadded:: 2.0.0
   """
 
   def __enter__(self) -> None:
@@ -168,6 +170,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     necessary to set their USB serial numbers. Otherwise, an error will be
     raised. This can be done using the crappy utility
     ``set_ft232h_serial_nr.py``.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0 renamed from ft232h_server to FT232HServer
   """
 
   def __init__(self,
@@ -234,7 +239,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         due to different hardware requirements for the two protocols. Trying to
         do so will most likely raise an error or lead to inconsistent behavior.
 
-        """
+    .. versionchanged:: 2.0.0 renamed *block_number* argument to *block_index*
+    .. versionchanged:: 2.0.0
+       renamed *current_file* argument to *current_block*
+    .. versionchanged:: 2.0.0 renamed *current_lock* argument to *shared_lock*
+    """
 
     self._block_index = block_index
     self._current_block = current_block

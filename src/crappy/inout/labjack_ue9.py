@@ -4,6 +4,7 @@ from time import time
 from typing import Optional, List, Iterable
 from dataclasses import dataclass
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -33,6 +34,9 @@ class LabjackUE9(InOut):
   UE9. The UE9 model has been discontinued, and replaced by the T7 model (see
   :class:`~crappy.inout.LabjackT7`). It is thus likely that this class won't be
   further improved in the future.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Labjack_ue9 to LabjackUE9
   """
 
   def __init__(self,
@@ -78,6 +82,11 @@ class LabjackUE9(InOut):
       as if they had the same length as the shortest given one.
     """
 
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
+
     self._handle = None
 
     super().__init__()
@@ -110,6 +119,8 @@ class LabjackUE9(InOut):
 
     It simply performs the regular zeroing, and resets the compensation to
     zero for the channels that shouldn't be zeroed.
+    
+    .. versionadded:: 1.5.10
     """
 
     # No need to acquire data if no channel should be zeroed

@@ -2,6 +2,7 @@
 
 from typing import Optional
 import logging
+from  warnings import warn
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
@@ -19,6 +20,9 @@ class OrientalARDK(Actuator):
   It communicates with the stepper motor over a serial connection. This class
   was designed so that the :class:`~crappy.blocks.Machine` Block drives several
   of its instances at a time, corresponding to different axes to drive.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Oriental to OrientalARDK
   """
 
   def __init__(self,
@@ -33,6 +37,11 @@ class OrientalARDK(Actuator):
       gain: The gain to apply to speed commands, in `mm/min`. The default value
         corresponds to `0.07mm/min` for a command value of `1`.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._ser = None
 
@@ -128,6 +137,8 @@ class OrientalARDK(Actuator):
       position: The target position to reach, in arbitrary units.
       speed: The speed to use for reaching the target position, in arbitrary
         units. A speed must be given, otherwise an exception is raised.
+    
+    .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
     """
 
     if speed is None:
@@ -140,7 +151,10 @@ class OrientalARDK(Actuator):
     self._ser.write(f'MA {position}'.encode())
 
   def get_position(self) -> float:
-    """Reads and returns the current position of the motor."""
+    """Reads and returns the current position of the motor.
+
+    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    """
 
     # Sending the read command
     self._ser.flushInput()

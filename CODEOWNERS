@@ -7,3 +7,9 @@
 # PIERROOOTT owns the Phidget hardware
 /src/crappy/actuator/phidgets_stepper4a.py @WeisLeDocto @PIERROOOTT
 /src/crappy/inout/phidgets_wheatstone_bridge.py @WeisLeDocto @PIERROOOTT
+
+# PIERROOOTT owns the Opencv cameras
+/src/crappy/camera/opencv_* @WeisLeDocto @PIERROOOTT
+
+# PIERROOOTT owns the base v4l2 class
+/src/crappy/camera/_v4l2_base.py @WeisLeDocto @PIERROOOTT

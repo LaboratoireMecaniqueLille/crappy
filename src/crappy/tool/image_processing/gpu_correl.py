@@ -36,6 +36,8 @@ def interp_nearest(arr: np.ndarray, ny: int, nx: int) -> np.ndarray:
   Returns:
     A reshaped version of the input array obtained with the nearest
     interpolation.
+    
+  .. versionadded:: 1.4.0
   """
 
   # If the shape is already fine, nothing more to do
@@ -60,6 +62,14 @@ class CorrelStage:
 
   This class actually performs the GPU computation, while the calling classes
   only manage the data.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 1.5.10
+     now explicitly listing the *verbose*, *iterations*, *mul* and
+     *kernel_file* arguments
+  .. versionchanged:: 1.5.10 renamed *Nfields* argument to *n_fields*
+  .. versionremoved:: 1.5.10 *show_diff*, *img*, *mask* and *fields* arguments
+  .. versionadded:: 2.0.0 *logger_name* argument
   """
 
   def __init__(self,
@@ -496,6 +506,9 @@ class GPUCorrelTool:
   obtained at stages with low resolution to initialize the computation on
   stages with higher resolution. A Newton method is used to converge towards
   an optimal solution.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from GPUCorrel to GPUCorrelTool
   """
 
   context = None
@@ -556,6 +569,14 @@ class GPUCorrelTool:
         was found to be an acceptable value in most cases, but it is
         recommended to tune this value for each application so that the
         convergence is neither too slow nor too fast.
+    
+    .. versionchanged:: 1.5.10 
+       now explicitly listing the *verbose*, *levels*, *resampling_factor*,
+       *kernel_file*, *iterations*, *fields*, *mask* and *mul* arguments
+    .. versionchanged:: 1.5.10 renamed *img* argument to *ref_img*
+    .. versionadded:: 1.5.10 *context* argument
+    .. versionremoved:: 1.5.10 *show_diff* and *img_size* arguments
+    .. versionadded:: 2.0.0 *logger_name* argument
     """
 
     self._context = context

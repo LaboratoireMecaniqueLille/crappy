@@ -38,6 +38,8 @@ class DISCorrel(Camera):
   :class:`~crappy.tool.camera_config.DISCorrelConfig` window before the test
   starts. Here, the user can also select the patch to track if it was not
   already specified as an argument.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -254,6 +256,21 @@ class DISCorrel(Camera):
       **kwargs: Any additional argument will be passed to the
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.
+
+    .. versionadded:: 1.5.10 
+       *transform*, *config*, *displayer_backend*, *displayer_framerate*, 
+       *verbose*, *freq*, *save_images*, *img_name*, *save_folder*, 
+       *save_period*, *save_backend* and *image_generator* arguments
+    .. versionchanged:: 1.5.10 
+       renamed *gditerations* argument to *gradient_iterations*
+    .. versionchanged:: 1.5.10 
+       renamed *show_image* argument to *display_images*
+    .. versionremoved:: 1.5.10 *residual_full* argument
+    .. versionadded:: 2.0.0
+       *debug*, *patch*, *software_trig_label*, *img_extension*, *img_size* and
+       *img_dtype* arguments
+    .. versionremoved:: 2.0.0 *img_name* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     if not config and patch is None:
@@ -329,6 +346,9 @@ class DISCorrel(Camera):
     In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.DISCorrelProcess` object that
     performs the image correlation and the tracking.
+
+    .. versionchanged:: 1.5.5 now accepting args and kwargs
+    .. versionchanged:: 1.5.10 not accepting arguments anymore
     """
 
     # Instantiating the Box containing the patch to track

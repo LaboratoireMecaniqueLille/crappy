@@ -2,6 +2,8 @@
 More about custom objects in Crappy
 ===================================
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 .. role:: py(code)
   :language: python
   :class: highlight
@@ -14,6 +16,8 @@ understanding of the module, or users with a specific need.
 
 1. Custom Generator Paths
 -------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Starting from version 2.0.0, **it is now possible for users to create their**
 **own** :ref:`Generator Paths` ! There are two reasons why this possibility was
@@ -92,13 +96,17 @@ clearer how to create a custom Generator Path and how to handle the
 conditions. This example generates a square wave, whose duty cycle can be
 either fixed or controlled by the value of an input label :
 
-.. literalinclude:: /downloads/complex_custom_objects/custom_path.py
-   :language: python
-   :emphasize-lines: 35, 40-41, 49, 52-53
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/complex_custom_objects/custom_path.py
+      :language: python
+      :emphasize-lines: 35, 40-41, 49, 52-53
+
+|
 
 .. Note::
-   To run this example, you'll need to have the *matplotlib* and *scipy* Python
-   modules installed.
+   To run this example, you'll need to have the :mod:`matplotlib` and *scipy*
+   Python modules installed.
 
 This example contains all the ingredients described above. The parent class is
 initialized, then the :py:`condition` argument is parsed with
@@ -114,9 +122,10 @@ self-explanatory by just reading the code and the comments. You can
 :download:`download this custom Path example
 </downloads/complex_custom_objects/custom_path.py>` to run it locally on your
 machine. You should see that the duty cycle of the generated square signal
-varies according to the target duty cycle, as expected. In the `examples on
-GitHub  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/
-custom_objects>`_, you'll find another example of a custom Generator Path.
+varies according to the target duty cycle, as expected. In the `custom objects
+examples on GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/
+master/examples/custom_objects>`_, you'll find another example of a custom
+Generator Path.
 
 .. Note::
    If you want to have debug information displayed in the terminal from your
@@ -142,6 +151,8 @@ labels).
 2. More about custom InOuts
 ---------------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 In addition to what was described in the tutorial section about :ref:`how to
 create custom InOut objects <3. Custom InOuts>`, there is one more minor
 feature that the :ref:`In / Out` possess and that is worth describing in the
@@ -158,7 +169,7 @@ beginning of the test. It also works for streams, provided that the number of
 channels acquired in *streamer* mode is the same as the number of channels
 acquired by :meth:`~crappy.inout.InOut.get_data`.
 
-**Thing get a bit trickier when the hardware can handle and tune offsets for**
+**Things get a bit trickier when the hardware can handle and tune offsets for**
 **its channels** ! In such a case, it might be advantageous to set the zeroing
 offsets directly on the device rather than relying on Crappy. To achieve that,
 the :meth:`~crappy.inout.InOut.make_zero` method of the base
@@ -170,8 +181,9 @@ these values on the hardware and resets the offsets on Crappy's side. This
 kind of implementation can be found in the :ref:`Labjack T7` or the
 :ref:`Comedi` InOuts. Check their code to see how it looks ! There is also a
 very basic example of offsetting in the `examples on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/custom_objects>`_
-where the method is overriden and the offsets are simply doubled.
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+custom_objects>`_ where the method is overriden and the offsets are simply
+doubled.
 
 There is no need for a specific example in this sub-section, it is mostly
 included to signal the existence of the zeroing feature and the possibility for
@@ -179,6 +191,8 @@ users to override it.
 
 3. More about custom Actuators
 ------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In the tutorial section about :ref:`how to create custom Actuator objects
 <2. Custom Actuators>`, then entire speed management aspect in :py:`position`
@@ -213,16 +227,18 @@ It is passed no matter its value, so it might be equal to :obj:`None` ! It is
 your duty to handle the two situations when it has or hasn't an actual value.
 For hardware that doesn't support speed adjustment when operated in position
 mode, this argument can always be ignored. You can have a look at the
-`Actuators distributed with Crappy
-<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/actuator>`_
-to see how the various :meth:`~crappy.actuator.Actuator.set_position` methods
-implement the speed management in position mode. Also, an example of a
-:ref:`Machine` Block with a variable target speed can be found in the `examples
-folder on GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/
+`Actuators distributed with Crappy <https://github.com/
+LaboratoireMecaniqueLille/crappy/tree/master/src/crappy/actuator>`_ to see how
+the various :meth:`~crappy.actuator.Actuator.set_position` methods implement
+the speed management in position mode. Also, an example of a :ref:`Machine`
+Block with a variable target speed can be found in the `blocks examples folder
+on GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
 examples/blocks>`_.
 
 4. More about custom Cameras
 ----------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Because image acquisition is such a complex topic, the
 :class:`~crappy.camera.Camera` object is by far the richest of the classes
@@ -308,7 +324,8 @@ acquired image in order for it to be effective. It returns the cropped image,
 or :obj:`None` if there's nothing left to display (shouldn't happen). You can
 find examples of usage for the software ROI in
 :class:`~crappy.camera.CameraOpencv`, or in the `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+blocks>`_.
 
 4.b. Reload slider and choice settings
 ++++++++++++++++++++++++++++++++++++++
@@ -384,6 +401,8 @@ will change in future releases !
 
 5. Custom Camera Blocks
 -----------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 On the previous tutorial page, :ref:`a section <5. Custom Blocks>` was
 dedicated to the instantiation of custom :ref:`Blocks`. Always moving one step
@@ -672,16 +691,21 @@ that is the final object called by the user in its script. Based on these
 development, here is a final runnable code performing eye detection and adding
 the detected eyes on the displayed images :
 
-.. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
-   :language: python
+.. collapse:: (Expand to see the full code)
+
+   .. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
+      :language: python
+
+|
 
 .. Note::
    To run this example, you'll need to have the *opencv-python* and *Pillow*
    Python modules installed.
 
 This custom Camera Block script is based on an example that you can find in the
-`examples folder on GitHub  <https://github.com/LaboratoireMecaniqueLille/
-crappy/examples/custom_objects>`__. You can :download:`download it
+`custom objects examples folder on GitHub <https://github.com/
+LaboratoireMecaniqueLille/crappy/tree/master/examples/custom_objects>`__. You
+can :download:`download it
 </downloads/complex_custom_objects/custom_camera_block.py>` to run it locally
 on your machine. Note that the :py:`'Webcam'` camera is used here, so this
 example will require a camera readable by OpenCV to be plugged to the computer.
@@ -693,6 +717,8 @@ aspects in future releases.
 
 6. Sharing custom objects and Blocks
 ------------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 You have been through all the tutorials of Crappy and have now become a master
 at creating and using your own objects, and you now **want to share your**

@@ -27,6 +27,10 @@ class VideoExtensoTool:
 
   It is possible to track only one spot, in which case only the position of its
   center is returned and the strain values are left to `0`.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 1.5.10 renamed from Video_extenso to VideoExtenso
+  .. versionchanged:: 2.0.0 renamed from VideoExtenso to VideoExtensoTool
   """
 
   def __init__(self,
@@ -85,6 +89,10 @@ class VideoExtensoTool:
         takes a bit more time compared to no blurring. Passed to the 
         :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
         and not used in this class.
+
+    .. versionremoved:: 2.0.0 *num_spots* and *min_area* arguments
+    .. versionadded:: 2.0.0
+       *spots*, *thresh*, *log_level* and *log_queue* arguments
     """
 
     # These attributes will be used later
@@ -175,6 +183,8 @@ class VideoExtensoTool:
     Returns:
       A :obj:`list` containing :obj:`tuple` with the coordinates of the centers 
       of the detected spots, and the calculated x and y strain values.
+    
+    .. versionchanged:: 1.5.10 renamed from get_def to get_data
     """
 
     # Sending the latest sub-image containing the spot to track

@@ -16,6 +16,8 @@ class Biaxe(Actuator):
   It is used at the LaMcube for driving a bi-axial tensile test machine, hence
   its name. The :class:`~crappy.actuator.ServoStar300` Actuator can drive the
   same hardware, but only in position.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -64,7 +66,10 @@ class Biaxe(Actuator):
       self._speed = speed
 
   def stop(self) -> None:
-    """Sets the speed of the motor to `0`"""
+    """Sets the speed of the motor to `0`.
+    
+    .. versionadded:: 2.0.0
+    """
 
     if self._ser is not None:
       self.set_speed(0)

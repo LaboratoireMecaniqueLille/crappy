@@ -14,7 +14,10 @@ mpl = OptionalModule('matplotlib', lazy_import=True)
 
 
 class Text:
-  """Displays a simple text line on the drawing."""
+  """Displays a simple text line on the drawing.
+  
+  .. versionadded:: 1.4.0
+  """
 
   def __init__(self,
                _: Canvas,
@@ -30,6 +33,9 @@ class Text:
       text: The text to display.
       label: The label carrying the information for updating the text.
       **__: Other unused arguments.
+
+    .. versionchanged:: 1.5.10
+       now explicitly listing the *_*, *coord*, *text* and *label* arguments
     """
 
     x, y = coord
@@ -47,6 +53,9 @@ class Text:
 
 class DotText:
   """Like :class:`Text`, but with a colored dot to visualize a numerical value.
+
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Dot_text to DotText
   """
 
   def __init__(self,
@@ -69,6 +78,10 @@ class DotText:
       The value received in label must be a numeric value. It will be
       normalized on the ``crange`` of the Block and the dot will change
       color from blue to red depending on this value.
+      
+    .. versionchanged:: 1.5.10
+       now explicitly listing the *drawing*, *coord*, *text* and *label*
+       arguments
     """
 
     x, y = coord
@@ -95,7 +108,10 @@ class DotText:
 
 class Time:
   """Displays a time counter on the drawing, starting at the beginning of the
-  test."""
+  test.
+
+  .. versionadded:: 1.4.0
+  """
 
   def __init__(self, drawing: Canvas, coord: Tuple[int, int], **__) -> None:
     """Sets the arguments.
@@ -104,6 +120,9 @@ class Time:
       drawing: The parent drawing Block.
       coord: The coordinates of the time counter on the drawing.
       **__: Other unused arguments.
+
+    .. versionchanged:: 1.5.10
+       now explicitly listing the *drawing* and *coord* arguments
     """
 
     self._block = drawing
@@ -132,6 +151,9 @@ class Canvas(Block):
   representation of data. For simpler displays, the
   :class:`~crappy.blocks.Dashboard`, :class:`~crappy.blocks.Grapher` and
   :class:`~crappy.blocks.LinkReader` Blocks should be preferred.
+
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Drawing to Canvas
   """
 
   def __init__(self,
@@ -183,6 +205,11 @@ class Canvas(Block):
         - ``label``: Mandatory for `'text'` and `'dot_text'` only, the label of
           the data to display. It will try to retrieve this data in the
           incoming Links. The ``text`` will then be updated with this data.
+    
+    .. versionchanged:: 1.5.10 renamed *crange* argument to *color_range*
+    .. versionadded:: 1.5.10 *verbose* argument
+    .. versionadded:: 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     super().__init__()

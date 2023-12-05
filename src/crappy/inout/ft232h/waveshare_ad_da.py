@@ -4,6 +4,7 @@ from time import time, sleep
 from re import fullmatch, findall
 from typing import List, Union, Optional, Iterable
 import logging
+from  warnings import warn
 
 from ..meta_inout import InOut
 from ...tool.ft232h import FT232HServer as FT232H, USBArgsType
@@ -81,6 +82,8 @@ class WaveshareADDAFT232H(InOut):
   read values from the 8-channels ADC and/or to set the 2-channels DAC. The hat
   can acquire up to 30000 samples per second, although this data rate is
   impossible to achieve using Crappy.
+
+  .. versionadded:: 2.0.0
   """
 
   ft232h = True
@@ -182,6 +185,11 @@ class WaveshareADDAFT232H(InOut):
         value has no influence on the ADC behaviour as it is always powered
         up with `5V`. Same goes for the DAC.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._bus = None
 

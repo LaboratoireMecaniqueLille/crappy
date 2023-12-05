@@ -18,6 +18,8 @@ class StopButton(Block):
 
   Along with the :class:`~crappy.blocks.StopBlock`, it allows to stop a test in
   a clean way without resorting to CTRL+C.
+
+  .. versionadded 2.0.0
   """
 
   def __init__(self,

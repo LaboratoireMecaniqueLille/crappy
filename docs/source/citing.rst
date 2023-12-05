@@ -2,6 +2,8 @@
 Citing Crappy
 ==============
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 If Crappy has been of help in your research, please reference it in your 
 academic publications by citing one or both of the following articles :
 

@@ -23,6 +23,8 @@ class GPUCorrelProcess(CameraProcess):
   It is also this class that takes the decision to send or not the results to
   downstream Blocks based on the value of the calculated residuals, if this
   option is enabled by the user.
+
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self,

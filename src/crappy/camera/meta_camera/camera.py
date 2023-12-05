@@ -19,6 +19,8 @@ class Camera(metaclass=MetaCamera):
 
   The Camera objects are helper classes used by the
   :class:`~crappy.blocks.Camera` Block to interface with cameras.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self, *_, **__) -> None:
@@ -31,6 +33,8 @@ class Camera(metaclass=MetaCamera):
     :meth:`add_choice_setting`, :meth:`add_trigger_setting`, or
     :meth:`add_software_roi` methods. Refer to the documentation of these
     methods for more information.
+    
+    .. versionchanged:: 2.0.0 now accepts *args* and *kwargs*
     """
 
     self.settings: Dict[str, CameraSetting] = dict()
@@ -55,6 +59,8 @@ class Camera(metaclass=MetaCamera):
     Args:
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+      
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:
@@ -97,6 +103,8 @@ class Camera(metaclass=MetaCamera):
       end of the method. This is true even if no value to set was given in the
       kwargs. If :meth:`set_all` is not called, the settings won't actually be
       set on the camera.
+    
+    .. versionadded:: 1.5.10
     """
 
     self.set_all(**kwargs)
@@ -123,7 +131,9 @@ class Camera(metaclass=MetaCamera):
     the recorded images.
 
     If only a timestamp is provided, a metadata :obj:`dict` is built internally
-    but the user has no control over it
+    but the user has no control over it.
+
+    .. versionadded:: 1.5.10
     """
 
     self.log(logging.WARNING, "The get_img method was called but is not "
@@ -139,6 +149,8 @@ class Camera(metaclass=MetaCamera):
     This step is usually extremely important in order for the camera resources
     to be released. Otherwise, it might be impossible to re-open the camera
     from Crappy without resetting the hardware connection with it.
+
+    .. versionadded:: 1.5.10
     """
 
     ...
@@ -169,6 +181,8 @@ class Camera(metaclass=MetaCamera):
       setter: The method for setting the current value of the setting. If not
         given, the value to be set is simply stored.
       default: The default value to assign to the setting.
+    
+    .. versionadded:: 1.5.10
     """
 
     # Checking if the given name is valid
@@ -218,6 +232,9 @@ class Camera(metaclass=MetaCamera):
       default: The default value to assign to the setting. If not given, will
         be the average of ``lowest`` and ``highest``.
       step: The step value for the variation of the setting values.
+
+    .. versionadded:: 1.5.10
+    .. versionchanged:: 2.0.0 add the *step* argument
     """
 
     # Checking if the given name is valid
@@ -260,6 +277,8 @@ class Camera(metaclass=MetaCamera):
         given, the value to be set is simply stored.
       default: The default value to assign to the setting. If not given, will
         be the fist item in ``choices``.
+
+    .. versionadded:: 1.5.10
     """
 
     # Checking if the given name is valid
@@ -311,6 +330,8 @@ class Camera(metaclass=MetaCamera):
         given, the returned value is simply the last one that was set.
       setter: The method for setting the current value of the setting. If not
         given, the value to be set is simply stored.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self.trigger_name in self.settings:
@@ -358,6 +379,8 @@ class Camera(metaclass=MetaCamera):
     Args:
       width: The width of the acquired images, in pixels.
       height: The height of the acquired images, in pixels.
+    
+    .. versionadded:: 2.0.0
     """
 
     # Checking that the software ROI setting does not already exist
@@ -392,6 +415,8 @@ class Camera(metaclass=MetaCamera):
     Args:
       width: The width of the acquired images, in pixels.
       height: The height of the acquired images, in pixels.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._soft_roi_set:
@@ -419,6 +444,8 @@ class Camera(metaclass=MetaCamera):
     Might return :obj:`None` in case there's no pixel left on the cropped
     image. Returns the original image if the software ROI settings were not
     defined using :meth:`add_software_roi`.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._soft_roi_set:

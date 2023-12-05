@@ -11,6 +11,8 @@ class Sink(Block):
   It is only useful for debugging, e.g. with Blocks like the
   :class:`~crappy.blocks.IOBlock` that have a different behavior when they have
   output Links.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -28,6 +30,10 @@ class Sink(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionadded 1.5.6 *verbose* and *freq* arguments
+    .. versionadded 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     super().__init__()

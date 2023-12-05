@@ -57,6 +57,9 @@ class USBServer(Process):
   down.
 
   The server is a child of :obj:`multiprocessing.Process`.
+  
+  .. versionadded:: 1.5.2
+  .. versionchanged:: 2.0.0 renamed from Usb_server to USBServer
   """
 
   initialized = False
@@ -136,6 +139,8 @@ class USBServer(Process):
       A :obj:`tuple` containing the necessary information for other objects to
       communicate with the server. This information is for example given as
       arguments to :class:`~crappy.tool.ft232h.FT232HServer` objects.
+    
+    .. versionadded:: 2.0.0
     """
 
     # Initializing the synchronization objects
@@ -179,6 +184,8 @@ class USBServer(Process):
         in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
+
+    .. versionadded:: 2.0.0 *log_queue* and *log_level* arguments
     """
 
     cls.process = cls(current_block=cls.current_block,
@@ -193,7 +200,10 @@ class USBServer(Process):
   @classmethod
   def stop_server(cls) -> None:
     """If the server was started, tries to stop it gently and if not successful
-    terminates it."""
+    terminates it.
+
+    .. versionadded:: 2.0.0
+    """
 
     if cls.process is not None:
       cls.stop_event.set()
@@ -230,6 +240,8 @@ class USBServer(Process):
     Args:
       level: The logging level of the message, as an :obj:`int`.
       msg: The message to log, as a :obj:`str`.
+
+    .. versionadded:: 2.0.0
     """
 
     if cls.logger is None:
@@ -251,6 +263,8 @@ class USBServer(Process):
     Returns:
       :obj:`True` if the Lock was successfully acquired, :obj:`False`
       otherwise.
+
+    .. versionadded:: 2.0.0
     """
 
     ret = False
@@ -304,6 +318,8 @@ class USBServer(Process):
     command, sends it to the correct USB device, reads the answer from the USB 
     device and sends it back to the Block in control. Then, does the same with 
     the next Block getting control over the server.
+
+    .. versionadded:: 2.0.0
     """
 
     self._set_logger()

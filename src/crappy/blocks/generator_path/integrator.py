@@ -16,6 +16,9 @@ class Integrator(Path):
 
   Then the output value for this Path will be
   :math:`v(t) = v(t0) - [I(t0 -> t)f(t)dt] / m`.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Inertia to Integrator
   """
 
   def __init__(self,
@@ -39,6 +42,14 @@ class Integrator(Path):
         starting point for the inertia path. In the specific case when this
         path is the first one in the Generator Paths, this argument must be
         given !
+    
+    .. versionchanged:: 1.5.10 renamed *time* argument to *_last_time*
+    .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
+    .. versionchanged:: 1.5.10 renamed *flabel* argument to *func_label*
+    .. versionchanged:: 1.5.10 renamed *tlabel* argument to *time_label*
+    .. versionchanged:: 1.5.10 renamed *value* argument to *init_value*
+    .. versionremoved:: 1.5.10 *const* argument
+    .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 
     super().__init__()

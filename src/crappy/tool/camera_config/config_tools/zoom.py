@@ -10,6 +10,8 @@ class Zoom:
 
   It also allows updating them when the user changes the zoom ratio or drags
   the image with the mouse.
+
+  .. versionadded:: 2.0.0
   """
 
   x_low: float = 0.

@@ -3,6 +3,7 @@
 from time import time
 from typing import List
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -19,6 +20,9 @@ class HandySens(InOut):
 
   It can read data from various fiber optics sensors like temperature,
   pressure, position or strain.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Opsens to HandySens
   """
 
   def __init__(self,
@@ -29,6 +33,11 @@ class HandySens(InOut):
       device: Address of the serial connection for communicating with the
         OpSens.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._dev = None
 

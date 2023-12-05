@@ -37,6 +37,8 @@ class ImageSaver(CameraProcess):
   Various backends can be used for recording the images, some may be faster or
   slower depending on the machine. It is possible to only save one out of a
   given number of images, if not all frames are needed.
+
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self,

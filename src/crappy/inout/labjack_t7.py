@@ -68,6 +68,9 @@ class LabjackT7(InOut):
 
   This class is not capable of streaming. For higher frequency, refer to the
   :class:`~crappy.inout.T7Streamer` class.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Labjack_t7 to LabjackT7
   """
 
   def __init__(self,
@@ -343,6 +346,8 @@ class LabjackT7(InOut):
     Args:
       delay: The delay during which the data should be acquired for determining
         the offset.
+    
+    .. versionadded:: 1.5.10
     """
 
     # No need to acquire data if no channel should be zeroed

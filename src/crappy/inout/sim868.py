@@ -4,6 +4,7 @@ from time import sleep, time
 from typing import Iterable, Optional
 from re import fullmatch
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -23,6 +24,9 @@ class Sim868(InOut):
   Important:
     This InOut should be associated with a :class:`~crappy.modifier.Modifier`
     to manage the messages to send.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Gsm to Sim868
   """
 
   def __init__(self,
@@ -45,7 +49,14 @@ class Sim868(InOut):
       pin_code: Optionally, a pin code to use for activating the SIM card.
       registration_timeout: The maximum number of seconds to allow for the
         Sim868 to register to a network once the SIM card has the ready status.
+    
+    .. versionadded:: 2.0.0 *pin_code* and *registration_timeout* arguments
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._ser = None
 

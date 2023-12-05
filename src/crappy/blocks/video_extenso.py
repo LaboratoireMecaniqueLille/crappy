@@ -36,6 +36,9 @@ class VideoExtenso(Camera):
   currently not possible to specify the coordinates of the spots to track as an
   argument, so the use of the configuration window is mandatory. This might
   change in the future.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Video_extenso to VideoExtenso
   """
 
   def __init__(self,
@@ -238,6 +241,20 @@ class VideoExtenso(Camera):
       **kwargs: Any additional argument will be passed to the
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.
+    
+    .. versionadded:: 1.5.10 
+       *display_images*, *displayer_backend*, *displayer_framerate*, *freq*,
+       *save_images* and *image_generator* arguments
+    .. versionremoved:: 1.5.10 
+       *ext*, *fps_label*, *wait_l0* and *input_label* arguments
+    .. versionchanged:: 1.5.10
+       renamed *show_image* argument to *display_images*
+    .. versionchanged:: 1.5.10 renamed *end* argument to *raise_on_lost_spot*
+    .. versionadded:: 2.0.0
+       *debug*, *software_trig_label*, *img_extension*, *img_shape* and
+       *img_dtype* arguments
+    .. versionremoved:: 2.0.0 *img_name* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     super().__init__(camera=camera,
@@ -292,6 +309,9 @@ class VideoExtenso(Camera):
     In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` object that
     performs the video-extensometry and the tracking.
+    
+    .. versionchanged:: 1.5.5 now accepting args and kwargs
+    .. versionchanged:: 1.5.10 not accepting arguments anymore
     """
 
     # Instantiating the SpotsDetector containing the spots to track

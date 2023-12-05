@@ -29,6 +29,9 @@ class MeanBlock(Block):
     of the upstream Blocks, this Block may not always return the same number of
     labels ! This can cause errors in downstream Blocks expecting a fixed
     number of labels.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Mean_block to MeanBlock
   """
 
   def __init__(self,
@@ -58,6 +61,11 @@ class MeanBlock(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionadded:: 1.5.10 *verbose* argument
+    .. versionchanged:: 1.5.10 renamed *t_label* argument to *time_label*
+    .. versionadded 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     super().__init__()
@@ -79,7 +87,10 @@ class MeanBlock(Block):
     self._last_sent_t = time()
 
   def begin(self) -> None:
-    """Initializes the time counter."""
+    """Initializes the time counter.
+    
+    .. versionadded:: 2.0.0
+    """
 
     self._last_sent_t = self.t0
 

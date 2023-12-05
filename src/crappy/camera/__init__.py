@@ -4,8 +4,7 @@ from typing import Dict, Type
 
 from .fake_camera import FakeCamera
 from .file_reader import FileReader
-from .opencv_camera import CameraOpencv
-from .opencv_camera_basic import Webcam
+from .opencv_camera_webcam import Webcam
 from .raspberry_pi_camera import RaspberryPiCamera
 from .seek_thermal_pro import SeekThermalPro
 from .ximea_xiapi import XiAPI
@@ -22,10 +21,13 @@ if system() == 'Linux':
     run(['v4l2-ctl'], capture_output=True)
   except FileNotFoundError:
     from .gstreamer_camera_basic import CameraGstreamer
+    from .opencv_camera_basic import CameraOpencv
   else:
     from .gstreamer_camera_v4l2 import CameraGstreamer
+    from .opencv_camera_v4l2 import CameraOpencv
 else:
   from .gstreamer_camera_basic import CameraGstreamer
+  from .opencv_camera_basic import CameraOpencv
 
 from ._deprecated import deprecated_cameras
 camera_dict: Dict[str, Type[Camera]] = MetaCamera.classes

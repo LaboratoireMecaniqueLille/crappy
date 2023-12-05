@@ -10,6 +10,8 @@ What is Crappy ?
 Overview
 --------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 CRAPPY is an acronym and stands for **C**\ommand and **R**\eal-time
 **A**\cquisition in **P**\arallelized **PY**\thon.
 
@@ -30,6 +32,8 @@ requires to run experimental tests.
 
 Key features of Crappy
 ----------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 - **open-source** :
   It is natural for us to make our work available to anyone, and to keep it
@@ -59,6 +63,8 @@ Key features of Crappy
 
 Is Crappy for me ?
 ------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Crappy is **the right solution** for you if :
 
@@ -91,7 +97,7 @@ won't be able to help you. So Crappy is **NOT for you** if :
    :target: https://crappy.readthedocs.io/en/latest/?badge=latest
 
 .. |PyPi version| image:: https://badgen.net/pypi/v/crappy/
-   :target: https://pypi.org/project/crappy
+   :target: https://pypi.org/project/crappy/
 
 .. |PyPI pyversions| image:: https://img.shields.io/pypi/pyversions/crappy.svg
-   :target: https://pypi.python.org/pypi/crappy/
+   :target: https://pypi.org/project/crappy/

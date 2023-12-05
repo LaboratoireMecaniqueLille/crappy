@@ -10,8 +10,8 @@ from typing import Optional, Tuple
 from pkg_resources import resource_string
 from io import BytesIO
 import logging
-from multiprocessing import current_process, Event, Pipe
-from multiprocessing.queues import Queue
+from multiprocessing import current_process, Event, Queue
+from multiprocessing.queues import Queue as MPQueue
 
 from .config_tools import Zoom, HistogramProcess
 from ...camera.meta_camera.camera_setting import CameraBoolSetting, \
@@ -51,11 +51,14 @@ class CameraConfig(tk.Tk):
   :class:`~crappy.tool.camera_config.config_tools.HistogramProcess` tools. It
   also interacts with instances of the 
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
+
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Camera_config to CameraConfig
   """
 
   def __init__(self,
                camera: Camera,
-               log_queue: Queue,
+               log_queue: MPQueue,
                log_level: Optional[int],
                max_freq: Optional[float]) -> None:
     """Initializes the interface and displays it.
@@ -70,6 +73,8 @@ class CameraConfig(tk.Tk):
       max_freq: The maximum frequency this window is allowed to loop at. It is
         simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
         Block.
+    
+    .. versionadded:: 2.0.0 *log_queue*, *log_level* and *max_freq* arguments
     """
 
     super().__init__()
@@ -81,11 +86,11 @@ class CameraConfig(tk.Tk):
     # Instantiating objects for the process managing the histogram calculation
     self._stop_event = Event()
     self._processing_event = Event()
-    self._img_in, img_in_proc = Pipe()
-    img_out_proc, self._img_out = Pipe()
+    self._img_in = Queue(maxsize=0)
+    self._img_out = Queue(maxsize=0)
     self._histogram_process = HistogramProcess(
         stop_event=self._stop_event, processing_event=self._processing_event,
-        img_in=img_in_proc, img_out=img_out_proc, log_level=log_level,
+        img_in=self._img_in, img_out=self._img_out, log_level=log_level,
         log_queue=log_queue)
 
     # Attributes containing the several images and histograms
@@ -124,7 +129,10 @@ class CameraConfig(tk.Tk):
 
   def main(self) -> None:
     """Constantly updates the image and the information on the GUI, until asked
-    to stop."""
+    to stop.
+    
+    .. versionadded:: 1.5.10
+    """
 
     # Starting the histogram calculation process
     self._histogram_process.start()
@@ -134,8 +142,8 @@ class CameraConfig(tk.Tk):
 
     while self._run:
       # Remaining below the max allowed frequency
-      if self._max_freq is None or \
-         self._n_loops / (time() - start_time) < self._max_freq:
+      if self._max_freq is None or (self._n_loops <
+                                    self._max_freq * (time() - start_time)):
         # Update the image, the histogram and the information
         self._update_img()
 
@@ -154,6 +162,8 @@ class CameraConfig(tk.Tk):
     Args:
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:
@@ -164,7 +174,10 @@ class CameraConfig(tk.Tk):
 
   def report_callback_exception(self, exc: Exception, val: str, tb) -> None:
     """Method displaying an error message in case an exception is raised in a
-    :mod:`tkinter` callback."""
+    :mod:`tkinter` callback.
+
+    .. versionadded:: 2.0.0
+    """
 
     self._logger.exception(f"Caught exception in {type(self).__name__}: "
                            f"{exc.__name__}({val})", exc_info=tb)
@@ -174,6 +187,8 @@ class CameraConfig(tk.Tk):
     """Method called when the user tries to close the configuration window.
 
     Mostly intended for being overwritten.
+    
+    .. versionadded:: 2.0.0
     """
 
     self.stop()
@@ -182,6 +197,8 @@ class CameraConfig(tk.Tk):
     """Method called for gracefully stopping the GUI.
 
     Stops the process calculating the histogram, and destroys the GUI.
+
+    .. versionadded:: 2.0.0
     """
 
     # Stopping the event loop and the histogram process
@@ -942,20 +959,20 @@ class CameraConfig(tk.Tk):
       hist_img = Image.fromarray(self._original_img)
       if hist_img.width > 320 or hist_img.height > 240:
         factor = min(320 / hist_img.width, 240 / hist_img.height)
-        hist_img = hist_img.resize((int(hist_img.width * factor),
-                                    int(hist_img.height * factor)))
+        hist_img = hist_img.resize((max(int(hist_img.width * factor), 1),
+                                    max(int(hist_img.height * factor), 1)))
       # The histogram is calculated on a grey level image
       if len(self._original_img.shape) == 3:
         hist_img = hist_img.convert('L')
 
       # Sending the image to the histogram process
       self.log(logging.DEBUG, "Sending image for histogram calculation")
-      self._img_in.send((hist_img, self._auto_range.get(),
-                         self._low_thresh, self._high_thresh))
+      self._img_in.put_nowait((hist_img, self._auto_range.get(),
+                               self._low_thresh, self._high_thresh))
 
     # Checking if a histogram is available for display
-    while self._img_out.poll():
-      self._hist = self._img_out.recv()
+    while not self._img_out.empty():
+      self._hist = self._img_out.get_nowait()
       self.log(logging.DEBUG, "Received histogram from histogram process")
 
   def _resize_hist(self) -> None:

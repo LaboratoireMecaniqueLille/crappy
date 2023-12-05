@@ -3,6 +3,7 @@
 from time import time
 from typing import List
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -97,6 +98,9 @@ class MCP9600(InOut):
   operating mode that returns Volts. Several parameters can be tuned, like the
   thermocouple type, the reading resolution or the filter coefficient. Note
   that the MCP9600 can only achieve a data rate of a few Hz.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Mcp9600 to MCP9600
   """
 
   def __init__(self,
@@ -164,7 +168,13 @@ class MCP9600(InOut):
           'Cold Junction Temperature',
           'Raw Data ADC'
 
+    .. versionremoved:: 2.0.0 *ft232h_ser_num* argument
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._bus = None
     self._mcp = None

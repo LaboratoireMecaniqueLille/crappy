@@ -38,6 +38,9 @@ class RaspberryPiCamera(Camera):
   Warning:
     Only works on Raspberry Pi, with the picamera API. On the latest OS release
     "Bullseye", it has to be specifically activated in the configuration menu.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Picamera to RaspberryPiCamera
   """
 
   def __init__(self) -> None:

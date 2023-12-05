@@ -3,6 +3,67 @@
 from .meta_block import Block
 
 
+def recv_all(_):
+  """Empty function for signaling a deprecated method of the Block object."""
+
+  raise NotImplementedError("The method recv_all was deprecated in version "
+                            "2.0.0, please use recv_all_data instead !")
+
+
+def poll(_):
+  """Empty function for signaling a deprecated method of the Block object."""
+
+  raise NotImplementedError("The method poll was deprecated in version "
+                            "2.0.0, please use data_available instead !")
+
+
+def recv_all_last(_):
+  """Empty function for signaling a deprecated method of the Block object."""
+
+  raise NotImplementedError("The method recv_all_last was deprecated in "
+                            "version 2.0.0, please use recv_last_data "
+                            "instead !")
+
+
+def get_last(_, *__, **___):
+  """Empty function for signaling a deprecated method of the Block object."""
+
+  raise NotImplementedError("The method get_last was deprecated in version "
+                            "2.0.0, please use recv_last_data instead !")
+
+
+def get_all_last(_, *__, **___):
+  """Empty function for signaling a deprecated method of the Block object."""
+
+  raise NotImplementedError("The method get_all_last was deprecated in "
+                            "version 2.0.0, please use recv_all_data "
+                            "instead !")
+
+
+def recv_all_delay(_, *__, **___):
+  """Empty function for signaling a deprecated method of the Block object."""
+
+  raise NotImplementedError("The method recv_all_delay was deprecated in "
+                            "version 2.0.0, please use recv_all_data_raw "
+                            "instead !")
+
+
+def drop(_, *__, **___):
+  """Empty function for signaling a deprecated method of the Block object."""
+
+  raise NotImplementedError("The method drop was deprecated in version "
+                            "2.0.0 !")
+
+
+setattr(Block, recv_all.__name__, recv_all)
+setattr(Block, poll.__name__, poll)
+setattr(Block, recv_all_last.__name__, recv_all_last)
+setattr(Block, get_last.__name__, get_last)
+setattr(Block, get_all_last.__name__, get_all_last)
+setattr(Block, recv_all_delay.__name__, recv_all_delay)
+setattr(Block, drop.__name__, drop)
+
+
 class AutoDrive(Block):
   """Empty class for signaling an object of version 1.5 whose name changed in
   version 2.0 and is now deprecated.

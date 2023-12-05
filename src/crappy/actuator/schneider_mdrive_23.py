@@ -2,6 +2,7 @@
 
 from typing import Optional
 import logging
+from  warnings import warn
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
@@ -17,6 +18,9 @@ class SchneiderMDrive23(Actuator):
   and in position.
 
   It communicates with the motor over a serial connection.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from CM_drive to SchneiderMDrive23
   """
 
   def __init__(self,
@@ -28,6 +32,11 @@ class SchneiderMDrive23(Actuator):
       port: The path to the serial port to open for the serial connection.
       baudrate: The baudrate to use for serial communication.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._ser = None
 
@@ -69,6 +78,9 @@ class SchneiderMDrive23(Actuator):
     Args:
       position: The target position to reach, in `mm`.
       _: The speed argument is ignored.
+    
+    .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
+    .. deprecated:: 2.0.0 *motion_type* argument
     """
 
     # Closing and reopening to get rid of errors
@@ -82,7 +94,10 @@ class SchneiderMDrive23(Actuator):
     self._ser.readline()
 
   def get_position(self) -> float:
-    """Reads, displays and returns the current position in `mm`."""
+    """Reads, displays and returns the current position in `mm`.
+    
+    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    """
 
     # Closing and reopening to get rid of errors
     self._ser.close()

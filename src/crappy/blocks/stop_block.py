@@ -14,6 +14,8 @@ class StopBlock(Block):
 
   Along with the :class:`~crappy.blocks.StopButton` Block, it allows to stop a
   test in a clean way without resorting to CTRL+C.
+
+  .. versionadded 2.0.0
   """
 
   def __init__(self,
@@ -62,8 +64,15 @@ class StopBlock(Block):
       criteria = (criteria,)
     criteria = tuple(criteria)
 
-    # Ultimately, all the criteria are converted to Callables
-    self._criteria = tuple(map(self._parse_criterion, criteria))
+    self._raw_crit = criteria
+    self._criteria = None
+
+  def prepare(self) -> None:
+    """Converts all the given criteria to :ref:`collections.abc.Callable`."""
+
+    # This operation cannot be performed during __init__ due to limitations of
+    # the spawn start method of multiprocessing
+    self._criteria = tuple(map(self._parse_criterion, self._raw_crit))
 
   def loop(self) -> None:
     """Receives data from upstream Blocks, checks if this data meets the

@@ -3,7 +3,9 @@
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
 from typing import Tuple, Optional, Union, List
-from subprocess import Popen, PIPE
+from re import findall, search
+from subprocess import Popen, PIPE, run
+from fractions import Fraction
 from platform import system
 import logging
 
@@ -29,19 +31,29 @@ class CameraGstreamer(Camera):
   """A class for reading images from a video device using Gstreamer.
 
   It can read images from the default video source, or a video device can be
-  specified. In this case, the user has access to a range of parameters for
-  tuning the image. Alternatively, it is possible to give a custom GStreamer
-  pipeline as an argument. In this case no settings are available, and it is up
-  to the user to ensure the validity of the pipeline.
+  specified. The user has access to a range of parameters for tuning the image,
+  depending on the capability of the hardware. Alternatively, it is possible to
+  give a custom GStreamer pipeline as an argument. In this case no settings are
+  available, and it is up to the user to ensure the validity of the pipeline.
 
   This class uses less resources and is compatible with more cameras than the
   :class:`~crappy.camera.CameraOpencv` camera, that relies on OpenCV. The
   installation of GStreamer is however less straightforward than the one of
-  OpenCV.
+  OpenCV, especially on Windows !
+
+  Warning:
+    There are two classes for CameraGstreamer, one for Linux based on
+    `v4l-utils`, and another one for Linux (without `v4l-utils`) and other OS.
+    Depending on the installation of `v4l-utils` and the OS, the correct class
+    will be automatically imported. The version using `v4l-utils` allows tuning
+    more parameters than the basic version.
 
   Note:
     This Camera requires the module :mod:`PyGObject` to be installed, as well
     as GStreamer.
+  
+  .. versionadded:: 1.5.9
+  .. versionchanged:: 2.0.0 renamed from Camera_gstreamer to CameraGstreamer
   """
 
   def __init__(self) -> None:
@@ -181,15 +193,102 @@ videoconvert ! autovideosink
     # Defining the settings in case no custom pipeline was given
     if user_pipeline is None:
 
-      self._formats = ['Default', 'MJPG']
+      # Checking the available formats with the Gst device monitor
+      cam = None
+      device_monitor = Gst.DeviceMonitor.new()
+      device_monitor.start()
+      devices = [device for device in device_monitor.get_devices()
+                 if device.get_device_class() == "Video/Source"]
 
-      # Creating the parameter if applicable
-      self.add_choice_setting(name='format',
-                              choices=tuple(self._formats),
-                              setter=self._set_format)
+      # Stop right here if there is no connected camera
+      if not devices:
+        self.log(logging.ERROR, "No camera devices available for reading !")
+        raise IOError
+
+      # Finding the specified device in the available ones
+      if self._device is not None:
+        for device in devices:
+          properties = device.get_properties()
+          api = properties.get_value('device.api')
+          dev = properties.get_value('object.path')
+          if dev == f'{api}:{self._device}':
+            cam = device
+            break
+
+      # Raising an exception if the specified device cannot be found
+      if self._device is not None and cam is None:
+        self.log(logging.ERROR, f"Could not open the specified camera "
+                                f"at: {self._device}")
+        raise IOError
+
+      # Defining a default camera if the device is not specified
+      if self._device is None:
+        cam = devices[0]
+        path = cam.get_properties().get_value('object.path')
+        self.log(logging.WARNING, f"No specific camera to open specified, "
+                                  f"opening {path.split(':')[1]} by default")
+
+      # Getting the available image formats
+      caps = cam.get_caps()
+      nb_formats = caps.get_size()
+      for i in range(nb_formats):
+        form = None
+        struct = caps.get_structure(i)
+        name = struct.get_name()
+        if name == 'image/jpeg':
+          form = 'MJPG'
+        elif name == 'video/x-h264':
+          form = 'H264'
+        elif name == 'video/x-hevc':
+          form = 'HEVC'
+        elif name == 'video/x-raw':
+          form = struct.get_value('format')
+        else:
+          self.log(logging.WARNING, f"Found unsupported cap format: {name}, "
+                                    f"ignoring it")
+
+        # Formatting the format into the v4l2 syntax
+        if form is not None:
+          width = struct.get_value('width')
+          height = struct.get_value('height')
+          framerates = findall(r'(\d+/\d+)', struct.to_string())
+          for fps_str in framerates:
+            fps = f"{float(Fraction(fps_str)):.3f}"
+            self._formats.append(f"{form} {width}x{height} ({fps} fps)")
+
+      device_monitor.stop()
+
+      # Checking if the formats are supported with the installed libraries
+      if self._formats:
+        h264_available = bool(run(['gst-inspect-1.0', 'avdec_h264'],
+                                  capture_output=True, text=True).stdout)
+        h265_available = bool(run(['gst-inspect-1.0', 'avdec_h265'],
+                                  capture_output=True, text=True).stdout)
+        if not h264_available and any(form.split()[0] == 'H264'
+                                      for form in self._formats):
+          self._formats = [form for form in self._formats
+                           if form.split()[0] != 'H264']
+          self.log(logging.WARNING, "The video format H264 could be available "
+                                    "for the selected camera if "
+                                    "gstreamer1.0-libav was installed !")
+        if not h265_available and any(form.split()[0] == 'HEVC'
+                                      for form in self._formats):
+          self._formats = [form for form in self._formats
+                           if form.split()[0] != 'HEVC']
+          self.log(logging.WARNING, "The video format H265 could be available "
+                                    "for the selected camera if "
+                                    "gstreamer1.0-libav was installed !")
+
+      if self._formats:
+        # Creating the format parameter
+        self.add_choice_setting(name='format',
+                                choices=tuple(self._formats),
+                                setter=self._set_format)
 
       # These settings are always available no matter the platform
-      self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
+      if self._nb_channels > 1:
+        self.add_choice_setting(name="channels", choices=('1', '3'),
+                                default='1')
       self.add_scale_setting(name='brightness', lowest=-1., highest=1.,
                              setter=self._set_brightness, default=0.)
       self.add_scale_setting(name='contrast', lowest=0., highest=2.,
@@ -284,7 +383,7 @@ videoconvert ! autovideosink
                     contrast: Optional[float] = None,
                     hue: Optional[float] = None,
                     saturation: Optional[float] = None,
-                    img_format: Optional[int] = None) -> str:
+                    img_format: Optional[str] = None) -> str:
     """Method that generates a pipeline, according to the given settings.
 
     If a user-defined pipeline was given, it will always be returned.
@@ -325,19 +424,55 @@ videoconvert ! autovideosink
     else:
       device = ''
 
-    # Getting the format index
-    img_format = img_format if img_format is not None else self.format
-    format_name, img_size, fps = img_format, None, None
+    # Getting the format string if not provided as an argument
+    if img_format is None and hasattr(self, 'format'):
+      img_format = self.format
+    # In case it goes wrong, just try without specifying the format
+    if img_format is None:
+      img_format = ''
 
-    # Adding a mjpeg decoder to the pipeline if needed
-    if format_name == 'Default':
-      img_format = '! decodebin'
-    elif format_name == 'MJPG':
+    try:
+      format_name, img_size, fps = findall(r"(\w+)\s(\w+)\s\((\d+.\d+) fps\)",
+                                           img_format)[0]
+    except ValueError:
+      format_name, img_size, fps = img_format, None, None
+
+    # Default color is BGR in most cases
+    color = 'BGR'
+    # Adding the decoder to the pipeline if needed
+    if format_name == 'MJPG':
       img_format = '! jpegdec'
+    elif format_name == 'H264':
+      img_format = '! h264parse ! avdec_h264'
+    elif format_name == 'HEVC':
+      img_format = '! h265parse ! avdec_h265'
+    elif format_name in ('YUYV', 'YUY2'):
+      img_format = ''
+    elif format_name == 'GRAY8':
+      img_format = ''
+      color = 'GRAY8'
+    else:
+      self.log(logging.WARNING, f"Unsupported format name: {format_name}, "
+                                f"trying without explicitly setting the "
+                                f"decoder in the pipeline")
+      img_format = ''
 
+    # Getting the width and height from the second half of the string
+    if img_size is not None:
+      width, height = map(int, img_size.split('x'))
+    else:
+      width, height = None, None
+
+    # Including the dimensions and the fps in the pipeline
+    img_size = f',width={width},height={height}' if width else ''
+    if fps is not None:
+      fps = Fraction(fps)
+      fps_str = f',framerate={fps.numerator}/{fps.denominator}'
+    else:
+      fps_str = ''
     # Finally, generate a single pipeline containing all the user settings
     return f"""{source} {device} name=source {img_format} ! videoconvert ! 
-           video/x-raw,format=BGR ! videobalance 
+           video/x-raw,format={color}{img_size}{fps_str} ! videobalance 
            brightness={brightness if brightness is not None 
                        else self.brightness:.3f} 
            contrast={contrast if contrast is not None else self.contrast:.3f} 
@@ -384,7 +519,9 @@ videoconvert ! autovideosink
                       "the format.\n(here BGR would be for 3 channels)")
 
     # Converting to gray level if needed
-    if self._user_pipeline is None and self.channels == '1':
+    if (self._user_pipeline is None
+        and hasattr(self, 'channels')
+        and self.channels == '1'):
       numpy_frame = cv2.cvtColor(numpy_frame, cv2.COLOR_BGR2GRAY)
 
     # Cleaning up the buffer mapping
@@ -419,3 +556,8 @@ videoconvert ! autovideosink
     """Sets the image encoding and dimensions."""
 
     self._restart_pipeline(self._get_pipeline(img_format=img_format))
+
+    # Reloading the software ROI selection settings
+    if self._soft_roi_set and self._formats and ' ' in self._formats[0]:
+      width, height = search(r'(\d+)x(\d+)', img_format).groups()
+      self.reload_software_roi(int(width), int(height))

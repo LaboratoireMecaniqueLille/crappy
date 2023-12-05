@@ -2,6 +2,8 @@
 Troubleshooting
 ===============
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 When encountering a problem with Crappy, please **first carefully read the**
 **present documentation**. Most of the difficulties users may face come from an
 incorrect use of Crappy. If you cannot find an answer in the documentation, you

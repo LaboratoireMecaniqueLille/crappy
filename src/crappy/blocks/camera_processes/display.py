@@ -36,6 +36,8 @@ class Displayer(CameraProcess):
   The images can be displayed using two different backends : either using
   :mod:`cv2` (OpenCV), or using :mod:`matplotlib`. OpenCV is by far the fastest
   and most convenient.
+
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self,
