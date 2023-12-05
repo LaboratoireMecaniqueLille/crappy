@@ -45,14 +45,11 @@ class PhidgetWheatstoneBridge(InOut):
       data_rate: The number of samples to acquire per second, as an :obj:`int`.
         Should be between `0.017` (one sample per minute) and `50`.
       gain: A gain to apply to the acquired value, following the formula :
-        ::
-
-          returned = gain * acquired + offset
+        :math:`returned = gain * acquired + offset`
       offset: An offset to apply to the acquired value, following the formula :
-        ::
-
-          returned = gain * acquired + offset
-      remote: True when the channel is attached via a Phidget network server.
+        :math:`returned = gain * acquired + offset`
+      remote: Set to :obj:`True` to drive the bridge via a network VINT Hub,
+        or to :obj:`False` to drive it via a USB VINT Hub.
     """
 
     self._load_cell: Optional[VoltageRatioInput] = None
@@ -71,7 +68,7 @@ class PhidgetWheatstoneBridge(InOut):
     self._data_rate = data_rate
     self._gain = gain
     self._offset = offset
-    self.remote = remote
+    self._remote = remote
 
     self._last_ratio: Optional[float] = None
 
@@ -83,13 +80,15 @@ class PhidgetWheatstoneBridge(InOut):
     self.log(logging.DEBUG, "Enabling server discovery")
     Net.enableServerDiscovery(PhidgetServerType.PHIDGETSERVER_DEVICEREMOTE)
     self._load_cell = VoltageRatioInput()
-    if self.remote is True:
+    self._load_cell.setChannel(self._channel)
+
+    # Setting the remote or local status
+    if self._remote is True:
       self._load_cell.setIsLocal(False)
       self._load_cell.setIsRemote(True)
     else:
       self._load_cell.setIsLocal(True)
       self._load_cell.setIsRemote(False)
-    self._load_cell.setChannel(self._channel)
 
     # Setting up the callbacks
     self._load_cell.setOnAttachHandler(self._on_attach)

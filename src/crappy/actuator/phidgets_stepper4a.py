@@ -45,6 +45,8 @@ class Phidget4AStepper(Actuator):
         the motor, in `A` .
       max_acceleration: If given, sets the maximum acceleration the motor is
         allowed to reach in `mm/s²`.
+      remote: Set to :obj:`True` to drive the stepper via a network VINT Hub,
+        or to :obj:`False` to drive it via a USB VINT Hub.
     """
 
     self._motor: Optional[Stepper] = None
@@ -54,7 +56,7 @@ class Phidget4AStepper(Actuator):
     self._steps_per_mm = steps_per_mm
     self._current_limit = current_limit
     self._max_acceleration = max_acceleration
-    self.remote = remote
+    self._remote = remote
 
     # These buffers store the last known position and speed
     self._last_velocity: Optional[float] = None
@@ -68,13 +70,14 @@ class Phidget4AStepper(Actuator):
     self.log(logging.DEBUG, "Enabling server discovery")
     Net.enableServerDiscovery(PhidgetServerType.PHIDGETSERVER_DEVICEREMOTE)
     self._motor = Stepper()
-    if self.remote is True:
+
+    # Setting the remote or local status
+    if self._remote is True:
       self._motor.setIsLocal(False)
       self._motor.setIsRemote(True)
     else:
       self._motor.setIsLocal(True)
       self._motor.setIsRemote(False)
-    self._motor.setIsRemote(True)
 
     # Setting up the callbacks
     self.log(logging.DEBUG, "Setting the callbacks")
