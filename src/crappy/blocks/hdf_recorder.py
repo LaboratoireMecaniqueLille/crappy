@@ -30,6 +30,9 @@ class HDFRecorder(Block):
     Corrupted HDF5 files are not readable at all ! If anything goes wrong 
     during a test, especially during the finish phase, it is not guaranteed 
     that the recorded data will be readable.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Hdf_recorder to HDFRecorder
   """
 
   def __init__(self,
@@ -66,6 +69,10 @@ class HDFRecorder(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionadded:: 1.5.10 *freq* and *verbose* arguments
+    .. versionadded 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._hfile = None

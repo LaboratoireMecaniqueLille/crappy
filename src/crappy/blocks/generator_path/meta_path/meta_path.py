@@ -6,7 +6,10 @@ from ...._global import DefinitionError
 class MetaPath(type):
   """Metaclass ensuring that two Paths don't have the same name, and that all
   Paths define the required methods. Also keeps track of all the Path
-  classes, including the custom user-defined ones."""
+  classes, including the custom user-defined ones.
+  
+  .. versionadded:: 2.0.0
+  """
 
   classes = dict()
 

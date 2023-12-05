@@ -2,6 +2,8 @@
 Crappy
 ======
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 Crappy is a **Python module** that aims to provide easy-to-use and open-source
 tools for **command and data acquisition on complex experimental setups**. It
 is designed to let users drive most setups in **less than 100 lines of code**.

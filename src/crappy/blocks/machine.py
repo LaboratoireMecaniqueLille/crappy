@@ -46,6 +46,8 @@ class Machine(Block):
   commands, and optionally the labels over which it sends its current speed
   and/or position. The driving mode (`'speed'` or `'position'`) can also be set
   independently for each Actuator.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -111,6 +113,9 @@ class Machine(Block):
           in `'position'` mode. Each time a value is received, the stored speed
           value is updated. It will also overwrite the ``speed`` key if given.
 
+    .. versionadded:: 1.5.10 *verbose* argument
+    .. versionadded 2.0.0 *debug* and *ft232h_ser_num* arguments
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._actuators: List[ActuatorInstance] = list()

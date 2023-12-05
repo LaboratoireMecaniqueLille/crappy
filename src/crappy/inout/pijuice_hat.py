@@ -3,6 +3,7 @@
 from typing import Dict, Any, List
 from time import time
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -49,6 +50,9 @@ class PiJuice(InOut):
 
   Warning:
     Only available on Raspberry Pi !
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Pijuice to PiJuice
   """
 
   def __init__(self,
@@ -67,7 +71,14 @@ class PiJuice(InOut):
         `'pijuice'` backend is based on the :mod:`pijuice` module.
       i2c_port: The I2C port over which the PiJuice should communicate.
       address: The I2C address of the piJuice. The default address is `0x14`.
+    
+    .. versionadded:: 1.5.10 *backend* argument
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._bus = None
     self._pijuice = None

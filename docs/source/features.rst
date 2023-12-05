@@ -2,6 +2,8 @@
 Current functionalities
 =======================
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 On this page are listed all the objects currently distributed with Crappy and
 exposed to the users. Information on how to use them can be found in the
 :ref:`Tutorials`, as well as guidelines for creating your own objects. For most
@@ -13,6 +15,8 @@ in the :ref:`API`.
 
 Functionalities (Blocks)
 ------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 The Blocks are the base bricks of Crappy, that fulfill various functions. In
 the tutorials, you can learn more about :ref:`how to use Blocks
@@ -49,8 +53,8 @@ Data display
   persistent and allows to visualize the history of a label.
 
   The examples folder on GitHub contains `one example of the Grapher Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks/
-  dashboard.py>`_ specifically, but it is also used in most of the other
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/dashboard.py>`_ specifically, but it is also used in most of the other
   examples.
 
   :ref:`A tutorial section <2.c. The Grapher Block>` is also dedicated to the
@@ -365,6 +369,8 @@ Others
 
 Supported hardware (Cameras, InOuts, Actuators)
 -----------------------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Supported Cameras
 +++++++++++++++++
@@ -809,6 +815,8 @@ LaMcube-specific hardware
 
 On-the-fly data modification (Modifiers)
 ----------------------------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 - :ref:`Demux`
 

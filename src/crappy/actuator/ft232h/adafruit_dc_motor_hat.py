@@ -4,6 +4,7 @@ from struct import pack_into
 from time import sleep
 from typing import Union, Optional, Tuple
 import logging
+from warnings import warn
 
 from ..meta_actuator import Actuator
 from ...tool.ft232h import FT232HServer as FT232H, USBArgsType
@@ -45,7 +46,10 @@ class DCMotorHatFT232H(Actuator):
 
   Note:
     The DC Motor Hat can also drive stepper motors, but this feature isn't
-    included here."""
+    included here.
+
+  .. versionadded:: 2.0.0
+  """
 
   ft232h = True
 
@@ -63,6 +67,11 @@ class DCMotorHatFT232H(Actuator):
         be provided by the user. It contains the information necessary for
         setting up the FT232H.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._bus: Optional[FT232H] = None
     self._buf: bytearray = bytearray(4)

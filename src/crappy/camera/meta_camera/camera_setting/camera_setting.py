@@ -18,6 +18,9 @@ class CameraSetting:
   :class:`~crappy.camera.meta_camera.camera_setting.CameraBoolSetting`,
   :class:`~crappy.camera.meta_camera.camera_setting.CameraChoiceSetting`,
   and :class:`~crappy.camera.meta_camera.camera_setting.CameraScaleSetting`.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Camera_setting to CameraSetting
   """
 
   def __init__(self,
@@ -57,6 +60,8 @@ class CameraSetting:
     Args:
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:
@@ -101,6 +106,8 @@ class CameraSetting:
     GUI.
 
     Mostly helpful for adjusting the ranges of sliders.
+
+    .. versionadded:: 2.0.0
     """
 
     ...

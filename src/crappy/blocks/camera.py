@@ -44,6 +44,8 @@ class Camera(Block):
   the recording by the :class:`~crappy.blocks.camera_processes.ImageSaver`.
   This Block manages the instantiation, the synchronisation and the
   termination of all the CameraProcess it controls.
+  
+  .. versionadded:: 1.4.0
   """
 
   cam_count = dict()
@@ -190,6 +192,18 @@ class Camera(Block):
       **kwargs: Any additional argument will be passed to the 
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.
+    
+    .. versionadded:: 1.5.2 *no_loop* argument
+    .. versionadded:: 1.5.10 
+       *display_images*, *displayer_backend*, *displayer_framerate*, 
+       *software_trig_label*, *freq*, *save_images* and *image_generator*
+       arguments
+    .. versionremoved::
+       1.5.10 *fps_label*, *ext*, *input_label* and *no_loop* arguments
+    .. versionadded:: 2.0.0
+       *debug*, *img_extension*, *img_shape* and *img_dtype* arguments
+    .. versionremoved:: 2.0.0 *img_name* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._save_proc: Optional[ImageSaver] = None

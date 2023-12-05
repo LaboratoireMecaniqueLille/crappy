@@ -32,6 +32,8 @@ class Generator(Block):
   used by a :class:`~crappy.blocks.generator_path.meta_path.Path`. The most
   common use of this feature is to have the stop condition of a Path depend on
   the received values of a label.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -83,6 +85,11 @@ class Generator(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+    
+    .. versionremoved:: 1.5.10 *cmd* and *trig_link* argument
+    .. versionadded:: 1.5.10 *safe_start* argument
+    .. versionadded:: 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     super().__init__()

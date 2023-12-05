@@ -21,6 +21,9 @@ class DICVETool:
   Different algorithms are available depending on the needs. This tool is
   mainly used to perform video-extensometry on speckled surfaces, although it
   could as well be of use for other applications.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from DISVE to DICVETool
   """
 
   def __init__(self,
@@ -74,6 +77,11 @@ class DICVETool:
         image, and raises an error if that's the case.
       follow: It :obj:`True`, the patches will move to follow the displacement
         of the image.
+    
+    .. versionchanged:: 1.5.9
+       renamed *gditerations* argument to *gradient_iterations*
+    .. versionadded:: 1.5.9 *method* argument
+    .. versionremoved:: 1.5.10 *img0* and *show_image* arguments
     """
 
     # These attributes are accessed by the parent class
@@ -105,7 +113,10 @@ class DICVETool:
       self._dis = None
 
   def set_img0(self, img0: np.ndarray) -> None:
-    """Sets the reference image for the cross-correlation."""
+    """Sets the reference image for the cross-correlation.
+    
+    .. versionadded:: 1.5.10
+    """
 
     self._img0 = img0
     self._height, self._width, *_ = img0.shape
@@ -122,6 +133,8 @@ class DICVETool:
 
     Also updates the patch offsets if required, and updates the window for
     following the patches if any.
+
+    .. versionadded:: 1.5.9
     """
 
     # Making sure the reference image exists

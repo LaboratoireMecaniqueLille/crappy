@@ -6,7 +6,12 @@ from ..._global import DefinitionError
 class MetaIO(type):
   """Metaclass ensuring that two InOuts don't have the same name, and that all
   InOuts define the required methods. Also keeps track of all the InOut
-  classes, including the custom user-defined ones."""
+  classes, including the custom user-defined ones.
+
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 1.5.10
+     not checking anymore for mandatory methods in :meth:`__init__`
+  """
 
   classes = dict()
 

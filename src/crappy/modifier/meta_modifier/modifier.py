@@ -19,10 +19,15 @@ class Modifier(metaclass=MetaModifier):
   It is preferable for every Modifier to be a child of this class, although
   that is not mandatory. A Modifier only needs to be a callable, i.e. a class
   defining the :meth:`__call__` method or a function.
+
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self, *_, **__) -> None:
-    """Sets the logger attribute."""
+    """Sets the logger attribute.
+
+    .. versionchanged:: 2.0.0 now accepts args and kwargs
+    """
 
     self._logger: Optional[logging.Logger] = None
 
@@ -42,6 +47,8 @@ class Modifier(metaclass=MetaModifier):
       Data to send to the output :class:`~crappy.blocks.Block`, as a
       :obj:`dict`. It is also fine for this method to return :obj:`None`, in
       which case no message is transmitted to the output Block.
+
+    .. versionadded:: 2.0.0
     """
 
     self.log(logging.DEBUG, f"Received {data}")
@@ -58,6 +65,8 @@ class Modifier(metaclass=MetaModifier):
     Args:
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:

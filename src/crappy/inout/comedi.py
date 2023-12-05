@@ -4,6 +4,7 @@ from time import time
 from typing import Optional, List, Iterable
 from dataclasses import dataclass
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from ..tool.bindings import comedi_bind as comedi
@@ -38,6 +39,8 @@ class Comedi(InOut):
   Note:
     This class requires the `libcomedi` library to be installed on the
     computer.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -116,7 +119,20 @@ class Comedi(InOut):
       the same length, and same for the output channels. If that's not the
       case, all the given iterables are treated as if they had the same length
       as the shortest given one.
+
+    .. versionchanged:: 1.5.10
+       now explicitly listing the *device*, *subdevice*, *channels*,
+       *range_num*, *gain*, *offset*, *make_zero*, *out_subdevice*,
+       *out_channels*, *out_range_num*, *out_gain* and *out_offset* arguments
+    .. versionchanged:: 2.0.0 renamed *subdevice* argument to *sub_device*
+    .. versionchanged:: 2.0.0
+       renamed *out_subdevice* argument to *out_sub_device*
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._device = None
 

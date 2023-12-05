@@ -87,6 +87,9 @@ class ADS1115(InOut):
 
   Various settings can be adjusted, like the sample rate, the input mode or the
   voltage range.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Ads1115 to ADS1115
   """
 
   def __init__(self,
@@ -156,6 +159,9 @@ class ADS1115(InOut):
       AINx voltages should not be higher than `VDD+0.3V` nor lower than
       `GND-0.3V`. Setting high ``v_range`` values does not allow measuring
       voltages higher than `VDD` !!
+
+    .. versionadded:: 1.5.8 *dry_pin* argument
+    .. versionremoved:: 2.0.0 *ft232h_ser_num* argument
     """
 
     self._bus = None

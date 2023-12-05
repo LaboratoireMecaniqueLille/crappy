@@ -8,7 +8,10 @@ from .meta_modifier import Modifier
 
 class Diff(Modifier):
   """This Modifier calculates the time derivative of a given label and adds the
-  derivative to the returned data."""
+  derivative to the returned data.
+  
+  .. versionadded:: 1.4.0
+  """
 
   def __init__(self,
                label: str,
@@ -21,6 +24,8 @@ class Diff(Modifier):
       time_label: The label carrying the time information.
       out_label: The label carrying the calculated derivative. If not given,
         defaults to ``'d_<label>'``.
+
+    .. versionchanged:: 1.5.10 renamed *time* argument to *time_label*
     """
 
     super().__init__()
@@ -33,7 +38,10 @@ class Diff(Modifier):
 
   def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
     """Gets the data from the upstream Block, updates the derivative value,
-    appends it to the data and returns the data."""
+    appends it to the data and returns the data.
+    
+    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    """
 
     self.log(logging.DEBUG, f"Received {data}")
 

@@ -14,6 +14,9 @@ class CyclicRamp(Path):
 
   It is equivalent to a succession of 
   :class:`~crappy.blocks.generator_path.Ramp` Paths.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Cyclic_ramp to CyclicRamp
   """
 
   def __init__(self,
@@ -53,6 +56,12 @@ class CyclicRamp(Path):
 
         [{'type': 'Ramp', 'speed': 5,'condition': 'AIN0>2'},
         {'type': 'Ramp', 'value': -2, 'condition': 'AIN1<1'}] * 5
+    
+    .. versionchanged:: 1.5.10 renamed *time* argument to *_last_time*
+    .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
+    .. versionremoved:: 1.5.10 *verbose* argument
+    .. versionadded:: 1.5.10 *init_value* argument
+    .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 
     super().__init__()

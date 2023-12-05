@@ -114,7 +114,12 @@ ft232h_i2c_speed = {100E3: ft232h_i2c_timings(4.0E-6, 4.7E-6, 4.0E-6, 4.7E-6),
 
 class FindSerialNumber:
   """A class used for finding USB devices matching a given serial number, using
-     the usb.core.find method."""
+     the usb.core.find method.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0
+     renamed from Find_serial_number to FindSerialNumber
+  """
 
   def __init__(self, serial_number: str) -> None:
     self.serial_number = serial_number
@@ -158,6 +163,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     necessary to set their USB serial numbers. Otherwise, an error will be
     raised. This can be done using the crappy utility
     ``set_ft232h_serial_nr.py``.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0 renamed from ft232h to FT232H
   """
 
   class BitMode(IntEnum):

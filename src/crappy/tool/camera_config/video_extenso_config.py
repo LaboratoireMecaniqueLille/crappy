@@ -31,6 +31,9 @@ class VideoExtensoConfig(CameraConfigBoxes):
   :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` tools. It is
   meant to be used for configuring the :class:`~crappy.blocks.VideoExtenso`
   Block.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from VE_config to VideoExtensoConfig
   """
 
   def __init__(self,
@@ -55,6 +58,11 @@ class VideoExtensoConfig(CameraConfigBoxes):
         :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` used for
         detecting spots on the images received from the
         :class:`~crappy.camera.Camera`.
+
+    .. versionchanged:: 1.5.10 renamed *ve* argument to *video_extenso*
+    .. versionadded:: 2.0.0
+       *detector*, *log_queue*, *log_level* and *max_freq* arguments
+    .. versionremoved:: 2.0.0 *video_extenso* argument
     """
 
     super().__init__(camera, log_queue, log_level, max_freq)
@@ -67,6 +75,8 @@ class VideoExtensoConfig(CameraConfigBoxes):
     Checks that spots were detected on the image. If not, warns the user and
     prevents him from exiting except with CTRL+C. Also, saves the initial
     length if not already done by the user.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._detector.spots.empty():

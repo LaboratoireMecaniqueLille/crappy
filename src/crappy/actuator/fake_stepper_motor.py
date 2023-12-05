@@ -21,6 +21,8 @@ class FakeStepperMotor(Actuator):
   Internally, the behavior of the motor is emulated in a separate
   :obj:`~threading.Thread` and is based on the fundamental equations of the
   constantly accelerated linear movement.
+  
+  .. versionadded:: 2.0.0
   """
 
   def __init__(self,

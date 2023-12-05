@@ -4,6 +4,7 @@ from time import sleep
 from re import findall
 from typing import Optional
 import logging
+from  warnings import warn
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
@@ -24,6 +25,9 @@ class NewportTRA6PPD(Actuator):
 
   Note:
     This Actuator ignores new position commands while it is moving.
+  
+  .. versionadded:: 1.5.10
+  .. versionchanged:: 2.0.0 renamed from TRA6PPD to NewportTRA6PPD
   """
 
   def __init__(self,
@@ -35,6 +39,11 @@ class NewportTRA6PPD(Actuator):
       baudrate: The baudrate for the serial connection.
       port: Path to the port to use for serial communication.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._ser = None
 

@@ -5,6 +5,7 @@ from time import sleep, time
 from re import fullmatch, findall
 from typing import Union, Optional, List, Iterable
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -96,6 +97,9 @@ class WaveshareADDA(InOut):
 
   Important:
     This class is specifically meant to be used on a Raspberry Pi.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Waveshare_ad_da to WaveshareADDA
   """
 
   def __init__(self,
@@ -181,6 +185,11 @@ class WaveshareADDA(InOut):
         value has no influence on the ADC behaviour as it is always powered
         up with `5V`. Same goes for the DAC.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._bus = None
 

@@ -3,6 +3,7 @@
 from time import time
 from typing import List
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -21,6 +22,8 @@ class Agilent34420a(InOut):
 
   May also work on similar devices from the same manufacturer, although that
   was not tested.
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -37,6 +40,11 @@ class Agilent34420a(InOut):
       baudrate: Desired baudrate for serial communication.
       timeout: Timeout for the serial connection, as a :obj:`float`.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._ser = None
 

@@ -39,6 +39,8 @@ class Block(Process, metaclass=MetaBlock):
   This class also contains the class methods that allow driving a script with
   Crappy. They are always called in the `__main__` Process, and drive the
   execution of all the children Blocks.
+  
+  .. versionadded:: 1.4.0
   """
 
   instances = WeakSet()
@@ -112,7 +114,10 @@ class Block(Process, metaclass=MetaBlock):
   @classmethod
   def get_name(cls, name: str) -> str:
     """Method attributing to each new Block a unique name, based on the name of
-    the class and the number of existing instances for this class."""
+    the class and the number of existing instances for this class.
+    
+    .. versionadded:: 2.0.0
+    """
 
     i = 1
     while f"crappy.{name}-{i}" in cls.names:
@@ -155,6 +160,10 @@ class Block(Process, metaclass=MetaBlock):
         execution of code that would come after Crappy, in case Crappy does not
         terminate as expected. This behavior can be disabled by setting this
         argument to :obj:`True`.
+    
+    .. versionchanged:: 2.0.0 renamed *high_prio* argument to *allow_root*
+    .. versionremoved:: 2.0.0 *t0*, *verbose*, *bg* arguments
+    .. versionadded:: 2.0.0 *log_level*, *no_raise* arguments
     """
 
     cls.prepare_all(log_level)
@@ -182,6 +191,9 @@ class Block(Process, metaclass=MetaBlock):
         set to :obj:`None`, logging is totally disabled. Refer to the 
         documentation of the :mod:`logging` module for information on the 
         possible levels.
+    
+    .. versionremoved:: 2.0.0 *verbose* argument
+    .. versionadded:: 2.0.0 *log_level* argument
     """
 
     # Flag indicating whether to perform the cleanup action or not
@@ -317,6 +329,8 @@ class Block(Process, metaclass=MetaBlock):
       allow_root: If set to :obj:`True`, tries to renice the Processes with 
         sudo privilege in Linux. It requires the Python script to be run with 
         sudo privilege, otherwise it has no effect.
+    
+    .. versionchanged:: 2.0.0 renamed *high_prio* argument to *allow_root*
     """
 
     # Flag indicating whether to perform the cleanup action or not
@@ -413,6 +427,8 @@ class Block(Process, metaclass=MetaBlock):
         execution of code that would come after Crappy, in case Crappy does not
         terminate as expected. This behavior can be disabled by setting this
         argument to :obj:`True`.
+    
+    .. versionremoved:: 2.0.0 *t0*, *verbose* and *bg* arguments
     """
 
     # Setting the no_raise flag
@@ -682,7 +698,10 @@ class Block(Process, metaclass=MetaBlock):
   @classmethod
   def stop_all(cls) -> None:
     """Method for stopping all the Blocks by setting the stop
-    :obj:`~multiprocessing.Event`."""
+    :obj:`~multiprocessing.Event`.
+    
+    .. versionremoved:: 2.0.0 *verbose* argument
+    """
 
     if cls.stop_event is not None:
       cls.stop_event.set()
@@ -722,6 +741,8 @@ class Block(Process, metaclass=MetaBlock):
     
     Ensures the Logger exists before trying to log, thus avoiding potential 
     errors.
+    
+    .. versionadded:: 2.0.0
     """
     
     if cls.logger is None:
@@ -1058,6 +1079,8 @@ class Block(Process, metaclass=MetaBlock):
     level for the Block. And if :obj:`None`, displays only the
     :obj:`~logging.CRITICAL` logging level, which is equivalent to no
     information at all.
+    
+    .. versionadded:: 2.0.0
     """
 
     return self._debug
@@ -1078,7 +1101,10 @@ class Block(Process, metaclass=MetaBlock):
   @property
   def t0(self) -> float:
     """Returns the value of t0, the exact moment when the test started that is
-    shared between all the Blocks."""
+    shared between all the Blocks.
+    
+    .. versionadded:: 2.0.0
+    """
 
     if self._instance_t0 is not None and self._instance_t0.value > 0:
       self.log(logging.DEBUG, "Start time value requested")
@@ -1105,6 +1131,8 @@ class Block(Process, metaclass=MetaBlock):
     Args:
       log_level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:
@@ -1160,7 +1188,10 @@ class Block(Process, metaclass=MetaBlock):
 
   def data_available(self) -> bool:
     """Returns :obj:`True` if there's data available for reading in at least
-    one of the input :class:`~crappy.links.Link`."""
+    one of the input :class:`~crappy.links.Link`.
+    
+    .. versionchanged:: 2.0.0 renamed from poll to data_available
+    """
 
     self.log(logging.DEBUG, "Data availability requested")
     return self.inputs and any(link.poll() for link in self.inputs)
@@ -1182,6 +1213,8 @@ class Block(Process, metaclass=MetaBlock):
     Returns:
       A :obj:`dict` whose keys are the received labels and with a single value
       for each key (usually a :obj:`float` or a :obj:`str`).
+    
+    .. versionchanged:: 2.0.0 renamed from recv_all to recv_data
     """
 
     ret = dict()
@@ -1212,6 +1245,10 @@ class Block(Process, metaclass=MetaBlock):
     Returns:
       A :obj:`dict` whose keys are the received labels and with a single value
       for each key (usually a :obj:`float` or a :obj:`str`).
+
+    .. versionremoved:: 1.5.10 *num* argument
+    .. versionadded:: 1.5.10 *blocking* argument
+    .. versionchanged:: 2.0.0 renamed from get_last to recv_last_data
     """
 
     # Initializing the buffer storing the last received values
@@ -1265,6 +1302,10 @@ class Block(Process, metaclass=MetaBlock):
       A :obj:`dict` whose keys are the received labels and with a :obj:`list`
       of received values for each key. The first item in the list is the oldest
       one available in the Link, the last item is the newest available.
+
+    .. versionremoved:: 1.5.10 *num* argument
+    .. versionadded:: 1.5.10 *blocking* argument
+    .. versionchanged:: 2.0.0 renamed from get_all_last to recv_all_data
     """
 
     ret = defaultdict(list)
@@ -1314,6 +1355,8 @@ class Block(Process, metaclass=MetaBlock):
     Returns:
       A :obj:`list` containing :obj:`dict`, whose keys are the received labels
       and with a :obj:`list` of received value for each key.
+    
+    .. versionadded:: 2.0.0
     """
 
     ret = [defaultdict(list) for _ in self.inputs]

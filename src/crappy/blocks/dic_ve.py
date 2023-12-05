@@ -45,6 +45,9 @@ class DICVE(Camera):
   :class:`~crappy.tool.camera_config.DICVEConfig` window before the test
   starts. Here, the user can also select the patches to track if they were not
   already specified as an argument.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from DISVE to DICVE
   """
 
   def __init__(self,
@@ -287,6 +290,23 @@ class DICVE(Camera):
       **kwargs: Any additional argument will be passed to the
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.
+
+    .. versionadded:: 1.5.7 *safe* and *follow* arguments
+    .. versionremoved:: 1.5.9 *fields* argument
+    .. versionadded:: 1.5.9 *method* argument
+    .. versionadded:: 1.5.10 
+       *transform*, *config*, *displayer_backend*, *displayer_framerate*, 
+       *verbose*, *freq*, *save_images*, *img_name*, *save_folder*, 
+       *save_period*, *save_backend* and *image_generator* arguments
+    .. versionchanged:: 1.5.10 
+       renamed *gditerations* argument to *gradient_iterations*
+    .. versionchanged:: 1.5.10 
+       renamed *show_image* argument to *display_images*
+    .. versionadded:: 2.0.0 
+       *debug*, *software_trig_label*, *img_extension*, *raise_on_patch_exit*,
+       *img_size* and *img_dtype* arguments
+    .. versionremoved:: 2.0.0 *img_name* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     if not config and patches is None:
@@ -353,6 +373,9 @@ class DICVE(Camera):
     In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.DICVEProcess` object that performs
     the image correlation and the tracking.
+    
+    .. versionchanged:: 1.5.5 now accepting args and kwargs
+    .. versionchanged:: 1.5.10 not accepting arguments anymore
     """
 
     # Instantiating the SpotsBoxes containing the patches to track

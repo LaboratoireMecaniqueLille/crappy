@@ -36,6 +36,9 @@ class DAQmx(InOut):
   Note:
     This class requires the NIDAQmx C driver to be installed, as well as the
     :mod:`PyDAQmx` module.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Daqmx to DAQmx
   """
 
   def __init__(self,
@@ -114,6 +117,10 @@ class DAQmx(InOut):
       the same length, and same for the output channels. If that's not the
       case, all the given iterables are treated as if they had the same length
       as the shortest given one.
+
+    .. versionchanged:: 1.5.10 renamed *range* argument to *ranges*
+    .. versionchanged:: 1.5.10 renamed *out_range* argument to *out_ranges*
+    .. versionremoved:: 1.5.10 *nperscan* argument
     """
 
     self._handle = None

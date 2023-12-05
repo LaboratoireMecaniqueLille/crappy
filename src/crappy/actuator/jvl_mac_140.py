@@ -25,14 +25,18 @@ class JVLMac140(Actuator):
   in position.
 
   It interfaces with the servomotor over a serial connection.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed class from Biotens to JVLMac140
   """
 
-  def __init__(self,
-               port: str = '/dev/ttyUSB0') -> None:
+  def __init__(self, port: str = '/dev/ttyUSB0') -> None:
     """Initializes the parent class.
 
     Args:
       port: Path to the serial port to use for communication.
+
+    .. deprecated:: 2.0.0 *baudrate* argument
     """
 
     self._ser = None
@@ -83,6 +87,8 @@ class JVLMac140(Actuator):
       position: The target position, in `mm`.
       speed: The target speed for reaching the desired position, in `mm/min`.
         The speed must be given, otherwise an exception is raised.
+    
+    .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
     """
 
     if speed is None:
@@ -109,7 +115,10 @@ class JVLMac140(Actuator):
     self._ser.writelines(cmd)
 
   def get_position(self) -> float:
-    """Reads and returns the current position of the servomotor, in `mm`."""
+    """Reads and returns the current position of the servomotor, in `mm`.
+
+    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    """
 
     # We have 20 attempts for reading the position
     for _ in range(20):

@@ -28,6 +28,8 @@ class Link:
     modify the transferred value. The Modifiers should be callables taking a
     :obj:`dict` as argument and returning a :obj:`dict`. They can be functions,
     or preferably children of :class:`~crappy.modifier.Modifier`.
+  
+  .. versionadded:: 1.4.0
   """
 
   _count = 0
@@ -48,6 +50,10 @@ class Link:
       name: Name of the Link, to differentiate it from the others when
         debugging. If no specific name is given, the Links are numbered in the
         order in which they are instantiated in the script.
+    
+    .. versionchanged:: 1.5.9 renamed *condition* argument to *conditions*
+    .. versionchanged:: 1.5.9 renamed *modifier* argument to *modifiers*
+    .. versionremoved:: 2.0.0 *conditions*, *timeout* and *action* arguments
     """
 
     if modifiers is None:
@@ -89,6 +95,8 @@ class Link:
     Args:
       log_level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:
@@ -98,7 +106,10 @@ class Link:
     self._logger.log(log_level, msg)
 
   def poll(self) -> bool:
-    """Returns :obj:`True` if there's data available for reading."""
+    """Returns :obj:`True` if there's data available for reading.
+    
+    .. versionadded:: 2.0.0
+    """
 
     return self._in.poll()
 
@@ -145,6 +156,8 @@ class Link:
     Returns:
       A :obj:`dict` whose keys are the labels being sent, and for each key a
       single value (usually a :obj:`float` or a :obj:`str`).
+      
+    .. versionremoved:: 2.0.0 *blocking* argument
     """
 
     if self._in.poll():
@@ -161,6 +174,8 @@ class Link:
     Returns:
       A :obj:`dict` whose keys are the labels being sent, and for each key a
       single value (usually a :obj:`float` or a :obj:`str`).
+    
+    .. versionremoved:: 2.0.0 *blocking* argument
     """
 
     data = dict()
@@ -177,6 +192,10 @@ class Link:
       A :obj:`dict` whose keys are the labels being sent, and for each key a
       :obj:`list` of the received values. The first item in the list is the
       oldest one available in the Link, the last item is the newest available.
+    
+    .. versionremoved:: 1.5.9 *length* argument
+    .. versionadded:: 1.5.9 *blocking* argument
+    .. versionremoved:: 2.0.0 *blocking* argument
     """
 
     ret = defaultdict(list)
@@ -214,6 +233,12 @@ def link(in_block,
     name: Name of the Link, to differentiate it from the others when debugging.
       If no specific name is given, the Links are numbered in the order in
       which they are instantiated in the script.
+      
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 1.5.9
+     explicitly listing the *condition*, *modifier*, *timeout*, *action* and
+     *name* arguments
+  .. versionremoved:: 2.0.0 *condition*, *timeout* and *action* arguments
   """
 
   # Forcing the modifiers into lists

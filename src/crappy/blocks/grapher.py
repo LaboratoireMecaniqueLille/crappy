@@ -27,6 +27,8 @@ class Grapher(Block):
   the last values of given labels, the :class:`~crappy.blocks.LinkReader` and 
   :class:`~crappy.blocks.Dashboard` Blocks are simpler solutions that go much
   easier on the CPU. 
+  
+  .. versionadded:: 1.4.0
   """
 
   def __init__(self,
@@ -88,6 +90,11 @@ class Grapher(Block):
         graph = Grapher(('t(s)', 'F(N)'), length=30)
 
       will plot a dynamic graph displaying the last 30 chunks of data.
+
+    .. versionadded:: 1.5.6 *verbose* argument
+    .. versionadded 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+    .. versionchanged:: 2.0.0 renamed *maxpt* argument to *max_pt*
     """
 
     super().__init__()

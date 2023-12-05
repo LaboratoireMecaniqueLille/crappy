@@ -21,6 +21,8 @@ class Offset(Modifier):
   single data point for the offset calculation. The ``make_zero`` argument of
   the :class:`~crappy.blocks.IOBlock` is a better alternative if precision is
   required when offsetting a sensor.
+  
+  .. versionadded:: 1.5.10
   """
 
   def __init__(self,
@@ -60,7 +62,10 @@ class Offset(Modifier):
 
   def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
     """If the compensations are not set, sets them, and then offsets the
-    required labels."""
+    required labels.
+    
+    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    """
 
     self.log(logging.DEBUG, f"Received {data}")
 

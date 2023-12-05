@@ -4,6 +4,7 @@ from time import time
 from struct import pack, unpack
 from typing import List, Iterable
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -39,6 +40,9 @@ class KollmorgenAKDPDMM(InOut):
 
    It can either drive it in speed or in position. Multiple axes can be driven.
    The values of the current speeds or positions can also be retrieved.
+   
+   .. versionadded:: 1.4.0
+   .. versionchanged:: 2.0.0 renamed from Koll to KollmorgenAKDPDMM
    """
 
   def __init__(self,
@@ -55,7 +59,16 @@ class KollmorgenAKDPDMM(InOut):
       host: The IP address of the variator, given as a :obj:`str`.
       port: The network port over which to communicate with the variator, as
         an :obj:`int`.
+    
+    .. versionremoved:: 1.5.10 *speed*, *acc*, *decc* and *labels* arguments
+    .. versionchanged:: 1.5.10 renamed *axis* argument to *axes*
+    .. versionchanged:: 1.5.10 renamed *data* argument to *mode*
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._variator = None
 
@@ -113,6 +126,8 @@ class KollmorgenAKDPDMM(InOut):
 
     If more commands than motors are given, the extra commands are ignored. If
     there are more motors than commands, only part of the motors will be set.
+    
+    .. versionadded:: 1.5.10
     """
 
     for axis, val in zip(self._axes, cmd):

@@ -17,6 +17,9 @@ class LinkReader(Block):
   :class:`~crappy.blocks.Dashboard` Block can be used for a nicer layout, and 
   the :class:`~crappy.blocks.Grapher` Block should be used for plotting data in
   a persistent way.
+  
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Reader to LinkReader
   """
 
   _index = 0
@@ -40,6 +43,12 @@ class LinkReader(Block):
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+
+    .. versionchanged:: 1.5.5 renamed *name* argument to *reader_name*
+    .. versionadded:: 1.5.10 *freq* and *verbose* arguments
+    .. versionchanged:: 1.5.5 renamed *reader_name* argument to *name*
+    .. versionadded 2.0.0 *debug* argument
+    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     super().__init__()

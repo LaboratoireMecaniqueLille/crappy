@@ -51,6 +51,9 @@ class CameraConfig(tk.Tk):
   :class:`~crappy.tool.camera_config.config_tools.HistogramProcess` tools. It
   also interacts with instances of the 
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
+
+  .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from Camera_config to CameraConfig
   """
 
   def __init__(self,
@@ -70,6 +73,8 @@ class CameraConfig(tk.Tk):
       max_freq: The maximum frequency this window is allowed to loop at. It is
         simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
         Block.
+    
+    .. versionadded:: 2.0.0 *log_queue*, *log_level* and *max_freq* arguments
     """
 
     super().__init__()
@@ -124,7 +129,10 @@ class CameraConfig(tk.Tk):
 
   def main(self) -> None:
     """Constantly updates the image and the information on the GUI, until asked
-    to stop."""
+    to stop.
+    
+    .. versionadded:: 1.5.10
+    """
 
     # Starting the histogram calculation process
     self._histogram_process.start()
@@ -154,6 +162,8 @@ class CameraConfig(tk.Tk):
     Args:
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+    
+    .. versionadded:: 2.0.0
     """
 
     if self._logger is None:
@@ -164,7 +174,10 @@ class CameraConfig(tk.Tk):
 
   def report_callback_exception(self, exc: Exception, val: str, tb) -> None:
     """Method displaying an error message in case an exception is raised in a
-    :mod:`tkinter` callback."""
+    :mod:`tkinter` callback.
+
+    .. versionadded:: 2.0.0
+    """
 
     self._logger.exception(f"Caught exception in {type(self).__name__}: "
                            f"{exc.__name__}({val})", exc_info=tb)
@@ -174,6 +187,8 @@ class CameraConfig(tk.Tk):
     """Method called when the user tries to close the configuration window.
 
     Mostly intended for being overwritten.
+    
+    .. versionadded:: 2.0.0
     """
 
     self.stop()
@@ -182,6 +197,8 @@ class CameraConfig(tk.Tk):
     """Method called for gracefully stopping the GUI.
 
     Stops the process calculating the histogram, and destroys the GUI.
+
+    .. versionadded:: 2.0.0
     """
 
     # Stopping the event loop and the histogram process
@@ -942,8 +959,8 @@ class CameraConfig(tk.Tk):
       hist_img = Image.fromarray(self._original_img)
       if hist_img.width > 320 or hist_img.height > 240:
         factor = min(320 / hist_img.width, 240 / hist_img.height)
-        hist_img = hist_img.resize((int(hist_img.width * factor),
-                                    int(hist_img.height * factor)))
+        hist_img = hist_img.resize((max(int(hist_img.width * factor), 1),
+                                    max(int(hist_img.height * factor), 1)))
       # The histogram is calculated on a grey level image
       if len(self._original_img.shape) == 3:
         hist_img = hist_img.convert('L')

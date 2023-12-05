@@ -9,6 +9,8 @@ Installation
 Requirements
 ------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 Crappy was successfully installed and tested on **Linux** (Ubuntu 18.04 and
 higher), **Windows** (8 and higher) and **MacOS** (Sierra and higher). It was
 also successfully installed on **Raspberry Pi** 3B+ and 4B. As a Python module,
@@ -45,6 +47,8 @@ functionalities (this list is not exhaustive) :
 1. Check your Python version
 ----------------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 Before installing Crappy, first check that you have **a compatible version of**
 **Python** installed. You can get the current version of Python by running
 :shell:`python --version` in a console. The version should then be displayed,
@@ -67,6 +71,8 @@ are beyond the scope of this documentation.
 2. Deploy a virtual environment (optional)
 ------------------------------------------
 
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
 It is **recommended** to install Crappy in a `virtual environment
 <https://docs.python.org/3/library/venv.html>`_, to avoid conflicts with other
 Python packages installed at the user or system level. This step is however not
@@ -84,6 +90,8 @@ console, containing an independent install of Python.
 
 3. Install Crappy
 -----------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Once you have a compatible version of Python installed, and after optionally
 setting up a virtual environment, you're **ready to install Crappy**. A single
@@ -142,6 +150,8 @@ you would need to use along with Crappy. For example :
 
 4. Check your install
 ---------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Once you have installed Crappy, you can **run a few checks** to make sure it
 works fine on your system. First, try to simply import it :
