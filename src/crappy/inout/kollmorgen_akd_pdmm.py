@@ -4,6 +4,7 @@ from time import time
 from struct import pack, unpack
 from typing import List, Iterable
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -63,6 +64,11 @@ class KollmorgenAKDPDMM(InOut):
     .. versionchanged:: 1.5.10 renamed *axis* argument to *axes*
     .. versionchanged:: 1.5.10 renamed *data* argument to *mode*
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._variator = None
 

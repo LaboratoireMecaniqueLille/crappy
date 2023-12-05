@@ -3,6 +3,7 @@
 from typing import Optional, Tuple
 import numpy as np
 import logging
+from  warnings import warn
 
 from . import BaslerIronmanCameraLink
 from ..._global import OptionalModule
@@ -36,10 +37,15 @@ class JaiGO5000CPMCL8Bits(BaslerIronmanCameraLink):
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from Jai8 to JaiGO5000CPMCL8Bits
+  .. versionremoved:: 2.1.0
   """
 
   def __init__(self) -> None:
     """Adds various settings to the Camera."""
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be "
+         f"deprecated and removed from Crappy. Please contact the maintainers "
+         f"if you still use this Camera.", FutureWarning)
 
     super().__init__()
 
@@ -125,10 +131,15 @@ class JaiGO5000CPMCL(JaiGO5000CPMCL8Bits):
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from Jai to JaiGO5000CPMCL
+  .. versionremoved:: 2.1.0
   """
 
   def __init__(self) -> None:
     """Adds the data_format settings to the Camera."""
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be "
+         f"deprecated and removed from Crappy. Please contact the maintainers "
+         f"if you still use this Camera.", FutureWarning)
 
     super().__init__()
     self.add_choice_setting('data_format', ('10 bits', '12 bits'),

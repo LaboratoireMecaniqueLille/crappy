@@ -4,6 +4,7 @@ from time import time
 from typing import Optional, List, Iterable
 from dataclasses import dataclass
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -80,6 +81,11 @@ class LabjackUE9(InOut):
       same length. If that's not the case, all the given iterables are treated
       as if they had the same length as the shortest given one.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._handle = None
 

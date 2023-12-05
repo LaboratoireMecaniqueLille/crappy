@@ -3,6 +3,7 @@
 from time import time
 from typing import List
 import logging
+from  warnings import warn
 
 from ..meta_inout import InOut
 from ...tool.ft232h import FT232HServer as FT232H, USBArgsType
@@ -132,6 +133,11 @@ class MCP9600FT232H(InOut):
         be provided by the user. It contains the information necessary for
         setting up the FT232H.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._bus = None
 

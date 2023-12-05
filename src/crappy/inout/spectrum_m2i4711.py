@@ -4,6 +4,7 @@ import numpy as np
 from time import time
 from typing import List, Optional, Iterable
 import logging
+from  warnings import warn
 
 from .meta_inout import InOut
 from ..tool.bindings import pyspcm as spc
@@ -53,6 +54,11 @@ class SpectrumM2I4711(InOut):
     .. versionchanged:: 1.5.10 renamed *samplerate* argument to *sample_rate*
     .. versionremoved:: 1.5.10 *split_chan* argument
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._spectrum = None
 

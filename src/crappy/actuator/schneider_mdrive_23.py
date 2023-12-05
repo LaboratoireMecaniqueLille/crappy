@@ -2,6 +2,7 @@
 
 from typing import Optional
 import logging
+from  warnings import warn
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
@@ -31,6 +32,11 @@ class SchneiderMDrive23(Actuator):
       port: The path to the serial port to open for the serial connection.
       baudrate: The baudrate to use for serial communication.
     """
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     self._ser = None
 

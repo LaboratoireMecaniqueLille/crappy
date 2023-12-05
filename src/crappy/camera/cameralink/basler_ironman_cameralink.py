@@ -4,6 +4,7 @@ from time import time
 from typing import Optional, Tuple
 import numpy as np
 import logging
+from  warnings import warn
 
 from ..meta_camera import Camera
 from ..._global import OptionalModule
@@ -32,10 +33,15 @@ class BaslerIronmanCameraLink(Camera):
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from Cl_camera to BaslerIronmanCameraLink
+  .. versionremoved:: 2.1.0
   """
 
   def __init__(self) -> None:
     """Adds the frame rate setting."""
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be "
+         f"deprecated and removed from Crappy. Please contact the maintainers "
+         f"if you still use this Camera.", FutureWarning)
 
     self._cap = None
 
