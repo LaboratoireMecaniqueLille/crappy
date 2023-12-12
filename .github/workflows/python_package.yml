@@ -1,0 +1,38 @@
+# Installs the Python dependencies, installs Crappy, and checks that it imports
+name: Python Package
+
+on:
+  # Runs on pull requests targeting the default branch
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+    branches: ["master"]
+
+  # May also be started manually
+  workflow_dispatch:
+
+  # Runs automatically every first day of the month
+  schedule:
+    - cron: '0 12 1 * *'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: python -m pip install --upgrade pip wheel build setuptools
+    - name: Install Crappy
+      run: python -m pip install .
+    - name: Import Crappy
+      run: python -c "import crappy; print(crappy.__version__)"
