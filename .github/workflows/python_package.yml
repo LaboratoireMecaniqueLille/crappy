@@ -5,7 +5,7 @@ on:
   # Runs on pull requests targeting the default branch
   pull_request:
     types: [opened, edited, reopened, synchronize]
-    branches: ["master"]
+    branches: ["master", "develop"]
 
   # May also be started manually
   workflow_dispatch:
