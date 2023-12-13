@@ -6,6 +6,7 @@ from .meta_modifier import Modifier, MetaModifier
 
 from .demux import Demux
 from .differentiate import Diff
+from .downsampler import DownSampler
 from .integrate import Integrate
 from .mean import Mean
 from .median import Median

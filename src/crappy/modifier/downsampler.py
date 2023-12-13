@@ -1,0 +1,59 @@
+# coding: utf-8
+
+from typing import Dict, Any, Optional
+import logging
+
+from .meta_modifier import Modifier
+
+
+class DownSampler(Modifier):
+  """Modifier waiting for a given number of data points to be received, then
+  returning the last point, and starting all over again.
+
+  like :class:`~crappy.modifier.Mean`, it only returns a value once
+  every ``n_points`` points.
+  .. versionadded:: 2.0.3
+
+  """
+
+  def __init__(self, n_points: int = 10) -> None:
+    """Sets the args and initializes the parent class.
+
+    Args:
+      n_points: The number of points on which to compute the average.
+    """
+
+    super().__init__()
+    self._n_points = n_points
+    self._buf = None
+
+  def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Receives data from the upstream Block, once the right number of points
+    have been received, empties the buffer and returns the last point.
+
+    If there are not enough points, doesn't return anything.
+    """
+
+    self.log(logging.DEBUG, f"Received {data}")
+
+    # Initializing the buffer
+    if self._buf is None:
+      self._buf = {key: [value] for key, value in data.items()}
+
+    ret = {}
+    for label in data:
+      # Updating the buffer with the newest data
+      self._buf[label].append(data[label])
+
+      # Once there's enough data in the buffer, calculating the average value
+      if len(self._buf[label]) == self._n_points:
+        ret[label] = self._buf[label][-1]
+
+        # Resetting the buffer
+        self._buf[label].clear()
+
+    if ret:
+      self.log(logging.DEBUG, f"Sending {ret}")
+      return ret
+
+    self.log(logging.DEBUG, "Not returning any data")
