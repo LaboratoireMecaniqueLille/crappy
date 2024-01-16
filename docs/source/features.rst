@@ -849,7 +849,7 @@ On-the-fly data modification (Modifiers)
 
   Calculates the time derivative of a given label.
 
-- :ref:`Downsampler`
+- :ref:`DownSampler`
 
   Returns the last value of a label out of a given number of points. Only
   returns a value once every number of points.

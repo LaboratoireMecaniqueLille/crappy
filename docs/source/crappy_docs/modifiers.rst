@@ -15,9 +15,9 @@ Differentiate
 .. autoclass:: crappy.modifier.Diff
    :special-members: __init__, __call__
 
-Downsampler
+DownSampler
 ++++
-.. autoclass:: crappy.modifier.Downsampler
+.. autoclass:: crappy.modifier.DownSampler
    :special-members: __init__, __call__
 
 Integrate
