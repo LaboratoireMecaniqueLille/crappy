@@ -1,7 +1,8 @@
 # coding: utf-8
 
 import logging
-from typing import Optional
+import numpy as np
+from typing import Optional, Tuple
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
@@ -36,11 +37,12 @@ class Phidget4AStepper(Actuator):
                steps_per_mm: float,
                current_limit: float,
                max_acceleration: Optional[float] = None,
-               remote: bool = False) -> None:
                remote: bool = False,
                absolute_mode: Optional[bool] = False,
                reference_pos: Optional[float] = 0,
                switch_ports: Optional[Tuple[int, ...]] = None,
+               save_last_pos: Optional[bool] = False,
+               save_pos_folder: Optional[str] = './') -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -60,6 +62,10 @@ class Phidget4AStepper(Actuator):
         absolute mode at the beginning of the test.
       switch_ports: The port numbers of the VINT Hub where the switches are
         connected.
+      save_last_pos: If :obj:`True`, the last position of the actuator will be
+        saved in a .npy file.
+      save_pos_folder: The path to the folder where to save the last position
+        of the motor.
     """
 
     self._motor: Optional[Stepper] = None
@@ -76,6 +82,11 @@ class Phidget4AStepper(Actuator):
     self._absolute_mode = absolute_mode
     if self._absolute_mode is True:
       self._ref_pos = reference_pos
+    self._save_last_pos = save_last_pos
+    if self._save_last_pos is True:
+      self._save_folder = save_pos_folder
+      if self._save_folder[-1] != '/':
+        self._save_folder += '/'
 
     # These buffers store the last known position and speed
     self._last_velocity: Optional[float] = None
@@ -234,6 +245,8 @@ class Phidget4AStepper(Actuator):
     """Closes the connection to the motor."""
 
     if self._motor is not None:
+      if self._save_last_pos is True:
+        np.save(self._save_folder + 'last_pos', self.get_position())
       self._motor.close()
 
     if self._switch_ports is not None:
