@@ -62,10 +62,10 @@ class ImageSaver(CameraProcess):
       save_backend: The backend to use for saving the images. Should be one of:
         ::
 
-          'sitk', 'cv2', 'pil', 'npy'
+          'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`cv2` (OpenCV),
-        :mod:`PIL` (Pillow Fork), and :mod:`numpy`. Depending on the machine,
+        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
+        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Depending on the machine,
         some may be faster or slower. The ``img_extension`` is ignored for the
         backend ``'npy'``, that saves the images as raw numpy arrays.
     """
@@ -78,9 +78,9 @@ class ImageSaver(CameraProcess):
       if not isinstance(Sitk, OptionalModule):
         self._save_backend = 'sitk'
       elif not isinstance(PIL, OptionalModule):
-        self._save_backend = 'cv2'
-      elif not isinstance(PIL, OptionalModule):
         self._save_backend = 'pil'
+      elif not isinstance(cv2, OptionalModule):
+        self._save_backend = 'cv2'
       else:
         self._save_backend = 'npy'
     elif save_backend in ('sitk', 'pil', 'cv2', 'npy'):

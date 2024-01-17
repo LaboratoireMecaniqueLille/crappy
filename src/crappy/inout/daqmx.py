@@ -47,7 +47,7 @@ class DAQmx(InOut):
                gain: Optional[Iterable[float]] = None,
                offset: Optional[Iterable[float]] = None,
                ranges: Optional[Iterable[float]] = None,
-               make_zero: Optional[Iterable[bool]] = True,
+               make_zero: Optional[Iterable[bool]] = None,
                sample_rate: float = 10000,
                out_channels: Optional[Iterable[str]] = None,
                out_gain: Optional[Iterable[float]] = None,
@@ -237,7 +237,7 @@ class DAQmx(InOut):
                                   PyDAQmx.DAQmx_Val_FiniteSamps,
                                   2)
     PyDAQmx.DAQmxStartTask(self._handle)
-    data = np.empty((len(self._channels), 1), dtype=np.float64)
+    data = np.empty(len(self._channels), dtype=np.float64)
 
     # Reading the acquired values and stopping the task
     t0 = time()
@@ -247,7 +247,7 @@ class DAQmx(InOut):
                                PyDAQmx.byref(self._n_reads), None)
     PyDAQmx.DAQmxStopTask(self._handle)
 
-    return [t0] + [data[i, :] * chan.gain + chan.offset
+    return [t0] + [data[i] * chan.gain + chan.offset
                    for i, chan in enumerate(self._channels)]
 
   def set_cmd(self, *cmd: float) -> None:
