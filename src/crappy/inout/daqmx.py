@@ -47,7 +47,7 @@ class DAQmx(InOut):
                gain: Optional[Iterable[float]] = None,
                offset: Optional[Iterable[float]] = None,
                ranges: Optional[Iterable[float]] = None,
-               make_zero: Optional[Iterable[bool]] = True,
+               make_zero: Optional[Iterable[bool]] = None,
                sample_rate: float = 10000,
                out_channels: Optional[Iterable[str]] = None,
                out_gain: Optional[Iterable[float]] = None,
