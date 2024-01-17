@@ -66,17 +66,15 @@ main = [
 ]
 
 [tool.setuptools]
-include-package-data = true
+package-dir = {"" = "src"}
+include-package-data = false
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md", content-type = "text/markdown"}
 
-[tool.setuptools.package-dir]
-crappy = "src/crappy"
-
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["*"]
+include = ["crappy*"]
 exclude = []
 namespaces = false
 
