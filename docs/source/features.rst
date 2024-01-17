@@ -838,6 +838,7 @@ On-the-fly data modification (Modifiers)
 ----------------------------------------
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+.. sectionauthor:: Pierre Margotin <pierremargotin@gmail.com>
 
 - :ref:`Demux`
 
@@ -851,8 +852,9 @@ On-the-fly data modification (Modifiers)
 
 - :ref:`DownSampler`
 
-  Returns the last value of a label out of a given number of points. Only
-  returns a value once every number of points.
+  Transmits the values to downstream Blocks only once every given number of 
+  points. The values that are not sent are discarded. The values are directly 
+  sent without being altered.
 
 - :ref:`Integrate`
 
