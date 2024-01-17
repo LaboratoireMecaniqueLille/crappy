@@ -9,12 +9,14 @@ from .._global import OptionalModule
 try:
   from Phidget22.Net import Net, PhidgetServerType
   from Phidget22.Devices.Stepper import Stepper, StepperControlMode
+  from Phidget22.Devices.DigitalInput import DigitalInput
   from Phidget22.PhidgetException import PhidgetException
 except (ImportError, ModuleNotFoundError):
   Net = OptionalModule('Phidget22')
   PhidgetServerType = OptionalModule('Phidget22')
   Stepper = OptionalModule('Phidget22')
   StepperControlMode = OptionalModule('Phidget22')
+  DigitalInput = OptionalModule('Phidget22')
   PhidgetException = OptionalModule('Phidget22')
 
 
@@ -35,6 +37,7 @@ class Phidget4AStepper(Actuator):
                current_limit: float,
                max_acceleration: Optional[float] = None,
                remote: bool = False) -> None:
+               switch_ports: Optional[Tuple[int, ...]] = None,
     """Sets the args and initializes the parent class.
 
     Args:
@@ -47,6 +50,8 @@ class Phidget4AStepper(Actuator):
         allowed to reach in `mm/s²`.
       remote: Set to :obj:`True` to drive the stepper via a network VINT Hub,
         or to :obj:`False` to drive it via a USB VINT Hub.
+      switch_ports: The port numbers of the VINT Hub where the switches are
+        connected.
     """
 
     self._motor: Optional[Stepper] = None
@@ -57,6 +62,9 @@ class Phidget4AStepper(Actuator):
     self._current_limit = current_limit
     self._max_acceleration = max_acceleration
     self._remote = remote
+    self._switch_ports = switch_ports
+    if self._switch_ports is not None:
+      self._switches = []
 
     # These buffers store the last known position and speed
     self._last_velocity: Optional[float] = None
@@ -71,13 +79,29 @@ class Phidget4AStepper(Actuator):
     Net.enableServerDiscovery(PhidgetServerType.PHIDGETSERVER_DEVICEREMOTE)
     self._motor = Stepper()
 
+    # Setting up the switches
+    if self._switch_ports is not None:
+      for port in self._switch_ports:
+        switch = DigitalInput()
+        switch.setIsHubPortDevice(True)
+        switch.setHubPort(port)
+        self._switches.append(switch)
+
     # Setting the remote or local status
     if self._remote is True:
       self._motor.setIsLocal(False)
       self._motor.setIsRemote(True)
+      if self._switch_ports is not None:
+        for switch in self._switches:
+          switch.setIsLocal(False)
+          switch.setIsRemote(True)
     else:
       self._motor.setIsLocal(True)
       self._motor.setIsRemote(False)
+      if self._switch_ports is not None:
+        for switch in self._switches:
+          switch.setIsLocal(True)
+          switch.setIsRemote(False)
 
     # Setting up the callbacks
     self.log(logging.DEBUG, "Setting the callbacks")
@@ -85,6 +109,9 @@ class Phidget4AStepper(Actuator):
     self._motor.setOnErrorHandler(self._on_error)
     self._motor.setOnVelocityChangeHandler(self._on_velocity_change)
     self._motor.setOnPositionChangeHandler(self._on_position_change)
+    if self._switch_ports is not None:
+      for switch in self._switches:
+        switch.setOnStateChangeHandler(self._on_end)
 
     # Opening the connection to the motor driver
     try:
@@ -93,8 +120,23 @@ class Phidget4AStepper(Actuator):
     except PhidgetException:
       raise TimeoutError("Waited too long for the motor to attach !")
 
+    # Opening the connection to the switches
+    if self._switch_ports is not None:
+      for switch in self._switches:
+        try:
+          self.log(logging.DEBUG, "Trying to attach the switch")
+          switch.openWaitForAttachment(10000)
+        except PhidgetException:
+          raise TimeoutError("Waited too long for the switch to attach !")
+
     # Energizing the motor
     self._motor.setEngaged(True)
+
+    # Check the state of the switches
+    if self._switch_ports is not None:
+      for switch in self._switches:
+        if switch.getState() is False:
+          raise ValueError(f"The switch is already hit or disconnected")
 
   def set_speed(self, speed: float) -> None:
     """Sets the requested speed for the motor.
@@ -175,6 +217,10 @@ class Phidget4AStepper(Actuator):
     if self._motor is not None:
       self._motor.close()
 
+    if self._switch_ports is not None:
+      for switch in self._switches:
+        switch.close()
+
   def _on_attach(self, _: Stepper) -> None:
     """Callback called when the motor driver attaches to the program.
 
@@ -223,3 +269,7 @@ class Phidget4AStepper(Actuator):
 
     self.log(logging.DEBUG, f"Position changed to {position}")
     self._last_position = position
+
+  def _on_end(self, _: DigitalInput, state) -> None:
+    """Callback when a switch is hit."""
+    self.stop()
