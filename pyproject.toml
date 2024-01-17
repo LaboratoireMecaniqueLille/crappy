@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "crappy"
 dynamic = ["readme"]
-version = "2.0.2"
+version = "2.0.3"
 description = "Command and Real-time Acquisition in Parallelized Python"
 license = {file = "LICENSE"}
 keywords = ["control", "command", "acquisition", "multiprocessing"]
