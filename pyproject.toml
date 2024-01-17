@@ -1,10 +1,11 @@
 [build-system]
-requires = ["setuptools >= 61.0", "numpy >= 1.21"]
+requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "crappy"
-dynamic = ["version", "readme"]
+dynamic = ["readme"]
+version = "2.0.2"
 description = "Command and Real-time Acquisition in Parallelized Python"
 license = {file = "LICENSE"}
 keywords = ["control", "command", "acquisition", "multiprocessing"]
@@ -68,7 +69,6 @@ main = [
 include-package-data = true
 
 [tool.setuptools.dynamic]
-version = {attr = "crappy.__version__"}
 readme = {file = "README.md", content-type = "text/markdown"}
 
 [tool.setuptools.package-dir]
