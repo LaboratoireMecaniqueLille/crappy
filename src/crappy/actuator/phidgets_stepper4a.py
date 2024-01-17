@@ -37,6 +37,9 @@ class Phidget4AStepper(Actuator):
                current_limit: float,
                max_acceleration: Optional[float] = None,
                remote: bool = False) -> None:
+               remote: bool = False,
+               absolute_mode: Optional[bool] = False,
+               reference_pos: Optional[float] = 0,
                switch_ports: Optional[Tuple[int, ...]] = None,
     """Sets the args and initializes the parent class.
 
@@ -50,6 +53,11 @@ class Phidget4AStepper(Actuator):
         allowed to reach in `mm/s²`.
       remote: Set to :obj:`True` to drive the stepper via a network VINT Hub,
         or to :obj:`False` to drive it via a USB VINT Hub.
+      absolute_mode: If :obj:`True`, the target position of the motor will be
+        calculated from a reference position. If :obj:`False`, the target
+        position of the motor will be calculated from its actual position.
+      reference_pos: The position considered as the reference position for the
+        absolute mode at the beginning of the test.
       switch_ports: The port numbers of the VINT Hub where the switches are
         connected.
     """
@@ -65,6 +73,9 @@ class Phidget4AStepper(Actuator):
     self._switch_ports = switch_ports
     if self._switch_ports is not None:
       self._switches = []
+    self._absolute_mode = absolute_mode
+    if self._absolute_mode is True:
+      self._ref_pos = reference_pos
 
     # These buffers store the last known position and speed
     self._last_velocity: Optional[float] = None
@@ -186,14 +197,17 @@ class Phidget4AStepper(Actuator):
       else:
         self._motor.setVelocityLimit(abs(speed))
 
-    # Setting the requested position
-    min_pos = self._motor.getMinPosition()
-    max_pos = self._motor.getMaxPosition()
-    if not min_pos <= position <= max_pos:
-      raise ValueError(f"The position value must be between {min_pos} and "
-                       f"{max_pos}, got {position} !")
+    if self._absolute_mode is not True:
+      # Setting the requested position
+      min_pos = self._motor.getMinPosition()
+      max_pos = self._motor.getMaxPosition()
+      if not min_pos <= position <= max_pos:
+        raise ValueError(f"The position value must be between {min_pos} and "
+                         f"{max_pos}, got {position} !")
+      else:
+        self._motor.setTargetPosition(position)
     else:
-      self._motor.setTargetPosition(position)
+      self._motor.setTargetPosition(position-self._ref_pos)
 
   def get_speed(self) -> Optional[float]:
     """Returns the last known speed of the motor."""
@@ -203,7 +217,12 @@ class Phidget4AStepper(Actuator):
   def get_position(self) -> Optional[float]:
     """Returns the last known position of the motor."""
 
-    return self._last_position
+    if self._absolute_mode is not True:
+      return self._last_position
+    else:
+      if self._last_position is None:
+        return self._last_position
+      return self._last_position + self._ref_pos
 
   def stop(self) -> None:
     """Deenergizes the motor."""
