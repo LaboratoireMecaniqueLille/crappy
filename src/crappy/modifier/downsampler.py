@@ -8,52 +8,42 @@ from .meta_modifier import Modifier
 
 class DownSampler(Modifier):
   """Modifier waiting for a given number of data points to be received, then
-  returning the last point, and starting all over again.
+  returning only the last received point.
 
-  like :class:`~crappy.modifier.Mean`, it only returns a value once
-  every ``n_points`` points.
-  .. versionadded:: 2.0.3
-
+  Similar to :class:`~crappy.modifier.Mean`, except it discards the values 
+  that are not transmitted instead of averaging them. Useful for reducing
+  the amount of data sent to a Block.
+  
+  .. versionadded:: 2.0.4
   """
 
   def __init__(self, n_points: int = 10) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      n_points: The number of points on which to compute the average.
+      n_points: One value will be sent to the downstream Block only once
+        every ``n_points`` received values.
     """
 
     super().__init__()
-    self._n_points = n_points
-    self._buf = None
+    self._n_points: int = n_points
+    self._count: int = 0
 
   def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    """Receives data from the upstream Block, once the right number of points
-    have been received, empties the buffer and returns the last point.
+    """Receives data from the upstream Block, and if the counter matches the 
+    threshold, returns the data.
 
-    If there are not enough points, doesn't return anything.
+    If the counter doesn't match the threshold, doesn't return anything and 
+    increments the counter.
     """
 
     self.log(logging.DEBUG, f"Received {data}")
 
-    # Initializing the buffer
-    if self._buf is None:
-      self._buf = {key: [value] for key, value in data.items()}
-
-    ret = {}
-    for label in data:
-      # Updating the buffer with the newest data
-      self._buf[label].append(data[label])
-
-      # Once there's enough data in the buffer, calculating the average value
-      if len(self._buf[label]) == self._n_points:
-        ret[label] = self._buf[label][-1]
-
-        # Resetting the buffer
-        self._buf[label].clear()
-
-    if ret:
+    if self._count == self._n_points - 1:
+      self._count = 0
       self.log(logging.DEBUG, f"Sending {ret}")
-      return ret
-
-    self.log(logging.DEBUG, "Not returning any data")
+      return data
+    
+    else:
+      self._count += 1
+      self.log(logging.DEBUG, "Not returning any data")
