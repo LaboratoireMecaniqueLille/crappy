@@ -27,7 +27,7 @@ class DownSampler(Modifier):
 
     super().__init__()
     self._n_points: int = n_points
-    self._count: int = 0
+    self._count: int = n_points - 1
 
   def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Receives data from the upstream Block, and if the counter matches the 
@@ -41,7 +41,7 @@ class DownSampler(Modifier):
 
     if self._count == self._n_points - 1:
       self._count = 0
-      self.log(logging.DEBUG, f"Sending {ret}")
+      self.log(logging.DEBUG, f"Sending {data}")
       return data
     
     else:
