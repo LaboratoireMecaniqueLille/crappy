@@ -38,10 +38,10 @@ class Phidget4AStepper(Actuator):
                current_limit: float,
                max_acceleration: Optional[float] = None,
                remote: bool = False,
-               absolute_mode: Optional[bool] = False,
+               absolute_mode: bool = False,
                reference_pos: Optional[float] = 0,
                switch_ports: Optional[Tuple[int, ...]] = None,
-               save_last_pos: Optional[bool] = False,
+               save_last_pos: bool = False,
                save_pos_folder: Optional[str] = './') -> None:
     """Sets the args and initializes the parent class.
 
