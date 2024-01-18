@@ -304,4 +304,5 @@ class Phidget4AStepper(Actuator):
 
   def _on_end(self, _: DigitalInput, state) -> None:
     """Callback when a switch is hit."""
+
     self.stop()
