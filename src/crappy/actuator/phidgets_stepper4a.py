@@ -77,8 +77,7 @@ class Phidget4AStepper(Actuator):
     self._max_acceleration = max_acceleration
     self._remote = remote
     self._switch_ports = switch_ports
-    if self._switch_ports is not None:
-      self._switches = []
+    self._switches = []
     self._absolute_mode = absolute_mode
     if self._absolute_mode is True:
       self._ref_pos = reference_pos
@@ -113,17 +112,15 @@ class Phidget4AStepper(Actuator):
     if self._remote is True:
       self._motor.setIsLocal(False)
       self._motor.setIsRemote(True)
-      if self._switch_ports is not None:
-        for switch in self._switches:
-          switch.setIsLocal(False)
-          switch.setIsRemote(True)
+      for switch in self._switches:
+        switch.setIsLocal(False)
+        switch.setIsRemote(True)
     else:
       self._motor.setIsLocal(True)
       self._motor.setIsRemote(False)
-      if self._switch_ports is not None:
-        for switch in self._switches:
-          switch.setIsLocal(True)
-          switch.setIsRemote(False)
+      for switch in self._switches:
+        switch.setIsLocal(True)
+        switch.setIsRemote(False)
 
     # Setting up the callbacks
     self.log(logging.DEBUG, "Setting the callbacks")
@@ -131,9 +128,8 @@ class Phidget4AStepper(Actuator):
     self._motor.setOnErrorHandler(self._on_error)
     self._motor.setOnVelocityChangeHandler(self._on_velocity_change)
     self._motor.setOnPositionChangeHandler(self._on_position_change)
-    if self._switch_ports is not None:
-      for switch in self._switches:
-        switch.setOnStateChangeHandler(self._on_end)
+    for switch in self._switches:
+      switch.setOnStateChangeHandler(self._on_end)
 
     # Opening the connection to the motor driver
     try:
@@ -143,22 +139,20 @@ class Phidget4AStepper(Actuator):
       raise TimeoutError("Waited too long for the motor to attach !")
 
     # Opening the connection to the switches
-    if self._switch_ports is not None:
-      for switch in self._switches:
-        try:
-          self.log(logging.DEBUG, "Trying to attach the switch")
-          switch.openWaitForAttachment(10000)
-        except PhidgetException:
-          raise TimeoutError("Waited too long for the switch to attach !")
+    for switch in self._switches:
+      try:
+        self.log(logging.DEBUG, "Trying to attach the switch")
+        switch.openWaitForAttachment(10000)
+      except PhidgetException:
+        raise TimeoutError("Waited too long for the switch to attach !")
 
     # Energizing the motor
     self._motor.setEngaged(True)
 
     # Check the state of the switches
-    if self._switch_ports is not None:
-      for switch in self._switches:
-        if switch.getState() is False:
-          raise ValueError(f"The switch is already hit or disconnected")
+    for switch in self._switches:
+      if switch.getState() is False:
+        raise ValueError(f"The switch is already hit or disconnected")
 
   def set_speed(self, speed: float) -> None:
     """Sets the requested speed for the motor.
@@ -249,9 +243,8 @@ class Phidget4AStepper(Actuator):
         np.save(self._save_folder + 'last_pos', self.get_position())
       self._motor.close()
 
-    if self._switch_ports is not None:
-      for switch in self._switches:
-        switch.close()
+    for switch in self._switches:
+      switch.close()
 
   def _on_attach(self, _: Stepper) -> None:
     """Callback called when the motor driver attaches to the program.
