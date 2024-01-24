@@ -77,9 +77,10 @@ class Phidget4AStepper(Actuator):
     self._max_acceleration = max_acceleration
     self._remote = remote
     self._switch_ports = switch_ports
-    self._switches = []
+    self._switches = list()
+
     self._absolute_mode = absolute_mode
-    if self._absolute_mode is True:
+    if self._absolute_mode:
       self._ref_pos = reference_pos
     self._save_last_pos = save_last_pos
     if self._save_last_pos is True:
@@ -109,7 +110,7 @@ class Phidget4AStepper(Actuator):
         self._switches.append(switch)
 
     # Setting the remote or local status
-    if self._remote is True:
+    if self._remote:
       self._motor.setIsLocal(False)
       self._motor.setIsRemote(True)
       for switch in self._switches:
@@ -202,7 +203,7 @@ class Phidget4AStepper(Actuator):
       else:
         self._motor.setVelocityLimit(abs(speed))
 
-    if self._absolute_mode is not True:
+    if not self._absolute_mode:
       # Setting the requested position
       min_pos = self._motor.getMinPosition()
       max_pos = self._motor.getMaxPosition()
@@ -222,7 +223,7 @@ class Phidget4AStepper(Actuator):
   def get_position(self) -> Optional[float]:
     """Returns the last known position of the motor."""
 
-    if self._absolute_mode is not True:
+    if not self._absolute_mode:
       return self._last_position
     else:
       if self._last_position is None:
@@ -295,7 +296,7 @@ class Phidget4AStepper(Actuator):
     self.log(logging.DEBUG, f"Position changed to {position}")
     self._last_position = position
 
-  def _on_end(self, _: DigitalInput, state) -> None:
+  def _on_end(self, _: DigitalInput, __) -> None:
     """Callback when a switch is hit."""
 
     self.stop()
