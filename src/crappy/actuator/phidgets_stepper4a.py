@@ -2,7 +2,9 @@
 
 import logging
 import numpy as np
-from typing import Optional, Tuple
+from pathlib import Path
+from platform import system
+from typing import Optional, Tuple, Union
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
@@ -39,7 +41,7 @@ class Phidget4AStepper(Actuator):
                max_acceleration: Optional[float] = None,
                remote: bool = False,
                absolute_mode: bool = False,
-               reference_pos: Optional[float] = 0,
+               reference_pos: float = 0,
                switch_ports: Optional[Tuple[int, ...]] = None,
                save_last_pos: bool = False,
                save_pos_folder: Optional[str] = './') -> None:
