@@ -44,7 +44,7 @@ class Phidget4AStepper(Actuator):
                reference_pos: float = 0,
                switch_ports: Optional[Tuple[int, ...]] = None,
                save_last_pos: bool = False,
-               save_pos_folder: Optional[str] = './') -> None:
+               save_pos_folder: Optional[Union[str, Path]] = None) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -84,11 +84,17 @@ class Phidget4AStepper(Actuator):
     self._absolute_mode = absolute_mode
     if self._absolute_mode:
       self._ref_pos = reference_pos
-    self._save_last_pos = save_last_pos
-    if self._save_last_pos is True:
-      self._save_folder = save_pos_folder
-      if self._save_folder[-1] != '/':
-        self._save_folder += '/'
+
+    self._path: Optional[Path] = None
+    if save_last_pos:
+      if save_pos_folder is not None:
+        self._path = Path(save_pos_folder)
+      elif system() in ('Linux', 'Darwin'):
+        self._path = Path.home() / '.machine1000N'
+      elif system() == 'Windows':
+        self._path = Path.home() / 'AppData' / 'Local' / 'machine1000N'
+      else:
+        self._save_last_pos = False
 
     # These buffers store the last known position and speed
     self._last_velocity: Optional[float] = None
@@ -242,8 +248,9 @@ class Phidget4AStepper(Actuator):
     """Closes the connection to the motor."""
 
     if self._motor is not None:
-      if self._save_last_pos is True:
-        np.save(self._save_folder + 'last_pos', self.get_position())
+      if self._path is not None:
+        self._path.mkdir(parents=False, exist_ok=True)
+        np.save(self._path / 'last_pos.npy', self.get_position())
       self._motor.close()
 
     for switch in self._switches:
