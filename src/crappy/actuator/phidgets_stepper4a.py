@@ -42,7 +42,7 @@ class Phidget4AStepper(Actuator):
                remote: bool = False,
                absolute_mode: bool = False,
                reference_pos: float = 0,
-               switch_ports: Optional[Tuple[int, ...]] = None,
+               switch_ports: Tuple[int, ...] = tuple(),
                save_last_pos: bool = False,
                save_pos_folder: Optional[Union[str, Path]] = None) -> None:
     """Sets the args and initializes the parent class.
@@ -110,12 +110,11 @@ class Phidget4AStepper(Actuator):
     self._motor = Stepper()
 
     # Setting up the switches
-    if self._switch_ports is not None:
-      for port in self._switch_ports:
-        switch = DigitalInput()
-        switch.setIsHubPortDevice(True)
-        switch.setHubPort(port)
-        self._switches.append(switch)
+    for port in self._switch_ports:
+      switch = DigitalInput()
+      switch.setIsHubPortDevice(True)
+      switch.setHubPort(port)
+      self._switches.append(switch)
 
     # Setting the remote or local status
     self._motor.setIsLocal(not self._remote)
