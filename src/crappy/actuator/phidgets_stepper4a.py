@@ -1,7 +1,10 @@
 # coding: utf-8
 
 import logging
-from typing import Optional
+import numpy as np
+from pathlib import Path
+from platform import system
+from typing import Optional, Tuple, Union
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
@@ -9,12 +12,14 @@ from .._global import OptionalModule
 try:
   from Phidget22.Net import Net, PhidgetServerType
   from Phidget22.Devices.Stepper import Stepper, StepperControlMode
+  from Phidget22.Devices.DigitalInput import DigitalInput
   from Phidget22.PhidgetException import PhidgetException
 except (ImportError, ModuleNotFoundError):
   Net = OptionalModule('Phidget22')
   PhidgetServerType = OptionalModule('Phidget22')
   Stepper = OptionalModule('Phidget22')
   StepperControlMode = OptionalModule('Phidget22')
+  DigitalInput = OptionalModule('Phidget22')
   PhidgetException = OptionalModule('Phidget22')
 
 
@@ -34,7 +39,12 @@ class Phidget4AStepper(Actuator):
                steps_per_mm: float,
                current_limit: float,
                max_acceleration: Optional[float] = None,
-               remote: bool = False) -> None:
+               remote: bool = False,
+               absolute_mode: bool = False,
+               reference_pos: float = 0,
+               switch_ports: Tuple[int, ...] = tuple(),
+               save_last_pos: bool = False,
+               save_pos_folder: Optional[Union[str, Path]] = None) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -47,6 +57,18 @@ class Phidget4AStepper(Actuator):
         allowed to reach in `mm/s²`.
       remote: Set to :obj:`True` to drive the stepper via a network VINT Hub,
         or to :obj:`False` to drive it via a USB VINT Hub.
+      absolute_mode: If :obj:`True`, the target position of the motor will be
+        calculated from a reference position. If :obj:`False`, the target
+        position of the motor will be calculated from its current position.
+      reference_pos: The position considered as the reference position at the
+        beginning of the test. Only takes effect if ``absolute_mode`` is
+        :obj:`True`.
+      switch_ports: The indexes of the VINT Hub ports where the switches are
+        connected.
+      save_last_pos: If :obj:`True`, the last position of the actuator will be
+        saved in a .npy file.
+      save_pos_folder: The path to the folder where to save the last position
+        of the motor. Only takes effect if ``save_last_pos`` is :obj:`True`.
     """
 
     self._motor: Optional[Stepper] = None
@@ -57,6 +79,25 @@ class Phidget4AStepper(Actuator):
     self._current_limit = current_limit
     self._max_acceleration = max_acceleration
     self._remote = remote
+    self._switch_ports = switch_ports
+    self._switches = list()
+
+    self._absolute_mode = absolute_mode
+    if self._absolute_mode:
+      self._ref_pos = reference_pos
+
+    # Determining the path where to save the last position
+    # It depends on the current operating system
+    self._path: Optional[Path] = None
+    if save_last_pos:
+      if save_pos_folder is not None:
+        self._path = Path(save_pos_folder)
+      elif system() in ('Linux', 'Darwin'):
+        self._path = Path.home() / '.machine1000N'
+      elif system() == 'Windows':
+        self._path = Path.home() / 'AppData' / 'Local' / 'machine1000N'
+      else:
+        self._save_last_pos = False
 
     # These buffers store the last known position and speed
     self._last_velocity: Optional[float] = None
@@ -71,13 +112,19 @@ class Phidget4AStepper(Actuator):
     Net.enableServerDiscovery(PhidgetServerType.PHIDGETSERVER_DEVICEREMOTE)
     self._motor = Stepper()
 
+    # Setting up the switches
+    for port in self._switch_ports:
+      switch = DigitalInput()
+      switch.setIsHubPortDevice(True)
+      switch.setHubPort(port)
+      self._switches.append(switch)
+
     # Setting the remote or local status
-    if self._remote is True:
-      self._motor.setIsLocal(False)
-      self._motor.setIsRemote(True)
-    else:
-      self._motor.setIsLocal(True)
-      self._motor.setIsRemote(False)
+    self._motor.setIsLocal(not self._remote)
+    self._motor.setIsRemote(self._remote)
+    for switch in self._switches:
+      switch.setIsLocal(not self._remote)
+      switch.setIsRemote(self._remote)
 
     # Setting up the callbacks
     self.log(logging.DEBUG, "Setting the callbacks")
@@ -85,6 +132,8 @@ class Phidget4AStepper(Actuator):
     self._motor.setOnErrorHandler(self._on_error)
     self._motor.setOnVelocityChangeHandler(self._on_velocity_change)
     self._motor.setOnPositionChangeHandler(self._on_position_change)
+    for switch in self._switches:
+      switch.setOnStateChangeHandler(self._on_end)
 
     # Opening the connection to the motor driver
     try:
@@ -93,8 +142,21 @@ class Phidget4AStepper(Actuator):
     except PhidgetException:
       raise TimeoutError("Waited too long for the motor to attach !")
 
+    # Opening the connection to the switches
+    for switch in self._switches:
+      try:
+        self.log(logging.DEBUG, "Trying to attach the switch")
+        switch.openWaitForAttachment(10000)
+      except PhidgetException:
+        raise TimeoutError("Waited too long for the switch to attach !")
+
     # Energizing the motor
     self._motor.setEngaged(True)
+
+    # Check the state of the switches
+    for switch in self._switches:
+      if switch.getState() is False:
+        raise ValueError(f"The switch is already hit or disconnected")
 
   def set_speed(self, speed: float) -> None:
     """Sets the requested speed for the motor.
@@ -144,14 +206,18 @@ class Phidget4AStepper(Actuator):
       else:
         self._motor.setVelocityLimit(abs(speed))
 
-    # Setting the requested position
+    # Ensuring that the requested position is valid
     min_pos = self._motor.getMinPosition()
     max_pos = self._motor.getMaxPosition()
     if not min_pos <= position <= max_pos:
       raise ValueError(f"The position value must be between {min_pos} and "
                        f"{max_pos}, got {position} !")
-    else:
+
+    # Setting the position depending on the driving mode
+    if not self._absolute_mode:
       self._motor.setTargetPosition(position)
+    else:
+      self._motor.setTargetPosition(position - self._ref_pos)
 
   def get_speed(self) -> Optional[float]:
     """Returns the last known speed of the motor."""
@@ -161,7 +227,12 @@ class Phidget4AStepper(Actuator):
   def get_position(self) -> Optional[float]:
     """Returns the last known position of the motor."""
 
-    return self._last_position
+    if not self._absolute_mode:
+      return self._last_position
+
+    # Cannot perform addition if no known last position
+    elif self._last_position is not None:
+      return self._last_position + self._ref_pos
 
   def stop(self) -> None:
     """Deenergizes the motor."""
@@ -173,7 +244,13 @@ class Phidget4AStepper(Actuator):
     """Closes the connection to the motor."""
 
     if self._motor is not None:
+      if self._path is not None:
+        self._path.mkdir(parents=False, exist_ok=True)
+        np.save(self._path / 'last_pos.npy', self.get_position())
       self._motor.close()
+
+    for switch in self._switches:
+      switch.close()
 
   def _on_attach(self, _: Stepper) -> None:
     """Callback called when the motor driver attaches to the program.
@@ -223,3 +300,8 @@ class Phidget4AStepper(Actuator):
 
     self.log(logging.DEBUG, f"Position changed to {position}")
     self._last_position = position
+
+  def _on_end(self, _: DigitalInput, __) -> None:
+    """Callback when a switch is hit."""
+
+    self.stop()
