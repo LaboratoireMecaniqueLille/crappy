@@ -838,6 +838,7 @@ On-the-fly data modification (Modifiers)
 ----------------------------------------
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+.. sectionauthor:: Pierre Margotin <pierremargotin@gmail.com>
 
 - :ref:`Demux`
 
@@ -848,6 +849,12 @@ On-the-fly data modification (Modifiers)
 - :ref:`Differentiate`
 
   Calculates the time derivative of a given label.
+
+- :ref:`DownSampler`
+
+  Transmits the values to downstream Blocks only once every given number of 
+  points. The values that are not sent are discarded. The values are directly 
+  sent without being altered.
 
 - :ref:`Integrate`
 
