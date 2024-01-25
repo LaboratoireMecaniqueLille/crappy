@@ -59,15 +59,16 @@ class Phidget4AStepper(Actuator):
         or to :obj:`False` to drive it via a USB VINT Hub.
       absolute_mode: If :obj:`True`, the target position of the motor will be
         calculated from a reference position. If :obj:`False`, the target
-        position of the motor will be calculated from its actual position.
-      reference_pos: The position considered as the reference position for the
-        absolute mode at the beginning of the test.
-      switch_ports: The port numbers of the VINT Hub where the switches are
+        position of the motor will be calculated from its current position.
+      reference_pos: The position considered as the reference position at the
+        beginning of the test. Only takes effect if ``absolute_mode`` is
+        :obj:`True`.
+      switch_ports: The indexes of the VINT Hub ports where the switches are
         connected.
       save_last_pos: If :obj:`True`, the last position of the actuator will be
         saved in a .npy file.
       save_pos_folder: The path to the folder where to save the last position
-        of the motor.
+        of the motor. Only takes effect if ``save_last_pos`` is :obj:`True`.
     """
 
     self._motor: Optional[Stepper] = None
@@ -85,6 +86,8 @@ class Phidget4AStepper(Actuator):
     if self._absolute_mode:
       self._ref_pos = reference_pos
 
+    # Determining the path where to save the last position
+    # It depends on the current operating system
     self._path: Optional[Path] = None
     if save_last_pos:
       if save_pos_folder is not None:
