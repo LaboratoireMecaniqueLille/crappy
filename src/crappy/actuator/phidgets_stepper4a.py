@@ -118,18 +118,11 @@ class Phidget4AStepper(Actuator):
         self._switches.append(switch)
 
     # Setting the remote or local status
-    if self._remote:
-      self._motor.setIsLocal(False)
-      self._motor.setIsRemote(True)
-      for switch in self._switches:
-        switch.setIsLocal(False)
-        switch.setIsRemote(True)
-    else:
-      self._motor.setIsLocal(True)
-      self._motor.setIsRemote(False)
-      for switch in self._switches:
-        switch.setIsLocal(True)
-        switch.setIsRemote(False)
+    self._motor.setIsLocal(not self._remote)
+    self._motor.setIsRemote(self._remote)
+    for switch in self._switches:
+      switch.setIsLocal(not self._remote)
+      switch.setIsRemote(self._remote)
 
     # Setting up the callbacks
     self.log(logging.DEBUG, "Setting the callbacks")
@@ -234,9 +227,9 @@ class Phidget4AStepper(Actuator):
 
     if not self._absolute_mode:
       return self._last_position
-    else:
-      if self._last_position is None:
-        return self._last_position
+
+    # Cannot perform addition if no known last position
+    elif self._last_position is not None:
       return self._last_position + self._ref_pos
 
   def stop(self) -> None:
