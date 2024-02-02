@@ -81,6 +81,7 @@ class Phidget4AStepper(Actuator):
     self._remote = remote
     self._switch_ports = switch_ports
     self._switches = list()
+    self._check_switch = True
 
     self._absolute_mode = absolute_mode
     if self._absolute_mode:
@@ -154,9 +155,10 @@ class Phidget4AStepper(Actuator):
     self._motor.setEngaged(True)
 
     # Check the state of the switches
-    for switch in self._switches:
-      if switch.getState() is False:
-        raise ValueError(f"The switch is already hit or disconnected")
+    if self._check_switch:
+      for switch in self._switches:
+        if switch.getState() is False:
+          raise ValueError(f"A switch is already hit or disconnected")
 
   def set_speed(self, speed: float) -> None:
     """Sets the requested speed for the motor.
@@ -304,4 +306,7 @@ class Phidget4AStepper(Actuator):
   def _on_end(self, _: DigitalInput, __) -> None:
     """Callback when a switch is hit."""
 
-    self.stop()
+    for switch in self._switches:
+      if switch.getState() is False:
+        self.stop()
+        raise ValueError(f"A switch has been hit or disconnected")
