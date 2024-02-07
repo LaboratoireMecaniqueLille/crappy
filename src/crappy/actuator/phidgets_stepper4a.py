@@ -82,6 +82,13 @@ class Phidget4AStepper(Actuator):
     self._switch_ports = switch_ports
     self._switches = list()
 
+    # The following attribute is set to True to automatically check the state
+    # of the switches in the open method to keep the motor to move if a switch
+    # has been disconnected or hit.
+    # Nevertheless, this check can be bypassed if the motor is used outside
+    # from a Crappy loop by setting the attribute to False.
+    self._check_switch = True
+
     self._absolute_mode = absolute_mode
     if self._absolute_mode:
       self._ref_pos = reference_pos
@@ -154,9 +161,9 @@ class Phidget4AStepper(Actuator):
     self._motor.setEngaged(True)
 
     # Check the state of the switches
-    for switch in self._switches:
-      if switch.getState() is False:
-        raise ValueError(f"The switch is already hit or disconnected")
+    if self._check_switch and not all(
+      switch.getState() for switch in self._switches):
+      raise ValueError(f"A switch is already hit or disconnected !")
 
   def set_speed(self, speed: float) -> None:
     """Sets the requested speed for the motor.
@@ -301,7 +308,9 @@ class Phidget4AStepper(Actuator):
     self.log(logging.DEBUG, f"Position changed to {position}")
     self._last_position = position
 
-  def _on_end(self, _: DigitalInput, __) -> None:
+  def _on_end(self, _: DigitalInput, state) -> None:
     """Callback when a switch is hit."""
 
-    self.stop()
+    if not bool(state):
+      self.stop()
+      raise ValueError(f"A switch has been hit or disconnected !")
