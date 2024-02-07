@@ -19,6 +19,7 @@ from .nau7802 import NAU7802
 from .ni_daqmx import NIDAQmx
 from .opsens_handysens import HandySens
 from .pijuice_hat import PiJuice
+from .phidgets_wheatstone_bridge import PhidgetWheatstoneBridge
 from .sim868 import Sim868
 from .spectrum_m2i4711 import SpectrumM2I4711
 from .waveshare_ad_da import WaveshareADDA

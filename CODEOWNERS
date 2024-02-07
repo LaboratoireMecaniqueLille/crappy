@@ -4,6 +4,10 @@
 # PIERROOOTT owns the Gstreamer cameras
 /src/crappy/camera/gstreamer_* @WeisLeDocto @PIERROOOTT
 
+# PIERROOOTT owns the Phidget hardware
+/src/crappy/actuator/phidgets_stepper4a.py @WeisLeDocto @PIERROOOTT
+/src/crappy/inout/phidgets_wheatstone_bridge.py @WeisLeDocto @PIERROOOTT
+
 # PIERROOOTT owns the Opencv cameras
 /src/crappy/camera/opencv_* @WeisLeDocto @PIERROOOTT
 
