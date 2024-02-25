@@ -1018,8 +1018,12 @@ class CameraConfig(tk.Tk):
 
     ret = self._camera.get_image()
 
+    # Flag raised if no image could be grabbed
+    no_img = False
+
     # If no frame could be grabbed from the camera
     if ret is None:
+      no_img = True
       # If it's the first call, generate error image to initialize the window
       if not self._n_loops:
         self.log(logging.WARNING, "Could not get an image from the camera, "
@@ -1036,9 +1040,9 @@ class CameraConfig(tk.Tk):
     self._n_loops += 1
     _, img = ret
 
-    if img.dtype != self.dtype:
+    if not no_img and img.dtype != self.dtype:
       self.dtype = img.dtype
-    if self.shape != img.shape:
+    if not no_img and img.shape != self.shape:
       self.shape = img.shape
 
     self._cast_img(img)
