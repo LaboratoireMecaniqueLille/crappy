@@ -87,7 +87,7 @@ class CameraProcess(Process):
                  lock: RLock,
                  barrier: Barrier,
                  event: Event,
-                 shape: Tuple[int, int],
+                 shape: Union[Tuple[int, int], Tuple[int, int, int]],
                  dtype,
                  to_draw_conn: Optional[Connection],
                  outputs: List[Link],
