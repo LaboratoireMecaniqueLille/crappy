@@ -6,7 +6,7 @@ from _tkinter import TclError
 from platform import system
 import numpy as np
 from time import time, sleep
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 from pkg_resources import resource_string
 from io import BytesIO
 import logging
@@ -79,7 +79,7 @@ class CameraConfig(tk.Tk):
 
     super().__init__()
     self._camera = camera
-    self.shape = None
+    self.shape: Optional[Union[Tuple[int, int], Tuple[int, int, int]]] = None
     self.dtype = None
     self._logger: Optional[logging.Logger] = None
 

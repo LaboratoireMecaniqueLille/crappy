@@ -68,7 +68,8 @@ class Camera(Block):
                save_backend: Optional[str] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Tuple[int, int]] = None,
+               img_shape: Optional[Union[Tuple[int, int],
+                                         Tuple[int, int, int]]] = None,
                img_dtype: Optional[str] = None,
                **kwargs) -> None:
     """Sets the arguments and initializes the parent class.
