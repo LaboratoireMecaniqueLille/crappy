@@ -208,11 +208,11 @@ class ImageSaver(CameraProcess):
 
     # Only include the extension for the image file if applicable
     if self._img_extension:
-      path = str(self._save_folder / f"{self.metadata['ImageUniqueID']}_"
+      path = str(self._save_folder / f"{self.metadata['ImageUniqueID']:06d}_"
                                      f"{self.metadata['t(s)']:.3f}."
                                      f"{self._img_extension}")
     else:
-      path = str(self._save_folder / f"{self.metadata['ImageUniqueID']}_"
+      path = str(self._save_folder / f"{self.metadata['ImageUniqueID']:06d}_"
                                      f"{self.metadata['t(s)']:.3f}")
 
     # Saving the image at the destination path using the chosen backend
