@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from typing import Tuple, Optional, Callable, Union
-from re import findall, search, finditer, split, Match
+from re import findall, search, finditer, split, Match, compile
 from dataclasses import dataclass
 import logging
 from subprocess import run
@@ -117,6 +117,17 @@ class V4L2Helper:
       for param in self._parameters:
         param.add_options(menu_option)
 
+  @staticmethod
+  def _sort_key(format_: str):
+    """Key function to sort the different formats."""
+
+    format_pattern = compile(r'(.+?)\s+(\d+)x(\d+)\s+\((\d+\.\d+) fps\)')
+    match = format_pattern.search(format_)
+    name = match.group(1)
+    width = int(match.group(2))
+    fps = float(match.group(4))
+    return name, fps, width
+
   def _get_available_formats(self, device: Optional[Union[str, int]]) -> None:
     """Extracts the different formats available by parsing v4l2-ctl with
     regex."""
@@ -151,6 +162,7 @@ class V4L2Helper:
           fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
           for fps in fps_list:
             self._formats.append(f'{name} {size} ({fps} fps)')
+      self._formats = sorted(set(self._formats), key=self._sort_key)
 
   def _add_setter(self,
                   name: str,
