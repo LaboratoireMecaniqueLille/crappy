@@ -14,7 +14,7 @@ def docs():
   It opens the latest version, and of course requires an internet access.
 
   .. versionadded:: 1.5.5
-  .. versionchanged:: 2.0.0 renamed from doc to docs
+  .. versionchanged:: 2.0.0 renamed from *doc* to *docs*
   """
 
   webbrowser.open('https://crappy.readthedocs.io/en/latest/')
@@ -43,8 +43,8 @@ class OptionalModule:
       lazy_import: If :obj:`True`, the module won't be imported directly even
         if it is installed. Instead, it will be imported only when necessary.
         Allows reducing the import time, especially on Window.
-    
-    .. versionadded:: 2.0.0 *lazy_import* argument
+
+        .. versionadded:: 2.0.0
     """
 
     self._name = module_name
