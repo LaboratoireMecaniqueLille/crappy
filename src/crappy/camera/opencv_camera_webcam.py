@@ -44,7 +44,7 @@ class Webcam(Camera):
       **kwargs: Any additional setting to set before opening the configuration
         window.
 
-    .. versionchanged:: 1.5.9 renamed *numdevice* argument to *device_num*
+        .. versionchanged:: 1.5.9 renamed from *numdevice* to *device_num*
     """
 
     # Opening the videocapture device

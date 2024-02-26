@@ -53,7 +53,8 @@ class CameraGstreamer(Camera):
     as GStreamer.
   
   .. versionadded:: 1.5.9
-  .. versionchanged:: 2.0.0 renamed from Camera_gstreamer to CameraGstreamer
+  .. versionchanged:: 2.0.0
+     renamed from *Camera_gstreamer* to *CameraGstreamer*
   """
 
   def __init__(self) -> None:

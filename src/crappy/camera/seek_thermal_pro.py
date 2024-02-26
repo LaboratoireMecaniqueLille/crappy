@@ -66,7 +66,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     in a shell opened in ``/etc/udev/rules.d``.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Seek_thermal_pro to SeekThermalPro
+  .. versionchanged:: 2.0.0 renamed from *Seek_thermal_pro* to *SeekThermalPro*
   """
 
   def __init__(self) -> None:

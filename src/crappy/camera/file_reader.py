@@ -37,8 +37,8 @@ class FileReader(Camera):
   delay keeps growing.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 1.5.10 renamed from Streamer to File_reader
-  .. versionchanged:: 2.0.0 renamed from File_reader to FileReader
+  .. versionchanged:: 1.5.10 renamed from *Streamer* to *File_reader*
+  .. versionchanged:: 2.0.0 renamed from *File_reader* to *FileReader*
   """
 
   def __init__(self) -> None:
@@ -62,6 +62,8 @@ class FileReader(Camera):
 
     Args:
       reader_folder: The path to the folder containing the images to read.
+      
+        .. versionchanged:: 1.5.10 renamed from *path* to *reader_folder*
       reader_backend: The backend to use for reding the images. Should be one
         of :
         ::
@@ -69,13 +71,16 @@ class FileReader(Camera):
           'sitk' or 'cv2'
 
         If not given, SimpleITK is preferred over OpenCV if available.
+
+        .. versionadded:: 1.5.10
       stop_at_end: If :obj:`True` (the default), stops the Crappy script once
         the available images are all exhausted. Otherwise, simply remains idle
         while waiting for the test to finish.
-    
-    .. versionchanged:: 1.5.10 renamed *path* argument to *reader_folder*
-    .. versionadded:: 1.5.10 *reader_backend* and *stop_at_end* arguments
-    .. deprecated:: 1.5.10 *pattern*, *start_delay* and *modifier* arguments
+
+        .. versionadded:: 1.5.10
+
+    .. versionremoved::
+       1.5.10 *pattern*, *start_delay* and *modifier* arguments
     """
 
     # Selecting an  available backend between first sitk and then cv2

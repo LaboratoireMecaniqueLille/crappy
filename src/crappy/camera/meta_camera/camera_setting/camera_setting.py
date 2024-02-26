@@ -20,7 +20,7 @@ class CameraSetting:
   and :class:`~crappy.camera.meta_camera.camera_setting.CameraScaleSetting`.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Camera_setting to CameraSetting
+  .. versionchanged:: 2.0.0 renamed from *Camera_setting* to *CameraSetting*
   """
 
   def __init__(self,

@@ -60,7 +60,7 @@ class XiAPI(Camera):
     Ximea's website in order for this class to run.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Xiapi to XiAPI
+  .. versionchanged:: 2.0.0 renamed from *Xiapi* to *XiAPI*
   """
 
   def __init__(self) -> None:
