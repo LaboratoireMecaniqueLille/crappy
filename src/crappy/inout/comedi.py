@@ -62,6 +62,8 @@ class Comedi(InOut):
       device: The address of the device, as a :obj:`str`.
       sub_device: The id of the subdevice to use for input channels, as an
         :obj:`int`.
+
+        .. versionchanged:: 2.0.0 renamed from *subdevice* to *sub_device*
       channels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         the indexes of the channels to use as inputs, given as :obj:`int`.
       range_num: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
@@ -89,6 +91,9 @@ class Comedi(InOut):
         not given, the channels are by default not zeroed.
       out_sub_device: The id of the subdevice to use for output channels, as an
         :obj:`int`.
+
+        .. versionchanged:: 2.0.0
+           renamed from *out_subdevice* to *out_sub_device*
       out_channels: An iterable (like a :obj:`list` or a :obj:`tuple`)
         containing the indexes of the channels to use as outputs, given as
         :obj:`int`.
@@ -124,9 +129,6 @@ class Comedi(InOut):
        now explicitly listing the *device*, *subdevice*, *channels*,
        *range_num*, *gain*, *offset*, *make_zero*, *out_subdevice*,
        *out_channels*, *out_range_num*, *out_gain* and *out_offset* arguments
-    .. versionchanged:: 2.0.0 renamed *subdevice* argument to *sub_device*
-    .. versionchanged:: 2.0.0
-       renamed *out_subdevice* argument to *out_sub_device*
     """
 
     warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "

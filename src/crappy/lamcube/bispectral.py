@@ -85,7 +85,7 @@ class BiSpectral(BaslerIronmanCameraLink):
     proprietary drivers to be installed.
     
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Bispectral to BiSpectral
+  .. versionchanged:: 2.0.0 renamed from *Bispectral* to *BiSpectral*
   """
 
   def __init__(self) -> None:

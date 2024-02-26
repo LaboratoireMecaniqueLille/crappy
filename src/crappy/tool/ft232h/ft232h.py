@@ -118,7 +118,7 @@ class FindSerialNumber:
   
   .. versionadded:: 1.5.10
   .. versionchanged:: 2.0.0
-     renamed from Find_serial_number to FindSerialNumber
+     renamed from *Find_serial_number* to *FindSerialNumber*
   """
 
   def __init__(self, serial_number: str) -> None:
@@ -165,7 +165,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     ``set_ft232h_serial_nr.py``.
   
   .. versionadded:: 1.5.10
-  .. versionchanged:: 2.0.0 renamed from ft232h to FT232H
+  .. versionchanged:: 2.0.0 renamed from *ft232h* to *FT232H*
   """
 
   class BitMode(IntEnum):

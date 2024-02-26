@@ -12,7 +12,7 @@ class I2CMessage:
   :class:`~crappy.inout.MPRLS` InOut.
   
   .. versionadded:: 1.5.10
-  .. versionchanged:: 2.0.0 renamed from i2c_msg_ft232h to I2CMessage
+  .. versionchanged:: 2.0.0 renamed from *i2c_msg_ft232h* to *I2CMessage*
   """
 
   def __init__(self,

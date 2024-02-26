@@ -117,7 +117,7 @@ class WaveshareHighPrecision(InOut):
   
   .. versionadded:: 1.5.10
   .. versionchanged:: 2.0.0
-     renamed from Waveshare_high_precision to WaveshareHighPrecision
+     renamed from *Waveshare_high_precision* to *WaveshareHighPrecision*
   """
 
   def __init__(self,

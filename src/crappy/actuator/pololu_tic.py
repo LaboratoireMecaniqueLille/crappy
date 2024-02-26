@@ -271,7 +271,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     in a shell opened in ``/etc/udev/rules.d``.
     
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Pololu_tic to PololuTic
+  .. versionchanged:: 2.0.0 renamed from *Pololu_tic* to *PololuTic*
   """
 
   def __init__(self,
@@ -728,7 +728,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     Returns:
       The position in `mm`
     
-    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    .. versionchanged:: 1.5.2 renamed from *get_pos* to *get_position*
     """
 
     if self._backend == 'ticcmd':
@@ -753,14 +753,14 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         in `mm/s` Giving a speed other than :obj:`None` will set the maximum
         speed of the motor to that speed.
 
+        .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
+
     Note:
       - ``speed``:
         The only way to reach a position at a given speed is to change the
         maximum speed. The Tic will try to accelerate to the maximum speed but
         may remain slower if it doesn't have time to do so before reaching the
         given position.
-    
-    .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
     """
 
     if speed is not None:

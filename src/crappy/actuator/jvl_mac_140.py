@@ -36,7 +36,7 @@ class JVLMac140(Actuator):
     Args:
       port: Path to the serial port to use for communication.
 
-    .. deprecated:: 2.0.0 *baudrate* argument
+    .. versionremoved:: 2.0.0 *baudrate* argument
     """
 
     self._ser = None
@@ -87,8 +87,8 @@ class JVLMac140(Actuator):
       position: The target position, in `mm`.
       speed: The target speed for reaching the desired position, in `mm/min`.
         The speed must be given, otherwise an exception is raised.
-    
-    .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
+
+        .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
     """
 
     if speed is None:
@@ -117,7 +117,7 @@ class JVLMac140(Actuator):
   def get_position(self) -> float:
     """Reads and returns the current position of the servomotor, in `mm`.
 
-    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    .. versionchanged:: 1.5.2 renamed from *get_pos* to *get_position*
     """
 
     # We have 20 attempts for reading the position

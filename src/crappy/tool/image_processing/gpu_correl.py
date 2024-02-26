@@ -62,14 +62,8 @@ class CorrelStage:
 
   This class actually performs the GPU computation, while the calling classes
   only manage the data.
-  
+
   .. versionadded:: 1.4.0
-  .. versionchanged:: 1.5.10
-     now explicitly listing the *verbose*, *iterations*, *mul* and
-     *kernel_file* arguments
-  .. versionchanged:: 1.5.10 renamed *Nfields* argument to *n_fields*
-  .. versionremoved:: 1.5.10 *show_diff*, *img*, *mask* and *fields* arguments
-  .. versionadded:: 2.0.0 *logger_name* argument
   """
 
   def __init__(self,
@@ -86,6 +80,8 @@ class CorrelStage:
       img_size: The shape of the images to process. It is given beforehand so
         that the memory can be allocated before the test starts.
       logger_name: The name of the parent logger, as a :obj:`str`.
+
+        .. versionadded:: 2.0.0
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
         is displayed that is slows the code down.
@@ -100,8 +96,15 @@ class CorrelStage:
         recommended to tune this value for each application so that the
         convergence is neither too slow nor too fast.
       n_fields: The number of fields to project the displacement on.
+
+        .. versionchanged:: 1.5.10 renamed from *Nfields* to *n_fields*
       kernel_file: The path to the file containing the kernels to use for the
         correlation. Can be a :obj:`pathlib.Path` object or a :obj:`str`.
+
+    .. versionchanged:: 1.5.10
+       now explicitly listing the *verbose*, *iterations*, *mul* and
+       *kernel_file* arguments
+    .. versionremoved:: 1.5.10 *show_diff*, *img*, *mask* and *fields* arguments
     """
 
     self._logger: Optional[logging.Logger] = None
@@ -508,7 +511,7 @@ class GPUCorrelTool:
   an optimal solution.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from GPUCorrel to GPUCorrelTool
+  .. versionchanged:: 2.0.0 renamed from *GPUCorrel* to *GPUCorrelTool*
   """
 
   context = None
@@ -530,11 +533,15 @@ class GPUCorrelTool:
     Args:
       logger_name: The name of the parent :obj:`~logging.Logger`, to be used
         for setting the Logger of the class.
+
+        .. versionadded:: 2.0.0
       context: Optionally, the :mod:`pycuda` context to use. If not specified,
         a new context is instantiated.
+
+        .. versionadded:: 1.5.10
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
-        is displayed that is slows the code down.
+        is displayed that it slows the code down.
       levels: Number of levels of the pyramid. More levels may help converging
         on images with large strain, but may fail on images that don't contain
         low spatial frequency. Fewer levels mean that the program runs faster.
@@ -559,6 +566,8 @@ class GPUCorrelTool:
       ref_img: The reference image, as a 2D :obj:`numpy.array` with `dtype`
         `float32`. It can either be given at :meth:`__init__`, or set later
         with :meth:`set_orig`.
+
+        .. versionchanged:: 1.5.10 renamed from *img* to *ref_img*
       mask: The mask used for weighting the region of interest on the image. It
         is generally used to prevent unexpected behavior on the border of the
         image.
@@ -573,10 +582,7 @@ class GPUCorrelTool:
     .. versionchanged:: 1.5.10 
        now explicitly listing the *verbose*, *levels*, *resampling_factor*,
        *kernel_file*, *iterations*, *fields*, *mask* and *mul* arguments
-    .. versionchanged:: 1.5.10 renamed *img* argument to *ref_img*
-    .. versionadded:: 1.5.10 *context* argument
     .. versionremoved:: 1.5.10 *show_diff* and *img_size* arguments
-    .. versionadded:: 2.0.0 *logger_name* argument
     """
 
     self._context = context

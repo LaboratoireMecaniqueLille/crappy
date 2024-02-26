@@ -32,7 +32,8 @@ class BaslerIronmanCameraLink(Camera):
     proprietary drivers to be installed.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Cl_camera to BaslerIronmanCameraLink
+  .. versionchanged:: 2.0.0
+     renamed from *Cl_camera* to *BaslerIronmanCameraLink*
   .. versionremoved:: 2.1.0
   """
 
@@ -61,6 +62,8 @@ class BaslerIronmanCameraLink(Camera):
     Args:
       num_device: The index of the camera to open if multiple cameras are
         connected, as an :obj:`int`.
+
+        .. versionchanged:: 2.0.0 renamed from *numdevice* to *num_device*
       config_file: Path to the configuration file for the camera, as a
         :obj:`str`. Allows setting various parameters at once, and to store
         them in a persistent way.
@@ -70,7 +73,6 @@ class BaslerIronmanCameraLink(Camera):
     .. versionadded:: 1.5.10
        explicitly listing the *num_device*, *config_file* and *camera_type*
        arguments
-    .. versionchanged:: 2.0.0 renamed *numdevice* argument to *num_device*
     """
 
     # Reading the camera type from the config file, if applicable

@@ -23,7 +23,7 @@ class Mean(Modifier):
     Args:
       n_points: The number of points on which to compute the average.
     
-    .. versionchanged:: 1.5.10 renamed *npoints* argument to *n_points*
+        .. versionchanged:: 1.5.10 renamed from *npoints* to *n_points*
     """
 
     super().__init__()
@@ -37,7 +37,7 @@ class Mean(Modifier):
 
     If there are not enough points, doesn't return anything.
     
-    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    .. versionchanged:: 2.0.0 renamed from *evaluate* to *__call__*
     """
 
     self.log(logging.DEBUG, f"Received {data}")

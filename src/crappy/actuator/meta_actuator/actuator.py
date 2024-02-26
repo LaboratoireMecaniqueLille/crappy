@@ -118,9 +118,10 @@ class Actuator(metaclass=MetaActuator):
       speed: The speed at which to move to the desired position, as a
         :obj:`float`, or :obj:`None` if no speed is specified.
 
+        .. versionchanged:: 2.0.0
+          *speed* is now a mandatory argument even if it is :obj:`None`
+
     .. versionadded:: 1.5.10
-    .. versionchanged:: 2.0.0
-       *speed* is now a mandatory argument even if it is :obj:`None`
     """
 
     self.log(logging.WARNING, f"The set_position method was called but is not "

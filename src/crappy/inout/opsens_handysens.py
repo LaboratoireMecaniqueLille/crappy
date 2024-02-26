@@ -22,7 +22,7 @@ class HandySens(InOut):
   pressure, position or strain.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Opsens to HandySens
+  .. versionchanged:: 2.0.0 renamed from *Opsens* to *HandySens*
   """
 
   def __init__(self,

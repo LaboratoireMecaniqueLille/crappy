@@ -45,7 +45,7 @@ class MPRLS(InOut):
   It communicates over I2C with the sensor.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Mprls to MPRLS
+  .. versionchanged:: 2.0.0 renamed from *Mprls* to *MPRLS*
   """
 
   def __init__(self,
@@ -67,6 +67,8 @@ class MPRLS(InOut):
         :mod:`Adafruit-Blinka` and :mod:`adafruit-circuitpython-mprls`, but
         these modules are compatible with and maintained on a wide
         variety of boards.
+
+        .. versionadded:: 1.5.8
       eoc_pin: Optionally, reads the end of conversion signal from the polarity
         of a GPIO rather than from an I2C register. Speeds up the reading and
         decreases the traffic on the bus, but requires one extra wire. With the
@@ -74,15 +76,19 @@ class MPRLS(InOut):
         backend `'blinka'`, it should be a string but the syntax varies
         according to the board. Refer to blinka's documentation for more
         information.
+
+        .. versionadded:: 1.5.8
       device_address: The I2C address of the MPRLS. The address of the devices
         sold by Adafruit is `0x18`, but other suppliers may sell it with
         another address.
+
+        .. versionadded:: 1.5.8
       i2c_port: The I2C port over which the MPRLS should communicate. On most
         Raspberry Pi models the default I2C port is `1`.
+
+        .. versionadded:: 1.5.8
     
-    .. versionadded:: 1.5.8
-       *backend*, *eoc_pin*, *device_address*, *i2c_port* and *ft232h_ser_num*
-       arguments
+    .. versionadded:: 1.5.8 *ft232h_ser_num* argument
     .. versionremoved:: 2.0.0 *ft232h_ser_num* argument
     """
 

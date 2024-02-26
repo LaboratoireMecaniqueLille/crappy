@@ -32,7 +32,7 @@ class HDFRecorder(Block):
     that the recorded data will be readable.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Hdf_recorder to HDFRecorder
+  .. versionchanged:: 2.0.0 renamed from *Hdf_recorder* to *HDFRecorder*
   """
 
   def __init__(self,
@@ -63,16 +63,19 @@ class HDFRecorder(Block):
         `HDF5` file.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
+        
+        .. versionadded:: 1.5.10
       display_freq: if :obj:`True`, displays the looping frequency of the 
         Block.
+        
+        .. versionadded:: 1.5.10
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-    
-    .. versionadded:: 1.5.10 *freq* and *verbose* arguments
-    .. versionadded 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+        
+        .. versionadded:: 2.0.0
     """
 
     self._hfile = None

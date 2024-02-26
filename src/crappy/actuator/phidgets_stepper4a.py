@@ -33,6 +33,8 @@ class Phidget4AStepper(Actuator):
 
   The distance unit is the `mm` and the time unit is the `s`, so speeds are in
   `mm/s` and accelerations in `mm/s²`.
+
+  .. versionadded:: 2.0.3
   """
 
   def __init__(self,
@@ -60,15 +62,25 @@ class Phidget4AStepper(Actuator):
       absolute_mode: If :obj:`True`, the target position of the motor will be
         calculated from a reference position. If :obj:`False`, the target
         position of the motor will be calculated from its current position.
+
+        .. versionadded:: 2.0.4
       reference_pos: The position considered as the reference position at the
         beginning of the test. Only takes effect if ``absolute_mode`` is
         :obj:`True`.
+
+        .. versionadded:: 2.0.4
       switch_ports: The indexes of the VINT Hub ports where the switches are
         connected.
+
+        .. versionadded:: 2.0.4
       save_last_pos: If :obj:`True`, the last position of the actuator will be
         saved in a .npy file.
+
+        .. versionadded:: 2.0.4
       save_pos_folder: The path to the folder where to save the last position
         of the motor. Only takes effect if ``save_last_pos`` is :obj:`True`.
+
+        .. versionadded:: 2.0.4
     """
 
     self._motor: Optional[Stepper] = None

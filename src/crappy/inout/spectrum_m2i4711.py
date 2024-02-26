@@ -22,7 +22,7 @@ class SpectrumM2I4711(InOut):
   points.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Spectrum to SpectrumM2I4711
+  .. versionchanged:: 2.0.0 renamed from *Spectrum* to *SpectrumM2I4711*
   """
 
   def __init__(self,
@@ -46,12 +46,13 @@ class SpectrumM2I4711(InOut):
         If not given, all ranges default to `10000` mV.
       sample_rate: The sample rate of the acquisition for all channels, in Hz.
         The default is 100KHz.
+
+        .. versionchanged:: 1.5.10 renamed from *samplerate* to *sample_rate*
       buff_size: The size of the memory allocated as a rolling buffer to copy
         the data from the card, in bytes. The default is 67MB.
       notify_size: The size of each chunk of data to copy from the card, in
         bytes. The default is 65kB.
-    
-    .. versionchanged:: 1.5.10 renamed *samplerate* argument to *sample_rate*
+
     .. versionremoved:: 1.5.10 *split_chan* argument
     """
 

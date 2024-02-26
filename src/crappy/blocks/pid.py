@@ -62,6 +62,9 @@ class PID(Block):
       out_max: Ensures the output is always inferior to this value.
       out_min: Ensures the output is always superior to this value.
       setpoint_label: The label carrying the setpoint value.
+
+        .. versionchanged:: 2.0.0
+           renamed from *target_label* to *setpoint_label*
       input_label: The label carrying the reading of the actual value, to be
         compared with the setpoint.
       time_label: The label carrying the time information in the incoming
@@ -69,12 +72,18 @@ class PID(Block):
       kp_label: The label to use for changing the `P` gain on the fly. If a
         value is received over this label, it will overwrite the one given in
         the ``kp`` argument.
+
+        .. versionadded:: 2.0.0
       ki_label: The label to use for changing the `I` gain on the fly. If a
         value is received over this label, it will overwrite the one given in
         the ``ki`` argument.
+
+        .. versionadded:: 2.0.0
       kd_label: The label to use for changing the `D` gain on the fly. If a
         value is received over this label, it will overwrite the one given in
         the ``kd`` argument.
+
+        .. versionadded:: 2.0.0
       labels: The two labels that will be sent to downstream Blocks. The first
         one is the time label, the second one is the output of the PID. If this
         argument is not given, they default to ``'t(s)'`` and ``'pid'``.
@@ -88,17 +97,15 @@ class PID(Block):
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+        
+        .. versionadded:: 1.5.10
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-    
-    .. versionadded:: 1.5.10 *verbose* argument
-    .. versionadded 2.0.0 
-       *debug*, *kp_label*, *kd_label* and *ki_label* arguments
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
-    .. versionchanged:: 2.0.0
-       renamed *target_label* argument to *setpoint_label*
+        
+        .. versionadded:: 2.0.0
     """
 
     # Attributes of the parent class

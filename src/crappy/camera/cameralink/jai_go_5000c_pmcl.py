@@ -36,7 +36,7 @@ class JaiGO5000CPMCL8Bits(BaslerIronmanCameraLink):
     proprietary drivers to be installed.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Jai8 to JaiGO5000CPMCL8Bits
+  .. versionchanged:: 2.0.0 renamed from *Jai8* to *JaiGO5000CPMCL8Bits*
   .. versionremoved:: 2.1.0
   """
 
@@ -130,7 +130,7 @@ class JaiGO5000CPMCL(JaiGO5000CPMCL8Bits):
     proprietary drivers to be installed.
 
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Jai to JaiGO5000CPMCL
+  .. versionchanged:: 2.0.0 renamed from *Jai* to *JaiGO5000CPMCL*
   .. versionremoved:: 2.1.0
   """
 

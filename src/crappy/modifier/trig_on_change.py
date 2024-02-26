@@ -14,7 +14,7 @@ class TrigOnChange(Modifier):
   upon change of a label value.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Trig_on_change to TrigOnChange
+  .. versionchanged:: 2.0.0 renamed from *Trig_on_change* to *TrigOnChange*
   """
 
   def __init__(self, label: str) -> None:
@@ -23,7 +23,7 @@ class TrigOnChange(Modifier):
     Args:
       label: The name of the label to monitor.
     
-    .. versionchanged:: 1.5.10 renamed *name* argument to *label*
+        .. versionchanged:: 1.5.10 renamed from *name* to *label*
     """
 
     super().__init__()
@@ -34,7 +34,7 @@ class TrigOnChange(Modifier):
     """Compares the received value with the last sent one, and if they're
     different sends the received data and stores the latest value.
     
-    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    .. versionchanged:: 2.0.0 renamed from *evaluate* to *__call__*
     """
 
     self.log(logging.DEBUG, f"Received {data}")

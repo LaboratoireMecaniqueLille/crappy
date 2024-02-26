@@ -68,6 +68,8 @@ class IOBlock(Block):
       trigger_label: If given, the Block will only read data whenever a value
         is received on this label (can be any value). Ignored if the Block has
         no output Link. A trigger label can also be a cmd label.
+
+        .. versionchanged:: 1.5.10 renamed from *trigger* to *trigger_label*
       streamer: If :obj:`False`, the :meth:`~crappy.inout.InOut.get_data`
         method of the InOut is called for acquiring data, else it is the
         :meth:`~crappy.inout.InOut.get_stream` method. Refer to the
@@ -79,11 +81,15 @@ class IOBlock(Block):
       exit_cmd: A final command for the InOut, set during :meth:`finish`. If
         given, there must be as many values as in ``cmd_labels``. Must be given
         as an iterable (e.g. a :obj:`list` or a :obj:`tuple`).
+
+        .. versionchanged:: 1.5.10 renamed from *exit_values* to *exit_cmd*
       make_zero_delay: If set, will acquire data before the beginning of the
         test and use it to offset all the labels to zero. The data will be
         acquired during the given number of seconds. Ignored if the Block has
         no output Links. Does not work for InOuts that acquire values other
         than numbers (:obj:`str` for example).
+        
+        .. versionadded:: 1.5.10
       spam: If :obj:`False`, the Block will call
         :meth:`~crappy.inout.InOut.set_cmd` on the InOut object only if the
         current command is different from the previous. Otherwise, it will call
@@ -92,17 +98,15 @@ class IOBlock(Block):
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block while running.
+        
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+        
+        .. versionadded:: 2.0.0
       **kwargs: The arguments to be passed to the :class:`~crappy.inout.InOut`.
-
-    .. versionchanged:: 1.5.10 renamed *trigger* argument to *trigger_label*
-    .. versionchanged:: 1.5.10 renamed *exit_values* argument to *exit_cmd*
-    .. versionadded:: 1.5.10 *make_zero_delay* argument
-    .. versionadded 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._device: Optional[InOut] = None

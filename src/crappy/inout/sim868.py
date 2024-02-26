@@ -26,7 +26,7 @@ class Sim868(InOut):
     to manage the messages to send.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Gsm to Sim868
+  .. versionchanged:: 2.0.0 renamed from *Gsm* to *Sim868*
   """
 
   def __init__(self,
@@ -47,10 +47,12 @@ class Sim868(InOut):
       port: Serial port the Sim868 is connected to.
       baudrate: Serial baudrate, between `1200` and `115200`.
       pin_code: Optionally, a pin code to use for activating the SIM card.
+      
+        .. versionadded:: 2.0.0
       registration_timeout: The maximum number of seconds to allow for the
         Sim868 to register to a network once the SIM card has the ready status.
-    
-    .. versionadded:: 2.0.0 *pin_code* and *registration_timeout* arguments
+
+        .. versionadded:: 2.0.0
     """
 
     warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "

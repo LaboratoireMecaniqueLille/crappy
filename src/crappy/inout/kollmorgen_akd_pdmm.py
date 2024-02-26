@@ -42,7 +42,7 @@ class KollmorgenAKDPDMM(InOut):
    The values of the current speeds or positions can also be retrieved.
    
    .. versionadded:: 1.4.0
-   .. versionchanged:: 2.0.0 renamed from Koll to KollmorgenAKDPDMM
+   .. versionchanged:: 2.0.0 renamed from *Koll* to *KollmorgenAKDPDMM*
    """
 
   def __init__(self,
@@ -55,14 +55,16 @@ class KollmorgenAKDPDMM(InOut):
     Args:
       axes: An iterable (like a :obj:`list` or a :obj:`tuple`) containing the
         motors/axes to drive, given as :obj:`int`.
+
+        .. versionchanged:: 1.5.10 renamed from *axis* to *axes*
       mode: The driving mode, should be either `'speed'` or `'position'`.
+
+        .. versionchanged:: 1.5.10 renamed from *data* to *mode*
       host: The IP address of the variator, given as a :obj:`str`.
       port: The network port over which to communicate with the variator, as
         an :obj:`int`.
     
     .. versionremoved:: 1.5.10 *speed*, *acc*, *decc* and *labels* arguments
-    .. versionchanged:: 1.5.10 renamed *axis* argument to *axes*
-    .. versionchanged:: 1.5.10 renamed *data* argument to *mode*
     """
 
     warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "

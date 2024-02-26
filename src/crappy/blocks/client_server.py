@@ -38,7 +38,7 @@ class ClientServer(Block):
   programs on a same machine, etc.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Client_server to ClientServer
+  .. versionchanged:: 2.0.0 renamed from *Client_server* to *ClientServer*
   """
 
   def __init__(self,
@@ -95,15 +95,24 @@ class ClientServer(Block):
         once in the topics.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+
+        .. versionadded:: 1.5.10
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
+
+        .. versionadded:: 1.5.10
       spam: If :obj:`True`, sends the last received values at each loop even if
         no new values were received from the broker. When set to :obj:`True`,
         the ``init_output`` must be provided.
+
+        .. versionadded:: 1.5.10
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+
+        .. versionadded:: 2.0.0
 
     Note:
       - ``broker``:
@@ -207,10 +216,6 @@ class ClientServer(Block):
         ::
 
           ('sign',)
-
-    .. versionadded:: 1.5.10 *verbose*, *freq* and *spam* arguments
-    .. versionadded:: 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._client: Optional[mqtt.Client] = None

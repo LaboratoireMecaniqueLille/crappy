@@ -21,7 +21,7 @@ class ServoStar300(Actuator):
   in speed.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Servostar to ServoStar300
+  .. versionchanged:: 2.0.0 renamed from *Servostar* to *ServoStar300*
   """
 
   def __init__(self,
@@ -32,13 +32,12 @@ class ServoStar300(Actuator):
 
     Args:
       port: Path to the serial port used for communication.
+
+        .. versionchanged:: renamed from *device* to *port*
       baudrate: The serial baud rate to use, as an :obj:`int`.
       mode: The driving mode to use when starting the test. Can be `'analog'`
         or `'serial'`. It can be changed afterward while the test is running,
         by sending the right command.
-    
-    .. deprecated:: 2.0.0 *device argument*
-    .. versionchanged:: 2.0.0 use *port* instead of *device*
     """
 
     self._ser = None
@@ -90,9 +89,10 @@ class ServoStar300(Actuator):
         sets the driving mode to analog.
       speed: The speed at which the actuator should reach its target position.
         If no speed is specified, the default is `20000`.
+
+        .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
     
-    .. deprecated:: 2.0.0 remove *acc* and *dec* arguments
-    .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
+    .. versionremoved:: 2.0.0 *acc* and *dec* arguments
     """
 
     if speed is None:
@@ -129,7 +129,7 @@ class ServoStar300(Actuator):
   def get_position(self) -> Optional[float]:
     """Reads and returns the current position of the motor.
 
-    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    .. versionchanged:: 1.5.2 renamed from *get_pos* to *get_position*
     """
 
     # Requesting a position reading

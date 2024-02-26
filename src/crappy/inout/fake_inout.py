@@ -21,7 +21,7 @@ class FakeInOut(InOut):
   computer.
   
   .. versionadded:: 1.5.5
-  .. versionchanged:: 2.0.0 renamed from Fake_inout to FakeInOut
+  .. versionchanged:: 2.0.0 renamed from *Fake_inout* to *FakeInOut*
   """
 
   def __init__(self) -> None:

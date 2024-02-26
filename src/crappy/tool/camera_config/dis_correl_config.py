@@ -30,7 +30,7 @@ class DISCorrelConfig(CameraConfigBoxes):
   Block.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from DISConfig to DISCorrelConfig
+  .. versionchanged:: 2.0.0 renamed from *DISConfig* to *DISCorrelConfig*
   """
 
   def __init__(self,
@@ -46,17 +46,22 @@ class DISCorrelConfig(CameraConfigBoxes):
         the images.
       log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
         the main :obj:`~logging.Logger`, only used in Windows.
+
+        .. versionadded:: 2.0.0
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
+
+        .. versionadded:: 2.0.0
       max_freq: The maximum frequency this window is allowed to loop at. It is
         simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
         Block.
+
+        .. versionadded:: 2.0.0
       patch: The :class:`~crappy.tool.camera_config.config_tools.Box` container
         that will save the information on the patch where to perform image
         correlation.
-        
-    .. versionadded:: 2.0.0
-       *patch*, *log_queue*, *log_level* and *max_freq* arguments
+
+        .. versionadded:: 2.0.0
     """
 
     self._correl_box = patch

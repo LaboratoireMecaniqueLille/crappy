@@ -113,7 +113,7 @@ class NAU7802(InOut):
   converted to Newtons using the ``gain`` and ``offset`` arguments.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Nau7802 to NAU7802
+  .. versionchanged:: 2.0.0 renamed from *Nau7802* to *NAU7802*
   """
 
   def __init__(self,
@@ -150,12 +150,13 @@ class NAU7802(InOut):
         of a GPIO rather than from an I2C register. Speeds up the reading and
         decreases the traffic on the bus, but requires one extra wire. Give the
         index of the GPIO in BCM convention, as an :obj:`int`.
+
+        .. versionadded:: 1.5.8
       gain: Allows to tune the output value according to the formula :
         :math:`output = gain * tension + offset`.
       offset: Allows to tune the output value according to the formula :
         :math:`output = gain * tension + offset`.
-      
-    .. versionadded:: 1.5.8 *int_pin* argument
+
     .. versionremoved:: 2.0.0 *backend* and *ft232h_ser_num* arguments
     """
 

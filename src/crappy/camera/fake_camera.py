@@ -17,7 +17,7 @@ class FakeCamera(Camera):
   frame rate and the speed of the moving line.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Fake_camera to FakeCamera
+  .. versionchanged:: 2.0.0 renamed from *Fake_camera* to *FakeCamera*
   """
 
   def __init__(self) -> None:

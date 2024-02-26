@@ -89,7 +89,7 @@ class ADS1115(InOut):
   voltage range.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Ads1115 to ADS1115
+  .. versionchanged:: 2.0.0 renamed from *Ads1115* to *ADS1115*
   """
 
   def __init__(self,
@@ -150,6 +150,8 @@ class ADS1115(InOut):
         the traffic on the I2C bus, but requires one extra wire. With the
         backend `'Pi4'`, give the index of the GPIO in BCM convention. This
         feature is not available with the `'blinka'` backend.
+
+        .. versionadded:: 1.5.8
       gain: Allows to tune the output value according to the formula :
         :math:`output = gain * tension + offset`.
       offset: Allows to tune the output value according to the formula :
@@ -160,7 +162,6 @@ class ADS1115(InOut):
       `GND-0.3V`. Setting high ``v_range`` values does not allow measuring
       voltages higher than `VDD` !!
 
-    .. versionadded:: 1.5.8 *dry_pin* argument
     .. versionremoved:: 2.0.0 *ft232h_ser_num* argument
     """
 

@@ -233,8 +233,9 @@ class Camera(metaclass=MetaCamera):
         be the average of ``lowest`` and ``highest``.
       step: The step value for the variation of the setting values.
 
+        .. versionadded:: 2.0.0
+
     .. versionadded:: 1.5.10
-    .. versionchanged:: 2.0.0 add the *step* argument
     """
 
     # Checking if the given name is valid
