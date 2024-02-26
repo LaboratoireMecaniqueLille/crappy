@@ -22,7 +22,7 @@ class DISCorrelTool:
   image on the chosen fields, and calculates the residuals.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from DISCorrel to DISCorrelTool
+  .. versionchanged:: 2.0.0 renamed from *DISCorrel* to *DISCorrelTool*
   """
 
   def __init__(self,
@@ -43,6 +43,8 @@ class DISCorrelTool:
       box: An instance of the
         :class:`~crappy.tool.camera_config.config_tools.Box` object containing
         the coordinates of the patch on which to perform image correlation.
+
+        .. versionadded:: 2.0.0
       fields: The base of fields to use for the projection, given as a
         :obj:`list` of :obj:`str`. The available fields are :
         ::
@@ -61,14 +63,13 @@ class DISCorrelTool:
         patch inverse search stage in DISFlow, as an :obj:`int`.
       gradient_iterations: Maximum number of gradient descent iterations
         in the patch inverse search stage in DISFlow, as an :obj:`int`.
+
+        .. versionchanged:: 1.5.10
+           renamed from *gditerations* to *gradient_iterations*
       patch_size: Size of an image patch for matching in DISFlow
         (in pixels).
       patch_stride: Stride between neighbor patches in DISFlow. Must be
         less than patch size.
-    
-    .. versionchanged:: 1.5.10
-       renamed *gditerations* argument to *gradient_iterations*
-    .. versionadded:: 2.0.0 *box* argument
     """
 
     if fields is not None and not all((field in allowed_fields

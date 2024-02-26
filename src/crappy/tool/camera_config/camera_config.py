@@ -53,7 +53,7 @@ class CameraConfig(tk.Tk):
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
 
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Camera_config to CameraConfig
+  .. versionchanged:: 2.0.0 renamed from *Camera_config* to *CameraConfig*
   """
 
   def __init__(self,
@@ -68,13 +68,17 @@ class CameraConfig(tk.Tk):
         the images.
       log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
         the main :obj:`~logging.Logger`, only used in Windows.
+
+        .. versionadded:: 2.0.0
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
+
+        .. versionadded:: 2.0.0
       max_freq: The maximum frequency this window is allowed to loop at. It is
         simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
         Block.
-    
-    .. versionadded:: 2.0.0 *log_queue*, *log_level* and *max_freq* arguments
+
+        .. versionadded:: 2.0.0
     """
 
     super().__init__()

@@ -29,8 +29,8 @@ class VideoExtensoTool:
   center is returned and the strain values are left to `0`.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 1.5.10 renamed from Video_extenso to VideoExtenso
-  .. versionchanged:: 2.0.0 renamed from VideoExtenso to VideoExtensoTool
+  .. versionchanged:: 1.5.10 renamed from *Video_extenso* to *VideoExtenso*
+  .. versionchanged:: 2.0.0 renamed from *VideoExtenso* to *VideoExtensoTool*
   """
 
   def __init__(self,
@@ -49,14 +49,22 @@ class VideoExtensoTool:
       spots: An instance of the 
         :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` tool 
         containing the coordinates of the spots to track.
+
+        .. versionadded:: 2.0.0
       thresh: The grey level value of the threshold to use for discriminating
         spots from the background, as an :obj:int`. Passed to the
         :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
         and not used in this class.
+
+        .. versionadded:: 2.0.0
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
+
+        .. versionadded:: 2.0.0
       log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
         the main :obj:`~logging.Logger`, only used in Windows.
+
+        .. versionadded:: 2.0.0
       white_spots: If :obj:`True`, detects white objects over a black
         background, else black objects over a white background. Passed to the
         :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
@@ -91,8 +99,6 @@ class VideoExtensoTool:
         and not used in this class.
 
     .. versionremoved:: 2.0.0 *num_spots* and *min_area* arguments
-    .. versionadded:: 2.0.0
-       *spots*, *thresh*, *log_level* and *log_queue* arguments
     """
 
     # These attributes will be used later
@@ -184,7 +190,7 @@ class VideoExtensoTool:
       A :obj:`list` containing :obj:`tuple` with the coordinates of the centers 
       of the detected spots, and the calculated x and y strain values.
     
-    .. versionchanged:: 1.5.10 renamed from get_def to get_data
+    .. versionchanged:: 1.5.10 renamed from *get_def* to *get_data*
     """
 
     # Sending the latest sub-image containing the spot to track

@@ -23,7 +23,7 @@ class DICVETool:
   could as well be of use for other applications.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from DISVE to DICVETool
+  .. versionchanged:: 2.0.0 renamed from *DISVE* to *DICVETool*
   """
 
   def __init__(self,
@@ -56,6 +56,8 @@ class DICVETool:
         meant for debugging. `Parabola` refines the result of
         `Pixel precision` by interpolating the neighborhood of the maximum, and
         has thus a sub-pixel resolution.
+
+        .. versionadded:: 1.5.9
       alpha: Weight of the smoothness term in DISFlow, as a :obj:`float`.
       delta: Weight of the color constancy term in DISFlow, as a :obj:`float`.
       gamma: Weight of the gradient constancy term in DISFlow , as a
@@ -66,6 +68,9 @@ class DICVETool:
         patch inverse search stage in DISFlow, as an :obj:`int`.
       gradient_iterations: Maximum number of gradient descent iterations
         in the patch inverse search stage in DISFlow, as an :obj:`int`.
+
+        .. versionchanged:: 1.5.9
+           renamed from *gditerations* to *gradient_iterations*
       patch_size: Size of an image patch for matching in DISFlow
         (in pixels).
       patch_stride: Stride between neighbor patches in DISFlow. Must be
@@ -77,10 +82,7 @@ class DICVETool:
         image, and raises an error if that's the case.
       follow: It :obj:`True`, the patches will move to follow the displacement
         of the image.
-    
-    .. versionchanged:: 1.5.9
-       renamed *gditerations* argument to *gradient_iterations*
-    .. versionadded:: 1.5.9 *method* argument
+
     .. versionremoved:: 1.5.10 *img0* and *show_image* arguments
     """
 
