@@ -147,6 +147,8 @@ class Block(Process, metaclass=MetaBlock):
       allow_root: If set to :obj:`True`, tries to renice the Processes with
         sudo privilege in Linux. It requires the Python script to be run
         with sudo privilege, otherwise it has no effect.
+
+        .. versionchanged:: 2.0.0 renamed from *high_prio* to *allow_root*
       log_level: The maximum logging level that will be handled by Crappy. By
         default, it is set to the lowest level (:obj:`~logging.DEBUG`) so that
         all messages are handled. If set to a higher level, the levels
@@ -154,16 +156,18 @@ class Block(Process, metaclass=MetaBlock):
         set to :obj:`None`, logging is totally disabled. Refer to the
         documentation of the :mod:`logging` module for information on the
         possible levels.
+
+        .. versionadded:: 2.0.0
       no_raise: When set to :obj:`False`, the Exceptions encountered during
         Crappy's execution, as well as the :exc:`KeyboardInterrupt`, will raise
         an Exception right before Crappy returns. This is meant to prevent the
         execution of code that would come after Crappy, in case Crappy does not
         terminate as expected. This behavior can be disabled by setting this
         argument to :obj:`True`.
-    
-    .. versionchanged:: 2.0.0 renamed *high_prio* argument to *allow_root*
+
+        .. versionadded:: 2.0.0
+
     .. versionremoved:: 2.0.0 *t0*, *verbose*, *bg* arguments
-    .. versionadded:: 2.0.0 *log_level*, *no_raise* arguments
     """
 
     cls.prepare_all(log_level)
@@ -191,9 +195,10 @@ class Block(Process, metaclass=MetaBlock):
         set to :obj:`None`, logging is totally disabled. Refer to the 
         documentation of the :mod:`logging` module for information on the 
         possible levels.
+
+        .. versionadded:: 2.0.0
     
     .. versionremoved:: 2.0.0 *verbose* argument
-    .. versionadded:: 2.0.0 *log_level* argument
     """
 
     # Flag indicating whether to perform the cleanup action or not
@@ -329,8 +334,8 @@ class Block(Process, metaclass=MetaBlock):
       allow_root: If set to :obj:`True`, tries to renice the Processes with 
         sudo privilege in Linux. It requires the Python script to be run with 
         sudo privilege, otherwise it has no effect.
-    
-    .. versionchanged:: 2.0.0 renamed *high_prio* argument to *allow_root*
+
+        .. versionchanged:: 2.0.0 renamed from *high_prio* to *allow_root*
     """
 
     # Flag indicating whether to perform the cleanup action or not
@@ -1190,7 +1195,7 @@ class Block(Process, metaclass=MetaBlock):
     """Returns :obj:`True` if there's data available for reading in at least
     one of the input :class:`~crappy.links.Link`.
     
-    .. versionchanged:: 2.0.0 renamed from poll to data_available
+    .. versionchanged:: 2.0.0 renamed from *poll* to *data_available*
     """
 
     self.log(logging.DEBUG, "Data availability requested")
@@ -1214,7 +1219,7 @@ class Block(Process, metaclass=MetaBlock):
       A :obj:`dict` whose keys are the received labels and with a single value
       for each key (usually a :obj:`float` or a :obj:`str`).
     
-    .. versionchanged:: 2.0.0 renamed from recv_all to recv_data
+    .. versionchanged:: 2.0.0 renamed from *recv_all* to *recv_data*
     """
 
     ret = dict()
@@ -1248,7 +1253,8 @@ class Block(Process, metaclass=MetaBlock):
 
     .. versionremoved:: 1.5.10 *num* argument
     .. versionadded:: 1.5.10 *blocking* argument
-    .. versionchanged:: 2.0.0 renamed from get_last to recv_last_data
+    .. versionremoved:: 2.0.0 *blocking* argument
+    .. versionchanged:: 2.0.0 renamed from *get_last* to *recv_last_data*
     """
 
     # Initializing the buffer storing the last received values
@@ -1305,7 +1311,8 @@ class Block(Process, metaclass=MetaBlock):
 
     .. versionremoved:: 1.5.10 *num* argument
     .. versionadded:: 1.5.10 *blocking* argument
-    .. versionchanged:: 2.0.0 renamed from get_all_last to recv_all_data
+    .. versionremoved:: 2.0.0 *blocking* argument
+    .. versionchanged:: 2.0.0 renamed from *get_all_last* to *recv_all_data*
     """
 
     ret = defaultdict(list)

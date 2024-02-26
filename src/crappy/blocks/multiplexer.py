@@ -32,7 +32,7 @@ class Multiplexer(Block):
     rates.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Multiplex to Multiplexer
+  .. versionchanged:: 2.0.0 renamed from *Multiplex* to *Multiplexer*
   """
 
   def __init__(self,
@@ -46,6 +46,8 @@ class Multiplexer(Block):
 
     Args:
       time_label: The label carrying the time information.
+      
+        .. versionchanged:: 1.5.10 renamed from *key* to *time_label*
       out_labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         the labels to multiplex, except for the time label that is given
         separately in the ``time_label`` argument. The Block also doesn't
@@ -54,19 +56,28 @@ class Multiplexer(Block):
         recommended to always set this argument !** It is also possible to
         give this argument as a single :obj:`str` (i.e. not in an iterable),
         although multiplexing a single label is of limited interest.
+        
+        .. versionadded:: 2.0.0
+      interp_freq: The target frequency for performing the interpolation. In 
+        the output data, there will be one interpolated data point each 
+        :math:`1 / interp_freq` seconds. Independent of the ``freq`` argument, 
+        but it is no use setting ``freq`` higher than ``interp_freq`` otherwise 
+        there will be void loops.
+        
+        .. versionadded:: 2.0.0
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+        
+        .. versionadded:: 1.5.9
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-
-    .. versionadded:: 1.5.9 *verbose* argument
-    .. versionchanged:: 1.5.10 renamed *key* argument to *time_label*
-    .. versionadded 2.0.0 *debug*, *out_labels* and *interp_freq* arguments
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+        
+        .. versionadded:: 2.0.0
     """
 
     super().__init__()

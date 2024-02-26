@@ -74,6 +74,8 @@ class Generator(Block):
         Block switched to the next Path.
       display_freq: if :obj:`True`, displays the looping frequency of the 
         Block.
+        
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       end_delay: When all the Paths are exhausted, waits this many seconds
         before stopping the entire script. Can be set to :obj:`None`,
         in which case the Generator won't stop the program when finishing.
@@ -81,15 +83,14 @@ class Generator(Block):
         upstream Blocks before sending the first value of the signal.
         Otherwise, the first value might be sent without checking the
         associated condition if its depends on labels from other Blocks.
+        
+        .. versionadded:: 1.5.10
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-    
-    .. versionremoved:: 1.5.10 *cmd* and *trig_link* argument
-    .. versionadded:: 1.5.10 *safe_start* argument
-    .. versionadded:: 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+        
+        .. versionadded:: 2.0.0
     """
 
     super().__init__()

@@ -31,7 +31,7 @@ class MeanBlock(Block):
     number of labels.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Mean_block to MeanBlock
+  .. versionchanged:: 2.0.0 renamed from *Mean_block* to *MeanBlock*
   """
 
   def __init__(self,
@@ -47,6 +47,8 @@ class MeanBlock(Block):
       delay: The averaged data will be sent each ``delay`` seconds.
       time_label: The label containing the time information. It must be common
         to all the incoming Links.
+        
+        .. versionchanged:: 1.5.10 renamed from *t_label* to *time_label*
       out_labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         all the labels to average, as :obj:`str`. If not given, all the
         received labels are averaged and returned. The time label should not
@@ -55,17 +57,17 @@ class MeanBlock(Block):
         not in an iterable.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+        
+        .. versionadded:: 1.5.10
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-    
-    .. versionadded:: 1.5.10 *verbose* argument
-    .. versionchanged:: 1.5.10 renamed *t_label* argument to *time_label*
-    .. versionadded 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+        
+        .. versionadded:: 2.0.0
     """
 
     super().__init__()

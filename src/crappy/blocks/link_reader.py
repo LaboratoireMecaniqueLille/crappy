@@ -19,7 +19,7 @@ class LinkReader(Block):
   a persistent way.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Reader to LinkReader
+  .. versionchanged:: 2.0.0 renamed from *Reader* to *LinkReader*
   """
 
   _index = 0
@@ -35,20 +35,24 @@ class LinkReader(Block):
       name: If set, will be displayed to identify the LinkReader. Otherwise, 
         the block is automatically named based on the number of its instances 
         already running.
+        
+        .. versionchanged:: 1.5.5 renamed from *name* to *reader_name*
+        .. versionchanged:: 1.5.5 renamed from *reader_name* to *name*
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
+        
+        .. versionadded:: 1.5.10
       display_freq: if :obj:`True`, displays the looping frequency of the 
         Block.
+        
+        .. versionadded:: 1.5.10
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-
-    .. versionchanged:: 1.5.5 renamed *name* argument to *reader_name*
-    .. versionadded:: 1.5.10 *freq* and *verbose* arguments
-    .. versionchanged:: 1.5.5 renamed *reader_name* argument to *name*
-    .. versionadded 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+        
+        .. versionadded:: 2.0.0
     """
 
     super().__init__()

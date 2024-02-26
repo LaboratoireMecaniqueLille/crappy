@@ -35,7 +35,7 @@ class FakeMachine(Block):
   also be used to test a script without actually interacting with hardware.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Fake_machine to FakeMachine
+  .. versionchanged:: 2.0.0 renamed from *Fake_machine* to *FakeMachine*
   """
 
   def __init__(self,
@@ -55,10 +55,14 @@ class FakeMachine(Block):
 
     Args:
       rigidity: The rigidity of the material, in N, so that 
-        :math:`force = k * strain`.
+        :math:`force = rigidity * strain`.
+
+        .. versionchanged:: 2.0.0 renamed from *k* to *rigidity*
       l0: The initial length of the fake sample to test, in mm.
       max_strain: The maximum strain the material can withstand before
         breaking.
+
+        .. versionchanged:: 1.5.10 renamed from *maxstrain* to *max_strain*
       mode: Whether the command sent to the fake machine is a speed or a
         position command. Can be ``'speed'`` or ``'position'``.
       plastic_law: A callable taking the maximum reached strain and returning
@@ -71,18 +75,19 @@ class FakeMachine(Block):
       cmd_label: The label carrying the command of the fake machine.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
+
+        .. versionadded:: 1.5.10
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+
+        .. versionadded:: 1.5.10
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-    
-    .. versionchanged:: 1.5.10 renamed *maxstrain* argument to *max_strain*
-    .. versionadded:: 1.5.10 *freq* and *verbose* arguments
-    .. versionadded:: 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *k* argument to *rigidity*
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+
+        .. versionadded:: 2.0.0
     """
 
     super().__init__()

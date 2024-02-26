@@ -24,7 +24,7 @@ class AutoDriveVideoExtenso(Block):
   labels. It can then be used by downstream Blocks.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from AutoDrive to AutoDriveVideoExtenso
+  .. versionchanged:: 2.0.0 renamed from *AutoDrive* to *AutoDriveVideoExtenso*
   """
 
   def __init__(self,
@@ -48,26 +48,30 @@ class AutoDriveVideoExtenso(Block):
       gain: The gain for driving the Actuator in speed. The speed command is
         simply the difference in pixels between the center of the image and the
         center of the spots, multiplied by this gain.
+
+        .. versionchanged:: 1.5.10 renamed from *P* to *gain*
       direction: Indicates which axis to consider for driving the Actuator, and
         whether the action should be inverted. The first character is the axis
         (`X` or `Y`) and second character is the inversion (`+` or `-`). The
         inversion depends on whether a positive speed will bring the spots
         closer or farther.
       pixel_range: The size of the image (in pixels) along the chosen axis.
+
+        .. versionchanged:: 1.5.10 renamed from *range* to *pixel_range*
       max_speed: The absolute maximum speed value that can be sent to the
         Actuator.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+
+        .. versionadded:: 2.0.0
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-    
-    .. versionchanged:: 1.5.10 renamed *P* argument to *gain*
-    .. versionchanged:: 1.5.10 renamed *range* argument to *pixel_range*
-    .. versionadded:: 2.0.0 *display_freq* and *debug* arguments
+
+        .. versionadded:: 2.0.0
     """
 
     self._device: Optional[Actuator] = None

@@ -57,6 +57,8 @@ class Grapher(Block):
       max_pt: The maximum number of points displayed on the graph. When
         reaching this limit, the Block deletes one point out of two to avoid
         using too much memory and CPU.
+
+        .. versionchanged:: 2.0.0 renamed from *maxpt* to *max_pt*
       window_size: The size of the graph, in inches.
       window_pos: The position of the graph in pixels. The first value is for
         the `x` direction, the second for the `y` direction. The origin is the
@@ -68,10 +70,15 @@ class Grapher(Block):
         available depending on your machine.
       display_freq: if :obj:`True`, displays the looping frequency of the
         Block.
+        
+        .. versionadded:: 1.5.6
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+        
+        .. versionadded:: 2.0.0
 
     Example:
       ::
@@ -90,11 +97,6 @@ class Grapher(Block):
         graph = Grapher(('t(s)', 'F(N)'), length=30)
 
       will plot a dynamic graph displaying the last 30 chunks of data.
-
-    .. versionadded:: 1.5.6 *verbose* argument
-    .. versionadded 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
-    .. versionchanged:: 2.0.0 renamed *maxpt* argument to *max_pt*
     """
 
     super().__init__()

@@ -27,7 +27,7 @@ class Button(Block):
   the experimenter has completed a task, for example.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from GUI to Button
+  .. versionchanged:: 2.0.0 renamed from *GUI* to *Button*
   """
 
   def __init__(self,
@@ -44,23 +44,28 @@ class Button(Block):
       send_0: If :obj:`True`, the value `0` will be sent automatically when
         starting the Block. Otherwise, `1` will be sent at the first click.
         Only relevant when ``spam`` is :obj:`False`.
+
+        .. versionadded:: 1.5.10
       label: The label carrying the information on the number of clicks,
         default is ``'step'``.
       time_label: The label carrying the time information, default is
         ``'t(s)'``.
+
+        .. versionadded:: 1.5.10
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
       spam: If :obj:`True`, sends the current step value at each loop,
         otherwise only sends it at each click.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+
+        .. versionadded:: 2.0.0
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-    
-    .. versionadded:: 1.5.10 *send_0* and *time_label* arguments
-    .. versionadded:: 2.0.0 *display_freq* and *debug* arguments
+
+        .. versionadded:: 2.0.0
     """
 
     self._root: Optional[tk.Tk] = None

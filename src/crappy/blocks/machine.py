@@ -73,16 +73,25 @@ class Machine(Block):
         one will prevail.
       time_label: If reading speed or position from one or more Actuators, the
         time information will be carried by this label.
+      ft232h_ser_num: Serial number of the FT232H device to use for driving
+        the controlled Actuator.
+        
+        .. versionadded:: 2.0.0
       spam: If :obj:`True`, a command is sent to the Actuators at each loop of
         the Block, else it is sent every time a new command is received.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+        
+        .. versionadded:: 1.5.10
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+        
+        .. versionadded:: 2.0.0
 
     Note:
       - ``actuators`` keys:
@@ -112,10 +121,6 @@ class Machine(Block):
         - ``speed_cmd_label``: The label carrying the speed to set when driving
           in `'position'` mode. Each time a value is received, the stored speed
           value is updated. It will also overwrite the ``speed`` key if given.
-
-    .. versionadded:: 1.5.10 *verbose* argument
-    .. versionadded 2.0.0 *debug* and *ft232h_ser_num* arguments
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     self._actuators: List[ActuatorInstance] = list()
