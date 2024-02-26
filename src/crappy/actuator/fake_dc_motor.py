@@ -12,7 +12,7 @@ class FakeDCMotor(Actuator):
   It is mainly intended for testing scripts without requiring any hardware.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 Renamed from Fake_motor to FakeDCMotor
+  .. versionchanged:: 2.0.0 Renamed from *Fake_motor* to *FakeDCMotor*
   """
 
   def __init__(self,
@@ -34,11 +34,11 @@ class FakeDCMotor(Actuator):
       fv: The internal fluid friction coefficient of the motor, no unit.
       simulation_speed: Speed factor of the simulation, to speed it up or slow
         it down.
+
+        .. versionchanged:: 2.0.0
+           renamed from *sim_speed* to *simulation_speed*
       initial_speed: The initial speed of the motor, in RPM.
       initial_pos: The initial position of the motor, in turns.
-    
-    .. versionchanged:: 2.0.0
-       renamed *sim_speed* argument to *simulation_speed*
     """
 
     super().__init__()
@@ -74,7 +74,7 @@ class FakeDCMotor(Actuator):
   def get_position(self) -> float:
     """Returns the position of the motor, in rounds.
 
-    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    .. versionchanged:: 1.5.2 renamed from *get_pos* to *get_position*
     """
 
     self._update()

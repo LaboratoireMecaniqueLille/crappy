@@ -22,7 +22,7 @@ class OrientalARDK(Actuator):
   of its instances at a time, corresponding to different axes to drive.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Oriental to OrientalARDK
+  .. versionchanged:: 2.0.0 renamed from *Oriental* to *OrientalARDK*
   """
 
   def __init__(self,
@@ -137,8 +137,8 @@ class OrientalARDK(Actuator):
       position: The target position to reach, in arbitrary units.
       speed: The speed to use for reaching the target position, in arbitrary
         units. A speed must be given, otherwise an exception is raised.
-    
-    .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
+
+        .. versionchanged:: 2.0.0 *speed* is now a mandatory argument
     """
 
     if speed is None:
@@ -153,7 +153,7 @@ class OrientalARDK(Actuator):
   def get_position(self) -> float:
     """Reads and returns the current position of the motor.
 
-    .. versionchanged:: 1.5.2 renamed from get_pos to get_position
+    .. versionchanged:: 1.5.2 renamed from *get_pos* to *get_position*
     """
 
     # Sending the read command
