@@ -64,7 +64,7 @@ class Offset(Modifier):
     """If the compensations are not set, sets them, and then offsets the
     required labels.
     
-    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    .. versionchanged:: 2.0.0 renamed from *evaluate* to *__call__*
     """
 
     self.log(logging.DEBUG, f"Received {data}")

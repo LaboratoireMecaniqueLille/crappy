@@ -15,7 +15,7 @@ class MovingAvg(Modifier):
   received from the upstream Block.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Moving_avg to MovingAvg
+  .. versionchanged:: 2.0.0 renamed from *Moving_avg* to *MovingAvg*
   """
 
   def __init__(self, n_points: int = 100) -> None:
@@ -24,7 +24,7 @@ class MovingAvg(Modifier):
     Args:
       n_points: The maximum number of points on which to compute the average.
     
-    .. versionchanged:: 1.5.10 renamed *npoints* argument to *n_points*
+        .. versionchanged:: 1.5.10 renamed from *npoints* to *n_points*
     """
 
     super().__init__()
@@ -35,7 +35,7 @@ class MovingAvg(Modifier):
     """Receives data from the upstream Block, computes the average of every
     label and replaces the original data with it.
     
-    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    .. versionchanged:: 2.0.0 renamed from *evaluate* to *__call__*
     """
 
     self.log(logging.DEBUG, f"Received {data}")

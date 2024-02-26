@@ -46,13 +46,13 @@ class Demux(Modifier):
         rows or columns in the stream, only the data from the first rows or
         columns will be retrieved.
       stream_label: The label carrying the stream.
+
+        .. versionchanged:: 1.5.10 renamed from *stream* to *stream_label*
       mean: If :obj:`True`, the returned value will be the average of the
         row or column. Otherwise, it will be the first value.
       time_label: The label carrying the time information.
       transpose: If :obj:`True`, each label corresponds to a row in the stream.
         Otherwise, a label corresponds to a column in the stream.
-    
-    .. versionchanged:: 1.5.10 renamed *stream* argument to *stream_label*
     """
 
     super().__init__()
@@ -71,8 +71,8 @@ class Demux(Modifier):
     corresponding timestamp, and returns them.
     
     .. versionchanged:: 1.5.10 
-       merge evaluate_mean and evaluate_nomean methods into evaluate
-    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+       merge *evaluate_mean* and *evaluate_nomean* methods into *evaluate*
+    .. versionchanged:: 2.0.0 renamed from *evaluate* to *__call__*
     """
 
     self.log(logging.DEBUG, f"Received {data}")
