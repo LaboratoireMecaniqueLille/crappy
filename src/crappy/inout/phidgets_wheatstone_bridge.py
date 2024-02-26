@@ -25,6 +25,8 @@ class PhidgetWheatstoneBridge(InOut):
   It relies on the :mod:`Phidget22` module to communicate with the load cell
   conditioner. It can acquire values up to `50Hz` with possible gain values
   from `1` to `128`.
+
+  .. versionadded:: 2.0.4
   """
 
   def __init__(self,

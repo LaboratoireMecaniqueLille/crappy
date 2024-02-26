@@ -71,7 +71,7 @@ class NIDAQmx(InOut):
   be performed, like voltage, resistance, current, etc.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Nidaqmx to NIDAQmx
+  .. versionchanged:: 2.0.0 renamed from *Nidaqmx* to *NIDAQmx*
   """
 
   def __init__(self,
@@ -90,8 +90,12 @@ class NIDAQmx(InOut):
         channels of this type.
       sample_rate: The target sample rate for data acquisition in streamer
         mode, given as a :obj:`float`. Default is `100` SPS.
+
+        .. versionchanged:: 1.5.10 renamed from *samplerate* to *sample_rate*
       n_samples: The number of samples to acquire per chunk of data in streamer
         mode. Default is 20% of ``sample_rate``.
+
+        .. versionchanged:: 1.5.10 renamed from *nsamples* to *n_samples*
 
 
     Note:
@@ -128,9 +132,6 @@ class NIDAQmx(InOut):
           internally. Also note that for the analog output channels and the
           analog input channels of type `'voltage'`, the `'min_val'` and
           `'max_val'` arguments are internally set by default to `0` and `5`.
-    
-    .. versionchanged:: 1.5.10 renamed *samplerate* argument to *sample_rate*
-    .. versionchanged:: 1.5.10 renamed *nsamples* argument to *n_samples*
     """
 
     super().__init__()

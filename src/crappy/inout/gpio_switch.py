@@ -32,7 +32,7 @@ class GPIOSwitch(InOut):
   `0` it is turned low. Any value other than `0` and `1` raises an error.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Gpio_switch to GPIOSwitch
+  .. versionchanged:: 2.0.0 renamed from *Gpio_switch* to *GPIOSwitch*
   """
 
   def __init__(self,
@@ -54,8 +54,10 @@ class GPIOSwitch(InOut):
         The `'Pi4'` backend only works on the Raspberry Pis. The `'blinka'`
         backend requires installing :mod:`Adafruit-Blinka`, but this module is
         compatible with and maintained on a wide variety of boards.
+
+        .. versionadded:: 1.5.10
     
-    .. versionadded:: 1.5.10 *backend* and *ft232h_ser_num* arguments
+    .. versionadded:: 1.5.10 *ft232h_ser_num* argument
     .. versionremoved:: 2.0.0 *ft232h_ser_num* argument
     """
 

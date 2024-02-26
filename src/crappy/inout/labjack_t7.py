@@ -70,7 +70,7 @@ class LabjackT7(InOut):
   :class:`~crappy.inout.T7Streamer` class.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Labjack_t7 to LabjackT7
+  .. versionchanged:: 2.0.0 renamed from *Labjack_t7* to *LabjackT7*
   """
 
   def __init__(self,

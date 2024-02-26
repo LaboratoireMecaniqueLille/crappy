@@ -99,7 +99,7 @@ class WaveshareADDA(InOut):
     This class is specifically meant to be used on a Raspberry Pi.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Waveshare_ad_da to WaveshareADDA
+  .. versionchanged:: 2.0.0 renamed from *Waveshare_ad_da* to *WaveshareADDA*
   """
 
   def __init__(self,
