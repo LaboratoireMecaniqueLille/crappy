@@ -349,13 +349,17 @@ class Camera(Block):
     self._disp_lock = RLock()
     self._proc_lock = RLock()
 
-    # instantiating the ImageSaver CameraProcess
+    # Instantiating the ImageSaver CameraProcess
     if self._save_images:
       self.log(logging.INFO, "Instantiating the saver process")
+      # The ImageSaver sends a message on each saved image only if no
+      # processing is performed and if there are output Links
+      send_msg = self.process_proc is None and self.outputs
       self._save_proc = ImageSaver(img_extension=self._img_extension,
                                    save_folder=self._save_folder,
                                    save_period=self._save_period,
-                                   save_backend=self._save_backend)
+                                   save_backend=self._save_backend,
+                                   send_msg=send_msg)
 
     # instantiating the Displayer CameraProcess
     if self._display_images:
@@ -462,7 +466,7 @@ class Camera(Block):
                                  shape=self._img_shape,
                                  dtype=self._img_dtype,
                                  to_draw_conn=None,
-                                 outputs=list(),
+                                 outputs=self.outputs,
                                  labels=list(),
                                  log_queue=self._log_queue,
                                  log_level=self._log_level,
