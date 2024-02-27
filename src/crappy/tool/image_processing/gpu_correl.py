@@ -524,7 +524,7 @@ class GPUCorrelTool:
                resampling_factor: float = 2,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
-               fields: Optional[List[str]] = None,
+               fields: Optional[List[Union[str, np.ndarray]]] = None,
                ref_img: Optional[np.ndarray] = None,
                mask: Optional[np.ndarray] = None,
                mul: float = 3) -> None:
@@ -556,13 +556,21 @@ class GPUCorrelTool:
       iterations: The maximum number of iterations to run before returning the
         results. The results may be returned before if the residuals start
         increasing.
-      fields: A :obj:`list` of :obj:`str` representing the base of fields on
-        which the image will be projected during correlation. The possible
-        fields are :
+      fields: The base of fields to use for the projection, given as a
+        :obj:`list` of :obj:`str` or :mod:`numpy` arrays (both types can be
+        mixed). Strings are for using automatically-generated fields, the
+        available ones are :
         ::
 
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
 
+        If users provide their own fields as arrays, they will be used as-is to
+        run the correlation. The user-provided fields must be of shape:
+        ::
+
+          (patch_height, patch_width, 2)
+
+        .. versionchanged:: 2.0.5 provided fields can now be numpy arrays
       ref_img: The reference image, as a 2D :obj:`numpy.array` with `dtype`
         `float32`. It can either be given at :meth:`__init__`, or set later
         with :meth:`set_orig`.
@@ -819,11 +827,16 @@ class GPUCorrelTool:
     """Computes the fields based on the provided field strings, and sets them
     for each stage."""
 
-    for field_str, tex_fx, tex_fy in zip(fields, self._tex_fx, self._tex_fy):
+    for field, tex_fx, tex_fy in zip(fields, self._tex_fx, self._tex_fy):
 
       # Getting the fields as numpy arrays
-      field_x, field_y = get_field(field_str, self._heights[0],
-                                   self._widths[0])
+      if isinstance(field, str):
+        field_x, field_y = get_field(field, self._heights[0], self._widths[0])
+      elif isinstance(field, np.ndarray):
+        field_x, field_y = field[:, :, 0], field[:, :, 1]
+      else:
+        raise TypeError("The provided fields should either be strings or "
+                        "numpy arrays !")
 
       tex_fx.set_array(pycuda.driver.matrix_to_array(field_x, 'C'))
       tex_fy.set_array(pycuda.driver.matrix_to_array(field_y, 'C'))
