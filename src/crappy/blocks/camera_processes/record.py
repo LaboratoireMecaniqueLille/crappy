@@ -69,6 +69,12 @@ class ImageSaver(CameraProcess):
         Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Depending on the machine,
         some may be faster or slower. The ``img_extension`` is ignored for the
         backend ``'npy'``, that saves the images as raw numpy arrays.
+      send_msg: In case no processing is performed, and if output Links are
+        present, this argument is set to :obj:`True`. In that case, a message
+        containing the timestamp and the metadata of the image is sent to
+        downstream Blocks each time an image is saved.
+
+        .. versionadded:: 2.0.5
     """
 
     super().__init__()

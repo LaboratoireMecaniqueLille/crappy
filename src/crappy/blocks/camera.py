@@ -24,12 +24,19 @@ class Camera(Block):
   once.
   
   It takes no input :class:`~crappy.links.Link` in a majority of situations,
-  and never has output Links. Most of the time, this Block is used for 
-  recording to the desired location the images it acquires. Optionally, the 
-  images can also be displayed in a dedicated window. Both of these features 
-  are however optional, and it is possible to acquire images and not do 
-  anything with them. Several options are available for tuning the record and 
-  the display.
+  and usually doesn't have output Links neither. The only situations when it
+  can accept input Links is when an ``image_generator`` is defined, or when
+  defining a ``software_trig_label``. If ``save_images`` is set to :obj:`True`,
+  and if an output Link is present, a message is sent to downstream Blocks at
+  each saved image, containing the timestamp and the metadata of the image.
+  They are respectively carried by the `'t(s)'` and `'meta'` labels. This is
+  useful for performing an action conditionally at each new saved image.
+
+  Most of the time, this Block is used for recording to the desired location
+  the images it acquires. Optionally, the images can also be displayed in a
+  dedicated window. Both of these features are however optional, and it is
+  possible to acquire images and not do anything with them. Several options are
+  available for tuning the record and the display.
   
   Before a test starts, this Block can also display a 
   :class:`~crappy.tool.camera_config.CameraConfig` window in which the user can

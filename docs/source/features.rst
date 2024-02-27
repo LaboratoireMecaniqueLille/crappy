@@ -256,7 +256,8 @@ Hardware control
   Acquires images from a :ref:`Camera` object, and then displays and/or records
   the acquired images. It is the base class for other Blocks that can also
   perform image processing, in addition to the recording and display. This
-  Block usually doesn't have input nor output Links.
+  Block usually doesn't have input nor output Links, but can in some specific
+  situations.
 
   The examples folder on GitHub contains `several examples of the Camera Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
