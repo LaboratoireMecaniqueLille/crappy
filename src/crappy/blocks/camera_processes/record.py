@@ -45,7 +45,8 @@ class ImageSaver(CameraProcess):
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None) -> None:
+               save_backend: Optional[str] = None,
+               send_msg: bool = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -68,6 +69,12 @@ class ImageSaver(CameraProcess):
         Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Depending on the machine,
         some may be faster or slower. The ``img_extension`` is ignored for the
         backend ``'npy'``, that saves the images as raw numpy arrays.
+      send_msg: In case no processing is performed, and if output Links are
+        present, this argument is set to :obj:`True`. In that case, a message
+        containing the timestamp and the metadata of the image is sent to
+        downstream Blocks each time an image is saved.
+
+        .. versionadded:: 2.0.5
     """
 
     super().__init__()
@@ -99,6 +106,7 @@ class ImageSaver(CameraProcess):
       self._save_folder = Path(save_folder)
 
     self._save_period = int(save_period)
+    self._send_msg: bool = send_msg
 
     self._csv_created = False
     self._csv_path = None
@@ -230,3 +238,7 @@ class ImageSaver(CameraProcess):
 
     elif self._save_backend == 'npy':
       np.save(path, self.img)
+
+    # Sending the results to the downstream Blocks
+    if self._send_msg:
+      self.send({'t(s)': self.metadata['t(s)'], 'meta': self.metadata})

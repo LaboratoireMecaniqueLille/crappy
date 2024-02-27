@@ -24,12 +24,19 @@ class Camera(Block):
   once.
   
   It takes no input :class:`~crappy.links.Link` in a majority of situations,
-  and never has output Links. Most of the time, this Block is used for 
-  recording to the desired location the images it acquires. Optionally, the 
-  images can also be displayed in a dedicated window. Both of these features 
-  are however optional, and it is possible to acquire images and not do 
-  anything with them. Several options are available for tuning the record and 
-  the display.
+  and usually doesn't have output Links neither. The only situations when it
+  can accept input Links is when an ``image_generator`` is defined, or when
+  defining a ``software_trig_label``. If ``save_images`` is set to :obj:`True`,
+  and if an output Link is present, a message is sent to downstream Blocks at
+  each saved image, containing the timestamp and the metadata of the image.
+  They are respectively carried by the `'t(s)'` and `'meta'` labels. This is
+  useful for performing an action conditionally at each new saved image.
+
+  Most of the time, this Block is used for recording to the desired location
+  the images it acquires. Optionally, the images can also be displayed in a
+  dedicated window. Both of these features are however optional, and it is
+  possible to acquire images and not do anything with them. Several options are
+  available for tuning the record and the display.
   
   Before a test starts, this Block can also display a 
   :class:`~crappy.tool.camera_config.CameraConfig` window in which the user can
@@ -349,13 +356,17 @@ class Camera(Block):
     self._disp_lock = RLock()
     self._proc_lock = RLock()
 
-    # instantiating the ImageSaver CameraProcess
+    # Instantiating the ImageSaver CameraProcess
     if self._save_images:
       self.log(logging.INFO, "Instantiating the saver process")
+      # The ImageSaver sends a message on each saved image only if no
+      # processing is performed and if there are output Links
+      send_msg = self.process_proc is None and self.outputs
       self._save_proc = ImageSaver(img_extension=self._img_extension,
                                    save_folder=self._save_folder,
                                    save_period=self._save_period,
-                                   save_backend=self._save_backend)
+                                   save_backend=self._save_backend,
+                                   send_msg=send_msg)
 
     # instantiating the Displayer CameraProcess
     if self._display_images:
@@ -462,7 +473,7 @@ class Camera(Block):
                                  shape=self._img_shape,
                                  dtype=self._img_dtype,
                                  to_draw_conn=None,
-                                 outputs=list(),
+                                 outputs=self.outputs,
                                  labels=list(),
                                  log_queue=self._log_queue,
                                  log_level=self._log_level,
