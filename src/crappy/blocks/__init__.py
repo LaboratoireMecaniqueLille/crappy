@@ -25,6 +25,7 @@ from .recorder import Recorder
 from .sink import Sink
 from .stop_block import StopBlock
 from .stop_button import StopButton
+from .synchronizer import Synchronizer
 from .ucontroller import UController
 from .video_extenso import VideoExtenso
 
