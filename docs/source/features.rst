@@ -121,6 +121,15 @@ Data processing
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/multiplexer.py>`_.
 
+- :ref:`Synchronizer`
+
+  Allows putting labels emitted at different frequencies on the same time base
+  as a reference label. Very similar to the :ref:`Multiplexer` Block, except
+  the :ref:`Multiplexer` takes an independent time base for interpolation. Used
+  when the original values of a label need to be preserved while the other
+  labels can be interpolated, for example when the reference is the output of a
+  low-frequency image-processing.
+
 Real-time image correlation
 +++++++++++++++++++++++++++
 
