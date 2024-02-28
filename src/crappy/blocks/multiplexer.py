@@ -12,6 +12,11 @@ class Multiplexer(Block):
   """This Block takes data from upstream Blocks as input and interpolates it to
   output all the labels in a common time basis.
 
+  This Block is very similar to the :class:`~crappy.blocks.Synchronizer` Block,
+  but the `Synchronizer` takes the timestamps of a reference label as a time
+  base whereas this one performs the interpolation on a time base independent
+  of the received labels.
+
   It can take any number of inputs, provided that they all share a common time
   label. It is also possible to choose which labels are considered for
   multiplexing and which are dropped. The interpolation is performed using the
