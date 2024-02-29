@@ -71,8 +71,8 @@ class ImageSaver(CameraProcess):
         backend ``'npy'``, that saves the images as raw numpy arrays.
       send_msg: In case no processing is performed, and if output Links are
         present, this argument is set to :obj:`True`. In that case, a message
-        containing the timestamp and the metadata of the image is sent to
-        downstream Blocks each time an image is saved.
+        containing the timestamp, the index, and the metadata of the image is
+        sent to downstream Blocks each time an image is saved.
 
         .. versionadded:: 2.0.5
     """
@@ -241,4 +241,6 @@ class ImageSaver(CameraProcess):
 
     # Sending the results to the downstream Blocks
     if self._send_msg:
-      self.send({'t(s)': self.metadata['t(s)'], 'meta': self.metadata})
+      self.send({'t(s)': self.metadata['t(s)'],
+                 'img_index': self.metadata['ImageUniqueID'],
+                 'meta': self.metadata})
