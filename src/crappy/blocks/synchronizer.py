@@ -159,7 +159,14 @@ class Synchronizer(Block):
 
     # Building the dict of values to send
     for label, values in self._data.items():
-      to_send[label] = list(np.interp(interp_times, values[0], values[1]))
+
+      # Keeping the values of the reference label as they are
+      if label == self._ref_label:
+        to_send[label] = values[1, :]
+      # For all the other labels, performing interpolation
+      else:
+        to_send[label] = list(np.interp(interp_times, values[0], values[1]))
+
       # Keeping the last data point before max_t to pass this information on
       last = values[:, values[0] <= max_t][:, -1]
       # Removing the used values from the buffer, except the last data point
