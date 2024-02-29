@@ -28,9 +28,10 @@ class Camera(Block):
   can accept input Links is when an ``image_generator`` is defined, or when
   defining a ``software_trig_label``. If ``save_images`` is set to :obj:`True`,
   and if an output Link is present, a message is sent to downstream Blocks at
-  each saved image, containing the timestamp and the metadata of the image.
-  They are respectively carried by the `'t(s)'` and `'meta'` labels. This is
-  useful for performing an action conditionally at each new saved image.
+  each saved image, containing the timestamp, the index, and the metadata of
+  the image. They are respectively carried by the `'t(s)'`, `'img_index'` and
+  `'meta'` labels. This is useful for performing an action conditionally at
+  each new saved image.
 
   Most of the time, this Block is used for recording to the desired location
   the images it acquires. Optionally, the images can also be displayed in a
