@@ -22,10 +22,10 @@ class Integrate(Modifier):
     Args:
       label: The label whose data to integrate over time.
       time_label: The label carrying the time information.
+
+        .. versionchanged:: 1.5.10 renamed from *time* to *time_label*
       out_label: The label carrying the integration value. If not given,
         defaults to ``'i_<label>'``.
-
-    .. versionchanged:: 1.5.10 renamed *time* argument to *time_label*
     """
 
     super().__init__()
@@ -41,7 +41,7 @@ class Integrate(Modifier):
     """Gets the data from the upstream Block, updates the integration value,
     adds it to the data and returns the data.
     
-    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    .. versionchanged:: 2.0.0 renamed from *evaluate* to *__call__*
     """
 
     self.log(logging.DEBUG, f"Received {data}")

@@ -15,6 +15,7 @@ class Conditional(Path):
   from overheating, or a motor from driving too far.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.0 renamed from *Protection* to *Conditional*
   """
 
   def __init__(self,
@@ -45,7 +46,6 @@ class Conditional(Path):
     .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
     .. versionremoved:: 1.5.10 *verbose* argument
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
-    .. versionchanged:: 2.0.0 renamed from Protection to Conditional
     """
 
     super().__init__()

@@ -16,7 +16,7 @@ class CyclicRamp(Path):
   :class:`~crappy.blocks.generator_path.Ramp` Paths.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Cyclic_ramp to CyclicRamp
+  .. versionchanged:: 2.0.0 renamed from *Cyclic_ramp* to *CyclicRamp*
   """
 
   def __init__(self,
@@ -45,6 +45,8 @@ class CyclicRamp(Path):
         starting point for the first ramp. In the specific case when this Path
         is the first one in the Generator Paths, this argument must be given !
 
+        .. versionadded:: 1.5.10
+
     Note:
       ::
 
@@ -60,7 +62,6 @@ class CyclicRamp(Path):
     .. versionchanged:: 1.5.10 renamed *time* argument to *_last_time*
     .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
     .. versionremoved:: 1.5.10 *verbose* argument
-    .. versionadded:: 1.5.10 *init_value* argument
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 

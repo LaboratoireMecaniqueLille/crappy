@@ -17,7 +17,7 @@ from . import tool
 
 # Importing other features
 from .__version__ import __version__
-from ._global import OptionalModule, docs
+from ._global import OptionalModule, docs, resources
 
 # Useful aliases
 link = links.link

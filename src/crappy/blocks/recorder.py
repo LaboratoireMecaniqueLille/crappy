@@ -40,22 +40,26 @@ class Recorder(Block):
         parent folders of the file do not exist, they will be created. If the
         file already exists, the actual file where data will be written will be
         renamed with a trailing index to avoid overriding it.
+
+        .. versionchanged:: 2.0.0 renamed from *filename* to *file_name*
       delay: Delay between each write in seconds.
       labels: If provided, only the data carried by these labels will be saved.
         Otherwise, all the received data is saved.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
+        
+        .. versionadded:: 1.5.10
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+        
+        .. versionadded:: 1.5.10
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the 
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-    
-    .. versionadded 1.5.10 *freq* and *verbose* arguments
-    .. versionadded 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
-    .. versionchanged:: 2.0.0 renamed *filename* argument to *file_name*
+        
+        .. versionadded:: 2.0.0
     """
 
     super().__init__()

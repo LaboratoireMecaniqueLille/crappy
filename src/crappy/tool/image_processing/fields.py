@@ -26,11 +26,12 @@ def get_field(field_string: str,
   Args:
     field_string: The :obj:`str` describing the field on which to project the
       image for correlation.
+
+      .. versionchanged:: 1.5.10 renamed from *s* to *field_string*
     h: The height of the image, as an :obj:`int`.
     w: The width of the image, as an :obj:`int`.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 1.5.10 renamed *s* argument to *field_string*
   """
 
   if field_string == 'x':
@@ -90,13 +91,16 @@ def get_res(ref: np.ndarray, img: np.ndarray, flow: np.ndarray) -> np.ndarray:
 
   Args:
     ref: The reference image for calculating the optical flow.
+
+      .. versionchanged:: 1.5.10 renamed from *r* to *ref*
     img: The current image for calculating the optical flow.
+
+      .. versionchanged:: 1.5.10 renamed from *a* to *img*
     flow: The calculated optical flow
+
+      .. versionchanged:: 1.5.10 renamed from *b* to *flow*
     
   .. versionadded:: 1.4.0
-  .. versionchanged:: 1.5.10 renamed *a* argument to *img*
-  .. versionchanged:: 1.5.10 renamed *b* argument to *flow*
-  .. versionchanged:: 1.5.10 renamed *r* argument to *ref*
   """
 
   x, y = np.meshgrid(np.arange(img.shape[1]), np.arange(img.shape[0]))

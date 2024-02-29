@@ -100,7 +100,7 @@ class MCP9600(InOut):
   that the MCP9600 can only achieve a data rate of a few Hz.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Mcp9600 to MCP9600
+  .. versionchanged:: 2.0.0 renamed from *Mcp9600* to *MCP9600*
   """
 
   def __init__(self,

@@ -31,7 +31,7 @@ class CameraOpencv(Camera):
     more parameters than the basic version.
 
   .. versionadded:: 1.5.9
-  .. versionchanged:: 2.0.0 renamed from Camera_opencv to CameraOpencv
+  .. versionchanged:: 2.0.0 renamed from *Camera_opencv* to *CameraOpencv*
   """
 
   def __init__(self) -> None:

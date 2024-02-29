@@ -37,7 +37,7 @@ class GPUCorrelProcess(CameraProcess):
                resampling_factor: float = 2,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
-               fields: Optional[List[str]] = None,
+               fields: Optional[List[Union[str, np.ndarray]]] = None,
                mask: Optional[np.ndarray] = None,
                mul: float = 3) -> None:
     """Sets the arguments and initializes the parent class.
@@ -88,16 +88,25 @@ class GPUCorrelProcess(CameraProcess):
         increasing. This argument is passed to the
         :class:`~crappy.tool.image_processing.GPUCorrelTool` and not used in
         this class.
-      fields: A :obj:`list` of :obj:`str` representing the base of fields on
-        which the image will be projected during correlation. The possible
-        fields are :
+      fields: The base of fields to use for the projection, given as a
+        :obj:`list` of :obj:`str` or :mod:`numpy` arrays (both types can be
+        mixed). Strings are for using automatically-generated fields, the
+        available ones are :
         ::
 
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
 
+        If users provide their own fields as arrays, they will be used as-is to
+        run the correlation. The user-provided fields must be of shape:
+        ::
+
+          (patch_height, patch_width, 2)
+
         This argument is passed to the
         :class:`~crappy.tool.image_processing.GPUCorrelTool` and not used in
         this class.
+
+        .. versionchanged:: 2.0.5 provided fields can now be numpy arrays
       mask: The mask used for weighting the region of interest on the image. It
         is generally used to prevent unexpected behavior on the border of the
         image. This argument is passed to the

@@ -47,7 +47,7 @@ class DICVE(Camera):
   already specified as an argument.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from DISVE to DICVE
+  .. versionchanged:: 2.0.0 renamed from *DISVE* to *DICVE*
   """
 
   def __init__(self,
@@ -100,6 +100,8 @@ class DICVE(Camera):
         transformed image is displayed and/or saved and/or further processed.
         The transform operation is not parallelized, so it might negatively
         affect the acquisition framerate if it is too heavy.
+
+        .. versionadded:: 1.5.10
       config: If :obj:`True`, a
         :class:`~crappy.tool.camera_config.DICVEConfig` window is displayed
         before the test starts. There, the user can interactively adjust the
@@ -110,6 +112,8 @@ class DICVE(Camera):
         been given in the ``patches`` argument. The test starts when closing
         the configuration window. If not enabled, the ``img_dtype``,
         ``img_shape`` and ``patches`` arguments must be provided.
+
+        .. versionadded:: 1.5.10
       display_images: If :obj:`True`, displays the acquired images in a
         dedicated window, using the backend given in ``displayer_backend`` and
         at the frequency specified in ``displayer_framerate``. This option
@@ -119,16 +123,23 @@ class DICVE(Camera):
         might be downscaled to fit in this format. In addition to the acquired
         frames, the tracked patches are also displayed on the image as an
         overlay.
+
+        .. versionchanged:: 1.5.10
+           renamed from *show_image* to *display_images*
       displayer_backend: The backend to use for displaying the images. Can be
         either ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` (OpenCV)
         or :mod:`matplotlib`. ``'cv2'`` usually allows achieving a higher
         display frequency. Ignored if ``display_images`` is :obj:`False`. If
         not given and ``display_images`` is :obj:`True`, ``'cv2'`` is tried
         first and ``'mpl'`` second, and the first available one is used.
+
+        .. versionadded:: 1.5.10
       displayer_framerate: The maximum update frequency of the image displayer,
         as an :obj:`int`. This value usually lies between 5 and 30Hz, the
         default is 5. The achieved update frequency might be lower than
         requested. Ignored if ``display_images`` is :obj:`False`.
+
+        .. versionadded:: 1.5.10
       software_trig_label: The name of a label used as a software trigger for
         the :class:`~crappy.camera.Camera`. If given, images will only be
         acquired when receiving data over this label. The received value does
@@ -136,14 +147,22 @@ class DICVE(Camera):
         is recommended not to rely on it for a trigger frequency greater than
         10Hz, in which case a hardware trigger should be preferred if available
         on the camera.
+
+        .. versionadded:: 2.0.0
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+
+        .. versionadded:: 2.0.0
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
+
+        .. versionadded:: 1.5.10
       save_images: If :obj:`True`, the acquired images are saved to the folder
         specified in ``save_folder``, in the format specified in
         ``img_extension``, using the backend specified in ``save_backend``, and
@@ -157,12 +176,16 @@ class DICVE(Camera):
         :class:`~crappy.blocks.Camera` Block. Depending on the framerate of the
         camera and the performance of the computer, it is not guaranteed that
         all the acquired images will be recorded.
+
+        .. versionadded:: 1.5.10
       img_extension: The file extension for the recorded images, as a
         :obj:`str` and without the dot. Common file extensions include `tiff`,
         `png`, `jpg`, etc. Depending on the used ``save_backend``, some
         extensions might not be available. It is currently not possible to
         customize the save parameters further than choosing the file extension.
         Ignored if ``save_images`` is :obj:`False`.
+
+        .. versionadded:: 2.0.0
       save_folder: Path to the folder where to save the images, either as a
         :obj:`str` or as a :obj:`pathlib.Path`. Can be an absolute or a
         relative path, pointing to a folder. If the folder does not exist, it
@@ -172,11 +195,15 @@ class DICVE(Camera):
         a suffix is appended. Ignored if ``save_images`` is :obj:`False`. If
         not provided and ``save_images`` is :obj:`True`, the images are saved
         to the folder ``Crappy_images``, created next to the running script.
+
+        .. versionadded:: 1.5.10
       save_period: Must be given as an :obj:`int`. Only one out of that number
         images at most will be saved. Allows to have a known periodicity in
         case the framerate is too high to record all the images. Or simply to
         reduce the number of recorded images if saving them all is not needed.
         Ignored if ``save_images`` is :obj:`False`.
+
+        .. versionadded:: 1.5.10
       save_backend: If ``save_images`` is :obj:`True`, the backend to use for
         recording the images. It should be one of:
         ::
@@ -191,6 +218,8 @@ class DICVE(Camera):
         Python must of course be installed. If not provided and ``save_images``
         is :obj:`True`, the backends are tried in the same order as given above
         and the first available one is used. ``'npy'`` is always available.
+
+        .. versionadded:: 1.5.10
       image_generator: A callable taking two :obj:`float` as arguments and
         returning an image as a :obj:`numpy.array`. **This argument is intended
         for use in the examples of Crappy, to apply an artificial strain on a
@@ -198,16 +227,22 @@ class DICVE(Camera):
         argument is ignored and the images are acquired from the generator. To
         apply a strain on the image, strain values (in `%`) should be sent to
         the Camera Block over the labels ``'Exx(%)'`` and ``'Eyy(%)'``.
+
+        .. versionadded:: 1.5.10
       img_shape: The shape of the images returned by the
         :class:`~crappy.camera.Camera` object as a :obj:`tuple` of :obj:`int`.
         It should correspond to the value returned by :obj:`numpy.shape`.
         **This argument is mandatory in case** ``config`` **is** :obj:`False`.
         It is otherwise ignored.
+
+        .. versionadded:: 2.0.0
       img_dtype: The `dtype` of the images returned by the
         :class:`~crappy.camera.Camera` object, as a :obj:`str`. It should
         correspond to a valid data type in :mod:`numpy`, e.g. ``'uint8'``.
         **This argument is mandatory in case** ``config`` **is** :obj:`False`.
         It is otherwise ignored.
+
+        .. versionadded:: 2.0.0
       patches: The coordinates of the several patches to track, as an iterable
         (like a :obj:`list` or a :obj:`tuple`) containing one or several
         :obj:`tuple` of exactly :obj:`int` values. These integers correspond to
@@ -241,6 +276,8 @@ class DICVE(Camera):
         meant for debugging. ``'Parabola'`` refines the result of
         ``'Pixel precision'`` by interpolating the neighborhood of the maximum,
         and has thus a sub-pixel resolution.
+
+        .. versionadded:: 1.5.9
       alpha: Weight of the smoothness term in DISFlow, as a :obj:`float`.
         Ignored if ``method`` is not ``'Disflow'``.
       delta: Weight of the color constancy term in DISFlow, as a :obj:`float`.
@@ -260,6 +297,9 @@ class DICVE(Camera):
         the patch inverse search stage in DISFlow, as an :obj:`int`. Higher
         values may improve the quality. Ignored if ``method`` is not
         ``'Disflow'``.
+
+        .. versionchanged:: 1.5.10
+          renamed from *gditerations* to *gradient_iterations*
       patch_size: The size of an image patch for matching in DISFlow, in pixels
         as an :obj:`int`. Ignored if ``method`` is not ``'Disflow'``.
       patch_stride: The stride between two neighbor patches in DISFlow, in
@@ -274,6 +314,8 @@ class DICVE(Camera):
       safe: If :obj:`True`, checks at each new image if the patches are not
         exiting the frame. Otherwise, the patches might exit the image which
         can lead to an unexpected behavior without raising an error.
+
+        .. versionadded:: 1.5.7
       follow: If :obj:`True`, the position of each patch on the images is
         adjusted at each new image based on the previous computed displacement
         of this patch. If a displacement of 1 in the `x` direction was
@@ -283,30 +325,20 @@ class DICVE(Camera):
         expected displacement in pixels is big compared to the patch size. The
         only downside is that the patches may exit the frame if something goes
         wrong with the tracking.
+
+        .. versionadded:: 1.5.7
       raise_on_patch_exit: If :obj:`True`, raises an exception when a tracked
         patch exits the border of the image, which stops the entire test.
         Otherwise, just logs a warning message and sleeps until the test is
         stopped in another way.
+
+        .. versionadded:: 2.0.0
       **kwargs: Any additional argument will be passed to the
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.
 
-    .. versionadded:: 1.5.7 *safe* and *follow* arguments
     .. versionremoved:: 1.5.9 *fields* argument
-    .. versionadded:: 1.5.9 *method* argument
-    .. versionadded:: 1.5.10 
-       *transform*, *config*, *displayer_backend*, *displayer_framerate*, 
-       *verbose*, *freq*, *save_images*, *img_name*, *save_folder*, 
-       *save_period*, *save_backend* and *image_generator* arguments
-    .. versionchanged:: 1.5.10 
-       renamed *gditerations* argument to *gradient_iterations*
-    .. versionchanged:: 1.5.10 
-       renamed *show_image* argument to *display_images*
-    .. versionadded:: 2.0.0 
-       *debug*, *software_trig_label*, *img_extension*, *raise_on_patch_exit*,
-       *img_size* and *img_dtype* arguments
     .. versionremoved:: 2.0.0 *img_name* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     if not config and patches is None:

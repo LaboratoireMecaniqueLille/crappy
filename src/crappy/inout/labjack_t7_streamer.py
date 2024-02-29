@@ -67,7 +67,7 @@ class T7Streamer(InOut):
     point acquisition can be performed.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from T7_streamer to T7Streamer
+  .. versionchanged:: 2.0.0 renamed from *T7_streamer* to *T7Streamer*
   """
 
   def __init__(self,

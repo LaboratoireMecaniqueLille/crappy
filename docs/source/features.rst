@@ -121,6 +121,15 @@ Data processing
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/multiplexer.py>`_.
 
+- :ref:`Synchronizer`
+
+  Allows putting labels emitted at different frequencies on the same time base
+  as a reference label. Very similar to the :ref:`Multiplexer` Block, except
+  the :ref:`Multiplexer` takes an independent time base for interpolation. Used
+  when the original values of a label need to be preserved while the other
+  labels can be interpolated, for example when the reference is the output of a
+  low-frequency image-processing.
+
 Real-time image correlation
 +++++++++++++++++++++++++++
 
@@ -148,6 +157,11 @@ Real-time image correlation
      This Block hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected ! On the long-term, it should be replaced
      by another Block.
+
+  .. Warning::
+     This Block cannot run with CUDA versions greater than 11.3 ! This is due
+     to a deprecation in pycuda, and is unlikely to be fixed anytime soon in
+     Crappy or pycuda.
 
 Video-extensometry
 ++++++++++++++++++
@@ -191,6 +205,11 @@ Video-extensometry
      This Block hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected ! On the long-term, it should be replaced
      by another Block.
+
+  .. Warning::
+     This Block cannot run with CUDA versions greater than 11.3 ! This is due
+     to a deprecation in pycuda, and is unlikely to be fixed anytime soon in
+     Crappy or pycuda.
 
 - :ref:`Video Extenso`
 
@@ -256,7 +275,8 @@ Hardware control
   Acquires images from a :ref:`Camera` object, and then displays and/or records
   the acquired images. It is the base class for other Blocks that can also
   perform image processing, in addition to the recording and display. This
-  Block usually doesn't have input nor output Links.
+  Block usually doesn't have input nor output Links, but can in some specific
+  situations.
 
   The examples folder on GitHub contains `several examples of the Camera Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/

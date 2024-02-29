@@ -16,7 +16,7 @@ class CameraChoiceSetting(CameraSetting):
   
   .. versionadded:: 1.5.10
   .. versionchanged:: 2.0.0
-     renamed from Camera_choice_setting to CameraChoiceSetting
+     renamed from *Camera_choice_setting* to *CameraChoiceSetting*
   """
 
   def __init__(self,

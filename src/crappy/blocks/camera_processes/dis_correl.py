@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, List
+from typing import Optional, List, Union
 import logging
 import logging.handlers
 
@@ -28,7 +28,7 @@ class DISCorrelProcess(CameraProcess):
 
   def __init__(self,
                patch: Box,
-               fields: Optional[List[str]] = None,
+               fields: Optional[List[Union[str, np.ndarray]]] = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
@@ -47,15 +47,25 @@ class DISCorrelProcess(CameraProcess):
         the coordinates of the ROI to perform DIS on. This argument is passed
         to the :obj:`~crappy.tool.image_processing.DISCorrelTool` and not used
         in this class.
-      fields: The base of fields to use for the projection, given as a
-        :obj:`list` of :obj:`str`. The available fields are :
+      fields: fields: The base of fields to use for the projection, given as a
+        :obj:`list` of :obj:`str` or :mod:`numpy` arrays (both types can be
+        mixed). Strings are for using automatically-generated fields, the
+        available ones are :
         ::
 
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
 
+        If users provide their own fields as arrays, they will be used as-is to
+        run the correlation. The user-provided fields must be of shape:
+        ::
+
+          (patch_height, patch_width, 2)
+
         This argument is passed to the
         :obj:`~crappy.tool.image_processing.DISCorrelTool` and not used in this
         class.
+
+        .. versionchanged:: 2.0.5 provided fields can now be numpy arrays
       alpha: Weight of the smoothness term in DISFlow, as a :obj:`float`. This
         argument is passed to the
         :obj:`~crappy.tool.image_processing.DISCorrelTool` and not used in this

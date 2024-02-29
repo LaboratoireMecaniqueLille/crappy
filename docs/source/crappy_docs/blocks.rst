@@ -149,6 +149,12 @@ Stop Button
    :members: prepare, loop, finish
    :special-members: __init__
 
+Synchronizer
+++++++++++++
+.. autoclass:: crappy.blocks.Synchronizer
+   :members: loop
+   :special-members: __init__
+
 UController
 +++++++++++
 .. autoclass:: crappy.blocks.UController

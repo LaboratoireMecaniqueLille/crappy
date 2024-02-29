@@ -23,7 +23,7 @@ class Median(Modifier):
     Args:
       n_points: The number of points on which to compute the median.
 
-    .. versionchanged:: 1.5.10 renamed *npoints* argument to *n_points*
+        .. versionchanged:: 1.5.10 renamed from *npoints* to *n_points*
     """
 
     super().__init__()

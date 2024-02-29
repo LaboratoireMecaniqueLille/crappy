@@ -36,7 +36,7 @@ class LabjackUE9(InOut):
   further improved in the future.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Labjack_ue9 to LabjackUE9
+  .. versionchanged:: 2.0.0 renamed from *Labjack_ue9* to *LabjackUE9*
   """
 
   def __init__(self,

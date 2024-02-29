@@ -6,7 +6,7 @@ from _tkinter import TclError
 from platform import system
 import numpy as np
 from time import time, sleep
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 from pkg_resources import resource_string
 from io import BytesIO
 import logging
@@ -53,7 +53,7 @@ class CameraConfig(tk.Tk):
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
 
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Camera_config to CameraConfig
+  .. versionchanged:: 2.0.0 renamed from *Camera_config* to *CameraConfig*
   """
 
   def __init__(self,
@@ -68,18 +68,22 @@ class CameraConfig(tk.Tk):
         the images.
       log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
         the main :obj:`~logging.Logger`, only used in Windows.
+
+        .. versionadded:: 2.0.0
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
+
+        .. versionadded:: 2.0.0
       max_freq: The maximum frequency this window is allowed to loop at. It is
         simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
         Block.
-    
-    .. versionadded:: 2.0.0 *log_queue*, *log_level* and *max_freq* arguments
+
+        .. versionadded:: 2.0.0
     """
 
     super().__init__()
     self._camera = camera
-    self.shape = None
+    self.shape: Optional[Union[Tuple[int, int], Tuple[int, int, int]]] = None
     self.dtype = None
     self._logger: Optional[logging.Logger] = None
 
@@ -1018,8 +1022,12 @@ class CameraConfig(tk.Tk):
 
     ret = self._camera.get_image()
 
+    # Flag raised if no image could be grabbed
+    no_img = False
+
     # If no frame could be grabbed from the camera
     if ret is None:
+      no_img = True
       # If it's the first call, generate error image to initialize the window
       if not self._n_loops:
         self.log(logging.WARNING, "Could not get an image from the camera, "
@@ -1036,9 +1044,9 @@ class CameraConfig(tk.Tk):
     self._n_loops += 1
     _, img = ret
 
-    if img.dtype != self.dtype:
+    if not no_img and img.dtype != self.dtype:
       self.dtype = img.dtype
-    if self.shape != img.shape:
+    if not no_img and img.shape != self.shape:
       self.shape = img.shape
 
     self._cast_img(img)

@@ -59,7 +59,7 @@ class USBServer(Process):
   The server is a child of :obj:`multiprocessing.Process`.
   
   .. versionadded:: 1.5.2
-  .. versionchanged:: 2.0.0 renamed from Usb_server to USBServer
+  .. versionchanged:: 2.0.0 renamed from *Usb_server* to *USBServer*
   """
 
   initialized = False
@@ -182,10 +182,12 @@ class USBServer(Process):
       log_queue: The :obj:`multiprocessing.Queue` carrying the log messages 
         from the server Process to Crappy's centralized log handler. Only used 
         in Windows.
+
+        .. versionadded:: 2.0.0
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
 
-    .. versionadded:: 2.0.0 *log_queue* and *log_level* arguments
+        .. versionadded:: 2.0.0
     """
 
     cls.process = cls(current_block=cls.current_block,

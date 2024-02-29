@@ -38,7 +38,7 @@ class DAQmx(InOut):
     :mod:`PyDAQmx` module.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Daqmx to DAQmx
+  .. versionchanged:: 2.0.0 renamed from *Daqmx* to *DAQmx*
   """
 
   def __init__(self,
@@ -78,6 +78,8 @@ class DAQmx(InOut):
           0.5, 1., 2.5, 5.
 
         If not given, all input channels will be set to the range `5`.
+
+        .. versionchanged:: 1.5.10 renamed from *range* to *ranges*
       make_zero: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         for each input channel a :obj:`bool` indicating whether the channel
         should be zeroed or not. If so, data will be acquired on this channel
@@ -112,14 +114,14 @@ class DAQmx(InOut):
 
         If not given, all output channels will be set to the range `5`.
 
+        .. versionchanged:: 1.5.10 renamed from *out_range* to *out_ranges*
+
     Note:
       All the iterables given as arguments for the input channels should have
       the same length, and same for the output channels. If that's not the
       case, all the given iterables are treated as if they had the same length
       as the shortest given one.
 
-    .. versionchanged:: 1.5.10 renamed *range* argument to *ranges*
-    .. versionchanged:: 1.5.10 renamed *out_range* argument to *out_ranges*
     .. versionremoved:: 1.5.10 *nperscan* argument
     """
 

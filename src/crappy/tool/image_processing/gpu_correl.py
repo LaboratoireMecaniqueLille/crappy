@@ -62,14 +62,8 @@ class CorrelStage:
 
   This class actually performs the GPU computation, while the calling classes
   only manage the data.
-  
+
   .. versionadded:: 1.4.0
-  .. versionchanged:: 1.5.10
-     now explicitly listing the *verbose*, *iterations*, *mul* and
-     *kernel_file* arguments
-  .. versionchanged:: 1.5.10 renamed *Nfields* argument to *n_fields*
-  .. versionremoved:: 1.5.10 *show_diff*, *img*, *mask* and *fields* arguments
-  .. versionadded:: 2.0.0 *logger_name* argument
   """
 
   def __init__(self,
@@ -86,6 +80,8 @@ class CorrelStage:
       img_size: The shape of the images to process. It is given beforehand so
         that the memory can be allocated before the test starts.
       logger_name: The name of the parent logger, as a :obj:`str`.
+
+        .. versionadded:: 2.0.0
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
         is displayed that is slows the code down.
@@ -100,8 +96,15 @@ class CorrelStage:
         recommended to tune this value for each application so that the
         convergence is neither too slow nor too fast.
       n_fields: The number of fields to project the displacement on.
+
+        .. versionchanged:: 1.5.10 renamed from *Nfields* to *n_fields*
       kernel_file: The path to the file containing the kernels to use for the
         correlation. Can be a :obj:`pathlib.Path` object or a :obj:`str`.
+
+    .. versionchanged:: 1.5.10
+       now explicitly listing the *verbose*, *iterations*, *mul* and
+       *kernel_file* arguments
+    .. versionremoved:: 1.5.10 *show_diff*, *img*, *mask* and *fields* arguments
     """
 
     self._logger: Optional[logging.Logger] = None
@@ -508,7 +511,7 @@ class GPUCorrelTool:
   an optimal solution.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from GPUCorrel to GPUCorrelTool
+  .. versionchanged:: 2.0.0 renamed from *GPUCorrel* to *GPUCorrelTool*
   """
 
   context = None
@@ -521,7 +524,7 @@ class GPUCorrelTool:
                resampling_factor: float = 2,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
-               fields: Optional[List[str]] = None,
+               fields: Optional[List[Union[str, np.ndarray]]] = None,
                ref_img: Optional[np.ndarray] = None,
                mask: Optional[np.ndarray] = None,
                mul: float = 3) -> None:
@@ -530,11 +533,15 @@ class GPUCorrelTool:
     Args:
       logger_name: The name of the parent :obj:`~logging.Logger`, to be used
         for setting the Logger of the class.
+
+        .. versionadded:: 2.0.0
       context: Optionally, the :mod:`pycuda` context to use. If not specified,
         a new context is instantiated.
+
+        .. versionadded:: 1.5.10
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
-        is displayed that is slows the code down.
+        is displayed that it slows the code down.
       levels: Number of levels of the pyramid. More levels may help converging
         on images with large strain, but may fail on images that don't contain
         low spatial frequency. Fewer levels mean that the program runs faster.
@@ -549,16 +556,26 @@ class GPUCorrelTool:
       iterations: The maximum number of iterations to run before returning the
         results. The results may be returned before if the residuals start
         increasing.
-      fields: A :obj:`list` of :obj:`str` representing the base of fields on
-        which the image will be projected during correlation. The possible
-        fields are :
+      fields: The base of fields to use for the projection, given as a
+        :obj:`list` of :obj:`str` or :mod:`numpy` arrays (both types can be
+        mixed). Strings are for using automatically-generated fields, the
+        available ones are :
         ::
 
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
 
+        If users provide their own fields as arrays, they will be used as-is to
+        run the correlation. The user-provided fields must be of shape:
+        ::
+
+          (patch_height, patch_width, 2)
+
+        .. versionchanged:: 2.0.5 provided fields can now be numpy arrays
       ref_img: The reference image, as a 2D :obj:`numpy.array` with `dtype`
         `float32`. It can either be given at :meth:`__init__`, or set later
         with :meth:`set_orig`.
+
+        .. versionchanged:: 1.5.10 renamed from *img* to *ref_img*
       mask: The mask used for weighting the region of interest on the image. It
         is generally used to prevent unexpected behavior on the border of the
         image.
@@ -573,10 +590,7 @@ class GPUCorrelTool:
     .. versionchanged:: 1.5.10 
        now explicitly listing the *verbose*, *levels*, *resampling_factor*,
        *kernel_file*, *iterations*, *fields*, *mask* and *mul* arguments
-    .. versionchanged:: 1.5.10 renamed *img* argument to *ref_img*
-    .. versionadded:: 1.5.10 *context* argument
     .. versionremoved:: 1.5.10 *show_diff* and *img_size* arguments
-    .. versionadded:: 2.0.0 *logger_name* argument
     """
 
     self._context = context
@@ -813,11 +827,16 @@ class GPUCorrelTool:
     """Computes the fields based on the provided field strings, and sets them
     for each stage."""
 
-    for field_str, tex_fx, tex_fy in zip(fields, self._tex_fx, self._tex_fy):
+    for field, tex_fx, tex_fy in zip(fields, self._tex_fx, self._tex_fy):
 
       # Getting the fields as numpy arrays
-      field_x, field_y = get_field(field_str, self._heights[0],
-                                   self._widths[0])
+      if isinstance(field, str):
+        field_x, field_y = get_field(field, self._heights[0], self._widths[0])
+      elif isinstance(field, np.ndarray):
+        field_x, field_y = field[:, :, 0], field[:, :, 1]
+      else:
+        raise TypeError("The provided fields should either be strings or "
+                        "numpy arrays !")
 
       tex_fx.set_array(pycuda.driver.matrix_to_array(field_x, 'C'))
       tex_fy.set_array(pycuda.driver.matrix_to_array(field_y, 'C'))

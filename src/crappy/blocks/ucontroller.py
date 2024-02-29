@@ -75,15 +75,16 @@ class UController(Block):
         capabilities of the device.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+        
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-    
-    .. versionadded:: 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
+        
+        .. versionadded:: 2.0.0
     """
 
     self._bus = None

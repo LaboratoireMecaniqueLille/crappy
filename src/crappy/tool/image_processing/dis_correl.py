@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import List, Optional
+from typing import List, Optional, Union
+import numpy as np
 
 from ..._global import OptionalModule
 from ..camera_config import Box
@@ -10,7 +11,6 @@ try:
   import cv2
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
-import numpy as np
 
 
 class DISCorrelTool:
@@ -22,12 +22,12 @@ class DISCorrelTool:
   image on the chosen fields, and calculates the residuals.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from DISCorrel to DISCorrelTool
+  .. versionchanged:: 2.0.0 renamed from *DISCorrel* to *DISCorrelTool*
   """
 
   def __init__(self,
                box: Box,
-               fields: Optional[List[str]] = None,
+               fields: Optional[List[Union[str, np.ndarray]]] = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
@@ -43,12 +43,23 @@ class DISCorrelTool:
       box: An instance of the
         :class:`~crappy.tool.camera_config.config_tools.Box` object containing
         the coordinates of the patch on which to perform image correlation.
+
+        .. versionadded:: 2.0.0
       fields: The base of fields to use for the projection, given as a
-        :obj:`list` of :obj:`str`. The available fields are :
+        :obj:`list` of :obj:`str` or :mod:`numpy` arrays (both types can be
+        mixed). Strings are for using automatically-generated fields, the
+        available ones are :
         ::
 
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
 
+        If users provide their own fields as arrays, they will be used as-is to
+        run the correlation. The user-provided fields must be of shape:
+        ::
+
+          (patch_height, patch_width, 2)
+
+        .. versionchanged:: 2.0.5 provided fields can now be numpy arrays
       alpha: Weight of the smoothness term in DISFlow, as a :obj:`float`.
       delta: Weight of the color constancy term in DISFlow, as a :obj:`float`.
       gamma: Weight of the gradient constancy term in DISFlow , as a
@@ -61,21 +72,35 @@ class DISCorrelTool:
         patch inverse search stage in DISFlow, as an :obj:`int`.
       gradient_iterations: Maximum number of gradient descent iterations
         in the patch inverse search stage in DISFlow, as an :obj:`int`.
+
+        .. versionchanged:: 1.5.10
+           renamed from *gditerations* to *gradient_iterations*
       patch_size: Size of an image patch for matching in DISFlow
         (in pixels).
       patch_stride: Stride between neighbor patches in DISFlow. Must be
         less than patch size.
-    
-    .. versionchanged:: 1.5.10
-       renamed *gditerations* argument to *gradient_iterations*
-    .. versionadded:: 2.0.0 *box* argument
     """
 
-    if fields is not None and not all((field in allowed_fields
-                                       for field in fields)):
-      raise ValueError(f"The only allowed values for the fields "
-                       f"are {allowed_fields}")
-    self._fields = ["x", "y", "exx", "eyy"] if fields is None else fields
+    if fields is not None:
+      # Splitting the given fields into strings and numpy arrays
+      auto_fields = [field for field in fields if isinstance(field, str)]
+      user_fields = [field for field in fields
+                     if isinstance(field, np.ndarray)]
+
+      # Ensuring all the given fields are either strings or numpy arrays
+      if len(fields) != len(auto_fields) + len(user_fields):
+        raise TypeError('Correlation fields must be either strings or '
+                        'numpy arrays !')
+
+      # Ensuring all the string fields are valid ones
+      if not all((field in allowed_fields for field in auto_fields)):
+        raise ValueError(f"The only allowed values for the fields given as "
+                         f"strings are {allowed_fields}")
+
+      self._fields: List[Union[str, np.ndarray]] = fields
+    else:
+      self._fields: List[Union[str, np.ndarray]] = ["x", "y", "exx", "eyy"]
+
     self._init = init
 
     # These attributes will be set later
@@ -123,9 +148,12 @@ class DISCorrelTool:
     # Creates and populates the base fields to use for correlation
     fields = np.empty((box_height, box_width, 2, len(self._fields)),
                       dtype=np.float32)
-    for i, string in enumerate(self._fields):
-      fields[:, :, 0, i], fields[:, :, 1, i] = get_field(string, box_height,
-                                                         box_width)
+    for i, field in enumerate(self._fields):
+      if isinstance(field, str):
+        fields[:, :, 0, i], fields[:, :, 1, i] = get_field(field, box_height,
+                                                           box_width)
+      elif isinstance(field, np.ndarray):
+        fields[:, :, :, i] = field
 
     # These attributes will be used later
     self._base = [fields[:, :, :, i] for i in range(fields.shape[3])]

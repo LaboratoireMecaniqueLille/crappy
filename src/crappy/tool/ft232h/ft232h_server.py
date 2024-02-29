@@ -172,7 +172,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     ``set_ft232h_serial_nr.py``.
   
   .. versionadded:: 1.5.10
-  .. versionchanged:: 2.0.0 renamed from ft232h_server to FT232HServer
+  .. versionchanged:: 2.0.0 renamed from *ft232h_server* to *FT232HServer*
   """
 
   def __init__(self,
@@ -199,9 +199,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       block_index: The index the :class:`~crappy.blocks.Block` driving this 
         FT232HServer instance has been assigned by the 
         :class:`~crappy.tool.ft232h.USBServer`, as an :obj:`int`.
+
+        .. versionchanged:: 2.0.0 renamed from *block_number* to *block_index*
       current_block: The handle to a shared :obj:`multiprocessing.Value` 
         indicating which :class:`~crappy.blocks.Block` can currently
         communicate with the :class:`~crappy.tool.ft232h.USBServer`.
+
+        .. versionchanged:: 2.0.0
+           renamed from *current_file* to *current_block*
       command_file: A file in which the current command to be executed by the
         USB server is written.
       answer_file: A file in which the answer to the current command is
@@ -213,6 +218,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       shared_lock: A :obj:`multiprocessing.Lock` common to all the 
         :class:`~crappy.blocks.Block` that allows the one Block holding it to 
         communicate with the :class:`~crappy.tool.ft232h.USBServer`.
+
+        .. versionchanged:: 2.0.0 renamed from *current_lock* to *shared_lock*
       serial_nr: The serial number of the FT232H to drive, as a :obj:`str`. In
         `Write_serial_nr` mode, the serial number to be written.
       i2c_speed: In I2C mode, the I2C bus clock frequency in Hz. Available
@@ -238,11 +245,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         It is not possible to simultaneously control slaves over SPI and I2C,
         due to different hardware requirements for the two protocols. Trying to
         do so will most likely raise an error or lead to inconsistent behavior.
-
-    .. versionchanged:: 2.0.0 renamed *block_number* argument to *block_index*
-    .. versionchanged:: 2.0.0
-       renamed *current_file* argument to *current_block*
-    .. versionchanged:: 2.0.0 renamed *current_lock* argument to *shared_lock*
     """
 
     self._block_index = block_index

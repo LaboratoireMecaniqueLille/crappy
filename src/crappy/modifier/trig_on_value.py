@@ -13,7 +13,7 @@ class TrigOnValue(Modifier):
   Mostly useful to trigger Blocks in predefined situations.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Trig_on_value to TrigOnValue
+  .. versionchanged:: 2.0.0 renamed from *Trig_on_value* to *TrigOnValue*
   """
 
   def __init__(self,
@@ -23,11 +23,11 @@ class TrigOnValue(Modifier):
 
     Args:
       label: The name of the label to monitor.
+
+        .. versionchanged:: 1.5.10 renamed from *name* to *label*
       values: The values of ``label`` for which the data will be transmitted.
         Can be a single value, or an iterable of values (like a :obj:`list` or
         a :obj:`tuple`).
-
-    .. versionchanged:: 1.5.10 renamed *name* argument to *label*
     """
 
     super().__init__()
@@ -48,7 +48,7 @@ class TrigOnValue(Modifier):
     """Checks if the value of ``label`` is in the predefined set of accepted
     values, and if so transmits the data.
     
-    .. versionchanged:: 2.0.0 renamed from evaluate to __call__
+    .. versionchanged:: 2.0.0 renamed from *evaluate* to *__call__*
     """
 
     self.log(logging.DEBUG, f"Received {data}")

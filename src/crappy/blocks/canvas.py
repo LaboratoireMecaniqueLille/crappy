@@ -55,7 +55,7 @@ class DotText:
   """Like :class:`Text`, but with a colored dot to visualize a numerical value.
 
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Dot_text to DotText
+  .. versionchanged:: 2.0.0 renamed from *Dot_text* to *DotText*
   """
 
   def __init__(self,
@@ -153,7 +153,7 @@ class Canvas(Block):
   :class:`~crappy.blocks.LinkReader` Blocks should be preferred.
 
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Drawing to Canvas
+  .. versionchanged:: 2.0.0 renamed from *Drawing* to *Canvas*
   """
 
   def __init__(self,
@@ -175,6 +175,8 @@ class Canvas(Block):
         defining what to draw. See below for more details.
       color_range: A :obj:`tuple` containing the lowest and highest values for
         the color bar.
+
+        .. versionchanged:: 1.5.10 renamed from *crange* to *color_range*
       title: The title of the window containing the drawing.
       window_size: The `x` and `y` dimension of the window, following
         :mod:`matplotlib` nomenclature.
@@ -183,10 +185,15 @@ class Canvas(Block):
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
+
+        .. versionadded:: 1.5.10
+        .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
+
+        .. versionadded:: 2.0.0
 
     Note:
       - Information about the ``draw`` keys:
@@ -205,11 +212,6 @@ class Canvas(Block):
         - ``label``: Mandatory for `'text'` and `'dot_text'` only, the label of
           the data to display. It will try to retrieve this data in the
           incoming Links. The ``text`` will then be updated with this data.
-    
-    .. versionchanged:: 1.5.10 renamed *crange* argument to *color_range*
-    .. versionadded:: 1.5.10 *verbose* argument
-    .. versionadded:: 2.0.0 *debug* argument
-    .. versionchanged:: 2.0.0 renamed *verbose* argument to *display_freq*
     """
 
     super().__init__()

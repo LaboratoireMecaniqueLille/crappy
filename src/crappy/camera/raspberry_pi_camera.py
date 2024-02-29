@@ -40,7 +40,7 @@ class RaspberryPiCamera(Camera):
     "Bullseye", it has to be specifically activated in the configuration menu.
   
   .. versionadded:: 1.4.0
-  .. versionchanged:: 2.0.0 renamed from Picamera to RaspberryPiCamera
+  .. versionchanged:: 2.0.0 renamed from *Picamera* to *RaspberryPiCamera*
   """
 
   def __init__(self) -> None:
