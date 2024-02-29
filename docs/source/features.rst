@@ -158,6 +158,11 @@ Real-time image correlation
      that it still works as expected ! On the long-term, it should be replaced
      by another Block.
 
+  .. Warning::
+     This Block cannot run with CUDA versions greater than 11.3 ! This is due
+     to a deprecation in pycuda, and is unlikely to be fixed anytime soon in
+     Crappy or pycuda.
+
 Video-extensometry
 ++++++++++++++++++
 
@@ -200,6 +205,11 @@ Video-extensometry
      This Block hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected ! On the long-term, it should be replaced
      by another Block.
+
+  .. Warning::
+     This Block cannot run with CUDA versions greater than 11.3 ! This is due
+     to a deprecation in pycuda, and is unlikely to be fixed anytime soon in
+     Crappy or pycuda.
 
 - :ref:`Video Extenso`
 
