@@ -29,6 +29,11 @@ class GPUVE(Camera):
   also performs video-extensometry, but it does so by tracking spots instead
   of textured patches, and it is not GPU-accelerated.
 
+  Warning:
+    This Block cannot run with CUDA versions greater than 11.3 ! This is due to
+    a deprecation in pycuda, and is unlikely to be fixed anytime soon in Crappy
+    or pycuda.
+
   .. versionadded:: 1.4.0
   """
 
