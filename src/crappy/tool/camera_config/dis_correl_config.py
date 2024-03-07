@@ -3,10 +3,6 @@
 import tkinter as tk
 from tkinter.messagebox import showerror
 from typing import Optional
-import numpy as np
-from io import BytesIO
-from pkg_resources import resource_string
-from time import sleep
 import logging
 from multiprocessing.queues import Queue
 
@@ -164,54 +160,16 @@ class DISCorrelConfig(CameraConfigBoxes):
     self._resize_img()
     self._display_img()
     self.update()
+  def _draw_overlay(self) -> None:
+    """Draws the box to use for performing correlation on top of the last
+    acquired image.
 
-  def _update_img(self) -> None:
-    """Same as in the parent class except it also draws the select box on top
-    of the displayed image."""
+    Does not draw the correl box is the user is using the selection box.
+    """
 
-    self.log(logging.DEBUG, "Updating the image")
-
-    ret = self._camera.get_image()
-
-    # If no frame could be grabbed from the camera
-    if ret is None:
-      # If it's the first call, generate error image to initialize the window
-      if not self._n_loops:
-        self.log(logging.WARNING, "Could not get an image from the camera, "
-                                  "displaying an error image instead")
-        ret = None, np.array(Image.open(BytesIO(resource_string(
-          'crappy', 'tool/data/no_image.png'))))
-      # Otherwise, just pass
-      else:
-        self.log(logging.DEBUG, "No image returned by the camera")
-        self.update()
-        sleep(0.001)
-        return
-
-    self._n_loops += 1
-    _, img = ret
-
-    if img.dtype != self.dtype:
-      self.dtype = img.dtype
-    if self.shape != img.shape:
-      self.shape = img.shape
-
-    self._cast_img(img)
-    # Do not draw the correl box if the user is creating the select box
     if self._draw_correl_box:
       self._draw_box(self._correl_box)
     self._draw_box(self._select_box)
-    self._resize_img()
-
-    self._calc_hist()
-    self._resize_hist()
-
-    self._display_img()
-    self._display_hist()
-
-    self._update_pixel_value()
-
-    self.update()
 
   def _handle_box_outside_img(self, _: Box) -> None:
     """If the correl box is outside the image, it means that the image size has
