@@ -88,7 +88,7 @@ class CameraConfigBoxes(CameraConfig):
     """This method is meant to simplify the customization of the action to
     perform when a patch is outside the image in subclasses."""
 
-    pass
+    ...
 
   def _draw_spots(self) -> None:
     """Simply draws every spot on top of the image."""
