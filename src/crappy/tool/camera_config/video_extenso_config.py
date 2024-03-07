@@ -111,10 +111,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
     """Compared with the parent class, creates an extra button for saving the
     original position of the spots."""
 
-    self._update_button = tk.Button(self._sets_frame, text="Apply Settings",
-                                    command=self._update_settings)
-    self._update_button.pack(expand=False, fill='none', ipadx=5, ipady=5,
-                             padx=5, pady=5, anchor='n', side='top')
+    super()._create_buttons()
 
     self._update_button = tk.Button(self._sets_frame, text="Save L0",
                                     command=self._save_l0)

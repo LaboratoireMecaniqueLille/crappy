@@ -108,14 +108,7 @@ class DISCorrelConfig(CameraConfigBoxes):
     """Simply saves the position of the user click, and disables the display of
     the current correl box."""
 
-    self.log(logging.DEBUG, "Starting the selection box")
-
-    # If the mouse is on the canvas but not on the image, do nothing
-    if not self._check_event_pos(event):
-      return
-
-    self._select_box.x_start, \
-        self._select_box.y_start = self._coord_to_pix(event.x, event.y)
+    super()._start_box(event)
 
     self._draw_correl_box = False
 
