@@ -1050,6 +1050,7 @@ class CameraConfig(tk.Tk):
       self.shape = img.shape
 
     self._cast_img(img)
+    self._draw_overlay()
     self._resize_img()
 
     self._calc_hist()
@@ -1061,3 +1062,9 @@ class CameraConfig(tk.Tk):
     self._update_pixel_value()
 
     self.update()
+
+  def _draw_overlay(self) -> None:
+    """Method meant to be used by subclasses for drawing an overlay on top of
+    the image to display."""
+
+    ...
