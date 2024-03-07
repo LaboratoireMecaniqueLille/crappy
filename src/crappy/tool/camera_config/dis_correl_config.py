@@ -146,20 +146,6 @@ class DISCorrelConfig(CameraConfigBoxes):
 
     self._draw_correl_box = True
 
-  def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
-    """Same as in the parent class except it also draws the select box on top
-    of the displayed image."""
-
-    self.log(logging.DEBUG, "The image canvas was resized")
-
-    # Do not draw the correl box if the user is creating the select box
-    if self._draw_correl_box:
-      self._draw_box(self._correl_box)
-    self._draw_box(self._select_box)
-
-    self._resize_img()
-    self._display_img()
-    self.update()
   def _draw_overlay(self) -> None:
     """Draws the box to use for performing correlation on top of the last
     acquired image.

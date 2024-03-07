@@ -150,17 +150,6 @@ class DICVEConfig(CameraConfigBoxes):
     # This box is not needed anymore
     self._select_box.reset()
 
-  def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
-    """Same as in the parent class except it also draws the patches on top of
-    the displayed image."""
-
-    self.log(logging.DEBUG, "The image canvas was resized")
-
-    self._draw_spots()
-    self._resize_img()
-    self._display_img()
-    self.update()
-
   def _draw_overlay(self) -> None:
     """Draws the detected spots to track on top of the last acquired image."""
 

@@ -940,6 +940,8 @@ class CameraConfig(tk.Tk):
 
     self.log(logging.DEBUG, "The image canvas was resized")
 
+    self._draw_overlay()
+
     self._resize_img()
     self._display_img()
     self.update()
