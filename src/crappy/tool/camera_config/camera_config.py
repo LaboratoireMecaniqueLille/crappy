@@ -112,6 +112,7 @@ class CameraConfig(tk.Tk):
     self._run = True
     self._n_loops = 0
     self._max_freq = max_freq
+    self._got_first_img: bool = False
 
     # Settings for adjusting the behavior of the zoom
     self._zoom_ratio = 0.9
@@ -940,6 +941,8 @@ class CameraConfig(tk.Tk):
 
     self.log(logging.DEBUG, "The image canvas was resized")
 
+    self._draw_overlay()
+
     self._resize_img()
     self._display_img()
     self.update()
@@ -1023,13 +1026,12 @@ class CameraConfig(tk.Tk):
     ret = self._camera.get_image()
 
     # Flag raised if no image could be grabbed
-    no_img = False
+    no_img = ret is None
 
     # If no frame could be grabbed from the camera
-    if ret is None:
-      no_img = True
+    if no_img:
       # If it's the first call, generate error image to initialize the window
-      if not self._n_loops:
+      if not self._got_first_img:
         self.log(logging.WARNING, "Could not get an image from the camera, "
                                   "displaying an error image instead")
         ret = None, np.array(Image.open(BytesIO(resource_string(
@@ -1041,6 +1043,8 @@ class CameraConfig(tk.Tk):
         sleep(0.001)
         return
 
+    # Always set, so that the error image is only ever loaded once
+    self._got_first_img = True
     self._n_loops += 1
     _, img = ret
 
@@ -1050,6 +1054,7 @@ class CameraConfig(tk.Tk):
       self.shape = img.shape
 
     self._cast_img(img)
+    self._draw_overlay()
     self._resize_img()
 
     self._calc_hist()
@@ -1061,3 +1066,9 @@ class CameraConfig(tk.Tk):
     self._update_pixel_value()
 
     self.update()
+
+  def _draw_overlay(self) -> None:
+    """Method meant to be used by subclasses for drawing an overlay on top of
+    the image to display."""
+
+    ...

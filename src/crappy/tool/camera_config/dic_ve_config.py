@@ -3,10 +3,6 @@
 from typing import Optional
 from tkinter.messagebox import showerror
 import tkinter as tk
-import numpy as np
-from io import BytesIO
-from pkg_resources import resource_string
-from time import sleep
 import logging
 from multiprocessing.queues import Queue
 
@@ -154,61 +150,10 @@ class DICVEConfig(CameraConfigBoxes):
     # This box is not needed anymore
     self._select_box.reset()
 
-  def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
-    """Same as in the parent class except it also draws the patches on top of
-    the displayed image."""
-
-    self.log(logging.DEBUG, "The image canvas was resized")
+  def _draw_overlay(self) -> None:
+    """Draws the detected spots to track on top of the last acquired image."""
 
     self._draw_spots()
-    self._resize_img()
-    self._display_img()
-    self.update()
-
-  def _update_img(self) -> None:
-    """Same as in the parent class except it also draws the patches on top of
-    the displayed image."""
-
-    self.log(logging.DEBUG, "Updating the image")
-
-    ret = self._camera.get_image()
-
-    # If no frame could be grabbed from the camera
-    if ret is None:
-      # If it's the first call, generate error image to initialize the window
-      if not self._n_loops:
-        self.log(logging.WARNING, "Could not get an image from the camera, "
-                                  "displaying an error image instead")
-        ret = None, np.array(Image.open(BytesIO(resource_string(
-          'crappy', 'tool/data/no_image.png'))))
-      # Otherwise, just pass
-      else:
-        self.log(logging.DEBUG, "No image returned by the camera")
-        self.update()
-        sleep(0.001)
-        return
-
-    self._n_loops += 1
-    _, img = ret
-
-    if img.dtype != self.dtype:
-      self.dtype = img.dtype
-    if self.shape != img.shape:
-      self.shape = img.shape
-
-    self._cast_img(img)
-    self._draw_spots()
-    self._resize_img()
-
-    self._calc_hist()
-    self._resize_hist()
-
-    self._display_img()
-    self._display_hist()
-
-    self._update_pixel_value()
-
-    self.update()
 
   def _handle_box_outside_img(self, box: Box) -> None:
     """If a patch is outside the image, warning the user and resetting the

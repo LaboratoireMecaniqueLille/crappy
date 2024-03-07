@@ -3,10 +3,6 @@
 import tkinter as tk
 from tkinter.messagebox import showerror
 from typing import Optional
-import numpy as np
-from io import BytesIO
-from pkg_resources import resource_string
-from time import sleep
 import logging
 from multiprocessing.queues import Queue
 
@@ -115,10 +111,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
     """Compared with the parent class, creates an extra button for saving the
     original position of the spots."""
 
-    self._update_button = tk.Button(self._sets_frame, text="Apply Settings",
-                                    command=self._update_settings)
-    self._update_button.pack(expand=False, fill='none', ipadx=5, ipady=5,
-                             padx=5, pady=5, anchor='n', side='top')
+    super()._create_buttons()
 
     self._update_button = tk.Button(self._sets_frame, text="Save L0",
                                     command=self._save_l0)
@@ -166,63 +159,14 @@ class VideoExtensoConfig(CameraConfigBoxes):
                f"Successfully saved L0 ! L0 x : {self._detector.spots.x_l0}, "
                f"L0 y : {self._detector.spots.y_l0}")
 
-  def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
-    """Same as in the parent class except it also draws the patches and the
-    select box on top of the displayed image."""
+  def _draw_overlay(self) -> None:
+    """Draws the detected spots to track on top of the last acquired image.
 
-    self.log(logging.DEBUG, "The image canvas was resized")
+    Also draws the selection box if the user is currently drawing one.
+    """
 
     self._draw_box(self._select_box)
     self._draw_spots()
-    self._resize_img()
-    self._display_img()
-    self.update()
-
-  def _update_img(self) -> None:
-    """Same as in the parent class except it also draws the patches and the
-    select box on top of the displayed image."""
-
-    self.log(logging.DEBUG, "Updating the image")
-
-    ret = self._camera.get_image()
-
-    # If no frame could be grabbed from the camera
-    if ret is None:
-      # If it's the first call, generate error image to initialize the window
-      if not self._n_loops:
-        self.log(logging.WARNING, "Could not get an image from the camera, "
-                                  "displaying an error image instead")
-        ret = None, np.array(Image.open(BytesIO(resource_string(
-          'crappy', 'tool/data/no_image.png'))))
-      # Otherwise, just pass
-      else:
-        self.log(logging.DEBUG, "No image returned by the camera")
-        self.update()
-        sleep(0.001)
-        return
-
-    self._n_loops += 1
-    _, img = ret
-
-    if img.dtype != self.dtype:
-      self.dtype = img.dtype
-    if self.shape != img.shape:
-      self.shape = img.shape
-
-    self._cast_img(img)
-    self._draw_box(self._select_box)
-    self._draw_spots()
-    self._resize_img()
-
-    self._calc_hist()
-    self._resize_hist()
-
-    self._display_img()
-    self._display_hist()
-
-    self._update_pixel_value()
-
-    self.update()
 
   def _handle_box_outside_img(self, _: Box) -> None:
     """If a patch is outside the image, it means that the image size has been
