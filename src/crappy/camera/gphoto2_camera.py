@@ -18,19 +18,13 @@ except (ModuleNotFoundError, ImportError):
   gphoto2 = OptionalModule("gphoto2", "To use DSLR or compact cameras, please install the "
                                         "official ghoto2 Python module : python -m pip instal gphoto2")
 
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError):
-  gphoto2 = OptionalModule("cv2", "Crappy needs OpenCV for video "
-                                    "official cv2 Python module : python -m pip instal opencv-python")
-
 
 class CameraGphoto2(Camera):
   """Class for reading images from agphoto2 compatible Camera.
 
   The CameraGphoto2 block is meant for reading images from a
-  Gphoto2 Camera. It uses the :mod:`ghoto2` library for capturing images,
-  and :mod:`cv2` for converting BGR images to black and white.
+  Gphoto2 Camera. It uses the :mod:`gphoto2` library for capturing images,
+  and :mod:`PIL` for converting BGR images to black and white.
 
   Read images from the all the gphoto2 compatible cameras  indifferently.
 
@@ -104,17 +98,17 @@ class CameraGphoto2(Camera):
     if self.mode == 'hardware_trigger':
       # Wait for a hardware trigger event
       print("Waiting for hardware trigger...")
-      while True:
-        event_type, event_data = self.camera.wait_for_event(5000, self.context)
-        if event_type == gp.GP_EVENT_FILE_ADDED:
-          camera_file_path = event_data
-          camera_file = gp.CameraFile()
-          self.camera.file_get(camera_file_path.folder,
-                               camera_file_path.name,
-                               gp.GP_FILE_TYPE_NORMAL,
-                               camera_file,
-                               self.context)
-          break
+      event_type, event_data = self.camera.wait_for_event(5000, self.context)
+      if event_type == gp.GP_EVENT_FILE_ADDED:
+        camera_file_path = event_data
+        camera_file = gp.CameraFile()
+        self.camera.file_get(camera_file_path.folder,
+                             camera_file_path.name,
+                             gp.GP_FILE_TYPE_NORMAL,
+                             camera_file,
+                             self.context)
+      else:
+        return
     else:
       file_path = self.camera.capture(gp.GP_CAPTURE_IMAGE, self.context)
       camera_file = self.camera.file_get(
@@ -140,15 +134,17 @@ class CameraGphoto2(Camera):
     metadata = {'ImageUniqueID': self.num_image, **metadata}
     metadata = {'t(s)': t, **metadata}
     self.num_image+=1
-    img=np.array(img)
     if self.channels == '1':
+      img = img.convert('L')
       metadata['channels'] = 'gray'
-      return metadata, cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+      return metadata, np.array(img)
     else:
       metadata['channels'] = 'color'
+      img = np.array(img)
       return metadata,img[:,:,::-1]
 
   def close(self) -> None:
     """Close the camera in gphoto2 library"""
     if self.camera is not None:
       self.camera.exit(self.context)
+
