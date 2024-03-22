@@ -98,7 +98,7 @@ class CameraGphoto2(Camera):
     if self.mode == 'hardware_trigger':
       # Wait for a hardware trigger event
       print("Waiting for hardware trigger...")
-      event_type, event_data = self.camera.wait_for_event(5000, self.context)
+      event_type, event_data = self.camera.wait_for_event(200, self.context)
       if event_type == gp.GP_EVENT_FILE_ADDED:
         camera_file_path = event_data
         camera_file = gp.CameraFile()
