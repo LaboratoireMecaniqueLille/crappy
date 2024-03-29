@@ -31,9 +31,10 @@ class CameraGphoto2(Camera):
   2 modes are currently implemented :
       'continuous' : take picture as fast as possible
       'hardware_trigger' : take picture when button is clicked
+
   Warning:
-  Not tested in Windows, but there is no use of Linux API,
-   only python libraries.
+    Not tested in Windows, but there is no use of Linux API,
+     only python libraries.
   .. versionadded:: ?
   """
   def __init__(self) -> None:
