@@ -414,14 +414,17 @@ Supported Cameras
 
 - :ref:`Camera gPhoto2`
 
-  This Camera object opens video streams using the Python binding of `gphoto2
-  <https://pypi.org/project/gphoto2/0.8.0/>`_. It can open a camera by name (in
-  Linux) and port if several identical cameras are connected. it can record
-  continuously or wait event such as shot button or remote controller button.
+  Reads images over USB from a camera supported by gPhoto2, including most of
+  the Canon and Nikon models. It can either acquire images continuously, or
+  wait for an acquisition to be triggered via a remote controller button.
 
   .. Important::
-     This Camera object can only be used if the python library has benn
-     installed and has not been tested with Windows and MacOS.
+     This class was only tested on Linux. The installation of its dependencies
+     is expected to be troublesome on macOS and Windows.
+
+  .. Important::
+     This class relies on the `gphoto2 <https://pypi.org/project/gphoto2/>`_
+     Python module, that must be installed before using it.
 
 - :ref:`Camera GStreamer`
 
