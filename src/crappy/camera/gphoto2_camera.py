@@ -38,6 +38,7 @@ class CameraGPhoto2(Camera):
      only python libraries.
   .. versionadded:: ?
   """
+
   def __init__(self) -> None:
     """Instantiates the available settings."""
 
@@ -52,14 +53,16 @@ class CameraGPhoto2(Camera):
                             choices=('1', '3'),
                             default='1')
     self.add_choice_setting(name="mode",
-                            choices=('continuous','hardware_trigger'),
+                            choices=('continuous', 'hardware_trigger'),
                             default='continuous')
     self.num_image = 0
 
-  def open(self, model: Optional[str] = None,
+  def open(self,
+           model: Optional[str] = None,
            port: Optional[str] = None,
            **kwargs: any) -> None:
     """Open the camera `model` and `could be specified`"""
+
     self.model = model
     self.port = port
     self.set_all(**kwargs)
@@ -97,6 +100,7 @@ class CameraGPhoto2(Camera):
     Returns:
     The timeframe and the image.
     """
+
     if self.mode == 'hardware_trigger':
       # Wait for a hardware trigger event
       print("Waiting for hardware trigger...")
@@ -127,15 +131,14 @@ class CameraGPhoto2(Camera):
       exif_info = img._getexif()
       if exif_info is not None:
         for tag, value in exif_info.items():
-            decoded = ExifTags.TAGS.get(tag, tag)
-            if decoded in [
-                "Model", "DateTime", "ExposureTime","ShutterSpeedValue",
-                "FNumber","ApertureValue","FocalLength", "ISOSpeedRatings"
-            ]:
-                  metadata[decoded] = value
+          decoded = ExifTags.TAGS.get(tag, tag)
+          if decoded in ["Model", "DateTime", "ExposureTime",
+                         "ShutterSpeedValue", "FNumber", "ApertureValue",
+                         "FocalLength", "ISOSpeedRatings"]:
+            metadata[decoded] = value
     metadata = {'ImageUniqueID': self.num_image, **metadata}
     metadata = {'t(s)': t, **metadata}
-    self.num_image+=1
+    self.num_image += 1
     if self.channels == '1':
       img = img.convert('L')
       metadata['channels'] = 'gray'
@@ -143,9 +146,10 @@ class CameraGPhoto2(Camera):
     else:
       metadata['channels'] = 'color'
       img = np.array(img)
-      return metadata,img[:,:,::-1]
+      return metadata, img[:, :, ::-1]
 
   def close(self) -> None:
     """Close the camera in gphoto2 library"""
+
     if self.camera is not None:
       self.camera.exit(self.context)
