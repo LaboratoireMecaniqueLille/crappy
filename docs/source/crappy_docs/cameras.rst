@@ -5,6 +5,12 @@ Cameras
 Regular Cameras
 ---------------
 
+Camera gPhoto2
+++++++++++++++
+.. autoclass:: crappy.camera.CameraGPhoto2
+   :members: open, get_image, close
+   :special-members: __init__
+
 Camera GStreamer
 ++++++++++++++++
 .. autoclass:: crappy.camera.CameraGstreamer
@@ -73,13 +79,6 @@ JAI GO-5000C-PMCL 8 bits
 .. autoclass:: crappy.camera.cameralink.JaiGO5000CPMCL8Bits
    :members: open
    :special-members: __init__
-
-Camera gPhoto2
-++++++++++++++
-.. autoclass:: crappy.camera.CameraGPhoto2
-   :members: open, get_image, close
-   :special-members: __init__
-
 
 Parent Camera
 -------------

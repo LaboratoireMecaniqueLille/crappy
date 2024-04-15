@@ -412,6 +412,17 @@ Supported Cameras
      that it still works as expected ! On the long-term, it should be totally
      removed.
 
+- :ref:`Camera gPhoto2`
+
+  This Camera object opens video streams using the Python binding of `gphoto2
+  <https://pypi.org/project/gphoto2/0.8.0/>`_. It can open a camera by name (in
+  Linux) and port if several identical cameras are connected. it can record
+  continuously or wait event such as shot button or remote controller button.
+
+  .. Important::
+     This Camera object can only be used if the python library has benn
+     installed and has not been tested with Windows and MacOS.
+
 - :ref:`Camera GStreamer`
 
   This Camera object opens video streams using the Python binding of `Gstreamer
@@ -495,19 +506,6 @@ Supported Cameras
 
   Allows reading images from any `Ximea <https://www.ximea.com/>`_ camera. The
   backend is the official Ximea API.
-
-- :ref:`Camera gPhoto2`
-
-  This Camera object opens video streams using the Python binding of `gphoto2
-  <https://pypi.org/project/gphoto2/0.8.0/>`_. It can open a camera by name (in
-  Linux) and port if several identical cameras are connected. it can record
-  continuously or wait event such as shot button or remote controller button.
-
-
-  .. Important::
-     This Camera object can only be used if the python library has benn
-     installed and has not been tested with Windows and MacOS.
-
 
 Supported Actuators
 +++++++++++++++++++
