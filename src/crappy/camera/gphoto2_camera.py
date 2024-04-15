@@ -11,14 +11,13 @@ from .._global import OptionalModule
 try:
   from PIL import Image, ExifTags
 except (ModuleNotFoundError, ImportError):
-  pillow = OptionalModule("Pillow", "To use DSLR or compact cameras, please install the "
-                                      "official ghoto2 Python module : python -m pip instal Pillow")
+  Image = OptionalModule("Pillow")
+  ExifTags = OptionalModule("Pillow")
 
 try:
   import gphoto2 as gp
 except (ModuleNotFoundError, ImportError):
-  gphoto2 = OptionalModule("gphoto2", "To use DSLR or compact cameras, please install the "
-                                        "official ghoto2 Python module : python -m pip instal gphoto2")
+  gp = OptionalModule("gphoto2")
 
 
 class CameraGPhoto2(Camera):
