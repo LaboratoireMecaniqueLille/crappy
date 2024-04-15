@@ -67,8 +67,6 @@ class CameraGPhoto2(Camera):
            **kwargs: any) -> None:
     """Open the camera `model` and `could be specified`"""
 
-    self._model = model
-    self._port = port
     self.set_all(**kwargs)
 
     cameras = gp.Camera.autodetect(self._context)
@@ -76,10 +74,10 @@ class CameraGPhoto2(Camera):
     _port_info_list.load()
 
     camera_found = False
-    for name, port in cameras:
-      if ((self._model is None or name == self._model) and
-          (self._port is None or port == self._port)):
-        idx = _port_info_list.lookup_path(port)
+    for name, detected_port in cameras:
+      if ((model is None or name == model) and
+          (port is None or detected_port == port)):
+        idx = _port_info_list.lookup_path(detected_port)
         if idx >= 0:
           self._camera = gp.Camera()
           self._camera.set_port_info(_port_info_list[idx])
@@ -88,13 +86,13 @@ class CameraGPhoto2(Camera):
           break
 
     if not camera_found:
-      if self._model is not None and self._port is not None:
+      if model is not None and port is not None:
         raise IOError(
-          f"Camera '{self._model}' on port '{self._port}' not found."
+          f"Camera '{model}' on port '{port}' not found."
         )
-      elif self._model is not None and self._port is None:
-        raise IOError(f"Camera '{self._model}' not found.")
-      elif self._model is None and self._port is None:
+      elif model is not None and port is None:
+        raise IOError(f"Camera '{model}' not found.")
+      elif model is None and port is None:
         raise IOError(f"No camera found found.")
 
   def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
