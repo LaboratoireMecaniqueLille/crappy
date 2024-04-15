@@ -1,11 +1,11 @@
 # coding: utf-8
 
 import numpy as np
-from crappy.camera.meta_camera import Camera
 from io import BytesIO
 import time
 from typing import Optional, Tuple, Dict, Any
 
+from .meta_camera import Camera
 from .._global import OptionalModule
 
 try:
