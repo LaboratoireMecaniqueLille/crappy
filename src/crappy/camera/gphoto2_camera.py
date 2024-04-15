@@ -44,17 +44,17 @@ class CameraGPhoto2(Camera):
 
     super().__init__()
 
-    self.camera = None
-    self.context = gp.Context()
-    self.model: Optional[str] = None
-    self.port: Optional[str] = None
+    self._camera = None
+    self._context = gp.Context()
+    self._model: Optional[str] = None
+    self._port: Optional[str] = None
     self.add_choice_setting(name="channels",
                             choices=('1', '3'),
                             default='1')
     self.add_choice_setting(name="mode",
                             choices=('continuous', 'hardware_trigger'),
                             default='continuous')
-    self.num_image = 0
+    self._num_image = 0
 
   def open(self,
            model: Optional[str] = None,
@@ -62,34 +62,34 @@ class CameraGPhoto2(Camera):
            **kwargs: any) -> None:
     """Open the camera `model` and `could be specified`"""
 
-    self.model = model
-    self.port = port
+    self._model = model
+    self._port = port
     self.set_all(**kwargs)
 
-    cameras = gp.Camera.autodetect(self.context)
+    cameras = gp.Camera.autodetect(self._context)
     _port_info_list = gp.PortInfoList()
     _port_info_list.load()
 
     camera_found = False
     for name, port in cameras:
-      if ((self.model is None or name == self.model) and
-          (self.port is None or port == self.port)):
+      if ((self._model is None or name == self._model) and
+          (self._port is None or port == self._port)):
         idx = _port_info_list.lookup_path(port)
         if idx >= 0:
-          self.camera = gp.Camera()
-          self.camera.set_port_info(_port_info_list[idx])
-          self.camera.init(self.context)
+          self._camera = gp.Camera()
+          self._camera.set_port_info(_port_info_list[idx])
+          self._camera.init(self._context)
           camera_found = True
           break
 
     if not camera_found:
-      if self.model is not None and self.port is not None:
+      if self._model is not None and self._port is not None:
         raise IOError(
-          f"Camera '{self.model}' on port '{self.port}' not found."
+          f"Camera '{self._model}' on port '{self._port}' not found."
         )
-      elif self.model is not None and self.port is None:
-        raise IOError(f"Camera '{self.model}' not found.")
-      elif self.model is None and self.port is None:
+      elif self._model is not None and self._port is None:
+        raise IOError(f"Camera '{self._model}' not found.")
+      elif self._model is None and self._port is None:
         raise IOError(f"No camera found found.")
 
   def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
@@ -103,20 +103,20 @@ class CameraGPhoto2(Camera):
     if self.mode == 'hardware_trigger':
       # Wait for a hardware trigger event
       print("Waiting for hardware trigger...")
-      event_type, event_data = self.camera.wait_for_event(200, self.context)
+      event_type, event_data = self._camera.wait_for_event(200, self._context)
       if event_type == gp.GP_EVENT_FILE_ADDED:
         camera_file_path = event_data
         camera_file = gp.CameraFile()
-        self.camera.file_get(camera_file_path.folder,
-                             camera_file_path.name,
-                             gp.GP_FILE_TYPE_NORMAL,
-                             camera_file,
-                             self.context)
+        self._camera.file_get(camera_file_path.folder,
+                              camera_file_path.name,
+                              gp.GP_FILE_TYPE_NORMAL,
+                              camera_file,
+                              self._context)
       else:
         return
     else:
-      file_path = self.camera.capture(gp.GP_CAPTURE_IMAGE, self.context)
-      camera_file = self.camera.file_get(
+      file_path = self._camera.capture(gp.GP_CAPTURE_IMAGE, self._context)
+      camera_file = self._camera.file_get(
           file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
 
     file_data = camera_file.get_data_and_size()
@@ -135,9 +135,9 @@ class CameraGPhoto2(Camera):
                          "ShutterSpeedValue", "FNumber", "ApertureValue",
                          "FocalLength", "ISOSpeedRatings"]:
             metadata[decoded] = value
-    metadata = {'ImageUniqueID': self.num_image, **metadata}
+    metadata = {'ImageUniqueID': self._num_image, **metadata}
     metadata = {'t(s)': t, **metadata}
-    self.num_image += 1
+    self._num_image += 1
     if self.channels == '1':
       img = img.convert('L')
       metadata['channels'] = 'gray'
@@ -150,5 +150,5 @@ class CameraGPhoto2(Camera):
   def close(self) -> None:
     """Close the camera in gphoto2 library"""
 
-    if self.camera is not None:
-      self.camera.exit(self.context)
+    if self._camera is not None:
+      self._camera.exit(self._context)
