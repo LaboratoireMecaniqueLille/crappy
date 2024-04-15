@@ -44,17 +44,18 @@ class CameraGPhoto2(Camera):
 
     super().__init__()
 
-    self._camera = None
-    self._context = gp.Context()
+    self._camera: Optional[gp.Camera] = None
+    self._context: gp.GPContext = gp.Context()
     self._model: Optional[str] = None
     self._port: Optional[str] = None
+    self._num_image = 0
+
     self.add_choice_setting(name="channels",
                             choices=('1', '3'),
                             default='1')
     self.add_choice_setting(name="mode",
                             choices=('continuous', 'hardware_trigger'),
                             default='continuous')
-    self._num_image = 0
 
   def open(self,
            model: Optional[str] = None,
