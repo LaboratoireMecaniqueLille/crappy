@@ -72,7 +72,6 @@ class CameraGPhoto2(Camera):
     port_info_list = gp.PortInfoList()
     port_info_list.load()
 
-    camera_found = False
     for name, detected_port in cameras:
       if ((model is None or name == model) and
           (port is None or detected_port == port)):
@@ -81,10 +80,9 @@ class CameraGPhoto2(Camera):
           self._camera = gp.Camera()
           self._camera.set_port_info(port_info_list[idx])
           self._camera.init(self._context)
-          camera_found = True
           break
 
-    if not camera_found:
+    if self._camera is None:
       if model is not None and port is not None:
         raise IOError(
           f"Camera '{model}' on port '{port}' not found."
