@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import numpy as np
 from crappy.camera.meta_camera import Camera
 from io import BytesIO
@@ -148,4 +150,3 @@ class CameraGPhoto2(Camera):
     """Close the camera in gphoto2 library"""
     if self.camera is not None:
       self.camera.exit(self.context)
-
