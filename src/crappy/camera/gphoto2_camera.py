@@ -67,8 +67,6 @@ class CameraGPhoto2(Camera):
            **kwargs: any) -> None:
     """Open the camera `model` and `could be specified`"""
 
-    self.set_all(**kwargs)
-
     cameras = gp.Camera.autodetect(self._context)
 
     port_info_list = gp.PortInfoList()
@@ -95,6 +93,8 @@ class CameraGPhoto2(Camera):
         raise IOError(f"Camera '{model}' not found.")
       elif model is None and port is None:
         raise IOError(f"No camera found found.")
+
+    self.set_all(**kwargs)
 
   def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
     """Simply acquire an image using gphoto2 library.
