@@ -74,7 +74,7 @@ JAI GO-5000C-PMCL 8 bits
    :members: open
    :special-members: __init__
 
-Camera Gphoto2
+Camera gPhoto2
 ++++++++++++++
 .. autoclass:: crappy.camera.CameraGPhoto2
    :members: open, get_image, close

@@ -496,7 +496,7 @@ Supported Cameras
   Allows reading images from any `Ximea <https://www.ximea.com/>`_ camera. The
   backend is the official Ximea API.
 
-- :ref:`Camera gphoto2`
+- :ref:`Camera gPhoto2`
 
   This Camera object opens video streams using the Python binding of `gphoto2
   <https://pypi.org/project/gphoto2/0.8.0/>`_. It can open a camera by name (in
