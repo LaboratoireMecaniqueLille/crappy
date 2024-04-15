@@ -70,17 +70,18 @@ class CameraGPhoto2(Camera):
     self.set_all(**kwargs)
 
     cameras = gp.Camera.autodetect(self._context)
-    _port_info_list = gp.PortInfoList()
-    _port_info_list.load()
+
+    port_info_list = gp.PortInfoList()
+    port_info_list.load()
 
     camera_found = False
     for name, detected_port in cameras:
       if ((model is None or name == model) and
           (port is None or detected_port == port)):
-        idx = _port_info_list.lookup_path(detected_port)
+        idx = port_info_list.lookup_path(detected_port)
         if idx >= 0:
           self._camera = gp.Camera()
-          self._camera.set_port_info(_port_info_list[idx])
+          self._camera.set_port_info(port_info_list[idx])
           self._camera.init(self._context)
           camera_found = True
           break
