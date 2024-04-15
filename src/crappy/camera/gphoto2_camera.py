@@ -52,9 +52,13 @@ class CameraGPhoto2(Camera):
 
     self.add_choice_setting(name="channels",
                             choices=('1', '3'),
+                            getter=None,
+                            setter=None,
                             default='1')
     self.add_choice_setting(name="mode",
                             choices=('continuous', 'hardware_trigger'),
+                            getter=None,
+                            setter=None,
                             default='continuous')
 
   def open(self,
