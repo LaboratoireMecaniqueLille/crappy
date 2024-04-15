@@ -84,13 +84,13 @@ class CameraGPhoto2(Camera):
 
     if self._camera is None:
       if model is not None and port is not None:
-        raise IOError(
-          f"Camera '{model}' on port '{port}' not found."
-        )
+        raise IOError(f"Could not find camera {model} on port {port} !")
       elif model is not None and port is None:
-        raise IOError(f"Camera '{model}' not found.")
-      elif model is None and port is None:
-        raise IOError(f"No camera found found.")
+        raise IOError(f"Could not find camera {model} !")
+      elif model is None and port is not None:
+        raise IOError(f"Could not find a camera on port {port} !")
+      else:
+        raise IOError(f"No compatible camera found !")
 
     self.set_all(**kwargs)
 
