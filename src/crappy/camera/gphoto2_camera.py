@@ -44,7 +44,6 @@ class CameraGPhoto2(Camera):
 
     super().__init__()
 
-    Camera.__init__(self)
     self.camera = None
     self.context = gp.Context()
     self.model: Optional[str] = None
