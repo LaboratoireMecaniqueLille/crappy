@@ -19,7 +19,7 @@ except (ModuleNotFoundError, ImportError):
                                         "official ghoto2 Python module : python -m pip instal gphoto2")
 
 
-class CameraGphoto2(Camera):
+class CameraGPhoto2(Camera):
   """Class for reading images from agphoto2 compatible Camera.
 
   The CameraGphoto2 block is meant for reading images from a
