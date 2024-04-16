@@ -4,6 +4,7 @@ import numpy as np
 from io import BytesIO
 from time import time
 from typing import Optional, Tuple, Dict, Any
+import logging
 
 from .meta_camera import Camera
 from .._global import OptionalModule
@@ -83,10 +84,15 @@ class CameraGPhoto2(Camera):
     # instantiating it if so
     # If nothing specified, instantiating the first camera found
     for name, detected_port in cameras:
+      self.log(logging.DEBUG, f"Detected camera {name} on port "
+                              f"{detected_port}")
       if ((model is None or name == model) and
           (port is None or detected_port == port)):
         idx = port_info_list.lookup_path(detected_port)
+
         if idx >= 0:
+          self.log(logging.INFO, f"Instantiating camera {name} on port "
+                                 f"{detected_port}")
           self._camera = gp.Camera()
           self._camera.set_port_info(port_info_list[idx])
           self._camera.init(self._context)
@@ -125,7 +131,12 @@ class CameraGPhoto2(Camera):
                               gp.GP_FILE_TYPE_NORMAL,
                               camera_file,
                               self._context)
+        self.log(logging.DEBUG, f"One new image grabbed in this loop, file "
+                                f"in {event_data.folder}/{event_data.name}")
+      # Otherwise, not returning anything
       else:
+        self.log(logging.DEBUG, f"No new image captured in this loop, got "
+                                f"event type: {event_type}")
         return
 
     # In continuous mode, getting the image in all cases
@@ -168,4 +179,5 @@ class CameraGPhoto2(Camera):
     """Close the camera in gphoto2 library"""
 
     if self._camera is not None:
+      self.log(logging.INFO, "Closing the camera object.")
       self._camera.exit(self._context)
