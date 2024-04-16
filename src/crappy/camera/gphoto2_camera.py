@@ -2,7 +2,7 @@
 
 import numpy as np
 from io import BytesIO
-import time
+from time import time
 from typing import Optional, Tuple, Dict, Any
 
 from .meta_camera import Camera
@@ -120,30 +120,24 @@ class CameraGPhoto2(Camera):
       camera_file = self._camera.file_get(
           file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
 
-    file_data = camera_file.get_data_and_size()
-    image_stream = BytesIO(file_data)
-    img = Image.open(image_stream)
-    # Extract EXIF data
-    t = time.time()
-    # Extract and interpret EXIF data
-    metadata = {}
-    if hasattr(img, '_getexif'):
-      exif_info = img._getexif()
-      if exif_info is not None:
-        for tag, value in exif_info.items():
-          decoded = ExifTags.TAGS.get(tag, tag)
-          if decoded in ["Model", "DateTime", "ExposureTime",
-                         "ShutterSpeedValue", "FNumber", "ApertureValue",
-                         "FocalLength", "ISOSpeedRatings"]:
-            metadata[decoded] = value
-    metadata = {'ImageUniqueID': self._num_image, **metadata}
-    metadata = {'t(s)': t, **metadata}
     else:
+      self.log(logging.WARNING, f"The acquisition mode {self.mode} is not "
+                                f"supported, aborting")
       return
 
-    else:
-      return
+    # Getting the image from the gPhoto2 buffer
+    img = Image.open(BytesIO(camera_file.get_data_and_size()))
 
+    # Building the metadata dictionary
+    metadata = dict()
+    exif_info = img.getexif()
+    for tag, value in exif_info.items():
+      decoded = ExifTags.TAGS.get(tag, tag)
+      if decoded in ["Model", "DateTime", "ExposureTime",
+                     "ShutterSpeedValue", "FNumber", "ApertureValue",
+                     "FocalLength", "ISOSpeedRatings"]:
+        metadata[decoded] = value
+    metadata = {'ImageUniqueID': self._num_image, 't(s)': time(), **metadata}
     self._num_image += 1
     if self.channels == '1':
       img = img.convert('L')
