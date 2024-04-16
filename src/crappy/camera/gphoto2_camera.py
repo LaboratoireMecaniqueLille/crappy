@@ -104,19 +104,18 @@ class CameraGPhoto2(Camera):
 
     if self.mode == 'hardware_trigger':
       # Wait for a hardware trigger event
-      print("Waiting for hardware trigger...")
       event_type, event_data = self._camera.wait_for_event(200, self._context)
       if event_type == gp.GP_EVENT_FILE_ADDED:
-        camera_file_path = event_data
         camera_file = gp.CameraFile()
-        self._camera.file_get(camera_file_path.folder,
-                              camera_file_path.name,
+        self._camera.file_get(event_data.folder,
+                              event_data.name,
                               gp.GP_FILE_TYPE_NORMAL,
                               camera_file,
                               self._context)
       else:
         return
-    else:
+
+    elif self.mode == 'continuous':
       file_path = self._camera.capture(gp.GP_CAPTURE_IMAGE, self._context)
       camera_file = self._camera.file_get(
           file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
@@ -139,6 +138,12 @@ class CameraGPhoto2(Camera):
             metadata[decoded] = value
     metadata = {'ImageUniqueID': self._num_image, **metadata}
     metadata = {'t(s)': t, **metadata}
+    else:
+      return
+
+    else:
+      return
+
     self._num_image += 1
     if self.channels == '1':
       img = img.convert('L')
