@@ -44,12 +44,14 @@ class CameraGPhoto2(Camera):
 
     super().__init__()
 
+    # Attributes used for image acquisition
     self._camera: Optional[gp.Camera] = None
     self._context: gp.GPContext = gp.Context()
     self._model: Optional[str] = None
     self._port: Optional[str] = None
     self._num_image = 0
 
+    # Basic settings always implemented
     self.add_choice_setting(name="channels",
                             choices=('1', '3'),
                             getter=None,
@@ -67,11 +69,16 @@ class CameraGPhoto2(Camera):
            **kwargs: any) -> None:
     """Open the camera `model` and `could be specified`"""
 
+    # Detecting the connected and compatible cameras
     cameras = gp.Camera.autodetect(self._context)
 
+    # Listing all the available ports
     port_info_list = gp.PortInfoList()
     port_info_list.load()
 
+    # Checking if a camera matches the port and/or model specifications and
+    # instantiating it if so
+    # If nothing specified, instantiating the first camera found
     for name, detected_port in cameras:
       if ((model is None or name == model) and
           (port is None or detected_port == port)):
@@ -82,6 +89,7 @@ class CameraGPhoto2(Camera):
           self._camera.init(self._context)
           break
 
+    # Raising an exception in case no compatible camera was found
     if self._camera is None:
       if model is not None and port is not None:
         raise IOError(f"Could not find camera {model} on port {port} !")
@@ -93,6 +101,7 @@ class CameraGPhoto2(Camera):
         raise IOError(f"No compatible camera found !")
 
     self.set_all(**kwargs)
+    # Not currently used, but might be needed in the future
 
   def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
     """Simply acquire an image using gphoto2 library.
@@ -105,6 +114,7 @@ class CameraGPhoto2(Camera):
     if self.mode == 'hardware_trigger':
       # Wait for a hardware trigger event
       event_type, event_data = self._camera.wait_for_event(200, self._context)
+      # Get the acquired image if a new one was captured
       if event_type == gp.GP_EVENT_FILE_ADDED:
         camera_file = gp.CameraFile()
         self._camera.file_get(event_data.folder,
@@ -115,6 +125,7 @@ class CameraGPhoto2(Camera):
       else:
         return
 
+    # In continuous mode, getting the image in all cases
     elif self.mode == 'continuous':
       file_path = self._camera.capture(gp.GP_CAPTURE_IMAGE, self._context)
       camera_file = self._camera.file_get(
@@ -139,6 +150,8 @@ class CameraGPhoto2(Camera):
         metadata[decoded] = value
     metadata = {'ImageUniqueID': self._num_image, 't(s)': time(), **metadata}
     self._num_image += 1
+
+    # Casting the image to grey level if needed
     if self.channels == '1':
       img = img.convert('L')
       metadata['channels'] = 'gray'
