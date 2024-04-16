@@ -23,22 +23,19 @@ except (ModuleNotFoundError, ImportError):
 
 
 class CameraGPhoto2(Camera):
-  """Class for reading images from agphoto2 compatible Camera.
+  """Class for reading images from a gPhoto2-compatible camera.
 
-  The CameraGphoto2 block is meant for reading images from a
-  Gphoto2 Camera. It uses the :mod:`gphoto2` library for capturing images,
-  and :mod:`PIL` for converting BGR images to black and white.
+  Such cameras include for example most of the Nikon and Canon models. This
+  class is designed for low-frequency acquisition of high-resolution images.
 
-  Read images from the all the gphoto2 compatible cameras  indifferently.
-
-  2 modes are currently implemented :
-      'continuous' : take picture as fast as possible
-      'hardware_trigger' : take picture when button is clicked
+  The class is based on the :mod:`gphoto2` Python module, that is necessary for
+  using it. It can acquire images continuously, or following external triggers.
 
   Warning:
-    Not tested in Windows, but there is no use of Linux API,
-     only python libraries.
-  .. versionadded:: ?
+    This class was only tested on Linux, it is not certain that it works on
+    Windows or macOS.
+
+  .. versionadded:: 2.0.6
   """
 
   def __init__(self) -> None:
@@ -73,11 +70,23 @@ class CameraGPhoto2(Camera):
   def open(self,
            model: Optional[str] = None,
            port: Optional[str] = None,
-    """Open the camera `model` and `could be specified`"""
            channels: str = '1',
            mode: str = 'continuous') -> None:
+    """Opens the connection to a gPhoto2-supported camera.
+
     The available connected cameras are first scanned, and if one matches the
     model and port requirements it is opened.
+
+    Args:
+      model: The model of camera to open can be specified as a :obj:`str`,
+        following gPhoto2's nomenclature.
+      port: The port on which to open the camera can be specified as a
+        :obj:`str`.
+      channels: Either `'1'` for acquiring images in grey levels, or `'3'` for
+        acquiring color images.
+      mode: Either `'continuous'` for continuous image acquisition, or
+        `'hardware_trigger'` if image acquisition is externally triggered.
+    """
 
     # Detecting the connected and compatible cameras
     cameras = gp.Camera.autodetect(self._context)
@@ -118,12 +127,11 @@ class CameraGPhoto2(Camera):
     # Not currently used, but might be needed in the future
     self.set_all(channels=channels, mode=mode)
 
-  def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
-    """Simply acquire an image using gphoto2 library.
-    The captured image is in GBR format, and converted into black and white if
-    needed.
-    Returns:
-    The timeframe and the image.
+  def get_image(self) -> Optional[Tuple[Dict[str, Any], np.ndarray]]:
+    """Acquires an image using gPhoto2 and returns it.
+
+    The images can either be acquired continuously, or based on an external
+    trigger.
     """
 
     if self.mode == 'hardware_trigger':
@@ -182,7 +190,7 @@ class CameraGPhoto2(Camera):
       return metadata, img[:, :, ::-1]
 
   def close(self) -> None:
-    """Close the camera in gphoto2 library"""
+    """Closes the connection to the camera object."""
 
     if self._camera is not None:
       self.log(logging.INFO, "Closing the camera object.")
