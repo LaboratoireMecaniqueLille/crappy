@@ -66,8 +66,11 @@ class CameraGPhoto2(Camera):
   def open(self,
            model: Optional[str] = None,
            port: Optional[str] = None,
-           **kwargs: any) -> None:
     """Open the camera `model` and `could be specified`"""
+           channels: str = '1',
+           mode: str = 'continuous') -> None:
+    The available connected cameras are first scanned, and if one matches the
+    model and port requirements it is opened.
 
     # Detecting the connected and compatible cameras
     cameras = gp.Camera.autodetect(self._context)
@@ -100,8 +103,8 @@ class CameraGPhoto2(Camera):
       else:
         raise IOError(f"No compatible camera found !")
 
-    self.set_all(**kwargs)
     # Not currently used, but might be needed in the future
+    self.set_all(channels=channels, mode=mode)
 
   def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
     """Simply acquire an image using gphoto2 library.
