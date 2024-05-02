@@ -24,10 +24,10 @@ jobs:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
         # Run on all the supported platforms
         os: [ubuntu-latest, windows-latest, macos-latest]
-    # Cannot run for Python 3.7 on macOS as it is no longer supported
-    if: |
-      contains(fromJSON('["Linux", "Windows"]'), runner.os) ||
-      contains(fromJSON('["3.8", "3.9", "3.10", "3.11", "3.12"]'), matrix.python-version)
+        # Cannot run for Python 3.7 on macOS as it is no longer supported
+        exclude:
+          - os: macos-latest
+            python-version: 3.7
 
     steps:
     # Checkout the repository
