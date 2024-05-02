@@ -1,5 +1,5 @@
 # Installs the Python dependencies, installs Crappy, and checks that it imports
-name: Python Package
+name: Test Python Package
 
 on:
   # Runs on pull requests targeting the default branch
@@ -15,7 +15,7 @@ on:
     - cron: '0 12 1 * *'
 
 jobs:
-  build:
+  test-python-package:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
