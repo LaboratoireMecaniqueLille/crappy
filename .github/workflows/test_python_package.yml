@@ -40,5 +40,10 @@ jobs:
     # Install the crappy Python module
     - name: Install Crappy
       run: python -m pip install .
+    # Check if the module imports as expected
+    # Cannot run for Python 3.7 on macOS as it is not supported anymore
     - name: Import Crappy
+      if: |
+        contains(fromJSON('["Linux", "Windows"]'), runner.os) ||
+        contains(fromJSON('["3.8", "3.9", "3.10", "3.11", "3.12"]'), matrix.python-version)
       run: python -c "import crappy; print(crappy.__version__)"
