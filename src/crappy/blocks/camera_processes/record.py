@@ -232,7 +232,7 @@ class ImageSaver(CameraProcess):
       cv2.imwrite(path, self.img)
 
     elif self._save_backend == 'pil':
-      PIL.Image.fromarray(self.img).save(
+      PIL.Image.fromarray(self.img[:, :, ::-1]).save(
         path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
                     if key in TAGS_INV})
 
