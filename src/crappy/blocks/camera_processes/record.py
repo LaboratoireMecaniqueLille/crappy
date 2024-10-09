@@ -226,7 +226,8 @@ class ImageSaver(CameraProcess):
     # Saving the image at the destination path using the chosen backend
     self.log(logging.DEBUG, "Saving image")
     if self._save_backend == 'sitk':
-      Sitk.WriteImage(Sitk.GetImageFromArray(self.img), path)
+      Sitk.WriteImage(Sitk.GetImageFromArray(self.img[:, :, ::-1],
+                                             isVector=True), path)
 
     elif self._save_backend == 'cv2':
       cv2.imwrite(path, self.img)
