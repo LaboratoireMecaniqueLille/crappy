@@ -226,13 +226,21 @@ class ImageSaver(CameraProcess):
     # Saving the image at the destination path using the chosen backend
     self.log(logging.DEBUG, "Saving image")
     if self._save_backend == 'sitk':
-      Sitk.WriteImage(Sitk.GetImageFromArray(self.img[:, :, ::-1],
-                                             isVector=True), path)
+      if len(self.img.shape) == 3:
+        Sitk.WriteImage(Sitk.GetImageFromArray(self.img[:, :, ::-1],
+                                               isVector=True), path)
+      else:
+        Sitk.WriteImage(Sitk.GetImageFromArray(self.img), path)
 
     elif self._save_backend == 'pil':
-      PIL.Image.fromarray(self.img[:, :, ::-1]).save(
-        path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
-                    if key in TAGS_INV})
+      if len(self.img.shape) == 3:
+        PIL.Image.fromarray(self.img[:, :, ::-1]).save(
+          path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
+                      if key in TAGS_INV})
+      else:
+        PIL.Image.fromarray(self.img).save(
+          path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
+                      if key in TAGS_INV})
 
     elif self._save_backend == 'cv2':
       cv2.imwrite(path, self.img)
