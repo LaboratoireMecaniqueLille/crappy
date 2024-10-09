@@ -229,13 +229,13 @@ class ImageSaver(CameraProcess):
       Sitk.WriteImage(Sitk.GetImageFromArray(self.img[:, :, ::-1],
                                              isVector=True), path)
 
-    elif self._save_backend == 'cv2':
-      cv2.imwrite(path, self.img)
-
     elif self._save_backend == 'pil':
       PIL.Image.fromarray(self.img[:, :, ::-1]).save(
         path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
                     if key in TAGS_INV})
+
+    elif self._save_backend == 'cv2':
+      cv2.imwrite(path, self.img)
 
     elif self._save_backend == 'npy':
       np.save(path, self.img)
