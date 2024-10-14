@@ -208,16 +208,17 @@ class DICVE(Camera):
         recording the images. It should be one of:
         ::
 
-          'sitk', 'cv2', 'pil', 'npy'
+          'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`cv2` (OpenCV),
-        :mod:`PIL` (Pillow Fork), and :mod:`numpy`. Note that the ``'npy'``
+        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
+        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
         backend saves the images as raw :obj:`numpy.array`, and thus ignores
         the ``img_extension`` argument. Depending on the machine, some backends
         may be faster or slower. For using each backend, the corresponding
-        Python must of course be installed. If not provided and ``save_images``
-        is :obj:`True`, the backends are tried in the same order as given above
-        and the first available one is used. ``'npy'`` is always available.
+        Python module must of course be installed. If not provided and
+        ``save_images`` is :obj:`True`, the backends are tried in the same
+        order as given above and the first available one is used. ``'npy'`` is
+        always available.
 
         .. versionadded:: 1.5.10
       image_generator: A callable taking two :obj:`float` as arguments and
