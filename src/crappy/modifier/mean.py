@@ -54,7 +54,7 @@ class Mean(Modifier):
       # Once there's enough data in the buffer, calculating the average value
       if len(self._buf[label]) == self._n_points:
         try:
-          ret[label] = np.mean(self._buf[label])
+          ret[label] = float(np.mean(self._buf[label]))
         except TypeError:
           ret[label] = self._buf[label][-1]
 

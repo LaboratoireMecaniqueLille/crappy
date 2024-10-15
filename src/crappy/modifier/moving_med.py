@@ -55,7 +55,7 @@ class MovingMed(Modifier):
 
       # Calculating the median for each label
       try:
-        ret[label] = np.median(self._buf[label])
+        ret[label] = float(np.median(self._buf[label]))
       except TypeError:
         ret[label] = self._buf[label][-1]
 

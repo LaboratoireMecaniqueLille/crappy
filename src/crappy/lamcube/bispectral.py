@@ -3,6 +3,7 @@
 import numpy as np
 from typing import Tuple
 import logging
+from warnings import warn
 
 from ..camera.cameralink import BaslerIronmanCameraLink
 
@@ -86,10 +87,15 @@ class BiSpectral(BaslerIronmanCameraLink):
     
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Bispectral* to *BiSpectral*
+  .. versionremoved:: 2.1.0
   """
 
   def __init__(self) -> None:
     """Adds the various setting for the Camera."""
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be "
+         f"deprecated and removed from Crappy. Please contact the maintainers "
+         f"if you still use this Camera.", FutureWarning)
 
     super().__init__()
     self.add_scale_setting('width', 1, 640, self._get_w, self._set_w, 640)

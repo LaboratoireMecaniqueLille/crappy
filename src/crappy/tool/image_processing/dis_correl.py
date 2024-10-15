@@ -157,7 +157,7 @@ class DISCorrelTool:
 
     # These attributes will be used later
     self._base = [fields[:, :, :, i] for i in range(fields.shape[3])]
-    self._norm2 = [np.sum(base_field ** 2) for base_field in self._base]
+    self._norm2 = [float(np.sum(base_field ** 2)) for base_field in self._base]
 
   def get_data(self,
                img: np.ndarray,
@@ -192,12 +192,13 @@ class DISCorrelTool:
       self._dis_flow = self._dis.calc(self._img0, img, None)
 
     # Getting the values to calculate as floats
-    ret = [np.sum(vec * self._crop(self._dis_flow)) / n2 for vec, n2 in
+    ret = [float(np.sum(vec * self._crop(self._dis_flow))) / n2 for vec, n2 in
            zip(self._base, self._norm2)]
 
     # Adding the average residual value if requested
     if residuals:
-      ret.append(np.average(np.abs(get_res(self._img0, img, self._dis_flow))))
+      ret.append(float(np.average(np.abs(get_res(self._img0, img,
+                                                 self._dis_flow)))))
 
     return ret
 

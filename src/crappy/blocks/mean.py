@@ -112,7 +112,7 @@ class MeanBlock(Block):
     for label, values in data.items():
       if self._out_labels is None or label in self._out_labels:
         try:
-          to_send[label] = np.mean(values)
+          to_send[label] = float(np.mean(values))
         except (ValueError, TypeError):
           self.log(logging.WARNING, f"Cannot perform averaging on label "
                                     f"{label} with values: {values}")
