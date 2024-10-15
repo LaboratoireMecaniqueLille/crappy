@@ -5,6 +5,12 @@ Cameras
 Regular Cameras
 ---------------
 
+Camera gPhoto2
+++++++++++++++
+.. autoclass:: crappy.camera.CameraGPhoto2
+   :members: open, get_image, close
+   :special-members: __init__
+
 Camera GStreamer
 ++++++++++++++++
 .. autoclass:: crappy.camera.CameraGstreamer
