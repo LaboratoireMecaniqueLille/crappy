@@ -265,7 +265,8 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     """
 
     for i, j in self._dead_pixels:
-      img[i, j] = np.median(img[max(0, i - 1): i + 2, max(0, j - 1): j + 2])
+      img[i, j] = float(np.median(img[max(0, i - 1): i + 2,
+                                      max(0, j - 1): j + 2]))
     return img
 
   def _write_data(self, request: int, data: bytes) -> int:

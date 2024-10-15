@@ -522,13 +522,13 @@ class CameraConfig(tk.Tk):
     self.log(logging.DEBUG, "Updating the value of the current pixel")
 
     try:
-      self._reticle_val.set(np.average(self._original_img[self._y_pos.get(),
-                                                          self._x_pos.get()]))
+      self._reticle_val.set(int(np.average(
+          self._original_img[self._y_pos.get(), self._x_pos.get()])))
     except IndexError:
       self._x_pos.set(0)
       self._y_pos.set(0)
-      self._reticle_val.set(np.average(self._original_img[self._y_pos.get(),
-                                                          self._x_pos.get()]))
+      self._reticle_val.set(int(np.average(
+          self._original_img[self._y_pos.get(), self._x_pos.get()])))
 
   def _coord_to_pix(self, x: int, y: int) -> Tuple[int, int]:
     """Converts the coordinates of the mouse in the GUI referential to
@@ -859,19 +859,20 @@ class CameraConfig(tk.Tk):
     # If the auto_range is set, adjusting the values to the range
     if self._auto_range.get():
       self.log(logging.DEBUG, "Applying auto range to the image")
-      self._low_thresh, self._high_thresh = np.percentile(img, (3, 97))
+      self._low_thresh, self._high_thresh = map(float,
+                                                np.percentile(img, (3, 97)))
       self._img = ((np.clip(img, self._low_thresh, self._high_thresh) -
                     self._low_thresh) * 255 /
                    (self._high_thresh - self._low_thresh)).astype('uint8')
 
       # The original image still needs to be saved as 8-bits
-      bit_depth = np.ceil(np.log2(np.max(img) + 1))
+      bit_depth = int(np.ceil(np.log2(int(np.max(img)) + 1)))
       self._original_img = (img / 2 ** (bit_depth - 8)).astype('uint8')
 
     # Or if the image is not already 8 bits, casting to 8 bits
     elif img.dtype != np.uint8:
       self.log(logging.DEBUG, "Casting the image to 8 bits")
-      bit_depth = np.ceil(np.log2(np.max(img) + 1))
+      bit_depth = int(np.ceil(np.log2(int(np.max(img)) + 1)))
       self._img = (img / 2 ** (bit_depth - 8)).astype('uint8')
       self._original_img = np.copy(self._img)
 
@@ -881,7 +882,7 @@ class CameraConfig(tk.Tk):
       self._original_img = np.copy(img)
 
     # Updating the information
-    self._nb_bits.set(int(np.ceil(np.log2(np.max(img) + 1))))
+    self._nb_bits.set(int(np.ceil(np.log2(int(np.max(img)) + 1))))
     self._max_pixel.set(int(np.max(img)))
     self._min_pixel.set(int(np.min(img)))
 

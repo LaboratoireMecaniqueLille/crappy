@@ -138,10 +138,11 @@ class FakeMachine(Block):
 
     # Calculating the speed based on the command and the mode
     if self._mode == 'speed':
-      speed = np.sign(cmd) * np.min((self._max_speed, np.abs(cmd)))
+      speed = float(np.sign(cmd)) * float(np.min((self._max_speed,
+                                                  np.abs(cmd))))
     elif self._mode == 'position':
-      speed = np.sign(cmd - self._current_pos) * np.min(
-          (self._max_speed, np.abs(cmd - self._current_pos) / delta_t))
+      speed = float(np.sign(cmd - self._current_pos)) * float(np.min(
+          (self._max_speed, np.abs(cmd - self._current_pos) / delta_t)))
     else:
       raise ValueError(f'Invalid mode : {self._mode} !')
 

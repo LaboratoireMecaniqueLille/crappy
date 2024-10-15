@@ -86,24 +86,24 @@ class Demux(Modifier):
       # The data of a given label is on a same row
       if self._transpose:
         if self._mean:
-          data[label] = np.mean(data[self._stream_label][i, :])
+          data[label] = float(np.mean(data[self._stream_label][i, :]))
         else:
-          data[label] = data[self._stream_label][i, 0]
+          data[label] = float(data[self._stream_label][i, 0])
       # The data of a given label is on a same column
       else:
         if self._mean:
-          data[label] = np.mean(data[self._stream_label][:, i])
+          data[label] = float(np.mean(data[self._stream_label][:, i]))
         else:
-          data[label] = data[self._stream_label][0, i]
+          data[label] = float(data[self._stream_label][0, i])
 
     # Discarding the raw data
     del data[self._stream_label]
 
     # Keeping either the average or the first time value
     if self._mean:
-      data[self._time_label] = np.mean(data[self._time_label])
+      data[self._time_label] = float(np.mean(data[self._time_label]))
     else:
-      data[self._time_label] = np.squeeze(data[self._time_label])[0]
+      data[self._time_label] = float(np.squeeze(data[self._time_label])[0])
 
     self.log(logging.DEBUG, f"Sending {data}")
 
