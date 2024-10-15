@@ -54,7 +54,7 @@ class Median(Modifier):
       # Once there's enough data in the buffer, calculating the median value
       if len(self._buf[label]) == self._n_points:
         try:
-          ret[label] = np.median(self._buf[label])
+          ret[label] = float(np.median(self._buf[label]))
         except TypeError:
           ret[label] = self._buf[label][-1]
 

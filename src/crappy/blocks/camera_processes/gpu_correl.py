@@ -213,7 +213,8 @@ class GPUCorrelProcess(CameraProcess):
         self._res_history.append(res)
         self._res_history = self._res_history[-self._discard_ref - 1:]
 
-        if res > self._discard_limit * np.average(self._res_history[:-1]):
+        if (res > self._discard_limit *
+            float(np.average(self._res_history[:-1]))):
           self.log(logging.WARNING, "Residual too high, not sending "
                                     "values")
           return

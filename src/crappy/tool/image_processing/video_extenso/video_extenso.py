@@ -243,15 +243,15 @@ class VideoExtensoTool:
         x_top_1, x_bottom_1, y_left_1, y_right_1 = box_1.sorted()
         x_top_2, x_bottom_2, y_left_2, y_right_2 = box_2.sorted()
 
-        box_1.x_start = min(x_top_1 + 1, box_1.x_centroid - 2)
-        box_1.y_start = min(y_left_1 + 1, box_1.y_centroid - 2)
-        box_1.x_end = max(x_bottom_1 - 1, box_1.x_centroid + 2)
-        box_1.y_end = max(y_right_1 - 1, box_1.y_centroid + 2)
+        box_1.x_start = min(x_top_1 + 1, int(box_1.x_centroid - 2))
+        box_1.y_start = min(y_left_1 + 1, int(box_1.y_centroid - 2))
+        box_1.x_end = max(x_bottom_1 - 1, int(box_1.x_centroid + 2))
+        box_1.y_end = max(y_right_1 - 1, int(box_1.y_centroid + 2))
 
-        box_2.x_start = min(x_top_2 + 1, box_2.x_centroid - 2)
-        box_2.y_start = min(y_left_2 + 1, box_2.y_centroid - 2)
-        box_2.x_end = max(x_bottom_2 - 1, box_2.x_centroid + 2)
-        box_2.y_end = max(y_right_2 - 1, box_2.y_centroid + 2)
+        box_2.x_start = min(x_top_2 + 1, int(box_2.x_centroid - 2))
+        box_2.y_start = min(y_left_2 + 1, int(box_2.y_centroid - 2))
+        box_2.x_end = max(x_bottom_2 - 1, int(box_2.x_centroid + 2))
+        box_2.y_end = max(y_right_2 - 1, int(box_2.y_centroid + 2))
 
     if overlap:
       self._consecutive_overlaps += 1

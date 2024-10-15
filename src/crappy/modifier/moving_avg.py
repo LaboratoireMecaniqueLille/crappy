@@ -55,7 +55,7 @@ class MovingAvg(Modifier):
 
       # Calculating the average for each label
       try:
-        ret[label] = np.mean(self._buf[label])
+        ret[label] = float(np.mean(self._buf[label]))
       except TypeError:
         ret[label] = self._buf[label][-1]
 
