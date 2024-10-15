@@ -16,7 +16,7 @@
 from time import gmtime, strftime
 from re import match
 
-__version__ = '2.0.5'
+__version__ = '2.0.6'
 
 # -- Project information -----------------------------------------------------
 
