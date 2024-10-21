@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List
+from typing import List, Literal
 import logging
 from  warnings import warn
 
@@ -27,7 +27,7 @@ class Agilent34420a(InOut):
   """
 
   def __init__(self,
-               mode: bytes = b"VOLT",
+               mode: Literal[b'VOLT', b'RES'] = b"VOLT",
                device: str = '/dev/ttyUSB0',
                baudrate: int = 9600,
                timeout: float = 1) -> None:

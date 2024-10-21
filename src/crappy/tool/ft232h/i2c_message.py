@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from __future__ import annotations
-from typing import Optional, List
+from typing import Optional, List, Literal
 
 
 class I2CMessage:
@@ -16,7 +16,7 @@ class I2CMessage:
   """
 
   def __init__(self,
-               type_: str,
+               type_: Literal['r', 'w'],
                address: int,
                length: Optional[int] = None,
                buf: Optional[list] = None) -> None:

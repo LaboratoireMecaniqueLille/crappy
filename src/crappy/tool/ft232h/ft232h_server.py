@@ -2,7 +2,7 @@
 
 from collections import namedtuple
 from struct import unpack
-from typing import Union, List, Tuple, Optional, Callable
+from typing import Union, List, Tuple, Optional, Callable, Literal
 from _io import FileIO
 from multiprocessing.synchronize import RLock
 from multiprocessing.sharedctypes import Synchronized
@@ -176,7 +176,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   """
 
   def __init__(self,
-               mode: str,
+               mode: Literal['SPI', 'I2C', 'GPIO_only', 'Write_serial_nr'],
                block_index: int,
                current_block: Synchronized,
                command_file: FileIO,

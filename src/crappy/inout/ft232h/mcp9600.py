@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List
+from typing import List, Literal
 import logging
 from  warnings import warn
 
@@ -80,12 +80,16 @@ class MCP9600FT232H(InOut):
   ft232h = True
 
   def __init__(self,
-               thermocouple_type: str,
+               thermocouple_type: Literal['J', 'K', 'T', 'N', 'S',
+                                          'E', 'B', 'R'],
                device_address: int = 0x67,
                adc_resolution: int = 18,
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
-               mode: str = 'Hot Junction Temperature',
+               mode: Literal['Hot Junction Temperature',
+                             'Junction Temperature Delta',
+                             'Cold Junction Temperature',
+                             'Raw Data ADC'] = 'Hot Junction Temperature',
                _ft232h_args: USBArgsType = tuple()) -> None:
     """Checks the validity of the arguments.
 

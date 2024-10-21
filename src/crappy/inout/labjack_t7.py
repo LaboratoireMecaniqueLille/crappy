@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List, Optional, Dict, Any, Union, Tuple, Iterable
+from typing import List, Optional, Dict, Any, Union, Tuple, Iterable, Literal
 from itertools import chain
 from dataclasses import dataclass, field
 from multiprocessing import current_process
@@ -40,7 +40,7 @@ class _Channel:
   range: float = 10
   limits: Optional[Tuple[float, float]] = None
   resolution: int = 1
-  thermocouple: Optional[str] = None
+  thermocouple: Optional[Literal['E', 'J', 'K', 'R', 'T', 'S', 'C']] = None
   write_at_open: List[Tuple[str, float]] = field(default_factory=list)
 
   def update(self, dic_in: Dict[str, Any]) -> None:
@@ -75,8 +75,9 @@ class LabjackT7(InOut):
 
   def __init__(self,
                channels: Iterable[Dict[str, Any]],
-               device: str = 'ANY',
-               connection: str = 'ANY',
+               device: Literal['ANY', 'T7', 'T4', 'DIGIT'] = 'ANY',
+               connection: Literal['ANY', 'TCP', 'USB',
+                                   'ETHERNET', 'WIFI'] = 'ANY',
                identifier: str = 'ANY',
                write_at_open: Optional[Iterable[tuple]] = None,
                no_led: bool = False) -> None:

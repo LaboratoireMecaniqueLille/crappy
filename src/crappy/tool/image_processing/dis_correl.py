@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Literal
 import numpy as np
 
 from ..._global import OptionalModule
@@ -27,7 +27,9 @@ class DISCorrelTool:
 
   def __init__(self,
                box: Box,
-               fields: Optional[List[Union[str, np.ndarray]]] = None,
+               fields: Optional[List[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                                   'exy', 'eyx', 'exy2', 'z'],
+                                           np.ndarray]]] = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,

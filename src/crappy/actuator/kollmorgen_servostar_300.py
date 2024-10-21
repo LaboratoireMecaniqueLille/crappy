@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Union, Optional
+from typing import Union, Optional, Literal
 import logging
 
 from .meta_actuator import Actuator
@@ -27,7 +27,7 @@ class ServoStar300(Actuator):
   def __init__(self,
                port: str,
                baudrate: int = 38400,
-               mode: str = "serial") -> None:
+               mode: Literal['serial', 'analog'] = "serial") -> None:
     """Sets the instance attributes and initializes the parent class.
 
     Args:

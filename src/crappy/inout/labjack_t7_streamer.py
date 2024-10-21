@@ -2,7 +2,7 @@
 
 from time import time
 import numpy as np
-from typing import List, Dict, Any, Optional, Tuple, Iterable
+from typing import List, Dict, Any, Optional, Tuple, Iterable, Literal
 from dataclasses import dataclass, field
 from itertools import chain
 from multiprocessing import current_process
@@ -72,8 +72,9 @@ class T7Streamer(InOut):
 
   def __init__(self,
                channels: Iterable[Dict[str, Any]],
-               device: str = 'ANY',
-               connection: str = 'ANY',
+               device: Literal['ANY', 'T7', 'T4', 'DIGIT']  = 'ANY',
+               connection: Literal['ANY', 'TCP', 'USB',
+                                   'ETHERNET', 'WIFI'] = 'ANY',
                identifier: str = 'ANY',
                scan_rate: int = 100000,
                scan_per_read: int = 10000,

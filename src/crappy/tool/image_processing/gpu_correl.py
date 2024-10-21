@@ -4,7 +4,7 @@ import warnings
 from math import ceil
 import numpy as np
 from pkg_resources import resource_filename
-from typing import Any, Tuple, Optional, Union, List
+from typing import Any, Tuple, Optional, Union, List, Literal
 from pathlib import Path
 from itertools import chain
 import logging
@@ -524,7 +524,9 @@ class GPUCorrelTool:
                resampling_factor: float = 2,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
-               fields: Optional[List[Union[str, np.ndarray]]] = None,
+               fields: Optional[List[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                                   'exy', 'eyx', 'exy2', 'z'],
+                                           np.ndarray]]] = None,
                ref_img: Optional[np.ndarray] = None,
                mask: Optional[np.ndarray] = None,
                mul: float = 3) -> None:
@@ -823,7 +825,9 @@ class GPUCorrelTool:
     if level <= self._verbose:
       self._logger.log(logging.INFO, msg)
 
-  def _set_fields(self, fields: List[str]) -> None:
+  def _set_fields(self, fields: List[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                                   'exy', 'eyx', 'exy2', 'z'],
+                                           np.ndarray]]) -> None:
     """Computes the fields based on the provided field strings, and sets them
     for each stage."""
 

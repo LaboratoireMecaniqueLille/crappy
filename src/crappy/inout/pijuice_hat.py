@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Literal
 from time import time
 import logging
 from  warnings import warn
@@ -58,7 +58,7 @@ class PiJuice(InOut):
   def __init__(self,
                i2c_port: int = 1,
                address: int = 0x14,
-               backend: str = 'Pi4') -> None:
+               backend: Literal['Pi4', 'blinka'] = 'Pi4') -> None:
     """Checks the validity of the arguments.
 
     Args:

@@ -3,7 +3,7 @@
 from enum import IntEnum
 from collections import namedtuple
 from struct import calcsize, unpack, pack
-from typing import Union, Callable, Optional, Tuple, List
+from typing import Union, Callable, Optional, Tuple, List, Literal
 from multiprocessing import current_process
 import logging
 
@@ -181,7 +181,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     SYNCFF = 0x40  # Single Channel Synchronous FIFO mode
 
   def __init__(self,
-               mode: str,
+               mode: Literal['SPI', 'I2C', 'GPIO_only', 'Write_serial_nr'],
                serial_nr: Optional[str] = None,
                i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:

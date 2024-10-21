@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List
+from typing import List, Literal
 import logging
 from  warnings import warn
 
@@ -104,14 +104,19 @@ class MCP9600(InOut):
   """
 
   def __init__(self,
-               backend: str,
-               thermocouple_type: str,
+               backend: Literal['Pi4', 'blinka'],
+               thermocouple_type: Literal['J', 'K', 'T', 'N', 'S',
+                                          'E', 'B', 'R'],
                i2c_port: int = 1,
                device_address: int = 0x67,
                adc_resolution: int = 18,
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
-               mode: str = 'Hot Junction Temperature') -> None:
+               mode: Literal['Hot Junction Temperature',
+                             'Junction Temperature Delta',
+                             'Cold Junction Temperature',
+                             'Raw Data ADC'] = 'Hot Junction Temperature'
+               ) -> None:
     """Checks the validity of the arguments.
 
     Args:

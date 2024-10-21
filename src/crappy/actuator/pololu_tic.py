@@ -3,7 +3,7 @@
 from subprocess import check_output
 from threading import Thread, RLock
 from time import sleep
-from typing import Union, Dict, Optional
+from typing import Union, Dict, Optional, Literal
 import logging
 
 from .meta_actuator import Actuator
@@ -238,6 +238,11 @@ Tic_pin_modes = {'Default': 0,
 Tic_pin_polarity = {'Active low': 0,
                     'Active high': 1}
 
+pin_type = Literal['SCL', 'SDA', 'TX', 'RX', 'RC']
+pin_mode_type = Literal['Default', 'Kill switch', 'Limit switch forward', 
+                        'Limit switch reverse']
+pin_polarity_type = Literal['Active high', 'Active low']
+
 
 class FindSerialNumber:
   """A class used for finding USB devices matching a given serial number, using
@@ -277,17 +282,20 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def __init__(self,
                steps_per_mm: float,
                current_limit: float,
-               step_mode: Union[int, str] = 8,
+               step_mode: Literal[1, 2, 4, 8, 16, 32,
+                                  64, 128, 256, '2_100p'] = 8,
                max_accel: float = 20,
                t_shutoff: float = 0,
                config_file: Optional[str] = None,
                serial_number: Optional[str] = None,
-               model: Optional[str] = None,
+               model: Optional[Literal['T825', 'T824', 'T500', 
+                               'N825', 'T249', '36v4']] = None,
                reset_command_timeout: bool = True,
-               backend: str = 'USB',
+               backend: Literal['USB', 'ticcmd'] = 'USB',
                unrestricted_current_limit: bool = False,
-               pin_function: Optional[Dict[str, str]] = None,
-               pin_polarity: Optional[Dict[str, str]] = None) -> None:
+               pin_function: Optional[Dict[pin_type, pin_mode_type]] = None,
+               pin_polarity: Optional[Dict[pin_type, 
+                                           pin_polarity_type]] = None) -> None:
     """Checks args validity, finds the right device, reads the current limit
     tables.
 
@@ -496,6 +504,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       devices.pop()  # Removing the '' element at the end of devices
       devices = [string.split(',') for string in devices]
       if model is not None:
+        model: str
         if serial_number is not None:
           devices = [dev for dev in devices if dev[0] == serial_number and
                      model in dev[1]]
@@ -1010,7 +1019,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
           byteorder='little',
           signed=False) / 10000)
 
-  def _set_pin_function(self, pin_func: Dict[str, str]) -> None:
+  def _set_pin_function(self, pin_func: Dict[pin_type, pin_mode_type]) -> None:
     """Sets the pin function bitfields.
 
     Sends a command for setting each pin separately, and three commands for
@@ -1079,7 +1088,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
                         value=limit_reverse_map,
                         index=Tic_settings['Limit_switch_reverse_map'])
 
-  def _set_pin_polarity(self, pin_pol: Dict[str, str]) -> None:
+  def _set_pin_polarity(self, pin_pol: Dict[pin_type,
+                                            pin_polarity_type]) -> None:
     """Sets the switch polarity bitfield."""
 
     self.log(logging.INFO, "Setting the pin polarities")

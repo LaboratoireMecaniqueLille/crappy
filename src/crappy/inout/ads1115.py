@@ -2,7 +2,7 @@
 
 from time import time
 from re import findall
-from typing import List, Optional
+from typing import List, Optional, Literal
 import logging
 
 from .meta_inout import InOut
@@ -93,12 +93,13 @@ class ADS1115(InOut):
   """
 
   def __init__(self,
-               backend: str,
+               backend: Literal['Pi4', 'blinka'],
                device_address: int = 0x48,
                i2c_port: int = 1,
                sample_rate: int = 128,
                v_range: float = 2.048,
-               multiplexer: str = 'A1',
+               multiplexer: Literal['A0', 'A1', 'A2', 'A3', 'A0 - A1',
+                                    'A0 - A3', 'A1 - A3', 'A2 - A3'] = 'A1',
                dry_pin: Optional[int] = None,
                gain: float = 1,
                offset: float = 0) -> None:

@@ -2,7 +2,7 @@
 
 from struct import pack_into
 from time import sleep
-from typing import Union, Tuple
+from typing import Union, Tuple, Literal
 import logging
 from  warnings import warn
 
@@ -68,7 +68,7 @@ class DCMotorHat(Actuator):
   """
 
   def __init__(self,
-               backend: str,
+               backend: Literal['Pi4', 'blinka'],
                device_address: int = 0x60,
                i2c_port: int = 1) -> None:
     """Checks the validity of the arguments.

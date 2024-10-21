@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Literal
 from ..._global import OptionalModule
 from ..camera_config import SpotsBoxes, Box
 
@@ -28,7 +28,8 @@ class DICVETool:
 
   def __init__(self,
                patches: SpotsBoxes,
-               method: str = 'Disflow',
+               method: Literal['Disflow', 'Lucas Kanade',
+                               'Pixel precision', 'Parabola'] = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,

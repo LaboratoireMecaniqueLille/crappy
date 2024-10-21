@@ -2,7 +2,7 @@
 
 from time import time
 from struct import pack, unpack
-from typing import List, Iterable
+from typing import List, Iterable, Literal
 import logging
 from  warnings import warn
 
@@ -47,7 +47,7 @@ class KollmorgenAKDPDMM(InOut):
 
   def __init__(self,
                axes: Iterable[int],
-               mode: str = 'position',
+               mode: Literal['position', 'speed'] = 'position',
                host: str = '192.168.0.109',
                port: int = 502) -> None:
     """Sets the arguments and initializes the parent class.
