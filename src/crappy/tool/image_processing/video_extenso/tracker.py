@@ -50,7 +50,7 @@ class Tracker(Process):
                log_queue: Queue,
                white_spots: bool = False,
                thresh: Optional[int] = None,
-               blur: Optional[float] = 5) -> None:
+               blur: Optional[int] = 5) -> None:
     """Sets the arguments.
 
     Args:
