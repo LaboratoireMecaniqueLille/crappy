@@ -562,8 +562,7 @@ class Camera(Block):
         self._camera.Eyy = data['Eyy(%)']
 
     # Grabbing the frame from the Camera object
-    ret = self._camera.get_image()
-    if ret is None:
+    if (ret := self._camera.get_image()) is None:
       return
     metadata, img = ret
  

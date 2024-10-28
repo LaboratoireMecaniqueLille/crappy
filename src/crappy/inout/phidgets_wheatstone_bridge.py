@@ -128,9 +128,8 @@ class PhidgetWheatstoneBridge(InOut):
     self._load_cell.setBridgeGain(int(round(log2(self._hardware_gain), 0) + 1))
 
     # Setting the data rate
-    min_rate = self._load_cell.getMinDataRate()
-    max_rate = self._load_cell.getMaxDataRate()
-    if not min_rate <= self._data_rate <= max_rate:
+    if not ((min_rate := self._load_cell.getMinDataRate()) <= self._data_rate
+            <= (max_rate := self._load_cell.getMaxDataRate())):
       raise ValueError(f"The data rate should be between {min_rate} and "
                        f"{max_rate}, got {self._data_rate} !")
     else:

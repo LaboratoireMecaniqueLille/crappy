@@ -685,10 +685,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
           if length >= 2:
             if tempbuf[1] & ft232h_tx_empty_bits:
               if request_gen:
-                req_size -= length - 2
-                if req_size > 0:
-                  cmd = request_gen(req_size)
-                  if cmd:
+                if (req_size := req_size - (length - 2)) > 0:
+                  if cmd := request_gen(req_size):
                     self._write_data(cmd)
           if length > 2:
             retry = attempt

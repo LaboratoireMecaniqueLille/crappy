@@ -234,15 +234,12 @@ class Machine(Block):
     position and speed values respectively.
     """
 
-    # Receiving the latest command
-    recv = self.recv_last_data(fill_missing=self._spam)
-
     # Iterating over the actuators for setting the commands
-    if recv:
+    if recv := self.recv_last_data(fill_missing=self._spam):
       for actuator in self._actuators:
         # Setting the speed attribute if it was received
-        if actuator.speed_cmd_label is not None and \
-            actuator.speed_cmd_label in recv:
+        if (actuator.speed_cmd_label is not None
+            and actuator.speed_cmd_label in recv):
           self.log(logging.DEBUG,
                    f"Updating the speed of the "
                    f"{type(actuator.actuator).__name__} Actuator from "

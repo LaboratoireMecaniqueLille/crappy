@@ -541,8 +541,8 @@ class XiAPI(Camera):
     and `'Hdw after config'`.
     """
 
-    r = self._cam.get_trigger_source()
-    if r == 'XI_TRG_OFF' and self._trig == 'Hardware':
+    if ((r := self._cam.get_trigger_source()) == 'XI_TRG_OFF' and
+        self._trig == 'Hardware'):
       self._trig = 'Free run'
     elif r != 'XI_TRG_OFF' and self._trig != 'Hardware':
       self._trig = 'Hardware'

@@ -96,8 +96,7 @@ class Sim868(InOut):
     ret = ''
     while time() - t < 2:
       # Reading the answers
-      ret = self._ser.readline().strip().decode()
-      if ret:
+      if ret := self._ser.readline().strip().decode():
         self.log(logging.DEBUG, f"Read {ret} from port {self._port}")
       # Just waiting for the answer to be 'OK'
       if 'OK' in ret:
@@ -121,13 +120,11 @@ class Sim868(InOut):
     need_pin = False
     while time() - t < 2:
       # Reading the answers
-      ret = self._ser.readline().strip().decode()
-      if ret:
+      if ret := self._ser.readline().strip().decode():
         self.log(logging.DEBUG, f"Read {ret} from port {self._port}")
 
       # Expecting an answer giving the SIM status, and parsing it
-      status = fullmatch(r'\+CPIN:\s(.+)', ret)
-      if status is not None:
+      if (status := fullmatch(r'\+CPIN:\s(.+)', ret)) is not None:
         status, = status.groups()
         # Several possible answers from the Sim868
         if status == 'READY':
@@ -168,8 +165,7 @@ class Sim868(InOut):
         ret = ''
         while time() - t < 2:
           # Reading the answers
-          ret = self._ser.readline().strip().decode()
-          if ret:
+          if ret := self._ser.readline().strip().decode():
             self.log(logging.DEBUG, f"Read {ret} from port {self._port}")
 
           # Only exiting when receiving the final answer 'OK'
@@ -197,13 +193,11 @@ class Sim868(InOut):
         ret = ''
         while time() - t < 2:
           # Reading the answers
-          ret = self._ser.readline().strip().decode()
-          if ret:
+          if ret := self._ser.readline().strip().decode():
             self.log(logging.DEBUG, f"Read {ret} from port {self._port}")
 
           # Expecting an answer giving the SIM status, and parsing it
-          status = fullmatch(r'\+CPIN:\s(.+)', ret)
-          if status is not None:
+          if (status := fullmatch(r'\+CPIN:\s(.+)', ret)) is not None:
             status, = status.groups()
             # Several possible answers from the Sim868
             if status == 'READY':
@@ -238,13 +232,11 @@ class Sim868(InOut):
       # Reading the answers
       while time() - t < self._reg_timeout:
         # Sometimes the Sim868 sends back non UTF-8 characters, ignoring them
-        ret = self._ser.readline().strip().decode()
-        if ret:
+        if ret := self._ser.readline().strip().decode():
           self.log(logging.DEBUG, f"Read {ret} from port {self._port}")
 
         # Expecting an answer giving the registration status, and parsing it
-        status = fullmatch(r'\+CGREG:\s\d,(\d).*', ret)
-        if status is not None:
+        if (status := fullmatch(r'\+CGREG:\s\d,(\d).*', ret)) is not None:
           status, = status.groups()
           # Several possible answers from the Sim868
           if status in ('0', '3', '4'):
@@ -292,8 +284,7 @@ class Sim868(InOut):
     ret = ''
     while time() - t < 9:
       # Reading the answers
-      ret = self._ser.readline().strip().decode()
-      if ret:
+      if ret := self._ser.readline().strip().decode():
         self.log(logging.DEBUG, f"Read {ret} from port {self._port}")
 
       # Only exiting when receiving the final answer 'OK'
@@ -365,8 +356,7 @@ class Sim868(InOut):
           ret = ''
           while time() - t < 2:
             # Reading the answers
-            ret = self._ser.readline().strip().decode()
-            if ret:
+            if ret := self._ser.readline().strip().decode():
               self.log(logging.DEBUG, f"Read {ret} from port {self._port}")
 
             # Only exiting when receiving the final answer 'OK'

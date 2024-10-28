@@ -128,8 +128,7 @@ class AutoDriveVideoExtenso(Block):
     the :class:`~crappy.actuator.Actuator` speed accordingly."""
 
     # Receiving the latest data
-    data = self.recv_last_data(fill_missing=False)
-    if not data:
+    if not (data := self.recv_last_data(fill_missing=False)):
       return
 
     # Extracting the coordinates of the spots

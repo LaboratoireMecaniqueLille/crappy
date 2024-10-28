@@ -265,8 +265,7 @@ class Canvas(Block):
     """Receives the latest data from upstream Blocks and updates the drawing
     accordingly."""
 
-    data = self.recv_last_data(fill_missing=False)
-    if not data:
+    if not (data := self.recv_last_data(fill_missing=False)):
       return
 
     for elt in self._drawing_elements:

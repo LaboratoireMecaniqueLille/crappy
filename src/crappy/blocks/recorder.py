@@ -92,10 +92,8 @@ class Recorder(Block):
     elif len(self.inputs) > 1:
       raise ValueError('Cannot link more than one block to a Recorder block !')
 
-    parent_folder = self._path.parent
-
     # Creating the folder for storing the data if it does not already exist
-    if not Path.is_dir(parent_folder):
+    if not Path.is_dir(parent_folder := self._path.parent):
       self.log(logging.INFO, f"Creating the folder containing the file to save"
                              f" data to ({parent_folder})")
       Path.mkdir(parent_folder, exist_ok=True, parents=True)

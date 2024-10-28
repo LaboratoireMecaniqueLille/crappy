@@ -326,8 +326,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                      idProduct=ft232h_product_id)
 
     # Checking if there's only 1 device matching
-    devices = list(devices)
-    if len(devices) == 0:
+    if len(devices := list(devices)) == 0:
       raise IOError("No matching ft232h connected")
     elif len(devices) > 1:
       raise IOError("Several ft232h devices found, please specify a serial_nr")
@@ -826,10 +825,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
           if length >= 2:
             if tempbuf[1] & ft232h_tx_empty_bits:
               if request_gen:
-                req_size -= length - 2
-                if req_size > 0:
-                  cmd = request_gen(req_size)
-                  if cmd:
+                if (req_size := req_size - (length - 2)) > 0:
+                  if cmd := request_gen(req_size):
                     self._write_data(cmd)
           if length > 2:
             retry = attempt
@@ -1005,10 +1002,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # limit RX chunk size to the count of I2C packable commands in the FTDI
     # TX FIFO (minus one byte for the last 'send immediate' command)
     tx_count = (self._tx_size - 1) // cmd_size
-    chunk_size = min(tx_count, chunk_size)
     chunks = []
-    rem = readlen
-    if rem > chunk_size:
+    if (rem := readlen) > (chunk_size := min(tx_count, chunk_size)):
       chunk_size //= 2
       cmd_chunk = bytearray()
       cmd_chunk.extend(read_not_last * chunk_size)
@@ -1056,8 +1051,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     cmd.extend((ft232h_cmds['read_bits_PVE_MSB'], 0))
     cmd.extend((ft232h_cmds['send_immediate'],))
     self._write_data(cmd)
-    ack = self._read_data_bytes(1, 8)
-    if not ack:
+    if not (ack := self._read_data_bytes(1, 8)):
       raise IOError('No answer from FTDI')
     if ack[0] & 0x01:
       raise IOError('NACK from slave')
@@ -1106,8 +1100,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     while True:
       try:
         self._do_prolog(i2caddress | 0x01)
-        data = self._do_read(length)
-        if len(data) < length:
+        if len(data := self._do_read(length)) < length:
           raise IOError
         return data
       except (IOError, OSError):
@@ -1148,8 +1141,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         self._do_prolog(i2caddress)
         self._do_write(out)
         self._do_prolog(i2caddress | 0x01)
-        data = self._do_read(readlen)
-        if len(data) < readlen:
+        if len(data := self._do_read(readlen)) < readlen:
           raise IOError
         return data
       except (IOError, OSError):
@@ -1964,8 +1956,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if gpio_str not in ft232h_pin_nr:
       raise ValueError("gpio_id should be in {}".format(
         list(ft232h_pin_nr.values())))
-    gpio_bit = ft232h_pin_nr[gpio_str]
-    if not self._gpio_all_pins & gpio_bit:
+    if not self._gpio_all_pins & (gpio_bit := ft232h_pin_nr[gpio_str]):
       raise ValueError("Cannot use pin {} as a GPIO".format(gpio_str))
 
     # Changing the _direction and _gpio_dir bitfields
@@ -1990,8 +1981,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if gpio_str not in ft232h_pin_nr:
       raise ValueError("gpio_id should be in {}".format(
         list(ft232h_pin_nr.values())))
-    gpio_bit = ft232h_pin_nr[gpio_str]
-    if not self._gpio_all_pins & gpio_bit:
+    if not self._gpio_all_pins & (gpio_bit := ft232h_pin_nr[gpio_str]):
       raise ValueError("Cannot use pin {} as a GPIO".format(gpio_str))
 
     # Changing the _direction and _gpio_dir bitfields

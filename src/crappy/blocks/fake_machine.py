@@ -127,8 +127,7 @@ class FakeMachine(Block):
     is, and finally returns the data."""
 
     # Getting the latest command
-    data = self.recv_last_data(fill_missing=True)
-    if self._cmd_label not in data:
+    if self._cmd_label not in (data := self.recv_last_data(fill_missing=True)):
       return
     else:
       cmd = data[self._cmd_label]

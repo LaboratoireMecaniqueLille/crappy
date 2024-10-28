@@ -340,9 +340,8 @@ class USBServer(Process):
         break
 
       # A Block has acquired the lock and shared its index
-      if self._current_block.value:
+      if index := self._current_block.value:
         # Reading the index and resetting the value
-        index = self._current_block.value
         self._current_block.value = 0
         self._log(logging.DEBUG, f"Block with index {index} now has control")
 
