@@ -379,7 +379,7 @@ class LabjackT7(InOut):
 
   def get_data(self) -> List[float]:
     """Reads the signal on all pre-defined input channels, and returns the
-    values along with a timestamp.."""
+    values along with a timestamp."""
 
     return [time()] + ljm.eReadAddresses(handle=self._handle,
                                          numFrames=len(self._read_addresses),

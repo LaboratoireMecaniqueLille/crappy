@@ -350,7 +350,7 @@ class MCP9600(InOut):
     return out
 
   def close(self) -> None:
-    """Switches the MCP9600 to shutdown mode and closes the I2C bus."""
+    """Switches the MCP9600 to shut down mode and closes the I2C bus."""
 
     if self._backend != 'blinka' and self._bus is not None:
       # Switching to shut down mode, keeping configuration
