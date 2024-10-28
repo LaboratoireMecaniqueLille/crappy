@@ -84,11 +84,8 @@ class Synchronizer(Block):
     """Receives data, interpolates it, and sends it to the downstream
     Blocks."""
 
-    # Receiving all the upcoming data
-    data = self.recv_all_data_raw()
-
     # Iterating over all the links
-    for link_data in data:
+    for link_data in self.recv_all_data_raw():
       # Only data associated with a time label can be synchronized
       if self._time_label not in link_data:
         continue
