@@ -56,5 +56,5 @@ class Sine(Path):
       raise StopIteration
 
     # Returning the current signal value
-    return sin((time() - self.t0) * self._k - self._phase) * \
-        self._amplitude + self._offset
+    return (sin((time() - self.t0) * self._k - self._phase) *
+            self._amplitude + self._offset)
