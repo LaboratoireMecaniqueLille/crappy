@@ -55,7 +55,7 @@ class _Channel:
 
       # All the other keys are put together in the kwargs attribute
       else:
-        self.kwargs.update({key: val})
+        self.kwargs |= {key: val}
 
 
 class NIDAQmx(InOut):

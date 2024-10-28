@@ -1223,7 +1223,7 @@ class Block(Process, metaclass=MetaBlock):
     ret = dict()
 
     for link in self.inputs:
-      ret.update(link.recv())
+      ret |= link.recv()
 
     self.log(logging.DEBUG, f"Called recv_data, got {ret}")
     return ret
@@ -1264,13 +1264,13 @@ class Block(Process, metaclass=MetaBlock):
     # Storing the received values in the return dict and in the buffer
     for link, buffer in zip(self.inputs, self._last_values):
       data = link.recv_last()
-      ret.update(data)
-      buffer.update(data)
+      ret |= data
+      buffer |= data
 
     # If requested, filling up the missing values in the return dict
     if fill_missing:
       for buffer in self._last_values:
-        ret.update(buffer)
+        ret |= buffer
 
     self.log(logging.DEBUG, f"Called recv_last_data, got {ret}")
     return ret
@@ -1319,7 +1319,7 @@ class Block(Process, metaclass=MetaBlock):
     # If simple recv_all, just receiving from all input links
     if delay is None:
       for link in self.inputs:
-        ret.update(link.recv_chunk())
+        ret |= link.recv_chunk()
 
     # Otherwise, receiving during the given period
     else:
@@ -1370,7 +1370,7 @@ class Block(Process, metaclass=MetaBlock):
     # If simple recv_all, just receiving from all input links
     if delay is None:
       for dic, link in zip(ret, self.inputs):
-        dic.update(link.recv_chunk())
+        dic |= link.recv_chunk()
 
     # Otherwise, receiving during the given period
     else:

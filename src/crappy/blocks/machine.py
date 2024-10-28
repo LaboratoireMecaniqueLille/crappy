@@ -140,7 +140,7 @@ class Machine(Block):
 
     # Updating the settings with the common information
     for actuator in actuators:
-      actuator.update(common)
+      actuator |= common
 
     # Making sure all the dicts contain the 'type' key
     if not all('type' in dic for dic in actuators):

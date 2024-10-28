@@ -205,7 +205,7 @@ class UController(Block):
     # The presence of the label 't(s)' indicates that the device should return
     # a timestamp along with the data
     if self._labels is not None and self._t_device:
-      self._labels_table.update({'t(s)': 0})
+      self._labels_table |= {'t(s)': 0}
 
     self.log(logging.DEBUG, f"Labels table : {self._labels_table}")
 
