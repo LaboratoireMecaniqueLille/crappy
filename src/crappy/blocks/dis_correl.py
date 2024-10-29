@@ -9,7 +9,8 @@ from .camera import Camera
 from ..tool.camera_config import DISCorrelConfig, Box
 from .._global import CameraConfigError
 
-field_type = Literal['x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z']
+field_type = Union[Literal['x', 'y', 'r', 'exx', 'eyy',
+                           'exy', 'eyx', 'exy2', 'z'], np.ndarray]
 
 
 class DISCorrel(Camera):
