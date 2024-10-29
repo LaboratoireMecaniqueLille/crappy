@@ -2,7 +2,7 @@
 
 import logging
 import numpy as np
-from typing import Dict, Optional, Iterable, Union
+from typing import Optional, Iterable, Union
 from collections import defaultdict
 
 from .meta_block import Block
@@ -93,7 +93,7 @@ class Multiplexer(Block):
     # Initializing the attributes
     self._time_label = time_label
     self._interp_freq = interp_freq
-    self._data: Dict[str, np.ndarray] = defaultdict(self._default_array)
+    self._data: dict[str, np.ndarray] = defaultdict(self._default_array)
     self._delta: float = 1 / self._interp_freq / 20
     self._last_max_t: float = -float('inf')
 

@@ -3,7 +3,7 @@
 from multiprocessing import Pipe
 from time import time
 from copy import deepcopy
-from typing import Callable, Union, Any, Dict, Optional, List, Iterable
+from typing import Callable, Union, Any, Optional, Iterable
 from collections import defaultdict
 from select import select
 from platform import system
@@ -12,7 +12,7 @@ import logging
 
 from .._global import LinkDataError
 
-ModifierType = Callable[[Dict[str, Any]], Dict[str, Any]]
+ModifierType = Callable[[dict[str, Any]], dict[str, Any]]
 
 
 class Link:
@@ -37,7 +37,7 @@ class Link:
   def __init__(self,
                input_block,
                output_block,
-               modifiers: Optional[List[ModifierType]] = None,
+               modifiers: Optional[list[ModifierType]] = None,
                name: Optional[str] = None) -> None:
     """Sets the instance attributes.
 
@@ -113,7 +113,7 @@ class Link:
 
     return self._in.poll()
 
-  def send(self, value: Dict[str, Any]) -> None:
+  def send(self, value: dict[str, Any]) -> None:
     """Sends a value from the upstream Block to the downstream Block.
 
     Before sending, applies the given Modifiers and makes sure there's room in
@@ -145,7 +145,7 @@ class Link:
     else:
       self._out.send(value)
 
-  def recv(self) -> Dict[str, Any]:
+  def recv(self) -> dict[str, Any]:
     """Reads a single value from the Link and returns it.
 
     The read value is the oldest available in the Link, see :meth:`recv_last`
@@ -165,7 +165,7 @@ class Link:
     else:
       return dict()
 
-  def recv_last(self) -> Dict[str, Any]:
+  def recv_last(self) -> dict[str, Any]:
     """Reads all the available values in the Link, and returns the newest one.
 
     If no data is available in the Link, returns an empty :obj:`dict`. All the
@@ -185,7 +185,7 @@ class Link:
 
     return data
 
-  def recv_chunk(self) -> Dict[str, List[Any]]:
+  def recv_chunk(self) -> dict[str, list[Any]]:
     """Reads all the available values in the Link, and returns them all.
 
     Returns:

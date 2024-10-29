@@ -2,7 +2,7 @@
 
 from time import time
 from numpy import sin, pi
-from typing import Union, Dict
+from typing import Union
 import logging
 
 from .meta_path import Path, ConditionType
@@ -46,7 +46,7 @@ class Sine(Path):
     self._phase = phase
     self._k = 2 * pi * freq
 
-  def get_cmd(self, data: Dict[str, list]) -> float:
+  def get_cmd(self, data: dict[str, list]) -> float:
     """Returns the value to send or raises :exc:`StopIteration` if the stop
     condition is met."""
 

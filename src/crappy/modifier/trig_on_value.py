@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Dict, Any, Union, Iterable
+from typing import Optional, Any, Union, Iterable
 import logging
 
 from .meta_modifier import Modifier
@@ -44,7 +44,7 @@ class TrigOnValue(Modifier):
 
     self._values = tuple(values)
 
-  def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+  def __call__(self, data: dict[str, Any]) -> Optional[dict[str, Any]]:
     """Checks if the value of ``label`` is in the predefined set of accepted
     values, and if so transmits the data.
     

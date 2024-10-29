@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 import logging
 
 from .meta_modifier import Modifier
@@ -29,7 +29,7 @@ class DownSampler(Modifier):
     self._n_points: int = n_points
     self._count: int = n_points - 1
 
-  def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+  def __call__(self, data: dict[str, Any]) -> Optional[dict[str, Any]]:
     """Receives data from the upstream Block, and if the counter matches the 
     threshold, returns the data.
 

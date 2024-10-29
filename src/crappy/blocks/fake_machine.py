@@ -2,7 +2,7 @@
 
 from time import time
 import numpy as np
-from typing import Callable, Dict, Optional, Literal
+from typing import Callable, Optional, Literal
 import logging
 
 from .meta_block import Block
@@ -42,7 +42,7 @@ class FakeMachine(Block):
                rigidity: float = 8.4E6,
                l0: float = 200,
                max_strain: float = 1.51,
-               sigma: Optional[Dict[str, float]] = None,
+               sigma: Optional[dict[str, float]] = None,
                nu: float = 0.3,
                plastic_law: Callable[[float], float] = plastic,
                max_speed: float = 5,
@@ -164,7 +164,7 @@ class FakeMachine(Block):
     # Finally, sending the values
     self._send_values()
 
-  def _add_noise(self, to_send: Dict[str, float]) -> Dict[str, float]:
+  def _add_noise(self, to_send: dict[str, float]) -> dict[str, float]:
     """Adds noise to the data to be sent, according to the sigma values
     provided by the user. Then returns the noised data."""
 

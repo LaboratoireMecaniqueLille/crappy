@@ -2,7 +2,7 @@
 
 from collections import namedtuple
 from struct import unpack
-from typing import Union, List, Tuple, Optional, Callable, Literal
+from typing import Union, Optional, Callable, Literal
 from _io import FileIO
 from multiprocessing.synchronize import RLock
 from multiprocessing.sharedctypes import Synchronized
@@ -352,7 +352,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return cmd
 
   def _send_server(self, command: list) -> Union[int, bytes, None,
-                                                 Tuple[int, ...]]:
+                                                 tuple[int, ...]]:
     """Sends a command to the server and gets the corresponding answer.
 
     Args:
@@ -401,7 +401,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
               self.log(logging.DEBUG, "Acquired the block lock")
               # Reading the answer
               self._answer_file.seek(0)
-              answer: List[bytes] = self._answer_file.read().split(b',')
+              answer: list[bytes] = self._answer_file.read().split(b',')
               self.log(logging.DEBUG, f"Read {answer} from the answer file")
               self._answer_file.seek(0)
               self._answer_file.truncate(0)

@@ -44,7 +44,7 @@ class Path(metaclass=MetaPath):
 
     self._logger: Optional[logging.Logger] = None
 
-  def get_cmd(self, data: Dict[str, list]) -> Optional[float]:
+  def get_cmd(self, data: dict[str, list]) -> Optional[float]:
     """This method is called by the :class:`~crappy.blocks.Generator` Block to
     get the next command to send.
 
@@ -140,7 +140,7 @@ class Path(metaclass=MetaPath):
       if condition is None:
         self.log(logging.DEBUG, "Condition is None")
 
-        def cond(_: Dict[str, list]) -> bool:
+        def cond(_: dict[str, list]) -> bool:
           """Condition always returning False."""
 
           return False
@@ -157,7 +157,7 @@ class Path(metaclass=MetaPath):
       var, thresh = split(r'\s*<\s*', condition)
 
       # Return a function that checks if received data is inferior to threshold
-      def cond(data: Dict[str, list]) -> bool:
+      def cond(data: dict[str, list]) -> bool:
         """Condition checking that the label values are below a given
         threshold."""
 
@@ -173,7 +173,7 @@ class Path(metaclass=MetaPath):
       var, thresh = split(r'\s*>\s*', condition)
 
       # Return a function that checks if received data is superior to threshold
-      def cond(data: Dict[str, list]) -> bool:
+      def cond(data: dict[str, list]) -> bool:
         """Condition checking that the label values are above a given
         threshold."""
 
@@ -189,7 +189,7 @@ class Path(metaclass=MetaPath):
       delay = float(split(r'=\s*', condition)[1])
 
       # Return a function that checks if the delay is expired
-      def cond(_: Dict[str, list]) -> bool:
+      def cond(_: dict[str, list]) -> bool:
         """Condition checking if a given delay is expired."""
 
         return time() - self.t0 > delay

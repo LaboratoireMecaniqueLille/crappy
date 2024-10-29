@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Union, Iterable, Dict
+from typing import Optional, Union, Iterable
 from collections import defaultdict
 import logging
 
@@ -70,7 +70,7 @@ class Synchronizer(Block):
     # Initializing the attributes
     self._ref_label = reference_label
     self._time_label = time_label
-    self._data: Dict[str, np.ndarray] = defaultdict(self._default_array)
+    self._data: dict[str, np.ndarray] = defaultdict(self._default_array)
 
     # Forcing the labels_to_sync into a list
     if labels_to_sync is not None and isinstance(labels_to_sync, str):

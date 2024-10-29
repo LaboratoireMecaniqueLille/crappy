@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, strftime, gmtime
-from typing import Optional, Tuple, Dict, Any, Literal
+from typing import Optional, Any, Literal
 import numpy as np
 import logging
 from warnings import warn
@@ -421,7 +421,7 @@ class XiAPI(Camera):
     self._cam.start_acquisition()
     self._started = True
 
-  def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
+  def get_image(self) -> tuple[dict[str, Any], np.ndarray]:
     """Reads a frame from the camera, and returns it along with its metadata.
 
     The acquired metadata contains the following fields :

@@ -8,7 +8,7 @@ from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 from threading import BrokenBarrierError
 import numpy as np
-from typing import Optional, Tuple, List, Union, Dict, Any, Iterable
+from typing import Optional, Union, Any, Iterable
 import logging
 import logging.handlers
 from select import select
@@ -66,10 +66,10 @@ class CameraProcess(Process):
     self._lock: Optional[RLock] = None
     self._cam_barrier: Optional[Barrier] = None
     self._stop_event: Optional[Event] = None
-    self._shape: Optional[Tuple[int, int]] = None
+    self._shape: Optional[tuple[int, int]] = None
     self._to_draw_conn: Optional[Connection] = None
-    self._outputs: List[Link] = list()
-    self._labels: List[str] = list()
+    self._outputs: list[Link] = list()
+    self._labels: list[str] = list()
     self.img: Optional[np.ndarray] = None
     self._dtype = None
     self.metadata = {'ImageUniqueID': None}
@@ -87,11 +87,11 @@ class CameraProcess(Process):
                  lock: RLock,
                  barrier: Barrier,
                  event: Event,
-                 shape: Union[Tuple[int, int], Tuple[int, int, int]],
+                 shape: Union[tuple[int, int], tuple[int, int, int]],
                  dtype,
                  to_draw_conn: Optional[Connection],
-                 outputs: List[Link],
-                 labels: Optional[List[str]],
+                 outputs: list[Link],
+                 labels: Optional[list[str]],
                  log_queue: Queue,
                  log_level: Optional[int] = 20,
                  display_freq: bool = False) -> None:
@@ -268,7 +268,7 @@ class CameraProcess(Process):
 
     ...
 
-  def send(self, data: Optional[Union[Dict[str, Any],
+  def send(self, data: Optional[Union[dict[str, Any],
                                       Iterable[Any]]]) -> None:
     """This method allows sending data to downstream Blocks.
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Tuple, Union, Optional
+from typing import Union, Optional
 import numpy as np
 from pathlib import Path
 from re import fullmatch
@@ -128,7 +128,7 @@ class FileReader(Camera):
     # The images are stored as an iterator
     self._images = iter(images)
 
-  def get_image(self) -> Optional[Tuple[float, np.ndarray]]:
+  def get_image(self) -> Optional[tuple[float, np.ndarray]]:
     """Reads the next image in the image folder, and returns it at the right
     time so that the achieved framerate matches the original framerate.
 

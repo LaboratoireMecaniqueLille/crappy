@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Optional, Dict, Any, Union, List, Iterable
+from typing import Optional, Any, Union, Iterable
 import numpy as np
 import logging
 from multiprocessing import current_process
@@ -28,8 +28,8 @@ class InOut(metaclass=MetaIO):
     .. versionchanged:: 2.0.0 now accepts args and kwargs
     """
 
-    self._compensations: List[float] = list()
-    self._compensations_dict: Dict[str, float] = dict()
+    self._compensations: list[float] = list()
+    self._compensations_dict: dict[str, float] = dict()
     self._logger: Optional[logging.Logger] = None
 
   def log(self, level: int, msg: str) -> None:
@@ -67,7 +67,7 @@ class InOut(metaclass=MetaIO):
 
     ...
 
-  def get_data(self) -> Optional[Union[Iterable, Dict[str, Any]]]:
+  def get_data(self) -> Optional[Union[Iterable, dict[str, Any]]]:
     """This method should acquire data from a device and return it along with a
     timestamp.
 
@@ -147,7 +147,7 @@ class InOut(metaclass=MetaIO):
                               "defined !")
 
   def get_stream(self) -> Optional[Union[Iterable[np.ndarray],
-                                         Dict[str, np.ndarray]]]:
+                                         dict[str, np.ndarray]]]:
     """This method should acquire a stream as a :obj:`numpy.array`, and return
     it along with another array carrying the timestamps.
 
@@ -282,7 +282,7 @@ class InOut(metaclass=MetaIO):
                    "the InOut doesn't return only numbers in the dict")
           return
 
-  def return_data(self) -> Optional[Union[List[Any], Dict[str, Any]]]:
+  def return_data(self) -> Optional[Union[list[Any], dict[str, Any]]]:
     """Returns the data from :meth:`get_data`, corrected by an offset if the
     ``make_zero_delay`` argument of the :class:`~crappy.blocks.IOBlock` is
     set.
@@ -337,8 +337,8 @@ class InOut(metaclass=MetaIO):
         raise ValueError("The number of offsets doesn't match the number of "
                          "acquired values.")
 
-  def return_stream(self) -> Optional[Union[List[np.ndarray],
-                                            Dict[str, np.ndarray]]]:
+  def return_stream(self) -> Optional[Union[list[np.ndarray],
+                                            dict[str, np.ndarray]]]:
     """Returns the data from :meth:`get_stream`, corrected by an offset if the
     ``make_zero_delay`` argument of the :class:`~crappy.blocks.IOBlock` is
     set.

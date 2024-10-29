@@ -2,7 +2,7 @@
 
 from time import time, sleep
 from re import fullmatch, findall
-from typing import Union, List, Optional, Iterable
+from typing import Union, Optional, Iterable
 import logging
 from  warnings import warn
 
@@ -271,7 +271,7 @@ class WaveshareHighPrecision(InOut):
     # Starting the acquisition
     self._write_cmd(ADS1263_CMD['CMD_START1'])
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the channels sequentially, and returns all the values along with a
     timestamp.
 

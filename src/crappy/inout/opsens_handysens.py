@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import List
 import logging
 from  warnings import warn
 
@@ -53,7 +52,7 @@ class HandySens(InOut):
     self._dev = serial.Serial(port=self._addr, baudrate=57600, timeout=0.1)
     self._send_cmd("meas:rate min")
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads data from the OpSens and returns it."""
 
     return [time(), float(self._send_cmd("ch1:data? 1")[:-3])]

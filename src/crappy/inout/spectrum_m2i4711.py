@@ -2,7 +2,7 @@
 
 import numpy as np
 from time import time
-from typing import List, Optional, Iterable
+from typing import Optional, Iterable
 import logging
 from  warnings import warn
 
@@ -129,7 +129,7 @@ class SpectrumM2I4711(InOut):
     self._stream_t0 = time()
     self._stream_started = True
 
-  def get_stream(self) -> List[np.ndarray]:
+  def get_stream(self) -> list[np.ndarray]:
     """Waits for data to be available, and returns it along with an array of
     timestamps."""
 

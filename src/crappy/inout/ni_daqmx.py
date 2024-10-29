@@ -2,7 +2,7 @@
 
 from time import time
 import numpy as np
-from typing import List, Optional, Dict, Any, Iterable
+from typing import Optional, Any, Iterable
 from dataclasses import dataclass, field
 from re import fullmatch
 from collections import defaultdict
@@ -41,9 +41,9 @@ class _Channel:
 
   meas_type: str = 'voltage'
   name: Optional[str] = None
-  kwargs: Dict[str, Any] = field(default_factory=dict)
+  kwargs: dict[str, Any] = field(default_factory=dict)
 
-  def update(self, dic_in: Dict[str, Any]) -> None:
+  def update(self, dic_in: dict[str, Any]) -> None:
     """Updates the channel keys based on the user input."""
 
     for key, val in dic_in.items():
@@ -75,7 +75,7 @@ class NIDAQmx(InOut):
   """
 
   def __init__(self,
-               channels: Iterable[Dict[str, Any]],
+               channels: Iterable[dict[str, Any]],
                sample_rate: float = 100,
                n_samples: Optional[int] = None) -> None:
     """Sets the arguments and initializes the parent class.
@@ -295,7 +295,7 @@ class NIDAQmx(InOut):
 
     self._stream_started = True
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads data from the analog and digital input channels, and returns it
     along with a timestamp.
 
@@ -324,7 +324,7 @@ class NIDAQmx(InOut):
 
     return ret
 
-  def get_stream(self) -> Optional[List[np.ndarray]]:
+  def get_stream(self) -> Optional[list[np.ndarray]]:
     """Reads data from the device, and returns it in an array along with an
     array holding the timestamps.
 

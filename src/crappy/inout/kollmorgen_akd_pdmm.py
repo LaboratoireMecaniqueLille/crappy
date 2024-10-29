@@ -2,7 +2,7 @@
 
 from time import time
 from struct import pack, unpack
-from typing import List, Iterable, Literal
+from typing import Iterable, Literal
 import logging
 from  warnings import warn
 
@@ -96,7 +96,7 @@ class KollmorgenAKDPDMM(InOut):
                            f"{self._host} on port {self._port}")
     self._variator.connect()
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """For each motor, reads its current speed or position depending on the
     selected mode.
 

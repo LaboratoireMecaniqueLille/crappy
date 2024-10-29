@@ -3,7 +3,7 @@
 from __future__ import annotations
 from datetime import timedelta
 from time import time
-from typing import Tuple, Dict, Any, Optional, Iterable
+from typing import Any, Optional, Iterable
 import logging
 
 from .meta_block import Block
@@ -21,7 +21,7 @@ class Text:
 
   def __init__(self,
                _: Canvas,
-               coord: Tuple[int, int],
+               coord: tuple[int, int],
                text: str,
                label: str,
                **__: str) -> None:
@@ -44,7 +44,7 @@ class Text:
 
     self._txt = plt.text(x, y, text)
 
-  def update(self, data: Dict[str, float]) -> None:
+  def update(self, data: dict[str, float]) -> None:
     """Updates the text according to the received values."""
 
     if self._label in data:
@@ -60,7 +60,7 @@ class DotText:
 
   def __init__(self,
                drawing: Canvas,
-               coord: Tuple[int, int],
+               coord: tuple[int, int],
                text: str,
                label: str,
                **__: str) -> None:
@@ -97,7 +97,7 @@ class DotText:
     self._amp = high - low
     self._low = low
 
-  def update(self, data: Dict[str, float]) -> None:
+  def update(self, data: dict[str, float]) -> None:
     """Updates the text and the color dot according to the received values."""
 
     if self._label in data:
@@ -113,7 +113,7 @@ class Time:
   .. versionadded:: 1.4.0
   """
 
-  def __init__(self, drawing: Canvas, coord: Tuple[int, int], **__) -> None:
+  def __init__(self, drawing: Canvas, coord: tuple[int, int], **__) -> None:
     """Sets the arguments.
 
     Args:
@@ -130,7 +130,7 @@ class Time:
 
     self._txt = plt.text(x, y, "00:00", size=38)
 
-  def update(self, _: Dict[str, float]) -> None:
+  def update(self, _: dict[str, float]) -> None:
     """Updates the time counter, independently of the received values."""
 
     self._txt.set_text(str(timedelta(seconds=int(time() - self._block.t0))))
@@ -158,10 +158,10 @@ class Canvas(Block):
 
   def __init__(self,
                image_path: str,
-               draw: Optional[Iterable[Dict[str, Any]]] = None,
-               color_range: Tuple[float, float] = (20, 300),
+               draw: Optional[Iterable[dict[str, Any]]] = None,
+               color_range: tuple[float, float] = (20, 300),
                title: str = "Canvas",
-               window_size: Tuple[int, int] = (7, 5),
+               window_size: tuple[int, int] = (7, 5),
                backend: str = "TkAgg",
                freq: Optional[float] = 2,
                display_freq: bool = False,

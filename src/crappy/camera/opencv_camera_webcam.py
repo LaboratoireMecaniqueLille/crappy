@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Tuple, Optional
+from typing import Optional
 from numpy import ndarray
 import logging
 from .meta_camera import Camera
@@ -54,7 +54,7 @@ class Webcam(Camera):
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, ndarray]:
+  def get_image(self) -> tuple[float, ndarray]:
     """Grabs a frame from the videocapture object and returns it along with a
     timestamp."""
 

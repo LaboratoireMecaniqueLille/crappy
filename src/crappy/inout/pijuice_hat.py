@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Dict, Any, List, Literal
+from typing import Any, Literal
 from time import time
 import logging
 from  warnings import warn
@@ -109,7 +109,7 @@ class PiJuice(InOut):
                              f"port {self._i2c_port} with backend pijuice")
       self._pijuice = PiJuiceModule(self._i2c_port, self._address)
 
-  def get_data(self) -> Dict[str, Any]:
+  def get_data(self) -> dict[str, Any]:
     """Reads all the available information on the battery status.
 
     Returns:
@@ -217,7 +217,7 @@ class PiJuice(InOut):
       self._bus.close()
 
   @staticmethod
-  def _checksum(data: List[int]) -> List[int]:
+  def _checksum(data: list[int]) -> list[int]:
     """Compares the received checksum (last byte) to the one calculated over
     the other bytes.
 

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import List, Optional, Union, Literal
+from typing import Optional, Union, Literal
 import numpy as np
 
 from ..._global import OptionalModule
@@ -27,7 +27,7 @@ class DISCorrelTool:
 
   def __init__(self,
                box: Box,
-               fields: Optional[List[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
+               fields: Optional[list[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
                                                    'exy', 'eyx', 'exy2', 'z'],
                                            np.ndarray]]] = None,
                alpha: float = 3,
@@ -99,9 +99,9 @@ class DISCorrelTool:
         raise ValueError(f"The only allowed values for the fields given as "
                          f"strings are {allowed_fields}")
 
-      self._fields: List[Union[str, np.ndarray]] = fields
+      self._fields: list[Union[str, np.ndarray]] = fields
     else:
-      self._fields: List[Union[str, np.ndarray]] = ["x", "y", "exx", "eyy"]
+      self._fields: list[Union[str, np.ndarray]] = ["x", "y", "exx", "eyy"]
 
     self._init = init
 
@@ -163,7 +163,7 @@ class DISCorrelTool:
 
   def get_data(self,
                img: np.ndarray,
-               residuals: bool = False) -> List[float]:
+               residuals: bool = False) -> list[float]:
     """Processes the input image and returns the requested data in a
     :obj:`list`.
 

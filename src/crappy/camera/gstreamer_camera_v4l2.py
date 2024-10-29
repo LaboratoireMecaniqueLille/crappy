@@ -2,7 +2,7 @@
 
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
-from typing import Tuple, Optional, Union, List
+from typing import Optional, Union
 from subprocess import Popen, PIPE, run
 from re import findall, search
 import logging
@@ -75,7 +75,7 @@ class CameraGstreamer(Camera, V4L2Helper):
     self._user_pipeline: Optional[str] = None
     self._nb_channels: int = 3
     self._img_depth: int = 8
-    self._formats: List[str] = list()
+    self._formats: list[str] = list()
     self._app_sink = None
 
   def open(self,
@@ -290,7 +290,7 @@ videoconvert ! autovideosink
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, ndarray]:
+  def get_image(self) -> tuple[float, ndarray]:
     """Reads the last image acquired from the camera.
 
     Returns:

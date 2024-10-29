@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Union, Dict
+from typing import Union
 import logging
 
 from .meta_path import Path, ConditionType
@@ -58,7 +58,7 @@ class Conditional(Path):
     self._condition2 = self.parse_condition(condition2)
     self._prev = self._value0
 
-  def get_cmd(self, data: Dict[str, list]) -> float:
+  def get_cmd(self, data: dict[str, list]) -> float:
     """Sends either ``value1`` if ``condition1`` is met, or ``value2`` if only
     ``condition2`` is met, or ``value0`` if none of the conditions are met."""
 

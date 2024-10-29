@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, List
+from typing import Optional
 import logging
 from math import log2
 
@@ -103,7 +103,7 @@ class PhidgetWheatstoneBridge(InOut):
     except PhidgetException:
       raise TimeoutError("Waited too long for the motor to attach !")
 
-  def get_data(self) -> Optional[List[float]]:
+  def get_data(self) -> Optional[list[float]]:
     """Returns the last known voltage ratio value, adjusted with the gain and
     the offset."""
 

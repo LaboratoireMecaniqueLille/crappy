@@ -42,7 +42,6 @@ CTRL+C, but it is not a clean way to stop Crappy.
 import crappy
 import numpy as np
 import numpy.random as rd
-from typing import Tuple
 from time import time, sleep
 
 
@@ -100,7 +99,7 @@ class CustomCam(crappy.camera.Camera):
     # This line is mandatory here for first applying the trigger setting
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """Compared to the one in custom_camera_basic.py, this method returns the
     same images but with a delay if in Hardware trigger mode.
 

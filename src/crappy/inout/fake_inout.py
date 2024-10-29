@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List, Optional, Tuple
+from typing import Optional
 import numpy as np
 
 from .meta_inout import InOut
@@ -61,7 +61,7 @@ class FakeInOut(InOut):
       except IndexError:
         return
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Just returns the timestamp and the current memory usage."""
 
     return [time(), virtual_memory().percent]
@@ -82,7 +82,7 @@ class FakeInOut(InOut):
 
     ...
 
-  def get_stream(self) -> Tuple[np.ndarray, np.ndarray]:
+  def get_stream(self) -> tuple[np.ndarray, np.ndarray]:
     """This method calls 10 times the :meth:`get_data` method and returns the
     10 values at once in the streamer format.
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Optional, List, Literal
+from typing import Union, Optional, Literal
 import logging
 
 from .meta_inout import InOut
@@ -148,7 +148,7 @@ class MPRLS(InOut):
 
     self._i2c_msg = i2c_msg
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the pressure value.
 
     Returns:

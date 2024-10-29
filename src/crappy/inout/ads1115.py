@@ -2,7 +2,7 @@
 
 from time import time
 from re import findall
-from typing import List, Optional, Literal
+from typing import Optional, Literal
 import logging
 
 from .meta_inout import InOut
@@ -259,7 +259,7 @@ class ADS1115(InOut):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self._dry_pin, GPIO.IN)
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the registers containing the conversion result.
 
     The output is in Volts, unless a gain and offset are applied.

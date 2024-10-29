@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, List, Union
+from typing import Optional, Union
 import logging
 import logging.handlers
 
@@ -28,7 +28,7 @@ class DISCorrelProcess(CameraProcess):
 
   def __init__(self,
                patch: Box,
-               fields: Optional[List[Union[str, np.ndarray]]] = None,
+               fields: Optional[list[Union[str, np.ndarray]]] = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,

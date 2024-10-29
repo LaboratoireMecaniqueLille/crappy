@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Callable, Union, Tuple, Iterable, Literal
+from typing import Optional, Callable, Union, Iterable, Literal
 import numpy as np
 from pathlib import Path
 
@@ -69,9 +69,9 @@ class DICVE(Camera):
                                               'cv2', 'npy']] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Tuple[int, int]] = None,
+               img_shape: Optional[tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
-               patches: Optional[Iterable[Tuple[int, int, int, int]]] = None,
+               patches: Optional[Iterable[tuple[int, int, int, int]]] = None,
                labels: Optional[Union[str, Iterable[str]]] = None,
                method: Literal['Disflow', 'Lucas Kanade',
                                'Pixel precision', 'Parabola'] = 'Disflow',

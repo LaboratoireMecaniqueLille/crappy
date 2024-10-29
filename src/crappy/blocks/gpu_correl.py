@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Callable, Union, Tuple, Iterable, Literal
+from typing import Optional, Callable, Union, Iterable, Literal
 import numpy as np
 from pathlib import Path
 
@@ -48,7 +48,7 @@ class GPUCorrel(Camera):
   def __init__(self,
                camera: str,
                fields: Union[field_type, Iterable[field_type]],
-               img_shape: Tuple[int, int],
+               img_shape: tuple[int, int],
                img_dtype: str,
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
                display_images: bool = False,

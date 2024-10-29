@@ -2,7 +2,7 @@
 
 from struct import unpack
 from time import time
-from typing import Optional, Dict, Callable, Iterable, Union
+from typing import Optional, Callable, Iterable, Union
 import logging
 
 from .meta_block import Block
@@ -32,8 +32,8 @@ class UController(Block):
   def __init__(self,
                labels: Optional[Union[str, Iterable[str]]] = None,
                cmd_labels: Optional[Union[str, Iterable[str]]] = None,
-               init_output: Optional[Dict[str, float]] = None,
-               post_process: Optional[Dict[str,
+               init_output: Optional[dict[str, float]] = None,
+               post_process: Optional[dict[str,
                                            Callable[[float], float]]] = None,
                t_device: bool = False,
                port: str = '/dev/ttyUSB0',

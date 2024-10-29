@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Dict, Optional
+from typing import Union, Optional
 import logging
 
 from .meta_path import Path, ConditionType
@@ -46,7 +46,7 @@ class Ramp(Path):
     self._speed = speed
     self._init_value = init_value if init_value is not None else self.last_cmd
 
-  def get_cmd(self, data: Dict[str, list]) -> float:
+  def get_cmd(self, data: dict[str, list]) -> float:
     """Returns the value to send or raises :exc:`StopIteration` if the stop
     condition is met."""
 

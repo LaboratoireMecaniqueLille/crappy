@@ -34,7 +34,7 @@ CTRL+C to stop Crappy, but it is not a clean way to do it.
 import crappy
 import cv2
 import numpy as np
-from typing import Optional, Callable, Tuple, Union
+from typing import Optional, Callable, Union
 from pathlib import Path
 
 
@@ -226,7 +226,7 @@ class CustomCameraBlock(crappy.blocks.Camera):
                save_backend: Optional[str] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Tuple[int, int]] = None,
+               img_shape: Optional[tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
                scale_factor: float = 1.2,
                min_neighbors: int = 3,

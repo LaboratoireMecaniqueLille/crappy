@@ -28,7 +28,7 @@ CTRL+C to stop it earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
-from typing import Dict, Optional
+from typing import Optional
 from time import time
 
 
@@ -64,7 +64,7 @@ class CustomInOut(crappy.inout.InOut):
 
     ...
 
-  def get_data(self) -> Dict[str, float]:
+  def get_data(self) -> dict[str, float]:
     """This method is used for acquiring data from the hardware.
 
     Here, it returns the current timestamp as well as the value of the _buffer

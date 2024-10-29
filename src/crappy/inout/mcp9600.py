@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List, Literal
+from typing import Literal
 import logging
 from  warnings import warn
 
@@ -271,7 +271,7 @@ class MCP9600(InOut):
                                      Mcp9600_registers['Device Configuration'],
                                      [config_device])
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the registers containing the conversion result.
 
     The output is in `°C` for all modes except the raw data ADC one, which

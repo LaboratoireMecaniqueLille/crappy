@@ -3,7 +3,7 @@
 from multiprocessing import Pipe, current_process
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
-from typing import Optional, Tuple, List, Union
+from typing import Optional, Union
 import numpy as np
 from itertools import combinations
 from time import sleep, time
@@ -178,7 +178,7 @@ class VideoExtensoTool:
 
   def get_data(self,
                img: np.ndarray
-               ) -> Optional[Tuple[List[Tuple[float, ...]], float, float]]:
+               ) -> Optional[tuple[list[tuple[float, ...]], float, float]]:
     """Takes an image as an input, performs spot detection on it, computes the
     strain from the newly detected spots, and returns the spot positions and
     strain values.
@@ -302,7 +302,7 @@ class VideoExtensoTool:
 
   def _send(self,
             conn: Connection,
-            val: Union[str, Tuple[int, int, np.ndarray]]) -> None:
+            val: Union[str, tuple[int, int, np.ndarray]]) -> None:
     """Wrapper for sending messages to the Tracker processes.
 
     In Linux, checks that the Pipe is not full before sending the message.

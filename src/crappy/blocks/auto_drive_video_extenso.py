@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Dict, Any, Optional, Literal
+from typing import Any, Optional, Literal
 import logging
 
 from .meta_block import Block
@@ -28,7 +28,7 @@ class AutoDriveVideoExtenso(Block):
   """
 
   def __init__(self,
-               actuator: Dict[str, Any],
+               actuator: dict[str, Any],
                gain: float = 2000,
                direction: Literal['X-', 'X+', 'Y-', 'Y+'] = 'Y-',
                pixel_range: int = 2048,

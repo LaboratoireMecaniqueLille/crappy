@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Optional, List, Tuple
+from typing import Optional
 
 from .box import Box
 
@@ -69,7 +69,7 @@ class SpotsBoxes:
     return len([spot for spot in self if spot is not None])
 
   def set_spots(self,
-                spots: List[Tuple[int, int, int, int]]) -> None:
+                spots: list[tuple[int, int, int, int]]) -> None:
     """Parses a list of tuples and instantiates the corresponding
     :class:`~crappy.tool.camera_config.config_tools.Box` objects."""
 

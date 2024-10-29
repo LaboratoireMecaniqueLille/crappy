@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Dict, List, Any, Optional, Iterable
+from typing import Any, Optional, Iterable
 from dataclasses import dataclass, fields
 import logging
 
@@ -51,8 +51,8 @@ class Machine(Block):
   """
 
   def __init__(self,
-               actuators: Iterable[Dict[str, Any]],
-               common: Optional[Dict[str, Any]] = None,
+               actuators: Iterable[dict[str, Any]],
+               common: Optional[dict[str, Any]] = None,
                time_label: str = 't(s)',
                ft232h_ser_num: Optional[str] = None,
                spam: bool = False,
@@ -123,7 +123,7 @@ class Machine(Block):
           value is updated. It will also overwrite the ``speed`` key if given.
     """
 
-    self._actuators: List[ActuatorInstance] = list()
+    self._actuators: list[ActuatorInstance] = list()
     self._ft232h_args = None
 
     super().__init__()
