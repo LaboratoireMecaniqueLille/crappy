@@ -92,7 +92,7 @@ class Ellipse(crappy.tool.camera_config.Overlay):
     cv2.ellipse(img,
                 (self._center_x, self._center_y),
                 (self._x_axis, self._y_axis),
-                0, 0, 360, 0, thickness)
+                0., 0., 360., (0.,), thickness)
 
 
 class CustomCameraProcess(crappy.blocks.camera_processes.CameraProcess):
