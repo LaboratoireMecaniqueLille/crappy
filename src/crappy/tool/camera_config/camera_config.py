@@ -221,7 +221,7 @@ class CameraConfig(tk.Tk):
 
     try:
       self.destroy()
-    except TclError:
+    except tk.TclError:
       self.log(logging.WARNING, "Cannot destroy the configuration window, "
                                 "ignoring")
 
