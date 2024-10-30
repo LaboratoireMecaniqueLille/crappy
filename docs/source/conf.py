@@ -124,15 +124,21 @@ html_context = {'display_github': True,
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {'collapse_navigation': False,
+
+html_theme_options = {'logo_only': False,
+                      'prev_next_buttons_location': 'both',
+                      'style_external_links': False,
+                      'vcs_pageview_mode': 'blob',
+                      'style_nav_header_background': '#2980B9',
+                      'flyout_display': 'attached',
+                      'version_selector': True,
+                      'language_selector': True,
+                      # Toc options
+                      'collapse_navigation': False,
                       'sticky_navigation': False,
                       'navigation_depth': 4,
                       'includehidden': False,
-                      'display_version': True,
-                      'logo_only': False,
-                      'prev_next_buttons_location': 'both',
-                      'style_external_links': False,
-                      'vcs_pageview_mode': 'blob'}
+                      'titles_only': False}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
