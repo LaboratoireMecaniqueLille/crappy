@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 import logging
 import numpy as np
 
@@ -114,7 +114,7 @@ class Box(Overlay):
     self.x_centroid = None
     self.y_centroid = None
 
-  def sorted(self) -> Tuple[int, int, int, int]:
+  def sorted(self) -> tuple[int, int, int, int]:
     """Returns the four coordinates but sorted in the order : min x, max x,
     min y, max y."""
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, Tuple
+from typing import Optional
 import logging
 
 from .meta_block import Block
@@ -37,9 +37,9 @@ class PID(Block):
                kp_label: str = 'kp',
                ki_label: str = 'ki',
                kd_label: str = 'kd',
-               labels: Optional[Tuple[str, str]] = None,
+               labels: Optional[tuple[str, str]] = None,
                reverse: bool = False,
-               i_limit: Tuple[Optional[float], Optional[float]] = (None, None),
+               i_limit: tuple[Optional[float], Optional[float]] = (None, None),
                send_terms: bool = False,
                freq: Optional[float] = 500,
                display_freq: bool = False,

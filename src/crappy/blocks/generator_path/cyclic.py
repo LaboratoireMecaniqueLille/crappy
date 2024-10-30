@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Dict
+from typing import Union
 from itertools import cycle, islice
 import logging
 
@@ -79,7 +79,7 @@ class Cyclic(Path):
     self._condition = None
     self._value = None
 
-  def get_cmd(self, data: Dict[str, list]) -> float:
+  def get_cmd(self, data: dict[str, list]) -> float:
     """Returns either the first or second value depending on the current state
     of the cycle. Raises :exc:`StopIteration` when the cycles are exhausted.
 

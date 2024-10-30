@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Tuple, Optional
+from typing import Optional
 import numpy as np
 import logging
 
@@ -56,7 +56,7 @@ class FakeCamera(Camera):
 
     self._gen_image()
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """Returns the updated image, depending only on the current timestamp.
 
     Also includes a waiting loop in order to achieve the right frame rate.

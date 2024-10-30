@@ -4,7 +4,7 @@ import warnings
 from math import ceil
 import numpy as np
 from pkg_resources import resource_filename
-from typing import Any, Tuple, Optional, Union, List
+from typing import Any, Optional, Union, Literal
 from pathlib import Path
 from itertools import chain
 import logging
@@ -67,7 +67,7 @@ class CorrelStage:
   """
 
   def __init__(self,
-               img_size: Tuple[int, int],
+               img_size: tuple[int, int],
                logger_name: str,
                verbose: int = 0,
                iterations: int = 5,
@@ -524,7 +524,9 @@ class GPUCorrelTool:
                resampling_factor: float = 2,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
-               fields: Optional[List[Union[str, np.ndarray]]] = None,
+               fields: Optional[list[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                                   'exy', 'eyx', 'exy2', 'z'],
+                                           np.ndarray]]] = None,
                ref_img: Optional[np.ndarray] = None,
                mask: Optional[np.ndarray] = None,
                mul: float = 3) -> None:
@@ -637,7 +639,7 @@ class GPUCorrelTool:
       self._kernel_file = kernel_file
     self._debug(3, f"Kernel file:{self._kernel_file}")
 
-  def set_img_size(self, img_size: Tuple[int, int]) -> None:
+  def set_img_size(self, img_size: tuple[int, int]) -> None:
     """Sets the image shape, and calls the methods that need this information
     for running."""
 
@@ -823,7 +825,9 @@ class GPUCorrelTool:
     if level <= self._verbose:
       self._logger.log(logging.INFO, msg)
 
-  def _set_fields(self, fields: List[str]) -> None:
+  def _set_fields(self, fields: list[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                                   'exy', 'eyx', 'exy2', 'z'],
+                                           np.ndarray]]) -> None:
     """Computes the fields based on the provided field strings, and sets them
     for each stage."""
 

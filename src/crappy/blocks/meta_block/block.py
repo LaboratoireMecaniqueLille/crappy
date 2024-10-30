@@ -11,7 +11,8 @@ import logging
 import logging.handlers
 from time import sleep, time, time_ns
 from weakref import WeakSet
-from typing import Union, Optional, List, Dict, Any, Iterable
+from typing import Union, Optional, Any
+from collections.abc import Iterable
 from collections import defaultdict
 import subprocess
 from sys import stdout, stderr, argv
@@ -44,7 +45,7 @@ class Block(Process, metaclass=MetaBlock):
   """
 
   instances = WeakSet()
-  names: List[str] = list()
+  names: list[str] = list()
   log_level: Optional[int] = logging.DEBUG
 
   # The synchronization objects will be set later
@@ -69,8 +70,8 @@ class Block(Process, metaclass=MetaBlock):
     super().__init__()
 
     # The lists of input and output links
-    self.outputs: List[Link] = list()
-    self.inputs: List[Link] = list()
+    self.outputs: list[Link] = list()
+    self.inputs: list[Link] = list()
 
     # Various objects that should be set by child classes
     self.niceness: int = 0
@@ -1035,10 +1036,8 @@ class Block(Process, metaclass=MetaBlock):
 
       # Correcting the error of the sleep function through a recursive approach
       # The last 2 milliseconds are in free loop
-      remaining = self._last_t + 1 / self.freq - t
-      while remaining > 0:
+      while (remaining := self._last_t + 1 / self.freq - t) > 0:
         t = time_ns() / 1e9
-        remaining = self._last_t + 1 / self.freq - t
         sleep(max(0., remaining / 2 - 2e-3))
 
     self._last_t = t
@@ -1144,7 +1143,7 @@ class Block(Process, metaclass=MetaBlock):
       return
     self._logger.log(log_level, msg)
 
-  def send(self, data: Optional[Union[Dict[str, Any], Iterable[Any]]]) -> None:
+  def send(self, data: Optional[Union[dict[str, Any], Iterable[Any]]]) -> None:
     """Method for sending data to downstream Blocks.
 
     The exact same :obj:`dict` is sent to every downstream Block.
@@ -1201,7 +1200,7 @@ class Block(Process, metaclass=MetaBlock):
     self.log(logging.DEBUG, "Data availability requested")
     return self.inputs and any(link.poll() for link in self.inputs)
 
-  def recv_data(self) -> Dict[str, Any]:
+  def recv_data(self) -> dict[str, Any]:
     """Reads the first available values from each incoming
     :class:`~crappy.links.Link` and returns them all in a single dict.
 
@@ -1225,12 +1224,12 @@ class Block(Process, metaclass=MetaBlock):
     ret = dict()
 
     for link in self.inputs:
-      ret.update(link.recv())
+      ret |= link.recv()
 
     self.log(logging.DEBUG, f"Called recv_data, got {ret}")
     return ret
 
-  def recv_last_data(self, fill_missing: bool = True) -> Dict[str, Any]:
+  def recv_last_data(self, fill_missing: bool = True) -> dict[str, Any]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns the newest ones in a single dict.
 
@@ -1266,20 +1265,20 @@ class Block(Process, metaclass=MetaBlock):
     # Storing the received values in the return dict and in the buffer
     for link, buffer in zip(self.inputs, self._last_values):
       data = link.recv_last()
-      ret.update(data)
-      buffer.update(data)
+      ret |= data
+      buffer |= data
 
     # If requested, filling up the missing values in the return dict
     if fill_missing:
       for buffer in self._last_values:
-        ret.update(buffer)
+        ret |= buffer
 
     self.log(logging.DEBUG, f"Called recv_last_data, got {ret}")
     return ret
 
   def recv_all_data(self,
                     delay: Optional[float] = None,
-                    poll_delay: float = 0.1) -> Dict[str, List[Any]]:
+                    poll_delay: float = 0.1) -> dict[str, list[Any]]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns them all in a single dict.
 
@@ -1321,7 +1320,7 @@ class Block(Process, metaclass=MetaBlock):
     # If simple recv_all, just receiving from all input links
     if delay is None:
       for link in self.inputs:
-        ret.update(link.recv_chunk())
+        ret |= link.recv_chunk()
 
     # Otherwise, receiving during the given period
     else:
@@ -1341,7 +1340,7 @@ class Block(Process, metaclass=MetaBlock):
 
   def recv_all_data_raw(self,
                         delay: Optional[float] = None,
-                        poll_delay: float = 0.1) -> List[Dict[str, List[Any]]]:
+                        poll_delay: float = 0.1) -> list[dict[str, list[Any]]]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns them separately in a list of
     dicts.
@@ -1372,7 +1371,7 @@ class Block(Process, metaclass=MetaBlock):
     # If simple recv_all, just receiving from all input links
     if delay is None:
       for dic, link in zip(ret, self.inputs):
-        dic.update(link.recv_chunk())
+        dic |= link.recv_chunk()
 
     # Otherwise, receiving during the given period
     else:

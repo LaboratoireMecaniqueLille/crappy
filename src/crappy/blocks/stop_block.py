@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Iterable, Union, Callable, Dict
+from typing import Optional, Union
+from collections.abc import Iterable, Callable
 import logging
 from re import split
 from time import time
@@ -102,7 +103,7 @@ class StopBlock(Block):
       var, thresh = split(r'\s*<\s*', criterion)
 
       # Return a function that checks if received data is inferior to threshold
-      def cond(data: Dict[str, list]) -> bool:
+      def cond(data: dict[str, list]) -> bool:
         """Criterion checking that the label values are below a given
         threshold."""
 
@@ -122,7 +123,7 @@ class StopBlock(Block):
         self.log(logging.DEBUG, "Criterion is about the elapsed time")
 
         # Return a function that checks if the given time was reached
-        def cond(_: Dict[str, list]) -> bool:
+        def cond(_: dict[str, list]) -> bool:
           """Criterion checking if a given delay is expired."""
 
           return time() - self.t0 > float(thresh)
@@ -134,7 +135,7 @@ class StopBlock(Block):
 
         # Return a function that checks if received data is superior to
         # threshold
-        def cond(data: Dict[str, list]) -> bool:
+        def cond(data: dict[str, list]) -> bool:
           """Criterion checking that the label values are above a given
           threshold."""
 

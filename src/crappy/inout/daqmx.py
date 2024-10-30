@@ -2,7 +2,8 @@
 
 import numpy as np
 from time import time
-from typing import List, Optional, Iterable
+from typing import Optional
+from collections.abc import Iterable
 from dataclasses import dataclass
 import logging
 
@@ -229,7 +230,7 @@ class DAQmx(InOut):
         self._compensations = [comp if chan.make_zero else 0 for comp, chan
                                in zip(self._compensations, self._channels)]
   
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Creates and starts an acquisition task, and returns the acquired
     values."""
 

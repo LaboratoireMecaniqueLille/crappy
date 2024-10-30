@@ -1,11 +1,14 @@
 # coding: utf-8
 
-from typing import Optional, Callable, Union, Tuple, Iterable
+from typing import Optional, Union, Literal
+from collections.abc import Callable, Iterable
 import numpy as np
 from pathlib import Path
 
 from .camera_processes import GPUCorrelProcess
 from .camera import Camera
+
+field_type = Literal['x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z']
 
 
 class GPUCorrel(Camera):
@@ -45,12 +48,12 @@ class GPUCorrel(Camera):
 
   def __init__(self,
                camera: str,
-               fields: Union[str, Iterable[str]],
-               img_shape: Tuple[int, int],
+               fields: Union[field_type, Iterable[field_type]],
+               img_shape: tuple[int, int],
                img_dtype: str,
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
                display_images: bool = False,
-               displayer_backend: Optional[str] = None,
+               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
                verbose: int = 0,
@@ -60,7 +63,8 @@ class GPUCorrel(Camera):
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None,
+               save_backend: Optional[Literal['sitk', 'pil', 
+                                              'cv2', 'npy']] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
                labels: Optional[Union[str, Iterable[str]]] = None,

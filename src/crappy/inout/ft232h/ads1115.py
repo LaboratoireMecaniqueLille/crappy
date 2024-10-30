@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List, Optional
+from typing import Optional, Literal
 import logging
 
 from ..meta_inout import InOut
@@ -62,7 +62,8 @@ class ADS1115FT232H(InOut):
                device_address: int = 0x48,
                sample_rate: int = 128,
                v_range: float = 2.048,
-               multiplexer: str = 'A1',
+               multiplexer: Literal['A0', 'A1', 'A2', 'A3', 'A0 - A1',
+                                    'A0 - A3', 'A1 - A3', 'A2 - A3'] = 'A1',
                dry_pin: Optional[str] = None,
                gain: float = 1,
                offset: float = 0,
@@ -179,7 +180,7 @@ class ADS1115FT232H(InOut):
       self._set_register(Ads1115_pointer_lo_thresh, 0x0000)
       self._set_register(Ads1115_pointer_hi_thresh, 0xFFFF)
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the registers containing the conversion result.
 
     The output is in Volts, unless a gain and offset are applied.

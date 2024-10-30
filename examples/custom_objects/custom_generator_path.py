@@ -26,7 +26,7 @@ clean way to stop Crappy.
 
 import crappy
 from crappy.blocks.generator_path.meta_path import Path, ConditionType
-from typing import Optional, Union, Dict
+from typing import Optional, Union
 from math import pi, sin, copysign
 from time import time
 
@@ -74,7 +74,7 @@ class CustomPath(Path):
     self._amplitude = amplitude / 2
     self._offset = offset
 
-  def get_cmd(self, data: Dict[str, list]) -> float:
+  def get_cmd(self, data: dict[str, list]) -> float:
     """This method is the one that generates and returns the value to output
     for the Generator Block.
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Optional, List
+from typing import Optional
 import logging
 
 from .meta_inout import InOut
@@ -252,7 +252,7 @@ class NAU7802(InOut):
       GPIO.setmode(GPIO.BCM)
       GPIO.setup(self._int_pin, GPIO.IN)
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the registers containing the conversion result.
 
     The output is in Volts by default, and can be converted to Newtons using

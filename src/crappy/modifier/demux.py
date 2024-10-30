@@ -1,7 +1,8 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Dict, Any, Union, Iterable
+from typing import Any, Union
+from collections.abc import Iterable
 import logging
 
 from .meta_modifier import Modifier
@@ -66,7 +67,7 @@ class Demux(Modifier):
     self._time_label = time_label
     self._transpose = transpose
 
-  def __call__(self, data: Dict[str, np.ndarray]) -> Dict[str, Any]:
+  def __call__(self, data: dict[str, np.ndarray]) -> dict[str, Any]:
     """Retrieves for each label its value in the stream, also gets the
     corresponding timestamp, and returns them.
     

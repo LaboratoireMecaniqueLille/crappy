@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Tuple, Any, Optional
+from typing import Any, Optional
 import numpy as np
 from threading import Thread, RLock
 import logging
@@ -106,7 +106,7 @@ class RaspberryPiCamera(Camera):
     sleep(1)
     self._started = True
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """Simply returns the last image in the acquisition buffer.
 
     The captured image is in GBR format, and converted into black and white if

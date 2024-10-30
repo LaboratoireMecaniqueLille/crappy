@@ -30,7 +30,7 @@ class FakeBlock:
 
     buf = dict()
     for link in self.inputs:
-      buf.update(link.recv_last())
+      buf |= link.recv_last()
 
     return buf
 

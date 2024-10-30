@@ -34,7 +34,6 @@ Crappy.
 import crappy
 import numpy as np
 import numpy.random as rd
-from typing import Tuple
 from time import time
 
 
@@ -109,7 +108,7 @@ class CustomCam(crappy.camera.Camera):
     # This line is mandatory here for first applying the instantiated settings
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """This method is an extension of the custom_camera_basic.py one.
 
     Instead of just generating the random image always in a same way, it is

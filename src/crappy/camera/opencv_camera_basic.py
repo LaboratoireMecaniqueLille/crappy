@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Tuple, Optional
+from typing import Optional
 from numpy import ndarray
 import logging
 from .meta_camera import Camera
@@ -105,7 +105,7 @@ class CameraOpencv(Camera):
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, ndarray]:
+  def get_image(self) -> tuple[float, ndarray]:
     """Grabs a frame from the videocapture object and returns it along with a
     timestamp."""
 
@@ -130,7 +130,7 @@ class CameraOpencv(Camera):
       self.log(logging.INFO, "Closing the image stream from the camera")
       self._cap.release()
 
-  def _get_min_max(self, prop_id: int) -> Tuple[int, int]:
+  def _get_min_max(self, prop_id: int) -> tuple[int, int]:
     """Gets the min and max values of a parameter."""
 
     self._cap.set(prop_id, 99999)

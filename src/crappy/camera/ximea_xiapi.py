@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, strftime, gmtime
-from typing import Optional, Tuple, Dict, Any
+from typing import Optional, Any, Literal
 import numpy as np
 import logging
 from warnings import warn
@@ -82,8 +82,9 @@ class XiAPI(Camera):
   def open(self,
            serial_number: Optional[str] = None,
            timeout: Optional[int] = None,
-           trigger: Optional[str] = None,
-           data_format: Optional[str] = None,
+           trigger: Literal['Free run', 'Hdw after config', 'Hardware'] = None,
+           data_format: Literal['Mono (8 bits)', 'Mono (16 bits)',
+                                'Raw (8 bits)', 'Raw (16 bits)'] = None,
            exposure_time_us: Optional[int] = None,
            gain: Optional[float] = None,
            auto_exposure_auto_gain: Optional[bool] = None,
@@ -94,16 +95,17 @@ class XiAPI(Camera):
            image_height: Optional[int] = None,
            x_offset: Optional[int] = None,
            y_offset: Optional[int] = None,
-           framerate_mode: Optional[str] = None,
+           framerate_mode: Literal['Free run', 'Framerate target',
+                                   'Framerate limit'] = None,
            framerate: Optional[float] = None,
-           downsampling_mode: Optional[str] = None,
+           downsampling_mode: Literal['1x1', '2x2'] = None,
            width: Optional[int] = None,
            height: Optional[int] = None,
            xoffset: Optional[int] = None,
            yoffset: Optional[int] = None,
            exposure: Optional[float] = None,
            AEAG: Optional[bool] = None,
-           external_trig: Optional[bool] = None,) -> None:
+           external_trig: Optional[bool] = None) -> None:
     """Opens the connection to the camera, instantiates the available settings
     and starts the acquisition.
 
@@ -419,7 +421,7 @@ class XiAPI(Camera):
     self._cam.start_acquisition()
     self._started = True
 
-  def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
+  def get_image(self) -> tuple[dict[str, Any], np.ndarray]:
     """Reads a frame from the camera, and returns it along with its metadata.
 
     The acquired metadata contains the following fields :
@@ -475,7 +477,8 @@ class XiAPI(Camera):
       self.log(logging.INFO, "Closing the connection to the camera")
       self._cam.close_device()
 
-  def _get_data_format(self) -> str:
+  def _get_data_format(self) -> Literal['Mono (8 bits)', 'Mono (16 bits)',
+                                        'Raw (8 bits)', 'Raw (16 bits)']:
     """Returns the current data format of the acquired images."""
 
     return DATA_FORMATS[self._model][self._cam.get_imgdataformat()]
@@ -530,7 +533,7 @@ class XiAPI(Camera):
 
     return self._cam.get_offsetY()
 
-  def _get_extt(self) -> str:
+  def _get_extt(self) -> Literal['Free run', 'Hdw after config', 'Hardware']:
     """Returns the current trigger mode value, and updates the last read
     trigger mode value if needed.
 
@@ -538,8 +541,8 @@ class XiAPI(Camera):
     and `'Hdw after config'`.
     """
 
-    r = self._cam.get_trigger_source()
-    if r == 'XI_TRG_OFF' and self._trig == 'Hardware':
+    if ((r := self._cam.get_trigger_source()) == 'XI_TRG_OFF' and
+        self._trig == 'Hardware'):
       self._trig = 'Free run'
     elif r != 'XI_TRG_OFF' and self._trig != 'Hardware':
       self._trig = 'Hardware'
@@ -550,17 +553,21 @@ class XiAPI(Camera):
 
     return self._cam.get_framerate()
 
-  def _get_framerate_mode(self) -> str:
+  def _get_framerate_mode(self) -> Literal['Free run', 'Framerate target',
+                                           'Framerate limit']:
     """Returns the current frame rate mode for the camera."""
 
     return FRAMERATE_MODES[self._model][self._cam.get_acq_timing_mode()]
 
-  def _get_downsampling_mode(self) -> str:
+  def _get_downsampling_mode(self) -> Literal['1x1', '2x2']:
     """Returns the current downsampling mode."""
 
     return DOWNSAMPLING_MODES[self._model][self._cam.get_downsampling()]
 
-  def _set_data_format(self, fmt: str) -> None:
+  def _set_data_format(self, fmt: Literal['Mono (8 bits)',
+                                          'Mono (16 bits)',
+                                          'Raw (8 bits)',
+                                          'Raw (16 bits)']) -> None:
     """sets the requested data format."""
 
     if self._started:
@@ -686,7 +693,8 @@ class XiAPI(Camera):
       self.log(logging.DEBUG, "Starting the image acquisition")
       self._cam.start_acquisition()
 
-  def _set_ext_trig(self, trig: str) -> None:
+  def _set_ext_trig(self, trig: Literal['Free run', 'Hdw after config',
+                                        'Hardware']) -> None:
     """Sets the requested trigger mode value, and updates the last requested
     trigger mode value.
 
@@ -710,7 +718,8 @@ class XiAPI(Camera):
       self.log(logging.DEBUG, "Starting the image acquisition")
       self._cam.start_acquisition()
 
-  def _set_framerate_mode(self, mode: str) -> None:
+  def _set_framerate_mode(self, mode: Literal['Free run', 'Framerate target',
+                                              'Framerate limit']) -> None:
     """Sets the framerate mode for the camera to use."""
 
     self._cam.set_acq_timing_mode(FRAMERATE_MODES_INV[self._model][mode])
@@ -730,7 +739,7 @@ class XiAPI(Camera):
                                 "the camera is in free run mode !")
     self._cam.set_framerate(framerate)
 
-  def _set_downsampling_mode(self, mode: str) -> None:
+  def _set_downsampling_mode(self, mode: Literal['1x1', '2x2']) -> None:
     """Sets the downsampling mode on the camera."""
 
     if self._started:

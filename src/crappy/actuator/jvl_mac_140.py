@@ -1,7 +1,7 @@
 ﻿# coding: utf-8
 
 from struct import pack, unpack
-from typing import Optional, Tuple
+from typing import Optional
 from time import sleep
 import logging
 
@@ -201,8 +201,8 @@ class JVLMac140(Actuator):
       pass
 
   def _make_cmd(self,
-                values: Tuple[int, int, int, int],
-                encodings: Tuple[str, str, str, str],
+                values: tuple[int, int, int, int],
+                encodings: tuple[str, str, str, str],
                 last_cmd: bool) -> bytes:
     """Builds a command to send to the servomotor, from the given arguments.
 

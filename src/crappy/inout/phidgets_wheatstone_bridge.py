@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, List
+from typing import Optional
 import logging
 from math import log2
 
@@ -103,7 +103,7 @@ class PhidgetWheatstoneBridge(InOut):
     except PhidgetException:
       raise TimeoutError("Waited too long for the motor to attach !")
 
-  def get_data(self) -> Optional[List[float]]:
+  def get_data(self) -> Optional[list[float]]:
     """Returns the last known voltage ratio value, adjusted with the gain and
     the offset."""
 
@@ -128,9 +128,8 @@ class PhidgetWheatstoneBridge(InOut):
     self._load_cell.setBridgeGain(int(round(log2(self._hardware_gain), 0) + 1))
 
     # Setting the data rate
-    min_rate = self._load_cell.getMinDataRate()
-    max_rate = self._load_cell.getMaxDataRate()
-    if not min_rate <= self._data_rate <= max_rate:
+    if not ((min_rate := self._load_cell.getMinDataRate()) <= self._data_rate
+            <= (max_rate := self._load_cell.getMaxDataRate())):
       raise ValueError(f"The data rate should be between {min_rate} and "
                        f"{max_rate}, got {self._data_rate} !")
     else:

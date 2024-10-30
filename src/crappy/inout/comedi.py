@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, List, Iterable
+from typing import Optional
+from collections.abc import Iterable
 from dataclasses import dataclass
 import logging
 from  warnings import warn
@@ -249,7 +250,7 @@ class Comedi(InOut):
       comedi.comedi_data_write(self._device, self._out_sub_device, chan.num,
                                chan.range_num, comedi.AREF_GROUND, out_a)
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads and returns the value of each channel, adjusted with the given
     gain and offset."""
 

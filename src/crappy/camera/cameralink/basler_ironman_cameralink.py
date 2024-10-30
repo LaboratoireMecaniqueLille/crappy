@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, Tuple
+from typing import Optional
 import numpy as np
 import logging
 from  warnings import warn
@@ -132,7 +132,7 @@ class BaslerIronmanCameraLink(Camera):
     self._cap.set(Cl.FG_TRIGGERMODE, 1)
     self._cap.set(Cl.FG_EXSYNCON, 1)
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """Reads a frame from the camera and returns it as is."""
 
     ret, frame = self._cap.read()

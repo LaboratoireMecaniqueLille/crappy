@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Callable, Union, Optional, Tuple
+from typing import Union, Optional, Literal
+from collections.abc import Callable
 from pathlib import Path
 import numpy as np
 from time import time, sleep, strftime, gmtime
@@ -63,7 +64,7 @@ class Camera(Block):
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: Optional[str] = None,
+               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
                display_freq: bool = False,
@@ -73,11 +74,12 @@ class Camera(Block):
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None,
+               save_backend: Optional[Literal['sitk', 'pil',
+                                              'cv2', 'npy']] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Union[Tuple[int, int],
-                                         Tuple[int, int, int]]] = None,
+               img_shape: Optional[Union[tuple[int, int],
+                                         tuple[int, int, int]]] = None,
                img_dtype: Optional[str] = None,
                **kwargs) -> None:
     """Sets the arguments and initializes the parent class.
@@ -561,8 +563,7 @@ class Camera(Block):
         self._camera.Eyy = data['Eyy(%)']
 
     # Grabbing the frame from the Camera object
-    ret = self._camera.get_image()
-    if ret is None:
+    if (ret := self._camera.get_image()) is None:
       return
     metadata, img = ret
  

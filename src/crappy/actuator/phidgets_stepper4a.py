@@ -4,7 +4,7 @@ import logging
 import numpy as np
 from pathlib import Path
 from platform import system
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
@@ -44,7 +44,7 @@ class Phidget4AStepper(Actuator):
                remote: bool = False,
                absolute_mode: bool = False,
                reference_pos: float = 0,
-               switch_ports: Tuple[int, ...] = tuple(),
+               switch_ports: tuple[int, ...] = tuple(),
                save_last_pos: bool = False,
                save_pos_folder: Optional[Union[str, Path]] = None) -> None:
     """Sets the args and initializes the parent class.

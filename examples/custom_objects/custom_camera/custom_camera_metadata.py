@@ -34,7 +34,7 @@ the metadata returned in the get_image method was correctly saved.
 import crappy
 import numpy as np
 import numpy.random as rd
-from typing import Tuple, Dict, Any
+from typing import Any
 from time import time, strftime, gmtime
 
 
@@ -69,7 +69,7 @@ class CustomCam(crappy.camera.Camera):
     # Here the Camera does not include settings though
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
+  def get_image(self) -> tuple[dict[str, Any], np.ndarray]:
     """Compared to the custom_camera_basic.py example, this method returns a
     complete dictionary of metadata instead of just a timestamp.
 

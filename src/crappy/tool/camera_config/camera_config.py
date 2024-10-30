@@ -6,7 +6,7 @@ from _tkinter import TclError
 from platform import system
 import numpy as np
 from time import time, sleep
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 from pkg_resources import resource_string
 from io import BytesIO
 import logging
@@ -83,7 +83,7 @@ class CameraConfig(tk.Tk):
 
     super().__init__()
     self._camera = camera
-    self.shape: Optional[Union[Tuple[int, int], Tuple[int, int, int]]] = None
+    self.shape: Optional[Union[tuple[int, int], tuple[int, int, int]]] = None
     self.dtype = None
     self._logger: Optional[logging.Logger] = None
 
@@ -530,7 +530,7 @@ class CameraConfig(tk.Tk):
       self._reticle_val.set(int(np.average(
           self._original_img[self._y_pos.get(), self._x_pos.get()])))
 
-  def _coord_to_pix(self, x: int, y: int) -> Tuple[int, int]:
+  def _coord_to_pix(self, x: int, y: int) -> tuple[int, int]:
     """Converts the coordinates of the mouse in the GUI referential to
     coordinates on the original image."""
 

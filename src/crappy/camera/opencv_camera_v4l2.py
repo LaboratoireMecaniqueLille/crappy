@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Tuple, List, Optional
+from typing import Optional
 from numpy import ndarray
 from subprocess import run
 from re import findall, search
@@ -46,7 +46,7 @@ class CameraOpencv(Camera, V4L2Helper):
 
     self._cap = None
     self._device_num: Optional[int] = None
-    self._formats: List[str] = list()
+    self._formats: list[str] = list()
 
   def open(self, device_num: int = 0, **kwargs) -> None:
     """Opens the video stream and sets any user-specified settings.
@@ -131,7 +131,7 @@ class CameraOpencv(Camera, V4L2Helper):
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, ndarray]:
+  def get_image(self) -> tuple[float, ndarray]:
     """Grabs a frame from the videocapture object and returns it along with a
     timestamp."""
 

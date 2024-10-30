@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional
+from typing import Optional, Literal
 import numpy as np
 import logging
 import logging.handlers
@@ -29,7 +29,8 @@ class DICVEProcess(CameraProcess):
 
   def __init__(self,
                patches: SpotsBoxes,
-               method: str = 'Disflow',
+               method: Literal['Disflow', 'Lucas Kanade',
+                               'Pixel precision', 'Parabola'] = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,

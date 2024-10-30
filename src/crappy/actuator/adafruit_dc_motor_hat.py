@@ -2,7 +2,7 @@
 
 from struct import pack_into
 from time import sleep
-from typing import Union, Tuple
+from typing import Union, Literal
 import logging
 from  warnings import warn
 
@@ -68,7 +68,7 @@ class DCMotorHat(Actuator):
   """
 
   def __init__(self,
-               backend: str,
+               backend: Literal['Pi4', 'blinka'],
                device_address: int = 0x60,
                i2c_port: int = 1) -> None:
     """Checks the validity of the arguments.
@@ -142,7 +142,7 @@ class DCMotorHat(Actuator):
       for i in range(1, 5):
         self._write_i2c(motor_hat_ctrl[i], motor_hat_0xFF)
 
-  def set_speed(self, cmd: Tuple[int, float]) -> None:
+  def set_speed(self, cmd: tuple[int, float]) -> None:
     """Sets the desired voltage on the selected motor.
 
     The provided voltage should be between `-12` and `12V` which are the limits

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Tuple
+from typing import Optional
 import numpy as np
 import logging
 from  warnings import warn
@@ -166,7 +166,7 @@ class JaiGO5000CPMCL(JaiGO5000CPMCL8Bits):
     self._cap.set(Cl.FG_CAMERA_LINK_CAMTYP, 212)  # Set the input to 12 bits
     self._cap.set(Cl.FG_SENSORREADOUT, 7)  # Sets the correct framegrabber mode
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """Grabs a frame using the parent class' method, and returns if after
     shifting bits."""
 
