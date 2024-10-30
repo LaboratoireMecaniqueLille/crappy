@@ -40,7 +40,7 @@ for materials testing.
 Requirements
 ------------
 
-CRAPPY can run with Python 3.7 to 3.10, and has been tested on Windows, Linux, 
+CRAPPY can run with Python 3.9 to 3.13, and has been tested on Windows, Linux, 
 Raspberry Pi and macOS. It can probably run on other operating systems 
 supporting the required Python versions. 
 
