@@ -1,14 +1,15 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Callable, Union, Dict, Optional
+from typing import Union, Optional
+from collections.abc import Callable
 from re import split, IGNORECASE, match
 import logging
 from multiprocessing import current_process
 
 from .meta_path import MetaPath
 
-ConditionType = Callable[[Dict[str, list]], bool]
+ConditionType = Callable[[dict[str, list]], bool]
 
 
 class Path(metaclass=MetaPath):

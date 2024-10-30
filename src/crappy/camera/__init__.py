@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from typing import Dict, Type
-
 from .fake_camera import FakeCamera
 from .file_reader import FileReader
 from .opencv_camera_webcam import Webcam
@@ -30,4 +28,4 @@ else:
   from .opencv_camera_basic import CameraOpencv
 
 from ._deprecated import deprecated_cameras
-camera_dict: Dict[str, Type[Camera]] = MetaCamera.classes
+camera_dict: dict[str, type[Camera]] = MetaCamera.classes
