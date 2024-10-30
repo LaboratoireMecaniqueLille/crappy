@@ -1,10 +1,12 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Any
+from typing import TypeVar
 import logging
 
 from .meta_modifier import Modifier
+
+T = TypeVar('T')
 
 
 class MovingAvg(Modifier):
@@ -31,7 +33,7 @@ class MovingAvg(Modifier):
     self._n_points = n_points
     self._buf = None
 
-  def __call__(self, data: dict[str, Any]) -> dict[str, Any]:
+  def __call__(self, data: dict[str, T]) -> dict[str, T]:
     """Receives data from the upstream Block, computes the average of every
     label and replaces the original data with it.
     

@@ -1,9 +1,12 @@
 # coding: utf-8
 
-from typing import Any, Union, Iterable
+from typing import Union, TypeVar
+from collections.abc import Iterable
 import logging
 
 from .meta_modifier import Modifier
+
+T = TypeVar('T')
 
 
 class Offset(Modifier):
@@ -60,7 +63,7 @@ class Offset(Modifier):
     self._compensations = None
     self._compensated = False
 
-  def __call__(self, data: dict[str, Any]) -> dict[str, Any]:
+  def __call__(self, data: dict[str, T]) -> dict[str, T]:
     """If the compensations are not set, sets them, and then offsets the
     required labels.
     

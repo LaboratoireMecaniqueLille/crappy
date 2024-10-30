@@ -1,9 +1,11 @@
 # coding: utf-8
 
-from typing import Optional, Any
+from typing import Optional, TypeVar
 import logging
 
 from .meta_modifier import Modifier
+
+T = TypeVar('T')
 
 
 class Diff(Modifier):
@@ -36,7 +38,7 @@ class Diff(Modifier):
     self._last_t = None
     self._last_val = None
 
-  def __call__(self, data: dict[str, Any]) -> dict[str, Any]:
+  def __call__(self, data: dict[str, T]) -> dict[str, T]:
     """Gets the data from the upstream Block, updates the derivative value,
     appends it to the data and returns the data.
     

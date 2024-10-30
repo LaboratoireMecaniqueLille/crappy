@@ -26,8 +26,11 @@ a clean way to stop Crappy.
 """
 
 import crappy
-from typing import Any, Iterable, Optional
+from typing import Optional, TypeVar
+from collections.abc import Iterable
 from math import sqrt
+
+T = TypeVar('T')
 
 
 class CustomModifier(crappy.modifier.Modifier):
@@ -73,7 +76,7 @@ class CustomModifier(crappy.modifier.Modifier):
     self._square_sum = 0
     self._nb_samples = 0
 
-  def __call__(self, data: dict[str, Any]) -> dict[str, Any]:
+  def __call__(self, data: dict[str, T]) -> dict[str, T]:
     """This method is the one that transforms the received data and returns the
     modified version.
 
