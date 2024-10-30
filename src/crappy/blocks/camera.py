@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Callable, Union, Optional, Literal
+from typing import Union, Optional, Literal
+from collections.abc import Callable
 from pathlib import Path
 import numpy as np
 from time import time, sleep, strftime, gmtime

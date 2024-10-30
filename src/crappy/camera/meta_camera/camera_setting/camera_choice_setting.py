@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Callable
+from typing import Optional
+from collections.abc import Callable
 from itertools import zip_longest
 import logging
 

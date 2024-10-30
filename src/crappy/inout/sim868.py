@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import sleep, time
-from typing import Iterable, Optional
+from typing import Optional
+from collections.abc import Iterable
 from re import fullmatch
 import logging
 from  warnings import warn

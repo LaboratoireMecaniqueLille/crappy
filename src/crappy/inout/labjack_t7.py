@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, Any, Union, Iterable, Literal
+from typing import Optional, Any, Union, Literal
+from collections.abc import Iterable
 from itertools import chain
 from dataclasses import dataclass, field
 from multiprocessing import current_process

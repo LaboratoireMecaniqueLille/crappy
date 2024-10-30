@@ -2,7 +2,8 @@
 
 from struct import unpack
 from time import time
-from typing import Optional, Callable, Iterable, Union
+from typing import Optional, Union
+from collections.abc import Callable, Iterable
 import logging
 
 from .meta_block import Block

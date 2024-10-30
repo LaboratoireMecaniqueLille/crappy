@@ -8,7 +8,8 @@ from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 from threading import BrokenBarrierError
 import numpy as np
-from typing import Optional, Union, Any, Iterable
+from typing import Optional, Union, Any
+from collections.abc import Iterable
 import logging
 import logging.handlers
 from select import select

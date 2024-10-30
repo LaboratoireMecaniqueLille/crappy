@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Optional, Any, Union, Iterable
+from typing import Optional, Any, Union
+from collections.abc import Iterable
 import numpy as np
 import logging
 from multiprocessing import current_process

@@ -3,7 +3,8 @@
 from enum import IntEnum
 from collections import namedtuple
 from struct import calcsize, unpack, pack
-from typing import Union, Callable, Optional, Literal
+from typing import Union, Optional, Literal
+from collections.abc import Callable
 from multiprocessing import current_process
 import logging
 

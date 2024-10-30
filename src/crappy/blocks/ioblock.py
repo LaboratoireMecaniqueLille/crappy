@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Union, Optional, Iterable, Any
+from typing import Union, Optional, Any
+from collections.abc import Iterable
 import logging
 
 from .meta_block import Block

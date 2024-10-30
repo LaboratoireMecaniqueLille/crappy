@@ -3,7 +3,8 @@
 from threading import Thread
 from math import log2, ceil
 import numpy as np
-from typing import Optional, Iterable
+from typing import Optional
+from collections.abc import Iterable
 from time import time, sleep
 import logging
 import logging.handlers

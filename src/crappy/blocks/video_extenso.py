@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Callable, Union, Iterable, Literal
+from typing import Optional, Union, Literal
+from collections.abc import Callable, Iterable
 import numpy as np
 from pathlib import Path
 

@@ -3,7 +3,8 @@
 from __future__ import annotations
 from datetime import timedelta
 from time import time
-from typing import Any, Optional, Iterable
+from typing import Any, Optional
+from collections.abc import Iterable
 import logging
 
 from .meta_block import Block

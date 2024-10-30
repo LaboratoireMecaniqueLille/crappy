@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Iterable, Optional, Union
+from typing import Optional, Union
+from collections.abc import Iterable
 from pathlib import Path
 import logging
 

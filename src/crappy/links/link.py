@@ -3,7 +3,8 @@
 from multiprocessing import Pipe
 from time import time
 from copy import deepcopy
-from typing import Callable, Union, Any, Optional, Iterable
+from typing import Union, Any, Optional
+from collections.abc import Callable, Iterable
 from collections import defaultdict
 from select import select
 from platform import system

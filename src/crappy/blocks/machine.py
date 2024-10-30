@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import Any, Optional, Iterable
+from typing import Any, Optional
+from collections.abc import Iterable
 from dataclasses import dataclass, fields
 import logging
 

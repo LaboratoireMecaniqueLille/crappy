@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Union, Any, Optional, Iterable
+from typing import Union, Any, Optional
+from collections.abc import Iterable
 from time import time, sleep
 from subprocess import Popen, PIPE, STDOUT, TimeoutExpired
 from threading import Thread

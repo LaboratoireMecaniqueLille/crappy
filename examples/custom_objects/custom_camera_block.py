@@ -34,7 +34,8 @@ CTRL+C to stop Crappy, but it is not a clean way to do it.
 import crappy
 import cv2
 import numpy as np
-from typing import Optional, Callable, Union
+from typing import Optional, Union
+from collections.abc import Callable
 from pathlib import Path
 
 

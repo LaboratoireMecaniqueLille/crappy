@@ -2,7 +2,8 @@
 
 from time import time
 from struct import pack, unpack
-from typing import Iterable, Literal
+from typing import Literal
+from collections.abc import Iterable
 import logging
 from  warnings import warn
 

@@ -2,7 +2,8 @@
 
 from time import time
 import numpy as np
-from typing import Callable, Optional, Literal
+from typing import Optional, Literal
+from collections.abc import Callable
 import logging
 
 from .meta_block import Block

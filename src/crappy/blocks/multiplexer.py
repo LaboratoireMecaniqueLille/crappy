@@ -2,7 +2,8 @@
 
 import logging
 import numpy as np
-from typing import Optional, Iterable, Union
+from typing import Optional, Union
+from collections.abc import Iterable
 from collections import defaultdict
 
 from .meta_block import Block

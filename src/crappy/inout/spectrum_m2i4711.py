@@ -2,7 +2,8 @@
 
 import numpy as np
 from time import time
-from typing import Optional, Iterable
+from typing import Optional
+from collections.abc import Iterable
 import logging
 from  warnings import warn
 

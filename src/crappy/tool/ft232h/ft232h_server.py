@@ -2,7 +2,8 @@
 
 from collections import namedtuple
 from struct import unpack
-from typing import Union, Optional, Callable, Literal
+from typing import Union, Optional, Literal
+from collections.abc import Callable
 from _io import FileIO
 from multiprocessing.synchronize import RLock
 from multiprocessing.sharedctypes import Synchronized

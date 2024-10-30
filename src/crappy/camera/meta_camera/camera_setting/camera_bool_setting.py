@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Callable
+from typing import Optional
+from collections.abc import Callable
 
 from .camera_setting import CameraSetting
 

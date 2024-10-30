@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Iterable, Union
+from typing import Optional, Union
+from collections.abc import Iterable
 import tkinter as tk
 import logging
 

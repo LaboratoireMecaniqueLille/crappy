@@ -11,7 +11,8 @@ import logging
 import logging.handlers
 from time import sleep, time, time_ns
 from weakref import WeakSet
-from typing import Union, Optional, Any, Iterable
+from typing import Union, Optional, Any
+from collections.abc import Iterable
 from collections import defaultdict
 import subprocess
 from sys import stdout, stderr, argv

@@ -2,7 +2,8 @@
 
 from time import time
 import numpy as np
-from typing import Any, Optional, Iterable, Literal
+from typing import Any, Optional, Literal
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from itertools import chain
 from multiprocessing import current_process

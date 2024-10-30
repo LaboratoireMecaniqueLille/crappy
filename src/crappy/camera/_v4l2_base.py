@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from __future__ import annotations
-from typing import Optional, Callable, Union
+from typing import Optional, Union
+from collections.abc import Callable
 from re import findall, search, finditer, split, Match, compile
 from dataclasses import dataclass
 import logging

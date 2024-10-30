@@ -2,7 +2,8 @@
 
 from time import time
 import numpy as np
-from typing import Optional, Any, Iterable
+from typing import Optional, Any
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from re import fullmatch
 from collections import defaultdict

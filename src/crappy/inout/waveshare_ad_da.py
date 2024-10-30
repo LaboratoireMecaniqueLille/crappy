@@ -3,7 +3,8 @@
 import time
 from time import sleep, time
 from re import fullmatch, findall
-from typing import Union, Optional, Iterable
+from typing import Union, Optional
+from collections.abc import Iterable
 import logging
 from  warnings import warn
 

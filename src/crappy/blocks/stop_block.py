@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Iterable, Union, Callable
+from typing import Optional, Union
+from collections.abc import Iterable, Callable
 import logging
 from re import split
 from time import time

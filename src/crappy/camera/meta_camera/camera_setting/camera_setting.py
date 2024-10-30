@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Callable, Optional, Union, Any
+from typing import Optional, Union, Any
+from collections.abc import Callable
 from multiprocessing import current_process
 import logging
 

@@ -1,7 +1,8 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Any, Union, Iterable
+from typing import Any, Union
+from collections.abc import Iterable
 import logging
 
 from .meta_modifier import Modifier

@@ -27,7 +27,8 @@ clean way to stop Crappy.
 """
 
 import crappy
-from typing import Optional, Iterable
+from typing import Optional
+from collections.abc import Iterable
 import logging
 from time import sleep, time
 

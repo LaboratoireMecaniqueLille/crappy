@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Any, Optional, Iterator, Iterable
+from typing import Any, Optional
+from collections.abc import Iterator, Iterable
 from itertools import cycle
 from copy import deepcopy
 import logging
