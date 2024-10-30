@@ -414,6 +414,10 @@ class XiAPI(Camera):
          sharpness, image_width, image_height, x_offset, y_offset,
          framerate_mode, framerate, downsampling_mode, trigger))
               if arg is not None}
+
+    if self._model in DATA_FORMATS and data_format is not None:
+      to_set['data_format'] = data_format
+
     self.set_all(**to_set)
 
     # Starting the acquisition

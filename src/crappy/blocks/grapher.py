@@ -3,7 +3,7 @@
 import numpy as np
 from typing import Optional
 import logging
-from _tkinter import TclError
+from tkinter import TclError
 
 from .meta_block import Block
 from .._global import OptionalModule

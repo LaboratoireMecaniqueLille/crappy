@@ -846,12 +846,18 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _to_steps(self, mm: float) -> float:
     """Wrapper for converting `mm` to `steps`."""
 
-    return mm * self._steps_per_mm * self._step_mode
+    if self._step_mode == '2_100p':
+      return mm * self._steps_per_mm * 2
+    else:
+      return mm * self._steps_per_mm * int(self._step_mode)
 
   def _to_mm(self, steps: float) -> float:
     """Wrapper for converting `steps` to `mm`."""
 
-    return steps / self._steps_per_mm / self._step_mode
+    if self._step_mode == '2_100p':
+      return steps / self._steps_per_mm / 2
+    else:
+      return steps / self._steps_per_mm / int(self._step_mode)
 
   def _reset_command_timeout(self) -> None:
     """Sends a reset command timeout command."""
