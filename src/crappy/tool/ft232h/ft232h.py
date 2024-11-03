@@ -154,7 +154,7 @@ class FT232H:
     manually by running:
     ::
 
-      $ echo "SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"0403\\", \
+      echo "SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"0403\\", \
 MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     in a shell opened in ``/etc/udev/rules.d``.

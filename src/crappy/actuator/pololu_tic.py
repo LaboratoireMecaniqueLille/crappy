@@ -270,7 +270,7 @@ class PololuTic(Actuator):
     folder. It is also possible to add it manually by running:
     ::
 
-      $ echo "SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"1ffb\\", \
+      echo "SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"1ffb\\", \
 MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     in a shell opened in ``/etc/udev/rules.d``.

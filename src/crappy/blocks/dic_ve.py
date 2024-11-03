@@ -270,7 +270,7 @@ class DICVE(Camera):
         Should be one of :
         ::
 
-          `Disflow`, 'Pixel precision', 'Parabola', 'Lucas Kanade'
+          'Disflow', 'Pixel precision', 'Parabola', 'Lucas Kanade'
 
         ``'Disflow'`` uses OpenCV's DISOpticalFlow and ``'Lucas Kanade'`` uses
         OpenCV's calcOpticalFlowPyrLK, while all other methods are based on a
