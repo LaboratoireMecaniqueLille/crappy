@@ -476,13 +476,13 @@ of these methods do, refer to the :ref:`Developers information` section of
 the documentation. In short, the :ref:`crappy.prepare()` method initializes all
 the Blocks, but does not start the test. For example, after calling this
 method, the actuators are powered on, the sensors are configured, and the files
-for recording data are created. The :meth:`crappy.renice()` method can be
-ignored by most users. And the :meth:`crappy.launch()` actually starts the test
-and is blocking, just like :meth:`crappy.start()`.
+for recording data are created. The :ref:`crappy.renice()` method can be
+ignored by most users. And the :ref:`crappy.launch()` actually starts the test
+and is blocking, just like :ref:`crappy.start()`.
 
 But why would you want to split up the three methods of
-:meth:`crappy.start()` ? By doing so, you gain the possibility to add some code
-between the :meth:`crappy.prepare()` and :meth:`crappy.launch()` methods. This
+:ref:`crappy.start()` ? By doing so, you gain the possibility to add some code
+between the :ref:`crappy.prepare()` and :ref:`crappy.launch()` methods. This
 mostly gives you the capacity to interact with hardware once it is initialized
 but the test is not yet started. For example, it is used on some setups to
 allow the user to place samples on the device once the motors reach an initial
@@ -491,13 +491,13 @@ only start the test once the desired position is reached and the actuator is
 switched back to software-controlled mode.
 
 .. Warning::
-   If code is included between the :meth:`crappy.prepare()` and
-   :meth:`crappy.launch()` methods, there is no warranty that Crappy terminates
+   If code is included between the :ref:`crappy.prepare()` and
+   :ref:`crappy.launch()` methods, there is no warranty that Crappy terminates
    gracefully in case this code crashes ! Be extremely cautious when performing
    operations that can potentially fail, and make sure to understand what the
    effects would be on your setup !
 
-As the alternatives :meth:`crappy.start()` are much more difficult to use in a
+As the alternatives :ref:`crappy.start()` are much more difficult to use in a
 safe way, and have very few clean use cases, no example will be showed for this
 section. We consider that users skilled enough to use these methods safely
 should be able to do so without an example. Still, these methods exist and are
@@ -506,7 +506,7 @@ part of the API, and as such they are presented in this tutorial section.
 7.b. Arguments to the startup method
 ++++++++++++++++++++++++++++++++++++
 
-The :meth:`crappy.start()` method, alias to the
+The :ref:`crappy.start()` method, alias to the
 :meth:`~crappy.blocks.Block.start_all` method of the class
 :class:`~crappy.blocks.Block`, accepts three arguments that can help customize
 a bit the behavior of Crappy. They are briefly detailed in this section.
@@ -532,7 +532,7 @@ the exceptions raised at the end of a script. The default behavior of Crappy is
 to raise an exception when it stops, if either an unexpected error was raised
 during its execution or if a :exc:`KeyboardInterrupt` was caught (script
 stopped using :kbd:`Control-c`). The purpose of this behavior is to prevent the
-execution of any line of code that would come after :meth:`crappy.start()`,
+execution of any line of code that would come after :ref:`crappy.start()`,
 since it might not be safe to run it after Crappy has failed or the user
 interrupted the test. By setting :py:`'no_raise'` to :obj:`True`, the
 exceptions are disabled and Python goes on after Crappy finishes, even if it
