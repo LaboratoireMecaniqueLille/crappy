@@ -42,7 +42,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
 
     Args:
       camera: The :class:`~crappy.camera.Camera` object in charge of acquiring
-      the images.
+        the images.
       log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to
         the main :obj:`~logging.Logger`, only used in Windows.
 
