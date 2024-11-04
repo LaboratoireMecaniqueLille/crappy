@@ -1,12 +1,10 @@
 # coding: utf-8
 
-from typing import Optional, Any, Union, TypeVar
+from typing import Optional, Any, Union
 from collections.abc import Iterable
 import logging
 
-from .meta_modifier import Modifier
-
-T = TypeVar('T')
+from .meta_modifier import Modifier, T
 
 
 class TrigOnValue(Modifier):

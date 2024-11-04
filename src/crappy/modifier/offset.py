@@ -1,12 +1,10 @@
 # coding: utf-8
 
-from typing import Union, TypeVar
+from typing import Union
 from collections.abc import Iterable
 import logging
 
-from .meta_modifier import Modifier
-
-T = TypeVar('T')
+from .meta_modifier import Modifier, T
 
 
 class Offset(Modifier):
