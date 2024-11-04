@@ -22,8 +22,7 @@ class VideoExtensoTool:
   It performs spot tracking on up to `4` spots on the images acquired by the
   :class:`~crappy.camera.Camera`, and computes the strain values at each new 
   image. For each spot, the tracking is performed by an independent
-  :class:`~crappy.tool.image_processing.video_extenso.tracker.tracker.Tracker`
-  Process.
+  :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` Process.
 
   It is possible to track only one spot, in which case only the position of its
   center is returned and the strain values are left to `0`.

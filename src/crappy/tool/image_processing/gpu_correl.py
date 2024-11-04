@@ -499,11 +499,12 @@ class GPUCorrelTool:
   correlation, rigid body displacements or other fields are identified.
 
   This class  is meant to be efficient enough to run in real-time. It relies on
-  the :class:`CorrelStage` class (not documented) to perform correlation on
-  different scales. It mainly takes a list of base fields and a reference image
-  as inputs, and project the displacement between the current image and the
-  reference one on the base of fields. The optimal fit is achieved by lowering
-  the residuals with a least-squares method.
+  the :class:`~crappy.tool.image_processing.gpu_correl.CorrelStage` class (not
+  documented) to perform correlation on different scales. It mainly takes a
+  list of base fields and a reference image as inputs, and project the
+  displacement between the current image and the reference one on the base of
+  fields. The optimal fit is achieved by lowering the residuals with a
+  least-squares method.
 
   The projection on the base is performed sequentially, using the results
   obtained at stages with low resolution to initialize the computation on

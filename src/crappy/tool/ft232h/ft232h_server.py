@@ -239,8 +239,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         The CS pin for selecting SPI devices is always `D3`. This pin is
         reserved and cannot be used as a GPIO. If you want to drive the CS line
         manually, it is possible not to drive the CS pin by setting the SPI
-        parameter :attr:`no_cs` to :obj:`True` and to drive the CS line from a
-        GPIO instead.
+        parameter :attr:`~crappy.tool.ft232h.ft232h_server.FT232HServer.no_cs`
+        to :obj:`True` and to drive the CS line from a GPIO instead.
 
       - ``mode``:
         It is not possible to simultaneously control slaves over SPI and I2C,
