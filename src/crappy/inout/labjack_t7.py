@@ -132,16 +132,16 @@ class LabjackT7(InOut):
 
         - gain: If the channel is an input, the measured value will be
           modified directly by the Labjack as follows :
-          :math:`returned\_value = gain * measured\_value + offset`. If the
+          :math:`returned\\_value = gain * measured\\_value + offset`. If the
           channel is an output, the command value will be modified in Crappy as
           follows before being sent to the Labjack :
-          :math:`sent\_value = gain * command + offset`.
+          :math:`sent\\_value = gain * command + offset`.
         - offset: If the channel is an input, the measured value will be
           modified directly by the Labjack as follows :
-          :math:`returned\_value = gain * measured\_value + offset`. If the
+          :math:`returned\\_value = gain * measured\\_value + offset`. If the
           channel is an output, the command value will be modified in Crappy as
           follows before being sent to the Labjack :
-          :math:`sent\_value = gain * command + offset`.
+          :math:`sent\\_value = gain * command + offset`.
         - make_zero: If :obj:`True`, data will be acquired on this channel
           before the test starts, and a compensation value will be deduced
           so that the offset of this channel is `0`. The compensation is
