@@ -1,12 +1,9 @@
 # coding: utf-8
 
 import numpy as np
-from typing import TypeVar
 import logging
 
-from .meta_modifier import Modifier
-
-T = TypeVar('T')
+from .meta_modifier import Modifier, T
 
 
 class MovingMed(Modifier):

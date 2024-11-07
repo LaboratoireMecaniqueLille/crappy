@@ -7,6 +7,7 @@ from multiprocessing import current_process
 from .meta_modifier import MetaModifier
 
 T = TypeVar('T')
+"""Generic type representing data handled by Modifiers."""
 
 
 class Modifier(metaclass=MetaModifier):
@@ -20,7 +21,7 @@ class Modifier(metaclass=MetaModifier):
 
   It is preferable for every Modifier to be a child of this class, although
   that is not mandatory. A Modifier only needs to be a callable, i.e. a class
-  defining the :meth:`__call__` method or a function.
+  defining the :meth:`~crappy.modifier.Modifier.__call__` method or a function.
 
   .. versionadded:: 1.4.0
   """

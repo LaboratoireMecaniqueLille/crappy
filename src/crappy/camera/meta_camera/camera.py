@@ -497,8 +497,8 @@ class Camera(metaclass=MetaCamera):
     """Method for getting the value of a setting directly by calling
     ``self.<setting name>``.
 
-    It is called in case :meth:`__getattribute__` doesn't work properly, and
-    tries to return the corresponding setting value."""
+    It is called in case :meth:`~crappy.camera.Camera.__getattribute__` doesn't
+    work properly, and tries to return the corresponding setting value."""
 
     try:
       return self.settings[item].value

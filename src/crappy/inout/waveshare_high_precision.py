@@ -145,7 +145,7 @@ class WaveshareHighPrecision(InOut):
         of:
         ::
 
-          2.5, 5, 10, 16?6, 20, 50, 60, 100, 400, 1200, 2400, 4800, 7200,
+          2.5, 5, 10, 16, 20, 50, 60, 100, 400, 1200, 2400, 4800, 7200, \
           14400, 19200, 38400
 
         The actual achieved sample rate might be lower depending on the

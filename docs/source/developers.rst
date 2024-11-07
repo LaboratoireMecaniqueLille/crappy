@@ -396,7 +396,7 @@ The cleanup phase
 
 This phase is triggered every time an exception (of any nature) is caught in
 the ``__main__`` Process, or if at least one Block has stopped. The
-corresponding method is :meth:`crappy.blocks.Block._exception`. Its goal is to
+corresponding method is :meth:`crappy.blocks.Block._cleanup`. Its goal is to
 make sure that all the Blocks stop as expected, and that the other Processes
 and Threads of Crappy terminate as well. It first sets the stop
 :obj:`~multiprocessing.Event`, indicating all the Blocks to stop looping and to

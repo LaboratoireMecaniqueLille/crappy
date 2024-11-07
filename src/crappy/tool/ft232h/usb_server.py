@@ -47,7 +47,7 @@ class BlockObjects:
 
 class USBServer(Process):
   """This class is a server managing communication with USB devices through the
-  :mod:`pysub` library.
+  :mod:`pyusb` library.
 
   As :mod:`pyusb` is not process-safe in Python, running a server is the only
   option to allow multiple :class:`~crappy.blocks.Block` to use the library in

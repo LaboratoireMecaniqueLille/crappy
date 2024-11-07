@@ -47,11 +47,12 @@ class UController(Block):
     Args:
       labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing the
         labels to get from the device (as :obj:`str`). Only these labels should
-        be given as argument to the :meth:`send_to_pc` method in the
-        MicroPython script. If this argument is not :obj:`None`, then the
-        ``init_output`` argument should be given as well. No more than 9 labels
-        should be given. If there's only one label to acquire, it can be given
-        directly as a :obj:`str` and not in an iterable.
+        be given as argument to the
+        :meth:`~crappy.blocks.UController.send_to_pc` method in the MicroPython
+        script. If this argument is not :obj:`None`, then the ``init_output``
+        argument should be given as well. No more than 9 labels should be
+        given. If there's only one label to acquire, it can be given directly
+        as a :obj:`str` and not in an iterable.
       cmd_labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         the command labels that will be sent to the device upon reception from
         an upstream Block. The variables in the MicroPython script should have

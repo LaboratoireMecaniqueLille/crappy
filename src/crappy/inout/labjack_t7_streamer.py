@@ -120,10 +120,10 @@ class T7Streamer(InOut):
           channels, i.e. the analog inputs, are available.
 
         - gain: The measured value will be modified in Crappy as follows :
-          :math:`returned\_value = gain * measured\_value + offset`.
+          :math:`returned\\_value = gain * measured\\_value + offset`.
 
         - offset: The measured value will be modified in Crappy as follows :
-          :math:`returned\_value = gain * measured\_value + offset`
+          :math:`returned\\_value = gain * measured\\_value + offset`
 
         - make_zero: If :obj:`True`, data will be acquired on this channel
           before the test starts, and a compensation value will be deduced

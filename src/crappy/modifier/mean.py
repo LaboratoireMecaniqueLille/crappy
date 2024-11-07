@@ -1,12 +1,10 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, TypeVar
+from typing import Optional
 import logging
 
-from .meta_modifier import Modifier
-
-T = TypeVar('T')
+from .meta_modifier import Modifier, T
 
 
 class Mean(Modifier):

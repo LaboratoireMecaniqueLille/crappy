@@ -655,7 +655,7 @@ class Camera(Block):
     It should also handle the case when an exception is raised in the 
     configuration window.
     
-    This method is meant to be overriden by children of the Camera Block, as 
+    This method is meant to be overridden by children of the Camera Block, as
     other image processing Blocks rely on subclasses of 
     :class:`~crappy.tool.camera_config.CameraConfig`.
     """

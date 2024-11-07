@@ -141,8 +141,9 @@ class Block(Process, metaclass=MetaBlock):
 
     Note:
       It is possible to have a finer grained control of the start of a Crappy
-      script with the methods :meth:`prepare_all`, :meth:`renice_all` and
-      :meth:`launch_all`.
+      script with the methods :meth:`~crappy.blocks.Block.prepare_all`,
+      :meth:`~crappy.blocks.Block.renice_all` and
+      :meth:`~crappy.blocks.Block.launch_all`.
 
     Args:
       allow_root: If set to :obj:`True`, tries to renice the Processes with
@@ -182,8 +183,9 @@ class Block(Process, metaclass=MetaBlock):
 
     Also initializes the :obj:`~logging.Logger` for the Crappy script.
 
-    Once started with this method, the Blocks will call their :meth:`prepare`
-    method and then be blocked by a :obj:`multiprocessing.Barrier`.
+    Once started with this method, the Blocks will call their
+    :meth:`~crappy.blocks.Block.prepare` method and then be blocked by a
+    :obj:`multiprocessing.Barrier`.
 
     If an error is caught at a moment when the Blocks might already be running,
     performs an extensive cleanup to ensure everything stops as expected.
@@ -719,9 +721,9 @@ class Block(Process, metaclass=MetaBlock):
     """Resets Crappy by emptying the :obj:`~weakref.WeakSet` containing
     references to all the Blocks and resetting the synchronization objects.
 
-    This method is called at the very end of the :meth:`_cleanup` method, but
-    can also be called to "revert" the instantiation of Blocks while Crappy
-    isn't started yet.
+    This method is called at the very end of the
+    :meth:`~crappy.blocks.Block._cleanup` method, but can also be called to
+    "revert" the instantiation of Blocks while Crappy isn't started yet.
     """
 
     cls.instances = WeakSet()
@@ -783,9 +785,10 @@ class Block(Process, metaclass=MetaBlock):
     """The method run by the Blocks when their :obj:`~multiprocessing.Process` 
     is started.
 
-    It first calls :meth:`prepare`, then waits at the
+    It first calls :meth:`~crappy.blocks.Block.prepare`, then waits at the
     :obj:`~multiprocessing.Barrier` for all Blocks to be ready, then calls
-    :meth:`begin`, then :meth:`main`, and finally :meth:`finish`.
+    :meth:`~crappy.blocks.Block.begin`, then :meth:`~crappy.blocks.Block.main`,
+    and finally :meth:`~crappy.blocks.Block.finish`.
     
     If an exception is raised, sets the shared stop 
     :obj:`~multiprocessing.Event` to warn all the other Blocks.
@@ -938,8 +941,9 @@ class Block(Process, metaclass=MetaBlock):
                                   'unexpected Exception while finishing')
 
   def main(self) -> None:
-    """The main loop of the :meth:`run` method. Repeatedly calls the
-    :meth:`loop` method and manages the looping frequency."""
+    """The main loop of the :meth:`~crappy.blocks.Block.run` method. Repeatedly
+    calls the :meth:`~crappy.blocks.Block.loop` method and manages the looping
+    frequency."""
 
     # Looping until told to stop or an error occurs
     while not self._stop_event.is_set():
@@ -964,10 +968,10 @@ class Block(Process, metaclass=MetaBlock):
 
   def begin(self) -> None:
     """This method can be considered as the first loop of the test, and is
-    called before the :meth:`loop` method.
+    called before the :meth:`~crappy.blocks.Block.loop` method.
 
     It allows to perform initialization actions that cannot be achieved in the
-    :meth:`prepare` method.
+    :meth:`~crappy.blocks.Block.prepare` method.
     """
 
     ...
@@ -1004,14 +1008,17 @@ class Block(Process, metaclass=MetaBlock):
   def stop(self) -> None:
     """This method stops all the running Blocks.
 
-    It should be called from the :meth:`loop` method of a Block. It allows to
-    stop the execution of the script in a clean way, without raising an
-    exception. It is mostly intended for users writing their own Blocks.
+    It should be called from the :meth:`~crappy.blocks.Block.loop` method of a
+    Block. It allows to stop the execution of the script in a clean way,
+    without raising an exception. It is mostly intended for users writing their
+    own Blocks.
 
     Note:
-      Calling this method in :meth:`__init__`, :meth:`prepare` or :meth:`begin`
-      is not recommended, as the Block will only stop when reaching the
-      :meth:`loop` method. Calling this method during :meth:`finish` will have
+      Calling this method in :meth:`~crappy.blocks.Block.__init__`,
+      :meth:`~crappy.blocks.Block.prepare` or
+      :meth:`~crappy.blocks.Block.begin` is not recommended, as the Block will
+      only stop when reaching the :meth:`~crappy.blocks.Block.loop` method.
+      Calling this method during :meth:`~crappy.blocks.Block.finish` will have
       no effect.
     """
 
@@ -1208,7 +1215,8 @@ class Block(Process, metaclass=MetaBlock):
     depending on the availability of incoming data.
 
     Also, the returned values are the oldest available in the Links. See
-    :meth:`recv_last_data` for getting the newest available values.
+    :meth:`~crappy.blocks.Block.recv_last_data` for getting the newest
+    available values.
 
     Important:
       If data is received over a same label from different Links, part of it
@@ -1288,7 +1296,8 @@ class Block(Process, metaclass=MetaBlock):
     Important:
       If data is received over a same label from different Links, part of it
       will be lost ! Always avoid using a same label twice in a Crappy script.
-      See the :meth:`recv_all_data_raw` method for receiving data with no loss.
+      See the :meth:`~crappy.blocks.Block.recv_all_data_raw` method for
+      receiving data with no loss.
 
     Warning:
       As the time label is (normally) shared between all Blocks, the values
@@ -1345,9 +1354,9 @@ class Block(Process, metaclass=MetaBlock):
     :class:`~crappy.links.Link`, and returns them separately in a list of
     dicts.
 
-    Unlike :meth:`recv_all_data` this method does not fuse the received data
-    into a single :obj:`dict`, so it is guaranteed to return all the available
-    data with no loss.
+    Unlike :meth:`~crappy.blocks.Block.recv_all_data` this method does not fuse
+    the received data into a single :obj:`dict`, so it is guaranteed to return
+    all the available data with no loss.
 
     Args:
       delay: If given specifies a delay, as a :obj:`float`, during which the
