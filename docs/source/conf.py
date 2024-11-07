@@ -783,8 +783,8 @@ linkcheck_anchors_ignore_for_url = tuple()
 # builder should not check the validity of links
 linkcheck_exclude_documents = list()
 
-# A list of regular expressions that match URIs that should not be checked when d
-# oing a linkcheck build
+# A list of regular expressions that match URIs that should not be checked when
+# doing a linkcheck build
 linkcheck_ignore = list()
 
 # Pass authentication information when doing a linkcheck build

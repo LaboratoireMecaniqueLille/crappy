@@ -480,8 +480,8 @@ Supported Cameras
 
 - :ref:`Seek Thermal Pro`
 
-  Allows reading images from a Seek Thermal `Compact Pro <https://www.thermal.
-  com/compact-series.html>`_ infrared camera.
+  Allows reading images from a Seek Thermal `Compact Pro <https://
+  www.thermal.com/compact-series-cameras.html>`_ infrared camera.
 
 - :ref:`Webcam`
 
@@ -634,9 +634,9 @@ Acquisition boards
 
 - :ref:`Labjack UE9`
 
-  Controls Labjack's `UE9 <https://labjack.com/products/calibration-service-
-  with-cert-u6-ue9-t7>`_ acquisition board. It can only read the input analog
-  channels of the board.
+  Controls Labjack's `UE9 <https://labjack.com/products/
+  calibration-service-with-cert>`_ acquisition board. It can only read the
+  input analog channels of the board.
 
   .. Important::
      This object hasn't been maintained nor tested for a while, it is not sure
