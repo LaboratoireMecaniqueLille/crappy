@@ -77,9 +77,9 @@ class Block(Process, metaclass=MetaBlock):
     # Various objects that should be set by child classes
     self.niceness: int = 0
     self.labels: Optional[Iterable[str]] = None
-    self.freq = None
-    self.display_freq = False
-    self.name = self.get_name(type(self).__name__)
+    self.freq: Optional[float] = None
+    self.display_freq: bool = False
+    self.name: str = self.get_name(type(self).__name__)
     self.pausable: bool = True
 
     # The synchronization objects will be set later
