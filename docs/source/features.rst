@@ -328,6 +328,20 @@ Hardware control
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
   blocks/ucontroller>`_.
 
+Test management
++++++++++++++++
+
+- :ref:`Pause Block`
+
+  Pauses the current Crappy script if the received data meets one of the given
+  criteria. Useful when human intervention on hardware is needed during a test,
+  but has some strong limitations. Refer to the documentation of this Block for
+  more details.
+
+  The examples folder on GitHub contains `one example of the Pause Block
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/pause_block.py>`_.
+
 Others
 ++++++
 

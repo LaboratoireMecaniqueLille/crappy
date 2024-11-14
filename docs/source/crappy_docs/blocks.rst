@@ -120,6 +120,12 @@ Multiplexer
    :members: loop
    :special-members: __init__
 
+Pause Block
++++++++++++
+.. autoclass:: crappy.blocks.Pause
+   :members: prepare, loop
+   :special-members: __init__
+
 PID
 +++
 .. autoclass:: crappy.blocks.PID

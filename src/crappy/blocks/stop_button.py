@@ -45,6 +45,7 @@ class StopButton(Block):
     self.freq = freq
     self.display_freq = display_freq
     self.debug = debug
+    self.pausable = False
 
     self._label = None
     self._button = None
