@@ -26,7 +26,7 @@ class Pause(Block):
   Important:
     This Block prevents other Blocks from running normally, but no specific
     mechanism for putting hardware in an idle state is implemented. For
-    example, a motor driven by an :class:`~crappy.blocks.Actuator` Block might
+    example, a motor driven by an :class:`~crappy.blocks.Machine` Block might
     keep moving according to the last command it received before the Blocks
     were paused. It is up to the user to put hardware in the desired state
     before starting a pause.
