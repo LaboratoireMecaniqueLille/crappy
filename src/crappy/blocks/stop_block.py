@@ -59,6 +59,7 @@ class StopBlock(Block):
     self.freq = freq
     self.display_freq = display_freq
     self.debug = debug
+    self.pausable = False
 
     # Handling the case when only one stop condition is given
     if isinstance(criteria, str) or isinstance(criteria, Callable):
