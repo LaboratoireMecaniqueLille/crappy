@@ -342,6 +342,32 @@ Test management
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/pause_block.py>`_.
 
+- :ref:`Stop Block`
+
+  Stops the current Crappy script if the received data meets one of the given
+  criteria. One of the clean ways to stop a script in Crappy.
+
+  The examples folder on GitHub contains `one example of the Stop Block
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/stop_block.py>`_.
+
+  Refer to the :ref:`dedicated tutorial section
+  <3. Properly stopping a script>` to learn more about how to properly stop a
+  script in Crappy.
+
+- :ref:`Stop Button`
+
+  Stops the current Crappy script when the user clicks on a button in a GUI.
+  One of the clean ways to stop a script in Crappy.
+
+  The examples folder on GitHub contains `one example of the Stop Button Block
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/stop_button.py>`_.
+
+  Refer to the :ref:`dedicated tutorial section
+  <3. Properly stopping a script>` to learn more about how to properly stop a
+  script in Crappy.
+
 Others
 ++++++
 
@@ -374,32 +400,6 @@ Others
   The examples folder on GitHub contains `one example of the Sink Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/sink.py>`_.
-
-- :ref:`Stop Block`
-
-  Stops the current Crappy script if the received data meets one of the given
-  criteria. One of the clean ways to stop a script in Crappy.
-
-  The examples folder on GitHub contains `on example of the Stop Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
-  blocks/stop_block.py>`_.
-
-  Refer to the :ref:`dedicated tutorial section
-  <3. Properly stopping a script>` to learn more about how to properly stop a
-  script in Crappy.
-
-- :ref:`Stop Button`
-
-  Stops the current Crappy script when the user clicks on a button in a GUI.
-  One of the clean ways to stop a script in Crappy.
-
-  The examples folder on GitHub contains `on example of the Stop Button Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
-  blocks/stop_button.py>`_.
-
-  Refer to the :ref:`dedicated tutorial section
-  <3. Properly stopping a script>` to learn more about how to properly stop a
-  script in Crappy.
 
 Supported hardware (Cameras, InOuts, Actuators)
 -----------------------------------------------
