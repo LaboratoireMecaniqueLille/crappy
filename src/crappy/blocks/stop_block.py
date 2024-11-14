@@ -150,4 +150,3 @@ class StopBlock(Block):
     else:
       raise ValueError("Wrong syntax for the criterion, please refer to the "
                        "documentation")
-      
