@@ -324,7 +324,7 @@ Hardware control
   provided with Crappy. This Block can start or stop the script on the
   microcontroller, send commands, and receive data.
 
-  The examples folder on GitHub contains `on example of the UController Block
+  The examples folder on GitHub contains `one example of the UController Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
   blocks/ucontroller>`_.
 
@@ -342,45 +342,12 @@ Test management
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/pause_block.py>`_.
 
-Others
-++++++
-
-- :ref:`Client Server`
-
-  Sends and/or receives data over a local network via an MQTT server. Can also
-  start a `Mosquitto <https://mosquitto.org/>`_ MQTT broker. Used for
-  communicating with distant devices over a network, e.g. for remotely
-  controlling a test.
-
-  The examples folder on GitHub contains `on example of the Client Server Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
-  blocks/client_server>`_.
-
-- :ref:`Fake Machine`
-
-  Emulates the behavior of a tensile test machine, taking a position command as
-  input and outputting the force and the displacement. Mainly used in the
-  examples because it doesn't require any hardware, but may as well be used for
-  debugging or prototyping.
-
-  The examples folder on GitHub contains `on example of the Fake Machine Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
-  blocks/fake_machine.py>`_.
-
-- :ref:`Sink`
-
-  Discards any received data. Used for prototyping and debugging only.
-
-  The examples folder on GitHub contains `on example of the Sink Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
-  blocks/sink.py>`_.
-
 - :ref:`Stop Block`
 
   Stops the current Crappy script if the received data meets one of the given
   criteria. One of the clean ways to stop a script in Crappy.
 
-  The examples folder on GitHub contains `on example of the Stop Block
+  The examples folder on GitHub contains `one example of the Stop Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/stop_block.py>`_.
 
@@ -393,13 +360,46 @@ Others
   Stops the current Crappy script when the user clicks on a button in a GUI.
   One of the clean ways to stop a script in Crappy.
 
-  The examples folder on GitHub contains `on example of the Stop Button Block
+  The examples folder on GitHub contains `one example of the Stop Button Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/stop_button.py>`_.
 
   Refer to the :ref:`dedicated tutorial section
   <3. Properly stopping a script>` to learn more about how to properly stop a
   script in Crappy.
+
+Others
+++++++
+
+- :ref:`Client Server`
+
+  Sends and/or receives data over a local network via an MQTT server. Can also
+  start a `Mosquitto <https://mosquitto.org/>`_ MQTT broker. Used for
+  communicating with distant devices over a network, e.g. for remotely
+  controlling a test.
+
+  The examples folder on GitHub contains `one example of the ClientServer Block
+  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+  blocks/client_server>`_.
+
+- :ref:`Fake Machine`
+
+  Emulates the behavior of a tensile test machine, taking a position command as
+  input and outputting the force and the displacement. Mainly used in the
+  examples because it doesn't require any hardware, but may as well be used for
+  debugging or prototyping.
+
+  The examples folder on GitHub contains `one example of the Fake Machine Block
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/fake_machine.py>`_.
+
+- :ref:`Sink`
+
+  Discards any received data. Used for prototyping and debugging only.
+
+  The examples folder on GitHub contains `one example of the Sink Block
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/sink.py>`_.
 
 Supported hardware (Cameras, InOuts, Actuators)
 -----------------------------------------------

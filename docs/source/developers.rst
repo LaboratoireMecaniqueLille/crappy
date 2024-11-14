@@ -380,7 +380,7 @@ This Barrier is shared by all the Blocks, and its value is set to the number of
 Blocks +1. Therefore, the Barrier only breaks when all the Blocks have reached
 it, as well as the ``__main__`` Process. In case one of the Processes doesn't
 make it to the Barrier, a :obj:`~threading.BrokenBarrierError` is raised to
-indicate all the other Blocks not to wait forever on the Barrier.
+indicate all the other Blocks not to wait forever at the Barrier.
 
 Once every Process has reached the Barrier, it breaks and releases them all.
 At that moment, the :obj:`~multiprocessing.Value` storing the initial timestamp

@@ -2,7 +2,6 @@
 
 import tkinter as tk
 from tkinter.messagebox import showerror
-from _tkinter import TclError
 from platform import system
 import numpy as np
 from time import time, sleep

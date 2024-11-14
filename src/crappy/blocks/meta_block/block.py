@@ -77,9 +77,9 @@ class Block(Process, metaclass=MetaBlock):
     # Various objects that should be set by child classes
     self.niceness: int = 0
     self.labels: Optional[Iterable[str]] = None
-    self.freq = None
-    self.display_freq = False
-    self.name = self.get_name(type(self).__name__)
+    self.freq: Optional[float] = None
+    self.display_freq: bool = False
+    self.name: str = self.get_name(type(self).__name__)
     self.pausable: bool = True
 
     # The synchronization objects will be set later
@@ -969,7 +969,7 @@ class Block(Process, metaclass=MetaBlock):
     Block before the test starts.
 
     For example, it can open a network connection, create a file, etc. It is
-    also fine for this method not to be overriden if there's no particular
+    also fine for this method not to be overridden if there's no particular
     action to perform.
 
     Note that this method is called once the :obj:`~multiprocessing.Process`
@@ -1055,8 +1055,9 @@ class Block(Process, metaclass=MetaBlock):
 
       # Correcting the error of the sleep function through a recursive approach
       # The last 2 milliseconds are in free loop
-      while (remaining := self._last_t + 1 / self.freq - t) > 0:
+      while self._last_t + 1 / self.freq - t > 0:
         t = time_ns() / 1e9
+        remaining = self._last_t + 1 / self.freq - t
         sleep(max(0., remaining / 2 - 2e-3))
 
     self._last_t = t
