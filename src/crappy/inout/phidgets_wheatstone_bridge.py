@@ -101,7 +101,7 @@ class PhidgetWheatstoneBridge(InOut):
       self.log(logging.DEBUG, "Trying to attach the load cell conditioner")
       self._load_cell.openWaitForAttachment(10000)
     except PhidgetException:
-      raise TimeoutError("Waited too long for the motor to attach !")
+      raise TimeoutError("Waited too long for the bridge to attach !")
 
   def get_data(self) -> Optional[list[float]]:
     """Returns the last known voltage ratio value, adjusted with the gain and

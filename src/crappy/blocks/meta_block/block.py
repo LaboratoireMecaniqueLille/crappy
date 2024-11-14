@@ -969,7 +969,7 @@ class Block(Process, metaclass=MetaBlock):
     Block before the test starts.
 
     For example, it can open a network connection, create a file, etc. It is
-    also fine for this method not to be overriden if there's no particular
+    also fine for this method not to be overridden if there's no particular
     action to perform.
 
     Note that this method is called once the :obj:`~multiprocessing.Process`

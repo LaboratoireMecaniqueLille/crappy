@@ -324,7 +324,7 @@ Hardware control
   provided with Crappy. This Block can start or stop the script on the
   microcontroller, send commands, and receive data.
 
-  The examples folder on GitHub contains `on example of the UController Block
+  The examples folder on GitHub contains `one example of the UController Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
   blocks/ucontroller>`_.
 
@@ -352,7 +352,7 @@ Others
   communicating with distant devices over a network, e.g. for remotely
   controlling a test.
 
-  The examples folder on GitHub contains `on example of the Client Server Block
+  The examples folder on GitHub contains `one example of the ClientServer Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
   blocks/client_server>`_.
 
@@ -363,7 +363,7 @@ Others
   examples because it doesn't require any hardware, but may as well be used for
   debugging or prototyping.
 
-  The examples folder on GitHub contains `on example of the Fake Machine Block
+  The examples folder on GitHub contains `one example of the Fake Machine Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/fake_machine.py>`_.
 
@@ -371,7 +371,7 @@ Others
 
   Discards any received data. Used for prototyping and debugging only.
 
-  The examples folder on GitHub contains `on example of the Sink Block
+  The examples folder on GitHub contains `one example of the Sink Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/sink.py>`_.
 
