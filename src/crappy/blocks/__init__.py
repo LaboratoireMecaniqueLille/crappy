@@ -19,6 +19,7 @@ from .ioblock import IOBlock
 from .machine import Machine
 from .mean import MeanBlock
 from .multiplexer import Multiplexer
+from .pause import Pause
 from .pid import PID
 from .link_reader import LinkReader
 from .recorder import Recorder

@@ -52,6 +52,7 @@ class Block(Process, metaclass=MetaBlock):
   shared_t0: Optional[Synchronized] = None
   ready_barrier: Optional[synchronize.Barrier] = None
   start_event: Optional[synchronize.Event] = None
+  pause_event: Optional[synchronize.Event] = None
   stop_event: Optional[synchronize.Event] = None
   raise_event: Optional[synchronize.Event] = None
   kbi_event: Optional[synchronize.Event] = None
@@ -79,11 +80,13 @@ class Block(Process, metaclass=MetaBlock):
     self.freq = None
     self.display_freq = False
     self.name = self.get_name(type(self).__name__)
+    self.pausable: bool = True
 
     # The synchronization objects will be set later
     self._instance_t0: Optional[Synchronized] = None
     self._ready_barrier: Optional[synchronize.Barrier] = None
     self._start_event: Optional[synchronize.Event] = None
+    self._pause_event: Optional[synchronize.Event] = None
     self._stop_event: Optional[synchronize.Event] = None
     self._raise_event: Optional[synchronize.Event] = None
     self._kbi_event: Optional[synchronize.Event] = None
@@ -239,6 +242,7 @@ class Block(Process, metaclass=MetaBlock):
       cls.ready_barrier = Barrier(len(cls.instances) + 1)
       cls.shared_t0 = Value('d', -1.0)
       cls.start_event = Event()
+      cls.pause_event = Event()
       cls.stop_event = Event()
       cls.raise_event = Event()
       cls.kbi_event = Event()
@@ -266,6 +270,7 @@ class Block(Process, metaclass=MetaBlock):
         instance._ready_barrier = cls.ready_barrier
         instance._instance_t0 = cls.shared_t0
         instance._stop_event = cls.stop_event
+        instance._pause_event = cls.pause_event
         instance._start_event = cls.start_event
         instance._raise_event = cls.raise_event
         instance._kbi_event = cls.kbi_event
@@ -736,6 +741,7 @@ class Block(Process, metaclass=MetaBlock):
     cls.shared_t0 = None
     cls.ready_barrier = None
     cls.start_event = None
+    cls.pause_event = None
     cls.stop_event = None
     cls.raise_event = None
     cls.kbi_event = None
@@ -947,8 +953,14 @@ class Block(Process, metaclass=MetaBlock):
 
     # Looping until told to stop or an error occurs
     while not self._stop_event.is_set():
-      self.log(logging.DEBUG, "Looping")
-      self.loop()
+      # Only looping if the Block is not paused
+      if not self._pause_event.is_set() or not self.pausable:
+        self.log(logging.DEBUG, "Looping")
+        self.loop()
+      else:
+        self.log(logging.DEBUG, "Block currently paused, not calling loop()")
+      # Handling the frequency in all cases to avoid hyperactive Blocks when
+      # "paused"
       self.log(logging.DEBUG, "Handling freq")
       self._handle_freq()
 
