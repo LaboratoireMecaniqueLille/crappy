@@ -28,12 +28,13 @@ class StopBlock(Block):
     """Sets the arguments and initialize the parent class.
 
     Args:
-      criteria: A :obj:`str`, a :obj:`~typing.Callable`, or an
-        :obj:`~typing.Iterable` (like a :obj:`tuple` or a :obj:`list`)
-        containing such objects. Each :obj:`str` or :obj:`~typing.Callable`
-        represents one stop criterion. There is no limit to the given number of
-        stop criteria. If a criterion is given as an :obj:`~typing.Callable`,
-        it should accept as its sole argument the output of the
+      criteria: A :obj:`str`, a :obj:`~collections.abc.Callable`, or an
+        :obj:`~collections.abc.Iterable` (like a :obj:`tuple` or a :obj:`list`)
+        containing such objects. Each :obj:`str` or
+        :obj:`~collections.abc.Callable` represents one stop criterion. There
+        is no limit to the given number of stop criteria. If a criterion is
+        given as an :obj:`~collections.abc.Callable`, it should accept as its
+        sole argument the output of the
         :meth:`crappy.blocks.Block.recv_all_data` method and return :obj:`True`
         if the criterion is met, and :obj:`False` otherwise. If the criterion
         is given as a :obj:`str`, it should follow the following syntax :
