@@ -1055,8 +1055,9 @@ class Block(Process, metaclass=MetaBlock):
 
       # Correcting the error of the sleep function through a recursive approach
       # The last 2 milliseconds are in free loop
-      while (remaining := self._last_t + 1 / self.freq - t) > 0:
+      while self._last_t + 1 / self.freq - t > 0:
         t = time_ns() / 1e9
+        remaining = self._last_t + 1 / self.freq - t
         sleep(max(0., remaining / 2 - 2e-3))
 
     self._last_t = t
