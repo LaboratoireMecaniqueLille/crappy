@@ -25,113 +25,127 @@ except (ModuleNotFoundError, ImportError):
 
 try:
   from libcamera import controls
+  # Mapping of all the autofocus modes
+  AUTO_FOCUS_MODE = {
+    controls.AfModeEnum.Continuous: 'Continuous',
+    controls.AfModeEnum.Manual: 'Manual',
+    controls.AfModeEnum.Auto: 'Auto'}
+  AUTO_FOCUS_MODE_INV = {
+    val: key for key, val in AUTO_FOCUS_MODE.items()}
 except (ModuleNotFoundError, ImportError):
   controls = OptionalModule("libcamera")
+  AUTO_FOCUS_MODE = OptionalModule("libcamera")
+  AUTO_FOCUS_MODE_INV = OptionalModule("libcamera")
 
 try:
   import cv2
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
-# Mapping of all the autofocus modes
-AUTO_FOCUS_MODE = {
-    controls.AfModeEnum.Continuous: 'Continuous',
-    controls.AfModeEnum.Manual: 'Manual',
-    controls.AfModeEnum.Auto: 'Auto'}
-AUTO_FOCUS_MODE_INV = {
-    val: key for key, val in AUTO_FOCUS_MODE.items()}
-
 # Pixel formats implemented in Crappy
 PIXEL_FORMATS = ('YUV420', 'RGB888')
 
+# Protect import to avoid raising exception when picamera2 is not installed
+if not isinstance(Encoder, OptionalModule):
 
-class CrappyEncoder(Encoder):
-  """Overloading of the :class:`picamera2.Encoder` class for the specific
-  pipeline implemented in Crappy.
 
-  Compared to the original class, passes a mapped array to the Output instead
-  of a frame buffer, and also transmits all the metadata instead of just the
-  timestamp.
-  """
-  
-  def outputframe(self, array: MappedArray, metadata: dict[str, Any]) -> None:
-    """Passes the mapped array of the captured frame and its metadata to the
-    Output object."""
+  class CrappyEncoder(Encoder):
+    """Overloading of the :class:`picamera2.Encoder` class for the specific
+    pipeline implemented in Crappy.
 
-    # _output_lock might not be available depending on the version of picamera2
-    if hasattr(self, '_output_lock'):
-      with self._output_lock:
+    Compared to the original class, passes a mapped array to the Output instead
+    of a frame buffer, and also transmits all the metadata instead of just the
+    timestamp.
+    """
+
+    def outputframe(self,
+                    array: MappedArray,
+                    metadata: dict[str, Any]) -> None:
+      """Passes the mapped array of the captured frame and its metadata to the
+      Output object."""
+
+      # _output_lock might not be available depending on the version of
+      # picamera2
+      if hasattr(self, '_output_lock'):
+        with self._output_lock:
+          for out in self._output:
+            out.outputframe(array, metadata)
+      else:
         for out in self._output:
           out.outputframe(array, metadata)
-    else:
-      for out in self._output:
-        out.outputframe(array, metadata)
-  
-  def _encode(self, stream, request: CompletedRequest) -> None:
-    """Converts a captured image to a numpy array, extracts its metadata, and
-    passes them to the Output."""
 
-    # Probably useless here, but included for consistency with original method
-    if isinstance(stream, str):
-      stream = request.stream_map[stream]
+    def _encode(self, stream, request: CompletedRequest) -> None:
+      """Converts a captured image to a numpy array, extracts its metadata, and
+      passes them to the Output."""
 
-    # Gets the metadata and passes the frame as a mapped array
-    metadata = request.get_metadata()
-    with MappedArray(request, stream, reshape=True, write=True) as array:
-      self.outputframe(array, metadata)
+      # Probably useless here, but included for consistency with original
+      # method
+      if isinstance(stream, str):
+        stream = request.stream_map[stream]
+
+      # Gets the metadata and passes the frame as a mapped array
+      metadata = request.get_metadata()
+      with MappedArray(request, stream, reshape=True, write=True) as array:
+        self.outputframe(array, metadata)
 
 
-class CrappyOutput(Output):
-  """Overloading of the :class:`picamera2.Encoder` class for the specific
-  pipeline implemented in Crappy.
+# Protect import to avoid raising exception when picamera2 is not installed
+if not isinstance(Output, OptionalModule):
 
-  Each time a frame is received, shares it with the Camera object along with
-  its metadata.
-  """
-  
-  def __init__(self, 
-               shared: dict[str, Union[Optional[np.ndarray], dict[str, Any]]],
-               lock: RLock) -> None:
-    """Initializes the parent class and sets the arguments.
 
-    Args:
-      shared: a :obj:`dict` used for sharing the acquired frames and their
-        metadata with the Camera object.
-      lock: An :obj:`~threading.RLock` ensuring the Output and the Camera
-        objects are not reading/writing in the shared :obj:`dict` at the same
-        time.
+  class CrappyOutput(Output):
+    """Overloading of the :class:`picamera2.Encoder` class for the specific
+    pipeline implemented in Crappy.
+
+    Each time a frame is received, shares it with the Camera object along with
+    its metadata.
     """
-    
-    super().__init__(pts=None)
 
-    self._shared: dict[str, Union[Optional[np.ndarray],
-                                  dict[str, Any]]] = shared
-    self._frame_count: int = 0
-    self._lock = lock
-  
-  def outputframe(self, array: MappedArray, metadata: dict[str, Any]) -> None:
-    """Shares the acquired frame and part of its metadata with the Camera
-    object."""
+    def __init__(self,
+                 shared: dict[str, Union[Optional[np.ndarray],
+                                         dict[str, Any]]],
+                 lock: RLock) -> None:
+      """Initializes the parent class and sets the arguments.
 
-    # Specify a limited set of metadata fields we're interested in
-    to_retrieve = ('SensorTimestamp', 'ExposureTime', 
-                   'AnalogueGain', 'DigitalGain')
+      Args:
+        shared: a :obj:`dict` used for sharing the acquired frames and their
+          metadata with the Camera object.
+        lock: An :obj:`~threading.RLock` ensuring the Output and the Camera
+          objects are not reading/writing in the shared :obj:`dict` at the same
+          time.
+      """
 
-    with self._lock:
-      # Place the acquired image in the shared dict
-      self._shared['array'] = array.array.copy()
-      # Place a subset of the metadata fields in the shared dict
-      self._shared['metadata'] = {key: val for key, val in metadata.items() 
-                                  if key in to_retrieve and key in metadata}
+      super().__init__(pts=None)
 
-      # Add a few extra fields to the metadata dictionary
-      t = time()
-      self._shared['metadata'] |= {'ImageUniqueID': self._frame_count,
-                                   't(s)': t,
-                                   'DateTimeOriginal': 
-                                   strftime("%Y:%m:%d %H:%M:%S", gmtime(t)),
-                                   'SubsecTimeOriginal': f'{t % 1:.6f}'}
-      self._frame_count += 1
+      self._shared: dict[str, Union[Optional[np.ndarray],
+                                    dict[str, Any]]] = shared
+      self._frame_count: int = 0
+      self._lock = lock
+
+    def outputframe(self, array: MappedArray,
+                    metadata: dict[str, Any]) -> None:
+      """Shares the acquired frame and part of its metadata with the Camera
+      object."""
+
+      # Specify a limited set of metadata fields we're interested in
+      to_retrieve = ('SensorTimestamp', 'ExposureTime',
+                     'AnalogueGain', 'DigitalGain')
+
+      with self._lock:
+        # Place the acquired image in the shared dict
+        self._shared['array'] = array.array.copy()
+        # Place a subset of the metadata fields in the shared dict
+        self._shared['metadata'] = {key: val for key, val in metadata.items()
+                                    if key in to_retrieve and key in metadata}
+
+        # Add a few extra fields to the metadata dictionary
+        t = time()
+        self._shared['metadata'] |= {'ImageUniqueID': self._frame_count,
+                                     't(s)': t,
+                                     'DateTimeOriginal':
+                                     strftime("%Y:%m:%d %H:%M:%S", gmtime(t)),
+                                     'SubsecTimeOriginal': f'{t % 1:.6f}'}
+        self._frame_count += 1
 
 
 @dataclass
