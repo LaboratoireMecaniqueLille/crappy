@@ -5,6 +5,7 @@ from typing import Any, Optional
 import numpy as np
 from threading import Thread, RLock
 import logging
+from warnings import warn
 
 from .meta_camera import Camera
 from .._global import OptionalModule
@@ -46,6 +47,11 @@ class RaspberryPiCamera(Camera):
 
   def __init__(self) -> None:
     """Instantiates the available settings."""
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     super().__init__()
 
