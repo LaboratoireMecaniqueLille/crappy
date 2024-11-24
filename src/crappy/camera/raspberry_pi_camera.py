@@ -23,9 +23,6 @@ except (ModuleNotFoundError, ImportError, OSError):
 
 picamera_iso = [0, 100, 200, 320, 400, 500, 640, 800]
 
-# TODO:
-#   Update to picamera2 when available
-
 
 class RaspberryPiCamera(Camera):
   """Class for reading images from a Raspberry Pi Camera, using the legacy
