@@ -19,6 +19,7 @@ try:
   from picamera.array import PiRGBArray
 except (ModuleNotFoundError, ImportError, OSError):
   PiCameraRPi = OptionalModule("picamera")
+  PiRGBArray = OptionalModule("picamera")
 
 picamera_iso = [0, 100, 200, 320, 400, 500, 640, 800]
 
