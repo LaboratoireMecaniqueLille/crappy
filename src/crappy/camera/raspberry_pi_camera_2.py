@@ -458,7 +458,6 @@ class RaspberryPiCamera2(Camera):
           and self._shared['metadata'] 
           and self._shared['metadata']['ImageUniqueID'] > self._last_id):
         self._last_id = self._shared['metadata']['ImageUniqueID']
-        
 
         # Dirty trick to avoid communication with hardware in this critical
         # section
@@ -539,7 +538,7 @@ class RaspberryPiCamera2(Camera):
                                             'bit_depth': mode.bit_depth}
     self._cam.video_configuration.main = {'format': pixel_format,
                                           'size': mode.size}
-    
+
     if self._started:
       # Re-applying the configuration to make the changes effective
       self._cam.configure('video')
