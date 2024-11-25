@@ -500,7 +500,7 @@ Supported Cameras
 
   Allows reading images from an official Raspberry Pi Camera, with Crappy
   running on a Raspberry Pi. It has been tested on Raspberry Pi 4 and 5, with
-  Raspberry Pi camera HQ and V2 models. Probably works with other official and
+  Raspberry Pi camera HQ and V3 models. Probably works with other official and
   unofficial Raspberry Pi cameras.
 
   .. Note::

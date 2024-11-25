@@ -181,7 +181,7 @@ class RaspberryPiCamera2(Camera):
   exposed, the more specific ones have been left out.
 
   Note:
-    This class was only tested on PiCameraV2 and PiCameraHQ hardware, using a
+    This class was only tested on PiCameraV3 and PiCameraHQ hardware, using a
     Raspberry Pi 5.
 
   Important:
