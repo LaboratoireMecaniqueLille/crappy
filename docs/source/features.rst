@@ -487,10 +487,26 @@ Supported Cameras
   Raspberry Pi. It has been tested on Raspberry Pi 3 and 4, with a variety of
   official Raspberry Pi cameras.
 
+  .. Warning::
+     This Camera object is deprecated, and :ref:`Raspberry Pi Camera 2` should
+     be used instead. It is only kept for compatibility with older OS versions.
+
   .. Important::
      Can only be run on a Raspberry Pi ! Also, it is for now only compatible
      with the *Buster* version of Raspberry Pi OS, or with *Bullseye* in legacy
      camera mode.
+
+- :ref:`Raspberry Pi Camera 2`
+
+  Allows reading images from an official Raspberry Pi Camera, with Crappy
+  running on a Raspberry Pi. It has been tested on Raspberry Pi 4 and 5, with
+  Raspberry Pi camera HQ and V3 models. Probably works with other official and
+  unofficial Raspberry Pi cameras.
+
+  .. Note::
+     This Camera is an updated version of :ref:`Raspberry Pi Camera`, which is
+     now deprecated and should only be used for compatibility with old
+     Raspberry Pi OS versions.
 
 - :ref:`Seek Thermal Pro`
 

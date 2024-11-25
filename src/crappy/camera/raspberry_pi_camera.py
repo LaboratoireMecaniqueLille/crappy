@@ -5,6 +5,7 @@ from typing import Any, Optional
 import numpy as np
 from threading import Thread, RLock
 import logging
+from warnings import warn
 
 from .meta_camera import Camera
 from .._global import OptionalModule
@@ -19,25 +20,26 @@ try:
   from picamera.array import PiRGBArray
 except (ModuleNotFoundError, ImportError, OSError):
   PiCameraRPi = OptionalModule("picamera")
+  PiRGBArray = OptionalModule("picamera")
 
 picamera_iso = [0, 100, 200, 320, 400, 500, 640, 800]
 
-# TODO:
-#   Update to picamera2 when available
-
 
 class RaspberryPiCamera(Camera):
-  """Class for reading images from a Raspberry Pi Camera.
+  """Class for reading images from a Raspberry Pi Camera, using the legacy
+  :mod:`picamera2` module.
 
-  The RaspberryPiCamera Camera block is meant for reading images from a
-  Raspberry Pi Camera. It uses the :mod:`picamera` module for capturing images,
-  and :mod:`cv2` for converting BGR images to black and white.
+  The RaspberryPiCamera Camera is meant for reading images from a Raspberry Pi
+  Camera. It uses the :mod:`picamera` module for capturing images, and
+  :mod:`cv2` for converting BGR images to black and white.
 
-  It can read images from the PiCamera V1, V2 and HQ models indifferently.
+  It can read images from the PiCamera V1, V2 and HQ models.
 
   Warning:
-    Only works on Raspberry Pi, with the picamera API. On the latest OS release
-    "Bullseye", it has to be specifically activated in the configuration menu.
+    This class is a legacy object, the Camera
+    :class:`~crappy.camera.RaspberryPiCamera2` should be used instead. This
+    class can only be used on the "Buster" OS, or the "Bullseye" OS with legacy
+    camera mode enabled.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Picamera* to *RaspberryPiCamera*
@@ -45,6 +47,11 @@ class RaspberryPiCamera(Camera):
 
   def __init__(self) -> None:
     """Instantiates the available settings."""
+
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
     super().__init__()
 
