@@ -29,7 +29,7 @@ Crappy.
 """
 
 import crappy
-from typing import Tuple, Optional
+from typing import Optional
 from time import time
 
 
@@ -66,7 +66,7 @@ class CustomInOut(crappy.inout.InOut):
 
     ...
 
-  def get_data(self) -> Tuple[float, int]:
+  def get_data(self) -> tuple[float, int]:
     """This method is used for acquiring data from the hardware.
 
     Here, it simply updates the loop counter and returns its value along with a

@@ -945,6 +945,10 @@ meaning :
 - :py:`name` contains the unique name attributed to the Block by Crappy. It can
   be read at any time, and even modified. This name is only used for logging,
   and appears in the log messages for identifying where a message comes from.
+- :py:`pausable` is a :obj:`bool` indicating whether the Block is affected when
+  a pause is started by a :class:`~crappy.blocks.Pause` Block. By default,
+  most Blocks are affected except for the ones managing the test flow (like the
+  :class:`~crappy.blocks.StopButton` Block).
 
 In the presented example, you may have recognized a few of the presented
 attributes. They are highlighted here for convenience :

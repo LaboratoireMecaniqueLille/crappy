@@ -2,7 +2,8 @@
 
 from time import time, sleep
 from re import fullmatch, findall
-from typing import List, Union, Optional, Iterable
+from typing import Union, Optional, Literal
+from collections.abc import Iterable
 import logging
 from  warnings import warn
 
@@ -89,7 +90,8 @@ class WaveshareADDAFT232H(InOut):
   ft232h = True
 
   def __init__(self,
-               dac_channels: Optional[Iterable[str]] = None,
+               dac_channels: Optional[Iterable[Literal['DAC0',
+                                                       'DAC1']]] = None,
                adc_channels: Optional[Iterable[str]] = None,
                gain_hardware: int = 1,
                v_ref: float = 3.3,
@@ -288,7 +290,7 @@ class WaveshareADDAFT232H(InOut):
     self._bus.set_gpio(self._cs_pin_ads, True)
     sleep(0.001)
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads data from all the user-specified ADC channels, in a sequential
     way.
 

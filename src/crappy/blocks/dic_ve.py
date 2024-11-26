@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Callable, Union, Tuple, Iterable
+from typing import Optional, Union, Literal
+from collections.abc import Iterable, Callable
 import numpy as np
 from pathlib import Path
 
@@ -55,7 +56,7 @@ class DICVE(Camera):
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: Optional[str] = None,
+               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
                display_freq: bool = False,
@@ -65,14 +66,16 @@ class DICVE(Camera):
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None,
+               save_backend: Optional[Literal['sitk', 'pil',
+                                              'cv2', 'npy']] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Tuple[int, int]] = None,
+               img_shape: Optional[tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
-               patches: Optional[Iterable[Tuple[int, int, int, int]]] = None,
+               patches: Optional[Iterable[tuple[int, int, int, int]]] = None,
                labels: Optional[Union[str, Iterable[str]]] = None,
-               method: str = 'Disflow',
+               method: Literal['Disflow', 'Lucas Kanade',
+                               'Pixel precision', 'Parabola'] = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
@@ -267,7 +270,7 @@ class DICVE(Camera):
         Should be one of :
         ::
 
-          `Disflow`, 'Pixel precision', 'Parabola', 'Lucas Kanade'
+          'Disflow', 'Pixel precision', 'Parabola', 'Lucas Kanade'
 
         ``'Disflow'`` uses OpenCV's DISOpticalFlow and ``'Lucas Kanade'`` uses
         OpenCV's calcOpticalFlowPyrLK, while all other methods are based on a

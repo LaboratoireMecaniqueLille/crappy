@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import List, Optional, Iterable, Union
+from typing import Optional, Union
+from collections.abc import Iterable
 import tkinter as tk
 import logging
 
@@ -15,7 +16,7 @@ class DashboardWindow(tk.Tk):
      renamed from *Dashboard_window* to *DashboardWindow*
   """
 
-  def __init__(self, labels: List[str]) -> None:
+  def __init__(self, labels: list[str]) -> None:
     """Initializes the GUI and sets the layout."""
 
     super().__init__()

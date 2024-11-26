@@ -2,7 +2,8 @@
 
 from struct import unpack
 from time import time
-from typing import Optional, Dict, Callable, Iterable, Union
+from typing import Optional, Union
+from collections.abc import Callable, Iterable
 import logging
 
 from .meta_block import Block
@@ -32,8 +33,8 @@ class UController(Block):
   def __init__(self,
                labels: Optional[Union[str, Iterable[str]]] = None,
                cmd_labels: Optional[Union[str, Iterable[str]]] = None,
-               init_output: Optional[Dict[str, float]] = None,
-               post_process: Optional[Dict[str,
+               init_output: Optional[dict[str, float]] = None,
+               post_process: Optional[dict[str,
                                            Callable[[float], float]]] = None,
                t_device: bool = False,
                port: str = '/dev/ttyUSB0',
@@ -46,11 +47,12 @@ class UController(Block):
     Args:
       labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing the
         labels to get from the device (as :obj:`str`). Only these labels should
-        be given as argument to the :meth:`send_to_pc` method in the
-        MicroPython script. If this argument is not :obj:`None`, then the
-        ``init_output`` argument should be given as well. No more than 9 labels
-        should be given. If there's only one label to acquire, it can be given
-        directly as a :obj:`str` and not in an iterable.
+        be given as argument to the
+        :meth:`~crappy.blocks.UController.send_to_pc` method in the MicroPython
+        script. If this argument is not :obj:`None`, then the ``init_output``
+        argument should be given as well. No more than 9 labels should be
+        given. If there's only one label to acquire, it can be given directly
+        as a :obj:`str` and not in an iterable.
       cmd_labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         the command labels that will be sent to the device upon reception from
         an upstream Block. The variables in the MicroPython script should have
@@ -205,7 +207,7 @@ class UController(Block):
     # The presence of the label 't(s)' indicates that the device should return
     # a timestamp along with the data
     if self._labels is not None and self._t_device:
-      self._labels_table.update({'t(s)': 0})
+      self._labels_table |= {'t(s)': 0}
 
     self.log(logging.DEBUG, f"Labels table : {self._labels_table}")
 

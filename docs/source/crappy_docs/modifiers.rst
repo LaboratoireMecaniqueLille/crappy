@@ -69,6 +69,9 @@ Modifier
    :members: log
    :special-members: __init__, __call__
 
+.. automodule:: crappy.modifier.meta_modifier.modifier
+   :members: T
+
 Meta Modifier
 +++++++++++++
 .. autoclass:: crappy.modifier.MetaModifier

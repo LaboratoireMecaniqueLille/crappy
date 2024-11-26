@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Dict, Any, Optional, Iterator, Iterable
+from typing import Any, Optional
+from collections.abc import Iterator, Iterable
 from itertools import cycle
 from copy import deepcopy
 import logging
@@ -37,7 +38,7 @@ class Generator(Block):
   """
 
   def __init__(self,
-               path: Iterable[Dict[str, Any]],
+               path: Iterable[dict[str, Any]],
                freq: Optional[float] = 200,
                cmd_label: str = 'cmd',
                path_index_label: str = 'index',
@@ -218,7 +219,7 @@ class Generator(Block):
     Path.last_cmd = self._last_cmd
     self._current_path = path_type(**next_path_dict)
 
-  def _check_path_validity(self, path: Iterator[Dict[str, Any]]) -> None:
+  def _check_path_validity(self, path: Iterator[dict[str, Any]]) -> None:
     """Simply instantiates all the Paths in a row to check no error is
     raised."""
 

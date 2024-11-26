@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from __future__ import annotations
-from typing import Tuple, Optional, Callable, Union
+from typing import Optional, Union
+from collections.abc import Callable
 from re import findall, search, finditer, split, Match, compile
 from dataclasses import dataclass
 import logging
@@ -21,7 +22,7 @@ class V4L2Parameter:
   default: Optional[str] = None
   value: Optional[str] = None
   flags: Optional[str] = None
-  options: Optional[Tuple[str, ...]] = None
+  options: Optional[tuple[str, ...]] = None
 
   # Regex to extract the different parameters and their information
   param_pattern = (r'(\w+)\s+0x\w+\s+\((\w+)\)\s+:\s*'

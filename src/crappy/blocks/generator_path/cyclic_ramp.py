@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Dict, Optional
+from typing import Union, Optional
 from itertools import cycle, islice
 import logging
 
@@ -91,7 +91,7 @@ class CyclicRamp(Path):
     # The last extreme command sent
     self._last_peak_cmd = self.last_cmd if init_value is None else init_value
 
-  def get_cmd(self, data: Dict[str, list]) -> float:
+  def get_cmd(self, data: dict[str, list]) -> float:
     """Returns the current value of the signal and raises :exc:`StopIteration`
     when the cycles are exhausted.
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Tuple, List, Union
+from typing import Optional, Union
 from pathlib import Path
 import logging
 import logging.handlers
@@ -35,7 +35,7 @@ class GPUVEProcess(CameraProcess):
   """
 
   def __init__(self,
-               patches: List[Tuple[int, int, int, int]],
+               patches: list[tuple[int, int, int, int]],
                verbose: int = 0,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
@@ -94,7 +94,7 @@ class GPUVEProcess(CameraProcess):
     self._mul = mul
 
     # Other attributes
-    self._correls: Optional[List[GPUCorrelTool]] = None
+    self._correls: Optional[list[GPUCorrelTool]] = None
     self._patches = patches
     self._img_ref = img_ref
 

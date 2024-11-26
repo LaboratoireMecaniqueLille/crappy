@@ -1,7 +1,8 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Union, Iterable
+from typing import Optional, Union
+from collections.abc import Iterable
 from time import time
 import logging
 

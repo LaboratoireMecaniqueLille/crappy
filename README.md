@@ -1,8 +1,8 @@
 Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)
 =================================================================
 
-[![Downloads](https://pepy.tech/badge/crappy)](https://pepy.tech/project/crappy)
-[![Documentation Status](https://readthedocs.org/projects/crappy/badge/?version=latest)](https://crappy.readthedocs.io/en/latest/?badge=latest)
+[![Downloads](https://static.pepy.tech/badge/crappy)](https://www.pepy.tech/projects/crappy)
+[![Documentation Status](https://readthedocs.org/projects/crappy/badge/?version=latest)](https://crappy.readthedocs.io/en/latest/)
 [![PyPi version](https://badgen.net/pypi/v/crappy/)](https://pypi.org/project/crappy/)
 [![Python version](https://img.shields.io/pypi/pyversions/crappy.svg)](https://pypi.org/project/crappy/)
 
@@ -40,7 +40,7 @@ for materials testing.
 Requirements
 ------------
 
-CRAPPY can run with Python 3.7 to 3.10, and has been tested on Windows, Linux, 
+CRAPPY can run with Python 3.9 to 3.13, and has been tested on Windows, Linux, 
 Raspberry Pi and macOS. It can probably run on other operating systems 
 supporting the required Python versions. 
 

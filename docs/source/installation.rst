@@ -21,7 +21,7 @@ was not tested.
   We develop Crappy on recent OS versions, and no particular effort is made to
   ensure compatibility with older OS versions.
 
-Crappy requires **Python 3.6 or later**, as well as the following module :
+Crappy requires **Python 3.9 or later**, as well as the following module :
 
 - `numpy <https://numpy.org/>`_ (1.21.0 or higher)
 
@@ -59,7 +59,7 @@ e.g. :shell:`Python 3.9.7`.
   all ! In this case, the given command will display an error message.
 
 If the current version of Python is not compatible with Crappy (requires Python
->=3.6), or if Python is not installed, you will first need to **install a**
+>=3.9), or if Python is not installed, you will first need to **install a**
 **compatible version of Python**. The precise installation steps for each OS
 are beyond the scope of this documentation.
 

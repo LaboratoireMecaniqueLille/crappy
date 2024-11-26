@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, List, Iterable
+from typing import Optional
+from collections.abc import Iterable
 from dataclasses import dataclass
 import logging
 from  warnings import warn
@@ -74,12 +75,12 @@ class Comedi(InOut):
       gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
         each input channel the gain to apply to the measured voltage, as a
         :obj:`float`. The returned voltage is calculated as follows :
-        :math:`returned\_voltage = gain * measured\_voltage + offset`. If not
+        :math:`returned\\_voltage = gain * measured\\_voltage + offset`. If not
         given, no gain is applied to the measured values.
       offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
         each input channel the offset to apply to the measured voltage, as a
         :obj:`float`. The returned voltage is calculated as follows :
-        :math:`returned\_voltage = gain * measured\_voltage + offset`. If not
+        :math:`returned\\_voltage = gain * measured\\_voltage + offset`. If not
         given, no offset is applied to the measured values.
       make_zero: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         for each input channel a :obj:`bool` indicating whether the channel
@@ -249,7 +250,7 @@ class Comedi(InOut):
       comedi.comedi_data_write(self._device, self._out_sub_device, chan.num,
                                chan.range_num, comedi.AREF_GROUND, out_a)
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads and returns the value of each channel, adjusted with the given
     gain and offset."""
 

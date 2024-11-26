@@ -1,10 +1,13 @@
 # coding: utf-8
 
-from typing import Optional, Dict, Any
+from typing import Optional, TypeVar
 import logging
 from multiprocessing import current_process
 
 from .meta_modifier import MetaModifier
+
+T = TypeVar('T')
+"""Generic type representing data handled by Modifiers."""
 
 
 class Modifier(metaclass=MetaModifier):
@@ -18,7 +21,7 @@ class Modifier(metaclass=MetaModifier):
 
   It is preferable for every Modifier to be a child of this class, although
   that is not mandatory. A Modifier only needs to be a callable, i.e. a class
-  defining the :meth:`__call__` method or a function.
+  defining the :meth:`~crappy.modifier.Modifier.__call__` method or a function.
 
   .. versionadded:: 1.4.0
   """
@@ -31,7 +34,7 @@ class Modifier(metaclass=MetaModifier):
 
     self._logger: Optional[logging.Logger] = None
 
-  def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+  def __call__(self, data: dict[str, T]) -> Optional[dict[str, T]]:
     """The main method altering the inout data and returning the altered data.
 
     It should take a :obj:`dict` as its only argument, and return another

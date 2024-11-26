@@ -2,7 +2,7 @@
 
 from time import time
 from re import findall
-from typing import List, Optional
+from typing import Optional, Literal
 import logging
 
 from .meta_inout import InOut
@@ -93,12 +93,13 @@ class ADS1115(InOut):
   """
 
   def __init__(self,
-               backend: str,
+               backend: Literal['Pi4', 'blinka'],
                device_address: int = 0x48,
                i2c_port: int = 1,
                sample_rate: int = 128,
                v_range: float = 2.048,
-               multiplexer: str = 'A1',
+               multiplexer: Literal['A0', 'A1', 'A2', 'A3', 'A0 - A1',
+                                    'A0 - A3', 'A1 - A3', 'A2 - A3'] = 'A1',
                dry_pin: Optional[int] = None,
                gain: float = 1,
                offset: float = 0) -> None:
@@ -258,7 +259,7 @@ class ADS1115(InOut):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self._dry_pin, GPIO.IN)
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the registers containing the conversion result.
 
     The output is in Volts, unless a gain and offset are applied.

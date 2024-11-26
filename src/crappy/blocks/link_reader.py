@@ -79,8 +79,7 @@ class LinkReader(Block):
     """Flushes the incoming :class:`~crappy.links.Link` and displays their
     data."""
 
-    data = self.recv_all_data_raw()
-    for link_data in data:
+    for link_data in self.recv_all_data_raw():
       for dic in (dict(i) for i in
                   zip(*([(key, value) for value in values]
                         for key, values in link_data.items()))):

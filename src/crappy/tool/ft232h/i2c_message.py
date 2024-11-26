@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from __future__ import annotations
-from typing import Optional, List
+from typing import Optional, Literal
 
 
 class I2CMessage:
@@ -16,7 +16,7 @@ class I2CMessage:
   """
 
   def __init__(self,
-               type_: str,
+               type_: Literal['r', 'w'],
                address: int,
                length: Optional[int] = None,
                buf: Optional[list] = None) -> None:
@@ -73,13 +73,13 @@ class I2CMessage:
     self._addr = addr_
 
   @property
-  def buf(self) -> List[int]:
+  def buf(self) -> list[int]:
     """The list of bytes to be written, or the list of bytes read."""
 
     return self._buf
 
   @buf.setter
-  def buf(self, buf_: List[int]) -> None:
+  def buf(self, buf_: list[int]) -> None:
     if self.type == 'w' and not buf_:
       raise ValueError("buf can't be empty for a write operation !")
     self._buf = buf_

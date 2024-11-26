@@ -152,9 +152,7 @@ class HDFRecorder(Block):
       else:
         return
 
-    data = self.recv_all_data()
-
-    if self._label in data:
+    if self._label in (data := self.recv_all_data()):
       for elt in data[self._label]:
         self._array.append(elt)
 
@@ -168,9 +166,7 @@ class HDFRecorder(Block):
   def _first_loop(self) -> None:
     """Initializes the array for saving data."""
 
-    data = self.recv_all_data()
-
-    if self._label not in data:
+    if self._label not in (data := self.recv_all_data()):
       raise KeyError(f'The data received by the HDF Recorder block does not '
                      f'contain the label {self._label} !')
 

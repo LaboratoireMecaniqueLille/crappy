@@ -1,7 +1,8 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Union, Iterable, Dict
+from typing import Optional, Union
+from collections.abc import Iterable
 from collections import defaultdict
 import logging
 
@@ -70,7 +71,7 @@ class Synchronizer(Block):
     # Initializing the attributes
     self._ref_label = reference_label
     self._time_label = time_label
-    self._data: Dict[str, np.ndarray] = defaultdict(self._default_array)
+    self._data: dict[str, np.ndarray] = defaultdict(self._default_array)
 
     # Forcing the labels_to_sync into a list
     if labels_to_sync is not None and isinstance(labels_to_sync, str):
@@ -84,11 +85,8 @@ class Synchronizer(Block):
     """Receives data, interpolates it, and sends it to the downstream
     Blocks."""
 
-    # Receiving all the upcoming data
-    data = self.recv_all_data_raw()
-
     # Iterating over all the links
-    for link_data in data:
+    for link_data in self.recv_all_data_raw():
       # Only data associated with a time label can be synchronized
       if self._time_label not in link_data:
         continue

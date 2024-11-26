@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Union, Optional, Iterable, Any
+from typing import Union, Optional, Any
+from collections.abc import Iterable
 import logging
 
 from .meta_block import Block
@@ -242,7 +243,7 @@ class IOBlock(Block):
                              f"{type(self._device).__name__} InOut")
       self._device.set_cmd(*self._initial_cmd)
       self._last_cmd = self._initial_cmd
-      self._prev_values.update(zip(self._cmd_labels, self._initial_cmd))
+      self._prev_values |= zip(self._cmd_labels, self._initial_cmd)
 
   def loop(self) -> None:
     """Reads data from the InOut and/or sets the received commands.
@@ -282,8 +283,8 @@ class IOBlock(Block):
     if self._write:
       # The missing values are completed here, because the trig label must not
       # be artificially created
-      self._prev_values.update(data)
-      data.update(self._prev_values)
+      self._prev_values |= data
+      data |= self._prev_values
 
       # Keeping only the labels in cmd_labels
       data = {key: val for key, val in data.items() if key in self._cmd_labels}

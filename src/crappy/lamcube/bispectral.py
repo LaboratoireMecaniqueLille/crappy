@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Tuple
 import logging
 from warnings import warn
 
@@ -121,7 +120,7 @@ class BiSpectral(BaslerIronmanCameraLink):
     self._send_cmd('@W1A084')  # Restore unwindowed Mode
     self._send_cmd('@W10012')  # Make sure the image is not inverted
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """Grabs an image using the parent class' method, transforms it, and
     returns it."""
 
@@ -151,7 +150,7 @@ class BiSpectral(BaslerIronmanCameraLink):
     else:
       self._send_cmd('@W10274')  # 3rd bit to 0
 
-  def _get_roi(self) -> Tuple[int, int, int, int]:
+  def _get_roi(self) -> tuple[int, int, int, int]:
     """Returns the minimum and maximum x and y coordinates of the current
     ROI."""
 
@@ -194,7 +193,7 @@ class BiSpectral(BaslerIronmanCameraLink):
     self._send_cmd("@W1D6" + lsb_ymax)
     self._send_cmd("@W1D7" + msb_ymax)
 
-  def _get_it(self) -> Tuple[float, float]:
+  def _get_it(self) -> tuple[float, float]:
     """Reads the integration time from the Camera and returns it."""
 
     mc = 10.35  # MHz

@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from typing import Dict, Type
-
 from .ads1115 import ADS1115
 from .agilent_34420A import Agilent34420a
 from .comedi import Comedi
@@ -36,4 +34,4 @@ from .meta_inout import InOut, MetaIO
 
 # All the inout objects
 from ._deprecated import deprecated_inouts
-inout_dict: Dict[str, Type[InOut]] = MetaIO.classes
+inout_dict: dict[str, type[InOut]] = MetaIO.classes

@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, List, Iterable
+from typing import Optional
+from collections.abc import Iterable
 from dataclasses import dataclass
 import logging
 from  warnings import warn
@@ -55,12 +56,12 @@ class LabjackUE9(InOut):
       gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
         each channel the gain to apply to the measured voltage, as a
         :obj:`float`. The returned voltage is calculated as follows :
-        :math:`returned\_voltage = gain * measured\_voltage + offset`. If not
+        :math:`returned\\_voltage = gain * measured\\_voltage + offset`. If not
         given, no gain is applied to the measured values.
       offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
         each channel the offset to apply to the measured voltage, as a
         :obj:`float`. The returned voltage is calculated as follows :
-        :math:`returned\_voltage = gain * measured\_voltage + offset`. If not
+        :math:`returned\\_voltage = gain * measured\\_voltage + offset`. If not
         given, no offset is applied to the measured values.
       make_zero: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         for each channel a :obj:`bool` indicating whether the channel should be
@@ -135,7 +136,7 @@ class LabjackUE9(InOut):
         self._compensations = [comp if chan.make_zero else 0 for comp, chan
                                in zip(self._compensations, self._channels)]
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads sequentially the channels and returns the acquired values,
     corrected by the given gains and offsets."""
 

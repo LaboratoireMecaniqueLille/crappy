@@ -321,7 +321,7 @@ attributes. In addition to the synchronization and logging attributes, each
 instance of Block also has :
 
 - A few attributes managing its execution (target looping frequency, niceness,
-  flag for displaying the achieved looping frequency).
+  flag for displaying the achieved looping frequency, pausability).
 - A few buffers storing values needed for trying to achieve and displaying the
   looping frequency.
 - A name, given by a :obj:`classmethod` to ensure it is unique.
@@ -380,7 +380,7 @@ This Barrier is shared by all the Blocks, and its value is set to the number of
 Blocks +1. Therefore, the Barrier only breaks when all the Blocks have reached
 it, as well as the ``__main__`` Process. In case one of the Processes doesn't
 make it to the Barrier, a :obj:`~threading.BrokenBarrierError` is raised to
-indicate all the other Blocks not to wait forever on the Barrier.
+indicate all the other Blocks not to wait forever at the Barrier.
 
 Once every Process has reached the Barrier, it breaks and releases them all.
 At that moment, the :obj:`~multiprocessing.Value` storing the initial timestamp
@@ -396,7 +396,7 @@ The cleanup phase
 
 This phase is triggered every time an exception (of any nature) is caught in
 the ``__main__`` Process, or if at least one Block has stopped. The
-corresponding method is :meth:`crappy.blocks.Block._exception`. Its goal is to
+corresponding method is :meth:`crappy.blocks.Block._cleanup`. Its goal is to
 make sure that all the Blocks stop as expected, and that the other Processes
 and Threads of Crappy terminate as well. It first sets the stop
 :obj:`~multiprocessing.Event`, indicating all the Blocks to stop looping and to
@@ -446,7 +446,13 @@ specific to the first loop, and then the Block starts looping forever by
 calling it :meth:`~crappy.blocks.Block.main` method. Under the hood, this
 method calls the :meth:`~crappy.blocks.Block.loop` method, performing the main
 task for which the Block was written. It also handles the regulation and the
-display of the looping frequency, if requested by the user.
+display of the looping frequency, if requested by the user. If a
+:class:`~crappy.blocks.Pause` Block is used, all the Blocks having their
+``pausable`` attribute set to :obj:`True` might be paused (most Blocks by
+default). When paused, the :meth:`~crappy.blocks.Block.main` method keeps
+looping at its target frequency, but the :meth:`~crappy.blocks.Block.loop`
+method is never called. As soon as the pause ends, the normal behavior is
+restored.
 
 There are several ways the Block can stop. First, the stop
 :obj:`~multiprocessing.Event` might be set in another Process, which conducts
