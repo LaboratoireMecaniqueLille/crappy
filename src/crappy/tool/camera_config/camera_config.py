@@ -110,6 +110,7 @@ class CameraConfig(tk.Tk):
     self._move_y = None
     self._run = True
     self._n_loops = 0
+    self._last_upd_t: Optional[float] = None
     self._max_freq = max_freq
     self._got_first_img: bool = False
 
@@ -142,20 +143,28 @@ class CameraConfig(tk.Tk):
     self._histogram_process.start()
 
     self._n_loops = 0
-    start_time = time()
+    self._last_upd_t = time()
 
+    # Perform processing in separate method to allow for easier unit testing
     while self._run:
-      # Remaining below the max allowed frequency
-      if self._max_freq is None or (self._n_loops <
-                                    self._max_freq * (time() - start_time)):
-        # Update the image, the histogram and the information
-        self._update_img()
+      self.loop()
 
-      # Update the FPS counter
-      if time() - start_time > 0.5:
-        self._fps_var.set(self._n_loops / (time() - start_time))
-        self._n_loops = 0
-        start_time = time()
+  def loop(self) -> None:
+    """Acquires an image if it is time to, and updates the displayed
+    information if needed."""
+
+    # Remaining below the max allowed frequency
+    if self._max_freq is None or (self._n_loops <
+                                  self._max_freq * (time() -
+                                                    self._last_upd_t)):
+      # Update the image, the histogram and the information
+      self._update_img()
+
+    # Update the FPS counter
+    if time() - self._last_upd_t > 0.5:
+      self._fps_var.set(self._n_loops / (time() - self._last_upd_t))
+      self._n_loops = 0
+      self._last_upd_t = time()
 
   def log(self, level: int, msg: str) -> None:
     """Record log messages for the CameraConfig window.
