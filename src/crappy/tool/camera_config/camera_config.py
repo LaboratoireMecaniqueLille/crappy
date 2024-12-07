@@ -650,7 +650,7 @@ class CameraConfig(tk.Tk):
     cam_set.tk_obj = tk.Checkbutton(self._canvas_frame,
                                     text=cam_set.name,
                                     variable=cam_set.tk_var,
-                                    command=self._auto_apply_bool_settings)
+                                    command=self._auto_apply_settings)
 
     cam_set.tk_obj.pack(anchor='w', side='top', expand=False, fill='none',
                         padx=5, pady=2)
@@ -674,7 +674,7 @@ class CameraConfig(tk.Tk):
                               from_=cam_set.lowest,
                               to=cam_set.highest)
 
-    cam_set.tk_obj.bind("<ButtonRelease-1>", self._auto_apply_scale_settings)
+    cam_set.tk_obj.bind("<ButtonRelease-1>", self._auto_apply_settings)
 
     cam_set.tk_obj.pack(anchor='center', side='top', expand=False,
                         fill='x', padx=5, pady=2)
@@ -694,7 +694,7 @@ class CameraConfig(tk.Tk):
                               text=value,
                               variable=cam_set.tk_var,
                               value=value,
-                              command=self._auto_apply_choice_settings)
+                              command=self._auto_apply_settings)
 
       tk_obj.pack(anchor='w', side='top', expand=False,
                   fill='none', padx=5, pady=2)
@@ -815,30 +815,13 @@ class CameraConfig(tk.Tk):
       setting.tk_var.set(setting.value)
 
   def _auto_apply_scale_settings(self, _: tk.Event):
+  def _auto_apply_settings(self, *_: tk.Event):
     """Applies the settings without clicking on the Apply Settings
      button when the Auto apply button is checked.
 
-     The scale settings will be applied when the slicer is released.
-     """
-
-    if self._auto_apply.get():
-      self._update_settings()
-
-  def _auto_apply_bool_settings(self):
-    """Applies the settings without clicking on the Apply Settings
-     button when the Auto apply button is checked.
-
-     The bool settings will be applied when the bool button is checked.
-     """
-
-    if self._auto_apply.get():
-      self._update_settings()
-
-  def _auto_apply_choice_settings(self):
-    """Applies the settings without clicking on the Apply Settings
-     button when the Auto apply button is checked.
-
-     The choice settings will be applied when the choice button is checked.
+     The scale settings will be applied when the slicer is released. The bool
+     settings will be applied when the bool button is checked. The choice
+     settings will be applied when the choice button is checked.
      """
 
     if self._auto_apply.get():
