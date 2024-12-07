@@ -92,6 +92,7 @@ class CameraSetting:
   @value.setter
   def value(self, val: Any) -> None:
     self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
+    self.was_set = True
     self._value_no_getter = val
     if self._setter is not None:
       self._setter(val)

@@ -100,6 +100,7 @@ class CameraScaleSetting(CameraSetting):
   def value(self, val: NbrType) -> None:
     val = min(max(val, self.lowest), self.highest)
     self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
+    self.was_set = True
 
     self._value_no_getter = self.type(val)
     if self._setter is not None:
@@ -183,8 +184,29 @@ class CameraScaleSetting(CameraSetting):
       self.tk_obj.configure(to=self.highest,
                             from_=self.lowest,
                             resolution=self.step)
-    if self.tk_var is not None:
-      self.tk_var.set(value)
+
+    if value is not None:
+      if self.tk_var is None:
+        # If the setting was never set, not setting it yet but tweaking its
+        # default so that it will only be set to the right value when expected
+        if not self.was_set:
+          self.log(logging.DEBUG, f"Setting default to {value} as a hack to "
+                                  f"maintain settings call order")
+          self.default = value
+        # If the setting was already set though a kwarg, the user probably
+        # doesn't want it silently overridden by a reload() call
+        elif self.user_set and value != self.value:
+          raise ValueError(f"Setting {self.name} forcibly set to value "
+                           f"{self.value} using a kwarg, cannot override to "
+                           f"{value} !")
+        # Setting to the indicated value if parameter was previously set to
+        # default
+        else:
+          self.value = value
+      # Once in the graphical interface it is assumed that the user does not
+      # want strict control over settings, always setting
+      else:
+        self.value = value
 
   def _check_default(self) -> None:
     """Checks if the step value is compatible with the limit values and
