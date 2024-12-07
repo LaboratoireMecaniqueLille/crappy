@@ -38,6 +38,12 @@ class CameraChoiceSetting(CameraSetting):
 
     self.choices = choices
 
+    if default is not None and default not in choices:
+      self.log(logging.WARNING, f"The given default {default} is not part "
+                                  f"of the given choices ! Setting default "
+                                  f"to {choices[0]} instead")
+      default = choices[0]
+
     if default is None:
       default = choices[0]
 
@@ -63,9 +69,26 @@ class CameraChoiceSetting(CameraSetting):
 
     # Updating the default value
     if default is not None:
-      self.default = default
+      if default in choices:
+        self.default = default
+      else:
+        self.log(logging.WARNING, f"The given default {default} is not part "
+                                  f"of the given choices ! Setting default "
+                                  f"to {choices[0]} instead")
+        self.default = choices[0]
     else:
       self.default = choices[0]
+
+    if value is not None and value not in choices:
+      self.log(logging.WARNING, f"{value} is not a possible choice for the "
+                                f"setting {self.name}, ignoring it !")
+      value  = None
+
+    if value is None and self.value not in choices:
+      self.log(logging.WARNING, f"{self.value} is no longer a possible choice "
+                                f"for the setting {self.name}, setting to "
+                                f"{self.default} instead !")
+      value = self.default
 
     # Updating the radio buttons and the setting value
     if self.tk_obj:

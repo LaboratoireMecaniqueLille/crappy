@@ -48,15 +48,33 @@ class CameraScaleSetting(CameraSetting):
     .. versionadded:: 2.0.0 add *step* argument
     """
 
+    # Ensuring that the two bounds are not equal
+    if lowest == highest:
+      raise ValueError("The two given bounds are equal !")
+
+    # Ensuring that the given bounds are in the correct order
+    if lowest > highest:
+      self.log(logging.WARNING, f"Lowest ({lowest}) higher than highest "
+                                f"({highest}), swapping them !")
+      lowest, highest = highest, lowest
+
     self.lowest = lowest
     self.highest = highest
     self.step = step
     self.type = int if isinstance(self.lowest + self.highest, int) else float
 
-    if default is None:
-      default = self.type((self.lowest + self.highest) / 2)
+    # Ensuring that the default value lies between the bounds
+    if default is not None:
+      if not lowest <= default <= highest:
+        self.log(logging.WARNING,
+                 f"The given default {default} is not between the lowest "
+                 f"({lowest}) and highest ({highest}) values ! Setting to the "
+                 f"center of the interval instead")
+        default = self.type((self.lowest + self.highest) / 2)
+      else:
+        default = self.type(default)
     else:
-      default = self.type(default)
+      default = self.type((self.lowest + self.highest) / 2)
 
     super().__init__(name, getter, setter, default)
 
@@ -113,17 +131,52 @@ class CameraScaleSetting(CameraSetting):
 
     self.log(logging.DEBUG, f"Reloading the setting {self.name}")
 
+    # Ensuring that the two bounds are not equal
+    if lowest == highest:
+      raise ValueError("The two given bounds are equal !")
+
+    # Ensuring that the given bounds are in the correct order
+    if lowest > highest:
+      self.log(logging.WARNING, f"Lowest ({lowest}) higher than highest "
+                                f"({highest}), swapping them !")
+      lowest, highest = highest, lowest
+
     # Updating the lowest, highest, step and default values
     self.lowest = lowest
     self.highest = highest
     self.step = step
 
+    # Ensuring that the default value lies between the new bounds
+    if default is None and not lowest <= self.default <= highest:
+      self.log(logging.WARNING,
+               f"The current default {self.default} is not between the lowest "
+               f"({lowest}) and highest ({highest}) values ! Setting to the "
+               f"center of the interval instead")
+      self.default = self.type((self.lowest + self.highest) / 2)
     if default is not None:
-      self.default = self.type(default)
-    else:
-      self.default = self.type((lowest + highest) / 2)
+      if not lowest <= default <= highest:
+        self.log(logging.WARNING,
+                 f"The given default {default} is not between the lowest "
+                 f"({lowest}) and highest ({highest}) values ! Setting to the "
+                 f"center of the interval instead")
+        self.default = self.type((self.lowest + self.highest) / 2)
+      else:
+        self.default = default
 
-    self._check_value()
+    self._check_default()
+
+    if value is not None and not self.lowest <= value <= self.highest:
+      self.log(logging.WARNING,
+               f"The given value {value} is not between the lowest "
+               f"({lowest}) and highest ({highest}) values ! Ignoring it")
+      value = None
+
+    if value is None and not self.lowest <= self.value <= self.highest:
+      self.log(logging.WARNING,
+               f"The current value {self.value} is no longer between the "
+               f"lowest ({lowest}) and highest ({highest}) values ! Setting "
+               f"it to {self.default} instead")
+      value = self.default
 
     # Updating the slider limits and the setting value
     if self.tk_obj is not None:
