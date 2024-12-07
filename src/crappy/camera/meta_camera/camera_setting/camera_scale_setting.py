@@ -121,12 +121,25 @@ class CameraScaleSetting(CameraSetting):
   def reload(self,
              lowest: NbrType,
              highest: NbrType,
-             value: NbrType,
+             value: Optional[NbrType] = None,
              default: Optional[NbrType] = None,
              step: Optional[NbrType] = None) -> None:
-    """Allows modifying the limits and the step of the scale bar once it is 
+    """Allows modifying the limits and the step of the scale bar once it is
     already instantiated.
-    
+
+    Args:
+      lowest: The new lowest possible value for the scale setting.
+      highest: The new highest possible value for the scale setting.
+      value: Optionally, a value to set the setting to when reloading it. If
+        not provided, the current value remains if it is within the new bounds,
+        otherwise the default is set.
+
+        .. versionchanged:: 2.0.7 converted from mandatory to optional
+      default: Optionally, the new default value for the setting. If not
+        provided, the previous default remains, if it is still within the new
+        bounds. Otherwise, a new default is defined.
+      step: Optionally, a new step value for the setting.
+
     .. versionadded:: 2.0.0
     """
 

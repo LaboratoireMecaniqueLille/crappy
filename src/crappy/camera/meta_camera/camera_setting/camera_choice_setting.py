@@ -53,15 +53,28 @@ class CameraChoiceSetting(CameraSetting):
 
   def reload(self,
              choices: tuple[str, ...],
+             value: Optional[str] = None,
              default: Optional[str] = None) -> None:
     """Allows modifying the choices of the radio buttons once they have been
     instantiated.
 
-    As the layout of the GUI is already fixed, the number of displayed options
-    cannot vary. It is thus not possible to propose more choices than those
-    initially proposed. Reversely, if fewer new options ar proposed then some
-    radio buttons won't be affected a value.
-    
+    Note:
+      As the layout of the GUI is already fixed, the number of displayed
+      options cannot vary. It is thus not possible to propose more choices than
+      those initially proposed. Reversely, if fewer new options ar proposed
+      then some radio buttons will be disabled.
+
+    Args:
+      choices: The new possible choices for the setting.
+      value: Optionally, a value to set the setting to when reloading it. If
+        not provided, the current value remains if it is in the new choices,
+        otherwise the default is set.
+
+        .. versionadded:: 2.0.7
+      default: Optionally, the new default value for the setting. If not
+        provided, the previous default remains, if it is still in the new
+        choices. Otherwise, a new default is defined.
+
     .. versionadded:: 2.0.0
     """
 
