@@ -60,7 +60,7 @@ class CameraScaleSetting(CameraSetting):
 
     super().__init__(name, getter, setter, default)
 
-    self._check_value()
+    self._check_default()
 
   @property
   def value(self) -> NbrType:
@@ -133,7 +133,7 @@ class CameraScaleSetting(CameraSetting):
     if self.tk_var is not None:
       self.tk_var.set(value)
 
-  def _check_value(self) -> None:
+  def _check_default(self) -> None:
     """Checks if the step value is compatible with the limit values and
     types of the scale settings.
     
