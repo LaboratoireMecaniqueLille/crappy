@@ -39,9 +39,11 @@ class CameraSetting:
     """
 
     # Attributes shared by all the settings
-    self.name = name
+    self.name: str = name
     self.default = default
     self.type = type(default)
+    self.was_set: bool = False
+    self.user_set: bool = False
 
     # Attributes used in the GUI
     self.tk_var = None
