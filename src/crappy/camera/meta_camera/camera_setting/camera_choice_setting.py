@@ -105,6 +105,7 @@ class CameraChoiceSetting(CameraSetting):
                    f"Too few choices given when reloading the {self.name} "
                    f"setting, disabling the extra buttons")
           button.configure(state='disabled', value='', text='')
+          continue
 
         # Updating the text and value of the button, and enabling it
         button.configure(value=choice, text=choice, state='normal')
