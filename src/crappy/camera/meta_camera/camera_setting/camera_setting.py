@@ -102,6 +102,10 @@ class CameraSetting:
       self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
                                 f"value is {self.value} !")
 
+    # Update the GUI, in case the value was modified via a reload() call
+    if self.tk_var is not None:
+      self.tk_var.set(self.value)
+
   def reload(self, *_, **__) -> None:
     """Allows modifying a setting once it is already being displayed in the
     GUI.

@@ -811,10 +811,9 @@ class CameraConfig(tk.Tk):
       if setting.value != setting.tk_var.get():
         setting.value = setting.tk_var.get()
 
-      # Reading the actual value of all the settings
-      setting.tk_var.set(setting.value)
+      # Update graphics to reflect changes that could have happened
+      self.update()
 
-  def _auto_apply_scale_settings(self, _: tk.Event):
   def _auto_apply_settings(self, *_: tk.Event):
     """Applies the settings without clicking on the Apply Settings
      button when the Auto apply button is checked.
