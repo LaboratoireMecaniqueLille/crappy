@@ -72,3 +72,106 @@ class FakeTestCameraSimple(Camera):
     x, y = np.mgrid[0:320, 0:240]
     ret = np.astype((x + y + 3) / np.max(x + y + 3) * 255, np.uint8)
     return time(), ret
+
+
+class FakeTestCameraParams(Camera):
+  """"""
+
+  def __init__(self) -> None:
+    """"""
+
+    super().__init__()
+
+    self._bool_getter_called: bool = False
+    self._bool_setter_called: bool = False
+    self._scale_int_getter_called: bool = False
+    self._scale_int_setter_called: bool = False
+    self._scale_float_getter_called: bool = False
+    self._scale_float_setter_called: bool = False
+    self._choice_getter_called: bool = False
+    self._choice_setter_called: bool = False
+
+    self._scale_int_bounds = (-100, 100, 2)
+    self._scale_float_bounds = (-10.0, 10.0, 0.1)
+    self._choices = ('choice_1', 'choice_2', 'choice_3')
+
+  def open(self) -> None:
+    """"""
+
+    self.add_bool_setting('bool_setting',
+                          self._bool_getter,
+                          self._bool_setter,
+                          True)
+    
+    self.add_scale_setting('scale_int_setting',
+                           self._scale_int_bounds[0],
+                           self._scale_int_bounds[1],
+                           self._scale_int_getter,
+                           self._scale_int_setter,
+                           default=0,
+                           step=self._scale_int_bounds[2])
+
+    self.add_scale_setting('scale_float_setting',
+                           self._scale_float_bounds[0],
+                           self._scale_float_bounds[1],
+                           self._scale_float_getter,
+                           self._scale_float_setter,
+                           default=0.,
+                           step=self._scale_float_bounds[2])
+
+    self.add_choice_setting('choice_setting',
+                            self._choices,
+                            self._choice_getter,
+                            self._choice_setter,
+                            self._choices[0])
+
+    # Left out on purpose
+    # self.set_all()
+
+  def _bool_setter(self, value: bool) -> None:
+    """"""
+
+    self._bool_setter_called = True
+    self.settings['bool_setting']._value_no_getter = value
+
+  def _bool_getter(self) -> bool:
+    """"""
+
+    self._bool_getter_called = True
+    return self.settings['bool_setting']._value_no_getter
+
+  def _scale_int_setter(self, value: int) -> None:
+    """"""
+
+    self._scale_int_setter_called = True
+    self.settings['scale_int_setting']._value_no_getter = value
+
+  def _scale_int_getter(self) -> int:
+    """"""
+
+    self._scale_int_getter_called = True
+    return self.settings['scale_int_setting']._value_no_getter
+  
+  def _scale_float_setter(self, value: float) -> None:
+    """"""
+
+    self._scale_float_setter_called = True
+    self.settings['scale_float_setting']._value_no_getter = value
+
+  def _scale_float_getter(self) -> float:
+    """"""
+
+    self._scale_float_getter_called = True
+    return self.settings['scale_float_setting']._value_no_getter
+
+  def _choice_setter(self, value: str) -> None:
+    """"""
+
+    self._choice_setter_called = True
+    self.settings['choice_setting']._value_no_getter = value
+
+  def _choice_getter(self) -> str:
+    """"""
+
+    self._choice_getter_called = True
+    return self.settings['choice_setting']._value_no_getter
