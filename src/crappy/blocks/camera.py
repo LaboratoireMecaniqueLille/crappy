@@ -418,7 +418,7 @@ class Camera(Block):
     # Displaying the configuration window if required
     if self._config_cam:
       self.log(logging.INFO, "Displaying the configuration window")
-      self._configure()
+      self.configure()
       self.log(logging.INFO, "Camera configuration done")
 
     # Setting the camera to 'Hardware' trig if it's in 'Hdw after config' mode
@@ -647,27 +647,25 @@ class Camera(Block):
     if self._manager is not None:
       self._manager.shutdown()
 
-  def _configure(self) -> None:
+  def configure(self) -> None:
     """This method should instantiate and start the 
     :class:`~crappy.tool.camera_config.CameraConfig` window for configuring the
     :class:`~crappy.camera.Camera` object.
     
     It should also handle the case when an exception is raised in the 
     configuration window.
-    
-    This method is meant to be overridden by children of the Camera Block, as
-    other image processing Blocks rely on subclasses of 
-    :class:`~crappy.tool.camera_config.CameraConfig`.
+
+    It is common to all camera-related Blocks, except for those that don't have
+    a configuration window.
     """
 
     config = None
-    
+
     # Instantiating and starting the configuration window
     try:
-      config = CameraConfig(self._camera, self._log_queue,
-                            self._log_level, self.freq)
+      config = self._configure()
       config.main()
-    
+
     # If an exception is raised in the config window, closing it before raising
     except (Exception,) as exc:
       self._logger.exception("Caught exception in the configuration window !",
@@ -681,3 +679,15 @@ class Camera(Block):
       self._img_shape = config.shape
     if config.dtype is not None:
       self._img_dtype = config.dtype
+
+  def _configure(self) -> CameraConfig:
+    """This method contains the Block-specific part of the camera configuration
+    workflow.
+
+    It is meant to be overridden by children of the Camera Block, as other
+    image processing Blocks rely on subclasses of
+    :class:`~crappy.tool.camera_config.CameraConfig`.
+    """
+
+    return CameraConfig(self._camera, self._log_queue,
+                        self._log_level, self.freq)
