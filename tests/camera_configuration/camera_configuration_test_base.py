@@ -63,13 +63,8 @@ class ConfigurationWindowTestBase(unittest.TestCase):
       self._log_queue.close()
 
 
-class FakeTestCamera(Camera):
+class FakeTestCameraSimple(Camera):
   """"""
-
-  def __init__(self) -> None:
-    """"""
-
-    super().__init__()
 
   def get_image(self) -> tuple[float, np.ndarray]:
     """"""

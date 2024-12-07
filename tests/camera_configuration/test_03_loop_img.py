@@ -5,7 +5,7 @@ from time import sleep
 import numpy.dtypes as np_dt
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
-                                             FakeTestCamera)
+                                             FakeTestCameraSimple)
 
 
 class TestLoopImg(ConfigurationWindowTestBase):
@@ -14,7 +14,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
   def __init__(self, *args, **kwargs) -> None:
     """"""
 
-    super().__init__(*args, camera=FakeTestCamera(),  **kwargs)
+    super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
 
   def test_loop_img(self) -> None:
     """"""
