@@ -664,7 +664,8 @@ class Camera(Block):
     # Instantiating and starting the configuration window
     try:
       config = self._configure()
-      config.main()
+      config.start()
+      config.wait_window(config)
 
     # If an exception is raised in the config window, closing it before raising
     except (Exception,) as exc:
