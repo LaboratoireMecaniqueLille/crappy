@@ -18,7 +18,6 @@ class TestFinish(ConfigurationWindowTestBase):
     with self.assertRaises(TclError):
       self._config.wm_state()
 
-    self.assertFalse(self._config._run)
     self.assertFalse(self._config._histogram_process.is_alive())
 
     # Indicating the tearDown() method not to destroy the window

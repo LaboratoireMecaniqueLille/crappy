@@ -57,7 +57,9 @@ class TestLoopImg(ConfigurationWindowTestBase):
     # Sleeping to ensure the loop counter will be reset (it is every 0.5s)
     sleep(0.5)
     # Calling the first loop
-    self._config.loop()
+    self._config._img_acq_sched()
+    self._config._upd_var_sched()
+    self._config._upd_sched()
 
     # These monitoring variables should change because of the acquired image
     self.assertGreater(self._config._fps_var.get(), 0.)
@@ -102,7 +104,9 @@ class TestLoopImg(ConfigurationWindowTestBase):
     # Sleeping to give some time for the histogram process to work
     sleep(2)
     # Calling a second loop
-    self._config.loop()
+    self._config._img_acq_sched()
+    self._config._upd_var_sched()
+    self._config._upd_sched()
 
     # Monitoring variables should be unchanged compared to previous loop
     self.assertGreater(self._config._fps_var.get(), 0.)

@@ -99,7 +99,9 @@ class TestSetParams(ConfigurationWindowTestBase):
     self.assertFalse(self._camera._choice_setter_called)
 
     # Looping once
-    self._config.loop()
+    self._config._img_acq_sched()
+    self._config._upd_var_sched()
+    self._config._upd_sched()
 
     # The setter should still not have been called as the Apply button wasn't
     # clicked and the auto apply mode isn't set
@@ -116,7 +118,9 @@ class TestSetParams(ConfigurationWindowTestBase):
 
     # Looping once again but this time with the update button clicked
     self._config._update_button.invoke()
-    self._config.loop()
+    self._config._img_acq_sched()
+    self._config._upd_var_sched()
+    self._config._upd_sched()
 
     # Now all the setters should have been called
     self.assertTrue(self._camera._bool_setter_called)

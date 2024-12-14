@@ -49,7 +49,9 @@ class TestLoopNoImg(ConfigurationWindowTestBase):
     # Sleeping to ensure the loop counter will be reset (it is every 0.5s)
     sleep(0.5)
     # Calling the first loop
-    self._config.loop()
+    self._config._img_acq_sched()
+    self._config._upd_var_sched()
+    self._config._upd_sched()
 
     # These monitoring variables should change because of the error image
     self.assertGreater(self._config._fps_var.get(), 0.)
@@ -92,7 +94,9 @@ class TestLoopNoImg(ConfigurationWindowTestBase):
     self.assertIsNone(self._config._pil_hist)
 
     # Calling a second loop that should have no effect
-    self._config.loop()
+    self._config._img_acq_sched()
+    self._config._upd_var_sched()
+    self._config._upd_sched()
 
     # Monitoring variables should be unchanged compared to previous loop
     self.assertEqual(self._config._fps_var.get(), 0.)

@@ -49,9 +49,8 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     self._config = CameraConfig(self._camera, self._log_queue,
                                 self._log_level, self._freq)
 
-    self._config._run = False
-    self._config.main()
-    self._config._run = True
+    self._config._testing = True
+    self._config.start()
 
   def tearDown(self) -> None:
     """"""
