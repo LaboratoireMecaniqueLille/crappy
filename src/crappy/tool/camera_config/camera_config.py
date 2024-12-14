@@ -108,11 +108,15 @@ class CameraConfig(tk.Tk):
     self._high_thresh = None
     self._move_x = None
     self._move_y = None
-    self._run = True
     self._n_loops = 0
     self._last_upd_t: Optional[float] = None
     self._max_freq = max_freq
     self._got_first_img: bool = False
+
+    # Keeping track of the scheduled objects to be able to cancel them later
+    self._upd_sched_obj: Optional[str] = None
+    self._img_acq_sched_obj: Optional[str] = None
+    self._upd_var_sched_obj: Optional[str] = None
 
     # Settings for adjusting the behavior of the zoom
     self._zoom_ratio = 0.9
@@ -132,11 +136,15 @@ class CameraConfig(tk.Tk):
     self._add_settings()
     self.update()
 
-  def main(self) -> None:
+    # Attribute used only for unit testing, do not use otherwise
+    self._testing: bool = False
+
+  def start(self) -> None:
     """Constantly updates the image and the information on the GUI, until asked
     to stop.
     
     .. versionadded:: 1.5.10
+    .. versionchanged:: 2.0.7 Renamed from *main()* to *start()*
     """
 
     # Starting the histogram calculation process
@@ -145,26 +153,11 @@ class CameraConfig(tk.Tk):
     self._n_loops = 0
     self._last_upd_t = time()
 
-    # Perform processing in separate method to allow for easier unit testing
-    while self._run:
-      self.loop()
-
-  def loop(self) -> None:
-    """Acquires an image if it is time to, and updates the displayed
-    information if needed."""
-
-    # Remaining below the max allowed frequency
-    if self._max_freq is None or (self._n_loops <
-                                  self._max_freq * (time() -
-                                                    self._last_upd_t)):
-      # Update the image, the histogram and the information
-      self._update_img()
-
-    # Update the FPS counter
-    if time() - self._last_upd_t > 0.5:
-      self._fps_var.set(self._n_loops / (time() - self._last_upd_t))
-      self._n_loops = 0
-      self._last_upd_t = time()
+    # Starting the endless loops of automatic updates
+    if not self._testing:
+      self._upd_sched()
+      self._img_acq_sched()
+      self._upd_var_sched()
 
   def log(self, level: int, msg: str) -> None:
     """Record log messages for the CameraConfig window.
@@ -214,8 +207,15 @@ class CameraConfig(tk.Tk):
     .. versionadded:: 2.0.0
     """
 
+    # Canceling the scheduled tasks
+    if self._upd_sched_obj is not None:
+      self.after_cancel(self._upd_sched_obj)
+    if self._img_acq_sched_obj is not None:
+      self.after_cancel(self._img_acq_sched_obj)
+    if self._upd_var_sched_obj is not None:
+      self.after_cancel(self._upd_var_sched_obj)
+
     # Stopping the event loop and the histogram process
-    self._run = False
     self._stop_event.set()
     sleep(0.1)
 
@@ -232,6 +232,43 @@ class CameraConfig(tk.Tk):
     except tk.TclError:
       self.log(logging.WARNING, "Cannot destroy the configuration window, "
                                 "ignoring")
+
+  def _upd_sched(self) -> None:
+    """Updates the GUI and plans the next GUI update."""
+
+    # Planning the next update
+    if not self._testing:
+      # Aiming for max 30 FPS, no need for more updating
+      self._upd_sched_obj = self.after(33, self._upd_sched)
+
+    # Updating the interface
+    self.update()
+
+  def _img_acq_sched(self) -> None:
+    """Acquires an image if it is time to, and plans the next image
+    acquisition."""
+
+    # Limiting the acquisition frequency to the given maximum if any
+    if (self._max_freq is None or
+        self._n_loops < self._max_freq * (time() - self._last_upd_t)):
+      # Trying to acquire a nex image
+      self._update_img()
+
+    # Planning the next image acquisition
+    if not self._testing:
+      # Acquiring up to 1000 FPS theoretically, but most calls are aborted
+      self._img_acq_sched_obj = self.after(1, self._img_acq_sched)
+
+  def _upd_var_sched(self) -> None:
+    """Updates the GUI indicators, and plans the next indicators update."""
+
+    # Planning the next update
+    self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
+
+    # Updating the indicators in the GUI
+    self._fps_var.set(self._n_loops / (time() - self._last_upd_t))
+    self._n_loops = 0
+    self._last_upd_t = time()
 
   def _set_layout(self) -> None:
     """Creates and places the different elements of the display on the GUI."""
@@ -659,7 +696,7 @@ class CameraConfig(tk.Tk):
     cam_set.tk_obj = tk.Checkbutton(self._canvas_frame,
                                     text=cam_set.name,
                                     variable=cam_set.tk_var,
-                                    command=self._auto_apply_bool_settings)
+                                    command=self._auto_apply_settings)
 
     cam_set.tk_obj.pack(anchor='w', side='top', expand=False, fill='none',
                         padx=5, pady=2)
@@ -683,7 +720,7 @@ class CameraConfig(tk.Tk):
                               from_=cam_set.lowest,
                               to=cam_set.highest)
 
-    cam_set.tk_obj.bind("<ButtonRelease-1>", self._auto_apply_scale_settings)
+    cam_set.tk_obj.bind("<ButtonRelease-1>", self._auto_apply_settings)
 
     cam_set.tk_obj.pack(anchor='center', side='top', expand=False,
                         fill='x', padx=5, pady=2)
@@ -703,7 +740,7 @@ class CameraConfig(tk.Tk):
                               text=value,
                               variable=cam_set.tk_var,
                               value=value,
-                              command=self._auto_apply_choice_settings)
+                              command=self._auto_apply_settings)
 
       tk_obj.pack(anchor='w', side='top', expand=False,
                   fill='none', padx=5, pady=2)
@@ -820,34 +857,16 @@ class CameraConfig(tk.Tk):
       if setting.value != setting.tk_var.get():
         setting.value = setting.tk_var.get()
 
-      # Reading the actual value of all the settings
-      setting.tk_var.set(setting.value)
+      # Update graphics to reflect changes that could have happened
+      self.update()
 
-  def _auto_apply_scale_settings(self, _: tk.Event):
+  def _auto_apply_settings(self, *_: tk.Event):
     """Applies the settings without clicking on the Apply Settings
      button when the Auto apply button is checked.
 
-     The scale settings will be applied when the slicer is released.
-     """
-
-    if self._auto_apply.get():
-      self._update_settings()
-
-  def _auto_apply_bool_settings(self):
-    """Applies the settings without clicking on the Apply Settings
-     button when the Auto apply button is checked.
-
-     The bool settings will be applied when the bool button is checked.
-     """
-
-    if self._auto_apply.get():
-      self._update_settings()
-
-  def _auto_apply_choice_settings(self):
-    """Applies the settings without clicking on the Apply Settings
-     button when the Auto apply button is checked.
-
-     The choice settings will be applied when the choice button is checked.
+     The scale settings will be applied when the slicer is released. The bool
+     settings will be applied when the bool button is checked. The choice
+     settings will be applied when the choice button is checked.
      """
 
     if self._auto_apply.get():

@@ -492,6 +492,7 @@ class Camera(metaclass=MetaCamera):
     self.log(logging.INFO, "Setting all the setting values")
     for name, setting in self.settings.items():
       setting.value = kwargs[name] if name in kwargs else setting.default
+      setting.user_set = True if name in kwargs else False
 
   def __getattr__(self, item: str) -> Any:
     """Method for getting the value of a setting directly by calling

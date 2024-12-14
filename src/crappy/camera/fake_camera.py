@@ -32,7 +32,7 @@ class FakeCamera(Camera):
     self.add_scale_setting('fps', 0.1, 100., None, None, 50., 0.1)
 
     self._t0 = time()
-    self._t = self._t0
+    self._t = -float('inf')
 
   def open(self,
            width: int = 1280,
@@ -56,15 +56,15 @@ class FakeCamera(Camera):
 
     self._gen_image()
 
-  def get_image(self) -> tuple[float, np.ndarray]:
+  def get_image(self) -> Optional[tuple[float, np.ndarray]]:
     """Returns the updated image, depending only on the current timestamp.
 
     Also includes a waiting loop in order to achieve the right frame rate.
     """
 
     # Waiting in order to achieve the right frame rate
-    while time() - self._t < 1 / self.fps:
-      pass
+    if time() - self._t < 1 / self.fps:
+      return
 
     self._t = time()
     self._frame_nr += 1
