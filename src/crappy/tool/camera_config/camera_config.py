@@ -263,7 +263,8 @@ class CameraConfig(tk.Tk):
     """Updates the GUI indicators, and plans the next indicators update."""
 
     # Planning the next update
-    self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
+    if not self._testing:
+      self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
     # Updating the indicators in the GUI
     self._fps_var.set(self._n_loops / (time() - self._last_upd_t))
