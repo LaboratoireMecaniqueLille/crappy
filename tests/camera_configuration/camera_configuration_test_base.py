@@ -68,7 +68,7 @@ class FakeTestCameraSimple(Camera):
   def get_image(self) -> tuple[float, np.ndarray]:
     """"""
 
-    x, y = np.mgrid[0:320, 0:240]
+    x, y = np.mgrid[0:240, 0:320]
     ret = np.astype((x + y + 3) / np.max(x + y + 3) * 255, np.uint8)
     return time(), ret
 
