@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from platform import system
+from itertools import product
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -12,7 +13,9 @@ class TestZoom(ConfigurationWindowTestBase):
   def __init__(self, *args, **kwargs) -> None:
     """"""
 
-    super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
+    super().__init__(*args,
+                     camera=FakeTestCameraSimple(min_val=0, max_val=255),
+                     **kwargs)
   
   def test_zoom(self) -> None:
     """"""
@@ -147,3 +150,34 @@ class TestZoom(ConfigurationWindowTestBase):
     self.assertEqual(self._config._zoom_values.x_high, 1.0)
     self.assertEqual(self._config._zoom_values.y_low, 0.0)
     self.assertEqual(self._config._zoom_values.y_high, 1.0)
+
+    # Define values to use in test loop
+    to_test = range(0, 255, 50)
+    img_ratio = 320 / 240
+
+    # Loop over many possible zoom configurations to test if they all give the
+    # expected displayed image
+    for x_min, x_max, y_min, y_max in product(to_test, repeat=4):
+      with self.subTest(x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max):
+
+        # Only consider cases when the image is valid
+        if x_min >= x_max or y_min >= y_max:
+          continue
+
+        # Set the zoom level to arbitrary values
+        self._config._zoom_values.x_low = x_min / 255
+        self._config._zoom_values.x_high = x_max / 255
+        self._config._zoom_values.y_low = y_min / 255
+        self._config._zoom_values.y_high = y_max / 255
+
+        # Update the displayed image
+        self._config._img_acq_sched()
+        self._config._upd_var_sched()
+        self._config._upd_sched()
+
+        # Check that the displayed sub-image is the expected one
+        min_, max_ = self._config._pil_img.getextrema()
+        self.assertAlmostEqual(int((x_min / 255 * img_ratio + y_min / 255) /
+                                   (img_ratio + 1) * 255), min_, delta=2)
+        self.assertAlmostEqual(int((x_max / 255 * img_ratio + y_max / 255) /
+                                   (img_ratio + 1) * 255), max_, delta=2)
