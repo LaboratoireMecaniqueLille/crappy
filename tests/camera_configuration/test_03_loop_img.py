@@ -14,7 +14,9 @@ class TestLoopImg(ConfigurationWindowTestBase):
   def __init__(self, *args, **kwargs) -> None:
     """"""
 
-    super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
+    super().__init__(*args,
+                     camera=FakeTestCameraSimple(min_val=3, max_val=252),
+                     **kwargs)
 
   def test_loop_img(self) -> None:
     """"""
@@ -64,9 +66,9 @@ class TestLoopImg(ConfigurationWindowTestBase):
     # These monitoring variables should change because of the acquired image
     self.assertGreater(self._config._fps_var.get(), 0.)
     self.assertEqual(self._config._nb_bits.get(), 8)
-    self.assertEqual(self._config._min_pixel.get(), 1)
-    self.assertEqual(self._config._max_pixel.get(), 255)
-    self.assertEqual(self._config._reticle_val.get(), 1)
+    self.assertEqual(self._config._min_pixel.get(), 3)
+    self.assertEqual(self._config._max_pixel.get(), 252)
+    self.assertEqual(self._config._reticle_val.get(), 3)
     # All other monitoring variables should be unchanged
     self.assertEqual(self._config._x_pos.get(), 0)
     self.assertEqual(self._config._y_pos.get(), 0)
@@ -79,8 +81,8 @@ class TestLoopImg(ConfigurationWindowTestBase):
                         f'fps = 0.00\n(might be lower in this GUI than '
                         f'actual)')
     self.assertEqual(self._config._bits_txt.get(), 'Detected bits: 8')
-    self.assertEqual(self._config._min_max_pix_txt.get(), 'min: 1, max: 255')
-    self.assertEqual(self._config._reticle_txt.get(), 'X: 0, Y: 0, V: 1')
+    self.assertEqual(self._config._min_max_pix_txt.get(), 'min: 3, max: 252')
+    self.assertEqual(self._config._reticle_txt.get(), 'X: 0, Y: 0, V: 3')
     # All other displayed texts should be unchanged
     self.assertEqual(self._config._zoom_txt.get(), 'Zoom: 100.0%')
 
@@ -91,7 +93,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
 
     # Image-type related parameters should no longer be None
     self.assertIsInstance(self._config.dtype, np_dt.UInt8DType)
-    self.assertEqual(self._config.shape, (320, 240))
+    self.assertEqual(self._config.shape, (240, 320))
 
     # These image containers should not be empty
     self.assertIsNotNone(self._config._img)
@@ -111,9 +113,9 @@ class TestLoopImg(ConfigurationWindowTestBase):
     # Monitoring variables should be unchanged compared to previous loop
     self.assertGreater(self._config._fps_var.get(), 0.)
     self.assertEqual(self._config._nb_bits.get(), 8)
-    self.assertEqual(self._config._min_pixel.get(), 1)
-    self.assertEqual(self._config._max_pixel.get(), 255)
-    self.assertEqual(self._config._reticle_val.get(), 1)
+    self.assertEqual(self._config._min_pixel.get(), 3)
+    self.assertEqual(self._config._max_pixel.get(), 252)
+    self.assertEqual(self._config._reticle_val.get(), 3)
     self.assertEqual(self._config._x_pos.get(), 0)
     self.assertEqual(self._config._y_pos.get(), 0)
     self.assertFalse(self._config._auto_range.get())
@@ -125,8 +127,8 @@ class TestLoopImg(ConfigurationWindowTestBase):
                         f'fps = 0.00\n(might be lower in this GUI than '
                         f'actual)')
     self.assertEqual(self._config._bits_txt.get(), 'Detected bits: 8')
-    self.assertEqual(self._config._min_max_pix_txt.get(), 'min: 1, max: 255')
-    self.assertEqual(self._config._reticle_txt.get(), 'X: 0, Y: 0, V: 1')
+    self.assertEqual(self._config._min_max_pix_txt.get(), 'min: 3, max: 252')
+    self.assertEqual(self._config._reticle_txt.get(), 'X: 0, Y: 0, V: 3')
     self.assertEqual(self._config._zoom_txt.get(), 'Zoom: 100.0%')
 
     # The loop counter should have been reset
@@ -135,7 +137,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
 
     # Image-type parameters should be unchanged compared to previous loop
     self.assertIsInstance(self._config.dtype, np_dt.UInt8DType)
-    self.assertEqual(self._config.shape, (320, 240))
+    self.assertEqual(self._config.shape, (240, 320))
 
     # The histogram should now have been loaded
     self.assertIsNotNone(self._config._img)

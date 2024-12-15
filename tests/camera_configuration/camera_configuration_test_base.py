@@ -65,11 +65,20 @@ class ConfigurationWindowTestBase(unittest.TestCase):
 class FakeTestCameraSimple(Camera):
   """"""
 
+  def __init__(self, min_val: int = 0, max_val: int = 255) -> None:
+    """"""
+
+    super().__init__()
+
+    self._min = min_val
+    self._max = max_val
+
   def get_image(self) -> tuple[float, np.ndarray]:
     """"""
 
     x, y = np.mgrid[0:240, 0:320]
-    ret = np.astype((x + y + 3) / np.max(x + y + 3) * 255, np.uint8)
+    ret = np.astype(self._min + (x + y) / np.max(x + y) *
+                    (self._max - self._min), np.uint8)
     return time(), ret
 
 
