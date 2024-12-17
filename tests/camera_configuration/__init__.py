@@ -9,3 +9,4 @@ from .test_06_zoom import TestZoom
 from .test_07_drag import TestDrag
 from .test_08_fps import TestFPS
 from .test_09_indicators import TestIndicators
+from .test_10_cast_img import TestCastImage
