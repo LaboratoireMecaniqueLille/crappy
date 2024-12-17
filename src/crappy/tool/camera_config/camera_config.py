@@ -879,7 +879,29 @@ class CameraConfig(tk.Tk):
     the user's choice.
     """
 
-    # First, convert BGR to RGB
+    # Ensure the image has a supported shape
+    if len(img.shape) not in (2, 3):
+      raise ValueError(f"Cannot handle images of shape {img.shape} !")
+
+    # Ensure the image has either 1, 2, 3, or 4 channels
+    if len(img.shape) == 3 and img.shape[2] > 4:
+      raise ValueError(f"Cannot handle images of shape {img.shape} !")
+
+    # Single-channel stored in 3D arrays images should be flattened
+    if len(img.shape) == 3 and img.shape[2] == 1:
+      img = img[:, :, 0]
+
+    # Two-channel images are considered to be grey level plus an alpha channel,
+    # which is ignored here
+    if len(img.shape) == 3 and img.shape[2] == 2:
+      img = img[:, :, 0]
+
+    # Four-channel images are considered to be BGR plus an alpha channel, which
+    # is ignored here
+    if len(img.shape) == 3 and img.shape[2] == 4:
+      img = img[:, :, :3]
+
+    # Converting from BGR to RGB
     if len(img.shape) == 3:
       img = img[:, :, ::-1]
 
