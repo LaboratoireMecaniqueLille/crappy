@@ -606,7 +606,7 @@ class CameraConfig(tk.Tk):
                img_width - 1), min(int(y_disp + y_trim), img_height - 1)
 
   def _start_move(self, event: tk.Event) -> None:
-    """Stores the position of the mouse upon left-clicking on the image."""
+    """Stores the position of the mouse upon right-clicking on the image."""
 
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
@@ -622,13 +622,13 @@ class CameraConfig(tk.Tk):
     self._move_y = event.y - zero_y
 
   def _move(self, event: tk.Event) -> None:
-    """Drags the image upon prolonged left-clik and drag from the user."""
+    """Drags the image upon prolonged right-clik and drag from the user."""
 
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
       return
 
-    self.log(logging.DEBUG, "Drag ended")
+    self.log(logging.DEBUG, "Dragging the image")
 
     pil_width = self._pil_img.width
     pil_height = self._pil_img.height
