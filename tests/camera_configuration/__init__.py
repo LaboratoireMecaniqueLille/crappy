@@ -11,3 +11,4 @@ from .test_08_fps import TestFPS
 from .test_09_indicators import TestIndicators
 from .test_10_cast_img import TestCastImage
 from .test_11_auto_range import TestAutoRange
+from .test_12_resize import TestResize
