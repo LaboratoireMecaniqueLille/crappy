@@ -46,6 +46,11 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     if self._camera is None:
       self._camera = Camera()
 
+    self.customSetUp()
+
+  def customSetUp(self) -> None:
+    """"""
+
     self._config = CameraConfig(self._camera, self._log_queue,
                                 self._log_level, self._freq)
 

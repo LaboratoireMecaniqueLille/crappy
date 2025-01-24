@@ -1,14 +1,11 @@
 # coding: utf-8
 
-from multiprocessing import Queue
-import logging
 from time import sleep
 import numpy as np
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
 from crappy.tool.camera_config.camera_config import CameraConfig
-from crappy.camera.meta_camera.camera import Camera
 
 class TestHistogram(ConfigurationWindowTestBase):
   """"""
@@ -18,17 +15,8 @@ class TestHistogram(ConfigurationWindowTestBase):
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
 
-  def setUp(self) -> None:
+  def customSetUp(self) -> None:
     """"""
-
-    if self._log_queue is None:
-      self._log_queue = Queue()
-    if self._log_level is None:
-      self._log_level = logging.CRITICAL
-    if self._freq is None:
-      self._freq = 30
-    if self._camera is None:
-      self._camera = Camera()
 
     self._config = CameraConfig(self._camera, self._log_queue,
                                 self._log_level, self._freq)
