@@ -12,3 +12,5 @@ from .test_09_indicators import TestIndicators
 from .test_10_cast_img import TestCastImage
 from .test_11_auto_range import TestAutoRange
 from .test_12_resize import TestResize
+from .test_13_histogram import TestHistogram
+
