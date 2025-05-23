@@ -2,7 +2,8 @@
 
 from collections import namedtuple
 from struct import unpack
-from typing import Union, List, Tuple, Optional, Callable
+from typing import Union, Optional, Literal
+from collections.abc import Callable
 from _io import FileIO
 from multiprocessing.synchronize import RLock
 from multiprocessing.sharedctypes import Synchronized
@@ -160,7 +161,7 @@ class FT232HServer(FT232H):
     manually by running:
     ::
 
-      $ echo "SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"0403\\", \
+      echo "SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"0403\\", \
 MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     in a shell opened in ``/etc/udev/rules.d``.
@@ -176,7 +177,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   """
 
   def __init__(self,
-               mode: str,
+               mode: Literal['SPI', 'I2C', 'GPIO_only', 'Write_serial_nr'],
                block_index: int,
                current_block: Synchronized,
                command_file: FileIO,
@@ -238,8 +239,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         The CS pin for selecting SPI devices is always `D3`. This pin is
         reserved and cannot be used as a GPIO. If you want to drive the CS line
         manually, it is possible not to drive the CS pin by setting the SPI
-        parameter :attr:`no_cs` to :obj:`True` and to drive the CS line from a
-        GPIO instead.
+        parameter :attr:`~crappy.tool.ft232h.ft232h_server.FT232HServer.no_cs`
+        to :obj:`True` and to drive the CS line from a GPIO instead.
 
       - ``mode``:
         It is not possible to simultaneously control slaves over SPI and I2C,
@@ -352,7 +353,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return cmd
 
   def _send_server(self, command: list) -> Union[int, bytes, None,
-                                                 Tuple[int, ...]]:
+                                                 tuple[int, ...]]:
     """Sends a command to the server and gets the corresponding answer.
 
     Args:
@@ -401,7 +402,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
               self.log(logging.DEBUG, "Acquired the block lock")
               # Reading the answer
               self._answer_file.seek(0)
-              answer: List[bytes] = self._answer_file.read().split(b',')
+              answer: list[bytes] = self._answer_file.read().split(b',')
               self.log(logging.DEBUG, f"Read {answer} from the answer file")
               self._answer_file.seek(0)
               self._answer_file.truncate(0)
@@ -685,10 +686,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
           if length >= 2:
             if tempbuf[1] & ft232h_tx_empty_bits:
               if request_gen:
-                req_size -= length - 2
-                if req_size > 0:
-                  cmd = request_gen(req_size)
-                  if cmd:
+                if (req_size := req_size - (length - 2)) > 0:
+                  if cmd := request_gen(req_size):
                     self._write_data(cmd)
           if length > 2:
             retry = attempt

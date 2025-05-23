@@ -28,7 +28,6 @@ hit CTRL+C, but it is not a clean way to stop Crappy.
 import crappy
 import numpy as np
 import numpy.random as rd
-from typing import Tuple
 from time import time
 
 
@@ -70,7 +69,7 @@ class CustomInOut(crappy.inout.InOut):
 
     ...
 
-  def get_stream(self) -> Tuple[np.ndarray, np.ndarray]:
+  def get_stream(self) -> tuple[np.ndarray, np.ndarray]:
     """This method acquires the stream data and returns it in one array
     containing the time information and another array containing the data.
 

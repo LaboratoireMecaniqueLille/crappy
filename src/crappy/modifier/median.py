@@ -1,10 +1,10 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Dict, Any, Optional
+from typing import Optional
 import logging
 
-from .meta_modifier import Modifier
+from .meta_modifier import Modifier, T
 
 
 class Median(Modifier):
@@ -30,7 +30,7 @@ class Median(Modifier):
     self._n_points = n_points
     self._buf = None
 
-  def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+  def __call__(self, data: dict[str, T]) -> Optional[dict[str, T]]:
     """Receives data from the upstream Block, and computes the median of every
     label once the right number of points have been received. Then empties the
     buffer and returns the medians.
@@ -54,7 +54,7 @@ class Median(Modifier):
       # Once there's enough data in the buffer, calculating the median value
       if len(self._buf[label]) == self._n_points:
         try:
-          ret[label] = np.median(self._buf[label])
+          ret[label] = float(np.median(self._buf[label]))
         except TypeError:
           ret[label] = self._buf[label][-1]
 

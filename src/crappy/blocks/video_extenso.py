@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Callable, Union, Tuple, Iterable
+from typing import Optional, Union, Literal
+from collections.abc import Callable, Iterable
 import numpy as np
 from pathlib import Path
 
@@ -46,7 +47,7 @@ class VideoExtenso(Camera):
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: Optional[str] = None,
+               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
                display_freq: bool = False,
@@ -56,10 +57,11 @@ class VideoExtenso(Camera):
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None,
+               save_backend: Optional[Literal['sitk', 'pil', 
+                                              'cv2', 'npy']] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Tuple[int, int]] = None,
+               img_shape: Optional[tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
                labels: Optional[Union[str, Iterable[str]]] = None,
                raise_on_lost_spot: bool = True,
@@ -193,16 +195,17 @@ class VideoExtenso(Camera):
         recording the images. It should be one of:
         ::
 
-          'sitk', 'cv2', 'pil', 'npy'
+          'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`cv2` (OpenCV),
-        :mod:`PIL` (Pillow Fork), and :mod:`numpy`. Note that the ``'npy'``
+        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
+        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
         backend saves the images as raw :obj:`numpy.array`, and thus ignores
         the ``img_extension`` argument. Depending on the machine, some backends
         may be faster or slower. For using each backend, the corresponding
-        Python must of course be installed. If not provided and ``save_images``
-        is :obj:`True`, the backends are tried in the same order as given above
-        and the first available one is used. ``'npy'`` is always available.
+        Python module must of course be installed. If not provided and
+        ``save_images`` is :obj:`True`, the backends are tried in the same
+        order as given above and the first available one is used. ``'npy'`` is
+        always available.
 
         .. versionadded:: 1.5.10
       image_generator: A callable taking two :obj:`float` as arguments and

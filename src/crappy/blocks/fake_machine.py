@@ -2,7 +2,8 @@
 
 from time import time
 import numpy as np
-from typing import Callable, Dict, Optional
+from typing import Optional, Literal
+from collections.abc import Callable
 import logging
 
 from .meta_block import Block
@@ -42,11 +43,11 @@ class FakeMachine(Block):
                rigidity: float = 8.4E6,
                l0: float = 200,
                max_strain: float = 1.51,
-               sigma: Optional[Dict[str, float]] = None,
+               sigma: Optional[dict[str, float]] = None,
                nu: float = 0.3,
                plastic_law: Callable[[float], float] = plastic,
                max_speed: float = 5,
-               mode: str = 'speed',
+               mode: Literal['speed', 'position'] = 'speed',
                cmd_label: str = 'cmd',
                freq: Optional[float] = 100,
                display_freq: bool = False,
@@ -127,8 +128,7 @@ class FakeMachine(Block):
     is, and finally returns the data."""
 
     # Getting the latest command
-    data = self.recv_last_data(fill_missing=True)
-    if self._cmd_label not in data:
+    if self._cmd_label not in (data := self.recv_last_data(fill_missing=True)):
       return
     else:
       cmd = data[self._cmd_label]
@@ -138,10 +138,11 @@ class FakeMachine(Block):
 
     # Calculating the speed based on the command and the mode
     if self._mode == 'speed':
-      speed = np.sign(cmd) * np.min((self._max_speed, np.abs(cmd)))
+      speed = float(np.sign(cmd)) * float(np.min((self._max_speed,
+                                                  np.abs(cmd))))
     elif self._mode == 'position':
-      speed = np.sign(cmd - self._current_pos) * np.min(
-          (self._max_speed, np.abs(cmd - self._current_pos) / delta_t))
+      speed = float(np.sign(cmd - self._current_pos)) * float(np.min(
+          (self._max_speed, np.abs(cmd - self._current_pos) / delta_t)))
     else:
       raise ValueError(f'Invalid mode : {self._mode} !')
 
@@ -164,7 +165,7 @@ class FakeMachine(Block):
     # Finally, sending the values
     self._send_values()
 
-  def _add_noise(self, to_send: Dict[str, float]) -> Dict[str, float]:
+  def _add_noise(self, to_send: dict[str, float]) -> dict[str, float]:
     """Adds noise to the data to be sent, according to the sigma values
     provided by the user. Then returns the noised data."""
 

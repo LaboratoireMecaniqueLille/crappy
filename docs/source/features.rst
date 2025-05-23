@@ -324,49 +324,30 @@ Hardware control
   provided with Crappy. This Block can start or stop the script on the
   microcontroller, send commands, and receive data.
 
-  The examples folder on GitHub contains `on example of the UController Block
+  The examples folder on GitHub contains `one example of the UController Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
   blocks/ucontroller>`_.
 
-Others
-++++++
+Test management
++++++++++++++++
 
-- :ref:`Client Server`
+- :ref:`Pause Block`
 
-  Sends and/or receives data over a local network via an MQTT server. Can also
-  start a `Mosquitto <https://mosquitto.org/>`_ MQTT broker. Used for
-  communicating with distant devices over a network, e.g. for remotely
-  controlling a test.
+  Pauses the current Crappy script if the received data meets one of the given
+  criteria. Useful when human intervention on hardware is needed during a test,
+  but has some strong limitations. Refer to the documentation of this Block for
+  more details.
 
-  The examples folder on GitHub contains `on example of the Client Server Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
-  blocks/client_server>`_.
-
-- :ref:`Fake Machine`
-
-  Emulates the behavior of a tensile test machine, taking a position command as
-  input and outputting the force and the displacement. Mainly used in the
-  examples because it doesn't require any hardware, but may as well be used for
-  debugging or prototyping.
-
-  The examples folder on GitHub contains `on example of the Fake Machine Block
+  The examples folder on GitHub contains `one example of the Pause Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
-  blocks/fake_machine.py>`_.
-
-- :ref:`Sink`
-
-  Discards any received data. Used for prototyping and debugging only.
-
-  The examples folder on GitHub contains `on example of the Sink Block
-  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
-  blocks/sink.py>`_.
+  blocks/pause_block.py>`_.
 
 - :ref:`Stop Block`
 
   Stops the current Crappy script if the received data meets one of the given
   criteria. One of the clean ways to stop a script in Crappy.
 
-  The examples folder on GitHub contains `on example of the Stop Block
+  The examples folder on GitHub contains `one example of the Stop Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/stop_block.py>`_.
 
@@ -379,13 +360,46 @@ Others
   Stops the current Crappy script when the user clicks on a button in a GUI.
   One of the clean ways to stop a script in Crappy.
 
-  The examples folder on GitHub contains `on example of the Stop Button Block
+  The examples folder on GitHub contains `one example of the Stop Button Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/stop_button.py>`_.
 
   Refer to the :ref:`dedicated tutorial section
   <3. Properly stopping a script>` to learn more about how to properly stop a
   script in Crappy.
+
+Others
+++++++
+
+- :ref:`Client Server`
+
+  Sends and/or receives data over a local network via an MQTT server. Can also
+  start a `Mosquitto <https://mosquitto.org/>`_ MQTT broker. Used for
+  communicating with distant devices over a network, e.g. for remotely
+  controlling a test.
+
+  The examples folder on GitHub contains `one example of the ClientServer Block
+  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
+  blocks/client_server>`_.
+
+- :ref:`Fake Machine`
+
+  Emulates the behavior of a tensile test machine, taking a position command as
+  input and outputting the force and the displacement. Mainly used in the
+  examples because it doesn't require any hardware, but may as well be used for
+  debugging or prototyping.
+
+  The examples folder on GitHub contains `one example of the Fake Machine Block
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/fake_machine.py>`_.
+
+- :ref:`Sink`
+
+  Discards any received data. Used for prototyping and debugging only.
+
+  The examples folder on GitHub contains `one example of the Sink Block
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  blocks/sink.py>`_.
 
 Supported hardware (Cameras, InOuts, Actuators)
 -----------------------------------------------
@@ -487,15 +501,31 @@ Supported Cameras
   Raspberry Pi. It has been tested on Raspberry Pi 3 and 4, with a variety of
   official Raspberry Pi cameras.
 
+  .. Warning::
+     This Camera object is deprecated, and :ref:`Raspberry Pi Camera 2` should
+     be used instead. It is only kept for compatibility with older OS versions.
+
   .. Important::
      Can only be run on a Raspberry Pi ! Also, it is for now only compatible
      with the *Buster* version of Raspberry Pi OS, or with *Bullseye* in legacy
      camera mode.
 
+- :ref:`Raspberry Pi Camera 2`
+
+  Allows reading images from an official Raspberry Pi Camera, with Crappy
+  running on a Raspberry Pi. It has been tested on Raspberry Pi 4 and 5, with
+  Raspberry Pi camera HQ and V3 models. Probably works with other official and
+  unofficial Raspberry Pi cameras.
+
+  .. Note::
+     This Camera is an updated version of :ref:`Raspberry Pi Camera`, which is
+     now deprecated and should only be used for compatibility with old
+     Raspberry Pi OS versions.
+
 - :ref:`Seek Thermal Pro`
 
-  Allows reading images from a Seek Thermal `Compact Pro <https://www.thermal.
-  com/compact-series.html>`_ infrared camera.
+  Allows reading images from a Seek Thermal `Compact Pro <https://
+  www.thermal.com/compact-series-cameras.html>`_ infrared camera.
 
 - :ref:`Webcam`
 
@@ -648,9 +678,9 @@ Acquisition boards
 
 - :ref:`Labjack UE9`
 
-  Controls Labjack's `UE9 <https://labjack.com/products/calibration-service-
-  with-cert-u6-ue9-t7>`_ acquisition board. It can only read the input analog
-  channels of the board.
+  Controls Labjack's `UE9 <https://labjack.com/products/
+  calibration-service-with-cert>`_ acquisition board. It can only read the
+  input analog channels of the board.
 
   .. Important::
      This object hasn't been maintained nor tested for a while, it is not sure

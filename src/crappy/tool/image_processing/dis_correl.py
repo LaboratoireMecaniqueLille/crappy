@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import List, Optional, Union
+from typing import Optional, Union, Literal
 import numpy as np
 
 from ..._global import OptionalModule
@@ -27,7 +27,9 @@ class DISCorrelTool:
 
   def __init__(self,
                box: Box,
-               fields: Optional[List[Union[str, np.ndarray]]] = None,
+               fields: Optional[list[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                                   'exy', 'eyx', 'exy2', 'z'],
+                                           np.ndarray]]] = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
@@ -97,9 +99,9 @@ class DISCorrelTool:
         raise ValueError(f"The only allowed values for the fields given as "
                          f"strings are {allowed_fields}")
 
-      self._fields: List[Union[str, np.ndarray]] = fields
+      self._fields: list[Union[str, np.ndarray]] = fields
     else:
-      self._fields: List[Union[str, np.ndarray]] = ["x", "y", "exx", "eyy"]
+      self._fields: list[Union[str, np.ndarray]] = ["x", "y", "exx", "eyy"]
 
     self._init = init
 
@@ -157,11 +159,11 @@ class DISCorrelTool:
 
     # These attributes will be used later
     self._base = [fields[:, :, :, i] for i in range(fields.shape[3])]
-    self._norm2 = [np.sum(base_field ** 2) for base_field in self._base]
+    self._norm2 = [float(np.sum(base_field ** 2)) for base_field in self._base]
 
   def get_data(self,
                img: np.ndarray,
-               residuals: bool = False) -> List[float]:
+               residuals: bool = False) -> list[float]:
     """Processes the input image and returns the requested data in a
     :obj:`list`.
 
@@ -192,12 +194,13 @@ class DISCorrelTool:
       self._dis_flow = self._dis.calc(self._img0, img, None)
 
     # Getting the values to calculate as floats
-    ret = [np.sum(vec * self._crop(self._dis_flow)) / n2 for vec, n2 in
+    ret = [float(np.sum(vec * self._crop(self._dis_flow))) / n2 for vec, n2 in
            zip(self._base, self._norm2)]
 
     # Adding the average residual value if requested
     if residuals:
-      ret.append(np.average(np.abs(get_res(self._img0, img, self._dis_flow))))
+      ret.append(float(np.average(np.abs(get_res(self._img0, img,
+                                                 self._dis_flow)))))
 
     return ret
 

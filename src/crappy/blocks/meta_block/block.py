@@ -11,7 +11,8 @@ import logging
 import logging.handlers
 from time import sleep, time, time_ns
 from weakref import WeakSet
-from typing import Union, Optional, List, Dict, Any, Iterable
+from typing import Union, Optional, Any
+from collections.abc import Iterable
 from collections import defaultdict
 import subprocess
 from sys import stdout, stderr, argv
@@ -44,13 +45,14 @@ class Block(Process, metaclass=MetaBlock):
   """
 
   instances = WeakSet()
-  names: List[str] = list()
+  names: list[str] = list()
   log_level: Optional[int] = logging.DEBUG
 
   # The synchronization objects will be set later
   shared_t0: Optional[Synchronized] = None
   ready_barrier: Optional[synchronize.Barrier] = None
   start_event: Optional[synchronize.Event] = None
+  pause_event: Optional[synchronize.Event] = None
   stop_event: Optional[synchronize.Event] = None
   raise_event: Optional[synchronize.Event] = None
   kbi_event: Optional[synchronize.Event] = None
@@ -69,20 +71,22 @@ class Block(Process, metaclass=MetaBlock):
     super().__init__()
 
     # The lists of input and output links
-    self.outputs: List[Link] = list()
-    self.inputs: List[Link] = list()
+    self.outputs: list[Link] = list()
+    self.inputs: list[Link] = list()
 
     # Various objects that should be set by child classes
     self.niceness: int = 0
     self.labels: Optional[Iterable[str]] = None
-    self.freq = None
-    self.display_freq = False
-    self.name = self.get_name(type(self).__name__)
+    self.freq: Optional[float] = None
+    self.display_freq: bool = False
+    self.name: str = self.get_name(type(self).__name__)
+    self.pausable: bool = True
 
     # The synchronization objects will be set later
     self._instance_t0: Optional[Synchronized] = None
     self._ready_barrier: Optional[synchronize.Barrier] = None
     self._start_event: Optional[synchronize.Event] = None
+    self._pause_event: Optional[synchronize.Event] = None
     self._stop_event: Optional[synchronize.Event] = None
     self._raise_event: Optional[synchronize.Event] = None
     self._kbi_event: Optional[synchronize.Event] = None
@@ -140,8 +144,9 @@ class Block(Process, metaclass=MetaBlock):
 
     Note:
       It is possible to have a finer grained control of the start of a Crappy
-      script with the methods :meth:`prepare_all`, :meth:`renice_all` and
-      :meth:`launch_all`.
+      script with the methods :meth:`~crappy.blocks.Block.prepare_all`,
+      :meth:`~crappy.blocks.Block.renice_all` and
+      :meth:`~crappy.blocks.Block.launch_all`.
 
     Args:
       allow_root: If set to :obj:`True`, tries to renice the Processes with
@@ -181,8 +186,9 @@ class Block(Process, metaclass=MetaBlock):
 
     Also initializes the :obj:`~logging.Logger` for the Crappy script.
 
-    Once started with this method, the Blocks will call their :meth:`prepare`
-    method and then be blocked by a :obj:`multiprocessing.Barrier`.
+    Once started with this method, the Blocks will call their
+    :meth:`~crappy.blocks.Block.prepare` method and then be blocked by a
+    :obj:`multiprocessing.Barrier`.
 
     If an error is caught at a moment when the Blocks might already be running,
     performs an extensive cleanup to ensure everything stops as expected.
@@ -236,6 +242,7 @@ class Block(Process, metaclass=MetaBlock):
       cls.ready_barrier = Barrier(len(cls.instances) + 1)
       cls.shared_t0 = Value('d', -1.0)
       cls.start_event = Event()
+      cls.pause_event = Event()
       cls.stop_event = Event()
       cls.raise_event = Event()
       cls.kbi_event = Event()
@@ -263,6 +270,7 @@ class Block(Process, metaclass=MetaBlock):
         instance._ready_barrier = cls.ready_barrier
         instance._instance_t0 = cls.shared_t0
         instance._stop_event = cls.stop_event
+        instance._pause_event = cls.pause_event
         instance._start_event = cls.start_event
         instance._raise_event = cls.raise_event
         instance._kbi_event = cls.kbi_event
@@ -718,9 +726,9 @@ class Block(Process, metaclass=MetaBlock):
     """Resets Crappy by emptying the :obj:`~weakref.WeakSet` containing
     references to all the Blocks and resetting the synchronization objects.
 
-    This method is called at the very end of the :meth:`_cleanup` method, but
-    can also be called to "revert" the instantiation of Blocks while Crappy
-    isn't started yet.
+    This method is called at the very end of the
+    :meth:`~crappy.blocks.Block._cleanup` method, but can also be called to
+    "revert" the instantiation of Blocks while Crappy isn't started yet.
     """
 
     cls.instances = WeakSet()
@@ -733,6 +741,7 @@ class Block(Process, metaclass=MetaBlock):
     cls.shared_t0 = None
     cls.ready_barrier = None
     cls.start_event = None
+    cls.pause_event = None
     cls.stop_event = None
     cls.raise_event = None
     cls.kbi_event = None
@@ -782,9 +791,10 @@ class Block(Process, metaclass=MetaBlock):
     """The method run by the Blocks when their :obj:`~multiprocessing.Process` 
     is started.
 
-    It first calls :meth:`prepare`, then waits at the
+    It first calls :meth:`~crappy.blocks.Block.prepare`, then waits at the
     :obj:`~multiprocessing.Barrier` for all Blocks to be ready, then calls
-    :meth:`begin`, then :meth:`main`, and finally :meth:`finish`.
+    :meth:`~crappy.blocks.Block.begin`, then :meth:`~crappy.blocks.Block.main`,
+    and finally :meth:`~crappy.blocks.Block.finish`.
     
     If an exception is raised, sets the shared stop 
     :obj:`~multiprocessing.Event` to warn all the other Blocks.
@@ -937,13 +947,20 @@ class Block(Process, metaclass=MetaBlock):
                                   'unexpected Exception while finishing')
 
   def main(self) -> None:
-    """The main loop of the :meth:`run` method. Repeatedly calls the
-    :meth:`loop` method and manages the looping frequency."""
+    """The main loop of the :meth:`~crappy.blocks.Block.run` method. Repeatedly
+    calls the :meth:`~crappy.blocks.Block.loop` method and manages the looping
+    frequency."""
 
     # Looping until told to stop or an error occurs
     while not self._stop_event.is_set():
-      self.log(logging.DEBUG, "Looping")
-      self.loop()
+      # Only looping if the Block is not paused
+      if not self._pause_event.is_set() or not self.pausable:
+        self.log(logging.DEBUG, "Looping")
+        self.loop()
+      else:
+        self.log(logging.DEBUG, "Block currently paused, not calling loop()")
+      # Handling the frequency in all cases to avoid hyperactive Blocks when
+      # "paused"
       self.log(logging.DEBUG, "Handling freq")
       self._handle_freq()
 
@@ -952,7 +969,7 @@ class Block(Process, metaclass=MetaBlock):
     Block before the test starts.
 
     For example, it can open a network connection, create a file, etc. It is
-    also fine for this method not to be overriden if there's no particular
+    also fine for this method not to be overridden if there's no particular
     action to perform.
 
     Note that this method is called once the :obj:`~multiprocessing.Process`
@@ -963,10 +980,10 @@ class Block(Process, metaclass=MetaBlock):
 
   def begin(self) -> None:
     """This method can be considered as the first loop of the test, and is
-    called before the :meth:`loop` method.
+    called before the :meth:`~crappy.blocks.Block.loop` method.
 
     It allows to perform initialization actions that cannot be achieved in the
-    :meth:`prepare` method.
+    :meth:`~crappy.blocks.Block.prepare` method.
     """
 
     ...
@@ -1003,14 +1020,17 @@ class Block(Process, metaclass=MetaBlock):
   def stop(self) -> None:
     """This method stops all the running Blocks.
 
-    It should be called from the :meth:`loop` method of a Block. It allows to
-    stop the execution of the script in a clean way, without raising an
-    exception. It is mostly intended for users writing their own Blocks.
+    It should be called from the :meth:`~crappy.blocks.Block.loop` method of a
+    Block. It allows to stop the execution of the script in a clean way,
+    without raising an exception. It is mostly intended for users writing their
+    own Blocks.
 
     Note:
-      Calling this method in :meth:`__init__`, :meth:`prepare` or :meth:`begin`
-      is not recommended, as the Block will only stop when reaching the
-      :meth:`loop` method. Calling this method during :meth:`finish` will have
+      Calling this method in :meth:`~crappy.blocks.Block.__init__`,
+      :meth:`~crappy.blocks.Block.prepare` or
+      :meth:`~crappy.blocks.Block.begin` is not recommended, as the Block will
+      only stop when reaching the :meth:`~crappy.blocks.Block.loop` method.
+      Calling this method during :meth:`~crappy.blocks.Block.finish` will have
       no effect.
     """
 
@@ -1035,8 +1055,7 @@ class Block(Process, metaclass=MetaBlock):
 
       # Correcting the error of the sleep function through a recursive approach
       # The last 2 milliseconds are in free loop
-      remaining = self._last_t + 1 / self.freq - t
-      while remaining > 0:
+      while self._last_t + 1 / self.freq - t > 0:
         t = time_ns() / 1e9
         remaining = self._last_t + 1 / self.freq - t
         sleep(max(0., remaining / 2 - 2e-3))
@@ -1144,7 +1163,7 @@ class Block(Process, metaclass=MetaBlock):
       return
     self._logger.log(log_level, msg)
 
-  def send(self, data: Optional[Union[Dict[str, Any], Iterable[Any]]]) -> None:
+  def send(self, data: Optional[Union[dict[str, Any], Iterable[Any]]]) -> None:
     """Method for sending data to downstream Blocks.
 
     The exact same :obj:`dict` is sent to every downstream Block.
@@ -1201,7 +1220,7 @@ class Block(Process, metaclass=MetaBlock):
     self.log(logging.DEBUG, "Data availability requested")
     return self.inputs and any(link.poll() for link in self.inputs)
 
-  def recv_data(self) -> Dict[str, Any]:
+  def recv_data(self) -> dict[str, Any]:
     """Reads the first available values from each incoming
     :class:`~crappy.links.Link` and returns them all in a single dict.
 
@@ -1209,7 +1228,8 @@ class Block(Process, metaclass=MetaBlock):
     depending on the availability of incoming data.
 
     Also, the returned values are the oldest available in the Links. See
-    :meth:`recv_last_data` for getting the newest available values.
+    :meth:`~crappy.blocks.Block.recv_last_data` for getting the newest
+    available values.
 
     Important:
       If data is received over a same label from different Links, part of it
@@ -1225,12 +1245,12 @@ class Block(Process, metaclass=MetaBlock):
     ret = dict()
 
     for link in self.inputs:
-      ret.update(link.recv())
+      ret |= link.recv()
 
     self.log(logging.DEBUG, f"Called recv_data, got {ret}")
     return ret
 
-  def recv_last_data(self, fill_missing: bool = True) -> Dict[str, Any]:
+  def recv_last_data(self, fill_missing: bool = True) -> dict[str, Any]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns the newest ones in a single dict.
 
@@ -1266,20 +1286,20 @@ class Block(Process, metaclass=MetaBlock):
     # Storing the received values in the return dict and in the buffer
     for link, buffer in zip(self.inputs, self._last_values):
       data = link.recv_last()
-      ret.update(data)
-      buffer.update(data)
+      ret |= data
+      buffer |= data
 
     # If requested, filling up the missing values in the return dict
     if fill_missing:
       for buffer in self._last_values:
-        ret.update(buffer)
+        ret |= buffer
 
     self.log(logging.DEBUG, f"Called recv_last_data, got {ret}")
     return ret
 
   def recv_all_data(self,
                     delay: Optional[float] = None,
-                    poll_delay: float = 0.1) -> Dict[str, List[Any]]:
+                    poll_delay: float = 0.1) -> dict[str, list[Any]]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns them all in a single dict.
 
@@ -1289,7 +1309,8 @@ class Block(Process, metaclass=MetaBlock):
     Important:
       If data is received over a same label from different Links, part of it
       will be lost ! Always avoid using a same label twice in a Crappy script.
-      See the :meth:`recv_all_data_raw` method for receiving data with no loss.
+      See the :meth:`~crappy.blocks.Block.recv_all_data_raw` method for
+      receiving data with no loss.
 
     Warning:
       As the time label is (normally) shared between all Blocks, the values
@@ -1321,7 +1342,7 @@ class Block(Process, metaclass=MetaBlock):
     # If simple recv_all, just receiving from all input links
     if delay is None:
       for link in self.inputs:
-        ret.update(link.recv_chunk())
+        ret |= link.recv_chunk()
 
     # Otherwise, receiving during the given period
     else:
@@ -1341,14 +1362,14 @@ class Block(Process, metaclass=MetaBlock):
 
   def recv_all_data_raw(self,
                         delay: Optional[float] = None,
-                        poll_delay: float = 0.1) -> List[Dict[str, List[Any]]]:
+                        poll_delay: float = 0.1) -> list[dict[str, list[Any]]]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns them separately in a list of
     dicts.
 
-    Unlike :meth:`recv_all_data` this method does not fuse the received data
-    into a single :obj:`dict`, so it is guaranteed to return all the available
-    data with no loss.
+    Unlike :meth:`~crappy.blocks.Block.recv_all_data` this method does not fuse
+    the received data into a single :obj:`dict`, so it is guaranteed to return
+    all the available data with no loss.
 
     Args:
       delay: If given specifies a delay, as a :obj:`float`, during which the
@@ -1372,7 +1393,7 @@ class Block(Process, metaclass=MetaBlock):
     # If simple recv_all, just receiving from all input links
     if delay is None:
       for dic, link in zip(ret, self.inputs):
-        dic.update(link.recv_chunk())
+        dic |= link.recv_chunk()
 
     # Otherwise, receiving during the given period
     else:

@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import Dict, List, Any, Optional, Iterable
+from typing import Any, Optional
+from collections.abc import Iterable
 from dataclasses import dataclass, fields
 import logging
 
@@ -51,8 +52,8 @@ class Machine(Block):
   """
 
   def __init__(self,
-               actuators: Iterable[Dict[str, Any]],
-               common: Optional[Dict[str, Any]] = None,
+               actuators: Iterable[dict[str, Any]],
+               common: Optional[dict[str, Any]] = None,
                time_label: str = 't(s)',
                ft232h_ser_num: Optional[str] = None,
                spam: bool = False,
@@ -123,7 +124,7 @@ class Machine(Block):
           value is updated. It will also overwrite the ``speed`` key if given.
     """
 
-    self._actuators: List[ActuatorInstance] = list()
+    self._actuators: list[ActuatorInstance] = list()
     self._ft232h_args = None
 
     super().__init__()
@@ -140,7 +141,7 @@ class Machine(Block):
 
     # Updating the settings with the common information
     for actuator in actuators:
-      actuator.update(common)
+      actuator |= common
 
     # Making sure all the dicts contain the 'type' key
     if not all('type' in dic for dic in actuators):
@@ -234,15 +235,12 @@ class Machine(Block):
     position and speed values respectively.
     """
 
-    # Receiving the latest command
-    recv = self.recv_last_data(fill_missing=self._spam)
-
     # Iterating over the actuators for setting the commands
-    if recv:
+    if recv := self.recv_last_data(fill_missing=self._spam):
       for actuator in self._actuators:
         # Setting the speed attribute if it was received
-        if actuator.speed_cmd_label is not None and \
-            actuator.speed_cmd_label in recv:
+        if (actuator.speed_cmd_label is not None
+            and actuator.speed_cmd_label in recv):
           self.log(logging.DEBUG,
                    f"Updating the speed of the "
                    f"{type(actuator.actuator).__name__} Actuator from "

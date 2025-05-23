@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from typing import Dict, Type
-
 from .adafruit_dc_motor_hat import DCMotorHat
 from .fake_dc_motor import FakeDCMotor
 from .fake_stepper_motor import FakeStepperMotor
@@ -18,4 +16,4 @@ from .ft232h import DCMotorHatFT232H
 from .meta_actuator import MetaActuator, Actuator
 
 from ._deprecated import deprecated_actuators
-actuator_dict: Dict[str, Type[Actuator]] = MetaActuator.classes
+actuator_dict: dict[str, type[Actuator]] = MetaActuator.classes

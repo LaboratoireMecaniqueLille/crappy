@@ -3,7 +3,8 @@
 import time
 from time import sleep, time
 from re import fullmatch, findall
-from typing import Union, Optional, List, Iterable
+from typing import Union, Optional
+from collections.abc import Iterable
 import logging
 from  warnings import warn
 
@@ -284,7 +285,7 @@ class WaveshareADDA(InOut):
     GPIO.output(AD_DA_pins['CS_PIN_ADS'], GPIO.HIGH)
     sleep(0.001)
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads data from all the user-specified ADC channels, in a sequential
     way.
 

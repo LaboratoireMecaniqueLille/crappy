@@ -29,7 +29,6 @@ but it is not a clean way to stop Crappy.
 import crappy
 import numpy as np
 import numpy.random as rd
-from typing import Tuple
 from time import time
 
 
@@ -76,7 +75,7 @@ class CustomCam(crappy.camera.Camera):
     # Here the Camera does not include settings though
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """This method must return the current timestamp as well as an acquired
     image.
 

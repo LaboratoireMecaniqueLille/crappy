@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Union, Optional
+from typing import Union, Optional, Literal
 import logging
 
 from .meta_actuator import Actuator
@@ -27,7 +27,7 @@ class ServoStar300(Actuator):
   def __init__(self,
                port: str,
                baudrate: int = 38400,
-               mode: str = "serial") -> None:
+               mode: Literal['serial', 'analog'] = "serial") -> None:
     """Sets the instance attributes and initializes the parent class.
 
     Args:
@@ -61,7 +61,7 @@ class ServoStar300(Actuator):
                            f"baudrate {self._baudrate}")
     self._ser = serial.Serial(self._port, baudrate=self._baudrate, timeout=2)
     self.log(logging.DEBUG, f"Writing b'ANCNFG 0\\r\\n' to port {self._port}")
-    self._ser.write('ANCNFG 0\r\n')
+    self._ser.write(b'ANCNFG 0\r\n')
 
     # Setting the desired mode
     if self._mode == "analog":
@@ -70,9 +70,9 @@ class ServoStar300(Actuator):
       self._set_mode_serial()
 
     self.log(logging.DEBUG, f"Writing b'EN\\r\\n' to port {self._port}")
-    self._ser.write('EN\r\n')
+    self._ser.write(b'EN\r\n')
     self.log(logging.DEBUG, f"Writing b'MH\\r\\n' to port {self._port}")
-    self._ser.write('MH\r\n')
+    self._ser.write(b'MH\r\n')
 
   def set_position(self,
                    pos: Union[float, bool],

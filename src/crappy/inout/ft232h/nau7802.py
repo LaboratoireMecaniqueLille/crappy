@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Optional, List
+from typing import Optional
 import logging
 
 from ..meta_inout import InOut
@@ -247,7 +247,7 @@ class NAU7802FT232H(InOut):
       if self._cal_afe_status() == NAU7802_Cal_Status['CAL_FAILURE']:
         raise IOError("Calibration failed !")
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the registers containing the conversion result.
 
     The output is in Volts by default, and can be converted to Newtons using

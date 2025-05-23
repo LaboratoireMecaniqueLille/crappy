@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Dict, Any, Optional
+from typing import Any, Optional, Literal
 import logging
 
 from .meta_block import Block
@@ -28,9 +28,9 @@ class AutoDriveVideoExtenso(Block):
   """
 
   def __init__(self,
-               actuator: Dict[str, Any],
+               actuator: dict[str, Any],
                gain: float = 2000,
-               direction: str = 'Y-',
+               direction: Literal['X-', 'X+', 'Y-', 'Y+'] = 'Y-',
                pixel_range: int = 2048,
                max_speed: float = 200000,
                ft232h_ser_num: Optional[str] = None,
@@ -128,8 +128,7 @@ class AutoDriveVideoExtenso(Block):
     the :class:`~crappy.actuator.Actuator` speed accordingly."""
 
     # Receiving the latest data
-    data = self.recv_last_data(fill_missing=False)
-    if not data:
+    if not (data := self.recv_last_data(fill_missing=False)):
       return
 
     # Extracting the coordinates of the spots

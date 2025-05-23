@@ -3,7 +3,8 @@
 from threading import Thread
 from math import log2, ceil
 import numpy as np
-from typing import Optional, Iterable
+from typing import Optional
+from collections.abc import Iterable
 from time import time, sleep
 import logging
 import logging.handlers
@@ -172,8 +173,8 @@ class Displayer(CameraProcess):
     if self.img.dtype != np.uint8:
       self.log(logging.DEBUG, f"Casting displayed image from "
                               f"{self.img.dtype} to uint8")
-      if np.max(self.img) > 255:
-        factor = max(ceil(log2(np.max(self.img) + 1) - 8), 0)
+      if max_pix := int(np.max(self.img)) > 255:
+        factor = max(ceil(log2(max_pix + 1) - 8), 0)
         img = (self.img / 2 ** factor).astype(np.uint8)
       else:
         img = self.img.astype(np.uint8)

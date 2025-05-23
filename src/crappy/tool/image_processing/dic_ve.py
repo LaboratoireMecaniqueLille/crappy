@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import List, Tuple
+from typing import Literal
 from ..._global import OptionalModule
 from ..camera_config import SpotsBoxes, Box
 
@@ -28,7 +28,8 @@ class DICVETool:
 
   def __init__(self,
                patches: SpotsBoxes,
-               method: str = 'Disflow',
+               method: Literal['Disflow', 'Lucas Kanade',
+                               'Pixel precision', 'Parabola'] = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
@@ -128,8 +129,8 @@ class DICVETool:
       self._check_offsets()
 
   def calculate_displacement(
-      self, img: np.ndarray) -> Tuple[List[Tuple[float, float]], float, float,
-                                      List[Tuple[float, float]]]:
+      self, img: np.ndarray) -> tuple[list[tuple[float, float]], float, float,
+                                      list[tuple[float, float]]]:
     """Returns the displacement of every patch, calculated according to the
     chosen method.
 
@@ -238,7 +239,7 @@ class DICVETool:
   def _calc_disflow(self,
                     patch: Box,
                     img: np.ndarray,
-                    offset: Tuple[int, int]) -> List[float]:
+                    offset: tuple[int, int]) -> list[float]:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using DISFlow."""
 
@@ -249,7 +250,7 @@ class DICVETool:
   def _calc_pixel_precision(self,
                             patch: Box,
                             img: np.ndarray,
-                            offset: Tuple[int, int]) -> List[float]:
+                            offset: tuple[int, int]) -> list[float]:
     """Returns the displacement between the original and the current image with
     a precision limited to 1 pixel."""
 
@@ -262,7 +263,7 @@ class DICVETool:
   def _calc_parabola(self,
                      patch: Box,
                      img: np.ndarray,
-                     offset: Tuple[int, int]) -> List[float]:
+                     offset: tuple[int, int]) -> list[float]:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using two parabola fits (one in x and one in y)."""
 
@@ -283,7 +284,7 @@ class DICVETool:
   def _calc_lucas_kanade(self,
                          patch: Box,
                          img: np.ndarray,
-                         offset: Tuple[int, int]) -> List[float]:
+                         offset: tuple[int, int]) -> list[float]:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using the Lucas Kanade algorithm."""
 
@@ -307,11 +308,11 @@ class DICVETool:
       arr: This array contains the y values for the 3 points.
     """
 
-    return (arr[0] - arr[2]) / (2 * (arr[0] - 2 * arr[1] + arr[2]))
+    return float((arr[0] - arr[2]) / (2 * (arr[0] - 2 * arr[1] + arr[2])))
 
   @staticmethod
   def _cross_correlation(img0: np.ndarray,
-                         img1: np.ndarray) -> Tuple[np.ndarray, int, int]:
+                         img1: np.ndarray) -> tuple[np.ndarray, int, int]:
     """Performs a cross-correlation operation on two patches in the Fourier
     domain.
 
@@ -358,7 +359,7 @@ class DICVETool:
   @staticmethod
   def _get_patch(img: np.ndarray,
                  patch: Box,
-                 offset: Tuple[int, int] = (0, 0)) -> np.ndarray:
+                 offset: tuple[int, int] = (0, 0)) -> np.ndarray:
     """Returns the part of the image corresponding to the given patch at the
     given offset."""
 

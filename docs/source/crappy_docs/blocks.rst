@@ -22,6 +22,7 @@ Camera Block
 .. autoclass:: crappy.blocks.Camera
    :members: prepare, begin, loop, finish
    :special-members: __init__
+   :private-members: _configure
 
 Canvas
 +++++++
@@ -117,6 +118,12 @@ Multiplexer
 +++++++++++
 .. autoclass:: crappy.blocks.Multiplexer
    :members: loop
+   :special-members: __init__
+
+Pause Block
++++++++++++
+.. autoclass:: crappy.blocks.Pause
+   :members: prepare, loop
    :special-members: __init__
 
 PID
@@ -241,6 +248,7 @@ Camera Process
 .. autoclass:: crappy.blocks.camera_processes.CameraProcess
    :members: set_shared, run, init, loop, finish, send, send_to_draw, log
    :special-members: __init__
+   :private-members: _get_data
 
 DIC VE Process
 ++++++++++++++
@@ -294,6 +302,7 @@ Block
              stop_all, reset, run, main, prepare, begin, loop, finish, debug,
              t0, add_output, add_input, log, send, data_available, recv_data,
              recv_last_data, recv_all_data, recv_all_data_raw
+   :private-members: _cleanup
    :special-members: __init__
 
 Meta Block

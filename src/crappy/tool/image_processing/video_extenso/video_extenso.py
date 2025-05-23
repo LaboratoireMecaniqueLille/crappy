@@ -3,7 +3,7 @@
 from multiprocessing import Pipe, current_process
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
-from typing import Optional, Tuple, List, Union
+from typing import Optional, Union
 import numpy as np
 from itertools import combinations
 from time import sleep, time
@@ -22,8 +22,7 @@ class VideoExtensoTool:
   It performs spot tracking on up to `4` spots on the images acquired by the
   :class:`~crappy.camera.Camera`, and computes the strain values at each new 
   image. For each spot, the tracking is performed by an independent
-  :class:`~crappy.tool.image_processing.video_extenso.tracker.tracker.Tracker`
-  Process.
+  :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` Process.
 
   It is possible to track only one spot, in which case only the position of its
   center is returned and the strain values are left to `0`.
@@ -178,7 +177,7 @@ class VideoExtensoTool:
 
   def get_data(self,
                img: np.ndarray
-               ) -> Optional[Tuple[List[Tuple[float, ...]], float, float]]:
+               ) -> Optional[tuple[list[tuple[float, ...]], float, float]]:
     """Takes an image as an input, performs spot detection on it, computes the
     strain from the newly detected spots, and returns the spot positions and
     strain values.
@@ -243,15 +242,15 @@ class VideoExtensoTool:
         x_top_1, x_bottom_1, y_left_1, y_right_1 = box_1.sorted()
         x_top_2, x_bottom_2, y_left_2, y_right_2 = box_2.sorted()
 
-        box_1.x_start = min(x_top_1 + 1, box_1.x_centroid - 2)
-        box_1.y_start = min(y_left_1 + 1, box_1.y_centroid - 2)
-        box_1.x_end = max(x_bottom_1 - 1, box_1.x_centroid + 2)
-        box_1.y_end = max(y_right_1 - 1, box_1.y_centroid + 2)
+        box_1.x_start = min(x_top_1 + 1, int(box_1.x_centroid - 2))
+        box_1.y_start = min(y_left_1 + 1, int(box_1.y_centroid - 2))
+        box_1.x_end = max(x_bottom_1 - 1, int(box_1.x_centroid + 2))
+        box_1.y_end = max(y_right_1 - 1, int(box_1.y_centroid + 2))
 
-        box_2.x_start = min(x_top_2 + 1, box_2.x_centroid - 2)
-        box_2.y_start = min(y_left_2 + 1, box_2.y_centroid - 2)
-        box_2.x_end = max(x_bottom_2 - 1, box_2.x_centroid + 2)
-        box_2.y_end = max(y_right_2 - 1, box_2.y_centroid + 2)
+        box_2.x_start = min(x_top_2 + 1, int(box_2.x_centroid - 2))
+        box_2.y_start = min(y_left_2 + 1, int(box_2.y_centroid - 2))
+        box_2.x_end = max(x_bottom_2 - 1, int(box_2.x_centroid + 2))
+        box_2.y_end = max(y_right_2 - 1, int(box_2.y_centroid + 2))
 
     if overlap:
       self._consecutive_overlaps += 1
@@ -302,7 +301,7 @@ class VideoExtensoTool:
 
   def _send(self,
             conn: Connection,
-            val: Union[str, Tuple[int, int, np.ndarray]]) -> None:
+            val: Union[str, tuple[int, int, np.ndarray]]) -> None:
     """Wrapper for sending messages to the Tracker processes.
 
     In Linux, checks that the Pipe is not full before sending the message.

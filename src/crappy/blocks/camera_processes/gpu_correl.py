@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, List, Union
+from typing import Optional, Union
 from pathlib import Path
 import logging
 import logging.handlers
@@ -37,7 +37,7 @@ class GPUCorrelProcess(CameraProcess):
                resampling_factor: float = 2,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
-               fields: Optional[List[Union[str, np.ndarray]]] = None,
+               fields: Optional[list[Union[str, np.ndarray]]] = None,
                mask: Optional[np.ndarray] = None,
                mul: float = 3) -> None:
     """Sets the arguments and initializes the parent class.
@@ -213,7 +213,8 @@ class GPUCorrelProcess(CameraProcess):
         self._res_history.append(res)
         self._res_history = self._res_history[-self._discard_ref - 1:]
 
-        if res > self._discard_limit * np.average(self._res_history[:-1]):
+        if (res > self._discard_limit *
+            float(np.average(self._res_history[:-1]))):
           self.log(logging.WARNING, "Residual too high, not sending "
                                     "values")
           return

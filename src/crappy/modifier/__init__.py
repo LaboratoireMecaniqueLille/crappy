@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from typing import Dict, Type
-
 from .meta_modifier import Modifier, MetaModifier
 
 from .demux import Demux
@@ -18,4 +16,4 @@ from .trig_on_value import TrigOnValue
 
 from ._deprecated import Moving_avg, Moving_med, Trig_on_change, Trig_on_value
 
-modifier_dict: Dict[str, Type[Modifier]] = MetaModifier.classes
+modifier_dict: dict[str, type[Modifier]] = MetaModifier.classes

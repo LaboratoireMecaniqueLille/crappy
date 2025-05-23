@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Callable, Union, Optional, Tuple
+from typing import Union, Optional, Literal
+from collections.abc import Callable
 from pathlib import Path
 import numpy as np
 from time import time, sleep, strftime, gmtime
@@ -63,7 +64,7 @@ class Camera(Block):
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: Optional[str] = None,
+               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
                display_freq: bool = False,
@@ -73,11 +74,12 @@ class Camera(Block):
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None,
+               save_backend: Optional[Literal['sitk', 'pil',
+                                              'cv2', 'npy']] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Union[Tuple[int, int],
-                                         Tuple[int, int, int]]] = None,
+               img_shape: Optional[Union[tuple[int, int],
+                                         tuple[int, int, int]]] = None,
                img_dtype: Optional[str] = None,
                **kwargs) -> None:
     """Sets the arguments and initializes the parent class.
@@ -194,20 +196,21 @@ class Camera(Block):
         Ignored if ``save_images`` is :obj:`False`.
 
         .. versionadded:: 1.5.10
-      save_backend: If ``save_images`` is :obj:`True`, the backend to use for 
+      save_backend: If ``save_images`` is :obj:`True`, the backend to use for
         recording the images. It should be one of:
         ::
 
-          'sitk', 'cv2', 'pil', 'npy'
+          'sitk', 'pil', 'cv2', 'npy'
         
-        They correspond to the modules :mod:`SimpleITK`, :mod:`cv2` (OpenCV),
-        :mod:`PIL` (Pillow Fork), and :mod:`numpy`. Note that the ``'npy'``
+        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
+        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
         backend saves the images as raw :obj:`numpy.array`, and thus ignores
         the ``img_extension`` argument. Depending on the machine, some backends
         may be faster or slower. For using each backend, the corresponding 
-        Python must of course be installed. If not provided and ``save_images``
-        is :obj:`True`, the backends are tried in the same order as given above
-        and the first available one is used. ``'npy'`` is always available.
+        Python module must of course be installed. If not provided and
+        ``save_images`` is :obj:`True`, the backends are tried in the same
+        order as given above and the first available one is used. ``'npy'`` is
+        always available.
 
         .. versionadded:: 1.5.10
       image_generator: A callable taking two :obj:`float` as arguments and
@@ -560,8 +563,7 @@ class Camera(Block):
         self._camera.Eyy = data['Eyy(%)']
 
     # Grabbing the frame from the Camera object
-    ret = self._camera.get_image()
-    if ret is None:
+    if (ret := self._camera.get_image()) is None:
       return
     metadata, img = ret
  
@@ -653,7 +655,7 @@ class Camera(Block):
     It should also handle the case when an exception is raised in the 
     configuration window.
     
-    This method is meant to be overriden by children of the Camera Block, as 
+    This method is meant to be overridden by children of the Camera Block, as
     other image processing Blocks rely on subclasses of 
     :class:`~crappy.tool.camera_config.CameraConfig`.
     """

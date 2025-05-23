@@ -2,7 +2,8 @@
 
 from time import time, sleep
 from re import fullmatch, findall
-from typing import Union, List, Optional, Iterable
+from typing import Union, Optional
+from collections.abc import Iterable
 import logging
 from  warnings import warn
 
@@ -144,7 +145,7 @@ class WaveshareHighPrecision(InOut):
         of:
         ::
 
-          2.5, 5, 10, 16?6, 20, 50, 60, 100, 400, 1200, 2400, 4800, 7200,
+          2.5, 5, 10, 16, 20, 50, 60, 100, 400, 1200, 2400, 4800, 7200, \
           14400, 19200, 38400
 
         The actual achieved sample rate might be lower depending on the
@@ -271,7 +272,7 @@ class WaveshareHighPrecision(InOut):
     # Starting the acquisition
     self._write_cmd(ADS1263_CMD['CMD_START1'])
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the channels sequentially, and returns all the values along with a
     timestamp.
 

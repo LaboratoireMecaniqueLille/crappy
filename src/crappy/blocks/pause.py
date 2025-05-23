@@ -9,46 +9,65 @@ from time import time
 from .meta_block import Block
 
 
-class StopBlock(Block):
+class Pause(Block):
   """This Block parses the data it receives and checks if this data meets the
-  given stop criteria. If so, its stops the test.
+  given pause criteria. If so, the other Blocks are paused until the criteria
+  are no longer met.
 
-  Along with the :class:`~crappy.blocks.StopButton` Block, it allows to stop a
-  test in a clean way without resorting to CTRL+C.
+  When paused, the other Blocks are still looping but no longer executing any
+  code. This feature is mostly useful when human intervention on a test setup
+  is required, to ensure that nothing happens during that time.
 
-  .. versionadded:: 2.0.0
+  It is possible to prevent a Block from being affected by a pause by setting
+  its ``pausable`` attribute to :obj:`False`. In particular, the Block(s)
+  responsible for outputting the labels checked by the criteria should keep
+  running, otherwise the test will be put on hold forever.
+
+  Important:
+    This Block prevents other Blocks from running normally, but no specific
+    mechanism for putting hardware in an idle state is implemented. For
+    example, a motor driven by an :class:`~crappy.blocks.Machine` Block might
+    keep moving according to the last command it received before the Blocks
+    were paused. It is up to the user to put hardware in the desired state
+    before starting a pause.
+
+  Warning:
+    Using this Block is potentially dangerous, as it leaves hardware
+    unsupervised with no software control on it. It is advised to always
+    include hardware securities on your setup.
+
+  .. versionadded:: 2.0.7
   """
 
   def __init__(self,
                criteria: Union[str, Callable, Iterable[Union[str, Callable]]],
-               freq: Optional[float] = 30,
+               freq: Optional[float] = 50,
                display_freq: bool = False,
-               debug: Optional[bool] = False
-               ) -> None:
-    """Sets the arguments and initialize the parent class.
+               debug: Optional[bool] = False) -> None:
+    """Sets the arguments and initializes the parent class.
 
     Args:
       criteria: A :obj:`str`, a :obj:`~collections.abc.Callable`, or an
         :obj:`~collections.abc.Iterable` (like a :obj:`tuple` or a :obj:`list`)
         containing such objects. Each :obj:`str` or
-        :obj:`~collections.abc.Callable` represents one stop criterion. There
+        :obj:`~collections.abc.Callable` represents one pause criterion. There
         is no limit to the given number of stop criteria. If a criterion is
         given as an :obj:`~collections.abc.Callable`, it should accept as its
         sole argument the output of the
         :meth:`crappy.blocks.Block.recv_all_data` method and return :obj:`True`
         if the criterion is met, and :obj:`False` otherwise. If the criterion
-        is given as a :obj:`str`, it should follow the following syntax :
+        is given as a :obj:`str`, it should follow one the following syntaxes :
         ::
 
           '<lab> > <threshold>'
           '<lab> < <threshold>'
 
         With ``<lab>`` and ``<threshold>`` to be replaced respectively with the
-        name of a received label, and a threshold value. The spaces in the
+        name of a received label and a threshold value. The spaces in the
         string are ignored.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
-      display_freq: if :obj:`True`, displays the looping frequency of the
+      display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
@@ -57,43 +76,58 @@ class StopBlock(Block):
     """
 
     super().__init__()
+
+    self.pausable = False
     self.freq = freq
     self.display_freq = display_freq
     self.debug = debug
-    self.pausable = False
 
     # Handling the case when only one stop condition is given
     if isinstance(criteria, str) or isinstance(criteria, Callable):
       criteria = (criteria,)
     criteria = tuple(criteria)
 
-    self._raw_crit = criteria
-    self._criteria = None
+    self._raw_crit: tuple[Union[str,
+                                Callable[[dict[str, list]], bool]]] = criteria
+    self._criteria: Optional[tuple[Callable[[dict[str, list]], bool]]] = None
 
   def prepare(self) -> None:
-    """Converts all the given criteria to :ref:`collections.abc.Callable`."""
+    """Converts all the given criteria to :obj:`~collections.abc.Callable`."""
 
     # This operation cannot be performed during __init__ due to limitations of
     # the spawn start method of multiprocessing
     self._criteria = tuple(map(self._parse_criterion, self._raw_crit))
 
   def loop(self) -> None:
-    """Receives data from upstream Blocks, checks if this data meets the
-    criteria, and stop the test if that's the case."""
+    """Receives data from upstream Blocks, checks if this data meets at least
+    one criterion, and puts the other Blocks in pause if that's the case."""
 
-    data = self.recv_all_data()
+    if not (data := self.recv_all_data()):
+      self.log(logging.DEBUG, "No data received during this loop")
+      return
 
-    if self._criteria and any(crit(data) for crit in self._criteria):
-      self.log(logging.WARNING, "Stop criterion reached, stopping all the "
-                                "Blocks !")
-      self.stop()
+    # Pausing only if not paused, and stop criterion is met
+    if (self._criteria and any(crit(data) for crit in self._criteria)
+        and not self._pause_event.is_set()):
+      self.log(logging.WARNING, "Stop criterion reached, pausing the Blocks !")
+      self._pause_event.set()
+      return
 
-    self.log(logging.DEBUG, "No stop criterion reached during this loop")
-  
-  def _parse_criterion(self, criterion: Union[str, Callable]) -> Callable:
+    if (self._criteria and not any(crit(data) for crit in self._criteria)
+        and self._pause_event.is_set()):
+      self.log(logging.WARNING, "Stop criterion no longer satisfied, "
+                                "un-pausing the Blocks !")
+      self._pause_event.clear()
+      return
+
+    self.log(logging.DEBUG, "No pausing or un-pausing during this loop")
+
+  def _parse_criterion(self,
+                       criterion: Union[str, Callable[[dict[str, list]], bool]]
+                       ) -> Callable[[dict[str, list]], bool]:
     """Parses a Callable or string criterion given as an input by the user, and
     returns the associated Callable."""
-    
+
     # If the criterion is already a callable, returning it
     if isinstance(criterion, Callable):
       self.log(logging.DEBUG, "Criterion is a callable")

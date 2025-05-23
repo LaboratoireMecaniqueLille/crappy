@@ -2,7 +2,8 @@
 
 import numpy as np
 from time import time
-from typing import List, Optional, Iterable
+from typing import Optional
+from collections.abc import Iterable
 from dataclasses import dataclass
 import logging
 
@@ -63,12 +64,12 @@ class DAQmx(InOut):
       gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
         each input channel the gain to apply to the measured voltage, as a
         :obj:`float`. The returned voltage is calculated as follows
-        :math:`returned\_voltage = gain * measured\_voltage + offset`. If not
+        :math:`returned\\_voltage = gain * measured\\_voltage + offset`. If not
         given, no gain is applied to the measured values.
       offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
         each input channel the offset to apply to the measured voltage, as a
         :obj:`float`. The returned voltage is calculated as follows
-        :math:`returned\_voltage = gain * measured\_voltage + offset`. If not
+        :math:`returned\\_voltage = gain * measured\\_voltage + offset`. If not
         given, no offset is applied to the measured values.
       ranges: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
         each input channel the range to set for that channel, as a
@@ -98,13 +99,13 @@ class DAQmx(InOut):
       out_gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         for each output channel the gain to apply to the command voltage, as a
         :obj:`float`. The set voltage is calculated as follows :
-        :math:`set\_voltage = out\_gain * command\_voltage + out\_offset`. If
-        not given, no gain is applied to the command values.
+        :math:`set\\_voltage = out\\_gain * command\\_voltage + out\\_offset`.
+        If not given, no gain is applied to the command values.
       out_offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         for each output channel the offset to apply to the command voltage, as
         a :obj:`float`. The set voltage is calculated as follows :
-        :math:`set\_voltage = out\_gain * command\_voltage + out\_offset`. If
-        not given, no offset is applied to the command values.
+        :math:`set\\_voltage = out\\_gain * command\\_voltage + out\\_offset`.
+        If not given, no offset is applied to the command values.
       out_ranges: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         for each output channel the range to set for that channel, as a
         :obj:`float`. The possible range values are :
@@ -229,7 +230,7 @@ class DAQmx(InOut):
         self._compensations = [comp if chan.make_zero else 0 for comp, chan
                                in zip(self._compensations, self._channels)]
   
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Creates and starts an acquisition task, and returns the acquired
     values."""
 

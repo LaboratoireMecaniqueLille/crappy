@@ -31,7 +31,7 @@ way to stop Crappy.
 
 import crappy
 from random import random
-from typing import Tuple, Optional
+from typing import Optional
 from time import time
 
 
@@ -67,7 +67,7 @@ class CustomInOut(crappy.inout.InOut):
 
     ...
 
-  def get_data(self) -> Tuple[float, float]:
+  def get_data(self) -> tuple[float, float]:
     """This method is used for acquiring data from the hardware.
 
     Here, it returns the current timestamp and a random value in the interval

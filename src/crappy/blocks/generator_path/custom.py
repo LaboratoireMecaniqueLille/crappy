@@ -2,7 +2,7 @@
 
 from time import time
 from numpy import loadtxt, interp
-from typing import Dict, Union
+from typing import Union
 import pathlib
 import logging
 
@@ -52,7 +52,7 @@ class Custom(Path):
     self._timestamps = array[:, 0]
     self._values = array[:, 1]
 
-  def get_cmd(self, _: Dict[str, list]) -> float:
+  def get_cmd(self, _: dict[str, list]) -> float:
     """Returns the value to send or raises :exc:`StopIteration` if the stop
     condition is met.
 

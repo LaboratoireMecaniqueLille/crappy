@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from numpy import trapz
-from typing import Union, Dict
+from typing import Union
 import logging
 
 from .meta_path import Path, ConditionType
@@ -69,7 +69,7 @@ class Integrator(Path):
     self._last_t = None
     self._last_val = None
 
-  def get_cmd(self, data: Dict[str, list]) -> float:
+  def get_cmd(self, data: dict[str, list]) -> float:
     """Gets the latest values of the incoming label, integrates them and
     changes the output accordingly.
 

@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Callable, Optional, Tuple, Union, Any, Dict, Iterable
+from typing import Optional, Union, Any
+from collections.abc import Callable, Iterable
 from time import sleep
 import numpy as np
 from multiprocessing import current_process
@@ -37,7 +38,7 @@ class Camera(metaclass=MetaCamera):
     .. versionchanged:: 2.0.0 now accepts *args* and *kwargs*
     """
 
-    self.settings: Dict[str, CameraSetting] = dict()
+    self.settings: dict[str, CameraSetting] = dict()
 
     # These names are reserved for special settings
     self.trigger_name = 'trigger'
@@ -109,7 +110,7 @@ class Camera(metaclass=MetaCamera):
 
     self.set_all(**kwargs)
 
-  def get_image(self) -> Optional[Tuple[Union[Dict[str, Any], float],
+  def get_image(self) -> Optional[tuple[Union[dict[str, Any], float],
                                         np.ndarray]]:
     """Acquires an image and returns it along with its metadata or timestamp.
 
@@ -496,8 +497,8 @@ class Camera(metaclass=MetaCamera):
     """Method for getting the value of a setting directly by calling
     ``self.<setting name>``.
 
-    It is called in case :meth:`__getattribute__` doesn't work properly, and
-    tries to return the corresponding setting value."""
+    It is called in case :meth:`~crappy.camera.Camera.__getattribute__` doesn't
+    work properly, and tries to return the corresponding setting value."""
 
     try:
       return self.settings[item].value

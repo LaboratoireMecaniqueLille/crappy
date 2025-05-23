@@ -2,7 +2,8 @@
 
 from time import time
 import numpy as np
-from typing import List, Dict, Any, Optional, Tuple, Iterable
+from typing import Any, Optional, Literal
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from itertools import chain
 from multiprocessing import current_process
@@ -30,9 +31,9 @@ class _Channel:
   offset: float = 0
   make_zero: bool = False
   range: float = 10
-  write_at_open: List[Tuple[str, Any]] = field(default_factory=list)
+  write_at_open: list[tuple[str, Any]] = field(default_factory=list)
 
-  def update(self, dic_in: Dict[str, Any]) -> None:
+  def update(self, dic_in: dict[str, Any]) -> None:
     """Updates the channel keys based on the user input."""
 
     for key, val in dic_in.items():
@@ -71,9 +72,10 @@ class T7Streamer(InOut):
   """
 
   def __init__(self,
-               channels: Iterable[Dict[str, Any]],
-               device: str = 'ANY',
-               connection: str = 'ANY',
+               channels: Iterable[dict[str, Any]],
+               device: Literal['ANY', 'T7', 'T4', 'DIGIT']  = 'ANY',
+               connection: Literal['ANY', 'TCP', 'USB',
+                                   'ETHERNET', 'WIFI'] = 'ANY',
                identifier: str = 'ANY',
                scan_rate: int = 100000,
                scan_per_read: int = 10000,
@@ -118,10 +120,10 @@ class T7Streamer(InOut):
           channels, i.e. the analog inputs, are available.
 
         - gain: The measured value will be modified in Crappy as follows :
-          :math:`returned\_value = gain * measured\_value + offset`.
+          :math:`returned\\_value = gain * measured\\_value + offset`.
 
         - offset: The measured value will be modified in Crappy as follows :
-          :math:`returned\_value = gain * measured\_value + offset`
+          :math:`returned\\_value = gain * measured\\_value + offset`
 
         - make_zero: If :obj:`True`, data will be acquired on this channel
           before the test starts, and a compensation value will be deduced
@@ -247,7 +249,7 @@ class T7Streamer(InOut):
     self._stream_t0 = time()
     self._stream_started = True
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads single data points, applies the given gains and offsets, and
     returns the data along with a timestamp."""
 
@@ -258,7 +260,7 @@ class T7Streamer(InOut):
     return [time()] + [val * chan.gain + chan.offset for chan, val
                        in zip(self._channels, data)]
 
-  def get_stream(self) -> Optional[List[np.ndarray]]:
+  def get_stream(self) -> Optional[list[np.ndarray]]:
     """Acquires the stream, reshapes the data, applies the gains and offsets,
     and returns the data along with a time array."""
 

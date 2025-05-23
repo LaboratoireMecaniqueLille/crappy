@@ -33,7 +33,6 @@ Crappy.
 
 import crappy
 import numpy as np
-from typing import Tuple
 from time import time
 
 
@@ -83,7 +82,7 @@ class CustomCam(crappy.camera.Camera):
     # This line is mandatory here for first applying the parameters of the ROI
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """Compared to the one in custom_camera_basic.py, this method returns the
     static image cropped by the selected software ROI.
 

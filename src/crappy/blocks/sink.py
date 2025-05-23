@@ -43,6 +43,7 @@ class Sink(Block):
     self.display_freq = display_freq
     self.freq = freq
     self.debug = debug
+    self.pausable = False
 
   def loop(self) -> None:
     """Drops all the received data."""

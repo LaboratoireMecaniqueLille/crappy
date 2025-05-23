@@ -111,8 +111,7 @@ class OrientalARDK(Actuator):
       return
 
     # Stopping the motor if the direction changed
-    dir_chg = self._prev_set_speed * sign < 0
-    if dir_chg:
+    if self._prev_set_speed * sign < 0:
       self.stop()
 
     # Writing the target speed value

@@ -8,7 +8,7 @@ from multiprocessing.sharedctypes import Synchronized
 import signal
 from _io import FileIO
 from tempfile import TemporaryFile
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any, Optional
 from contextlib import contextmanager
 from dataclasses import dataclass
 import logging
@@ -24,7 +24,7 @@ except (FileNotFoundError, ModuleNotFoundError):
   USBTimeoutError = OptionalModule('pyusb')
   util = OptionalModule('pyusb')
 
-USBArgsType = Tuple[int, multiprocessing.synchronize.RLock, FileIO,
+USBArgsType = tuple[int, multiprocessing.synchronize.RLock, FileIO,
                     FileIO, multiprocessing.synchronize.RLock,
                     Synchronized]
 
@@ -47,7 +47,7 @@ class BlockObjects:
 
 class USBServer(Process):
   """This class is a server managing communication with USB devices through the
-  :mod:`pysub` library.
+  :mod:`pyusb` library.
 
   As :mod:`pyusb` is not process-safe in Python, running a server is the only
   option to allow multiple :class:`~crappy.blocks.Block` to use the library in
@@ -67,7 +67,7 @@ class USBServer(Process):
 
   process: Optional[multiprocessing.context.Process] = None
   block_nr: int = 0
-  devices: Dict[str, Device] = dict()
+  devices: dict[str, Device] = dict()
 
   # Objects for synchronizing with the server
   stop_event: Optional[multiprocessing.synchronize.Event] = None
@@ -75,13 +75,13 @@ class USBServer(Process):
   command_file: Optional[FileIO] = None
   answer_file: Optional[FileIO] = None
   shared_lock: Optional[multiprocessing.synchronize.RLock] = None
-  block_dict: Dict[int, BlockObjects] = dict()
+  block_dict: dict[int, BlockObjects] = dict()
 
   def __init__(self,
                current_block: Synchronized,
                command_file: FileIO,
                answer_file: FileIO,
-               block_dict: Dict[int, BlockObjects],
+               block_dict: dict[int, BlockObjects],
                stop_event: multiprocessing.synchronize.Event,
                log_queue: multiprocessing.queues.Queue,
                log_level: Optional[int]) -> None:
@@ -278,7 +278,7 @@ class USBServer(Process):
         lock.release()
 
   @staticmethod
-  def _get_devices() -> Dict[str, Any]:
+  def _get_devices() -> dict[str, Any]:
     """Detects all the connected FT232H devices and returns them as a 
     :obj:`dict`.
 
@@ -289,7 +289,7 @@ class USBServer(Process):
     """
 
     # Searching for the FT232H devices
-    devices: List[Device] = list(find(find_all=True,
+    devices: list[Device] = list(find(find_all=True,
                                       idVendor=0x0403,
                                       idProduct=0x6014))
     if not devices:
@@ -340,9 +340,8 @@ class USBServer(Process):
         break
 
       # A Block has acquired the lock and shared its index
-      if self._current_block.value:
+      if index := self._current_block.value:
         # Reading the index and resetting the value
-        index = self._current_block.value
         self._current_block.value = 0
         self._log(logging.DEBUG, f"Block with index {index} now has control")
 
@@ -528,7 +527,7 @@ class USBServer(Process):
     self._logger.log(level, msg)
 
   @staticmethod
-  def _return_config_info(device) -> Tuple[int, int, int, int]:
+  def _return_config_info(device) -> tuple[int, int, int, int]:
     """Returns some configuration information from a USB object.
 
     Args:

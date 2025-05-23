@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List
+from typing import Literal
 import logging
 from  warnings import warn
 
@@ -104,14 +104,19 @@ class MCP9600(InOut):
   """
 
   def __init__(self,
-               backend: str,
-               thermocouple_type: str,
+               backend: Literal['Pi4', 'blinka'],
+               thermocouple_type: Literal['J', 'K', 'T', 'N', 'S',
+                                          'E', 'B', 'R'],
                i2c_port: int = 1,
                device_address: int = 0x67,
                adc_resolution: int = 18,
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
-               mode: str = 'Hot Junction Temperature') -> None:
+               mode: Literal['Hot Junction Temperature',
+                             'Junction Temperature Delta',
+                             'Cold Junction Temperature',
+                             'Raw Data ADC'] = 'Hot Junction Temperature'
+               ) -> None:
     """Checks the validity of the arguments.
 
     Args:
@@ -266,7 +271,7 @@ class MCP9600(InOut):
                                      Mcp9600_registers['Device Configuration'],
                                      [config_device])
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the registers containing the conversion result.
 
     The output is in `°C` for all modes except the raw data ADC one, which
@@ -345,7 +350,7 @@ class MCP9600(InOut):
     return out
 
   def close(self) -> None:
-    """Switches the MCP9600 to shutdown mode and closes the I2C bus."""
+    """Switches the MCP9600 to shut down mode and closes the I2C bus."""
 
     if self._backend != 'blinka' and self._bus is not None:
       # Switching to shut down mode, keeping configuration

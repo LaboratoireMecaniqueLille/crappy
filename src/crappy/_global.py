@@ -182,7 +182,7 @@ class DefinitionError(NameError):
 
 class GeneratorStop(Exception):
   """Exception raised when a :class:`~crappy.blocks.Generator` Block reaches
-  the end of its :class:`~crappy.blocks.generator_path.Path`."""
+  the end of its :class:`~crappy.blocks.generator_path.meta_path.Path`."""
 
 
 class ReaderStop(Exception):

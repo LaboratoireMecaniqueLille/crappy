@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Tuple, List, Any
+from typing import Any
 import numpy as np
 from time import time
 import logging
@@ -60,7 +60,7 @@ class SeekThermalPro(Camera):
     possible to add it manually by running:
     ::
 
-      $ echo "SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"289d\\", \
+      echo "SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"289d\\", \
 MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
 
     in a shell opened in ``/etc/udev/rules.d``.
@@ -158,7 +158,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
       elif i == 9:
         raise TimeoutError("Could not set the camera")
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> tuple[float, np.ndarray]:
     """Reads a single image from the camera.
 
     Returns:
@@ -230,7 +230,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     else:
       return status, None
 
-  def _get_dead_pixels_list(self, data: np.ndarray) -> List[Tuple[Any]]:
+  def _get_dead_pixels_list(self, data: np.ndarray) -> list[tuple[Any]]:
     """Identifies the dead pixels on an image.
 
     Args:
@@ -265,7 +265,8 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     """
 
     for i, j in self._dead_pixels:
-      img[i, j] = np.median(img[max(0, i - 1): i + 2, max(0, j - 1): j + 2])
+      img[i, j] = float(np.median(img[max(0, i - 1): i + 2,
+                                      max(0, j - 1): j + 2]))
     return img
 
   def _write_data(self, request: int, data: bytes) -> int:

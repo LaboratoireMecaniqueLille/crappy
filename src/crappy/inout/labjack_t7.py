@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import List, Optional, Dict, Any, Union, Tuple, Iterable
+from typing import Optional, Any, Union, Literal
+from collections.abc import Iterable
 from itertools import chain
 from dataclasses import dataclass, field
 from multiprocessing import current_process
@@ -38,12 +39,12 @@ class _Channel:
   offset: float = 0
   make_zero: bool = False
   range: float = 10
-  limits: Optional[Tuple[float, float]] = None
+  limits: Optional[tuple[float, float]] = None
   resolution: int = 1
-  thermocouple: Optional[str] = None
-  write_at_open: List[Tuple[str, float]] = field(default_factory=list)
+  thermocouple: Optional[Literal['E', 'J', 'K', 'R', 'T', 'S', 'C']] = None
+  write_at_open: list[tuple[str, float]] = field(default_factory=list)
 
-  def update(self, dic_in: Dict[str, Any]) -> None:
+  def update(self, dic_in: dict[str, Any]) -> None:
     """Updates the channel keys based on the user input."""
 
     for key, val in dic_in.items():
@@ -74,9 +75,10 @@ class LabjackT7(InOut):
   """
 
   def __init__(self,
-               channels: Iterable[Dict[str, Any]],
-               device: str = 'ANY',
-               connection: str = 'ANY',
+               channels: Iterable[dict[str, Any]],
+               device: Literal['ANY', 'T7', 'T4', 'DIGIT'] = 'ANY',
+               connection: Literal['ANY', 'TCP', 'USB',
+                                   'ETHERNET', 'WIFI'] = 'ANY',
                identifier: str = 'ANY',
                write_at_open: Optional[Iterable[tuple]] = None,
                no_led: bool = False) -> None:
@@ -130,16 +132,16 @@ class LabjackT7(InOut):
 
         - gain: If the channel is an input, the measured value will be
           modified directly by the Labjack as follows :
-          :math:`returned\_value = gain * measured\_value + offset`. If the
+          :math:`returned\\_value = gain * measured\\_value + offset`. If the
           channel is an output, the command value will be modified in Crappy as
           follows before being sent to the Labjack :
-          :math:`sent\_value = gain * command + offset`.
+          :math:`sent\\_value = gain * command + offset`.
         - offset: If the channel is an input, the measured value will be
           modified directly by the Labjack as follows :
-          :math:`returned\_value = gain * measured\_value + offset`. If the
+          :math:`returned\\_value = gain * measured\\_value + offset`. If the
           channel is an output, the command value will be modified in Crappy as
           follows before being sent to the Labjack :
-          :math:`sent\_value = gain * command + offset`.
+          :math:`sent\\_value = gain * command + offset`.
         - make_zero: If :obj:`True`, data will be acquired on this channel
           before the test starts, and a compensation value will be deduced
           so that the offset of this channel is `0`. The compensation is
@@ -376,9 +378,9 @@ class LabjackT7(InOut):
         # Resetting the software offsets to avoid double compensation
         self._compensations = list()
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Reads the signal on all pre-defined input channels, and returns the
-    values along with a timestamp.."""
+    values along with a timestamp."""
 
     return [time()] + ljm.eReadAddresses(handle=self._handle,
                                          numFrames=len(self._read_addresses),
@@ -434,7 +436,7 @@ class LabjackT7(InOut):
       ljm.close(self._handle)
 
   @staticmethod
-  def _parse(name: str) -> Tuple[int, int]:
+  def _parse(name: str) -> tuple[int, int]:
     """Wrapper around :meth:`ljm.nameToAddress` to make the code clearer."""
 
     return ljm.nameToAddress(name)

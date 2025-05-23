@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Dict, Union, Any, Optional, Iterable, List, Tuple
+from typing import Union, Any, Optional
+from collections.abc import Iterable
 from time import time, sleep
 from subprocess import Popen, PIPE, STDOUT, TimeoutExpired
 from threading import Thread
@@ -45,7 +46,7 @@ class ClientServer(Block):
                broker: bool = False,
                address: str = 'localhost',
                port: int = 1883,
-               init_output: Optional[Dict[str, Any]] = None,
+               init_output: Optional[dict[str, Any]] = None,
                topics: Optional[TopicsType] = None,
                cmd_labels: Optional[TopicsType] = None,
                labels_to_send: Optional[TopicsType] = None,
@@ -238,11 +239,11 @@ class ClientServer(Block):
     self._stop_mosquitto = False
     
     # These attributes may be set later
-    self._topics: Optional[List[Tuple[str, ...]]] = None
-    self._last_out_val: Dict[str, Any] = dict()
-    self._buffer_output: Optional[Dict[Tuple[str, ...], Queue]] = None
-    self._cmd_labels: Optional[List[Tuple[str, ...]]] = None
-    self._labels_to_send: Optional[List[Tuple[str, ...]]] = None
+    self._topics: Optional[list[tuple[str, ...]]] = None
+    self._last_out_val: dict[str, Any] = dict()
+    self._buffer_output: Optional[dict[tuple[str, ...], Queue]] = None
+    self._cmd_labels: Optional[list[tuple[str, ...]]] = None
+    self._labels_to_send: Optional[list[tuple[str, ...]]] = None
 
     if topics is None and cmd_labels is None:
       self.log(logging.WARNING, "The Client-server Block is neither an input "

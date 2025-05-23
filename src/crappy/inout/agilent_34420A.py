@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List
+from typing import Literal
 import logging
 from  warnings import warn
 
@@ -27,7 +27,7 @@ class Agilent34420a(InOut):
   """
 
   def __init__(self,
-               mode: bytes = b"VOLT",
+               mode: Literal[b'VOLT', b'RES'] = b"VOLT",
                device: str = '/dev/ttyUSB0',
                baudrate: int = 9600,
                timeout: float = 1) -> None:
@@ -75,7 +75,7 @@ class Agilent34420a(InOut):
     self.log(logging.DEBUG, f"Writing b'SYST:REM\\n' to port {self._device}")
     self._ser.write(b"SYST:REM\n")
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """Asks the Agilent to acquire a value and returns it, except if an error
     occurs in which case `0` is returned."""
 

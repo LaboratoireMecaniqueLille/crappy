@@ -34,7 +34,8 @@ CTRL+C to stop Crappy, but it is not a clean way to do it.
 import crappy
 import cv2
 import numpy as np
-from typing import Optional, Callable, Tuple, Union
+from typing import Optional, Union
+from collections.abc import Callable
 from pathlib import Path
 
 
@@ -92,7 +93,7 @@ class Ellipse(crappy.tool.camera_config.Overlay):
     cv2.ellipse(img,
                 (self._center_x, self._center_y),
                 (self._x_axis, self._y_axis),
-                0, 0, 360, 0, thickness)
+                0., 0., 360., (0.,), thickness)
 
 
 class CustomCameraProcess(crappy.blocks.camera_processes.CameraProcess):
@@ -226,7 +227,7 @@ class CustomCameraBlock(crappy.blocks.Camera):
                save_backend: Optional[str] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Tuple[int, int]] = None,
+               img_shape: Optional[tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
                scale_factor: float = 1.2,
                min_neighbors: int = 3,

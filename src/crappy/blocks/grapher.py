@@ -1,9 +1,9 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Tuple
+from typing import Optional
 import logging
-from _tkinter import TclError
+from tkinter import TclError
 
 from .meta_block import Block
 from .._global import OptionalModule
@@ -32,12 +32,12 @@ class Grapher(Block):
   """
 
   def __init__(self,
-               *labels: Tuple[str, str],
+               *labels: tuple[str, str],
                length: int = 0,
                freq: Optional[float] = 2,
                max_pt: int = 20000,
-               window_size: Tuple[int, int] = (8, 8),
-               window_pos: Optional[Tuple[int, int]] = None,
+               window_size: tuple[int, int] = (8, 8),
+               window_pos: Optional[tuple[int, int]] = None,
                interp: bool = True,
                backend: str = "TkAgg",
                display_freq: bool = False,

@@ -41,6 +41,12 @@ Raspberry Pi Camera
    :members: open, get_image, close
    :special-members: __init__
 
+Raspberry Pi Camera 2
++++++++++++++++++++++
+.. autoclass:: crappy.camera.RaspberryPiCamera2
+   :members: open, get_image, close
+   :special-members: __init__
+
 Seek Thermal Pro
 ++++++++++++++++
 .. autoclass:: crappy.camera.SeekThermalPro

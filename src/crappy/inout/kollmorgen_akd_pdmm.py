@@ -2,7 +2,8 @@
 
 from time import time
 from struct import pack, unpack
-from typing import List, Iterable
+from typing import Literal
+from collections.abc import Iterable
 import logging
 from  warnings import warn
 
@@ -47,7 +48,7 @@ class KollmorgenAKDPDMM(InOut):
 
   def __init__(self,
                axes: Iterable[int],
-               mode: str = 'position',
+               mode: Literal['position', 'speed'] = 'position',
                host: str = '192.168.0.109',
                port: int = 502) -> None:
     """Sets the arguments and initializes the parent class.
@@ -96,7 +97,7 @@ class KollmorgenAKDPDMM(InOut):
                            f"{self._host} on port {self._port}")
     self._variator.connect()
 
-  def get_data(self) -> List[float]:
+  def get_data(self) -> list[float]:
     """For each motor, reads its current speed or position depending on the
     selected mode.
 

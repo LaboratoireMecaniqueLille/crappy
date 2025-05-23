@@ -2,7 +2,8 @@
 
 import logging
 import numpy as np
-from typing import Dict, Optional, Iterable, Union
+from typing import Optional, Union
+from collections.abc import Iterable
 from collections import defaultdict
 
 from .meta_block import Block
@@ -93,7 +94,7 @@ class Multiplexer(Block):
     # Initializing the attributes
     self._time_label = time_label
     self._interp_freq = interp_freq
-    self._data: Dict[str, np.ndarray] = defaultdict(self._default_array)
+    self._data: dict[str, np.ndarray] = defaultdict(self._default_array)
     self._delta: float = 1 / self._interp_freq / 20
     self._last_max_t: float = -float('inf')
 
@@ -109,11 +110,8 @@ class Multiplexer(Block):
     """Receives data, interpolates it, and sends it to the downstream
     Blocks."""
 
-    # Receiving all the upcoming data
-    data = self.recv_all_data_raw()
-
     # Iterating over all the links
-    for link_data in data:
+    for link_data in self.recv_all_data_raw():
       # Only data associated with a time label can be multiplexed
       if self._time_label not in link_data:
         continue
