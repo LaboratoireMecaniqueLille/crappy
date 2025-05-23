@@ -35,7 +35,7 @@ class CameraGPhoto2(Camera):
     This class was only tested on Linux, it is not certain that it works on
     Windows or macOS.
 
-  .. versionadded:: 2.0.6
+  .. versionadded:: 2.0.8
   """
 
   def __init__(self) -> None:
