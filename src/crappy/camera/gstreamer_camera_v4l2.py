@@ -230,7 +230,7 @@ videoconvert ! autovideosink
             highest=int(param.max),
             getter=self._add_scale_getter(param.name, self._device),
             setter=self._add_setter(param.name, self._device),
-            default=param.default,
+            default=int(param.default),
             step=int(param.step))
 
         elif param.type == 'bool':
