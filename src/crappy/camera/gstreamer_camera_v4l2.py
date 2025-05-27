@@ -290,21 +290,15 @@ videoconvert ! autovideosink
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> tuple[float, ndarray]:
+  def get_image(self) -> Optional[tuple[float, ndarray]]:
     """Reads the last image acquired from the camera.
 
     Returns:
       The acquired image, along with a timestamp.
     """
 
-    # Assuming an image rate greater than 0.5 FPS
-    # Checking that we don't return the same image twice
-    t0 = time()
-    while self._last_frame_nr == self._frame_nr:
-      if time() - t0 > 2:
-        raise TimeoutError("Waited too long for the next image !")
-      sleep(0.01)
-
+    if self._last_frame_nr == self._frame_nr:
+      return
     self._last_frame_nr = self._frame_nr
 
     return time(), self.apply_soft_roi(copy(self._img))
