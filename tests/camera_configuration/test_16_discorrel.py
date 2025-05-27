@@ -81,5 +81,37 @@ class TestDISCorrel(ConfigurationWindowTestBase):
     # The box should now have been reset
     self.assertTrue(self._config.box.no_points())
 
+    # Start drawing the selection box inside the image
+    self._config._img_canvas.event_generate(
+        '<ButtonPress-1>', when="now", x=20, y=20)
+    self._config._upd_sched()
+
+    # Release the mouse button at the same location
+    self._config._img_canvas.event_generate(
+        '<B1-Motion>', when="now", x=20, y=20)
+    self._config._upd_sched()
+    self._config._img_canvas.event_generate(
+        '<ButtonRelease-1>', when="now", x=20, y=20)
+    self._config._upd_sched()
+
+    # The box should be empty
+    self.assertTrue(self._config.box.no_points())
+
+    # Start drawing the selection box inside the image
+    self._config._img_canvas.event_generate(
+        '<ButtonPress-1>', when="now", x=20, y=20)
+    self._config._upd_sched()
+
+    # Draw a box with no pixels inside
+    self._config._img_canvas.event_generate(
+        '<B1-Motion>', when="now", x=20, y=50)
+    self._config._upd_sched()
+    self._config._img_canvas.event_generate(
+        '<ButtonRelease-1>', when="now", x=20, y=50)
+    self._config._upd_sched()
+
+    # The box should be empty
+    self.assertTrue(self._config.box.no_points())
+
     # Re-populate the spots to avoid the interface crashing at exit
     self._config._correl_box = box
