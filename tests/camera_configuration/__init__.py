@@ -14,3 +14,4 @@ from .test_11_auto_range import TestAutoRange
 from .test_12_resize import TestResize
 from .test_13_histogram import TestHistogram
 from .test_14_draw_box import TestDrawBox
+from .test_15_dicve import TestDICVE
