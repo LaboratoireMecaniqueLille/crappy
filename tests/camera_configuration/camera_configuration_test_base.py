@@ -6,7 +6,10 @@ from multiprocessing import Queue, queues
 import logging
 from time import time
 import numpy as np
+import sys
 
+from . import mock_messagebox
+sys.modules['tkinter.messagebox'] = mock_messagebox
 from crappy.tool.camera_config.camera_config import CameraConfig
 from crappy.camera.meta_camera.camera import Camera
 
