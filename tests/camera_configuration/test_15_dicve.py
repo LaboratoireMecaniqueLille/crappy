@@ -62,6 +62,12 @@ class TestDICVE(ConfigurationWindowTestBase):
     # The patch should still be empty
     self.assertTrue(self._config._spots.empty())
 
+    # Move the mouse iteratively in case a border is hit
+    for i in range(40, 200, 20):
+      self._config._img_canvas.event_generate(
+          '<B1-Motion>', when="now", x=i, y=i)
+      self._config._upd_sched()
+
     # Move the mouse with the button pressed to make a large selection box
     self._config._img_canvas.event_generate(
         '<B1-Motion>', when="now", x=200, y=200)
