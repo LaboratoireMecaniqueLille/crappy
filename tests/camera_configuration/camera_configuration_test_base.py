@@ -7,6 +7,7 @@ import logging
 from time import time
 import numpy as np
 import sys
+import cv2
 
 from . import mock_messagebox
 sys.modules['tkinter.messagebox'] = mock_messagebox
@@ -87,6 +88,21 @@ class FakeTestCameraSimple(Camera):
     x, y = np.mgrid[0:240, 0:320]
     ret = np.astype(self._min + (x + y) / np.max(x + y) *
                     (self._max - self._min), np.uint8)
+    return time(), ret
+
+
+class FakeTestCameraSpots(Camera):
+  """"""
+
+  def get_image(self) -> tuple[float, np.ndarray]:
+    """"""
+
+    ret = np.full((240, 320), 255, dtype=np.uint8)
+    ret = cv2.circle(ret, (80, 80), 20, (0,), -1)
+    ret = cv2.circle(ret, (80, 160), 20, (0,), -1)
+    ret = cv2.circle(ret, (160, 80), 20, (0,), -1)
+    ret = cv2.circle(ret, (160, 160), 20, (0,), -1)
+
     return time(), ret
 
 

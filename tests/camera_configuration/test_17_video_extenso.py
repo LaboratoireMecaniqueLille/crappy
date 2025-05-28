@@ -1,0 +1,105 @@
+# coding: utf-8
+
+from copy import deepcopy
+
+from .camera_configuration_test_base import (ConfigurationWindowTestBase,
+                                             FakeTestCameraSpots)
+from crappy.tool.camera_config.video_extenso_config import VideoExtensoConfig
+from crappy.tool.camera_config import SpotsDetector, Box
+
+
+class TestVideoExtenso(ConfigurationWindowTestBase):
+  """"""
+
+  def __init__(self, *args, **kwargs) -> None:
+    """"""
+
+    super().__init__(*args, camera=FakeTestCameraSpots(), **kwargs)
+
+  def customSetUp(self) -> None:
+    """"""
+
+    self._config = VideoExtensoConfig(self._camera, self._log_queue,
+                                      self._log_level, self._freq,
+                                      SpotsDetector())
+
+    self._config._testing = True
+    self._config.start()
+
+  def test_video_extenso(self) -> None:
+    """"""
+
+    # Calling the first loop
+    self._config._img_acq_sched()
+    self._config._upd_var_sched()
+    self._config._upd_sched()
+
+    # The box should not be set for now
+    self.assertTrue(self._config._detector.spots.empty())
+
+    # Start drawing a box outside the image
+    self._config._img_canvas.event_generate(
+        '<ButtonPress-1>', when="now", x=-20, y=-20)
+    self._config._upd_sched()
+
+    # The box should not be set for now
+    self.assertTrue(self._config._detector.spots.empty())
+
+    # Start drawing the selection box inside the image
+    self._config._img_canvas.event_generate(
+        '<ButtonPress-1>', when="now", x=20, y=20)
+    self._config._upd_sched()
+
+    # The box should not be set for now
+    self.assertTrue(self._config._detector.spots.empty())
+
+    # Move the mouse with the button pressed to complete the selection box
+    self._config._img_canvas.event_generate(
+        '<B1-Motion>', when="now", x=50, y=50)
+    self._config._upd_sched()
+
+    # The box should not be set for now
+    self.assertTrue(self._config._detector.spots.empty())
+
+    # Move the mouse iteratively in case a border is hit
+    for i in range(50, 500, 50):
+      self._config._img_canvas.event_generate(
+          '<B1-Motion>', when="now", x=i, y=i)
+      self._config._upd_sched()
+
+    # Release the mouse button to complete the box
+    self._config._img_canvas.event_generate(
+        '<ButtonRelease-1>', when="now", x=500, y=500)
+    self._config._upd_sched()
+
+    # The spots should have been populated now
+    self.assertFalse(self._config._spots.empty())
+    self.assertIsInstance(self._config._spots.spot_1, Box)
+    self.assertIsInstance(self._config._spots.spot_2, Box)
+    self.assertIsInstance(self._config._spots.spot_3, Box)
+    self.assertIsInstance(self._config._spots.spot_4, Box)
+
+    # Check that the initial lengths have not been set
+    self.assertIsNone(self._config._spots.x_l0)
+    self.assertIsNone(self._config._spots.y_l0)
+
+    # Click on the save L0 button
+    self._config._update_button.invoke()
+
+    # Check that the initial lengths have been set
+    self.assertIsNotNone(self._config._spots.x_l0)
+    self.assertIsNotNone(self._config._spots.y_l0)
+
+    spots = deepcopy(self._config._detector.spots)
+
+    # Reset the box
+    self._config._detector.spots.reset()
+    self._config._upd_sched()
+
+    # The box should now have been reset
+    self.assertTrue(self._config._detector.spots.empty())
+
+    # Re-populate the spots to avoid the interface crashing at exit
+    self._config._detector.spots = spots
+
+

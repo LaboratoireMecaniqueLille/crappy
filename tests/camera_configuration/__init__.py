@@ -16,3 +16,4 @@ from .test_13_histogram import TestHistogram
 from .test_14_draw_box import TestDrawBox
 from .test_15_dicve import TestDICVE
 from .test_16_discorrel import TestDISCorrel
+from .test_17_video_extenso import TestVideoExtenso
