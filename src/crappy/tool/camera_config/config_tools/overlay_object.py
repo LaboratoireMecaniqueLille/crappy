@@ -30,7 +30,7 @@ class Overlay:
     """This method takes the image to display as an input, draws an overlay on
     top of it, and returns the modified image.
 
-    It is meant to be overriden by subclasses of this class.
+    It is meant to be overridden by subclasses of this class.
     """
 
     ...
