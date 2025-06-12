@@ -68,9 +68,9 @@ class Box(Overlay):
     try:
       for line in (line for i in range(max_fact + 1) for line in
                    ((self.y_start + i, slice(x_top, x_bottom)),
-                    (self.y_end - i, slice(x_top, x_bottom)),
+                    (self.y_end - i - 1, slice(x_top, x_bottom)),
                     (slice(y_left, y_right), x_top + i),
-                    (slice(y_left, y_right), x_bottom - i))):
+                    (slice(y_left, y_right), x_bottom - i - 1))):
         img[line] = 255 * int(np.mean(img[line]) < 128)
       self.log(logging.DEBUG, f"Drew {self} on top of the image to display")
 
