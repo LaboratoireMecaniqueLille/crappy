@@ -182,7 +182,7 @@ Waveshare AD/DA FT232H
 Eurotherm EPC3008
 ++++++
 .. autoclass:: crappy.inout.EurothermEPC3008
-   :members: open, get_data, set_cmd, close
+   :members: open, reconnect, get_data, set_cmd, close
    :special-members: __init__
 
 Parent In/Out
