@@ -779,7 +779,7 @@ Sensors
 
 - :ref:Eurotherm EPC3008
 
-  Controls an Eurotherm EPC3008 <https://www.eurotherm.com/us/products/temperature-controllers-us/single-loop-temperature-controllers-us/epc3000-programmable-controllers/>_ temperature controller.  
+  Controls an  `Eurotherm EPC3008 <https://www.eurotherm.com/us/products/temperature-controllers-us/single-loop-temperature-controllers-us/epc3000-programmable-controllers/>`_ temperature controller.  
   Allows setting the temperature setpoint and reading the current process value.  
   Typically used for managing the temperature of a furnace or industrial process over a serial Modbus RTU connection.
 
