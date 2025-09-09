@@ -106,6 +106,8 @@ class Phidget4AStepper(Actuator):
       self._switch_states = tuple(False for _ in switch_ports)
     self._switches = list()
 
+    self._switch_hit: bool = False
+
     # The following attribute is set to True to automatically check the state
     # of the switches in the open method to keep the motor to move if a switch
     # has been disconnected or hit.
@@ -199,6 +201,11 @@ class Phidget4AStepper(Actuator):
       speed: The speed to reach, in `mm/s`.
     """
 
+    # Ensuring that no switch was hit yet
+    if self._switch_hit:
+      self._switch_hit = False
+      raise ValueError(f"A switch has been hit or disconnected !")
+
     # Switching the control mode if needed
     if not self._motor.getControlMode() == StepperControlMode.CONTROL_MODE_RUN:
       self.log(logging.DEBUG, "Setting the control mode to run")
@@ -223,6 +230,11 @@ class Phidget4AStepper(Actuator):
       speed: If not :obj:`None`, the speed to use for moving to the desired
         position.
     """
+
+    # Ensuring that no switch was hit yet
+    if self._switch_hit:
+      self._switch_hit = False
+      raise ValueError(f"A switch has been hit or disconnected !")
 
     # Switching the control mode if needed
     if not (self._motor.getControlMode() ==
@@ -254,10 +266,20 @@ class Phidget4AStepper(Actuator):
   def get_speed(self) -> Optional[float]:
     """Returns the last known speed of the motor."""
 
+    # Ensuring that no switch was hit yet
+    if self._switch_hit:
+      self._switch_hit =  False
+      raise ValueError(f"A switch has been hit or disconnected !")
+
     return self._last_velocity
 
   def get_position(self) -> Optional[float]:
     """Returns the last known position of the motor."""
+
+    # Ensuring that no switch was hit yet
+    if self._switch_hit:
+      self._switch_hit =  False
+      raise ValueError(f"A switch has been hit or disconnected !")
 
     if not self._absolute_mode:
       return self._last_position
@@ -337,5 +359,5 @@ class Phidget4AStepper(Actuator):
     """Callback when a switch is hit."""
 
     if digital_input.default_state is not bool(state):
+      self._switch_hit = True
       self.stop()
-      raise ValueError(f"A switch has been hit or disconnected !")
