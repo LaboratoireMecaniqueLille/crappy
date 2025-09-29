@@ -185,6 +185,12 @@ Eurotherm EPC3008
    :members: open, reconnect, get_data, set_cmd, close
    :special-members: __init__
 
+Flow Controller Alicat
+++++++
+.. autoclass:: crappy.inout.FlowControllerAlicat
+   :members: open, get_data, set_cmd, close
+   :special-members: __init__
+
 Parent In/Out
 -------------
 
