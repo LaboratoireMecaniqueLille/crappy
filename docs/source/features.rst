@@ -777,7 +777,7 @@ Sensors
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
 
-- :ref:Eurotherm EPC3008
+- :ref:`Eurotherm EPC3008`
 
   Controls an  `Eurotherm EPC3008 <https://www.eurotherm.com/us/products/temperature-controllers-us/single-loop-temperature-controllers-us/epc3000-programmable-controllers/>`_ temperature controller.  
   Allows setting the temperature setpoint and reading the current process value.  
@@ -785,7 +785,7 @@ Sensors
 
   .. Note:: This object was developed for furnace control but could be adapted to similar Eurotherm models supporting Modbus RTU.
 
-- :ref:FlowControllerAlicat
+- :ref:`FlowControllerAlicat`
 
   Reads and controls an Alicat mass flow controller <https://www.alicat.com/products/mass-flow-meters-and-controllers/mass-flow-controllers/>_ over Modbus RTU.  
   Can acquire several process variables such as pressure, temperature, mass flow and volumetric flow, and also set the mass flow setpoint.  
