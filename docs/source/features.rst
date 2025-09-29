@@ -787,7 +787,7 @@ Sensors
 
 - :ref:`FlowControllerAlicat`
 
-  Reads and controls an Alicat mass flow controller <https://www.alicat.com/products/mass-flow-meters-and-controllers/mass-flow-controllers/>_ over Modbus RTU.  
+  Reads and controls an `Alicat mass flow controller <https://www.alicat.com/products/mass-flow-meters-and-controllers/mass-flow-controllers/>`_ over Modbus RTU.  
   Can acquire several process variables such as pressure, temperature, mass flow and volumetric flow, and also set the mass flow setpoint.  
   Communicates over a serial RS485 connection and supports flexible variable selection via the ``svp`` argument.
 
