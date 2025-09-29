@@ -23,7 +23,7 @@ from .spectrum_m2i4711 import SpectrumM2I4711
 from .waveshare_ad_da import WaveshareADDA
 from .waveshare_high_precision import WaveshareHighPrecision
 from .eurotherm_EPC3008 import EurothermEPC3008
-from .FlowControllerAlicat import FlowControllerAlicat
+from .flow_controller_alicat import FlowControllerAlicat
 
 from .ft232h import ADS1115FT232H
 from .ft232h import GPIOSwitchFT232H
