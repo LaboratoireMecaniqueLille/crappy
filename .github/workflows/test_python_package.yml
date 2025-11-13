@@ -40,6 +40,9 @@ jobs:
     # Install the crappy Python module
     - name: Install Crappy
       run: python -m pip install .
+    # Install the crappy Python module
+    - name: Install test dependencies
+      run: python -m pip install opencv-python scikit-image
     # On Windows, Crappy can run even though there is no graphical environment
     # Running the unit tests to check that everything's working as expected
     - name: Test Crappy (Windows)
