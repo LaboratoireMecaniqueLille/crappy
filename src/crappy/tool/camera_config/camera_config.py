@@ -225,6 +225,12 @@ class CameraConfig(tk.Tk):
                                 "killing it !")
       self._histogram_process.terminate()
 
+    # Close the queues to properly end all multiprocessing objects
+    self.log(logging.DEBUG, "Closing the queues communicating with the "
+                            "histogram process")
+    self._img_in.close()
+    self._img_out.close()
+
     self.log(logging.DEBUG, "Destroying the configuration window")
 
     try:
