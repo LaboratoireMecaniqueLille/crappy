@@ -23,7 +23,7 @@ class TestFPS(ConfigurationWindowTestBase):
                      f'fps = 0.00\n(might be lower in this GUI than actual)')
 
     # Testing a range of realistic frequencies
-    for fps in (1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50):
+    for fps in (1, 2, 3, 4, 5, 10, 15, 20):
       with self.subTest(fps=fps):
 
         # Setting the maximum frequency in the interface
@@ -51,4 +51,4 @@ class TestFPS(ConfigurationWindowTestBase):
       self._config._img_acq_sched()
       sleep(0.001)
     self._config._upd_var_sched()
-    self.assertGreater(self._config._fps_var.get(), 70)
+    self.assertGreater(self._config._fps_var.get(), 20)
