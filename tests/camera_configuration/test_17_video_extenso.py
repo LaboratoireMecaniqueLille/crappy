@@ -52,6 +52,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     # Get the width of the canvas
     width = self._config._img_canvas.winfo_width()
+    print(width)
 
     # Start drawing a box outside the image
     self._config._img_canvas.event_generate(
