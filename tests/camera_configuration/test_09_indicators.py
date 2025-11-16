@@ -136,7 +136,8 @@ class TestIndicators(ConfigurationWindowTestBase):
 
     # Checking if the position and reticle values are updated correctly when
     # moving the mouse around
-    img_ratio = 320 / 240
+    img_ratio = ((self._config._img_canvas.winfo_width() - 2) /
+                 (self._config._img_canvas.winfo_height() - 2))
     for x, y in product(range(1, self._config._img_canvas.winfo_width(),
                               self._config._img_canvas.winfo_width() // 10),
                         range(1, self._config._img_canvas.winfo_height(),

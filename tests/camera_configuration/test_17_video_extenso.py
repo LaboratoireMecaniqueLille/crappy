@@ -45,9 +45,13 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
 
+    # Get the width of the canvas
+    width = self._config._img_canvas.winfo_width()
+
     # Start drawing a box outside the image
     self._config._img_canvas.event_generate(
-        '<ButtonPress-1>', when="now", x=-20, y=-20)
+        '<ButtonPress-1>', when="now",
+        x=-int(0.025 * width), y=-int(0.025 * width))
     self._config._upd_sched()
 
     # The box should not be set for now
@@ -55,7 +59,8 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     # Start drawing the selection box inside the image
     self._config._img_canvas.event_generate(
-        '<ButtonPress-1>', when="now", x=20, y=20)
+        '<ButtonPress-1>', when="now",
+        x=int(0.025 * width), y=int(0.025 * width))
     self._config._upd_sched()
 
     # The box should not be set for now
@@ -63,21 +68,25 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     # Move the mouse with the button pressed to complete the selection box
     self._config._img_canvas.event_generate(
-        '<B1-Motion>', when="now", x=50, y=50)
+        '<B1-Motion>', when="now",
+        x=int(0.0625 * width), y=int(0.0625 * width))
     self._config._upd_sched()
 
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
 
     # Move the mouse iteratively in case a border is hit
-    for i in range(50, 500, 50):
+    for i in range(int(0.0625 * width),
+                   int(0.625 * width),
+                   int(0.0625 * width)):
       self._config._img_canvas.event_generate(
           '<B1-Motion>', when="now", x=i, y=i)
       self._config._upd_sched()
 
     # Release the mouse button to complete the box
     self._config._img_canvas.event_generate(
-        '<ButtonRelease-1>', when="now", x=500, y=500)
+        '<ButtonRelease-1>', when="now",
+        x=int(0.625 * width), y=int(0.625 * width))
     self._config._upd_sched()
 
     # The spots should have been populated now
