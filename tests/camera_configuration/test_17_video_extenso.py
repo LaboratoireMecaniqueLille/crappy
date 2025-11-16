@@ -51,12 +51,29 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     self.assertTrue(self._config._detector.spots.empty())
 
     # Get the width of the canvas
+    width = self._config._img_canvas.winfo_width()
     height = self._config._img_canvas.winfo_height()
+
+    # Get the ratio of the canvas and the image
+    can_ratio = width / height
+    img_ratio = 320 / 240
+
+    # Determine the position of the image on the canvas from the ratios
+    if can_ratio > img_ratio:
+      x0 = int(0.5 * height * (can_ratio - img_ratio))
+      y0 = 0
+      width_eff =  width - 2 * x0
+      height_eff = height
+    else:
+      x0 = 0
+      y0 = int(0.5 * width * (1 / can_ratio - 1 / img_ratio))
+      width_eff = width
+      height_eff = height - 2 * y0
 
     # Start drawing a box outside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now",
-        x=-int(0.02 * height), y=-int(0.02 * height))
+        x=int(x0 - 0.02 * width_eff), y=int(y0 - 0.02 * height_eff))
     self._config._upd_sched()
 
     # The box should not be set for now
@@ -65,7 +82,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     # Start drawing the selection box inside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now",
-        x=int(0.08 * height), y=int(0.08 * height))
+        x=int(x0 + 0.08 * width_eff), y=int(y0 + 0.08 * height_eff))
     self._config._upd_sched()
 
     # The box should not be set for now
@@ -73,22 +90,24 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     # Move the mouse with the button pressed to complete the selection box
     self._config._img_canvas.event_generate(
-        '<B1-Motion>', when="now", x=int(0.1 * height), y=int(0.1 * height))
+        '<B1-Motion>', when="now",
+        x=int(x0 + 0.1 * width_eff), y=int(x0 + 0.1 * height_eff))
     self._config._upd_sched()
 
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
 
     # Move the mouse iteratively in case a border is hit
-    for i in range(int(0.1 * height), int(0.9 * height), int(0.1 * height)):
+    for i in range(10, 90, 10):
       self._config._img_canvas.event_generate(
-          '<B1-Motion>', when="now", x=i, y=i)
+          '<B1-Motion>', when="now",
+          x=int(x0 + i * width_eff / 100), y=int(y0 + i * height_eff / 100))
       self._config._upd_sched()
 
     # Release the mouse button to complete the box
     self._config._img_canvas.event_generate(
         '<ButtonRelease-1>', when="now",
-        x=int(0.9 * height), y=int(0.9 * height))
+        x=int(x0 + 0.9 * height_eff), y=int(y0 + 0.9 * height_eff))
     self._config._upd_sched()
 
     # The spots should have been populated now

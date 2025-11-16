@@ -94,7 +94,8 @@ class TestIndicators(ConfigurationWindowTestBase):
     self._camera._min = 0
     self._camera._max = 255
 
-    # Checking if the zoom level is updated correctly when zooming in
+    # Checking if the zoom level is updated correctly when zooming in at the
+    # center of the image
     for i in range(self._config._max_zoom_step):
       with self.subTest(zoom_step=i):
         if system() == "Linux":
@@ -114,7 +115,8 @@ class TestIndicators(ConfigurationWindowTestBase):
         self.assertEqual(self._config._zoom_txt.get(),
                          f'Zoom: {self._config._zoom_level.get():.1f}%')
 
-    # Checking if the zoom level is updated correctly when zooming out
+    # Checking if the zoom level is updated correctly when zooming out at the
+    # center of the image
     for i in range(self._config._max_zoom_step):
       with self.subTest(zoom_step=self._config._max_zoom_step - i):
         if system() == "Linux":
@@ -134,14 +136,30 @@ class TestIndicators(ConfigurationWindowTestBase):
         self.assertEqual(self._config._zoom_txt.get(),
                          f'Zoom: {self._config._zoom_level.get():.1f}%')
 
+    # Get the width of the canvas
+    width = self._config._img_canvas.winfo_width()
+    height = self._config._img_canvas.winfo_height()
+
+    # Get the ratio of the canvas and the image
+    can_ratio = width / height
+    img_ratio = 320 / 240
+
+    # Determine the position of the image on the canvas from the ratios
+    if can_ratio > img_ratio:
+      x0 = int(0.5 * height * (can_ratio - img_ratio))
+      y0 = 0
+      width_eff = width - 2 * x0
+      height_eff = height
+    else:
+      x0 = 0
+      y0 = int(0.5 * width * (1 / can_ratio - 1 / img_ratio))
+      width_eff = width
+      height_eff = height - 2 * y0
+
     # Checking if the position and reticle values are updated correctly when
     # moving the mouse around
-    img_ratio = ((self._config._img_canvas.winfo_width() - 2) /
-                 (self._config._img_canvas.winfo_height() - 2))
-    for x, y in product(range(1, self._config._img_canvas.winfo_width(),
-                              self._config._img_canvas.winfo_width() // 10),
-                        range(1, self._config._img_canvas.winfo_height(),
-                              self._config._img_canvas.winfo_height() // 10)):
+    for x, y in product(range(x0 + 1, x0 + width_eff, width_eff // 10),
+                        range(y0 + 1, y0 + height_eff, height_eff // 10)):
       with self.subTest(x=x, y=y):
 
         # Moving the mouse over the displayed image
@@ -156,11 +174,9 @@ class TestIndicators(ConfigurationWindowTestBase):
         self._config._upd_sched()
 
         # Checking that the indicators are correctly updated
-        reticle = int((x / self._config._img_canvas.winfo_width() * img_ratio +
-                       y / self._config._img_canvas.winfo_height()) /
-                      (img_ratio + 1) * 255)
-        x_pos = int(x / self._config._img_canvas.winfo_width() * 320)
-        y_pos = int(y / self._config._img_canvas.winfo_height() * 240)
+        reticle = int(((x - x0) + (y - y0)) / (width_eff + height_eff) * 255)
+        x_pos = int((x - x0) / width_eff * 320)
+        y_pos = int((y - y0) / height_eff * 240)
         self.assertAlmostEqual(self._config._reticle_val.get(), reticle,
                                delta=2)
         self.assertAlmostEqual(self._config._x_pos.get(), x_pos, delta=1)
