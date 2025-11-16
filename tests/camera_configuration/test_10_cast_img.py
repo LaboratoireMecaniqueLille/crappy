@@ -25,7 +25,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     x, y = np.mgrid[0:240, 0:320]
 
     # 1 Channel, Shape 2, 8 bits image
-    img_1_2_8 = np.astype((x + y) / np.max(x + y) * 255, np.uint8)
+    img_1_2_8 = ((x + y) / np.max(x + y) * 255).astype(np.uint8)
 
     # The "regular" grey level image should be untouched
     self._config._cast_img(img_1_2_8)
@@ -37,7 +37,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     self.assertEqual(self._config._pil_img.mode, 'L')
 
     # 1 Channel, Shape 3, 8 bits image
-    img_1_3_8 = np.astype((x + y) / np.max(x + y) * 255, np.uint8)
+    img_1_3_8 = ((x + y) / np.max(x + y) * 255).astype(np.uint8)
     img_1_3_8 = img_1_3_8[:, :, np.newaxis]
 
     # The 3 dimensions grey level image should be cast to 2 dimensions
@@ -50,7 +50,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     self.assertEqual(self._config._pil_img.mode, 'L')
 
     # 2 Channel, Shape 3, 8 bits image
-    img_2_3_8 = np.astype((x + y) / np.max(x + y) * 255, np.uint8)
+    img_2_3_8 = ((x + y) / np.max(x + y) * 255).astype(np.uint8)
     img_2_3_8 = np.stack((img_2_3_8, img_2_3_8), axis=2)
 
     # The 3 dimensions grey level + alpha image should be cast to 2 dimensions
@@ -64,7 +64,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     self.assertEqual(self._config._pil_img.mode, 'L')
 
     # 3 Channel, Shape 3, 8 bits image
-    img_3_3_8 = np.astype((x + y) / np.max(x + y) * 255, np.uint8)
+    img_3_3_8 = ((x + y) / np.max(x + y) * 255).astype(np.uint8)
     img_3_3_8 = np.stack((img_3_3_8, img_3_3_8 - 1, img_3_3_8 + 1),
                          axis=2)
 
@@ -79,7 +79,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     self.assertEqual(self._config._pil_img.mode, 'RGB')
 
     # 4 Channel, Shape 3, 8 bits image
-    img_4_3_8 = np.astype((x + y) / np.max(x + y) * 255, np.uint8)
+    img_4_3_8 = ((x + y) / np.max(x + y) * 255).astype(np.uint8)
     img_4_3_8 = np.stack((img_4_3_8, img_4_3_8 - 1, img_4_3_8 + 1,
                           img_4_3_8), axis=2)
 
@@ -96,7 +96,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     self.assertEqual(self._config._pil_img.mode, 'RGB')
 
     # 1 Channel, Shape 2, 16 bits image
-    img_1_2_16 = np.astype((x + y) / np.max(x + y) * 255, np.uint16)
+    img_1_2_16 = ((x + y) / np.max(x + y) * 255).astype(np.uint16)
 
     # The 16 bits grey level image should be cast to 8 bits
     self._config._cast_img(img_1_2_16)
@@ -110,7 +110,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     self.assertEqual(self._config._pil_img.mode, 'L')
 
     # 1 Channel, Shape 3, 16 bits image
-    img_1_3_16 = np.astype((x + y) / np.max(x + y) * 255, np.uint16)
+    img_1_3_16 = ((x + y) / np.max(x + y) * 255).astype(np.uint16)
     img_1_3_16 = img_1_3_16[:, :, np.newaxis]
 
     # The 3 dimensions 16 bits grey level image should be cast to 2 dimensions
@@ -126,7 +126,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     self.assertEqual(self._config._pil_img.mode, 'L')
 
     # 2 Channel, Shape 3, 16 bits image
-    img_2_3_16 = np.astype((x + y) / np.max(x + y) * 255, np.uint16)
+    img_2_3_16 = ((x + y) / np.max(x + y) * 255).astype(np.uint16)
     img_2_3_16 = np.stack((img_2_3_16, img_2_3_16), axis=2)
 
     # The 3 dimensions grey level + alpha 16 bits image should be cast to 2
@@ -142,7 +142,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     self.assertEqual(self._config._pil_img.mode, 'L')
 
     # 3 Channel, Shape 3, 16 bits image
-    img_3_3_16 = np.astype((x + y) / np.max(x + y) * 255, np.uint16)
+    img_3_3_16 = ((x + y) / np.max(x + y) * 255).astype(np.uint16)
     img_3_3_16 = np.stack((img_3_3_16, img_3_3_16 + 1, img_3_3_16 - 1), axis=2)
 
     # The 3 dimensions RGB 16 bits image should be reversed and cast to 8 bits
@@ -157,7 +157,7 @@ class TestCastImage(ConfigurationWindowTestBase):
     self.assertEqual(self._config._pil_img.mode, 'RGB')
 
     # 4 Channel, Shape 3, 16 bits image
-    img_4_3_16 = np.astype((x + y) / np.max(x + y) * 255, np.uint16)
+    img_4_3_16 = ((x + y) / np.max(x + y) * 255).astype(np.uint16)
     img_4_3_16 = np.stack((img_4_3_16, img_4_3_16 + 1, img_4_3_16 - 1,
                            img_4_3_16), axis=2)
 

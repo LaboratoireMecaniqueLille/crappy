@@ -86,8 +86,8 @@ class FakeTestCameraSimple(Camera):
     """"""
 
     x, y = np.mgrid[0:240, 0:320]
-    ret = np.astype(self._min + (x + y) / np.max(x + y) *
-                    (self._max - self._min), np.uint8)
+    ret = (self._min + (x + y) / np.max(x + y) *
+           (self._max - self._min)).astype(np.uint8)
     return time(), ret
 
 
