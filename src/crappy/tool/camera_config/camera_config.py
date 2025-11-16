@@ -215,9 +215,9 @@ class CameraConfig(tk.Tk):
     if self._upd_var_sched_obj is not None:
       self.after_cancel(self._upd_var_sched_obj)
 
-    # Stopping the event loop and the histogram process
+    # Stopping the event loop and wait for the histogram process to finish
     self._stop_event.set()
-    sleep(0.1)
+    self._histogram_process.join(1)
 
     # Killing the histogram process if it's still alive
     if self._histogram_process.is_alive():
