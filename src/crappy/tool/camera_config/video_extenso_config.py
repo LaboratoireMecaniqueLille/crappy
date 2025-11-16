@@ -137,6 +137,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
 
     # Now actually trying to detect the spots
     try:
+      print(x_top, x_bottom, y_left, y_right)
       self._detector.detect_spots(self._original_img[x_top: x_bottom,
                                                      y_left: y_right],
                                   x_top, y_left)
