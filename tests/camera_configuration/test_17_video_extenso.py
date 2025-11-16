@@ -91,9 +91,6 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
         x=int(0.9 * height), y=int(0.9 * height))
     self._config._upd_sched()
 
-    # Give some time for the interface to update
-    sleep(2)
-
     # The spots should have been populated now
     self.assertFalse(self._config._spots.empty())
     self.assertIsInstance(self._config._spots.spot_1, Box)

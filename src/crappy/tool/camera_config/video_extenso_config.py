@@ -124,6 +124,8 @@ class VideoExtensoConfig(CameraConfigBoxes):
 
     # If it's just a regular click with no dragging, do nothing
     if self._img is None or self._select_box.no_points():
+      print(self._img)
+      print(self._select_box)
       self._select_box.reset()
       return
 
@@ -132,12 +134,12 @@ class VideoExtensoConfig(CameraConfigBoxes):
 
     # If the box is flat, resetting it
     if y_left == y_right or x_top == x_bottom:
+      print(y_left == y_right, x_top == x_bottom)
       self._select_box.reset()
       return
 
     # Now actually trying to detect the spots
     try:
-      print(x_top, x_bottom, y_left, y_right)
       self._detector.detect_spots(self._original_img[x_top: x_bottom,
                                                      y_left: y_right],
                                   x_top, y_left)
