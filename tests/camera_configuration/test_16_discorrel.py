@@ -31,6 +31,11 @@ class TestDISCorrel(ConfigurationWindowTestBase):
     if system() == 'Windows':
       sleep(3)
 
+  def customTearDown(self) -> None:
+    """"""
+
+    self._config._correl_box = Box(0, 100, 0, 100)
+
   def test_discorrel(self) -> None:
     """"""
 

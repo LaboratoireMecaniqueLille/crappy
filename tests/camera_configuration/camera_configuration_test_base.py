@@ -70,11 +70,18 @@ class ConfigurationWindowTestBase(unittest.TestCase):
   def tearDown(self) -> None:
     """"""
 
+    self.customTearDown()
+
     if self._config is not None and self._exit:
       self._config.finish()
 
     if self._log_queue is not None:
       self._log_queue.close()
+
+  def customTearDown(self) -> None:
+    """"""
+
+    ...
 
 
 class FakeTestCameraSimple(Camera):
