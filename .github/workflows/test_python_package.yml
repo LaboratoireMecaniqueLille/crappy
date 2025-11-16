@@ -48,16 +48,16 @@ jobs:
     - name: Test Crappy (Windows)
       if: runner.os == 'Windows'
       run: | 
-        python -m unittest -v tests.camera_configuration
         python -m unittest -v tests.camera_configuration_tools
+        python -m unittest -v tests.camera_configuration
     # On Linux, the Xvfb virtual X server can be used
     # Therefore, it is possible to run the automated test suite
     - name: Test Crappy (Linux)
       if: runner.os == 'Linux'
       run: |
         export DISPLAY=:99
-        Xvfb :99 -screen 0 1920x1080x24 & python -m unittest -v tests.camera_configuration
         Xvfb :99 -screen 0 1920x1080x24 & python -m unittest -v tests.camera_configuration_tools
+        Xvfb :99 -screen 0 1920x1080x24 & python -m unittest -v tests.camera_configuration
     # On macOS, it is not possible to set up a virtual graphical environment
     # Therefore, not all automated tests can be run on macOS
     - name: Import Crappy (macOS)
