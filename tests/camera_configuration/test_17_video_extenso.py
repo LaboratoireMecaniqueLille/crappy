@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from time import sleep
+from platform import system
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSpots)
@@ -26,6 +27,10 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     self._config._testing = True
     self._config.start()
+
+    # Allow some time for the HistogramProcess to start on Windows
+    if system() == 'Windows':
+      sleep(3)
 
   def test_video_extenso(self) -> None:
     """"""
@@ -104,5 +109,3 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     # Re-populate the spots to avoid the interface crashing at exit
     self._config._detector.spots = spots
-
-

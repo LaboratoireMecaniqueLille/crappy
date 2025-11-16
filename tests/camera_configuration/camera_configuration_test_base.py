@@ -4,10 +4,11 @@ import unittest
 from typing import Optional
 from multiprocessing import Queue, queues
 import logging
-from time import time
+from time import time, sleep
 import numpy as np
 import sys
 import cv2
+from platform import system
 
 from . import mock_messagebox
 
@@ -61,6 +62,10 @@ class ConfigurationWindowTestBase(unittest.TestCase):
 
     self._config._testing = True
     self._config.start()
+
+    # Allow some time for the HistogramProcess to start on Windows
+    if system() == 'Windows':
+      sleep(3)
 
   def tearDown(self) -> None:
     """"""

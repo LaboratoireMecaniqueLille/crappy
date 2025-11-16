@@ -50,7 +50,7 @@ class TestHistogram(ConfigurationWindowTestBase):
 
     # Start the histogram process and wait for it to work
     self._config._histogram_process.start()
-    sleep(2)
+    sleep(3)
 
     try:
       # The process should now be alive

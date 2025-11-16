@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import sleep, time
+from platform import system
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -24,6 +25,10 @@ class TestNormalRun(ConfigurationWindowTestBase):
 
     self._config._testing = False
     self._config.start()
+
+    # Allow some time for the HistogramProcess to start on Windows
+    if system() == 'Windows':
+      sleep(3)
 
   def test_normal_run(self) -> None:
     """"""

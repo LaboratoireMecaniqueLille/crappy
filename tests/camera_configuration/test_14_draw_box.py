@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import sleep
+from platform import system
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -26,6 +27,10 @@ class TestDrawBox(ConfigurationWindowTestBase):
 
     self._config._testing = True
     self._config.start()
+
+    # Allow some time for the HistogramProcess to start on Windows
+    if system() == 'Windows':
+      sleep(3)
 
   def test_draw_box(self) -> None:
     """"""

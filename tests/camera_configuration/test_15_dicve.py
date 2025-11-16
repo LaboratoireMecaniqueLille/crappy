@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from time import sleep
+from platform import system
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -27,6 +28,10 @@ class TestDICVE(ConfigurationWindowTestBase):
     self._config._testing = True
     self._config._patch_size.value = 20
     self._config.start()
+
+    # Allow some time for the HistogramProcess to start on Windows
+    if system() == 'Windows':
+      sleep(3)
 
   def test_dicve(self) -> None:
     """"""
