@@ -67,7 +67,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     # Start drawing the selection box inside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now",
-        x=int(0.02 * height), y=int(0.02 * height))
+        x=int(0.08 * height), y=int(0.08 * height))
     self._config._upd_sched()
 
     # The box should not be set for now
