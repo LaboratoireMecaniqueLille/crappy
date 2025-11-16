@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from time import sleep
+
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraParams)
 
@@ -98,6 +100,8 @@ class TestSetParams(ConfigurationWindowTestBase):
     self.assertFalse(self._camera._scale_float_setter_called)
     self.assertFalse(self._camera._choice_setter_called)
 
+    # Sleeping to avoid zero division error on Windows
+    sleep(0.05)
     # Looping once
     self._config._img_acq_sched()
     self._config._upd_var_sched()
@@ -118,6 +122,8 @@ class TestSetParams(ConfigurationWindowTestBase):
 
     # Looping once again but this time with the update button clicked
     self._config._update_button.invoke()
+    # Sleeping to avoid zero division error on Windows
+    sleep(0.05)
     self._config._img_acq_sched()
     self._config._upd_var_sched()
     self._config._upd_sched()

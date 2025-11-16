@@ -2,6 +2,7 @@
 
 from platform import system
 from itertools import product
+from time import sleep
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -170,6 +171,8 @@ class TestZoom(ConfigurationWindowTestBase):
         self._config._zoom_values.y_low = y_min / 255
         self._config._zoom_values.y_high = y_max / 255
 
+        # Sleeping to avoid zero division error on Windows
+        sleep(0.05)
         # Update the displayed image
         self._config._img_acq_sched()
         self._config._upd_var_sched()

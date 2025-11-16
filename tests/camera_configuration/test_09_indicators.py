@@ -3,6 +3,7 @@
 from itertools import product
 from math import log2, ceil
 from platform import system
+from time import sleep
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -68,6 +69,8 @@ class TestIndicators(ConfigurationWindowTestBase):
         self._camera._min = min_
         self._camera._max = max_
 
+        # Sleeping to avoid zero division error on Windows
+        sleep(0.05)
         # Looping to update the image
         self._config._img_acq_sched()
         self._config._upd_var_sched()
@@ -144,6 +147,8 @@ class TestIndicators(ConfigurationWindowTestBase):
         self._config._img_canvas.event_generate('<Motion>', when="now",
                                                 x=x, y=y)
 
+        # Sleeping to avoid zero division error on Windows
+        sleep(0.05)
         # Looping to update the image
         self._config._img_acq_sched()
         self._config._upd_var_sched()

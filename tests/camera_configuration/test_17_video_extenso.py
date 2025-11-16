@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from copy import deepcopy
+from time import sleep
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSpots)
@@ -29,6 +30,8 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
   def test_video_extenso(self) -> None:
     """"""
 
+    # Sleeping to avoid zero division error on Windows
+    sleep(0.05)
     # Calling the first loop
     self._config._img_acq_sched()
     self._config._upd_var_sched()

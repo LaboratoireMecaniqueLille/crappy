@@ -103,8 +103,8 @@ class TestLoopImg(ConfigurationWindowTestBase):
     self.assertIsNone(self._config._hist)
     self.assertIsNone(self._config._pil_hist)
 
-    # Sleeping to give some time for the histogram process to work
-    sleep(2)
+    # Sleeping to avoid zero division error on Windows
+    sleep(0.05)
     # Calling a second loop
     self._config._img_acq_sched()
     self._config._upd_var_sched()

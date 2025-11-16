@@ -46,6 +46,8 @@ class TestResize(ConfigurationWindowTestBase):
 
     # Call new loops to apply the changes
     for _ in range(2):
+      # Sleeping to avoid zero division error on Windows
+      sleep(0.05)
       self._config._img_acq_sched()
       self._config._upd_var_sched()
       self._config._upd_sched()
@@ -72,6 +74,8 @@ class TestResize(ConfigurationWindowTestBase):
 
     # Call new loops to apply the changes
     for _ in range(2):
+      # Sleeping to avoid zero division error on Windows
+      sleep(0.05)
       self._config._img_acq_sched()
       self._config._upd_var_sched()
       self._config._upd_sched()

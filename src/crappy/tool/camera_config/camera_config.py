@@ -153,6 +153,9 @@ class CameraConfig(tk.Tk):
     self._n_loops = 0
     self._last_upd_t = time()
 
+    # Sleeping to avoid zero division error on Windows in edge cases
+    sleep(0.05)
+
     # Starting the endless loops of automatic updates
     if not self._testing:
       self._upd_sched()

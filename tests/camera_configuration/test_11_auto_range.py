@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from time import sleep
+
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
 
@@ -37,6 +39,8 @@ class TestAutoRange(ConfigurationWindowTestBase):
     # The auto range feature should be enabled
     self.assertTrue(self._config._auto_range.get())
 
+    # Sleeping to avoid zero division error on Windows
+    sleep(0.05)
     # Call a second loop
     self._config._img_acq_sched()
     self._config._upd_var_sched()
@@ -55,6 +59,8 @@ class TestAutoRange(ConfigurationWindowTestBase):
     # The auto range feature should be disabled
     self.assertFalse(self._config._auto_range.get())
 
+    # Sleeping to avoid zero division error on Windows
+    sleep(0.05)
     # Call a third loop
     self._config._img_acq_sched()
     self._config._upd_var_sched()
