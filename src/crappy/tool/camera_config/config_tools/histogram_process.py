@@ -4,6 +4,7 @@ import numpy as np
 from multiprocessing import Process, current_process, get_start_method
 from multiprocessing.synchronize import Event
 from multiprocessing.queues import Queue
+from queue import Empty
 import logging
 import logging.handlers
 from typing import Optional
@@ -126,6 +127,9 @@ class HistogramProcess(Process):
       self._logger.exception("Caught Exception while running, stopping !",
                              exc_info=exc)
     finally:
+      self.log(logging.DEBUG, "Empty queues before exiting")
+      self._flush_queue(self._img_in)
+      self._flush_queue(self._img_out)
       self.log(logging.INFO, "HistogramProcess finished")
 
   @staticmethod
@@ -136,6 +140,21 @@ class HistogramProcess(Process):
     the histogram."""
 
     return np.where(x <= histo, 0, 255)
+
+  @staticmethod
+  def _flush_queue(queue: Queue) -> None:
+    """Helper for flushing a :class:`~multiprocessing.queues.Queue` before
+    exiting.
+
+    On Windows, not empty queues can prevent the HistogramProcess from
+    finishing on time.
+    """
+
+    try:
+      while True:
+        queue.get_nowait()
+    except Empty:
+      pass
 
   def log(self, level: int, msg: str) -> None:
     """Records log messages for the HistogramProcess.
