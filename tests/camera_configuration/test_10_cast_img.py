@@ -5,6 +5,7 @@ import numpy as np
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
 
+
 class TestCastImage(ConfigurationWindowTestBase):
   """"""
 

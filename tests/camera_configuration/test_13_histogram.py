@@ -7,6 +7,7 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
 from crappy.tool.camera_config.camera_config import CameraConfig
 
+
 class TestHistogram(ConfigurationWindowTestBase):
   """"""
 

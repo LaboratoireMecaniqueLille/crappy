@@ -5,6 +5,7 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
 from crappy.tool.camera_config.camera_config_boxes import CameraConfigBoxes
 
+
 class TestDrawBox(ConfigurationWindowTestBase):
   """"""
 

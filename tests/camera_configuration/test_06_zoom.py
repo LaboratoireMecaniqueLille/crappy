@@ -16,10 +16,10 @@ class TestZoom(ConfigurationWindowTestBase):
     super().__init__(*args,
                      camera=FakeTestCameraSimple(min_val=0, max_val=255),
                      **kwargs)
-  
+
   def test_zoom(self) -> None:
     """"""
-    
+
     # Looping once to load a first image
     self._config._img_acq_sched()
     self._config._upd_var_sched()

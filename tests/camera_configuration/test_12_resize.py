@@ -6,6 +6,7 @@ from re import fullmatch
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
 
+
 class TestResize(ConfigurationWindowTestBase):
   """"""
 

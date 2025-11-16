@@ -3,6 +3,7 @@
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
 
+
 class TestAutoRange(ConfigurationWindowTestBase):
   """"""
 
