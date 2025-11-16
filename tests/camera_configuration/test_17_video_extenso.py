@@ -51,13 +51,12 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     self.assertTrue(self._config._detector.spots.empty())
 
     # Get the width of the canvas
-    width = self._config._img_canvas.winfo_width()
-    print(width)
+    height = self._config._img_canvas.winfo_height()
 
     # Start drawing a box outside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now",
-        x=-int(0.025 * width), y=-int(0.025 * width))
+        x=-int(0.02 * height), y=-int(0.02 * height))
     self._config._upd_sched()
 
     # The box should not be set for now
@@ -66,7 +65,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     # Start drawing the selection box inside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now",
-        x=int(0.025 * width), y=int(0.025 * width))
+        x=int(0.02 * height), y=int(0.02 * height))
     self._config._upd_sched()
 
     # The box should not be set for now
@@ -74,17 +73,14 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     # Move the mouse with the button pressed to complete the selection box
     self._config._img_canvas.event_generate(
-        '<B1-Motion>', when="now",
-        x=int(0.0625 * width), y=int(0.0625 * width))
+        '<B1-Motion>', when="now", x=int(0.1 * height), y=int(0.1 * height))
     self._config._upd_sched()
 
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
 
     # Move the mouse iteratively in case a border is hit
-    for i in range(int(0.0625 * width),
-                   int(0.625 * width),
-                   int(0.0625 * width)):
+    for i in range(int(0.1 * height), int(0.9 * height), int(0.1 * height)):
       self._config._img_canvas.event_generate(
           '<B1-Motion>', when="now", x=i, y=i)
       self._config._upd_sched()
@@ -92,8 +88,11 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     # Release the mouse button to complete the box
     self._config._img_canvas.event_generate(
         '<ButtonRelease-1>', when="now",
-        x=int(0.625 * width), y=int(0.625 * width))
+        x=int(0.9 * height), y=int(0.9 * height))
     self._config._upd_sched()
+
+    # Give some time for the interface to update
+    sleep(0.5)
 
     # The spots should have been populated now
     self.assertFalse(self._config._spots.empty())
