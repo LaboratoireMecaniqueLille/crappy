@@ -86,6 +86,10 @@ class HistogramProcess(Process):
             (img, auto_range,
              low_thresh, high_thresh) = self._img_in.get_nowait()
 
+          # Fast-forward without running calculation
+          if self._stop_event.is_set():
+            break
+
           self.log(logging.DEBUG, "Received image from CameraConfig")
 
           # Calculating the histogram
