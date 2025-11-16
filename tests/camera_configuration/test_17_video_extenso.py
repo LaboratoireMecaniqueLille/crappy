@@ -62,8 +62,6 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
 
-    print(self._config._select_box)
-
     # Start drawing the selection box inside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now",
@@ -73,8 +71,6 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
 
-    print(self._config._select_box)
-
     # Move the mouse with the button pressed to complete the selection box
     self._config._img_canvas.event_generate(
         '<B1-Motion>', when="now", x=int(0.1 * height), y=int(0.1 * height))
@@ -83,23 +79,17 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
 
-    print(self._config._select_box)
-
     # Move the mouse iteratively in case a border is hit
     for i in range(int(0.1 * height), int(0.9 * height), int(0.1 * height)):
       self._config._img_canvas.event_generate(
           '<B1-Motion>', when="now", x=i, y=i)
       self._config._upd_sched()
 
-      print(self._config._select_box)
-
     # Release the mouse button to complete the box
     self._config._img_canvas.event_generate(
         '<ButtonRelease-1>', when="now",
         x=int(0.9 * height), y=int(0.9 * height))
     self._config._upd_sched()
-
-    print(self._config._select_box)
 
     # The spots should have been populated now
     self.assertFalse(self._config._spots.empty())
