@@ -10,17 +10,22 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
 
 
 class TestIndicators(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the display of the status indicators in the 
+  configuration window.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args,
                      camera=FakeTestCameraSimple(min_val=0, max_val=255),
                      **kwargs)
 
   def test_indicators(self) -> None:
-    """"""
+    """Tests whether the status indicators are correctly determined and
+    displayed in the interface."""
 
     # Monitoring variables should be initialized to their default values
     self.assertEqual(self._config._nb_bits.get(), 0)

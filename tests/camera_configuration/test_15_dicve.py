@@ -11,16 +11,21 @@ from crappy.tool.camera_config import SpotsBoxes, Box
 
 
 class TestDICVE(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the :class:`~crappy.tool.dic_ve_config.DICVEConfig` 
+  class.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
     self._exit = False
 
   def customSetUp(self) -> None:
-    """"""
+    """Used for instantiating the special configuration interface and for
+    setting a smaller patch size value for the tests."""
 
     self._config = DICVEConfig(self._camera, self._log_queue,
                                self._log_level, self._freq, SpotsBoxes())
@@ -34,12 +39,13 @@ class TestDICVE(ConfigurationWindowTestBase):
       sleep(3)
 
   def customTearDown(self) -> None:
-    """"""
+    """Used for ensuring at least one patch is defined, so that the interface
+    can exit even in case of a bug."""
 
     self._config._spots.spot_1 = Box(0, 100, 0, 100)
 
   def test_dicve(self) -> None:
-    """"""
+    """Tests whether the patches are correctly defined in several scenarios."""
 
     # Sleeping to avoid zero division error on Windows
     sleep(0.05)

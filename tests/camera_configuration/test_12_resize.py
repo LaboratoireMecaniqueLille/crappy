@@ -8,15 +8,20 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
 
 
 class TestResize(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the behavior of the configuration window when 
+  resized.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
 
   def test_resize(self) -> None:
-    """"""
+    """Tests whether the interface effectively resizes itself and the canvas
+    when resizing the overall window containing it."""
 
     # Calling the first loop
     self._config._img_acq_sched()

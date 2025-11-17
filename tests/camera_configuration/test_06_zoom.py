@@ -9,17 +9,20 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
 
 
 class TestZoom(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the zoom feature of the configuration window.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args,
                      camera=FakeTestCameraSimple(min_val=0, max_val=255),
                      **kwargs)
 
   def test_zoom(self) -> None:
-    """"""
+    """Tests whether the image is correctly updates when zooming in and out."""
 
     # Looping once to load a first image
     self._config._img_acq_sched()

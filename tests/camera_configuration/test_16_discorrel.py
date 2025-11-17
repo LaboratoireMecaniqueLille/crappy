@@ -11,15 +11,19 @@ from crappy.tool.camera_config import Box
 
 
 class TestDISCorrel(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the 
+  :class:`~crappy.tool.dis_correl_config.DISCorrelConfig` class.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
 
   def customSetUp(self) -> None:
-    """"""
+    """Used for instantiating the special configuration interface."""
 
     self._config = DISCorrelConfig(self._camera, self._log_queue,
                                    self._log_level, self._freq, Box())
@@ -32,12 +36,13 @@ class TestDISCorrel(ConfigurationWindowTestBase):
       sleep(3)
 
   def customTearDown(self) -> None:
-    """"""
+    """Used for ensuring that the patch is defined, so that the interface can
+    exit even in case of a bug."""
 
     self._config._correl_box = Box(0, 100, 0, 100)
 
   def test_discorrel(self) -> None:
-    """"""
+    """Tests whether the patch is correctly defined in several scenarios."""
 
     # Sleeping to avoid zero division error on Windows
     sleep(0.05)

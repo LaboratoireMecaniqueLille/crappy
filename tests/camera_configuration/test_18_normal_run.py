@@ -9,16 +9,20 @@ from crappy.tool.camera_config.camera_config import CameraConfig
 
 
 class TestNormalRun(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the normal operating mode of the configuration 
+  window.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
     self._exit = False
 
   def customSetUp(self) -> None:
-    """"""
+    """Used for setting the testing mode to :obj:`False`."""
 
     self._config = CameraConfig(self._camera, self._log_queue,
                                 self._log_level, self._freq)
@@ -31,7 +35,8 @@ class TestNormalRun(ConfigurationWindowTestBase):
       sleep(3)
 
   def test_normal_run(self) -> None:
-    """"""
+    """Tests whether the interface is able to start and finish correctly in
+    normal operating mode."""
 
     n_loops = 0
     t0 = time()

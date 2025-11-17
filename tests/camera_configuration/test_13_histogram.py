@@ -9,15 +9,20 @@ from crappy.tool.camera_config.camera_config import CameraConfig
 
 
 class TestHistogram(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the 
+  :class:`~crappy.tool.camera_config.config_tools.HistogramProcess` class.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
 
   def customSetUp(self) -> None:
-    """"""
+    """Used for instantiating the configuration window without starting it for
+    now."""
 
     self._config = CameraConfig(self._camera, self._log_queue,
                                 self._log_level, self._freq)
@@ -25,7 +30,8 @@ class TestHistogram(ConfigurationWindowTestBase):
     self._config._testing = True
 
   def test_histogram(self) -> None:
-    """"""
+    """Tests whether the histogram process starts and stops as expected, and if
+    it provides the correct output."""
 
     # Default configuration
     self.assertFalse(self._config._histogram_process.is_alive())

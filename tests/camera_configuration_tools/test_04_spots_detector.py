@@ -10,16 +10,20 @@ from crappy.tool.camera_config.config_tools import SpotsDetector
 
 @dataclass
 class Prop:
-  """"""
+  """Class for emulating the :mod:`scikit-image` bbox image property."""
 
   bbox: tuple[int, int, int, int]
 
 
 class TestSpotsDetector(unittest.TestCase):
-  """"""
+  """Class for testing the 
+  :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` class.
+
+  .. versionadded:: 2.0.8
+  """
 
   def test_01_overlap_bbox(self) -> None:
-    """"""
+    """Tests the SpotsDetector._overlap_bbox() method."""
 
     prop_ref = Prop((100, 100, 200, 200))
     for x in range(300):
@@ -37,7 +41,7 @@ class TestSpotsDetector(unittest.TestCase):
           self.assertTrue(SpotsDetector._overlap_bbox(prop_test, prop_ref))
 
   def test_02_detect_spot(self) -> None:
-    """"""
+    """Tests the SpotsDetector.detect_spots() method on a single spot."""
 
     # Instantiate spot detector
     detector = SpotsDetector(white_spots=False,
@@ -65,7 +69,8 @@ class TestSpotsDetector(unittest.TestCase):
     self.assertIsNone(detector.spots.spot_4)
 
   def test_03_multiple_spots(self) -> None:
-    """"""
+    """Tests the SpotsDetector.detect_spots() method on multiple spots of
+    different sizes."""
 
     # Instantiate spot detector
     detector = SpotsDetector(white_spots=False,
@@ -115,7 +120,8 @@ class TestSpotsDetector(unittest.TestCase):
     self.assertLessEqual(abs(300.0 - detector.spots.spot_4.y_centroid), 1.5)
 
   def test_04_ugly_spot(self) -> None:
-    """"""
+    """Tests the SpotsDetector.detect_spots() method on a single spot not round
+    enough to be detected."""
 
     # Instantiate spot detector
     detector = SpotsDetector(white_spots=False,
@@ -138,7 +144,8 @@ class TestSpotsDetector(unittest.TestCase):
     self.assertIsNone(detector.spots.spot_4)
 
   def test_05_white_spot(self) -> None:
-    """"""
+    """Tests the SpotsDetector.detect_spots() method on a single white spot
+    instead of a black spot."""
 
     # Instantiate spot detector
     detector = SpotsDetector(white_spots=True,
@@ -179,7 +186,8 @@ class TestSpotsDetector(unittest.TestCase):
     self.assertIsNone(detector.spots.spot_4)
 
   def test_06_num_spots(self) -> None:
-    """"""
+    """Tests the SpotsDetector.detect_spots() method on multiple spots, with
+    various number of spots to detect set."""
 
     props = (((100, 200), 50),
              ((300, 200), 49),
@@ -217,7 +225,8 @@ class TestSpotsDetector(unittest.TestCase):
               self.assertEqual(len(detector.spots), 0)
 
   def test_07_min_area(self) -> None:
-    """"""
+    """Tests the SpotsDetector.detect_spots() method on a single spot, with
+    multiple values of the min_area setting."""
 
     # Instantiate spot detector with min_area=150
     detector = SpotsDetector(white_spots=False,
@@ -263,7 +272,8 @@ class TestSpotsDetector(unittest.TestCase):
     self.assertIsNone(detector.spots.spot_4)
 
   def test_08_overlap(self) -> None:
-    """"""
+    """Tests the SpotsDetector.detect_spots() method on two spots close enough
+    that their bounding boxes overlap."""
 
     # Instantiate spot detector with min_area=150
     detector = SpotsDetector(white_spots=False,

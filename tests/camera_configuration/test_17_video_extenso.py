@@ -11,15 +11,19 @@ from crappy.tool.camera_config import SpotsDetector, Box
 
 
 class TestVideoExtenso(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the 
+  :class:`~crappy.tool.video_extenso_config.VideoExtensoConfig` class.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSpots(), **kwargs)
 
   def customSetUp(self) -> None:
-    """"""
+    """Used for instantiating the special configuration interface."""
 
     self._config = VideoExtensoConfig(self._camera, self._log_queue,
                                       self._log_level, self._freq,
@@ -33,12 +37,14 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
       sleep(3)
 
   def customTearDown(self) -> None:
-    """"""
+    """Used for ensuring at least one spot is defined, so that the interface
+    can exit even in case of a bug."""
 
     self._config._detector.spots.spot_1 = Box(0, 100, 0, 100)
 
   def test_video_extenso(self) -> None:
-    """"""
+    """Tests whether the spots are correctly detected in different
+    scenarios."""
 
     # Sleeping to avoid zero division error on Windows
     sleep(0.05)

@@ -7,15 +7,20 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
 
 
 class TestCastImage(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the behavior of the configuration window when facing 
+  various image types.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
 
   def test_cast_image(self) -> None:
-    """"""
+    """Tests whether the interface behaves as expected when provided with
+    images of various data types and bit depths."""
 
     # First, check that all variables are uninitialized
     self.assertIsNone(self._config._original_img)

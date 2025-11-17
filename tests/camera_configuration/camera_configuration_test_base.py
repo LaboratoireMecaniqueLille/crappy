@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import unittest
-from typing import Optional
 from multiprocessing import Queue, queues
 import logging
 from time import time, sleep
@@ -14,34 +13,60 @@ from . import mock_messagebox
 
 sys.modules['tkinter.messagebox'] = mock_messagebox
 from crappy.tool.camera_config.camera_config import CameraConfig
+from crappy.tool.camera_config.camera_config_boxes import CameraConfigBoxes
+from crappy.tool.camera_config.dic_ve_config import DICVEConfig
+from crappy.tool.camera_config.dis_correl_config import DISCorrelConfig
+from crappy.tool.camera_config.video_extenso_config import VideoExtensoConfig
 from crappy.camera.meta_camera.camera import Camera
 
 
 class ConfigurationWindowTestBase(unittest.TestCase):
-  """"""
+  """Base test class for testing the
+  :class:`~crappy.tool.camera_config.CameraConfig` of Crappy.
+
+  Basically implements setup and teardown methods shared by many test classes.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self,
                *args,
-               freq=None,
-               log_level=None,
-               log_queue=None,
-               camera=None,
+               freq: float | None = None,
+               log_level: int | None = None,
+               log_queue: queues.Queue | None = None,
+               camera: Camera | None = None,
                **kwargs) -> None:
-    """Sets the arguments and initializes the parent class."""
+    """Sets the arguments and initializes the parent class.
+
+    Args:
+      *args: Positional arguments to pass to the base
+        :class:`~unittest.TestCase`.
+      freq: The maximum looping frequency the configuration window is allowed
+        to loop at.
+      log_level: The minimum logging level for the configuration window.
+      log_queue: A :obj:`~queues.Queue` for sending the log messages of the
+        histogram process to the main logger.
+      camera: The :class:`~crappy.camera.Camera` object producing the images
+        for the configuration window.
+      **kwargs: Keyword arguments to pass to the base
+        :class:`~unittest.TestCase`.
+    """
 
     super().__init__(*args, **kwargs)
 
-    self._log_queue: Optional[queues.Queue] = log_queue
-    self._log_level: Optional[int] = log_level
-    self._freq: Optional[float] = freq
-    self._camera: Optional[Camera] = camera
+    self._log_queue: queues.Queue | None = log_queue
+    self._log_level: int | None = log_level
+    self._freq: float | None = freq
+    self._camera: Camera | None = camera
 
-    self._config: Optional[CameraConfig] = None
+    self._config: (CameraConfig | CameraConfigBoxes | DICVEConfig |
+                   DISCorrelConfig | VideoExtensoConfig | None) = None
 
     self._exit: bool = True
 
   def setUp(self) -> None:
-    """"""
+    """Defines the arguments to pass to the configuration window if not already
+    given."""
 
     if self._log_queue is None:
       self._log_queue = Queue()
@@ -55,7 +80,7 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     self.customSetUp()
 
   def customSetUp(self) -> None:
-    """"""
+    """Instantiates the configuration window and starts it."""
 
     self._config = CameraConfig(self._camera, self._log_queue,
                                 self._log_level, self._freq)
@@ -68,7 +93,7 @@ class ConfigurationWindowTestBase(unittest.TestCase):
       sleep(3)
 
   def tearDown(self) -> None:
-    """"""
+    """Closes the configuration window and the log Queue."""
 
     self.customTearDown()
 
@@ -79,16 +104,25 @@ class ConfigurationWindowTestBase(unittest.TestCase):
       self._log_queue.close()
 
   def customTearDown(self) -> None:
-    """"""
+    """Meant to be overwritten in subclasses for custom behavior."""
 
     ...
 
 
 class FakeTestCameraSimple(Camera):
-  """"""
+  """Fake :class:`~crappy.camera.Camera` used for tests, generating a
+  grey-level gradient image.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, min_val: int = 0, max_val: int = 255) -> None:
-    """"""
+    """Initializes the parent class.
+
+    Args:
+      min_val: Minimum value in the generated image.
+      max_val: Maximum value in the generated image.
+    """
 
     super().__init__()
 
@@ -96,7 +130,8 @@ class FakeTestCameraSimple(Camera):
     self._max = max_val
 
   def get_image(self) -> tuple[float, np.ndarray]:
-    """"""
+    """Generates a grey-level image containing a gradient from the specified
+    minimum to the specified maximum."""
 
     x, y = np.mgrid[0:240, 0:320]
     ret = (self._min + (x + y) / np.max(x + y) *
@@ -105,10 +140,15 @@ class FakeTestCameraSimple(Camera):
 
 
 class FakeTestCameraSpots(Camera):
-  """"""
+  """Fake :class:`~crappy.camera.Camera` used for test of the
+  video-extensometry configurator, generating a white image with four round
+  spots.
+
+  .. versionadded:: 2.0.8
+  """
 
   def get_image(self) -> tuple[float, np.ndarray]:
-    """"""
+    """Generates a white image with four round black spots."""
 
     ret = np.full((240, 320), 255, dtype=np.uint8)
     ret = cv2.circle(ret, (80, 80), 20, (0,), -1)
@@ -120,10 +160,14 @@ class FakeTestCameraSpots(Camera):
 
 
 class FakeTestCameraParams(Camera):
-  """"""
+  """Fake :class:`~crappy.camera.Camera` used for testing the parameter
+  handling in the configuration interface.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self) -> None:
-    """"""
+    """Initializes the parent class and sets the attributes."""
 
     super().__init__()
 
@@ -141,7 +185,7 @@ class FakeTestCameraParams(Camera):
     self._choices = ('choice_1', 'choice_2', 'choice_3')
 
   def open(self) -> None:
-    """"""
+    """Instantiates the four camera parameters to test."""
 
     self.add_bool_setting('bool_setting',
                           self._bool_getter,
@@ -174,49 +218,49 @@ class FakeTestCameraParams(Camera):
     # self.set_all()
 
   def _bool_setter(self, value: bool) -> None:
-    """"""
+    """Setter for the boolean parameter."""
 
     self._bool_setter_called = True
     self.settings['bool_setting']._value_no_getter = value
 
   def _bool_getter(self) -> bool:
-    """"""
+    """Getter for the boolean parameter."""
 
     self._bool_getter_called = True
     return self.settings['bool_setting']._value_no_getter
 
   def _scale_int_setter(self, value: int) -> None:
-    """"""
+    """Setter for the integer parameter."""
 
     self._scale_int_setter_called = True
     self.settings['scale_int_setting']._value_no_getter = value
 
   def _scale_int_getter(self) -> int:
-    """"""
+    """Getter for the integer parameter."""
 
     self._scale_int_getter_called = True
     return self.settings['scale_int_setting']._value_no_getter
   
   def _scale_float_setter(self, value: float) -> None:
-    """"""
+    """Setter for the float parameter."""
 
     self._scale_float_setter_called = True
     self.settings['scale_float_setting']._value_no_getter = value
 
   def _scale_float_getter(self) -> float:
-    """"""
+    """Getter for the float parameter."""
 
     self._scale_float_getter_called = True
     return self.settings['scale_float_setting']._value_no_getter
 
   def _choice_setter(self, value: str) -> None:
-    """"""
+    """Setter for the string parameter."""
 
     self._choice_setter_called = True
     self.settings['choice_setting']._value_no_getter = value
 
   def _choice_getter(self) -> str:
-    """"""
+    """Getter for the string parameter."""
 
     self._choice_getter_called = True
     return self.settings['choice_setting']._value_no_getter

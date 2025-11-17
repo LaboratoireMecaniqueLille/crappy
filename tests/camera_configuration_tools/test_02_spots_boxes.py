@@ -6,15 +6,19 @@ from crappy.tool.camera_config.config_tools import Box, SpotsBoxes
 
 
 class TestSpotBoxes(unittest.TestCase):
-  """"""
+  """Class for testing the 
+  :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` class.
+
+  .. versionadded:: 2.0.8
+  """
 
   def setUp(self) -> None:
-    """"""
+    """Instantiates the SpotsBoxes to test."""
 
     self._spots = SpotsBoxes()
 
   def test_01_spots(self) -> None:
-    """"""
+    """Tests whether the spots can be correctly set and their defaults."""
 
     # At the beginning, all spots should be empty
     self.assertIsNone(self._spots.spot_1)
@@ -52,7 +56,7 @@ class TestSpotBoxes(unittest.TestCase):
     self.assertIsNotNone(self._spots.y_l0)
 
   def test_02_set_spots(self) -> None:
-    """"""
+    """Tests the SpotsBoxes.set_spots() method."""
 
     # Defining spots with a regular pattern
     spots = list(zip(range(0, 13, 4), range(1, 14, 4),
@@ -66,7 +70,7 @@ class TestSpotBoxes(unittest.TestCase):
                                              4 * i, 2 + 8 * i))
 
   def test_03_save_length(self) -> None:
-    """"""
+    """Tests the SpotsBoxes.save_length() method."""
 
     # Populate the spots
     spots = list(zip(range(0, 13, 4), range(1, 14, 4),

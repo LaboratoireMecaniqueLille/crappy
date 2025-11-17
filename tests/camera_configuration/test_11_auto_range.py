@@ -7,17 +7,21 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
 
 
 class TestAutoRange(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the auto-range feature of the configuration window.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args,
                      camera=FakeTestCameraSimple(min_val=3, max_val=252),
                      **kwargs)
 
   def test_auto_range(self) -> None:
-    """"""
+    """Tests whether the interface behaves as expected when the auto-range
+    feature is enabled or disabled."""
 
     # The auto range feature should be disabled by default
     self.assertFalse(self._config._auto_range.get())

@@ -7,17 +7,22 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
 
 
 class TestSetParams(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the behavior of the configuration window with camera
+  parameters.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used for passing a different Camera for generating images."""
 
     self._camera = FakeTestCameraParams()
     self._camera.open()
     super().__init__(*args, camera=self._camera, **kwargs)
 
   def test_set_params(self) -> None:
-    """"""
+    """Tests whether the parameters are updated as expected in different
+    scenarios."""
 
     # All the tkinter objects of the parameters should have been set
     self.assertIsNotNone(self._camera.settings['bool_setting'].tk_var)

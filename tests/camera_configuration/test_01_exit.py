@@ -6,10 +6,13 @@ from .camera_configuration_test_base import ConfigurationWindowTestBase
 
 
 class TestFinish(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the exit behavior of the configuration window.
+
+  .. versionadded:: 2.0.8
+  """
 
   def test_exit(self) -> None:
-    """"""
+    """Tests whether the configuration window exits as expected when closed."""
 
     # The stop event should not be set
     self.assertFalse(self._config._stop_event.is_set())

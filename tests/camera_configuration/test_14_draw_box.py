@@ -9,15 +9,20 @@ from crappy.tool.camera_config.camera_config_boxes import CameraConfigBoxes
 
 
 class TestDrawBox(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the 
+  :class:`~crappy.tool.camera_config_boxes.CameraConfigBoxes` class.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
 
   def customSetUp(self) -> None:
-    """"""
+    """Used for instantiating the special configuration interface and for
+    adding bindings, otherwise the test wouldn't work."""
 
     self._config = CameraConfigBoxes(self._camera, self._log_queue,
                                      self._log_level, self._freq)
@@ -33,7 +38,8 @@ class TestDrawBox(ConfigurationWindowTestBase):
       sleep(3)
 
   def test_draw_box(self) -> None:
-    """"""
+    """Tests whether the selection box is correctly displayed on the image when
+    drawing it."""
 
     # Sleeping to avoid zero division error on Windows
     sleep(0.05)

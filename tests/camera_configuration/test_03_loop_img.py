@@ -9,17 +9,21 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
 
 
 class TestLoopImg(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the looping behavior of the configuration window.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args,
                      camera=FakeTestCameraSimple(min_val=3, max_val=252),
                      **kwargs)
 
   def test_loop_img(self) -> None:
-    """"""
+    """Tests whether the internal state variables of thr configuration window
+    are updated as expected when looping with an image."""
 
     # Monitoring variables should be initialized to their default values
     self.assertEqual(self._config._fps_var.get(), 0.)

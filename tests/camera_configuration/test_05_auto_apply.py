@@ -5,17 +5,21 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
 
 
 class TestAutoApply(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the auto-apply feature of the configuration window.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used for passing a different Camera for generating images."""
 
     self._camera = FakeTestCameraParams()
     self._camera.open()
     super().__init__(*args, camera=self._camera, **kwargs)
 
   def test_auto_apply(self) -> None:
-    """"""
+    """Tests whether the parameters are updated as expected with and without
+    the auto-apply feature."""
 
     # Necessary here as the callbacks are normally bound to mouse release
     self._camera.settings['scale_int_setting'].tk_obj.configure(

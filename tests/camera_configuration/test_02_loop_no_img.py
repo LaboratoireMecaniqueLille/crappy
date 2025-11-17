@@ -6,10 +6,14 @@ from .camera_configuration_test_base import ConfigurationWindowTestBase
 
 
 class TestLoopNoImg(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing the looping behavior of the configuration window.
+
+  .. versionadded:: 2.0.8
+  """
 
   def test_loop_no_img(self) -> None:
-    """"""
+    """Tests whether the internal state variables of thr configuration window
+    are updated as expected when looping without an image."""
 
     # Monitoring variables should be initialized to their default values
     self.assertEqual(self._config._fps_var.get(), 0.)

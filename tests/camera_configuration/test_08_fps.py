@@ -7,15 +7,20 @@ from .camera_configuration_test_base import (ConfigurationWindowTestBase,
 
 
 class TestFPS(ConfigurationWindowTestBase):
-  """"""
+  """Class for testing if the FPS are correctly handled in the configuration 
+  window.
+
+  .. versionadded:: 2.0.8
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
 
   def test_fps(self) -> None:
-    """"""
+    """Tests whether the FPS are correctly calculated, displayed, and if the
+    maximum FPs value is enforced."""
 
     # FPS-related variables should be initialized to their default values
     self.assertEqual(self._config._fps_var.get(), 0.)

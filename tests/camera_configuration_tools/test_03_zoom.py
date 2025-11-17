@@ -8,15 +8,20 @@ from crappy.tool.camera_config.config_tools import Zoom
 
 
 class TestZoom(unittest.TestCase):
-  """"""
+  """Class for testing the
+  :class:`~crappy.tool.camera_config.config_tools.Zoom` class.
+
+  .. versionadded:: 2.0.8
+  """
 
   def setUp(self) -> None:
-    """"""
+    """Instantiates the Zoom to test."""
 
     self._zoom = Zoom()
 
   def test_01_zoom(self) -> None:
-    """"""
+    """Tests whether the coordinates are updated consistently when zooming in
+    and out and when moving on the image."""
 
     # At the beginning, the zoom should cover the entire image
     self.assertEqual(self._zoom.x_low, 0.0)
