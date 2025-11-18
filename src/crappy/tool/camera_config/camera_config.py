@@ -45,10 +45,10 @@ class CameraConfig(tk.Tk):
   Blocks like :class:`~crappy.blocks.VideoExtenso` or 
   :class:`~crappy.blocks.DICVE`.
   
-  This class is a child of :obj:`tkinter.Tk`. It relies on the 
-  :class:`~crappy.tool.camera_config.config_tools.Zoom` and 
+  This class is a child of :obj:`tkinter.Tk`. It relies on the
+  :class:`~crappy.tool.camera_config.config_tools.Zoom` and
   :class:`~crappy.tool.camera_config.config_tools.HistogramProcess` tools. It
-  also interacts with instances of the 
+  also interacts with instances of the
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
 
   .. versionadded:: 1.4.0
@@ -63,9 +63,9 @@ class CameraConfig(tk.Tk):
     """Initializes the interface and displays it.
 
     Args:
-      camera: The :class:`~crappy.camera.Camera` object in charge of acquiring 
+      camera: The :class:`~crappy.camera.Camera` object in charge of acquiring
         the images.
-      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
+      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to
         the main :obj:`~logging.Logger`, only used in Windows.
 
         .. versionadded:: 2.0.0
@@ -152,6 +152,9 @@ class CameraConfig(tk.Tk):
 
     self._n_loops = 0
     self._last_upd_t = time()
+
+    # Sleeping to avoid zero division error on Windows in edge cases
+    sleep(0.05)
 
     # Starting the endless loops of automatic updates
     if not self._testing:
@@ -257,7 +260,7 @@ class CameraConfig(tk.Tk):
     # Limiting the acquisition frequency to the given maximum if any
     if (self._max_freq is None or
         self._n_loops < self._max_freq * (time() - self._last_upd_t)):
-      # Trying to acquire a nex image
+      # Trying to acquire a new image
       self._update_img()
 
     # Planning the next image acquisition
@@ -269,7 +272,8 @@ class CameraConfig(tk.Tk):
     """Updates the GUI indicators, and plans the next indicators update."""
 
     # Planning the next update
-    self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
+    if not self._testing:
+      self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
     # Updating the indicators in the GUI
     self._fps_var.set(self._n_loops / (time() - self._last_upd_t))

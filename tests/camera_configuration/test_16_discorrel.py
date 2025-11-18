@@ -1,0 +1,135 @@
+# coding: utf-8
+
+from copy import deepcopy
+from time import sleep
+from platform import system
+
+from .camera_configuration_test_base import (ConfigurationWindowTestBase,
+                                             FakeTestCameraSimple)
+from crappy.tool.camera_config.dis_correl_config import DISCorrelConfig
+from crappy.tool.camera_config import Box
+
+
+class TestDISCorrel(ConfigurationWindowTestBase):
+  """Class for testing the 
+  :class:`~crappy.tool.dis_correl_config.DISCorrelConfig` class.
+
+  .. versionadded:: 2.0.8
+  """
+
+  def __init__(self, *args, **kwargs) -> None:
+    """Used to instantiate a Camera that actually generates images."""
+
+    super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
+
+  def customSetUp(self) -> None:
+    """Used for instantiating the special configuration interface."""
+
+    self._config = DISCorrelConfig(self._camera, self._log_queue,
+                                   self._log_level, self._freq, Box())
+
+    self._config._testing = True
+    self._config.start()
+
+    # Allow some time for the HistogramProcess to start on Windows
+    if system() == 'Windows':
+      sleep(3)
+
+  def customTearDown(self) -> None:
+    """Used for ensuring that the patch is defined, so that the interface can
+    exit even in case of a bug."""
+
+    self._config._correl_box = Box(0, 100, 0, 100)
+
+  def test_discorrel(self) -> None:
+    """Tests whether the patch is correctly defined in several scenarios."""
+
+    # Sleeping to avoid zero division error on Windows
+    sleep(0.05)
+    # Calling the first loop
+    self._config._img_acq_sched()
+    self._config._upd_var_sched()
+    self._config._upd_sched()
+
+    # The box should not be set for now
+    self.assertTrue(self._config.box.no_points())
+
+    # Start drawing a box outside the image
+    self._config._img_canvas.event_generate(
+        '<ButtonPress-1>', when="now", x=-20, y=-20)
+    self._config._upd_sched()
+
+    # The box should not be set for now
+    self.assertTrue(self._config.box.no_points())
+
+    # Start drawing the selection box inside the image
+    self._config._img_canvas.event_generate(
+        '<ButtonPress-1>', when="now", x=20, y=20)
+    self._config._upd_sched()
+
+    # The box should not be set for now
+    self.assertTrue(self._config.box.no_points())
+
+    # Move the mouse with the button pressed to complete the selection box
+    self._config._img_canvas.event_generate(
+        '<B1-Motion>', when="now", x=50, y=50)
+    self._config._upd_sched()
+
+    # The box should not be set for now
+    self.assertTrue(self._config.box.no_points())
+
+    # Release the mouse button to complete the box
+    self._config._img_canvas.event_generate(
+        '<ButtonRelease-1>', when="now", x=50, y=50)
+    self._config._upd_sched()
+
+    # The end point should now be defined and the box is complete
+    self.assertFalse(self._config.box.no_points())
+    self.assertIsNotNone(self._config.box.x_start)
+    self.assertIsNotNone(self._config.box.y_start)
+    self.assertIsNotNone(self._config.box.x_end)
+    self.assertIsNotNone(self._config.box.y_end)
+
+    box = deepcopy(self._config.box)
+
+    # Reset the box
+    self._config.box.reset()
+    self._config._upd_sched()
+
+    # The box should now have been reset
+    self.assertTrue(self._config.box.no_points())
+
+    # Start drawing the selection box inside the image
+    self._config._img_canvas.event_generate(
+        '<ButtonPress-1>', when="now", x=20, y=20)
+    self._config._upd_sched()
+
+    # Release the mouse button at the same location
+    self._config._img_canvas.event_generate(
+        '<B1-Motion>', when="now", x=20, y=20)
+    self._config._upd_sched()
+    self._config._img_canvas.event_generate(
+        '<ButtonRelease-1>', when="now", x=20, y=20)
+    self._config._upd_sched()
+
+    # The box should be empty
+    self.assertTrue(self._config.box.no_points())
+
+    # Start drawing the selection box inside the image
+    self._config._img_canvas.event_generate(
+        '<ButtonPress-1>', when="now", x=20, y=20)
+    self._config._upd_sched()
+
+    # Draw a box with no pixels inside
+    self._config._img_canvas.event_generate(
+        '<B1-Motion>', when="now", x=20, y=50)
+    self._config._upd_sched()
+    self._config._img_canvas.event_generate(
+        '<ButtonRelease-1>', when="now", x=20, y=50)
+    self._config._upd_sched()
+
+    # The box should be empty
+    self.assertTrue(self._config.box.no_points())
+
+    # Re-populate the spots to avoid the interface crashing at exit
+    self._config._correl_box = box

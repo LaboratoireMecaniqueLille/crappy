@@ -13,15 +13,15 @@ from time import sleep
 
 
 class HistogramProcess(Process):
-  """This class is a :obj:`multiprocessing.Process` taking an image as an input 
-  via a :obj:`multiprocessing.Pipe`, and returning the histogram of that image 
+  """This class is a :obj:`multiprocessing.Process` taking an image as an input
+  via a :obj:`multiprocessing.Pipe`, and returning the histogram of that image
   in another :obj:`~multiprocessing.Pipe`.
 
-  It is used by the :class:`~crappy.tool.camera_config.CameraConfig` window and 
+  It is used by the :class:`~crappy.tool.camera_config.CameraConfig` window and
   its children to delegate and parallelize the calculation of the histogram. It
   allows to gain a few frames per second on the display in the configuration
   window.
-  
+
   .. versionadded:: 2.0.0
   """
 
@@ -64,8 +64,8 @@ class HistogramProcess(Process):
   def run(self) -> None:
     """The main method being run by the HistogramProcess.
 
-    It continuously receives images from the 
-    :class:`~crappy.tool.camera_config.CameraConfig`, calculates their 
+    It continuously receives images from the
+    :class:`~crappy.tool.camera_config.CameraConfig`, calculates their
     histograms and returns them back as a nice image to integrate on the
     window.
     """
@@ -136,7 +136,7 @@ class HistogramProcess(Process):
   def _hist_func(x: np.ndarray,
                  _: np.ndarray,
                  histo: np.ndarray) -> np.ndarray:
-    """Function passed to the :meth:`numpy.fromfunction` method for building 
+    """Function passed to the :meth:`numpy.fromfunction` method for building
     the histogram."""
 
     return np.where(x <= histo, 0, 255)
