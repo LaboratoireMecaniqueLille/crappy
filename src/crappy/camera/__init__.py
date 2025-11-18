@@ -2,6 +2,7 @@
 
 from .fake_camera import FakeCamera
 from .file_reader import FileReader
+from .gphoto2_camera import CameraGPhoto2
 from .opencv_camera_webcam import Webcam
 from .raspberry_pi_camera import RaspberryPiCamera
 from .raspberry_pi_camera_2 import RaspberryPiCamera2

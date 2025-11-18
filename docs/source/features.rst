@@ -426,6 +426,20 @@ Supported Cameras
      that it still works as expected ! On the long-term, it should be totally
      removed.
 
+- :ref:`Camera gPhoto2`
+
+  Reads images over USB from a camera supported by gPhoto2, including most of
+  the Canon and Nikon models. It can either acquire images continuously, or
+  wait for an acquisition to be triggered via a remote controller button.
+
+  .. Important::
+     This class was only tested on Linux. The installation of its dependencies
+     is expected to be troublesome on macOS and Windows.
+
+  .. Important::
+     This class relies on the `gphoto2 <https://pypi.org/project/gphoto2/>`_
+     Python module, that must be installed before using it.
+
 - :ref:`Camera GStreamer`
 
   This Camera object opens video streams using the Python binding of `Gstreamer
