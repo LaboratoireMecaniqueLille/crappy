@@ -108,10 +108,15 @@ class CameraConfig(tk.Tk):
     self._high_thresh = None
     self._move_x = None
     self._move_y = None
-    self._run = True
     self._n_loops = 0
+    self._last_upd_t: Optional[float] = None
     self._max_freq = max_freq
     self._got_first_img: bool = False
+
+    # Keeping track of the scheduled objects to be able to cancel them later
+    self._upd_sched_obj: Optional[str] = None
+    self._img_acq_sched_obj: Optional[str] = None
+    self._upd_var_sched_obj: Optional[str] = None
 
     # Settings for adjusting the behavior of the zoom
     self._zoom_ratio = 0.9
@@ -131,31 +136,28 @@ class CameraConfig(tk.Tk):
     self._add_settings()
     self.update()
 
-  def main(self) -> None:
+    # Attribute used only for unit testing, do not use otherwise
+    self._testing: bool = False
+
+  def start(self) -> None:
     """Constantly updates the image and the information on the GUI, until asked
     to stop.
     
     .. versionadded:: 1.5.10
+    .. versionchanged:: 2.0.7 Renamed from *main()* to *start()*
     """
 
     # Starting the histogram calculation process
     self._histogram_process.start()
 
     self._n_loops = 0
-    start_time = time()
+    self._last_upd_t = time()
 
-    while self._run:
-      # Remaining below the max allowed frequency
-      if self._max_freq is None or (self._n_loops <
-                                    self._max_freq * (time() - start_time)):
-        # Update the image, the histogram and the information
-        self._update_img()
-
-      # Update the FPS counter
-      if time() - start_time > 0.5:
-        self._fps_var.set(self._n_loops / (time() - start_time))
-        self._n_loops = 0
-        start_time = time()
+    # Starting the endless loops of automatic updates
+    if not self._testing:
+      self._upd_sched()
+      self._img_acq_sched()
+      self._upd_var_sched()
 
   def log(self, level: int, msg: str) -> None:
     """Record log messages for the CameraConfig window.
@@ -205,16 +207,29 @@ class CameraConfig(tk.Tk):
     .. versionadded:: 2.0.0
     """
 
-    # Stopping the event loop and the histogram process
-    self._run = False
+    # Canceling the scheduled tasks
+    if self._upd_sched_obj is not None:
+      self.after_cancel(self._upd_sched_obj)
+    if self._img_acq_sched_obj is not None:
+      self.after_cancel(self._img_acq_sched_obj)
+    if self._upd_var_sched_obj is not None:
+      self.after_cancel(self._upd_var_sched_obj)
+
+    # Stopping the event loop and wait for the histogram process to finish
     self._stop_event.set()
-    sleep(0.1)
+    self._histogram_process.join(1)
 
     # Killing the histogram process if it's still alive
     if self._histogram_process.is_alive():
       self.log(logging.WARNING, "The histogram process failed to stop, "
                                 "killing it !")
       self._histogram_process.terminate()
+
+    # Close the queues to properly end all multiprocessing objects
+    self.log(logging.DEBUG, "Closing the queues communicating with the "
+                            "histogram process")
+    self._img_in.close()
+    self._img_out.close()
 
     self.log(logging.DEBUG, "Destroying the configuration window")
 
@@ -223,6 +238,43 @@ class CameraConfig(tk.Tk):
     except tk.TclError:
       self.log(logging.WARNING, "Cannot destroy the configuration window, "
                                 "ignoring")
+
+  def _upd_sched(self) -> None:
+    """Updates the GUI and plans the next GUI update."""
+
+    # Planning the next update
+    if not self._testing:
+      # Aiming for max 30 FPS, no need for more updating
+      self._upd_sched_obj = self.after(33, self._upd_sched)
+
+    # Updating the interface
+    self.update()
+
+  def _img_acq_sched(self) -> None:
+    """Acquires an image if it is time to, and plans the next image
+    acquisition."""
+
+    # Limiting the acquisition frequency to the given maximum if any
+    if (self._max_freq is None or
+        self._n_loops < self._max_freq * (time() - self._last_upd_t)):
+      # Trying to acquire a nex image
+      self._update_img()
+
+    # Planning the next image acquisition
+    if not self._testing:
+      # Acquiring up to 1000 FPS theoretically, but most calls are aborted
+      self._img_acq_sched_obj = self.after(1, self._img_acq_sched)
+
+  def _upd_var_sched(self) -> None:
+    """Updates the GUI indicators, and plans the next indicators update."""
+
+    # Planning the next update
+    self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
+
+    # Updating the indicators in the GUI
+    self._fps_var.set(self._n_loops / (time() - self._last_upd_t))
+    self._n_loops = 0
+    self._last_upd_t = time()
 
   def _set_layout(self) -> None:
     """Creates and places the different elements of the display on the GUI."""
@@ -560,7 +612,7 @@ class CameraConfig(tk.Tk):
                img_width - 1), min(int(y_disp + y_trim), img_height - 1)
 
   def _start_move(self, event: tk.Event) -> None:
-    """Stores the position of the mouse upon left-clicking on the image."""
+    """Stores the position of the mouse upon right-clicking on the image."""
 
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
@@ -576,13 +628,13 @@ class CameraConfig(tk.Tk):
     self._move_y = event.y - zero_y
 
   def _move(self, event: tk.Event) -> None:
-    """Drags the image upon prolonged left-clik and drag from the user."""
+    """Drags the image upon prolonged right-clik and drag from the user."""
 
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
       return
 
-    self.log(logging.DEBUG, "Drag ended")
+    self.log(logging.DEBUG, "Dragging the image")
 
     pil_width = self._pil_img.width
     pil_height = self._pil_img.height
@@ -650,7 +702,7 @@ class CameraConfig(tk.Tk):
     cam_set.tk_obj = tk.Checkbutton(self._canvas_frame,
                                     text=cam_set.name,
                                     variable=cam_set.tk_var,
-                                    command=self._auto_apply_bool_settings)
+                                    command=self._auto_apply_settings)
 
     cam_set.tk_obj.pack(anchor='w', side='top', expand=False, fill='none',
                         padx=5, pady=2)
@@ -674,7 +726,7 @@ class CameraConfig(tk.Tk):
                               from_=cam_set.lowest,
                               to=cam_set.highest)
 
-    cam_set.tk_obj.bind("<ButtonRelease-1>", self._auto_apply_scale_settings)
+    cam_set.tk_obj.bind("<ButtonRelease-1>", self._auto_apply_settings)
 
     cam_set.tk_obj.pack(anchor='center', side='top', expand=False,
                         fill='x', padx=5, pady=2)
@@ -694,7 +746,7 @@ class CameraConfig(tk.Tk):
                               text=value,
                               variable=cam_set.tk_var,
                               value=value,
-                              command=self._auto_apply_choice_settings)
+                              command=self._auto_apply_settings)
 
       tk_obj.pack(anchor='w', side='top', expand=False,
                   fill='none', padx=5, pady=2)
@@ -811,34 +863,16 @@ class CameraConfig(tk.Tk):
       if setting.value != setting.tk_var.get():
         setting.value = setting.tk_var.get()
 
-      # Reading the actual value of all the settings
-      setting.tk_var.set(setting.value)
+      # Update graphics to reflect changes that could have happened
+      self.update()
 
-  def _auto_apply_scale_settings(self, _: tk.Event):
+  def _auto_apply_settings(self, *_: tk.Event):
     """Applies the settings without clicking on the Apply Settings
      button when the Auto apply button is checked.
 
-     The scale settings will be applied when the slicer is released.
-     """
-
-    if self._auto_apply.get():
-      self._update_settings()
-
-  def _auto_apply_bool_settings(self):
-    """Applies the settings without clicking on the Apply Settings
-     button when the Auto apply button is checked.
-
-     The bool settings will be applied when the bool button is checked.
-     """
-
-    if self._auto_apply.get():
-      self._update_settings()
-
-  def _auto_apply_choice_settings(self):
-    """Applies the settings without clicking on the Apply Settings
-     button when the Auto apply button is checked.
-
-     The choice settings will be applied when the choice button is checked.
+     The scale settings will be applied when the slicer is released. The bool
+     settings will be applied when the bool button is checked. The choice
+     settings will be applied when the choice button is checked.
      """
 
     if self._auto_apply.get():
@@ -851,7 +885,29 @@ class CameraConfig(tk.Tk):
     the user's choice.
     """
 
-    # First, convert BGR to RGB
+    # Ensure the image has a supported shape
+    if len(img.shape) not in (2, 3):
+      raise ValueError(f"Cannot handle images of shape {img.shape} !")
+
+    # Ensure the image has either 1, 2, 3, or 4 channels
+    if len(img.shape) == 3 and img.shape[2] > 4:
+      raise ValueError(f"Cannot handle images of shape {img.shape} !")
+
+    # Single-channel stored in 3D arrays images should be flattened
+    if len(img.shape) == 3 and img.shape[2] == 1:
+      img = img[:, :, 0]
+
+    # Two-channel images are considered to be grey level plus an alpha channel,
+    # which is ignored here
+    if len(img.shape) == 3 and img.shape[2] == 2:
+      img = img[:, :, 0]
+
+    # Four-channel images are considered to be BGR plus an alpha channel, which
+    # is ignored here
+    if len(img.shape) == 3 and img.shape[2] == 4:
+      img = img[:, :, :3]
+
+    # Converting from BGR to RGB
     if len(img.shape) == 3:
       img = img[:, :, ::-1]
 

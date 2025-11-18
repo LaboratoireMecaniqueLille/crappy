@@ -322,7 +322,7 @@ class GPUVE(Camera):
 
     super().prepare()
 
-  def _configure(self) -> None:
+  def configure(self) -> None:
     """No configuration window is available for this Block, so this method was
     left blank."""
 

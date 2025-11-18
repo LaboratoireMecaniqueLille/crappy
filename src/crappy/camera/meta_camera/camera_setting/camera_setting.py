@@ -39,9 +39,11 @@ class CameraSetting:
     """
 
     # Attributes shared by all the settings
-    self.name = name
+    self.name: str = name
     self.default = default
     self.type = type(default)
+    self.was_set: bool = False
+    self.user_set: bool = False
 
     # Attributes used in the GUI
     self.tk_var = None
@@ -90,6 +92,7 @@ class CameraSetting:
   @value.setter
   def value(self, val: Any) -> None:
     self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
+    self.was_set = True
     self._value_no_getter = val
     if self._setter is not None:
       self._setter(val)
@@ -101,6 +104,10 @@ class CameraSetting:
         return
       self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
                                 f"value is {self.value} !")
+
+    # Update the GUI, in case the value was modified via a reload() call
+    if self.tk_var is not None:
+      self.tk_var.set(self.value)
 
   def reload(self, *_, **__) -> None:
     """Allows modifying a setting once it is already being displayed in the

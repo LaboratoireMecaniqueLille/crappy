@@ -8,7 +8,6 @@ from pathlib import Path
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
 from ..tool.camera_config import DISCorrelConfig, Box
-from .._global import CameraConfigError
 
 field_type = Union[Literal['x', 'y', 'r', 'exx', 'eyy',
                            'exy', 'eyx', 'exy2', 'z'], np.ndarray]
@@ -412,33 +411,11 @@ class DISCorrel(Camera):
 
     super().prepare()
 
-  def _configure(self) -> None:
-    """This method should instantiate and start the
+  def _configure(self) -> DISCorrelConfig:
+    """This method should instantiate the
     :class:`~crappy.tool.camera_config.DISCorrelConfig` window for configuring
     the :class:`~crappy.camera.Camera` object.
-
-    It should also handle the case when an exception is raised in the
-    configuration window.
     """
 
-    config = None
-
-    # Instantiating and starting the configuration window
-    try:
-      config = DISCorrelConfig(self._camera, self._log_queue, self._log_level,
-                               self.freq, self._patch)
-      config.main()
-
-    # If an exception is raised in the config window, closing it before raising
-    except (Exception,) as exc:
-      self._logger.exception("Caught exception in the configuration window !",
-                             exc_info=exc)
-      if config is not None:
-        config.stop()
-      raise CameraConfigError
-
-    # Getting the image dtype and shape for setting the shared Array
-    if config.shape is not None:
-      self._img_shape = config.shape
-    if config.dtype is not None:
-      self._img_dtype = config.dtype
+    return DISCorrelConfig(self._camera, self._log_queue, self._log_level,
+                           self.freq, self._patch)

@@ -48,7 +48,10 @@ class Zoom:
     # Updating the upper x limit, making sure it's not out of the image
     if self.x_low + 1 / ratio * (prev_x_high - prev_x_low) > 1.:
       self.x_high = 1.
-      self.x_low = 1 - 1 / ratio * (prev_x_high - prev_x_low)
+      if 1 - 1 / ratio * (prev_x_high - prev_x_low) < 0.:
+        self.x_low = 0.
+      else:
+        self.x_low = 1 - 1 / ratio * (prev_x_high - prev_x_low)
     else:
       self.x_high = self.x_low + 1 / ratio * (prev_x_high - prev_x_low)
 
@@ -57,7 +60,10 @@ class Zoom:
     # Updating the upper y limit, making sure it's not out of the image
     if self.y_low + 1 / ratio * (prev_y_high - prev_y_low) > 1.:
       self.y_high = 1.
-      self.y_low = 1 - 1 / ratio * (prev_y_high - prev_y_low)
+      if 1 - 1 / ratio * (prev_y_high - prev_y_low) < 0.:
+        self.y_low = 0.
+      else:
+        self.y_low = 1 - 1 / ratio * (prev_y_high - prev_y_low)
     else:
       self.y_high = self.y_low + 1 / ratio * (prev_y_high - prev_y_low)
 

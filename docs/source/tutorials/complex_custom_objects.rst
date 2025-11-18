@@ -293,7 +293,7 @@ set the camera to hardware trigger mode. For the getter now, it should return
 :py:`'Hardware'` is the camera is in hardware trigger mode, and either
 :py:`'Free run'` or :py:`'Hdw after config'` otherwise, depending on the last
 value set by the setter. It is not the most straightforward getter to
-implement, we know ! This aspect should be improved in future releases, but for
+implement, we know ! This aspect might be improved in future releases, but for
 now you'll have to cope with it. You can get inspiration from the :ref:`Xi API`
 Camera that implements it already.
 
@@ -366,7 +366,7 @@ a class implementing a setting reload.
 4.c. Manage the metadata of the images
 ++++++++++++++++++++++++++++++++++++++
 
-For the last feature of th :class:`~crappy.camera.Camera` objects presented in
+For the last feature of the :class:`~crappy.camera.Camera` objects presented in
 the tutorials, let's introduce **the possibility to include metadata in the**
 **information returned by a Camera** ! So far, it was always mentioned that the
 first value that the :meth:`~crappy.camera.Camera.open` method of Cameras
@@ -395,9 +395,9 @@ contains for each image its metadata. For each key of the dictionary that is a
 valid EXIF tag, the metadata will also be embedded in the recorded images if
 the :mod:`PIL` backend is used for recording. The :py:`'ImageUniqueID'` is
 already a valid EXIF tag, and the time information is split and recorded over
-the :py:`'DateTimeOriginal'` and :py:`'SubsecTimeOriginal'` tags. For now, none
-of the Cameras implemented in Crappy return metadata as a :obj:`dict`, but that
-will change in future releases !
+the :py:`'DateTimeOriginal'` and :py:`'SubsecTimeOriginal'` tags. For now, only
+a fraction of the Cameras implemented in Crappy return metadata as a
+:obj:`dict`, but more should come in future releases !
 
 5. Custom Camera Blocks
 -----------------------
