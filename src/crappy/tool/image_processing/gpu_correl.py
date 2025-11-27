@@ -3,7 +3,7 @@
 import warnings
 from math import ceil
 import numpy as np
-from pkg_resources import resource_filename
+import importlib.resources
 from typing import Any, Optional, Union, Literal
 from pathlib import Path
 from itertools import chain
@@ -164,8 +164,10 @@ class CorrelStage:
     # Opening the kernel file and compiling the module
     if kernel_file is None:
       self._debug(2, "Kernel file not specified")
-      kernel_file = resource_filename('crappy',
-                                      'tool/image_processing/kernels.cu')
+      ref_kernel = (importlib.resources.files('crappy') / 'tool' /
+                    'image_processing' / 'kernels.cu')
+      with importlib.resources.as_file(ref_kernel) as path_kernel:
+        kernel_file = path_kernel
     with open(kernel_file, "r") as file:
       self._debug(3, "Sourcing module")
       mod = pycuda.compiler.SourceModule(file.read() % (self._width,
@@ -634,8 +636,10 @@ class GPUCorrelTool:
     if kernel_file is None:
       self._debug(3, "Kernel file not specified, using the default one of "
                      "crappy")
-      self._kernel_file = resource_filename('crappy',
-                                            'tool/image_processing/kernels.cu')
+      ref_kernel = (importlib.resources.files('crappy') / 'tool' /
+                    'image_processing' / 'kernels.cu')
+      with importlib.resources.as_file(ref_kernel) as path_kernel:
+        self._kernel_file = path_kernel
     else:
       self._kernel_file = kernel_file
     self._debug(3, f"Kernel file:{self._kernel_file}")
