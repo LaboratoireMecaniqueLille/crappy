@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Union, Optional
 from collections.abc import Callable
 from re import split, IGNORECASE, match
 import logging
@@ -21,8 +20,8 @@ class Path(metaclass=MetaPath):
   .. versionadded:: 1.4.0
   """
 
-  t0: Optional[float] = None
-  last_cmd: Optional[float] = None
+  t0: float | None = None
+  last_cmd: float | None = None
 
   def __init__(self, *_, **__) -> None:
     """Here, the arguments given to the Path should be handled.
@@ -43,9 +42,9 @@ class Path(metaclass=MetaPath):
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
 
-  def get_cmd(self, data: dict[str, list]) -> Optional[float]:
+  def get_cmd(self, data: dict[str, list]) -> float | None:
     """This method is called by the :class:`~crappy.blocks.Generator` Block to
     get the next command to send.
 
@@ -102,8 +101,7 @@ class Path(metaclass=MetaPath):
     self._logger.log(level, msg)
 
   def parse_condition(self,
-                      condition: Optional[Union[str, ConditionType]]
-                      ) -> ConditionType:
+                      condition: str | ConditionType | None) -> ConditionType:
     """This method returns a function allowing to check whether a given 
     condition is met or not.
     

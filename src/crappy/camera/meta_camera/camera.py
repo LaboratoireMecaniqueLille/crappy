@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Union, Any
-from collections.abc import Callable, Iterable
+from typing import Any
+from collections.abc import Callable, Sequence
 from time import sleep
 import numpy as np
 from multiprocessing import current_process
@@ -11,7 +11,7 @@ from .meta_camera import MetaCamera
 from .camera_setting import CameraSetting, CameraBoolSetting, \
   CameraScaleSetting, CameraChoiceSetting
 
-NbrType = Union[int, float]
+NbrType = int | float
 
 
 class Camera(metaclass=MetaCamera):
@@ -50,7 +50,7 @@ class Camera(metaclass=MetaCamera):
     self._reserved = (self.trigger_name, self.roi_x_name, self.roi_y_name,
                       self.roi_width_name, self.roi_height_name)
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
 
   def log(self, level: int, msg: str) -> None:
     """Records log messages for the Camera.
@@ -110,8 +110,7 @@ class Camera(metaclass=MetaCamera):
 
     self.set_all(**kwargs)
 
-  def get_image(self) -> Optional[tuple[Union[dict[str, Any], float],
-                                        np.ndarray]]:
+  def get_image(self) -> tuple[dict[str, Any] | float, np.ndarray] | None:
     """Acquires an image and returns it along with its metadata or timestamp.
 
     This method should return two objects, the second being the image as a
@@ -158,8 +157,8 @@ class Camera(metaclass=MetaCamera):
 
   def add_bool_setting(self,
                        name: str,
-                       getter: Optional[Callable[[], bool]] = None,
-                       setter: Optional[Callable[[bool], None]] = None,
+                       getter: Callable[[], bool] | None = None,
+                       setter: Callable[[bool], None] | None = None,
                        default: bool = True) -> None:
     """Adds a boolean setting, whose value is either :obj:`True` or
     :obj:`False`.
@@ -199,10 +198,10 @@ class Camera(metaclass=MetaCamera):
                         name: str,
                         lowest: NbrType,
                         highest: NbrType,
-                        getter: Optional[Callable[[], NbrType]] = None,
-                        setter: Optional[Callable[[NbrType], None]] = None,
-                        default: Optional[NbrType] = None,
-                        step: Optional[NbrType] = None) -> None:
+                        getter: Callable[[], NbrType] | None = None,
+                        setter: Callable[[NbrType], None] | None = None,
+                        default: NbrType | None = None,
+                        step: NbrType | None = None) -> None:
     """Adds a scale setting, whose value is an :obj:`int` or a :obj:`float`
     lying between two boundaries.
 
@@ -251,10 +250,10 @@ class Camera(metaclass=MetaCamera):
 
   def add_choice_setting(self,
                          name: str,
-                         choices: Iterable[str],
-                         getter: Optional[Callable[[], str]] = None,
-                         setter: Optional[Callable[[str], None]] = None,
-                         default: Optional[str] = None) -> None:
+                         choices: Sequence[str],
+                         getter: Callable[[], str] | None = None,
+                         setter: Callable[[str], None] | None = None,
+                         default: str | None = None) -> None:
     """Adds a choice setting, that can take a limited number of predefined
     :obj:`str` values.
 
@@ -294,8 +293,8 @@ class Camera(metaclass=MetaCamera):
                                               setter, default)
 
   def add_trigger_setting(self,
-                          getter: Optional[Callable[[], str]] = None,
-                          setter: Optional[Callable[[str], None]] = None
+                          getter: Callable[[], str] | None = None,
+                          setter: Callable[[str], None] | None = None
                           ) -> None:
     """Adds a specific setting for controlling the trigger mode of the camera.
     The reserved name for this setting is ``'trigger'``.
@@ -439,7 +438,7 @@ class Camera(metaclass=MetaCamera):
       self.log(logging.WARNING, "Cannot reload the software ROI settings as "
                                 "they are not defined !")
 
-  def apply_soft_roi(self, img: np.ndarray) -> Optional[np.ndarray]:
+  def apply_soft_roi(self, img: np.ndarray) -> np.ndarray | None:
     """Takes an image as an input, and crops according to the selected software
     ROI dimensions.
 

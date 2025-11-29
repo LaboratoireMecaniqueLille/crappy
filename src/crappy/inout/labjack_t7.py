@@ -1,8 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, Any, Union, Literal
-from collections.abc import Iterable
+from typing import Any, Literal
+from collections.abc import Sequence
 from itertools import chain
 from dataclasses import dataclass, field
 from multiprocessing import current_process
@@ -30,18 +30,18 @@ class _Channel:
   at least one type of channel.
   """
 
-  name: Union[str, int]
+  name: str | int
 
   direction: bool = True
-  dtype: Optional[int] = None
+  dtype: int | None = None
   address: int = 1
   gain: float = 1
   offset: float = 0
   make_zero: bool = False
   range: float = 10
-  limits: Optional[tuple[float, float]] = None
+  limits: tuple[float, float] | None = None
   resolution: int = 1
-  thermocouple: Optional[Literal['E', 'J', 'K', 'R', 'T', 'S', 'C']] = None
+  thermocouple: Literal['E', 'J', 'K', 'R', 'T', 'S', 'C'] | None = None
   write_at_open: list[tuple[str, float]] = field(default_factory=list)
 
   def update(self, dic_in: dict[str, Any]) -> None:
@@ -75,12 +75,12 @@ class LabjackT7(InOut):
   """
 
   def __init__(self,
-               channels: Iterable[dict[str, Any]],
+               channels: Sequence[dict[str, Any]],
                device: Literal['ANY', 'T7', 'T4', 'DIGIT'] = 'ANY',
                connection: Literal['ANY', 'TCP', 'USB',
                                    'ETHERNET', 'WIFI'] = 'ANY',
                identifier: str = 'ANY',
-               write_at_open: Optional[Iterable[tuple]] = None,
+               write_at_open: Sequence[tuple] | None = None,
                no_led: bool = False) -> None:
     """Sets the arguments and initializes the parent class.
 

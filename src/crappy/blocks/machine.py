@@ -1,8 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import Any, Optional
-from collections.abc import Iterable
+from typing import Any
+from collections.abc import Sequence
 from dataclasses import dataclass, fields
 import logging
 
@@ -17,12 +17,12 @@ class ActuatorInstance:
   Actuator."""
 
   actuator: Actuator
-  speed: Optional[float] = None
-  position_label: Optional[str] = None
-  speed_label: Optional[str] = None
+  speed: float | None = None
+  position_label: str | None = None
+  speed_label: str | None = None
   mode: str = 'speed'
   cmd_label: str = 'cmd'
-  speed_cmd_label: Optional[str] = None
+  speed_cmd_label: str | None = None
 
 
 class Machine(Block):
@@ -52,14 +52,14 @@ class Machine(Block):
   """
 
   def __init__(self,
-               actuators: Iterable[dict[str, Any]],
-               common: Optional[dict[str, Any]] = None,
+               actuators: Sequence[dict[str, Any]],
+               common: dict[str, Any] | None = None,
                time_label: str = 't(s)',
-               ft232h_ser_num: Optional[str] = None,
+               ft232h_ser_num: str | None = None,
                spam: bool = False,
-               freq: Optional[float] = 200,
+               freq: float | None = 200,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

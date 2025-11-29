@@ -1,8 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional
-from collections.abc import Iterable
+from collections.abc import Sequence
 from dataclasses import dataclass
 import logging
 from  warnings import warn
@@ -41,11 +40,11 @@ class LabjackUE9(InOut):
   """
 
   def __init__(self,
-               channels: Iterable[int],
-               gain: Optional[Iterable[float]] = None,
-               offset: Optional[Iterable[float]] = None,
-               make_zero: Optional[Iterable[bool]] = None,
-               resolution: Optional[Iterable[int]] = None) -> None:
+               channels: Sequence[int],
+               gain: Sequence[float] | None = None,
+               offset: Sequence[float] | None = None,
+               make_zero: Sequence[bool] | None = None,
+               resolution: Sequence[int] | None = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 from tkinter.messagebox import showerror
 import tkinter as tk
 import logging
@@ -33,8 +32,8 @@ class DICVEConfig(CameraConfigBoxes):
   def __init__(self,
                camera: Camera,
                log_queue: Queue,
-               log_level: Optional[int],
-               max_freq: Optional[float],
+               log_level: int | None,
+               max_freq: float | None,
                patches: SpotsBoxes) -> None:
     """Sets the patches and initializes the parent class.
 
@@ -59,7 +58,7 @@ class DICVEConfig(CameraConfigBoxes):
         the patches to follow for image correlation.
     """
 
-    self._patch_size: Optional[CameraScaleSetting] = None
+    self._patch_size: CameraScaleSetting | None = None
 
     super().__init__(camera, log_queue, log_level, max_freq)
 

@@ -2,8 +2,7 @@
 
 import numpy as np
 from time import time
-from typing import Optional
-from collections.abc import Iterable
+from collections.abc import Sequence
 import logging
 from  warnings import warn
 
@@ -27,9 +26,9 @@ class SpectrumM2I4711(InOut):
   """
 
   def __init__(self,
-               channels: Iterable[int],
+               channels: Sequence[int],
                device: str = '/dev/spcm0',
-               ranges: Optional[Iterable[int]] = None,
+               ranges: Sequence[int] | None = None,
                sample_rate: int = 100000,
                buff_size: int = 2**26,
                notify_size: int = 2**16) -> None:

@@ -3,7 +3,6 @@
 from multiprocessing import Pipe, current_process
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
-from typing import Optional, Union
 import numpy as np
 from itertools import combinations
 from time import sleep, time
@@ -35,13 +34,13 @@ class VideoExtensoTool:
   def __init__(self,
                spots: SpotsBoxes,
                thresh: int,
-               log_level: Optional[int],
+               log_level: int | None,
                log_queue: Queue,
                white_spots: bool = False,
                update_thresh: bool = False,
                safe_mode: bool = False,
                border: int = 5,
-               blur: Optional[int] = 5) -> None:
+               blur: int | None = 5) -> None:
     """Sets the arguments and the other instance attributes.
 
     Args:
@@ -114,7 +113,7 @@ class VideoExtensoTool:
     self.spots = spots
     self._thresh = thresh
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
     self._log_level = log_level
     self._log_queue = log_queue
 
@@ -177,7 +176,7 @@ class VideoExtensoTool:
 
   def get_data(self,
                img: np.ndarray
-               ) -> Optional[tuple[list[tuple[float, ...]], float, float]]:
+               ) -> tuple[list[tuple[float, ...]], float, float] | None:
     """Takes an image as an input, performs spot detection on it, computes the
     strain from the newly detected spots, and returns the spot positions and
     strain values.
@@ -301,7 +300,7 @@ class VideoExtensoTool:
 
   def _send(self,
             conn: Connection,
-            val: Union[str, tuple[int, int, np.ndarray]]) -> None:
+            val: str | tuple[int, int, np.ndarray]) -> None:
     """Wrapper for sending messages to the Tracker processes.
 
     In Linux, checks that the Pipe is not full before sending the message.

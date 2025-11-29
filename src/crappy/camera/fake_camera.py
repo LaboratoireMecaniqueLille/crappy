@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional
 import numpy as np
 import logging
 
@@ -56,7 +55,7 @@ class FakeCamera(Camera):
 
     self._gen_image()
 
-  def get_image(self) -> Optional[tuple[float, np.ndarray]]:
+  def get_image(self) -> tuple[float, np.ndarray] | None:
     """Returns the updated image, depending only on the current timestamp.
 
     Also includes a waiting loop in order to achieve the right frame rate.
@@ -73,7 +72,7 @@ class FakeCamera(Camera):
     row = int(self.speed * (self._t - self._t0)) % self.height
     return self._t, np.concatenate((self._img[row:], self._img[:row]), axis=0)
 
-  def _gen_image(self, _: Optional[float] = None) -> None:
+  def _gen_image(self, _: float | None = None) -> None:
     """Generates the base gradient image, that will be split and returned
     in the :meth:`get_image` method."""
 

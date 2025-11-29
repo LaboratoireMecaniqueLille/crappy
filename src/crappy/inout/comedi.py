@@ -1,8 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional
-from collections.abc import Iterable
+from collections.abc import Sequence
 from dataclasses import dataclass
 import logging
 from  warnings import warn
@@ -47,16 +46,16 @@ class Comedi(InOut):
   def __init__(self,
                device: str = '/dev/comedi0',
                sub_device: int = 0,
-               channels: Optional[Iterable[int]] = None,
-               range_num: Optional[Iterable[int]] = None,
-               gain: Optional[Iterable[float]] = None,
-               offset: Optional[Iterable[float]] = None,
-               make_zero: Optional[Iterable[bool]] = None,
+               channels: Sequence[int] | None = None,
+               range_num: Sequence[int] | None = None,
+               gain: Sequence[float] | None = None,
+               offset: Sequence[float] | None = None,
+               make_zero: Sequence[bool] | None = None,
                out_sub_device: int = 1,
-               out_channels: Optional[Iterable[int]] = None,
-               out_range_num: Optional[Iterable[int]] = None,
-               out_gain: Optional[Iterable[float]] = None,
-               out_offset: Optional[Iterable[float]] = None) -> None:
+               out_channels: Sequence[int] | None = None,
+               out_range_num: Sequence[int] | None = None,
+               out_gain: Sequence[float] | None = None,
+               out_offset: Sequence[float] | None = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

@@ -34,7 +34,6 @@ CTRL+C to stop Crappy, but it is not a clean way to do it.
 import crappy
 import cv2
 import numpy as np
-from typing import Optional, Union
 from collections.abc import Callable
 from pathlib import Path
 
@@ -211,24 +210,24 @@ class CustomCameraBlock(crappy.blocks.Camera):
 
   def __init__(self,
                camera: str,
-               transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+               transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: Optional[str] = None,
+               displayer_backend: str | None = None,
                displayer_framerate: float = 5,
-               software_trig_label: Optional[str] = None,
+               software_trig_label: str | None = None,
                display_freq: bool = False,
-               freq: Optional[float] = 200,
-               debug: Optional[bool] = False,
+               freq: float | None = 200,
+               debug: bool | None = False,
                save_images: bool = False,
                img_extension: str = "tiff",
-               save_folder: Optional[Union[str, Path]] = None,
+               save_folder: str | Path | None = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None,
-               image_generator: Optional[Callable[[float, float],
-                                                  np.ndarray]] = None,
-               img_shape: Optional[tuple[int, int]] = None,
-               img_dtype: Optional[str] = None,
+               save_backend: str | None = None,
+               image_generator: Callable[[float, float],
+                                         np.ndarray]  |None = None,
+               img_shape: tuple[int, int] | None = None,
+               img_dtype: str | None = None,
                scale_factor: float = 1.2,
                min_neighbors: int = 3,
                **kwargs) -> None:

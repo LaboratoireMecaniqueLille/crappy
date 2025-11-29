@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import logging
-from typing import Optional
 
 from .meta_block import Block
 from .._global import OptionalModule
@@ -23,9 +22,9 @@ class StopButton(Block):
   """
 
   def __init__(self,
-               freq: Optional[float] = 50,
+               freq: float | None = 50,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -39,7 +38,7 @@ class StopButton(Block):
         disables logging for this Block.
     """
 
-    self._root: Optional[tk.Tk] = None
+    self._root: tk.Tk | None = None
 
     super().__init__()
     self.freq = freq

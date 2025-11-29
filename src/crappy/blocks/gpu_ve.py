@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Union, Literal
-from collections.abc import Callable, Iterable
+from typing import Literal
+from collections.abc import Callable, Sequence
 import numpy as np
 from pathlib import Path
 
@@ -40,28 +40,28 @@ class GPUVE(Camera):
 
   def __init__(self,
                camera: str,
-               patches: Iterable[tuple[int, int, int, int]],
+               patches: Sequence[tuple[int, int, int, int]],
                img_shape: tuple[int, int],
                img_dtype: str,
-               transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+               transform: Callable[[np.ndarray], np.ndarray] | None = None,
                display_images: bool = False,
-               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
+               displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
-               software_trig_label: Optional[str] = None,
+               software_trig_label: str | None = None,
                verbose: bool = False,
-               freq: Optional[float] = 200,
-               debug: Optional[bool] = False,
+               freq: float | None = 200,
+               debug: bool | None = False,
                save_images: bool = False,
                img_extension: str = "tiff",
-               save_folder: Optional[Union[str, Path]] = None,
+               save_folder: str | Path | None = None,
                save_period: int = 1,
-               save_backend: Optional[Literal['sitk', 'pil', 
-                                              'cv2', 'npy']] = None,
-               image_generator: Optional[Callable[[float, float],
-                                                  np.ndarray]] = None,
-               labels: Optional[Union[str, Iterable[str]]] = None,
-               img_ref: Optional[np.ndarray] = None,
-               kernel_file: Optional[Union[str, Path]] = None,
+               save_backend: Literal['sitk', 'pil',
+                                     'cv2', 'npy'] | None = None,
+               image_generator: Callable[[float, float],
+                                         np.ndarray] | None = None,
+               labels: str | Sequence[str] | None = None,
+               img_ref: np.ndarray | None = None,
+               kernel_file: str | Path | None = None,
                iterations: int = 4,
                mul: float = 3,
                **kwargs) -> None:

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Optional, Literal
+from typing import Literal
 import logging
 
 from .meta_inout import InOut
@@ -50,7 +50,7 @@ class MPRLS(InOut):
 
   def __init__(self,
                backend: Literal['Pi4', 'blinka'],
-               eoc_pin: Optional[Union[str, int]] = None,
+               eoc_pin: str | int | None = None,
                device_address: int = 0x18,
                i2c_port: int = 1) -> None:
     """Initializes the parent class and opens the I2C bus.

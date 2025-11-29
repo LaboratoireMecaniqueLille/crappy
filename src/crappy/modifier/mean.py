@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional
 import logging
 
 from .meta_modifier import Modifier, T
@@ -30,7 +29,7 @@ class Mean(Modifier):
     self._n_points = n_points
     self._buf = None
 
-  def __call__(self, data: dict[str, T]) -> Optional[dict[str, T]]:
+  def __call__(self, data: dict[str, T]) -> dict[str, T] | None:
     """Receives data from the upstream Block, and computes the average of every
     label once the right number of points have been received. Then empties the
     buffer and returns the averages.

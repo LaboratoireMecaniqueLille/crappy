@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Union
 from collections.abc import Iterable
 import logging
 
@@ -27,8 +26,8 @@ class Offset(Modifier):
   """
 
   def __init__(self,
-               labels: Union[str, Iterable[str]],
-               offsets: Union[float, Iterable[float]]) -> None:
+               labels: str | Iterable[str],
+               offsets: float | Iterable[float]) -> None:
     """Sets the args and initializes the parent class.
 
     Args:

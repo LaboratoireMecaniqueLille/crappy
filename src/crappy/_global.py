@@ -1,6 +1,6 @@
 # coding:utf-8
 
-from typing import Optional, NoReturn, Any
+from typing import NoReturn, Any
 from importlib import import_module
 import webbrowser
 import importlib.resources
@@ -30,7 +30,7 @@ class OptionalModule:
 
   def __init__(self,
                module_name: str,
-               message: Optional[str] = None,
+               message: str | None = None,
                lazy_import: bool = False) -> None:
     """Sets the arguments.
 

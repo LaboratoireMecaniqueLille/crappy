@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, Literal
+from typing import Literal
 import logging
 
 from ..meta_inout import InOut
@@ -64,7 +64,7 @@ class ADS1115FT232H(InOut):
                v_range: float = 2.048,
                multiplexer: Literal['A0', 'A1', 'A2', 'A3', 'A0 - A1',
                                     'A0 - A3', 'A1 - A3', 'A2 - A3'] = 'A1',
-               dry_pin: Optional[str] = None,
+               dry_pin: str | None = None,
                gain: float = 1,
                offset: float = 0,
                _ft232h_args: USBArgsType = tuple()) -> None:

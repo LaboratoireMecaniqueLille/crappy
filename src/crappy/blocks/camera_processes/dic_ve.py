@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Literal
+from typing import Literal
 import numpy as np
 import logging
 import logging.handlers
@@ -133,7 +133,7 @@ class DICVEProcess(CameraProcess):
     
     # Other attributes
     self._raise_on_exit = raise_on_exit
-    self._disve: Optional[DICVETool] = None
+    self._disve: DICVETool | None = None
     self._img0_set = False
     self._lost_patch = False
 

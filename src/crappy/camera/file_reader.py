@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Union, Optional
 import numpy as np
 from pathlib import Path
 from re import fullmatch
@@ -54,8 +53,8 @@ class FileReader(Camera):
     self._stopped = False
 
   def open(self,
-           reader_folder: Union[Path, str],
-           reader_backend: Optional[str] = None,
+           reader_folder: Path | str,
+           reader_backend: str | None = None,
            stop_at_end: bool = True) -> None:
     """Sets the reader backend and retrieves the images to read, sorted by
     their timestamp.
@@ -128,7 +127,7 @@ class FileReader(Camera):
     # The images are stored as an iterator
     self._images = iter(images)
 
-  def get_image(self) -> Optional[tuple[float, np.ndarray]]:
+  def get_image(self) -> tuple[float, np.ndarray] | None:
     """Reads the next image in the image folder, and returns it at the right
     time so that the achieved framerate matches the original framerate.
 

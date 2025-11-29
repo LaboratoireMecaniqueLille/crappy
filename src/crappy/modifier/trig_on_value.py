@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Any, Union
+from typing import Any
 from collections.abc import Iterable
 import logging
 
@@ -19,7 +19,7 @@ class TrigOnValue(Modifier):
 
   def __init__(self,
                label: str,
-               values: Union[Any, Iterable[Any]]) -> None:
+               values: Any | Iterable[Any]) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -45,7 +45,7 @@ class TrigOnValue(Modifier):
 
     self._values = tuple(values)
 
-  def __call__(self, data: dict[str, T]) -> Optional[dict[str, T]]:
+  def __call__(self, data: dict[str, T]) -> dict[str, T] | None:
     """Checks if the value of ``label`` is in the predefined set of accepted
     values, and if so transmits the data.
     

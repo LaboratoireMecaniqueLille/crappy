@@ -3,7 +3,7 @@
 import numpy as np
 from io import BytesIO
 from time import time
-from typing import Optional, Tuple, Dict, Any
+from typing import Any
 import logging
 from warnings import warn
 
@@ -49,10 +49,10 @@ class CameraGPhoto2(Camera):
     super().__init__()
 
     # Attributes used for image acquisition
-    self._camera: Optional[gp.Camera] = None
+    self._camera: gp.Camera | None = None
     self._context: gp.GPContext = gp.Context()
-    self._model: Optional[str] = None
-    self._port: Optional[str] = None
+    self._model: str | None = None
+    self._port: str | None = None
     self._num_image = 0
 
     # Basic settings always implemented
@@ -68,8 +68,8 @@ class CameraGPhoto2(Camera):
                             default='continuous')
 
   def open(self,
-           model: Optional[str] = None,
-           port: Optional[str] = None,
+           model: str | None = None,
+           port: str | None = None,
            channels: str = '1',
            mode: str = 'continuous') -> None:
     """Opens the connection to a gPhoto2-supported camera.
@@ -127,7 +127,7 @@ class CameraGPhoto2(Camera):
     # Not currently used, but might be needed in the future
     self.set_all(channels=channels, mode=mode)
 
-  def get_image(self) -> Optional[Tuple[Dict[str, Any], np.ndarray]]:
+  def get_image(self) -> tuple[dict[str, Any], np.ndarray] | None:
     """Acquires an image using gPhoto2 and returns it.
 
     The images can either be acquired continuously, or based on an external

@@ -2,8 +2,7 @@
 
 from time import time, sleep
 from re import fullmatch, findall
-from typing import Union, Optional
-from collections.abc import Iterable
+from collections.abc import Sequence
 import logging
 from  warnings import warn
 
@@ -124,8 +123,8 @@ class WaveshareHighPrecision(InOut):
   def __init__(self,
                spi_port: int = 0,
                gain_hardware: int = 16,
-               sample_rate: Union[int, float] = 50,
-               channels: Optional[Iterable[str]] = None,
+               sample_rate: int | float = 50,
+               channels: Sequence[str] | None = None,
                digital_filter: int = 4,
                gain: float = 1,
                offset: float = 0) -> None:

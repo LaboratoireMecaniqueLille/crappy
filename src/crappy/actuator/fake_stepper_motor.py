@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 from time import time, sleep
 from math import sqrt, copysign
 from threading import Thread, RLock
@@ -56,8 +55,8 @@ class FakeStepperMotor(Actuator):
     # The variables for driving the motor
     self._speed: float = 0
     self._pos: float = 0
-    self._target_pos: Optional[float] = 0
-    self._target_speed: Optional[float] = None
+    self._target_pos: float | None = 0
+    self._target_speed: float | None = None
     self._t: float = time()
 
     # Attributes managing the Thread emulating the motor
@@ -71,7 +70,7 @@ class FakeStepperMotor(Actuator):
     self.log(logging.INFO, "Starting the emulation thread")
     self._thread.start()
 
-  def set_position(self, position: float, speed: Optional[float]) -> None:
+  def set_position(self, position: float, speed: float | None) -> None:
     """Sets the target position that the motor should reach.
 
     It first converts the given position from mm to steps. If a speed value is

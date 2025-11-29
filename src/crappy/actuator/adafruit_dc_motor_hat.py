@@ -2,7 +2,7 @@
 
 from struct import pack_into
 from time import sleep
-from typing import Union, Literal
+from typing import Literal
 import logging
 from  warnings import warn
 
@@ -224,7 +224,7 @@ class DCMotorHat(Actuator):
     elif self._backend == 'blinka':
       setattr(getattr(self._bus, f'motor{nr}'), 'throttle', cmd)
 
-  def _write_i2c(self, register: int, buf: Union[list, bytearray]) -> None:
+  def _write_i2c(self, register: int, buf: list | bytearray) -> None:
     """Thin wrapper to reduce verbosity."""
 
     self._bus.write_i2c_block_data(self._address, register, list(buf))

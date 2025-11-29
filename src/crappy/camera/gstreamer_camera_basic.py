@@ -2,7 +2,6 @@
 
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
-from typing import Optional, Union
 from re import findall, search
 from subprocess import Popen, PIPE, run
 from fractions import Fraction
@@ -68,20 +67,20 @@ class CameraGstreamer(Camera):
 
     # These attributes will be set later
     self._pipeline = None
-    self._process: Optional[Popen] = None
-    self._img: Optional[ndarray] = None
-    self._device: Optional[Union[str, int]] = None
-    self._user_pipeline: Optional[str] = None
+    self._process: Popen | None = None
+    self._img: ndarray | None = None
+    self._device: str | int | None = None
+    self._user_pipeline: str | None = None
     self._nb_channels: int = 3
     self._img_depth: int = 8
     self._formats: list[str] = list()
     self._app_sink = None
 
   def open(self,
-           device: Optional[Union[int, str]] = None,
-           user_pipeline: Optional[str] = None,
-           nb_channels: Optional[int] = None,
-           img_depth: Optional[int] = None,
+           device: str | int | None = None,
+           user_pipeline: str | None = None,
+           nb_channels: int | None = None,
+           img_depth: int | None = None,
            **kwargs) -> None:
     """Opens the pipeline, sets the settings and starts the acquisition of
     images.
@@ -380,11 +379,11 @@ videoconvert ! autovideosink
     self._pipeline.set_state(Gst.State.PLAYING)
 
   def _get_pipeline(self,
-                    brightness: Optional[float] = None,
-                    contrast: Optional[float] = None,
-                    hue: Optional[float] = None,
-                    saturation: Optional[float] = None,
-                    img_format: Optional[str] = None) -> str:
+                    brightness: float | None = None,
+                    contrast: float | None = None,
+                    hue: float | None = None,
+                    saturation: float | None = None,
+                    img_format: str | None = None) -> str:
     """Method that generates a pipeline, according to the given settings.
 
     If a user-defined pipeline was given, it will always be returned.

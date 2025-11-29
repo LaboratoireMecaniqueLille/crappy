@@ -3,7 +3,7 @@
 from subprocess import check_output
 from threading import Thread, RLock
 from time import sleep
-from typing import Union, Optional, Literal
+from typing import Literal
 import logging
 
 from .meta_actuator import Actuator
@@ -286,16 +286,16 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
                                   64, 128, 256, '2_100p'] = 8,
                max_accel: float = 20,
                t_shutoff: float = 0,
-               config_file: Optional[str] = None,
-               serial_number: Optional[str] = None,
-               model: Optional[Literal['T825', 'T824', 'T500', 
-                               'N825', 'T249', '36v4']] = None,
+               config_file: str | None = None,
+               serial_number: str | None = None,
+               model: Literal['T825', 'T824', 'T500',
+                              'N825', 'T249', '36v4'] | None = None,
                reset_command_timeout: bool = True,
                backend: Literal['USB', 'ticcmd'] = 'USB',
                unrestricted_current_limit: bool = False,
-               pin_function: Optional[dict[pin_type, pin_mode_type]] = None,
-               pin_polarity: Optional[dict[pin_type,
-                                           pin_polarity_type]] = None) -> None:
+               pin_function: dict[pin_type, pin_mode_type] | None = None,
+               pin_polarity: dict[pin_type,
+                                  pin_polarity_type] | None = None) -> None:
     """Checks args validity, finds the right device, reads the current limit
     tables.
 
@@ -753,7 +753,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         byteorder='little',
         signed=True))
 
-  def set_position(self, position: float, speed: Optional[float]) -> None:
+  def set_position(self, position: float, speed: float | None) -> None:
     """Sends a position command to the motor.
 
     Args:
@@ -1134,7 +1134,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
                    request: int = 0,
                    value: int = 0,
                    index: int = 0,
-                   data_or_length: int = 0) -> Union[bytearray, int]:
+                   data_or_length: int = 0) -> bytearray | int:
     """Wrapper for sending a USB control transfer."""
 
     with self._lock:

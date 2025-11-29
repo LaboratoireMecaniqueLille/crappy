@@ -2,7 +2,6 @@
 
 from struct import pack_into
 from time import sleep
-from typing import Union, Optional
 import logging
 from warnings import warn
 
@@ -73,7 +72,7 @@ class DCMotorHatFT232H(Actuator):
          f"is, except you will now need to import crappy.collection at the "
          f"top of your script.", FutureWarning)
 
-    self._bus: Optional[FT232H] = None
+    self._bus: FT232H | None = None
     self._buf: bytearray = bytearray(4)
 
     super().__init__()
@@ -189,7 +188,7 @@ class DCMotorHatFT232H(Actuator):
       self._write_i2c(motor_hat_pos[nr], [0x00 for _ in range(4)])
       self._write_i2c(motor_hat_neg[nr], self._buf)
 
-  def _write_i2c(self, register: int, buf: Union[list, bytearray]) -> None:
+  def _write_i2c(self, register: int, buf: list | bytearray) -> None:
     """Thin wrapper to reduce verbosity."""
 
     self._bus.write_i2c_block_data(self._address, register, list(buf))

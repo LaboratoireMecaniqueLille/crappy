@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional
 import logging
 from tkinter import TclError
 
@@ -34,14 +33,14 @@ class Grapher(Block):
   def __init__(self,
                *labels: tuple[str, str],
                length: int = 0,
-               freq: Optional[float] = 2,
+               freq: float | None = 2,
                max_pt: int = 20000,
                window_size: tuple[int, int] = (8, 8),
-               window_pos: Optional[tuple[int, int]] = None,
+               window_pos: tuple[int, int] | None = None,
                interp: bool = True,
                backend: str = "TkAgg",
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

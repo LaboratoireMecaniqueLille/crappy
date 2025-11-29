@@ -1,7 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Union
-from collections.abc import Iterable, Callable
+from collections.abc import Sequence, Callable
 import logging
 from re import split
 from time import time
@@ -20,10 +19,10 @@ class StopBlock(Block):
   """
 
   def __init__(self,
-               criteria: Union[str, Callable, Iterable[Union[str, Callable]]],
-               freq: Optional[float] = 30,
+               criteria: str | Callable | Sequence[str | Callable],
+               freq: float | None = 30,
                display_freq: bool = False,
-               debug: Optional[bool] = False
+               debug: bool | None = False
                ) -> None:
     """Sets the arguments and initialize the parent class.
 
@@ -90,7 +89,7 @@ class StopBlock(Block):
 
     self.log(logging.DEBUG, "No stop criterion reached during this loop")
   
-  def _parse_criterion(self, criterion: Union[str, Callable]) -> Callable:
+  def _parse_criterion(self, criterion: str | Callable) -> Callable:
     """Parses a Callable or string criterion given as an input by the user, and
     returns the associated Callable."""
     

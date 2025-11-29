@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 import logging
 from  warnings import warn
 
@@ -129,7 +128,7 @@ class OrientalARDK(Actuator):
     # Storing the written value
     self._prev_set_speed = signed_speed
 
-  def set_position(self, position: float, speed: Optional[float]) -> None:
+  def set_position(self, position: float, speed: float | None) -> None:
     """Sets the target position for the motor.
 
     Args:

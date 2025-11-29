@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 import logging
 
 from .meta_modifier import Modifier, T
@@ -16,7 +15,7 @@ class Diff(Modifier):
   def __init__(self,
                label: str,
                time_label: str = 't(s)',
-               out_label: Optional[str] = None) -> None:
+               out_label: str | None = None) -> None:
     """Sets the args and initializes the parent class.
 
     Args:

@@ -2,7 +2,6 @@
 
 from time import time
 from numpy import loadtxt, interp
-from typing import Union
 import pathlib
 import logging
 
@@ -19,7 +18,7 @@ class Custom(Path):
   """
 
   def __init__(self,
-               file_name: Union[str, pathlib.Path],
+               file_name: str | pathlib.Path,
                delimiter: str = ',') -> None:
     """Loads the file and sets the arguments.
 

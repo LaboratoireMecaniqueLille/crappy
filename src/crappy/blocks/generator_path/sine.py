@@ -2,7 +2,6 @@
 
 from time import time
 from numpy import sin, pi
-from typing import Union
 import logging
 
 from .meta_path import Path, ConditionType
@@ -16,7 +15,7 @@ class Sine(Path):
   """
 
   def __init__(self,
-               condition: Union[str, ConditionType],
+               condition: str | ConditionType,
                freq: float,
                amplitude: float,
                offset: float = 0,

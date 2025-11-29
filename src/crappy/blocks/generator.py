@@ -1,8 +1,8 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Any, Optional
-from collections.abc import Iterator, Iterable
+from typing import Any
+from collections.abc import Iterator, Sequence
 from itertools import cycle
 from copy import deepcopy
 import logging
@@ -38,16 +38,16 @@ class Generator(Block):
   """
 
   def __init__(self,
-               path: Iterable[dict[str, Any]],
-               freq: Optional[float] = 200,
+               path: Sequence[dict[str, Any]],
+               freq: float | None = 200,
                cmd_label: str = 'cmd',
                path_index_label: str = 'index',
                repeat: bool = False,
                spam: bool = False,
                display_freq: bool = False,
-               end_delay: Optional[float] = 2,
+               end_delay: float | None = 2,
                safe_start: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

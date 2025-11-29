@@ -27,8 +27,7 @@ clean way to stop Crappy.
 """
 
 import crappy
-from typing import Optional
-from collections.abc import Iterable
+from collections.abc import Sequence
 import logging
 from time import sleep, time
 
@@ -44,13 +43,13 @@ class CustomBlock(crappy.blocks.Block):
 
   def __init__(self,
                recv_meth: str,
-               labels: Iterable[str],
+               labels: Sequence[str],
                t_limit: float = float('inf'),
-               freq: Optional[float] = 100,
-               display_freq: Optional[bool] = False) -> None:
+               freq: float | None = 100,
+               display_freq: bool | None = False) -> None:
     """This method performs several critical actions.
 
-    First, is initializes the parent class. Then, it allows to set several
+    First, it initializes the parent class. Then, it allows to set several
     special attributes that control the way the Block runs. And finally, it
     is where the arguments are passed to the Block and where they should be
     handled.

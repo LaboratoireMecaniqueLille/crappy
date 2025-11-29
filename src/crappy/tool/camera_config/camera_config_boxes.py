@@ -3,7 +3,6 @@
 import numpy as np
 import tkinter as tk
 import logging
-from typing import Optional
 from multiprocessing.queues import Queue
 
 from .camera_config import CameraConfig
@@ -30,8 +29,8 @@ class CameraConfigBoxes(CameraConfig):
   def __init__(self,
                camera: Camera,
                log_queue: Queue,
-               log_level: Optional[int],
-               max_freq: Optional[float]) -> None:
+               log_level: int | None,
+               max_freq: float | None) -> None:
     """Initializes the parent class and sets the spots container.
 
     Args:

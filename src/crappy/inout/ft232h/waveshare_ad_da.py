@@ -2,8 +2,8 @@
 
 from time import time, sleep
 from re import fullmatch, findall
-from typing import Union, Optional, Literal
-from collections.abc import Iterable
+from typing import Literal
+from collections.abc import Sequence
 import logging
 from  warnings import warn
 
@@ -90,14 +90,13 @@ class WaveshareADDAFT232H(InOut):
   ft232h = True
 
   def __init__(self,
-               dac_channels: Optional[Iterable[Literal['DAC0',
-                                                       'DAC1']]] = None,
-               adc_channels: Optional[Iterable[str]] = None,
+               dac_channels: Sequence[Literal['DAC0', 'DAC1']] | None = None,
+               adc_channels: Sequence[str] | None = None,
                gain_hardware: int = 1,
                v_ref: float = 3.3,
                gain: float = 1,
                offset: float = 0,
-               sample_rate: Union[int, float] = 100,
+               sample_rate: int | float = 100,
                _ft232h_args: USBArgsType = tuple(),
                rst_pin_ads: str = 'D7',
                cs_pin_ads: str = 'D4',

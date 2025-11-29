@@ -2,7 +2,6 @@
 
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
-from typing import Optional, Union
 from subprocess import Popen, PIPE, run
 from re import findall, search
 import logging
@@ -69,20 +68,20 @@ class CameraGstreamer(Camera, V4L2Helper):
 
     # These attributes will be set later
     self._pipeline = None
-    self._process: Optional[Popen] = None
-    self._img: Optional[ndarray] = None
-    self._device: Optional[Union[str, int]] = None
-    self._user_pipeline: Optional[str] = None
+    self._process: Popen | None = None
+    self._img: ndarray | None = None
+    self._device: str | int | None = None
+    self._user_pipeline: str | None = None
     self._nb_channels: int = 3
     self._img_depth: int = 8
     self._formats: list[str] = list()
     self._app_sink = None
 
   def open(self,
-           device: Optional[Union[int, str]] = None,
-           user_pipeline: Optional[str] = None,
-           nb_channels: Optional[int] = None,
-           img_depth: Optional[int] = None,
+           device: str | int | None = None,
+           user_pipeline: str | None = None,
+           nb_channels: int | None = None,
+           img_depth: int | None = None,
            **kwargs) -> None:
     """Opens the pipeline, sets the settings and starts the acquisition of
     images.
@@ -290,7 +289,7 @@ videoconvert ! autovideosink
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> Optional[tuple[float, ndarray]]:
+  def get_image(self) -> tuple[float, ndarray] | None:
     """Reads the last image acquired from the camera.
 
     Returns:
@@ -339,7 +338,7 @@ videoconvert ! autovideosink
     self.log(logging.INFO, "Starting the GST pipeline")
     self._pipeline.set_state(Gst.State.PLAYING)
 
-  def _get_pipeline(self, img_format: Optional[str] = None) -> str:
+  def _get_pipeline(self, img_format: str | None = None) -> str:
     """Method that generates a pipeline, according to the given settings.
 
     If a user-defined pipeline was given, it will always be returned.

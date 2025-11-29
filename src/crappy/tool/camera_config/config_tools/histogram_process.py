@@ -7,7 +7,6 @@ from multiprocessing.queues import Queue
 from queue import Empty
 import logging
 import logging.handlers
-from typing import Optional
 from functools import partial
 from time import sleep
 
@@ -30,7 +29,7 @@ class HistogramProcess(Process):
                processing_event: Event,
                img_in: Queue,
                img_out: Queue,
-               log_level: Optional[int],
+               log_level: int | None,
                log_queue: Queue) -> None:
     """Sets the arguments and initializes the parent class.
 
@@ -50,7 +49,7 @@ class HistogramProcess(Process):
         to the main :obj:`~logging.Logger`, only used in Windows.
     """
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
     self._log_level = log_level
     self._log_queue = log_queue
 

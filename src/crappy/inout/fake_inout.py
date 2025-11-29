@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional
 import numpy as np
 
 from .meta_inout import InOut
@@ -27,7 +26,7 @@ class FakeInOut(InOut):
   def __init__(self) -> None:
     """Initializes the parent class."""
 
-    self._buf: Optional[list] = None
+    self._buf: list | None = None
 
     super().__init__()
 

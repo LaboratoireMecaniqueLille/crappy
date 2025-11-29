@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional
 import logging
 
 from .meta_block import Block
@@ -37,13 +36,13 @@ class PID(Block):
                kp_label: str = 'kp',
                ki_label: str = 'ki',
                kd_label: str = 'kd',
-               labels: Optional[tuple[str, str]] = None,
+               labels: tuple[str, str] | None = None,
                reverse: bool = False,
-               i_limit: tuple[Optional[float], Optional[float]] = (None, None),
+               i_limit: tuple[float | None, float | None] = (None, None),
                send_terms: bool = False,
-               freq: Optional[float] = 500,
+               freq: float | None = 500,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -141,8 +140,8 @@ class PID(Block):
     self._reverse = reverse
 
     # Setting the variables
-    self._setpoint: Optional[float] = None
-    self._last_input: Optional[float] = None
+    self._setpoint: float | None = None
+    self._last_input: float | None = None
     self._prev_t: float = 0.
     self._i_term: float = 0.
 

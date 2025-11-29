@@ -2,8 +2,7 @@
 
 import numpy as np
 from time import time
-from typing import Optional
-from collections.abc import Iterable
+from collections.abc import Sequence
 from dataclasses import dataclass
 import logging
 
@@ -44,16 +43,16 @@ class DAQmx(InOut):
 
   def __init__(self,
                device: str = 'Dev1',
-               channels: Optional[Iterable[str]] = None,
-               gain: Optional[Iterable[float]] = None,
-               offset: Optional[Iterable[float]] = None,
-               ranges: Optional[Iterable[float]] = None,
-               make_zero: Optional[Iterable[bool]] = None,
+               channels: Sequence[str] | None = None,
+               gain: Sequence[float] | None = None,
+               offset: Sequence[float] | None = None,
+               ranges: Sequence[float] | None = None,
+               make_zero: Sequence[bool] | None = None,
                sample_rate: float = 10000,
-               out_channels: Optional[Iterable[str]] = None,
-               out_gain: Optional[Iterable[float]] = None,
-               out_offset: Optional[Iterable[float]] = None,
-               out_ranges: Optional[Iterable[float]] = None) -> None:
+               out_channels: Sequence[str] | None = None,
+               out_gain: Sequence[float] | None = None,
+               out_offset: Sequence[float] | None = None,
+               out_ranges: Sequence[float] | None = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

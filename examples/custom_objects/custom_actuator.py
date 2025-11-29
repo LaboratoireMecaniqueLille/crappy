@@ -28,7 +28,6 @@ Crappy.
 """
 
 import crappy
-from typing import Optional
 from time import time
 from math import copysign
 
@@ -78,7 +77,7 @@ class CustomActuator(crappy.actuator.Actuator):
 
     ...
 
-  def set_position(self, position: float, speed: Optional[float]) -> None:
+  def set_position(self, position: float, speed: float | None) -> None:
     """This method is used for setting a target position value on the Actuator.
 
     Along with the target position value, a speed argument is always received.

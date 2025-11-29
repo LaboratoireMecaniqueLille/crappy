@@ -3,7 +3,6 @@
 from threading import Thread
 from math import log2, ceil
 import numpy as np
-from typing import Optional
 from collections.abc import Iterable
 from time import time, sleep
 import logging
@@ -44,7 +43,7 @@ class Displayer(CameraProcess):
   def __init__(self,
                title: str,
                framerate: float,
-               backend: Optional[str] = None) -> None:
+               backend: str | None = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -58,7 +57,7 @@ class Displayer(CameraProcess):
     """
 
     # The thread must be initialized later for compatibility with Windows
-    self._overlay_thread: Optional[Thread] = None
+    self._overlay_thread: Thread | None = None
     self._overlay: Iterable[Overlay] = list()
     self._stop_thread = False
 

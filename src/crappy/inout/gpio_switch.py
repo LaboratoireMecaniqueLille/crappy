@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Union, Literal
+from typing import Literal
 import logging
 
 from .meta_inout import InOut
@@ -36,7 +36,7 @@ class GPIOSwitch(InOut):
   """
 
   def __init__(self,
-               pin_out: Union[int, str],
+               pin_out: int | str,
                backend: Literal['Pi4', 'blinka']) -> None:
     """Checks the validity of the arguments.
 

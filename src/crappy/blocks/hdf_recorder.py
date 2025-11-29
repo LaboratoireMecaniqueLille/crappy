@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Union, Optional
 from pathlib import Path
 import logging
 
@@ -36,15 +35,15 @@ class HDFRecorder(Block):
   """
 
   def __init__(self,
-               filename: Union[str, Path],
+               filename: str | Path,
                node: str = 'table',
                expected_rows: int = 10**8,
                atom=None,
                label: str = 'stream',
-               metadata: Optional[dict] = None,
-               freq: Optional[float] = None,
+               metadata: dict | None = None,
+               freq: float | None = None,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

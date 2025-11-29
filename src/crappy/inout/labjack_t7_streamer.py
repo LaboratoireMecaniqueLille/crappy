@@ -2,8 +2,8 @@
 
 from time import time
 import numpy as np
-from typing import Any, Optional, Literal
-from collections.abc import Iterable
+from typing import Any, Literal
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from itertools import chain
 from multiprocessing import current_process
@@ -26,7 +26,7 @@ class _Channel:
 
   name: str
 
-  address: Optional[int] = None
+  address: int | None = None
   gain: float = 1
   offset: float = 0
   make_zero: bool = False
@@ -72,7 +72,7 @@ class T7Streamer(InOut):
   """
 
   def __init__(self,
-               channels: Iterable[dict[str, Any]],
+               channels: Sequence[dict[str, Any]],
                device: Literal['ANY', 'T7', 'T4', 'DIGIT']  = 'ANY',
                connection: Literal['ANY', 'TCP', 'USB',
                                    'ETHERNET', 'WIFI'] = 'ANY',
@@ -260,7 +260,7 @@ class T7Streamer(InOut):
     return [time()] + [val * chan.gain + chan.offset for chan, val
                        in zip(self._channels, data)]
 
-  def get_stream(self) -> Optional[list[np.ndarray]]:
+  def get_stream(self) -> list[np.ndarray] | None:
     """Acquires the stream, reshapes the data, applies the gains and offsets,
     and returns the data along with a time array."""
 
