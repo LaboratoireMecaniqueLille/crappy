@@ -3,7 +3,7 @@
 from typing import Optional, NoReturn, Any
 from importlib import import_module
 import webbrowser
-from pkg_resources import resource_string, resource_filename
+import importlib.resources
 from numpy import frombuffer, uint8
 
 
@@ -106,15 +106,20 @@ class resources:
   try:
     # Defining aliases to the images themselves
     from cv2 import imdecode
-    speckle = imdecode(frombuffer(resource_string('crappy',
-                                                  'tool/data/speckle.png'),
-                                  uint8), flags=0)
+    speckle_path = importlib.resources.files('crappy').joinpath(
+        'tool/data/speckle.png')
+    speckle = imdecode(frombuffer(speckle_path.read_bytes(), uint8),
+                       flags=0)
 
-    ve_markers = imdecode(frombuffer(
-      resource_string('crappy', 'tool/data/ve_markers.tif'), uint8), flags=0)
+    ve_markers_path = importlib.resources.files('crappy').joinpath(
+        'tool/data/ve_markers.tif')
+    ve_markers = imdecode(frombuffer(ve_markers_path.read_bytes(), uint8),
+                          flags=0)
 
-    pad = imdecode(frombuffer(resource_string('crappy', 'tool/data/pad.png'),
-                              uint8), flags=0)
+    pad_path = importlib.resources.files('crappy').joinpath(
+        'tool/data/pad.png')
+    pad = imdecode(frombuffer(pad_path.read_bytes(), uint8),
+                   flags=0)
 
   # In case the module opencv-python is missing
   except (ModuleNotFoundError, ImportError):
@@ -123,10 +128,16 @@ class resources:
     pad = OptionalModule('opencv-python')
 
   # Also getting the paths to the images
-  paths = {'pad': resource_filename('crappy', 'tool/data/pad.png'),
-           'speckle': resource_filename('crappy', 'tool/data/speckle.png'),
-           've_markers': resource_filename('crappy',
-                                           'tool/data/ve_markers.tif')}
+  ref_pad = (importlib.resources.files('crappy') / 'tool' / 'data' /
+             'pad.png')
+  ref_speckle = (importlib.resources.files('crappy') / 'tool' / 'data' /
+                 'speckle.png')
+  ref_ve = (importlib.resources.files('crappy') / 'tool' / 'data' /
+            've_markers.tif')
+  with (importlib.resources.as_file(ref_pad) as path_pad,
+        importlib.resources.as_file(ref_speckle) as path_speckle,
+        importlib.resources.as_file(ref_ve) as path_ve):
+    paths = {'pad': path_pad, 'speckle': path_speckle, 've_markers': path_ve}
 
 
 class LinkDataError(ValueError):

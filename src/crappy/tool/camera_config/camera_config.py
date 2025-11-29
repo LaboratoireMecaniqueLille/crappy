@@ -6,7 +6,7 @@ from platform import system
 import numpy as np
 from time import time, sleep
 from typing import Optional, Union
-from pkg_resources import resource_string
+import importlib.resources
 from io import BytesIO
 import logging
 from multiprocessing import current_process, Event, Queue
@@ -1094,8 +1094,9 @@ class CameraConfig(tk.Tk):
       if not self._got_first_img:
         self.log(logging.WARNING, "Could not get an image from the camera, "
                                   "displaying an error image instead")
-        ret = None, np.array(Image.open(BytesIO(resource_string(
-          'crappy', 'tool/data/no_image.png'))))
+        no_img_path = importlib.resources.files('crappy').joinpath(
+            'tool/data/no_image.png')
+        ret = None, np.array(Image.open(BytesIO(no_img_path.read_bytes())))
       # Otherwise, just pass
       else:
         self.log(logging.DEBUG, "No image returned by the camera")
