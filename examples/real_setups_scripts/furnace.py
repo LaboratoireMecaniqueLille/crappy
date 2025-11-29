@@ -95,8 +95,8 @@ if __name__ == '__main__':
               modifier=[crappy.modifier.Median(MED),
                         crappy.modifier.MovingAvg(MEAN)])
 
-  pid_list = []
-  gen_list = []
+  pid_list = list()
+  gen_list = list()
 
   # For each pin, instantiating a PID and a Generator for driving it
   for i in PINS:

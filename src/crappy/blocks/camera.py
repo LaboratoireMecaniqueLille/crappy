@@ -398,7 +398,7 @@ class Camera(Block):
       self._camera.add_software_roi(img.shape[1], img.shape[0])
       self._camera.set_all()
 
-      def get_image(self_) -> (float, np.ndarray):
+      def get_image(self_) -> tuple[float, np.ndarray]:
         """Method generating the frames using the ``image_generator`` argument 
         if one was provided."""
         

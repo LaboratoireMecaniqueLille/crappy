@@ -280,7 +280,7 @@ class VideoExtensoTool:
     else:
       x = self.spots[0].x_centroid
       y = self.spots[0].y_centroid
-      return [(y, x)], 0, 0
+      return [(y, x)], 0.0, 0.0
 
   def _log(self, level: int, msg: str) -> None:
     """Wrapper for recording log messages.

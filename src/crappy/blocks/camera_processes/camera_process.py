@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from multiprocessing import Process, managers, get_start_method, \
-  current_process
+from multiprocessing import (Process, managers, get_start_method,
+                             current_process)
 from multiprocessing.synchronize import Event, RLock, Barrier
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing.connection import Connection

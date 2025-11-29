@@ -1,8 +1,8 @@
 # coding: utf-8
 
 from platform import system
-from multiprocessing import Process, Value, Barrier, Event, Queue, \
-  get_start_method, synchronize, queues
+from multiprocessing import (Process, Value, Barrier, Event, Queue,
+                             get_start_method, synchronize, queues)
 from multiprocessing.sharedctypes import Synchronized
 from multiprocessing.connection import wait
 from threading import BrokenBarrierError, Thread
@@ -20,9 +20,10 @@ from pathlib import Path
 
 from .meta_block import MetaBlock
 from ...links import Link
-from ..._global import LinkDataError, StartTimeout, PrepareError, \
-  T0NotSetError, GeneratorStop, ReaderStop, CameraPrepareError, \
-  CameraRuntimeError, CameraConfigError, CrappyFail
+from ..._global import (LinkDataError, StartTimeout, PrepareError,
+                        T0NotSetError, GeneratorStop, ReaderStop,
+                        CameraPrepareError, CameraRuntimeError,
+                        CameraConfigError, CrappyFail)
 from ...tool.ft232h import USBServer
 
 
