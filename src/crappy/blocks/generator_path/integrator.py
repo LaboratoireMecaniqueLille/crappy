@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from numpy import trapz
+from numpy import trapezoid
 import logging
 
 from .meta_path import Path, ConditionType
@@ -14,10 +14,12 @@ class Integrator(Path):
   inertia and `t0` the timestamp of the beginning of this Path.
 
   Then the output value for this Path will be
-  :math:`v(t) = v(t0) - [I(t0 -> t)f(t)dt] / m`.
+  :math:`v(t) = v(t0) + [I(t0 -> t)f(t)dt] / m`.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Inertia* to *Integrator*
+  .. versionchanged:: 2.0.8 now adding the integrated value to the total
+     instead of subtracting, consistently with intended behavior
   """
 
   def __init__(self,
@@ -96,7 +98,7 @@ class Integrator(Path):
         self._last_val = values[-1]
 
       # Performing the integration and subtracting from the previous value
-      self._value -= trapz(values, times) / self._inertia
+      self._value += trapezoid(values, times) / self._inertia
 
     # Returning the current value
     return self._value

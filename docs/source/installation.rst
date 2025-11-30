@@ -23,7 +23,7 @@ but that was not tested.
 
 Crappy requires **Python 3.10 or later**, as well as the following module :
 
-- `numpy <https://numpy.org/>`_ (1.21.0 or higher)
+- `numpy <https://numpy.org/>`_ (2.0.0 or higher)
 
 The following modules are not mandatory but will provide additional
 functionalities (this list is not exhaustive) :
