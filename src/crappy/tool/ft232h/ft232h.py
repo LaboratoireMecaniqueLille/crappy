@@ -3,7 +3,7 @@
 from enum import IntEnum
 from collections import namedtuple
 from struct import calcsize, unpack, pack
-from typing import Union, Optional, Literal
+from typing import Literal
 from collections.abc import Callable
 from multiprocessing import current_process
 import logging
@@ -183,7 +183,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
   def __init__(self,
                mode: Literal['SPI', 'I2C', 'GPIO_only', 'Write_serial_nr'],
-               serial_nr: Optional[str] = None,
+               serial_nr: str | None = None,
                i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:
     """Checks the arguments validity, initializes the device and sets the
@@ -265,7 +265,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._threewire = False
     self._spi_param_changed = True
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
 
     self._initialize()
 
@@ -721,7 +721,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         raise IOError('EEPROM Write Error @ %d' % addr)
       addr += 2
 
-  def _write_data(self, data: Union[bytearray, bytes]) -> int:
+  def _write_data(self, data: bytearray | bytes) -> int:
     """Writes data to the FT232H.
 
     Writes the sequence of MPSSE commands and data to the FTDI port. Data
@@ -763,9 +763,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def _read_data_bytes(self,
                        size: int,
                        attempt: int = 2,
-                       request_gen: Optional[
-                         Callable[[int], Union[bytearray,
-                                               bytes]]] = None) -> bytes:
+                       request_gen: Callable[
+                          [int], bytearray | bytes] | None = None) -> bytes:
     """Reads data from the FT232H.
 
     Reads data from the FTDI interface. The data buffer is rebuilt from
@@ -1010,7 +1009,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       cmd_chunk.extend(read_not_last * chunk_size)
       cmd_chunk.extend((ft232h_cmds['send_immediate'],))
 
-      def _write_command_gen(length: int) -> Union[bytearray, bytes]:
+      def _write_command_gen(length: int) -> bytearray | bytes:
         if length <= 0:
           # no more data
           return b''
@@ -1805,7 +1804,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
   def xfer(self,
            values: list,
-           speed: Optional[float] = None,
+           speed: float | None = None,
            delay: float = 0.0,
            bits: int = 8,
            start: bool = True,

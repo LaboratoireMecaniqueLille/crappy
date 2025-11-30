@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional, Union
 from collections.abc import Iterable
 import tkinter as tk
 import logging
@@ -74,11 +73,11 @@ class Dashboard(Block):
   """
 
   def __init__(self,
-               labels: Union[str, Iterable[str]],
+               labels: str | Iterable[str],
                nb_digits: int = 2,
                display_freq: bool = False,
-               freq: Optional[float] = 30,
-               debug: Optional[bool] = False) -> None:
+               freq: float | None = 30,
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -101,7 +100,7 @@ class Dashboard(Block):
         .. versionadded:: 2.0.0
     """
 
-    self._dashboard: Optional[DashboardWindow] = None
+    self._dashboard: DashboardWindow | None = None
 
     super().__init__()
     self.display_freq = display_freq

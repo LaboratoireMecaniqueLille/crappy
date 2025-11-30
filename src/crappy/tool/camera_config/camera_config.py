@@ -5,7 +5,6 @@ from tkinter.messagebox import showerror
 from platform import system
 import numpy as np
 from time import time, sleep
-from typing import Optional, Union
 import importlib.resources
 from io import BytesIO
 import logging
@@ -58,8 +57,8 @@ class CameraConfig(tk.Tk):
   def __init__(self,
                camera: Camera,
                log_queue: MPQueue,
-               log_level: Optional[int],
-               max_freq: Optional[float]) -> None:
+               log_level: int | None,
+               max_freq: float | None) -> None:
     """Initializes the interface and displays it.
 
     Args:
@@ -82,9 +81,9 @@ class CameraConfig(tk.Tk):
 
     super().__init__()
     self._camera = camera
-    self.shape: Optional[Union[tuple[int, int], tuple[int, int, int]]] = None
+    self.shape: tuple[int, int] | tuple[int, int, int] | None = None
     self.dtype = None
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
 
     # Instantiating objects for the process managing the histogram calculation
     self._stop_event = Event()
@@ -109,14 +108,14 @@ class CameraConfig(tk.Tk):
     self._move_x = None
     self._move_y = None
     self._n_loops = 0
-    self._last_upd_t: Optional[float] = None
+    self._last_upd_t: float | None = None
     self._max_freq = max_freq
     self._got_first_img: bool = False
 
     # Keeping track of the scheduled objects to be able to cancel them later
-    self._upd_sched_obj: Optional[str] = None
-    self._img_acq_sched_obj: Optional[str] = None
-    self._upd_var_sched_obj: Optional[str] = None
+    self._upd_sched_obj: str | None = None
+    self._img_acq_sched_obj: str | None = None
+    self._upd_var_sched_obj: str | None = None
 
     # Settings for adjusting the behavior of the zoom
     self._zoom_ratio = 0.9
@@ -995,7 +994,7 @@ class CameraConfig(tk.Tk):
                                   int(self._img_canvas.winfo_height() / 2),
                                   anchor='center', image=self._image_tk)
 
-  def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
+  def _on_img_resize(self, _: tk.Event | None = None) -> None:
     """Resizes the image and updates the display when the zoom level has
     changed or the GUI has been resized."""
 

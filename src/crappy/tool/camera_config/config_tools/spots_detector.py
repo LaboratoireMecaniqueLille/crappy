@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 import logging
 from multiprocessing import current_process
 import numpy as np
@@ -39,9 +38,9 @@ class SpotsDetector:
 
   def __init__(self,
                white_spots: bool = False,
-               num_spots: Optional[int] = None,
+               num_spots: int | None = None,
                min_area: int = 150,
-               blur: Optional[int] = 5,
+               blur: int | None = 5,
                update_thresh: bool = False,
                safe_mode: bool = False,
                border: int = 5) -> None:

@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from typing import Union, Any, Optional
-from collections.abc import Iterable
+from typing import Any
+from collections.abc import Sequence
 from time import time, sleep
 from subprocess import Popen, PIPE, STDOUT, TimeoutExpired
 from threading import Thread
@@ -20,7 +20,7 @@ try:
 except (ModuleNotFoundError, ImportError):
   mqtt = OptionalModule("paho-mqtt")
 
-TopicsType = Iterable[Union[str, Iterable[str]]]
+TopicsType = Sequence[str | Sequence[str]]
 
 
 class ClientServer(Block):
@@ -46,14 +46,14 @@ class ClientServer(Block):
                broker: bool = False,
                address: str = 'localhost',
                port: int = 1883,
-               init_output: Optional[dict[str, Any]] = None,
-               topics: Optional[TopicsType] = None,
-               cmd_labels: Optional[TopicsType] = None,
-               labels_to_send: Optional[TopicsType] = None,
+               init_output: dict[str, Any] | None = None,
+               topics: TopicsType | None = None,
+               cmd_labels: TopicsType | None = None,
+               labels_to_send: TopicsType | None = None,
                display_freq: bool = False,
-               freq: Optional[float] = 200,
+               freq: float | None = 200,
                spam: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Checks the validity of the arguments and sets the instance attributes.
 
     Args:
@@ -219,9 +219,9 @@ class ClientServer(Block):
           ('sign',)
     """
 
-    self._client: Optional[mqtt.Client] = None
-    self._reader: Optional[Thread] = None
-    self._proc: Optional[Popen] = None
+    self._client: mqtt.Client | None = None
+    self._reader: Thread | None = None
+    self._proc: Popen | None = None
 
     super().__init__()
     self.niceness = -10
@@ -239,11 +239,11 @@ class ClientServer(Block):
     self._stop_mosquitto = False
     
     # These attributes may be set later
-    self._topics: Optional[list[tuple[str, ...]]] = None
+    self._topics: list[tuple[str, ...]] | None = None
     self._last_out_val: dict[str, Any] = dict()
-    self._buffer_output: Optional[dict[tuple[str, ...], Queue]] = None
-    self._cmd_labels: Optional[list[tuple[str, ...]]] = None
-    self._labels_to_send: Optional[list[tuple[str, ...]]] = None
+    self._buffer_output: dict[tuple[str, ...], Queue] | None = None
+    self._cmd_labels: list[tuple[str, ...]] | None = None
+    self._labels_to_send: dict[tuple[str, ...], tuple[str, ...]] | None = None
 
     if topics is None and cmd_labels is None:
       self.log(logging.WARNING, "The Client-server Block is neither an input "

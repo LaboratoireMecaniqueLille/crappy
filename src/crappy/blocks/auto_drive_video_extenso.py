@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Any, Optional, Literal
+from typing import Any, Literal
 import logging
 
 from .meta_block import Block
@@ -33,10 +33,10 @@ class AutoDriveVideoExtenso(Block):
                direction: Literal['X-', 'X+', 'Y-', 'Y+'] = 'Y-',
                pixel_range: int = 2048,
                max_speed: float = 200000,
-               ft232h_ser_num: Optional[str] = None,
-               freq: Optional[float] = 200,
+               ft232h_ser_num: str | None = None,
+               freq: float | None = 200,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -74,7 +74,7 @@ class AutoDriveVideoExtenso(Block):
         .. versionadded:: 2.0.0
     """
 
-    self._device: Optional[Actuator] = None
+    self._device: Actuator | None = None
     self._ft232h_args = None
 
     super().__init__()

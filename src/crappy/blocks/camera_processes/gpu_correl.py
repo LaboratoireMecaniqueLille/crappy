@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Union
 from pathlib import Path
 import logging
 import logging.handlers
@@ -31,14 +30,14 @@ class GPUCorrelProcess(CameraProcess):
                discard_limit: float = 3,
                discard_ref: int = 5,
                calc_res: bool = False,
-               img_ref: Optional[np.ndarray] = None,
+               img_ref: np.ndarray | None = None,
                verbose: int = 0,
                levels: int = 5,
                resampling_factor: float = 2,
-               kernel_file: Optional[Union[str, Path]] = None,
+               kernel_file: str | Path | None = None,
                iterations: int = 4,
-               fields: Optional[list[Union[str, np.ndarray]]] = None,
-               mask: Optional[np.ndarray] = None,
+               fields: list[str | np.ndarray] | None = None,
+               mask: np.ndarray | None = None,
                mul: float = 3) -> None:
     """Sets the arguments and initializes the parent class.
     
@@ -136,7 +135,7 @@ class GPUCorrelProcess(CameraProcess):
     self._mul = mul
 
     # Other attributes
-    self._correl: Optional[GPUCorrelTool] = None
+    self._correl: GPUCorrelTool | None = None
     self._img_ref = img_ref
     self._img0_set = img_ref is not None
 

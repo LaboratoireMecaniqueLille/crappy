@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
-
 from .meta_block import Block
 
 
@@ -17,8 +15,8 @@ class Sink(Block):
 
   def __init__(self,
                display_freq: bool = False,
-               freq: Optional[float] = 10,
-               debug: Optional[bool] = False) -> None:
+               freq: float | None = 10,
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
     
     Args:

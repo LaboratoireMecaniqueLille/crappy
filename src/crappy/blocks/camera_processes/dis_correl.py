@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Union, Literal
+from typing import Literal
 import logging
 import logging.handlers
 
@@ -28,9 +28,9 @@ class DISCorrelProcess(CameraProcess):
 
   def __init__(self,
                patch: Box,
-               fields: Optional[list[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
-                                                   'exy', 'eyx', 'exy2', 'z'],
-                                           np.ndarray]]] = None,
+               fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                    'exy', 'eyx', 'exy2', 'z']
+                            | np.ndarray] | None = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
@@ -128,7 +128,7 @@ class DISCorrelProcess(CameraProcess):
     
     # Other attributes
     self._residual = residual
-    self._dis_correl: Optional[DISCorrelTool] = None
+    self._dis_correl: DISCorrelTool | None = None
     self._img0_set = False
 
   def init(self) -> None:

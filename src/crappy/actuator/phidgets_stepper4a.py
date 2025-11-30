@@ -4,7 +4,6 @@ import logging
 import numpy as np
 from pathlib import Path
 from platform import system
-from typing import Optional, Union
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
@@ -40,14 +39,14 @@ class Phidget4AStepper(Actuator):
   def __init__(self,
                steps_per_mm: float,
                current_limit: float,
-               max_acceleration: Optional[float] = None,
+               max_acceleration: float | None = None,
                remote: bool = False,
                absolute_mode: bool = False,
                reference_pos: float = 0,
                switch_ports: tuple[int, ...] = tuple(),
-               switch_states: Optional[tuple[bool, ...]] = None,
+               switch_states: tuple[bool, ...] | None = None,
                save_last_pos: bool = False,
-               save_pos_folder: Optional[Union[str, Path]] = None) -> None:
+               save_pos_folder: str | Path | None = None) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -91,7 +90,7 @@ class Phidget4AStepper(Actuator):
         .. versionadded:: 2.0.4
     """
 
-    self._motor: Optional[Stepper] = None
+    self._motor: Stepper | None = None
 
     super().__init__()
 
@@ -121,7 +120,7 @@ class Phidget4AStepper(Actuator):
 
     # Determining the path where to save the last position
     # It depends on the current operating system
-    self._path: Optional[Path] = None
+    self._path: Path | None = None
     if save_last_pos:
       if save_pos_folder is not None:
         self._path = Path(save_pos_folder)
@@ -133,8 +132,8 @@ class Phidget4AStepper(Actuator):
         self._save_last_pos = False
 
     # These buffers store the last known position and speed
-    self._last_velocity: Optional[float] = None
-    self._last_position: Optional[float] = None
+    self._last_velocity: float | None = None
+    self._last_position: float | None = None
 
   def open(self) -> None:
     """Sets up the connection to the motor driver as well as the various
@@ -220,7 +219,7 @@ class Phidget4AStepper(Actuator):
 
   def set_position(self,
                    position: float,
-                   speed: Optional[float] = None) -> None:
+                   speed: float | None = None) -> None:
     """Sets the requested position for the motor.
 
     Switches to the correct driving mode if needed.
@@ -263,7 +262,7 @@ class Phidget4AStepper(Actuator):
     else:
       self._motor.setTargetPosition(position - self._ref_pos)
 
-  def get_speed(self) -> Optional[float]:
+  def get_speed(self) -> float | None:
     """Returns the last known speed of the motor."""
 
     # Ensuring that no switch was hit yet
@@ -273,7 +272,7 @@ class Phidget4AStepper(Actuator):
 
     return self._last_velocity
 
-  def get_position(self) -> Optional[float]:
+  def get_position(self) -> float | None:
     """Returns the last known position of the motor."""
 
     # Ensuring that no switch was hit yet

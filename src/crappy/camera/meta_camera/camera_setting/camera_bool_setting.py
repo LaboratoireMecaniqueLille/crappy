@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 from collections.abc import Callable
 
 from .camera_setting import CameraSetting
@@ -19,8 +18,8 @@ class CameraBoolSetting(CameraSetting):
 
   def __init__(self,
                name: str,
-               getter: Optional[Callable[[], bool]] = None,
-               setter: Optional[Callable[[bool], None]] = None,
+               getter: Callable[[], bool] | None = None,
+               setter: Callable[[bool], None] | None = None,
                default: bool = True) -> None:
     """Sets the attributes.
 

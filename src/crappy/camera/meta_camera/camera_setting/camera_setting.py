@@ -1,11 +1,11 @@
 # coding: utf-8
 
-from typing import Optional, Union, Any
+from typing import Any
 from collections.abc import Callable
 from multiprocessing import current_process
 import logging
 
-NbrType = Union[int, float]
+NbrType = int | float
 
 
 class CameraSetting:
@@ -53,7 +53,7 @@ class CameraSetting:
     self._value_no_getter = default
     self._getter = getter
     self._setter = setter
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
 
   def log(self, level: int, msg: str) -> None:
     """Records log messages for the CameraSetting.

@@ -8,7 +8,7 @@ from multiprocessing.sharedctypes import Synchronized
 import signal
 from _io import FileIO
 from tempfile import TemporaryFile
-from typing import Any, Optional
+from typing import Any
 from contextlib import contextmanager
 from dataclasses import dataclass
 import logging
@@ -63,18 +63,18 @@ class USBServer(Process):
   """
 
   initialized = False
-  logger: Optional[logging.Logger] = None
+  logger: logging.Logger | None = None
 
-  process: Optional[multiprocessing.context.Process] = None
+  process: multiprocessing.context.Process | None = None
   block_nr: int = 0
   devices: dict[str, Device] = dict()
 
   # Objects for synchronizing with the server
-  stop_event: Optional[multiprocessing.synchronize.Event] = None
-  current_block: Optional[Synchronized] = None
-  command_file: Optional[FileIO] = None
-  answer_file: Optional[FileIO] = None
-  shared_lock: Optional[multiprocessing.synchronize.RLock] = None
+  stop_event: multiprocessing.synchronize.Event | None = None
+  current_block: Synchronized | None = None
+  command_file: FileIO | None = None
+  answer_file: FileIO | None = None
+  shared_lock: multiprocessing.synchronize.RLock | None = None
   block_dict: dict[int, BlockObjects] = dict()
 
   def __init__(self,
@@ -84,7 +84,7 @@ class USBServer(Process):
                block_dict: dict[int, BlockObjects],
                stop_event: multiprocessing.synchronize.Event,
                log_queue: multiprocessing.queues.Queue,
-               log_level: Optional[int]) -> None:
+               log_level: int | None) -> None:
     """Sets the arguments.
 
     Args:
@@ -115,7 +115,7 @@ class USBServer(Process):
     self._stop_event = stop_event
 
     self._log_queue = log_queue
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
     self._log_level = log_level
 
     # Keeping a track of the number of connected blocks for each FT232H
@@ -126,7 +126,7 @@ class USBServer(Process):
                     if block.ser_num == ser_num))
 
   @classmethod
-  def register(cls, ser_num: Optional[str] = None) -> USBArgsType:
+  def register(cls, ser_num: str | None = None) -> USBArgsType:
     """Allows a :class:`~crappy.blocks.Block` to register for communicating
     with the server. This Block is then given the necessary information for
     communication.

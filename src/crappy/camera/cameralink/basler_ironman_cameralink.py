@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional
 import numpy as np
 import logging
 from  warnings import warn
@@ -53,8 +52,8 @@ class BaslerIronmanCameraLink(Camera):
 
   def open(self,
            num_device: int = 0,
-           config_file: Optional[str] = None,
-           camera_type: Optional[str] = None,
+           config_file: str | None = None,
+           camera_type: str | None = None,
            **kwargs) -> None:
     """Reads the settings from the arguments or from the configuration file,
     sets them on the camera, and starts the acquisition.

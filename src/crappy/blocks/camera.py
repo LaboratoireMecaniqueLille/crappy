@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Union, Optional, Literal
+from typing import Literal
 from collections.abc import Callable
 from pathlib import Path
 import numpy as np
@@ -61,26 +61,25 @@ class Camera(Block):
 
   def __init__(self,
                camera: str,
-               transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+               transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
+               displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
-               software_trig_label: Optional[str] = None,
+               software_trig_label: str | None = None,
                display_freq: bool = False,
-               debug: Optional[bool] = False,
-               freq: Optional[float] = 200,
+               debug: bool | None = False,
+               freq: float | None = 200,
                save_images: bool = False,
                img_extension: str = "tiff",
-               save_folder: Optional[Union[str, Path]] = None,
+               save_folder: str | Path | None = None,
                save_period: int = 1,
-               save_backend: Optional[Literal['sitk', 'pil',
-                                              'cv2', 'npy']] = None,
-               image_generator: Optional[Callable[[float, float],
-                                                  np.ndarray]] = None,
-               img_shape: Optional[Union[tuple[int, int],
-                                         tuple[int, int, int]]] = None,
-               img_dtype: Optional[str] = None,
+               save_backend: Literal['sitk', 'pil',
+                                     'cv2', 'npy'] | None = None,
+               image_generator: Callable[[float, float],
+                                         np.ndarray] | None = None,
+               img_shape: tuple[int, int] | tuple[int, int, int] | None = None,
+               img_dtype: str | None = None,
                **kwargs) -> None:
     """Sets the arguments and initializes the parent class.
     
@@ -246,12 +245,12 @@ class Camera(Block):
     .. versionremoved:: 2.0.0 *img_name* argument
     """
 
-    self._save_proc: Optional[ImageSaver] = None
-    self._display_proc: Optional[Displayer] = None
-    self.process_proc: Optional[CameraProcess] = None
-    self._manager: Optional[managers.SyncManager] = None
+    self._save_proc: ImageSaver | None = None
+    self._display_proc: Displayer | None = None
+    self.process_proc: CameraProcess | None = None
+    self._manager: managers.SyncManager | None = None
 
-    self._camera: Optional[BaseCam] = None
+    self._camera: BaseCam | None = None
 
     super().__init__()
 
@@ -293,16 +292,16 @@ class Camera(Block):
     self._camera_kwargs = kwargs
 
     # The synchronization objects are initialized later
-    self._img_array: Optional[SynchronizedArray] = None
-    self._img: Optional[np.ndarray] = None
-    self._metadata: Optional[managers.DictProxy] = None
-    self._cam_barrier: Optional[synchronize.Barrier] = None
-    self._stop_event_cam: Optional[synchronize.Event] = None
-    self._overlay_conn_in: Optional[connection.Connection] = None
-    self._overlay_conn_out: Optional[connection.Connection] = None
-    self._save_lock: Optional[synchronize.RLock] = None
-    self._disp_lock: Optional[synchronize.RLock] = None
-    self._proc_lock: Optional[synchronize.RLock] = None
+    self._img_array: SynchronizedArray | None = None
+    self._img: np.ndarray | None = None
+    self._metadata: managers.DictProxy | None = None
+    self._cam_barrier: synchronize.Barrier | None = None
+    self._stop_event_cam: synchronize.Event | None = None
+    self._overlay_conn_in: connection.Connection | None = None
+    self._overlay_conn_out: connection.Connection | None = None
+    self._save_lock: synchronize.RLock | None = None
+    self._disp_lock: synchronize.RLock | None = None
+    self._proc_lock: synchronize.RLock | None = None
 
     self._loop_count = 0
     self._fps_count = 0
@@ -399,7 +398,7 @@ class Camera(Block):
       self._camera.add_software_roi(img.shape[1], img.shape[0])
       self._camera.set_all()
 
-      def get_image(self_) -> (float, np.ndarray):
+      def get_image(self_) -> tuple[float, np.ndarray]:
         """Method generating the frames using the ``image_generator`` argument 
         if one was provided."""
         

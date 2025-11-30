@@ -26,8 +26,8 @@ a clean way to stop Crappy.
 """
 
 import crappy
-from typing import Optional, TypeVar
-from collections.abc import Iterable
+from typing import TypeVar
+from collections.abc import Sequence
 from math import sqrt
 
 T = TypeVar('T')
@@ -50,7 +50,7 @@ class CustomModifier(crappy.modifier.Modifier):
   def __init__(self,
                rms_label: str,
                input_label: str,
-               to_delete: Optional[Iterable[str]] = None) -> None:
+               to_delete: Sequence[str] | None = None) -> None:
     """In this method you should initialize the Python objects that you will
     use in the class.
 

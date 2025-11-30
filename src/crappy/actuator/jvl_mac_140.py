@@ -1,7 +1,6 @@
 ﻿# coding: utf-8
 
 from struct import pack, unpack
-from typing import Optional
 from time import sleep
 import logging
 
@@ -80,7 +79,7 @@ class JVLMac140(Actuator):
     self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
     self._ser.writelines(cmd)
 
-  def set_position(self, position: float, speed: Optional[float]) -> None:
+  def set_position(self, position: float, speed: float | None) -> None:
     """Sets the desired target position on the servomotor.
 
     Args:

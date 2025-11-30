@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Union, Literal
-from collections.abc import Callable, Iterable
+from typing import Literal
+from collections.abc import Callable, Sequence
 import numpy as np
 from pathlib import Path
 
@@ -48,34 +48,34 @@ class GPUCorrel(Camera):
 
   def __init__(self,
                camera: str,
-               fields: Union[field_type, Iterable[field_type]],
+               fields: field_type | Sequence[field_type],
                img_shape: tuple[int, int],
                img_dtype: str,
-               transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+               transform: Callable[[np.ndarray], np.ndarray] | None = None,
                display_images: bool = False,
-               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
+               displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
-               software_trig_label: Optional[str] = None,
+               software_trig_label: str | None = None,
                verbose: int = 0,
-               freq: Optional[float] = 200,
-               debug: Optional[bool] = False,
+               freq: float | None = 200,
+               debug: bool | None = False,
                save_images: bool = False,
                img_extension: str = "tiff",
-               save_folder: Optional[Union[str, Path]] = None,
+               save_folder: str | Path | None = None,
                save_period: int = 1,
-               save_backend: Optional[Literal['sitk', 'pil', 
-                                              'cv2', 'npy']] = None,
-               image_generator: Optional[Callable[[float, float],
-                                                  np.ndarray]] = None,
-               labels: Optional[Union[str, Iterable[str]]] = None,
+               save_backend: Literal['sitk', 'pil',
+                                     'cv2', 'npy'] | None = None,
+               image_generator: Callable[[float, float],
+                                         np.ndarray] | None = None,
+               labels: str | Sequence[str] | None = None,
                discard_limit: float = 3,
                discard_ref: int = 5,
-               img_ref: Optional[np.ndarray] = None,
+               img_ref: np.ndarray | None = None,
                levels: int = 5,
                resampling_factor: float = 2,
-               kernel_file: Optional[Union[str, Path]] = None,
+               kernel_file: str | Path | None = None,
                iterations: int = 4,
-               mask: Optional[np.ndarray] = None,
+               mask: np.ndarray | None = None,
                mul: float = 3,
                res: bool = False,
                **kwargs) -> None:

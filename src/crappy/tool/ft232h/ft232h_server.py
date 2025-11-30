@@ -2,7 +2,7 @@
 
 from collections import namedtuple
 from struct import unpack
-from typing import Union, Optional, Literal
+from typing import Literal
 from collections.abc import Callable
 from _io import FileIO
 from multiprocessing.synchronize import RLock
@@ -184,7 +184,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                answer_file: FileIO,
                block_lock: RLock,
                shared_lock: RLock,
-               serial_nr: Optional[str] = None,
+               serial_nr: str | None = None,
                i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:
     """Checks the argument validity and initializes the device.
@@ -352,8 +352,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     return cmd
 
-  def _send_server(self, command: list) -> Union[int, bytes, None,
-                                                 tuple[int, ...]]:
+  def _send_server(self, command: list) -> (int | bytes |
+                                            None | tuple[int, ...]):
     """Sends a command to the server and gets the corresponding answer.
 
     Args:
@@ -623,9 +623,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def _read_data_bytes(self,
                        size: int,
                        attempt: int = 2,
-                       request_gen: Optional[
-                         Callable[[int], Union[bytearray,
-                                               bytes]]] = None) -> bytes:
+                       request_gen: Callable[[int], bytearray | bytes]
+                          | None = None) -> bytes:
     """Reads data from the FT232H.
 
     Reads data from the FTDI interface. The data buffer is rebuilt from
@@ -835,7 +834,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         raise IOError('EEPROM Write Error @ %d' % addr)
       addr += 2
 
-  def _write_data(self, data: Union[bytearray, bytes]) -> int:
+  def _write_data(self, data: bytearray | bytes) -> int:
     """Writes data to the FT232H.
 
     Writes the sequence of MPSSE commands and data to the FTDI port. Data

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, TypeVar
+from typing import TypeVar
 import logging
 from multiprocessing import current_process
 
@@ -32,9 +32,9 @@ class Modifier(metaclass=MetaModifier):
     .. versionchanged:: 2.0.0 now accepts args and kwargs
     """
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
 
-  def __call__(self, data: dict[str, T]) -> Optional[dict[str, T]]:
+  def __call__(self, data: dict[str, T]) -> dict[str, T] | None:
     """The main method altering the inout data and returning the altered data.
 
     It should take a :obj:`dict` as its only argument, and return another

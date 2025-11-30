@@ -2,8 +2,8 @@
 
 from time import time
 import numpy as np
-from typing import Optional, Any
-from collections.abc import Iterable
+from typing import Any
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from re import fullmatch
 from collections import defaultdict
@@ -41,7 +41,7 @@ class _Channel:
   channel can have."""
 
   meas_type: str = 'voltage'
-  name: Optional[str] = None
+  name: str | None = None
   kwargs: dict[str, Any] = field(default_factory=dict)
 
   def update(self, dic_in: dict[str, Any]) -> None:
@@ -76,9 +76,9 @@ class NIDAQmx(InOut):
   """
 
   def __init__(self,
-               channels: Iterable[dict[str, Any]],
+               channels: Sequence[dict[str, Any]],
                sample_rate: float = 100,
-               n_samples: Optional[int] = None) -> None:
+               n_samples: int | None = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -325,7 +325,7 @@ class NIDAQmx(InOut):
 
     return ret
 
-  def get_stream(self) -> Optional[list[np.ndarray]]:
+  def get_stream(self) -> list[np.ndarray] | None:
     """Reads data from the device, and returns it in an array along with an
     array holding the timestamps.
 

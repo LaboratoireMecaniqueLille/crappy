@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 import logging
 
 from .meta_inout import InOut
@@ -28,8 +27,8 @@ class GPIOPWM(InOut):
 
   def __init__(self,
                pin_out: int,
-               duty_cycle: Optional[float] = None,
-               frequency: Optional[float] = None) -> None:
+               duty_cycle: float | None = None,
+               frequency: float | None = None) -> None:
     """Checks the validity of the arguments.
 
     Args:

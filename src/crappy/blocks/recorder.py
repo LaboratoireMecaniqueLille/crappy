@@ -1,7 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Union
-from collections.abc import Iterable
+from collections.abc import Sequence
 from pathlib import Path
 import logging
 
@@ -28,12 +27,12 @@ class Recorder(Block):
   """
 
   def __init__(self,
-               file_name: Union[str, Path],
+               file_name: str | Path,
                delay: float = 2,
-               labels: Optional[Union[str, Iterable[str]]] = None,
-               freq: Optional[float] = 200,
+               labels: str | Sequence[str] | None = None,
+               freq: float | None = 200,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

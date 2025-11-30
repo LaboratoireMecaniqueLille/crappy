@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 from collections.abc import Callable
 from itertools import zip_longest
 import logging
@@ -23,9 +22,9 @@ class CameraChoiceSetting(CameraSetting):
   def __init__(self,
                name: str,
                choices: tuple[str, ...],
-               getter: Optional[Callable[[], str]] = None,
-               setter: Optional[Callable[[str], None]] = None,
-               default: Optional[str] = None) -> None:
+               getter: Callable[[], str] | None = None,
+               setter: Callable[[str], None] | None = None,
+               default: str | None = None) -> None:
     """Sets the attributes.
 
     Args:
@@ -53,8 +52,8 @@ class CameraChoiceSetting(CameraSetting):
 
   def reload(self,
              choices: tuple[str, ...],
-             value: Optional[str] = None,
-             default: Optional[str] = None) -> None:
+             value: str | None = None,
+             default: str | None = None) -> None:
     """Allows modifying the choices of the radio buttons once they have been
     instantiated.
 

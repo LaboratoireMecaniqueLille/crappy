@@ -2,8 +2,7 @@
 
 from struct import unpack
 from time import time
-from typing import Optional, Union
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Sequence
 import logging
 
 from .meta_block import Block
@@ -31,17 +30,16 @@ class UController(Block):
   """
 
   def __init__(self,
-               labels: Optional[Union[str, Iterable[str]]] = None,
-               cmd_labels: Optional[Union[str, Iterable[str]]] = None,
-               init_output: Optional[dict[str, float]] = None,
-               post_process: Optional[dict[str,
-                                           Callable[[float], float]]] = None,
+               labels: str | Sequence[str] | None = None,
+               cmd_labels: str | Sequence[str] | None = None,
+               init_output: dict[str, float] | None = None,
+               post_process: dict[str, Callable[[float], float]] | None = None,
                t_device: bool = False,
                port: str = '/dev/ttyUSB0',
                baudrate: int = 115200,
                display_freq: bool = False,
-               freq: Optional[float] = 100,
-               debug: Optional[bool] = False) -> None:
+               freq: float | None = 100,
+               debug: bool | None = False) -> None:
     """Checks the validity of the arguments.
 
     Args:

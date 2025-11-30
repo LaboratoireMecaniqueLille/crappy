@@ -2,7 +2,6 @@
 
 from csv import DictWriter
 import numpy as np
-from typing import Optional, Union
 from pathlib import Path
 import logging
 import logging.handlers
@@ -43,9 +42,9 @@ class ImageSaver(CameraProcess):
 
   def __init__(self,
                img_extension: str = "tiff",
-               save_folder: Optional[Union[str, Path]] = None,
+               save_folder: str | Path | None = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None,
+               save_backend: str | None = None,
                send_msg: bool = False) -> None:
     """Sets the arguments and initializes the parent class.
 

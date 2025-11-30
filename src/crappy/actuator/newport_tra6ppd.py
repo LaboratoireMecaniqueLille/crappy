@@ -2,7 +2,6 @@
 
 from time import sleep
 from re import findall
-from typing import Optional
 import logging
 from  warnings import warn
 
@@ -75,7 +74,7 @@ class NewportTRA6PPD(Actuator):
       self.log(logging.INFO, f"Performing homing, {10 * i} seconds left")
       sleep(10)
 
-  def set_position(self, position: float, speed: Optional[float]) -> None:
+  def set_position(self, position: float, speed: float | None) -> None:
     """Sends the actuator a command to reach a given position.
 
     The command is ignored if the actuator is already moving.

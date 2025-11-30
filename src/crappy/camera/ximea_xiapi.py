@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, strftime, gmtime
-from typing import Optional, Any, Literal
+from typing import Any, Literal
 import numpy as np
 import logging
 from warnings import warn
@@ -70,8 +70,8 @@ class XiAPI(Camera):
 
     self._cam = None
     self._started: bool = False
-    self._model: Optional[str] = None
-    self._timeout: Optional[int] = None
+    self._model: str | None = None
+    self._timeout: int | None = None
 
     self._cam = xiapi.Camera()
     self._img = xiapi.Image()
@@ -80,32 +80,32 @@ class XiAPI(Camera):
     self._trig = 'Free run'
 
   def open(self,
-           serial_number: Optional[str] = None,
-           timeout: Optional[int] = None,
+           serial_number: str | None = None,
+           timeout: int | None = None,
            trigger: Literal['Free run', 'Hdw after config', 'Hardware'] = None,
            data_format: Literal['Mono (8 bits)', 'Mono (16 bits)',
                                 'Raw (8 bits)', 'Raw (16 bits)'] = None,
-           exposure_time_us: Optional[int] = None,
-           gain: Optional[float] = None,
-           auto_exposure_auto_gain: Optional[bool] = None,
-           gamma_y: Optional[float] = None,
-           gamma_c: Optional[float] = None,
-           sharpness: Optional[float] = None,
-           image_width: Optional[int] = None,
-           image_height: Optional[int] = None,
-           x_offset: Optional[int] = None,
-           y_offset: Optional[int] = None,
+           exposure_time_us: int | None = None,
+           gain: float | None = None,
+           auto_exposure_auto_gain: bool | None = None,
+           gamma_y: float | None = None,
+           gamma_c: float | None = None,
+           sharpness: float | None = None,
+           image_width: int | None = None,
+           image_height: int | None = None,
+           x_offset: int | None = None,
+           y_offset: int | None = None,
            framerate_mode: Literal['Free run', 'Framerate target',
                                    'Framerate limit'] = None,
-           framerate: Optional[float] = None,
+           framerate: float | None = None,
            downsampling_mode: Literal['1x1', '2x2'] = None,
-           width: Optional[int] = None,
-           height: Optional[int] = None,
-           xoffset: Optional[int] = None,
-           yoffset: Optional[int] = None,
-           exposure: Optional[float] = None,
-           AEAG: Optional[bool] = None,
-           external_trig: Optional[bool] = None) -> None:
+           width: int | None = None,
+           height: int | None = None,
+           xoffset: int | None = None,
+           yoffset: int | None = None,
+           exposure: float | None = None,
+           AEAG: bool | None = None,
+           external_trig: bool | None = None) -> None:
     """Opens the connection to the camera, instantiates the available settings
     and starts the acquisition.
 
@@ -302,7 +302,7 @@ class XiAPI(Camera):
     # Data format parameter
     if self._model in DATA_FORMATS:
       self.add_choice_setting('data_format',
-                              DATA_FORMATS[self._model].values(),
+                              list(DATA_FORMATS[self._model].values()),
                               self._get_data_format,
                               self._set_data_format,
                               self._get_data_format())

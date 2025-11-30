@@ -2,7 +2,7 @@
 
 from time import time
 import numpy as np
-from typing import Optional, Literal
+from typing import Literal
 from collections.abc import Callable
 import logging
 
@@ -43,15 +43,15 @@ class FakeMachine(Block):
                rigidity: float = 8.4E6,
                l0: float = 200,
                max_strain: float = 1.51,
-               sigma: Optional[dict[str, float]] = None,
+               sigma: dict[str, float] | None = None,
                nu: float = 0.3,
                plastic_law: Callable[[float], float] = plastic,
                max_speed: float = 5,
                mode: Literal['speed', 'position'] = 'speed',
                cmd_label: str = 'cmd',
-               freq: Optional[float] = 100,
+               freq: float | None = 100,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

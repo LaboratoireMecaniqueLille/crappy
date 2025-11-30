@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Union
 from itertools import cycle, islice
 import logging
 
@@ -20,8 +19,8 @@ class Cyclic(Path):
   """
 
   def __init__(self,
-               condition1: Union[str, ConditionType],
-               condition2: Union[str, ConditionType],
+               condition1: str | ConditionType,
+               condition2: str | ConditionType,
                value1: float,
                value2: float,
                cycles: float = 1) -> None:

@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from __future__ import annotations
-from typing import Optional, Union
 from collections.abc import Callable
 from re import findall, search, finditer, split, Match, compile
 from dataclasses import dataclass
@@ -16,13 +15,13 @@ class V4L2Parameter:
 
   name: str
   type: str
-  min: Optional[str] = None
-  max: Optional[str] = None
-  step: Optional[str] = None
-  default: Optional[str] = None
-  value: Optional[str] = None
-  flags: Optional[str] = None
-  options: Optional[tuple[str, ...]] = None
+  min: str | None = None
+  max: str | None = None
+  step: str | None = None
+  default: str | None = None
+  value: str | None = None
+  flags: str | None = None
+  options: tuple[str, ...] | None = None
 
   # Regex to extract the different parameters and their information
   param_pattern = (r'(\w+)\s+0x\w+\s+\((\w+)\)\s+:\s*'
@@ -89,9 +88,9 @@ class V4L2Helper:
 
     self._parameters = list()
     self._formats = list()
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
 
-  def _get_param(self, device: Optional[Union[str, int]]) -> None:
+  def _get_param(self, device: str | int | None) -> None:
     """Extracts the different parameters and their information by parsing
     v4l2-ctl with regex."""
 
@@ -129,7 +128,7 @@ class V4L2Helper:
     fps = float(match.group(4))
     return name, fps, width
 
-  def _get_available_formats(self, device: Optional[Union[str, int]]) -> None:
+  def _get_available_formats(self, device: str | int | None) -> None:
     """Extracts the different formats available by parsing v4l2-ctl with
     regex."""
 
@@ -167,7 +166,7 @@ class V4L2Helper:
 
   def _add_setter(self,
                   name: str,
-                  device: Optional[Union[int, str]]) -> Callable:
+                  device: str | int | None) -> Callable:
     """Creates a setter function for a setting named 'name'.
 
     Args:
@@ -177,7 +176,7 @@ class V4L2Helper:
       The setter function.
     """
 
-    def setter(value: Union[str, int, bool]) -> None:
+    def setter(value: str | int | bool) -> None:
       """The method to set the value of a setting running v4l2-ctl."""
 
       if isinstance(value, str):
@@ -205,7 +204,7 @@ class V4L2Helper:
 
   def _add_scale_getter(self,
                         name: str,
-                        device: Optional[Union[int, str]]) -> Callable:
+                        device: str | int | None) -> Callable:
     """Creates a getter function for a setting named 'name'.
 
     Args:
@@ -233,7 +232,7 @@ class V4L2Helper:
 
   def _add_bool_getter(self,
                        name: str,
-                       device: Optional[Union[int, str]]) -> Callable:
+                       device: str | int | None) -> Callable:
     """Creates a getter function for a setting named 'name'.
 
     Args:
@@ -261,7 +260,7 @@ class V4L2Helper:
 
   def _add_menu_getter(self,
                        name: str,
-                       device: Optional[Union[int, str]]) -> Callable:
+                       device: str | int | None) -> Callable:
     """Creates a getter function for a setting named 'name'.
 
     Args:

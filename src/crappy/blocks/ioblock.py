@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from typing import Union, Optional, Any
-from collections.abc import Iterable
+from typing import Any
+from collections.abc import Sequence
 import logging
 
 from .meta_block import Block
@@ -35,18 +35,18 @@ class IOBlock(Block):
 
   def __init__(self,
                name: str,
-               labels: Optional[Union[str, Iterable[str]]] = None,
-               cmd_labels: Optional[Union[str, Iterable[str]]] = None,
-               trigger_label: Optional[str] = None,
+               labels: str | Sequence[str] | None = None,
+               cmd_labels: str | Sequence[str] | None = None,
+               trigger_label: str | None = None,
                streamer: bool = False,
-               initial_cmd: Optional[Union[Any, Iterable[Any]]] = None,
-               exit_cmd: Optional[Union[Any, Iterable[Any]]] = None,
-               make_zero_delay: Optional[float] = None,
-               ft232h_ser_num: Optional[str] = None,
+               initial_cmd: Any | Sequence[Any] | None = None,
+               exit_cmd: Any | Sequence[Any] | None = None,
+               make_zero_delay: float | None = None,
+               ft232h_ser_num: str | None = None,
                spam: bool = False,
-               freq: Optional[float] = 200,
+               freq: float | None = 200,
                display_freq: bool = False,
-               debug: Optional[bool] = False,
+               debug: bool | None = False,
                **kwargs) -> None:
     """Sets the arguments and initializes the parent class.
 
@@ -110,7 +110,7 @@ class IOBlock(Block):
       **kwargs: The arguments to be passed to the :class:`~crappy.inout.InOut`.
     """
 
-    self._device: Optional[InOut] = None
+    self._device: InOut | None = None
     self._ft232h_args = None
     self._read: bool = False
     self._write: bool = False

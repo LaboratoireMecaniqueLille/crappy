@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Union, Optional, Literal
+from typing import Literal
 import logging
 
 from .meta_actuator import Actuator
@@ -75,8 +75,8 @@ class ServoStar300(Actuator):
     self._ser.write(b'MH\r\n')
 
   def set_position(self,
-                   pos: Union[float, bool],
-                   speed: Optional[float]) -> None:
+                   pos: float | bool,
+                   speed: float | None) -> None:
     """Sets the target position for the motor.
 
     Also allows switching to the serial or analog driving mode if the target
@@ -126,7 +126,7 @@ class ServoStar300(Actuator):
     # Saving the last command
     self._last_pos = pos
 
-  def get_position(self) -> Optional[float]:
+  def get_position(self) -> float | None:
     """Reads and returns the current position of the motor.
 
     .. versionchanged:: 1.5.2 renamed from *get_pos* to *get_position*

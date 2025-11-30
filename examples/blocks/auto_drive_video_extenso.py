@@ -64,7 +64,7 @@ if __name__ == '__main__':
       {'type': 'FakeDCMotor'},  # FakeDCMotor so that no hardware is needed
       gain=1,  # The gain to apply to the center difference before sending the
       # speed command to the Actuator
-      direction='x+',  # We want to be centered in the x direction, and we
+      direction='X+',  # We want to be centered in the x direction, and we
       # suppose that a positive commands shifts the center of the spots to the
       # right of the image
       pixel_range=632,  # The width of the image in pixels

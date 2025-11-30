@@ -2,7 +2,6 @@
 
 import tkinter as tk
 from tkinter.messagebox import showerror
-from typing import Optional
 import logging
 from multiprocessing.queues import Queue
 
@@ -35,8 +34,8 @@ class VideoExtensoConfig(CameraConfigBoxes):
   def __init__(self,
                camera: Camera,
                log_queue: Queue,
-               log_level: Optional[int],
-               max_freq: Optional[float],
+               log_level: int | None,
+               max_freq: float | None,
                detector: SpotsDetector) -> None:
     """Sets the args and initializes the parent class.
 

@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional
 import logging
 
 from ..meta_inout import InOut
@@ -28,7 +27,7 @@ class MPRLSFT232H(InOut):
   ft232h = True
 
   def __init__(self,
-               eoc_pin: Optional[str] = None,
+               eoc_pin: str | None = None,
                device_address: int = 0x18,
                _ft232h_args: USBArgsType = tuple()) -> None:
     """Initializes the parent class and opens the I2C bus.

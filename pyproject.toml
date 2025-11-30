@@ -10,7 +10,7 @@ description = "Command and Real-time Acquisition in Parallelized Python"
 license = {file = "LICENSE"}
 keywords = ["control", "command", "acquisition", "multiprocessing"]
 dependencies = ["numpy"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{name = "LaMcube", email = "antoine.weisrock1@centralelille.fr"}]
 maintainers = [{name = "Antoine Weisrock", email = "antoine.weisrock@gmail.com"}]
 classifiers = [
@@ -19,11 +19,11 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
     "Natural Language :: English",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
     "Topic :: Software Development :: Build Tools",
     "Topic :: Software Development :: Embedded Systems"

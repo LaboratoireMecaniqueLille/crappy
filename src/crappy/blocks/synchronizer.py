@@ -1,8 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Union
-from collections.abc import Iterable
+from collections.abc import Sequence
 from collections import defaultdict
 import logging
 
@@ -34,10 +33,10 @@ class Synchronizer(Block):
   def __init__(self,
                reference_label: str,
                time_label: str = 't(s)',
-               labels_to_sync: Optional[Union[str, Iterable[str]]] = None,
-               freq: Optional[float] = 50,
+               labels_to_sync: str | Sequence[str] | None = None,
+               freq: float | None = 50,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

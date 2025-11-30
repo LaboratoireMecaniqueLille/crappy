@@ -1,14 +1,14 @@
 # coding: utf-8
 
-from multiprocessing import Process, managers, get_start_method, \
-  current_process
+from multiprocessing import (Process, managers, get_start_method,
+                             current_process)
 from multiprocessing.synchronize import Event, RLock, Barrier
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 from threading import BrokenBarrierError
 import numpy as np
-from typing import Optional, Union, Any
+from typing import Any
 from collections.abc import Iterable
 import logging
 import logging.handlers
@@ -57,21 +57,21 @@ class CameraProcess(Process):
     self._system = system()
 
     # Logging-related objects
-    self._log_queue: Optional[Queue] = None
-    self._logger: Optional[logging.Logger] = None
-    self._log_level: Optional[int] = None
+    self._log_queue: Queue | None = None
+    self._logger: logging.Logger | None = None
+    self._log_level: int | None = None
 
     # These objects will be shared later by the Camera Block
-    self._img_array: Optional[SynchronizedArray] = None
-    self._data_dict: Optional[managers.DictProxy] = None
-    self._lock: Optional[RLock] = None
-    self._cam_barrier: Optional[Barrier] = None
-    self._stop_event: Optional[Event] = None
-    self._shape: Optional[tuple[int, int]] = None
-    self._to_draw_conn: Optional[Connection] = None
+    self._img_array: SynchronizedArray | None = None
+    self._data_dict: managers.DictProxy | None = None
+    self._lock: RLock | None = None
+    self._cam_barrier: Barrier | None = None
+    self._stop_event: Event | None = None
+    self._shape: tuple[int, int] | None = None
+    self._to_draw_conn: Connection | None = None
     self._outputs: list[Link] = list()
     self._labels: list[str] = list()
-    self.img: Optional[np.ndarray] = None
+    self.img: np.ndarray | None = None
     self._dtype = None
     self.metadata = {'ImageUniqueID': None}
     self._img0_set = False
@@ -79,7 +79,7 @@ class CameraProcess(Process):
     # Other attribute for internal use
     self._last_warn = time()
     self.fps_count = 0
-    self._display_freq: Optional[bool] = None
+    self._display_freq: bool | None = None
     self._last_fps = time()
 
   def set_shared(self,
@@ -88,13 +88,13 @@ class CameraProcess(Process):
                  lock: RLock,
                  barrier: Barrier,
                  event: Event,
-                 shape: Union[tuple[int, int], tuple[int, int, int]],
+                 shape: tuple[int, int] | tuple[int, int, int],
                  dtype,
-                 to_draw_conn: Optional[Connection],
+                 to_draw_conn: Connection | None,
                  outputs: list[Link],
-                 labels: Optional[list[str]],
+                 labels: list[str] | None,
                  log_queue: Queue,
-                 log_level: Optional[int] = 20,
+                 log_level: int | None = 20,
                  display_freq: bool = False) -> None:
     """Method allowing the :class:`~crappy.blocks.Camera` Block to share
     :mod:`multiprocessing` synchronization objects with this class.
@@ -269,8 +269,7 @@ class CameraProcess(Process):
 
     ...
 
-  def send(self, data: Optional[Union[dict[str, Any],
-                                      Iterable[Any]]]) -> None:
+  def send(self, data: dict[str, Any] | Iterable[Any] | None) -> None:
     """This method allows sending data to downstream Blocks.
 
     It is similar to the :meth:`~crappy.blocks.Block.send` method of the

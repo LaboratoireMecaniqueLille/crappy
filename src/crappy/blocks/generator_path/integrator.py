@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from numpy import trapz
-from typing import Union
 import logging
 
 from .meta_path import Path, ConditionType
@@ -22,7 +21,7 @@ class Integrator(Path):
   """
 
   def __init__(self,
-               condition: Union[str, ConditionType],
+               condition: str | ConditionType,
                inertia: float,
                func_label: str,
                time_label: str = 't(s)',

@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Optional
 import logging
 
 from .meta_path import Path, ConditionType
@@ -15,9 +14,9 @@ class Ramp(Path):
   """
 
   def __init__(self,
-               condition: Union[str, ConditionType],
+               condition: str | ConditionType,
                speed: float,
-               init_value: Optional[float] = None):
+               init_value: float | None = None):
     """Sets the arguments and initializes the parent class.
 
     Args:

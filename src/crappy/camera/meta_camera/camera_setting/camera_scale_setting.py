@@ -1,12 +1,11 @@
 # coding: utf-8
 
-from typing import Optional, Union
 from collections.abc import Callable
 import logging
 
 from .camera_setting import CameraSetting
 
-NbrType = Union[int, float]
+NbrType = int | float
 
 
 class CameraScaleSetting(CameraSetting):
@@ -30,10 +29,10 @@ class CameraScaleSetting(CameraSetting):
                name: str,
                lowest: NbrType,
                highest: NbrType,
-               getter: Optional[Callable[[], NbrType]] = None,
-               setter: Optional[Callable[[NbrType], None]] = None,
-               default: Optional[NbrType] = None,
-               step: Optional[NbrType] = None) -> None:
+               getter: Callable[[], NbrType] | None = None,
+               setter: Callable[[NbrType], None] | None = None,
+               default: NbrType | None = None,
+               step: NbrType | None = None) -> None:
     """Sets the attributes.
 
     Args:
@@ -121,9 +120,9 @@ class CameraScaleSetting(CameraSetting):
   def reload(self,
              lowest: NbrType,
              highest: NbrType,
-             value: Optional[NbrType] = None,
-             default: Optional[NbrType] = None,
-             step: Optional[NbrType] = None) -> None:
+             value: NbrType | None = None,
+             default: NbrType | None = None,
+             step: NbrType | None = None) -> None:
     """Allows modifying the limits and the step of the scale bar once it is
     already instantiated.
 

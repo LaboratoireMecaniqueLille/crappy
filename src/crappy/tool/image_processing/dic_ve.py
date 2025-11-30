@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import Literal
+
 from ..._global import OptionalModule
 from ..camera_config import SpotsBoxes, Box
 

@@ -26,7 +26,6 @@ clean way to stop Crappy.
 
 import crappy
 from crappy.blocks.generator_path.meta_path import Path, ConditionType
-from typing import Optional, Union
 from math import pi, sin, copysign
 from time import time
 
@@ -44,8 +43,8 @@ class CustomPath(Path):
                amplitude: float,
                freq: float,
                power: int,
-               condition: Optional[Union[str, ConditionType]],
-               offset: Optional[float] = 0) -> None:
+               condition: str | ConditionType | None,
+               offset: float | None = 0.0) -> None:
     """In this method you should initialize the Python objects that you will
     use in the class.
 

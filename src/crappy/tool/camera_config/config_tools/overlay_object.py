@@ -3,7 +3,6 @@
 from numpy import ndarray
 import logging
 from multiprocessing import current_process
-from typing import Optional
 
 
 class Overlay:
@@ -24,7 +23,7 @@ class Overlay:
   def __init__(self) -> None:
     """Simply initializes the logger to :obj:`None`."""
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
 
   def draw(self, img: ndarray) -> None:
     """This method takes the image to display as an input, draws an overlay on

@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 import logging
 
 from .meta_modifier import Modifier, T
@@ -30,7 +29,7 @@ class TrigOnChange(Modifier):
     self._label = label
     self._last = None
 
-  def __call__(self, data: dict[str, T]) -> Optional[dict[str, T]]:
+  def __call__(self, data: dict[str, T]) -> dict[str, T] | None:
     """Compares the received value with the last sent one, and if they're
     different sends the received data and stores the latest value.
     

@@ -1,8 +1,8 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Any, Union
-from collections.abc import Iterable
+from typing import Any
+from collections.abc import Sequence
 import logging
 
 from .meta_modifier import Modifier
@@ -32,7 +32,7 @@ class Demux(Modifier):
   """
 
   def __init__(self,
-               labels: Union[str, Iterable[str]],
+               labels: str | Sequence[str],
                stream_label: str = "stream",
                mean: bool = False,
                time_label: str = "t(s)",
