@@ -9,7 +9,7 @@ version = "2.0.7"
 description = "Command and Real-time Acquisition in Parallelized Python"
 license = {file = "LICENSE"}
 keywords = ["control", "command", "acquisition", "multiprocessing"]
-dependencies = ["numpy"]
+dependencies = ["numpy>=2.0.0"]
 requires-python = ">=3.10"
 authors = [{name = "LaMcube", email = "antoine.weisrock1@centralelille.fr"}]
 maintainers = [{name = "Antoine Weisrock", email = "antoine.weisrock@gmail.com"}]
