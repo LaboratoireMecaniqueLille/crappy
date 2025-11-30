@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from numpy import trapz
+from numpy import trapezoid
 import logging
 
 from .meta_path import Path, ConditionType
@@ -96,7 +96,7 @@ class Integrator(Path):
         self._last_val = values[-1]
 
       # Performing the integration and subtracting from the previous value
-      self._value -= trapz(values, times) / self._inertia
+      self._value += trapezoid(values, times) / self._inertia
 
     # Returning the current value
     return self._value
