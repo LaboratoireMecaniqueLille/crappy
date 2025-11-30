@@ -14,10 +14,12 @@ class Integrator(Path):
   inertia and `t0` the timestamp of the beginning of this Path.
 
   Then the output value for this Path will be
-  :math:`v(t) = v(t0) - [I(t0 -> t)f(t)dt] / m`.
+  :math:`v(t) = v(t0) + [I(t0 -> t)f(t)dt] / m`.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Inertia* to *Integrator*
+  .. versionchanged:: 2.0.8 now adding the integrated value to the total
+     instead of subtracting, consistently with intended behavior
   """
 
   def __init__(self,
