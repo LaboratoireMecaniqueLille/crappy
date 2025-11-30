@@ -44,7 +44,7 @@ CRAPPY can run with Python 3.10 to 3.14, and has been tested on Windows, Linux,
 Raspberry Pi and macOS. It can probably run on other operating systems 
 supporting the required Python versions. 
 
-CRAPPY has only one requirement: [Numpy](https://numpy.org/) (1.21 or higher).
+CRAPPY has only one requirement: [Numpy](https://numpy.org/) (2.0.0 or higher).
 In addition, other modules can be necessary depending on which features you 
 want to use. The main ones are [Matplotlib](https://matplotlib.org/),
 [openCV](https://opencv.org/), [pyserial](https://pypi.org/project/pyserial/)
