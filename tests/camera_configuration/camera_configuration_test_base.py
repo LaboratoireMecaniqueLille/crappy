@@ -20,6 +20,16 @@ from crappy.tool.camera_config.video_extenso_config import VideoExtensoConfig
 from crappy.camera.meta_camera.camera import Camera
 
 
+class DummyCamera(Camera):
+  """Subclass of Camera that does nothing, but Camera cannot be instantiated
+  directly."""
+
+  def get_image(self) -> None:
+    """Mandatory to implement in subclasses."""
+
+    return super().get_image()
+
+
 class ConfigurationWindowTestBase(unittest.TestCase):
   """Base test class for testing the
   :class:`~crappy.tool.camera_config.CameraConfig` of Crappy.
@@ -75,7 +85,7 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     if self._freq is None:
       self._freq = 30
     if self._camera is None:
-      self._camera = Camera()
+      self._camera = DummyCamera()
 
     self.customSetUp()
 
@@ -216,6 +226,11 @@ class FakeTestCameraParams(Camera):
 
     # Left out on purpose
     # self.set_all()
+
+  def get_image(self) -> None:
+    """Added because this method must be defined by children classes."""
+
+    return super().get_image()
 
   def _bool_setter(self, value: bool) -> None:
     """Setter for the boolean parameter."""
