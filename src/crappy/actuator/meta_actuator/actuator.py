@@ -4,10 +4,10 @@ from time import sleep
 import logging
 from multiprocessing import current_process
 
-from .meta_actuator import MetaActuator
+from ..._global import DefinitionError
 
 
-class Actuator(metaclass=MetaActuator):
+class Actuator:
   """The base class for all Actuator classes, allowing to keep track of them
   and defining methods shared by all of them.
 
@@ -16,9 +16,21 @@ class Actuator(metaclass=MetaActuator):
   actuators.
 
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
   ft232h: bool = False
+  classes = dict()
+
+  def __init_subclass__(cls, **kwargs) -> None:
+    """Used for checking that two subclasses don't share the same name."""
+
+    super().__init_subclass__()
+    if cls.__name__ in cls.classes:
+      raise DefinitionError(f"An Actuator with the name {cls.__name__} is "
+                            f"already defined !")
+    cls.classes[cls.__name__] = cls
 
   def __init__(self, *_, **__) -> None:
     """Initializes the instance attributes."""

@@ -30,8 +30,8 @@ from .ft232h import MPRLSFT232H
 from .ft232h import NAU7802FT232H
 from .ft232h import WaveshareADDAFT232H
 
-from .meta_inout import InOut, MetaIO
+from .meta_inout import InOut
 
 # All the inout objects
 from ._deprecated import deprecated_inouts
-inout_dict: dict[str, type[InOut]] = MetaIO.classes
+inout_dict: dict[str, type[InOut]] = InOut.classes

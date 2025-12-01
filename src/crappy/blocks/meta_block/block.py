@@ -18,16 +18,15 @@ import subprocess
 from sys import stdout, stderr, argv
 from pathlib import Path
 
-from .meta_block import MetaBlock
 from ...links import Link
 from ..._global import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
                         CameraPrepareError, CameraRuntimeError,
-                        CameraConfigError, CrappyFail)
+                        CameraConfigError, CrappyFail, DefinitionError)
 from ...tool.ft232h import USBServer
 
 
-class Block(Process, metaclass=MetaBlock):
+class Block(Process):
   """This class constitutes the base object in Crappy.
 
   It is extremely versatile, and can perform a wide variety of actions during a
@@ -43,6 +42,8 @@ class Block(Process, metaclass=MetaBlock):
   execution of all the children Blocks.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
   instances = WeakSet()
@@ -65,6 +66,17 @@ class Block(Process, metaclass=MetaBlock):
 
   prepared_all: bool = False
   launched_all: bool = False
+
+  classes = dict()
+
+  def __init_subclass__(cls, **kwargs) -> None:
+    """Used for checking that two subclasses don't share the same name."""
+
+    super().__init_subclass__()
+    if cls.__name__ in cls.classes:
+      raise DefinitionError(f"A Block with the name {cls.__name__} is already "
+                            f"defined !")
+    cls.classes[cls.__name__] = cls
 
   def __init__(self) -> None:
     """Sets the attributes and initializes the parent class."""

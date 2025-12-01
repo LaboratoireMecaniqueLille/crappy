@@ -229,11 +229,6 @@ Sine
 Parent Path
 +++++++++++
 
-Meta Path
-"""""""""
-.. autoclass:: crappy.blocks.generator_path.meta_path.MetaPath
-   :special-members: __init__
-
 Path
 """"
 .. autoclass:: crappy.blocks.generator_path.meta_path.Path
@@ -303,9 +298,4 @@ Block
              t0, add_output, add_input, log, send, data_available, recv_data,
              recv_last_data, recv_all_data, recv_all_data_raw
    :private-members: _cleanup
-   :special-members: __init__
-
-Meta Block
-++++++++++
-.. autoclass:: crappy.blocks.meta_block.MetaBlock
    :special-members: __init__

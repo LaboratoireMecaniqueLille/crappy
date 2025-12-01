@@ -71,8 +71,3 @@ Modifier
 
 .. automodule:: crappy.modifier.meta_modifier.modifier
    :members: T
-
-Meta Modifier
-+++++++++++++
-.. autoclass:: crappy.modifier.MetaModifier
-   :special-members: __init__

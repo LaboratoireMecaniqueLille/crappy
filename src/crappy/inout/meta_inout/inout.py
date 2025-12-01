@@ -8,10 +8,10 @@ import logging
 from multiprocessing import current_process
 from collections import defaultdict
 
-from .meta_inout import MetaIO
+from ..._global import DefinitionError
 
 
-class InOut(metaclass=MetaIO):
+class InOut:
   """Base class for all InOut objects. Implements methods shared by all the
   InOuts, and ensures their dataclass is MetaIO.
 
@@ -19,9 +19,22 @@ class InOut(metaclass=MetaIO):
   :class:`~crappy.blocks.IOBlock` to interface with hardware.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
   ft232h: bool = False
+
+  classes = dict()
+
+  def __init_subclass__(cls, **kwargs) -> None:
+    """Used for checking that two subclasses don't share the same name."""
+
+    super().__init_subclass__()
+    if cls.__name__ in cls.classes:
+      raise DefinitionError(f"An InOut with the name {cls.__name__} is "
+                            f"already defined !")
+    cls.classes[cls.__name__] = cls
 
   def __init__(self, *_, **__) -> None:
     """Sets the attributes.

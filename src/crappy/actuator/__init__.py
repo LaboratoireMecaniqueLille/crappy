@@ -13,7 +13,7 @@ from .schneider_mdrive_23 import SchneiderMDrive23
 
 from .ft232h import DCMotorHatFT232H
 
-from .meta_actuator import MetaActuator, Actuator
+from .meta_actuator import Actuator
 
 from ._deprecated import deprecated_actuators
-actuator_dict: dict[str, type[Actuator]] = MetaActuator.classes
+actuator_dict: dict[str, type[Actuator]] = Actuator.classes
