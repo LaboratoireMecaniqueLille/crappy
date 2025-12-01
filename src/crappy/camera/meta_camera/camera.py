@@ -16,12 +16,14 @@ NbrType = int | float
 
 class Camera:
   """Base class for every Camera object. Implements methods shared by all the
-  Cameras, and ensures their dataclass is :class:`~crappy.camera.MetaCamera`.
+  Cameras.
 
   The Camera objects are helper classes used by the
   :class:`~crappy.blocks.Camera` Block to interface with cameras.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
   classes = dict()

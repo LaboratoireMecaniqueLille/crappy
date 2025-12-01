@@ -42,6 +42,8 @@ class Block(Process):
   execution of all the children Blocks.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
   instances = WeakSet()

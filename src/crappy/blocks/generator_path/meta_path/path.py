@@ -18,6 +18,8 @@ class Path:
   generate signals.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
   t0: float | None = None

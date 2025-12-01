@@ -24,6 +24,8 @@ class Modifier:
   defining the :meth:`~crappy.modifier.Modifier.__call__` method or a function.
 
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
   classes = dict()
