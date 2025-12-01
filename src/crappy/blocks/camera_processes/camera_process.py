@@ -15,13 +15,14 @@ import logging.handlers
 from select import select
 from time import time
 from platform import system
+from abc import ABC, abstractmethod
 
 from ...links import Link
 from ..._global import LinkDataError
 from ...tool.camera_config import Overlay
 
 
-class CameraProcess(Process):
+class CameraProcess(Process, ABC):
   """This :obj:`~multiprocessing.Process` is the base class for all the helper
   Processes of the :class:`~crappy.blocks.Camera` Block.
   
@@ -241,6 +242,7 @@ class CameraProcess(Process):
 
     ...
 
+  @abstractmethod
   def loop(self) -> None:
     """This method is the main loop of the CameraProcess.
     

@@ -5,13 +5,14 @@ from collections.abc import Callable
 from re import split, IGNORECASE, match
 import logging
 from multiprocessing import current_process
+from abc import ABC, abstractmethod
 
 from ...._global import DefinitionError
 
 ConditionType = Callable[[dict[str, list]], bool]
 
 
-class Path:
+class Path(ABC):
   """Base class for all the Generator Path objects.
 
   The Path object are used by the :class:`~crappy.blocks.Generator` Block to
@@ -54,8 +55,11 @@ class Path:
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 
+    super().__init__()
+
     self._logger: logging.Logger | None = None
 
+  @abstractmethod
   def get_cmd(self, data: dict[str, list]) -> float | None:
     """This method is called by the :class:`~crappy.blocks.Generator` Block to
     get the next command to send.

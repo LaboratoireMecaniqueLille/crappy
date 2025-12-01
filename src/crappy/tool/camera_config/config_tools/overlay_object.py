@@ -3,9 +3,10 @@
 from numpy import ndarray
 import logging
 from multiprocessing import current_process
+from abc import ABC, abstractmethod
 
 
-class Overlay:
+class Overlay(ABC):
   """This class is the base class for all the classes adding overlays on top of
   the images displayed by a :class:`~crappy.blocks.camera_processes.Displayer`
   Process of a :class:`~crappy.blocks.Camera` Block.
@@ -23,8 +24,11 @@ class Overlay:
   def __init__(self) -> None:
     """Simply initializes the logger to :obj:`None`."""
 
+    super().__init__()
+
     self._logger: logging.Logger | None = None
 
+  @abstractmethod
   def draw(self, img: ndarray) -> None:
     """This method takes the image to display as an input, draws an overlay on
     top of it, and returns the modified image.
