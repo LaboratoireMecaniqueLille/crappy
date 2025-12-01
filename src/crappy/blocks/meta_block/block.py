@@ -17,6 +17,7 @@ from collections import defaultdict
 import subprocess
 from sys import stdout, stderr, argv
 from pathlib import Path
+from abc import ABC, abstractmethod
 
 from ...links import Link
 from ..._global import (LinkDataError, StartTimeout, PrepareError,
@@ -26,7 +27,7 @@ from ..._global import (LinkDataError, StartTimeout, PrepareError,
 from ...tool.ft232h import USBServer
 
 
-class Block(Process):
+class Block(Process, ABC):
   """This class constitutes the base object in Crappy.
 
   It is extremely versatile, and can perform a wide variety of actions during a
@@ -81,7 +82,8 @@ class Block(Process):
   def __init__(self) -> None:
     """Sets the attributes and initializes the parent class."""
 
-    super().__init__()
+    Process.__init__(self)
+    ABC.__init__(self)
 
     # The lists of input and output links
     self.outputs: list[Link] = list()
@@ -1001,6 +1003,7 @@ class Block(Process):
 
     ...
 
+  @abstractmethod
   def loop(self) -> None:
     """This method is the core of the Block. It is called repeatedly during the
     test, until the test stops or an error occurs.

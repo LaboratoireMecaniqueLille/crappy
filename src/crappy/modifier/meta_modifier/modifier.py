@@ -3,6 +3,7 @@
 from typing import TypeVar
 import logging
 from multiprocessing import current_process
+from abc import ABC, abstractmethod
 
 from ..._global import DefinitionError
 
@@ -10,7 +11,7 @@ T = TypeVar('T')
 """Generic type representing data handled by Modifiers."""
 
 
-class Modifier:
+class Modifier(ABC):
   """The base class for all Modifier classes, simply allowing to keep track of
   them.
 
@@ -51,8 +52,11 @@ class Modifier:
     .. versionchanged:: 2.0.0 now accepts args and kwargs
     """
 
+    super().__init__()
+
     self._logger: logging.Logger | None = None
 
+  @abstractmethod
   def __call__(self, data: dict[str, T]) -> dict[str, T] | None:
     """The main method altering the inout data and returning the altered data.
 

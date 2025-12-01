@@ -21,6 +21,9 @@ class Moving_avg(Modifier):
                               f"renamed to MovingAvg in version 2.0.0 ! "
                               f"Check the documentation for more information.")
 
+  def __call__(self, data):
+    super().__call__(data)
+
 
 class Moving_med(Modifier):
   """Empty class for signaling an object of version 1.5 whose name changed in
@@ -37,6 +40,9 @@ class Moving_med(Modifier):
     raise NotImplementedError(f"The {type(self).__name__} Modifier was "
                               f"renamed to MovingMed in version 2.0.0 ! "
                               f"Check the documentation for more information.")
+
+  def __call__(self, data):
+    super().__call__(data)
 
 
 class Trig_on_change(Modifier):
@@ -55,6 +61,9 @@ class Trig_on_change(Modifier):
                               f"renamed to TrigOnChange in version 2.0.0 ! "
                               f"Check the documentation for more information.")
 
+  def __call__(self, data):
+    super().__call__(data)
+
 
 class Trig_on_value(Modifier):
   """Empty class for signaling an object of version 1.5 whose name changed in
@@ -71,3 +80,6 @@ class Trig_on_value(Modifier):
     raise NotImplementedError(f"The {type(self).__name__} Modifier was "
                               f"renamed to TrigOnValue in version 2.0.0 ! "
                               f"Check the documentation for more information.")
+
+  def __call__(self, data):
+    super().__call__(data)

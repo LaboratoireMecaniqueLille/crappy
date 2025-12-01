@@ -6,6 +6,7 @@ from time import sleep
 import numpy as np
 from multiprocessing import current_process
 import logging
+from abc import ABC, abstractmethod
 
 from ..._global import DefinitionError
 from .camera_setting import (CameraSetting, CameraBoolSetting,
@@ -14,7 +15,7 @@ from .camera_setting import (CameraSetting, CameraBoolSetting,
 NbrType = int | float
 
 
-class Camera:
+class Camera(ABC):
   """Base class for every Camera object. Implements methods shared by all the
   Cameras.
 
@@ -50,6 +51,8 @@ class Camera:
     
     .. versionchanged:: 2.0.0 now accepts *args* and *kwargs*
     """
+
+    super().__init__()
 
     self.settings: dict[str, CameraSetting] = dict()
 
@@ -123,6 +126,7 @@ class Camera:
 
     self.set_all(**kwargs)
 
+  @abstractmethod
   def get_image(self) -> tuple[dict[str, Any] | float, np.ndarray] | None:
     """Acquires an image and returns it along with its metadata or timestamp.
 
