@@ -1,3 +1,3 @@
 # coding: utf-8
 
-from .actuator import MetaActuator, Actuator
+from .actuator import Actuator

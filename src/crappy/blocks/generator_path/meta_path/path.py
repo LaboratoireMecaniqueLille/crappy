@@ -6,12 +6,12 @@ from re import split, IGNORECASE, match
 import logging
 from multiprocessing import current_process
 
-from .meta_path import MetaPath
+from ...._global import DefinitionError
 
 ConditionType = Callable[[dict[str, list]], bool]
 
 
-class Path(metaclass=MetaPath):
+class Path:
   """Base class for all the Generator Path objects.
 
   The Path object are used by the :class:`~crappy.blocks.Generator` Block to
@@ -22,6 +22,16 @@ class Path(metaclass=MetaPath):
 
   t0: float | None = None
   last_cmd: float | None = None
+  classes = dict()
+
+  def __init_subclass__(cls, **kwargs) -> None:
+    """Used for checking that two subclasses don't share the same name."""
+
+    super().__init_subclass__()
+    if cls.__name__ in cls.classes:
+      raise DefinitionError(f"A Generator Path with the name {cls.__name__} "
+                            f"is already defined !")
+    cls.classes[cls.__name__] = cls
 
   def __init__(self, *_, **__) -> None:
     """Here, the arguments given to the Path should be handled.

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from .meta_modifier import Modifier, MetaModifier
+from .meta_modifier import Modifier
 
 from .demux import Demux
 from .differentiate import Diff
@@ -16,4 +16,4 @@ from .trig_on_value import TrigOnValue
 
 from ._deprecated import Moving_avg, Moving_med, Trig_on_change, Trig_on_value
 
-modifier_dict: dict[str, type[Modifier]] = MetaModifier.classes
+modifier_dict: dict[str, type[Modifier]] = Modifier.classes

@@ -7,14 +7,14 @@ import numpy as np
 from multiprocessing import current_process
 import logging
 
-from .meta_camera import MetaCamera
-from .camera_setting import CameraSetting, CameraBoolSetting, \
-  CameraScaleSetting, CameraChoiceSetting
+from ..._global import DefinitionError
+from .camera_setting import (CameraSetting, CameraBoolSetting,
+                             CameraScaleSetting, CameraChoiceSetting)
 
 NbrType = int | float
 
 
-class Camera(metaclass=MetaCamera):
+class Camera:
   """Base class for every Camera object. Implements methods shared by all the
   Cameras, and ensures their dataclass is :class:`~crappy.camera.MetaCamera`.
 
@@ -23,6 +23,17 @@ class Camera(metaclass=MetaCamera):
   
   .. versionadded:: 1.4.0
   """
+
+  classes = dict()
+
+  def __init_subclass__(cls, **kwargs) -> None:
+    """Used for checking that two subclasses don't share the same name."""
+
+    super().__init_subclass__()
+    if cls.__name__ in cls.classes:
+      raise DefinitionError(f"A Camera with the name {cls.__name__} is "
+                            f"already defined !")
+    cls.classes[cls.__name__] = cls
 
   def __init__(self, *_, **__) -> None:
     """Simply sets the :obj:`dict` containing the settings, and the name of the
