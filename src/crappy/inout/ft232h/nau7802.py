@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Optional
 import logging
 
 from ..meta_inout import InOut
@@ -115,7 +114,7 @@ class NAU7802FT232H(InOut):
                device_address: int = 0x2A,
                gain_hardware: int = 128,
                sample_rate: int = 80,
-               int_pin: Optional[str] = None,
+               int_pin: str | None = None,
                gain: float = 1,
                offset: float = 0,
                _ft232h_args: USBArgsType = tuple()) -> None:

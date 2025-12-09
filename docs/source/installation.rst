@@ -13,17 +13,17 @@ Requirements
 
 Crappy was successfully installed and tested on **Linux** (Ubuntu 18.04 and
 higher), **Windows** (8 and higher) and **MacOS** (Sierra and higher). It was
-also successfully installed on **Raspberry Pi** 3B+ and 4B. As a Python module,
-Crappy can probably be installed on other systems able to run Python, but that
-was not tested.
+also successfully installed on **Raspberry Pi** 3B+, 4B, and 5. As a Python
+module, Crappy can probably be installed on other systems able to run Python,
+but that was not tested.
 
 .. note::
   We develop Crappy on recent OS versions, and no particular effort is made to
   ensure compatibility with older OS versions.
 
-Crappy requires **Python 3.9 or later**, as well as the following module :
+Crappy requires **Python 3.10 or later**, as well as the following module :
 
-- `numpy <https://numpy.org/>`_ (1.21.0 or higher)
+- `numpy <https://numpy.org/>`_ (2.0.0 or higher)
 
 The following modules are not mandatory but will provide additional
 functionalities (this list is not exhaustive) :
@@ -52,14 +52,14 @@ functionalities (this list is not exhaustive) :
 Before installing Crappy, first check that you have **a compatible version of**
 **Python** installed. You can get the current version of Python by running
 :shell:`python --version` in a console. The version should then be displayed,
-e.g. :shell:`Python 3.9.7`.
+e.g. :shell:`Python 3.10.1`.
 
 .. note::
   On Windows, Python is not natively installed and might not be present at
   all ! In this case, the given command will display an error message.
 
 If the current version of Python is not compatible with Crappy (requires Python
->=3.9), or if Python is not installed, you will first need to **install a**
+>=3.10), or if Python is not installed, you will first need to **install a**
 **compatible version of Python**. The precise installation steps for each OS
 are beyond the scope of this documentation.
 

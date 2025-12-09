@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Any, Optional
+from typing import Any
 import numpy as np
 from threading import Thread, RLock
 import logging
@@ -55,7 +55,7 @@ class RaspberryPiCamera(Camera):
 
     super().__init__()
 
-    self._frame_grabber: Optional[Thread] = None
+    self._frame_grabber: Thread | None = None
     self._capture = None
     self._cam = None
 

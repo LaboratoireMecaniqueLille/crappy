@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 import numpy as np
 import logging
 from  warnings import warn
@@ -55,7 +54,7 @@ class JaiGO5000CPMCL8Bits(BaslerIronmanCameraLink):
                            self._set_exp)
 
   def open(self,
-           config_file: Optional[str] = None,
+           config_file: str | None = None,
            camera_type: str = 'FullAreaGray8',
            **kwargs) -> None:
     """Opens the connection to the camera using the parent class' method, and

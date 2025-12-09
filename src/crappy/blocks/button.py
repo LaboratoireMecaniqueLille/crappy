@@ -2,7 +2,6 @@
 
 from time import time
 import logging
-from typing import Optional
 
 from .meta_block import Block
 from .._global import OptionalModule
@@ -34,10 +33,10 @@ class Button(Block):
                send_0: bool = False,
                label: str = 'step',
                time_label: str = 't(s)',
-               freq: Optional[float] = 50,
+               freq: float | None = 50,
                spam: bool = False,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -68,7 +67,7 @@ class Button(Block):
         .. versionadded:: 2.0.0
     """
 
-    self._root: Optional[tk.Tk] = None
+    self._root: tk.Tk | None = None
 
     super().__init__()
     self.freq = freq

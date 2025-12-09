@@ -1,14 +1,13 @@
 # coding: utf-8
 
 from time import sleep
-from typing import Optional
 import logging
 from multiprocessing import current_process
 
-from .meta_actuator import MetaActuator
+from ..._global import DefinitionError
 
 
-class Actuator(metaclass=MetaActuator):
+class Actuator:
   """The base class for all Actuator classes, allowing to keep track of them
   and defining methods shared by all of them.
 
@@ -17,14 +16,26 @@ class Actuator(metaclass=MetaActuator):
   actuators.
 
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
   ft232h: bool = False
+  classes = dict()
+
+  def __init_subclass__(cls, **kwargs) -> None:
+    """Used for checking that two subclasses don't share the same name."""
+
+    super().__init_subclass__()
+    if cls.__name__ in cls.classes:
+      raise DefinitionError(f"An Actuator with the name {cls.__name__} is "
+                            f"already defined !")
+    cls.classes[cls.__name__] = cls
 
   def __init__(self, *_, **__) -> None:
     """Initializes the instance attributes."""
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
 
   def log(self, level: int, msg: str) -> None:
     """Records log messages for the Actuator.
@@ -82,7 +93,7 @@ class Actuator(metaclass=MetaActuator):
                               f"defined ! No command sent to the actuator.")
     sleep(1)
 
-  def set_position(self, position: float, speed: Optional[float]) -> None:
+  def set_position(self, position: float, speed: float | None) -> None:
     """This method should drive the actuator so that it reaches the desired
     position.
 
@@ -128,7 +139,7 @@ class Actuator(metaclass=MetaActuator):
                               f"defined ! No command sent to the actuator.")
     sleep(1)
 
-  def get_speed(self) -> Optional[float]:
+  def get_speed(self) -> float | None:
     """This method should return the current speed of the actuator, as a
     :obj:`float`.
 
@@ -149,7 +160,7 @@ class Actuator(metaclass=MetaActuator):
     sleep(1)
     return
 
-  def get_position(self) -> Optional[float]:
+  def get_position(self) -> float | None:
     """This method should return the current position of the actuator, as a
     :obj:`float`.
 

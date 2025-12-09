@@ -7,6 +7,7 @@ haven't been tested for a while.
 """
 
 from ctypes import *
+
 from ..._global import OptionalModule
 
 try:

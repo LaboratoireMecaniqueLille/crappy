@@ -88,8 +88,3 @@ Actuator
    :members: open, get_speed, get_position, set_speed, set_position, stop,
              close, log
    :special-members: __init__
-
-Meta Actuator
-+++++++++++++
-.. autoclass:: crappy.actuator.MetaActuator
-   :special-members: __init__

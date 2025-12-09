@@ -1,14 +1,13 @@
 # coding: utf-8
 
-from typing import Optional, Union, Literal
-from collections.abc import Callable, Iterable
+from typing import Literal
+from collections.abc import Callable, Sequence
 import numpy as np
 from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
 from ..tool.camera_config import VideoExtensoConfig, SpotsDetector
-from .._global import CameraConfigError
 
 
 class VideoExtenso(Camera):
@@ -44,34 +43,34 @@ class VideoExtenso(Camera):
 
   def __init__(self,
                camera: str,
-               transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+               transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
+               displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
-               software_trig_label: Optional[str] = None,
+               software_trig_label: str | None = None,
                display_freq: bool = False,
-               freq: Optional[float] = 200,
-               debug: Optional[bool] = False,
+               freq: float | None = 200,
+               debug: bool | None = False,
                save_images: bool = False,
                img_extension: str = "tiff",
-               save_folder: Optional[Union[str, Path]] = None,
+               save_folder: str | Path | None = None,
                save_period: int = 1,
-               save_backend: Optional[Literal['sitk', 'pil', 
-                                              'cv2', 'npy']] = None,
-               image_generator: Optional[Callable[[float, float],
-                                                  np.ndarray]] = None,
-               img_shape: Optional[tuple[int, int]] = None,
-               img_dtype: Optional[str] = None,
-               labels: Optional[Union[str, Iterable[str]]] = None,
+               save_backend: Literal['sitk', 'pil',
+                                     'cv2', 'npy'] | None = None,
+               image_generator: Callable[[float, float],
+                                         np.ndarray] | None = None,
+               img_shape: tuple[int, int] | None = None,
+               img_dtype: str | None = None,
+               labels: str | Sequence[str] | None = None,
                raise_on_lost_spot: bool = True,
                white_spots: bool = False,
                update_thresh: bool = False,
-               num_spots: Optional[int] = None,
+               num_spots: int | None = None,
                safe_mode: bool = False,
                border: int = 5,
                min_area: int = 150,
-               blur: Optional[int] = 5,
+               blur: int | None = 5,
                **kwargs) -> None:
     """Sets the arguments and initializes the parent class.
 
@@ -360,34 +359,12 @@ class VideoExtenso(Camera):
 
     super().prepare()
 
-  def _configure(self) -> None:
-    """This method should instantiate and start the
+  def _configure(self) -> VideoExtensoConfig:
+    """This method should instantiate the
     :class:`~crappy.tool.camera_config.VideoExtensoConfig` window for
     configuring the :class:`~crappy.camera.Camera` object.
-
-    It should also handle the case when an exception is raised in the
-    configuration window.
     """
 
-    config = None
-
-    # Instantiating and starting the configuration window
-    try:
-      config = VideoExtensoConfig(self._camera, self._log_queue,
-                                  self._log_level, self.freq,
-                                  self._spot_detector)
-      config.main()
-
-    # If an exception is raised in the config window, closing it before raising
-    except (Exception,) as exc:
-      self._logger.exception("Caught exception in the configuration window !",
-                             exc_info=exc)
-      if config is not None:
-        config.stop()
-      raise CameraConfigError
-
-    # Getting the image dtype and shape for setting the shared Array
-    if config.shape is not None:
-      self._img_shape = config.shape
-    if config.dtype is not None:
-      self._img_dtype = config.dtype
+    return VideoExtensoConfig(self._camera, self._log_queue,
+                              self._log_level, self.freq,
+                              self._spot_detector)

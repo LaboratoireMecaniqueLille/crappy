@@ -28,7 +28,6 @@ stop it earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
-from typing import Optional
 from time import sleep
 import random
 
@@ -58,7 +57,7 @@ class RandomPath(crappy.blocks.generator_path.meta_path.Path):
     self._time_range: tuple[float, float] = time_range
     self._value_range: tuple[float, float] = value_range
 
-  def get_cmd(self, data: dict[str, list]) -> Optional[float]:
+  def get_cmd(self, data: dict[str, list]) -> float | None:
     """Returns a randomly generated value after sleeping a random number of
     seconds."""
 

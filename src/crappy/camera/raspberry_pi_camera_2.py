@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Any, Union, Literal
+from typing import Any, Literal
 import logging
 from dataclasses import dataclass
 from time import time, strftime, gmtime
@@ -102,8 +102,7 @@ if not isinstance(Output, OptionalModule):
     """
 
     def __init__(self,
-                 shared: dict[str, Union[Optional[np.ndarray],
-                                         dict[str, Any]]],
+                 shared: dict[str, np.ndarray | None | dict[str, Any]],
                  lock: RLock) -> None:
       """Initializes the parent class and sets the arguments.
 
@@ -117,8 +116,7 @@ if not isinstance(Output, OptionalModule):
 
       super().__init__(pts=None)
 
-      self._shared: dict[str, Union[Optional[np.ndarray],
-                                    dict[str, Any]]] = shared
+      self._shared: dict[str, np.ndarray | None |dict[str, Any]] = shared
       self._frame_count: int = 0
       self._lock = lock
 
@@ -207,15 +205,15 @@ class RaspberryPiCamera2(Camera):
     self.log(logging.DEBUG, f"Available cameras:{available_msg}")
     
     # Initialize objects to be used later
-    self._cam: Optional[Picamera2] = None
-    self._sensor_modes: Optional[list[SensorMode]] = None
-    self._encoder: Optional[Encoder] = None
-    self._output: Optional[Output] = None
-    self._current_sensor_mode: Optional[SensorMode] = None
+    self._cam: Picamera2 | None = None
+    self._sensor_modes: list[SensorMode] | None = None
+    self._encoder: Encoder | None = None
+    self._output: Output | None = None
+    self._current_sensor_mode: SensorMode | None = None
     self._started: bool = False
 
     # Initialize the objects used for sharing data with the Output
-    self._shared: dict[str, Union[Optional[np.ndarray], dict[str, Any]]] = {
+    self._shared: dict[str, np.ndarray | None | dict[str, Any]] = {
         'array': None,
         'metadata': dict()}
     self._lock: RLock = RLock()
@@ -223,24 +221,24 @@ class RaspberryPiCamera2(Camera):
   
   def open(self,
            camera_num: int = 0,
-           sensor_mode: Optional[str] = None,
-           pixel_format: Optional[Literal['YUV420', 'RGB888']] = None,
-           grey_level_images: Optional[bool] = None,
-           auto_exposure: Optional[bool] = None,
-           auto_focus: Optional[Literal['Auto', 'Manual', 'Off']] = None,
-           analog_gain: Optional[float] = None,
-           auto_white_balance: Optional[bool] = None,
-           brightness: Optional[float] = None,
-           contrast: Optional[float] = None,
-           exposure_time: Optional[int] = None,
-           auto_exposure_value: Optional[float] = None,
-           lens_position: Optional[float] = None,
-           saturation: Optional[float] = None,
-           sharpness: Optional[float] = None,
-           soft_roi_width: Optional[int] = None,
-           soft_roi_height: Optional[int] = None,
-           soft_roi_x: Optional[int] = None,
-           soft_roi_y: Optional[int] = None) -> None:
+           sensor_mode: str | None = None,
+           pixel_format: Literal['YUV420', 'RGB888'] | None = None,
+           grey_level_images: bool | None = None,
+           auto_exposure: bool | None = None,
+           auto_focus: Literal['Auto', 'Manual', 'Off'] | None = None,
+           analog_gain: float | None = None,
+           auto_white_balance: bool | None = None,
+           brightness: float | None = None,
+           contrast: float | None = None,
+           exposure_time: int | None = None,
+           auto_exposure_value: float | None = None,
+           lens_position: float | None = None,
+           saturation: float | None = None,
+           sharpness: float | None = None,
+           soft_roi_width: int | None = None,
+           soft_roi_height: int | None = None,
+           soft_roi_x: int | None = None,
+           soft_roi_y: int | None = None) -> None:
     """Opens the connection to the camera, instantiates the available settings
     and starts the acquisition.
 
@@ -461,7 +459,7 @@ class RaspberryPiCamera2(Camera):
     self._cam.start_recording(self._encoder, self._output)
     self._started = True
   
-  def get_image(self) -> Optional[tuple[dict[str, Any], np.ndarray]]:
+  def get_image(self) -> tuple[dict[str, Any], np.ndarray] | None:
     """Grabs the latest image from the shared buffer, converts it to RGB and
     grey level if necessary, and returns it along with its metadata."""
 

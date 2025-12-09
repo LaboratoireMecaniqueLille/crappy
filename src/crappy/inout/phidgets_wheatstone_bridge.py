@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional
 import logging
 from math import log2
 
@@ -54,7 +53,7 @@ class PhidgetWheatstoneBridge(InOut):
         or to :obj:`False` to drive it via a USB VINT Hub.
     """
 
-    self._load_cell: Optional[VoltageRatioInput] = None
+    self._load_cell: VoltageRatioInput | None = None
 
     super().__init__()
 
@@ -72,7 +71,7 @@ class PhidgetWheatstoneBridge(InOut):
     self._offset = offset
     self._remote = remote
 
-    self._last_ratio: Optional[float] = None
+    self._last_ratio: float | None = None
 
   def open(self) -> None:
     """Sets up the connection to the load cell conditioner as well as the
@@ -103,7 +102,7 @@ class PhidgetWheatstoneBridge(InOut):
     except PhidgetException:
       raise TimeoutError("Waited too long for the bridge to attach !")
 
-  def get_data(self) -> Optional[list[float]]:
+  def get_data(self) -> list[float] | None:
     """Returns the last known voltage ratio value, adjusted with the gain and
     the offset."""
 

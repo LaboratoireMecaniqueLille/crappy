@@ -29,7 +29,6 @@ Crappy.
 """
 
 import crappy
-from typing import Optional
 from time import time
 
 
@@ -42,7 +41,7 @@ class CustomInOut(crappy.inout.InOut):
   as such.
   """
 
-  def __init__(self, max_value: Optional[int] = None) -> None:
+  def __init__(self, max_value: int | None = None) -> None:
     """In this method you should initialize the Python objects that you will
     use in the class.
 

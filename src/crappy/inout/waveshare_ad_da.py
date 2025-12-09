@@ -3,8 +3,7 @@
 import time
 from time import sleep, time
 from re import fullmatch, findall
-from typing import Union, Optional
-from collections.abc import Iterable
+from collections.abc import Sequence
 import logging
 from  warnings import warn
 
@@ -104,13 +103,13 @@ class WaveshareADDA(InOut):
   """
 
   def __init__(self,
-               dac_channels: Optional[Iterable[str]] = None,
-               adc_channels: Optional[Iterable[str]] = None,
+               dac_channels: Sequence[str] | None = None,
+               adc_channels: Sequence[str] | None = None,
                gain_hardware: int = 1,
                v_ref: float = 3.3,
                gain: float = 1,
                offset: float = 0,
-               sample_rate: Union[int, float] = 100) -> None:
+               sample_rate: int | float = 100) -> None:
     """Checks the validity of the arguments.
 
     Args:

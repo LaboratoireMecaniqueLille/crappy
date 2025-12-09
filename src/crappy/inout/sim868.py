@@ -1,8 +1,7 @@
 # coding: utf-8
 
 from time import sleep, time
-from typing import Optional
-from collections.abc import Iterable
+from collections.abc import Sequence
 from re import fullmatch
 import logging
 from  warnings import warn
@@ -31,10 +30,10 @@ class Sim868(InOut):
   """
 
   def __init__(self,
-               numbers: Iterable[str],
+               numbers: Sequence[str],
                port: str = "/dev/ttyUSB0",
                baudrate: int = 115200,
-               pin_code: Optional[str] = None,
+               pin_code: str | None = None,
                registration_timeout: float = 10) -> None:
     """Checks the validity of the arguments.
 

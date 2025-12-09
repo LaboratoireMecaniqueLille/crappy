@@ -1,7 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Union
-from collections.abc import Iterable, Callable
+from collections.abc import Sequence, Callable
 import logging
 from re import split
 from time import time
@@ -40,10 +39,10 @@ class Pause(Block):
   """
 
   def __init__(self,
-               criteria: Union[str, Callable, Iterable[Union[str, Callable]]],
-               freq: Optional[float] = 50,
+               criteria: str | Callable | Sequence[str | Callable],
+               freq: float | None = 50,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -87,9 +86,9 @@ class Pause(Block):
       criteria = (criteria,)
     criteria = tuple(criteria)
 
-    self._raw_crit: tuple[Union[str,
-                                Callable[[dict[str, list]], bool]]] = criteria
-    self._criteria: Optional[tuple[Callable[[dict[str, list]], bool]]] = None
+    self._raw_crit: tuple[str |
+                          Callable[[dict[str, list]], bool], ...] = criteria
+    self._criteria: tuple[Callable[[dict[str, list]], bool]] | None = None
 
   def prepare(self) -> None:
     """Converts all the given criteria to :obj:`~collections.abc.Callable`."""
@@ -123,7 +122,7 @@ class Pause(Block):
     self.log(logging.DEBUG, "No pausing or un-pausing during this loop")
 
   def _parse_criterion(self,
-                       criterion: Union[str, Callable[[dict[str, list]], bool]]
+                       criterion: str | Callable[[dict[str, list]], bool]
                        ) -> Callable[[dict[str, list]], bool]:
     """Parses a Callable or string criterion given as an input by the user, and
     returns the associated Callable."""

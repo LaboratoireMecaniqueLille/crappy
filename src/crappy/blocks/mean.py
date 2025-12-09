@@ -1,8 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Optional, Union
-from collections.abc import Iterable
+from collections.abc import Sequence
 from time import time
 import logging
 
@@ -38,10 +37,10 @@ class MeanBlock(Block):
   def __init__(self,
                delay: float,
                time_label: str = 't(s)',
-               out_labels: Optional[Union[str, Iterable[str]]] = None,
+               out_labels: str | Sequence[str] | None = None,
                display_freq: bool = False,
-               freq: Optional[float] = 50,
-               debug: Optional[bool] = False) -> None:
+               freq: float | None = 50,
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

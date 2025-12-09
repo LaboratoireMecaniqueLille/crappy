@@ -1,9 +1,9 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional
 from numpy import ndarray
 import logging
+
 from .meta_camera import Camera
 from .._global import OptionalModule
 
@@ -45,7 +45,7 @@ class CameraOpencv(Camera):
                             choices=('1', '3'),
                             default='1')
 
-  def open(self, device_num: Optional[int] = 0, **kwargs) -> None:
+  def open(self, device_num: int | None = 0, **kwargs) -> None:
     """Opens the video stream and sets any user-specified settings.
 
     Args:

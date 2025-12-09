@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Optional
 from itertools import cycle, islice
 import logging
 
@@ -20,12 +19,12 @@ class CyclicRamp(Path):
   """
 
   def __init__(self,
-               condition1: Union[str, ConditionType],
-               condition2: Union[str, ConditionType],
+               condition1: str | ConditionType,
+               condition2: str | ConditionType,
                speed1: float,
                speed2: float,
                cycles: float = 1,
-               init_value: Optional[float] = None) -> None:
+               init_value: float | None = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     The path always starts with ``speed1``, and then switches to ``speed2``.

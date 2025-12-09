@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 import logging
 from multiprocessing import current_process
 import numpy as np
@@ -17,11 +16,11 @@ except (ModuleNotFoundError, ImportError):
 try:
   from skimage.filters import threshold_otsu
   from skimage.morphology import label
-  from skimage.measure import regionprops
+  from skimage.measure import regionprops, perimeter_crofton
 except (ModuleNotFoundError, ImportError):
   label = OptionalModule("skimage", "Please install scikit-image to use"
                          "Video-extenso")
-  threshold_otsu = regionprops = label
+  threshold_otsu = regionprops = perimeter_crofton = label
 
 
 class SpotsDetector:
@@ -39,9 +38,9 @@ class SpotsDetector:
 
   def __init__(self,
                white_spots: bool = False,
-               num_spots: Optional[int] = None,
+               num_spots: int | None = None,
                min_area: int = 150,
-               blur: Optional[int] = 5,
+               blur: int | None = 5,
                update_thresh: bool = False,
                safe_mode: bool = False,
                border: int = 5) -> None:
@@ -145,13 +144,16 @@ class SpotsDetector:
     del img
 
     # Detecting the spots on the image
-    props = regionprops(label(black_white))
+    props = regionprops(label(black_white, background=0))
 
     # The black and white image is not needed anymore
     del black_white
 
     # Removing regions that are too small or not circular
-    props = [prop for prop in props if prop.solidity > 0.8
+    props = [prop for prop in props
+             if 4 * np.pi * prop.area_convex /
+             (perimeter_crofton(prop.image_convex) ** 2) > 0.9
+             and prop.solidity > 0.8
              and prop.area > self.min_area]
 
     # Detecting overlapping spots and storing the ones that should be removed

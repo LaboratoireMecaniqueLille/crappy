@@ -1,14 +1,13 @@
 # coding: utf-8
 
-from typing import Optional, Union, Literal
-from collections.abc import Iterable, Callable
+from typing import Literal
+from collections.abc import Sequence, Callable
 import numpy as np
 from pathlib import Path
 
 from .camera_processes import DICVEProcess
 from .camera import Camera
 from ..tool.camera_config import DICVEConfig, SpotsBoxes
-from .._global import CameraConfigError
 
 
 class DICVE(Camera):
@@ -53,27 +52,27 @@ class DICVE(Camera):
 
   def __init__(self,
                camera: str,
-               transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+               transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
+               displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
-               software_trig_label: Optional[str] = None,
+               software_trig_label: str | None = None,
                display_freq: bool = False,
-               freq: Optional[float] = 200,
-               debug: Optional[bool] = False,
+               freq: float | None = 200,
+               debug: bool | None = False,
                save_images: bool = False,
                img_extension: str = "tiff",
-               save_folder: Optional[Union[str, Path]] = None,
+               save_folder: str | Path | None = None,
                save_period: int = 1,
-               save_backend: Optional[Literal['sitk', 'pil',
-                                              'cv2', 'npy']] = None,
-               image_generator: Optional[Callable[[float, float],
-                                                  np.ndarray]] = None,
-               img_shape: Optional[tuple[int, int]] = None,
-               img_dtype: Optional[str] = None,
-               patches: Optional[Iterable[tuple[int, int, int, int]]] = None,
-               labels: Optional[Union[str, Iterable[str]]] = None,
+               save_backend: Literal['sitk', 'pil',
+                                     'cv2', 'npy'] | None = None,
+               image_generator: Callable[[float, float],
+                                         np.ndarray] | None = None,
+               img_shape: tuple[int, int] | None = None,
+               img_dtype: str | None = None,
+               patches: Sequence[tuple[int, int, int, int]] | None = None,
+               labels: str | Sequence[str] | None = None,
                method: Literal['Disflow', 'Lucas Kanade',
                                'Pixel precision', 'Parabola'] = 'Disflow',
                alpha: float = 3,
@@ -383,7 +382,7 @@ class DICVE(Camera):
       raise ValueError("The number of labels should be 6 !\n"
                        "Make sure that the time label was given")
 
-    self._patches: Optional[SpotsBoxes] = None
+    self._patches: SpotsBoxes | None = None
 
     self._raise_on_exit = raise_on_patch_exit
     self._patches_int = list(patches) if patches is not None else None
@@ -439,33 +438,11 @@ class DICVE(Camera):
 
     super().prepare()
 
-  def _configure(self) -> None:
-    """This method should instantiate and start the
+  def _configure(self) -> DICVEConfig:
+    """This method should instantiate the
     :class:`~crappy.tool.camera_config.DICVEConfig` window for configuring the
     :class:`~crappy.camera.Camera` object.
-
-    It should also handle the case when an exception is raised in the
-    configuration window.
     """
 
-    config = None
-
-    # Instantiating and starting the configuration window
-    try:
-      config = DICVEConfig(self._camera, self._log_queue, self._log_level,
-                           self.freq, self._patches)
-      config.main()
-
-    # If an exception is raised in the config window, closing it before raising
-    except (Exception,) as exc:
-      self._logger.exception("Caught exception in the configuration window !",
-                             exc_info=exc)
-      if config is not None:
-        config.stop()
-      raise CameraConfigError
-
-    # Getting the image dtype and shape for setting the shared Array
-    if config.shape is not None:
-      self._img_shape = config.shape
-    if config.dtype is not None:
-      self._img_dtype = config.dtype
+    return DICVEConfig(self._camera, self._log_queue, self._log_level,
+                       self.freq, self._patches)

@@ -5,6 +5,12 @@ Cameras
 Regular Cameras
 ---------------
 
+Camera gPhoto2
+++++++++++++++
+.. autoclass:: crappy.camera.CameraGPhoto2
+   :members: open, get_image, close
+   :special-members: __init__
+
 Camera GStreamer
 ++++++++++++++++
 .. autoclass:: crappy.camera.CameraGstreamer
@@ -90,11 +96,6 @@ Camera
              add_scale_setting, add_trigger_setting, add_software_roi,
              reload_software_roi, apply_soft_roi, set_all
    :special-members: __init__, __getattr__, __setattr__
-
-Meta Camera
-+++++++++++
-.. autoclass:: crappy.camera.MetaCamera
-   :special-members: __init__
 
 Camera Settings
 +++++++++++++++

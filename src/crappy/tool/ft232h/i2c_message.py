@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from __future__ import annotations
-from typing import Optional, Literal
+from typing import Literal
 
 
 class I2CMessage:
@@ -18,8 +18,8 @@ class I2CMessage:
   def __init__(self,
                type_: Literal['r', 'w'],
                address: int,
-               length: Optional[int] = None,
-               buf: Optional[list] = None) -> None:
+               length: int | None = None,
+               buf: list | None = None) -> None:
     """Simply sets the attributes of the class, that characterizes the I2C
     message.
 

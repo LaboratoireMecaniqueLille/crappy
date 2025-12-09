@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 import logging
 
 from .meta_block import Block
@@ -25,10 +24,10 @@ class LinkReader(Block):
   _index = 0
 
   def __init__(self,
-               name: Optional[str] = None,
-               freq: Optional[float] = 50,
+               name: str | None = None,
+               freq: float | None = 50,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

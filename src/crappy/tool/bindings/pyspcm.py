@@ -8,6 +8,7 @@ bindings haven't been tested for a while.
 
 from ctypes import *
 from sys import platform
+
 from ..._global import OptionalModule
 
 # ======= Constants definition ======

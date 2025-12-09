@@ -31,7 +31,6 @@ way to stop Crappy.
 
 import crappy
 from random import random
-from typing import Optional
 from time import time
 
 
@@ -44,7 +43,7 @@ class CustomInOut(crappy.inout.InOut):
   as such.
   """
 
-  def __init__(self, offset: Optional[float] = None) -> None:
+  def __init__(self, offset: float | None = None) -> None:
     """In this method you should initialize the Python objects that you will
     use in the class.
 

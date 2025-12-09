@@ -1,16 +1,17 @@
 # coding: utf-8
 
-from typing import Optional, TypeVar
+from typing import TypeVar
 import logging
 from multiprocessing import current_process
+from abc import ABC, abstractmethod
 
-from .meta_modifier import MetaModifier
+from ..._global import DefinitionError
 
 T = TypeVar('T')
 """Generic type representing data handled by Modifiers."""
 
 
-class Modifier(metaclass=MetaModifier):
+class Modifier(ABC):
   """The base class for all Modifier classes, simply allowing to keep track of
   them.
 
@@ -24,7 +25,26 @@ class Modifier(metaclass=MetaModifier):
   defining the :meth:`~crappy.modifier.Modifier.__call__` method or a function.
 
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
+
+  classes = dict()
+
+  def __init_subclass__(cls, **kwargs) -> None:
+    """Used for checking that two subclasses don't share the same name."""
+
+    super().__init_subclass__()
+
+    if hasattr(cls, 'evaluate'):
+      raise DefinitionError("The evaluate method is deprecated for Modifiers "
+                            "since version 2.0.0, just rename it to __call__ "
+                            "to get your Modifier working again.")
+
+    if cls.__name__ in cls.classes:
+      raise DefinitionError(f"An InOut with the name {cls.__name__} is "
+                            f"already defined !")
+    cls.classes[cls.__name__] = cls
 
   def __init__(self, *_, **__) -> None:
     """Sets the logger attribute.
@@ -32,9 +52,12 @@ class Modifier(metaclass=MetaModifier):
     .. versionchanged:: 2.0.0 now accepts args and kwargs
     """
 
-    self._logger: Optional[logging.Logger] = None
+    super().__init__()
 
-  def __call__(self, data: dict[str, T]) -> Optional[dict[str, T]]:
+    self._logger: logging.Logger | None = None
+
+  @abstractmethod
+  def __call__(self, data: dict[str, T]) -> dict[str, T] | None:
     """The main method altering the inout data and returning the altered data.
 
     It should take a :obj:`dict` as its only argument, and return another

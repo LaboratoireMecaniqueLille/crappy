@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Optional
 import logging
 import numpy as np
 
@@ -24,16 +23,16 @@ class Box(Overlay):
   .. versionadded:: 2.0.0
   """
 
-  x_start: Optional[int] = None
-  x_end: Optional[int] = None
-  y_start: Optional[int] = None
-  y_end: Optional[int] = None
+  x_start: int | None = None
+  x_end: int | None = None
+  y_start: int | None = None
+  y_end: int | None = None
 
-  x_disp: Optional[float] = None
-  y_disp: Optional[float] = None
+  x_disp: float | None = None
+  y_disp: float | None = None
 
-  x_centroid: Optional[float] = None
-  y_centroid: Optional[float] = None
+  x_centroid: float | None = None
+  y_centroid: float | None = None
 
   def __post_init__(self) -> None:
     """Needed to have the :obj:`~logging.Logger` of the parent class properly
@@ -68,9 +67,9 @@ class Box(Overlay):
     try:
       for line in (line for i in range(max_fact + 1) for line in
                    ((self.y_start + i, slice(x_top, x_bottom)),
-                    (self.y_end - i, slice(x_top, x_bottom)),
+                    (self.y_end - i - 1, slice(x_top, x_bottom)),
                     (slice(y_left, y_right), x_top + i),
-                    (slice(y_left, y_right), x_bottom - i))):
+                    (slice(y_left, y_right), x_bottom - i - 1))):
         img[line] = 255 * int(np.mean(img[line]) < 128)
       self.log(logging.DEBUG, f"Drew {self} on top of the image to display")
 

@@ -3,7 +3,7 @@
 from time import time
 from struct import pack, unpack
 from typing import Literal
-from collections.abc import Iterable
+from collections.abc import Sequence
 import logging
 from  warnings import warn
 
@@ -47,7 +47,7 @@ class KollmorgenAKDPDMM(InOut):
    """
 
   def __init__(self,
-               axes: Iterable[int],
+               axes: Sequence[int],
                mode: Literal['position', 'speed'] = 'position',
                host: str = '192.168.0.109',
                port: int = 502) -> None:

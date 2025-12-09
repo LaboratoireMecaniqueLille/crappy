@@ -3,8 +3,8 @@
 import warnings
 from math import ceil
 import numpy as np
-from pkg_resources import resource_filename
-from typing import Any, Optional, Union, Literal
+import importlib.resources
+from typing import Any, Literal
 from pathlib import Path
 from itertools import chain
 import logging
@@ -72,8 +72,8 @@ class CorrelStage:
                verbose: int = 0,
                iterations: int = 5,
                mul: float = 3,
-               n_fields: Optional[int] = None,
-               kernel_file: Optional[Union[Path, str]] = None) -> None:
+               n_fields: int | None = None,
+               kernel_file: str | Path | None = None) -> None:
     """Sets the args and instantiates the :mod:`pycuda` objects.
 
     Args:
@@ -107,7 +107,7 @@ class CorrelStage:
     .. versionremoved:: 1.5.10 *show_diff*, *img*, *mask* and *fields* arguments
     """
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
     self._logger_name = logger_name
 
     # Setting the args
@@ -164,8 +164,10 @@ class CorrelStage:
     # Opening the kernel file and compiling the module
     if kernel_file is None:
       self._debug(2, "Kernel file not specified")
-      kernel_file = resource_filename('crappy',
-                                      'tool/image_processing/kernels.cu')
+      ref_kernel = (importlib.resources.files('crappy') / 'tool' /
+                    'image_processing' / 'kernels.cu')
+      with importlib.resources.as_file(ref_kernel) as path_kernel:
+        kernel_file = path_kernel
     with open(kernel_file, "r") as file:
       self._debug(3, "Sourcing module")
       mod = pycuda.compiler.SourceModule(file.read() % (self._width,
@@ -519,17 +521,17 @@ class GPUCorrelTool:
 
   def __init__(self,
                logger_name: str,
-               context: Optional[Any] = None,
+               context: Any | None = None,
                verbose: int = 0,
                levels: int = 5,
                resampling_factor: float = 2,
-               kernel_file: Optional[Union[str, Path]] = None,
+               kernel_file: str | Path | None = None,
                iterations: int = 4,
-               fields: Optional[list[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
-                                                   'exy', 'eyx', 'exy2', 'z'],
-                                           np.ndarray]]] = None,
-               ref_img: Optional[np.ndarray] = None,
-               mask: Optional[np.ndarray] = None,
+               fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                    'exy', 'eyx', 'exy2', 'z'] |
+                            np.ndarray] | None = None,
+               ref_img: np.ndarray | None = None,
+               mask: np.ndarray | None = None,
                mul: float = 3) -> None:
     """Sets the args and a few parameters of :mod:`pycuda`.
 
@@ -597,7 +599,7 @@ class GPUCorrelTool:
     """
 
     self._context = context
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
     self._logger_name = logger_name
 
     self._verbose = verbose
@@ -634,8 +636,10 @@ class GPUCorrelTool:
     if kernel_file is None:
       self._debug(3, "Kernel file not specified, using the default one of "
                      "crappy")
-      self._kernel_file = resource_filename('crappy',
-                                            'tool/image_processing/kernels.cu')
+      ref_kernel = (importlib.resources.files('crappy') / 'tool' /
+                    'image_processing' / 'kernels.cu')
+      with importlib.resources.as_file(ref_kernel) as path_kernel:
+        self._kernel_file = path_kernel
     else:
       self._kernel_file = kernel_file
     self._debug(3, f"Kernel file:{self._kernel_file}")
@@ -747,7 +751,7 @@ class GPUCorrelTool:
 
     self._debug(2, "Ready !")
 
-  def get_disp(self, img_d: Optional[np.ndarray] = None) -> Any:
+  def get_disp(self, img_d: np.ndarray | None = None) -> Any:
     """To get the displacement.
 
     This will perform the correlation routine on each stage, initializing with
@@ -795,8 +799,8 @@ class GPUCorrelTool:
     GPUCorrelTool.context.pop()
 
   def _get_fields(self,
-                  y: Optional[int] = None,
-                  x: Optional[int] = None) -> (Any, Any):
+                  y: int | None = None,
+                  x: int | None = None) -> (Any, Any):
     """Returns the fields, resampled to size `(y, x)`."""
 
     if x is None or y is None:
@@ -826,9 +830,9 @@ class GPUCorrelTool:
     if level <= self._verbose:
       self._logger.log(logging.INFO, msg)
 
-  def _set_fields(self, fields: list[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
-                                                   'exy', 'eyx', 'exy2', 'z'],
-                                           np.ndarray]]) -> None:
+  def _set_fields(self, fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                             'exy', 'eyx', 'exy2', 'z'] |
+                                     np.ndarray]) -> None:
     """Computes the fields based on the provided field strings, and sets them
     for each stage."""
 

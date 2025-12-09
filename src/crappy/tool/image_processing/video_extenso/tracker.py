@@ -4,7 +4,6 @@ from multiprocessing import Process, get_start_method
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 import numpy as np
-from typing import Optional, Union
 from time import time
 from select import select
 import logging
@@ -46,11 +45,11 @@ class Tracker(Process):
   def __init__(self,
                pipe: Connection,
                logger_name: str,
-               log_level: Optional[int],
+               log_level: int | None,
                log_queue: Queue,
                white_spots: bool = False,
-               thresh: Optional[int] = None,
-               blur: Optional[int] = 5) -> None:
+               thresh: int | None = None,
+               blur: int | None = 5) -> None:
     """Sets the arguments.
 
     Args:
@@ -84,7 +83,7 @@ class Tracker(Process):
     self._thresh = thresh
     self._blur = blur
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
     self._log_level = log_level
     self._log_queue = log_queue
 
@@ -231,7 +230,7 @@ class Tracker(Process):
                x_centroid=x_start + x,
                y_centroid=y_start + y)
 
-  def _send(self, val: Union[Box, str]) -> None:
+  def _send(self, val: Box | str) -> None:
     """Sends a message to the 
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`, and 
     in Linux checks that the :obj:`multiprocessing.Pipe` is not full before 

@@ -28,7 +28,6 @@ CTRL+C to stop it earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
-from typing import Optional
 from time import time
 
 
@@ -41,7 +40,7 @@ class CustomInOut(crappy.inout.InOut):
   as such.
   """
 
-  def __init__(self, max_value: Optional[float] = None) -> None:
+  def __init__(self, max_value: float | None = None) -> None:
     """In this method you should initialize the Python objects that you will
     use in the class.
 
@@ -53,7 +52,7 @@ class CustomInOut(crappy.inout.InOut):
     super().__init__()
 
     self._max_value = max_value if max_value is not None else float('inf')
-    self._value: Optional[float] = None
+    self._value: float | None = None
 
   def open(self) -> None:
     """In this method you would perform any action needed to connect to the
@@ -64,7 +63,7 @@ class CustomInOut(crappy.inout.InOut):
 
     ...
 
-  def get_data(self) -> dict[str, float]:
+  def get_data(self) -> dict[str, float] | None:
     """This method is used for acquiring data from the hardware.
 
     Here, it returns the current timestamp as well as the value of the _buffer

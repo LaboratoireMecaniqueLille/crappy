@@ -4,23 +4,23 @@ import numpy as np
 from multiprocessing import Process, current_process, get_start_method
 from multiprocessing.synchronize import Event
 from multiprocessing.queues import Queue
+from queue import Empty
 import logging
 import logging.handlers
-from typing import Optional
 from functools import partial
 from time import sleep
 
 
 class HistogramProcess(Process):
-  """This class is a :obj:`multiprocessing.Process` taking an image as an input 
-  via a :obj:`multiprocessing.Pipe`, and returning the histogram of that image 
+  """This class is a :obj:`multiprocessing.Process` taking an image as an input
+  via a :obj:`multiprocessing.Pipe`, and returning the histogram of that image
   in another :obj:`~multiprocessing.Pipe`.
 
-  It is used by the :class:`~crappy.tool.camera_config.CameraConfig` window and 
+  It is used by the :class:`~crappy.tool.camera_config.CameraConfig` window and
   its children to delegate and parallelize the calculation of the histogram. It
   allows to gain a few frames per second on the display in the configuration
   window.
-  
+
   .. versionadded:: 2.0.0
   """
 
@@ -29,7 +29,7 @@ class HistogramProcess(Process):
                processing_event: Event,
                img_in: Queue,
                img_out: Queue,
-               log_level: Optional[int],
+               log_level: int | None,
                log_queue: Queue) -> None:
     """Sets the arguments and initializes the parent class.
 
@@ -49,7 +49,7 @@ class HistogramProcess(Process):
         to the main :obj:`~logging.Logger`, only used in Windows.
     """
 
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
     self._log_level = log_level
     self._log_queue = log_queue
 
@@ -63,8 +63,8 @@ class HistogramProcess(Process):
   def run(self) -> None:
     """The main method being run by the HistogramProcess.
 
-    It continuously receives images from the 
-    :class:`~crappy.tool.camera_config.CameraConfig`, calculates their 
+    It continuously receives images from the
+    :class:`~crappy.tool.camera_config.CameraConfig`, calculates their
     histograms and returns them back as a nice image to integrate on the
     window.
     """
@@ -85,6 +85,10 @@ class HistogramProcess(Process):
           while not self._img_in.empty():
             (img, auto_range,
              low_thresh, high_thresh) = self._img_in.get_nowait()
+
+          # Fast-forward without running calculation
+          if self._stop_event.is_set():
+            break
 
           self.log(logging.DEBUG, "Received image from CameraConfig")
 
@@ -122,16 +126,34 @@ class HistogramProcess(Process):
       self._logger.exception("Caught Exception while running, stopping !",
                              exc_info=exc)
     finally:
+      self.log(logging.DEBUG, "Empty queues before exiting")
+      self._flush_queue(self._img_in)
+      self._flush_queue(self._img_out)
       self.log(logging.INFO, "HistogramProcess finished")
 
   @staticmethod
   def _hist_func(x: np.ndarray,
                  _: np.ndarray,
                  histo: np.ndarray) -> np.ndarray:
-    """Function passed to the :meth:`numpy.fromfunction` method for building 
+    """Function passed to the :meth:`numpy.fromfunction` method for building
     the histogram."""
 
     return np.where(x <= histo, 0, 255)
+
+  @staticmethod
+  def _flush_queue(queue: Queue) -> None:
+    """Helper for flushing a :class:`~multiprocessing.queues.Queue` before
+    exiting.
+
+    On Windows, not empty queues can prevent the HistogramProcess from
+    finishing on time.
+    """
+
+    try:
+      while True:
+        queue.get_nowait()
+    except Empty:
+      pass
 
   def log(self, level: int, msg: str) -> None:
     """Records log messages for the HistogramProcess.

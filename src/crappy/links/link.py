@@ -3,8 +3,8 @@
 from multiprocessing import Pipe
 from time import time
 from copy import deepcopy
-from typing import Union, Any, Optional
-from collections.abc import Callable, Iterable
+from typing import Any
+from collections.abc import Callable, Sequence
 from collections import defaultdict
 from select import select
 from platform import system
@@ -38,8 +38,8 @@ class Link:
   def __init__(self,
                input_block,
                output_block,
-               modifiers: Optional[list[ModifierType]] = None,
-               name: Optional[str] = None) -> None:
+               modifiers: list[ModifierType] | None = None,
+               name: str | None = None) -> None:
     """Sets the instance attributes.
 
     Args:
@@ -75,7 +75,7 @@ class Link:
     output_block.add_input(self)
 
     self._last_warn = time()
-    self._logger: Optional[logging.Logger] = None
+    self._logger: logging.Logger | None = None
     self._system = system()
 
   def __new__(cls, *args, **kwargs):
@@ -212,9 +212,8 @@ class Link:
 def link(in_block,
          out_block,
          /, *,
-         modifier: Optional[Union[Iterable[ModifierType],
-                                  ModifierType]] = None,
-         name: Optional[str] = None) -> None:
+         modifier: Sequence[ModifierType] | ModifierType | None = None,
+         name: str | None = None) -> None:
   """Function linking two Blocks, allowing to send data from one to the other.
 
   It instantiates a :class:`~crappy.links.Link` between two children of

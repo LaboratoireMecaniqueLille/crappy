@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from typing import Union
-
 from ..meta_inout import InOut
 from ...tool.ft232h import FT232HServer as FT232H, ft232h_pin_nr, USBArgsType
 
@@ -22,7 +20,7 @@ class GPIOSwitchFT232H(InOut):
   ft232h = True
 
   def __init__(self,
-               pin_out: Union[int, str],
+               pin_out: int | str,
                _ft232h_args: USBArgsType = tuple()) -> None:
     """Checks the validity of the arguments.
 

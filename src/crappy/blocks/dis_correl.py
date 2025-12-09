@@ -1,17 +1,16 @@
 # coding: utf-8
 
-from typing import Optional, Union, Literal
-from collections.abc import Iterable, Callable
+from typing import Literal
+from collections.abc import Sequence, Callable
 import numpy as np
 from pathlib import Path
 
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
 from ..tool.camera_config import DISCorrelConfig, Box
-from .._global import CameraConfigError
 
-field_type = Union[Literal['x', 'y', 'r', 'exx', 'eyy',
-                           'exy', 'eyx', 'exy2', 'z'], np.ndarray]
+field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
+                     'exy', 'eyx', 'exy2', 'z'] | np.ndarray
 
 
 class DISCorrel(Camera):
@@ -48,28 +47,28 @@ class DISCorrel(Camera):
 
   def __init__(self,
                camera: str,
-               transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+               transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: Optional[Literal['cv2', 'mpl']] = None,
+               displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
-               software_trig_label: Optional[str] = None,
+               software_trig_label: str | None = None,
                display_freq: bool = False,
-               freq: Optional[float] = 200,
-               debug: Optional[bool] = False,
+               freq: float | None = 200,
+               debug: bool | None = False,
                save_images: bool = False,
                img_extension: str = "tiff",
-               save_folder: Optional[Union[str, Path]] = None,
+               save_folder: str | Path | None = None,
                save_period: int = 1,
-               save_backend: Optional[Literal['sitk', 'pil', 
-                                              'cv2', 'npy']] = None,
-               image_generator: Optional[Callable[[float, float],
-                                                  np.ndarray]] = None,
-               img_shape: Optional[tuple[int, int]] = None,
-               img_dtype: Optional[str] = None,
-               patch: Optional[tuple[int, int, int, int]] = None,
-               fields: Union[field_type, Iterable[field_type]] = None,
-               labels: Union[str, Iterable[str]] = None,
+               save_backend: Literal['sitk', 'pil',
+                                     'cv2', 'npy'] | None = None,
+               image_generator: Callable[[float, float],
+                                         np.ndarray] | None = None,
+               img_shape: tuple[int, int] | None = None,
+               img_dtype: str | None = None,
+               patch: tuple[int, int, int, int] | None = None,
+               fields: field_type | Sequence[field_type] | None = None,
+               labels: str | Sequence[str] = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
@@ -353,7 +352,7 @@ class DISCorrel(Camera):
       self.labels.append('res')
 
     self._patch_int = patch
-    self._patch: Optional[Box] = None
+    self._patch: Box | None = None
 
     # Making sure a coherent number of labels and fields was given
     if 2 + len(fields) + int(residual) != len(self.labels):
@@ -412,33 +411,11 @@ class DISCorrel(Camera):
 
     super().prepare()
 
-  def _configure(self) -> None:
-    """This method should instantiate and start the
+  def _configure(self) -> DISCorrelConfig:
+    """This method should instantiate the
     :class:`~crappy.tool.camera_config.DISCorrelConfig` window for configuring
     the :class:`~crappy.camera.Camera` object.
-
-    It should also handle the case when an exception is raised in the
-    configuration window.
     """
 
-    config = None
-
-    # Instantiating and starting the configuration window
-    try:
-      config = DISCorrelConfig(self._camera, self._log_queue, self._log_level,
-                               self.freq, self._patch)
-      config.main()
-
-    # If an exception is raised in the config window, closing it before raising
-    except (Exception,) as exc:
-      self._logger.exception("Caught exception in the configuration window !",
-                             exc_info=exc)
-      if config is not None:
-        config.stop()
-      raise CameraConfigError
-
-    # Getting the image dtype and shape for setting the shared Array
-    if config.shape is not None:
-      self._img_shape = config.shape
-    if config.dtype is not None:
-      self._img_dtype = config.dtype
+    return DISCorrelConfig(self._camera, self._log_queue, self._log_level,
+                           self.freq, self._patch)

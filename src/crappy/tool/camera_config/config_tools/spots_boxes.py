@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Optional
 
 from .box import Box
 
@@ -20,17 +19,17 @@ class SpotsBoxes:
   .. versionadded:: 2.0.0
   """
 
-  spot_1: Optional[Box] = None
-  spot_2: Optional[Box] = None
-  spot_3: Optional[Box] = None
-  spot_4: Optional[Box] = None
+  spot_1: Box | None = None
+  spot_2: Box | None = None
+  spot_3: Box | None = None
+  spot_4: Box | None = None
 
-  x_l0: Optional[float] = None
-  y_l0: Optional[float] = None
+  x_l0: float | None = None
+  y_l0: float | None = None
 
   _index = -1
 
-  def __getitem__(self, i: int) -> Optional[Box]:
+  def __getitem__(self, i: int) -> Box | None:
     if i == 0:
       return self.spot_1
     elif i == 1:
@@ -42,7 +41,7 @@ class SpotsBoxes:
     else:
       raise IndexError
 
-  def __setitem__(self, i: int, value: Optional[Box]) -> None:
+  def __setitem__(self, i: int, value: Box | None) -> None:
     if i == 0:
       self.spot_1 = value
     elif i == 1:

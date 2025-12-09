@@ -1,28 +1,40 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Union, Optional
 from collections.abc import Callable
 from re import split, IGNORECASE, match
 import logging
 from multiprocessing import current_process
+from abc import ABC, abstractmethod
 
-from .meta_path import MetaPath
+from ...._global import DefinitionError
 
 ConditionType = Callable[[dict[str, list]], bool]
 
 
-class Path(metaclass=MetaPath):
+class Path(ABC):
   """Base class for all the Generator Path objects.
 
   The Path object are used by the :class:`~crappy.blocks.Generator` Block to
   generate signals.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
-  t0: Optional[float] = None
-  last_cmd: Optional[float] = None
+  t0: float | None = None
+  last_cmd: float | None = None
+  classes = dict()
+
+  def __init_subclass__(cls, **kwargs) -> None:
+    """Used for checking that two subclasses don't share the same name."""
+
+    super().__init_subclass__()
+    if cls.__name__ in cls.classes:
+      raise DefinitionError(f"A Generator Path with the name {cls.__name__} "
+                            f"is already defined !")
+    cls.classes[cls.__name__] = cls
 
   def __init__(self, *_, **__) -> None:
     """Here, the arguments given to the Path should be handled.
@@ -43,9 +55,12 @@ class Path(metaclass=MetaPath):
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
 
-    self._logger: Optional[logging.Logger] = None
+    super().__init__()
 
-  def get_cmd(self, data: dict[str, list]) -> Optional[float]:
+    self._logger: logging.Logger | None = None
+
+  @abstractmethod
+  def get_cmd(self, data: dict[str, list]) -> float | None:
     """This method is called by the :class:`~crappy.blocks.Generator` Block to
     get the next command to send.
 
@@ -102,8 +117,7 @@ class Path(metaclass=MetaPath):
     self._logger.log(level, msg)
 
   def parse_condition(self,
-                      condition: Optional[Union[str, ConditionType]]
-                      ) -> ConditionType:
+                      condition: str | ConditionType | None) -> ConditionType:
     """This method returns a function allowing to check whether a given 
     condition is met or not.
     

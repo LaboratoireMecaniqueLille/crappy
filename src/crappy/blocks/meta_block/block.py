@@ -1,8 +1,8 @@
 # coding: utf-8
 
 from platform import system
-from multiprocessing import Process, Value, Barrier, Event, Queue, \
-  get_start_method, synchronize, queues
+from multiprocessing import (Process, Value, Barrier, Event, Queue,
+                             get_start_method, synchronize, queues)
 from multiprocessing.sharedctypes import Synchronized
 from multiprocessing.connection import wait
 from threading import BrokenBarrierError, Thread
@@ -11,22 +11,23 @@ import logging
 import logging.handlers
 from time import sleep, time, time_ns
 from weakref import WeakSet
-from typing import Union, Optional, Any
-from collections.abc import Iterable
+from typing import Any
+from collections.abc import Sequence
 from collections import defaultdict
 import subprocess
 from sys import stdout, stderr, argv
 from pathlib import Path
+from abc import ABC, abstractmethod
 
-from .meta_block import MetaBlock
 from ...links import Link
-from ..._global import LinkDataError, StartTimeout, PrepareError, \
-  T0NotSetError, GeneratorStop, ReaderStop, CameraPrepareError, \
-  CameraRuntimeError, CameraConfigError, CrappyFail
+from ..._global import (LinkDataError, StartTimeout, PrepareError,
+                        T0NotSetError, GeneratorStop, ReaderStop,
+                        CameraPrepareError, CameraRuntimeError,
+                        CameraConfigError, CrappyFail, DefinitionError)
 from ...tool.ft232h import USBServer
 
 
-class Block(Process, metaclass=MetaBlock):
+class Block(Process, ABC):
   """This class constitutes the base object in Crappy.
 
   It is extremely versatile, and can perform a wide variety of actions during a
@@ -42,33 +43,47 @@ class Block(Process, metaclass=MetaBlock):
   execution of all the children Blocks.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.0.8 remove metaclass and perform checks in
+     __init_subclass__
   """
 
   instances = WeakSet()
   names: list[str] = list()
-  log_level: Optional[int] = logging.DEBUG
+  log_level: int | None = logging.DEBUG
 
   # The synchronization objects will be set later
-  shared_t0: Optional[Synchronized] = None
-  ready_barrier: Optional[synchronize.Barrier] = None
-  start_event: Optional[synchronize.Event] = None
-  pause_event: Optional[synchronize.Event] = None
-  stop_event: Optional[synchronize.Event] = None
-  raise_event: Optional[synchronize.Event] = None
-  kbi_event: Optional[synchronize.Event] = None
-  logger: Optional[logging.Logger] = None
-  log_queue: Optional[queues.Queue] = None
-  log_thread: Optional[Thread] = None
+  shared_t0: Synchronized | None = None
+  ready_barrier: synchronize.Barrier | None = None
+  start_event: synchronize.Event | None = None
+  pause_event: synchronize.Event | None = None
+  stop_event: synchronize.Event | None = None
+  raise_event: synchronize.Event | None = None
+  kbi_event: synchronize.Event | None = None
+  logger: logging.Logger | None = None
+  log_queue: queues.Queue | None = None
+  log_thread: Thread | None = None
   thread_stop: bool = False
   no_raise: bool = False
 
   prepared_all: bool = False
   launched_all: bool = False
 
+  classes = dict()
+
+  def __init_subclass__(cls, **kwargs) -> None:
+    """Used for checking that two subclasses don't share the same name."""
+
+    super().__init_subclass__()
+    if cls.__name__ in cls.classes:
+      raise DefinitionError(f"A Block with the name {cls.__name__} is already "
+                            f"defined !")
+    cls.classes[cls.__name__] = cls
+
   def __init__(self) -> None:
     """Sets the attributes and initializes the parent class."""
 
-    super().__init__()
+    Process.__init__(self)
+    ABC.__init__(self)
 
     # The lists of input and output links
     self.outputs: list[Link] = list()
@@ -76,30 +91,30 @@ class Block(Process, metaclass=MetaBlock):
 
     # Various objects that should be set by child classes
     self.niceness: int = 0
-    self.labels: Optional[Iterable[str]] = None
-    self.freq: Optional[float] = None
+    self.labels: Sequence[str] | None = None
+    self.freq: float | None = None
     self.display_freq: bool = False
     self.name: str = self.get_name(type(self).__name__)
     self.pausable: bool = True
 
     # The synchronization objects will be set later
-    self._instance_t0: Optional[Synchronized] = None
-    self._ready_barrier: Optional[synchronize.Barrier] = None
-    self._start_event: Optional[synchronize.Event] = None
-    self._pause_event: Optional[synchronize.Event] = None
-    self._stop_event: Optional[synchronize.Event] = None
-    self._raise_event: Optional[synchronize.Event] = None
-    self._kbi_event: Optional[synchronize.Event] = None
+    self._instance_t0: Synchronized | None = None
+    self._ready_barrier: synchronize.Barrier | None = None
+    self._start_event: synchronize.Event | None = None
+    self._pause_event: synchronize.Event | None = None
+    self._stop_event: synchronize.Event | None = None
+    self._raise_event: synchronize.Event | None = None
+    self._kbi_event: synchronize.Event | None = None
 
     # The objects for logging will be set later
-    self._log_queue: Optional[queues.Queue] = None
-    self._logger: Optional[logging.Logger] = None
-    self._debug: Optional[bool] = False
+    self._log_queue: queues.Queue | None = None
+    self._logger: logging.Logger | None = None
+    self._debug: bool | None = False
     self._log_level: int = logging.INFO
 
     # Objects for displaying performance information about the block
-    self._last_t: Optional[float] = None
-    self._last_fps: Optional[float] = None
+    self._last_t: float | None = None
+    self._last_fps: float | None = None
     self._n_loops: int = 0
 
     self._last_values = None
@@ -133,7 +148,7 @@ class Block(Process, metaclass=MetaBlock):
   @classmethod
   def start_all(cls,
                 allow_root: bool = False,
-                log_level: Optional[int] = logging.DEBUG,
+                log_level: int | None = logging.DEBUG,
                 no_raise: bool = False) -> None:
     """Method for starting a script with Crappy.
 
@@ -180,7 +195,7 @@ class Block(Process, metaclass=MetaBlock):
     cls.launch_all(no_raise)
 
   @classmethod
-  def prepare_all(cls, log_level: Optional[int] = logging.DEBUG) -> None:
+  def prepare_all(cls, log_level: int | None = logging.DEBUG) -> None:
     """Creates the synchronization objects, shares them with the Blocks, and
     starts the :obj:`~multiprocessing.Process` associated to the Blocks.
 
@@ -988,6 +1003,7 @@ class Block(Process, metaclass=MetaBlock):
 
     ...
 
+  @abstractmethod
   def loop(self) -> None:
     """This method is the core of the Block. It is called repeatedly during the
     test, until the test stops or an error occurs.
@@ -1095,7 +1111,7 @@ class Block(Process, metaclass=MetaBlock):
     self._logger = logger
 
   @property
-  def debug(self) -> Optional[bool]:
+  def debug(self) -> bool | None:
     """Indicates whether the debug information should be displayed or not.
 
     If :obj:`False` (the default), only displays the :obj:`~logging.INFO`
@@ -1110,7 +1126,7 @@ class Block(Process, metaclass=MetaBlock):
     return self._debug
 
   @debug.setter
-  def debug(self, val: Optional[bool]) -> None:
+  def debug(self, val: bool | None) -> None:
     if val is not None:
       if val:
         self._debug = True
@@ -1163,7 +1179,7 @@ class Block(Process, metaclass=MetaBlock):
       return
     self._logger.log(log_level, msg)
 
-  def send(self, data: Optional[Union[dict[str, Any], Iterable[Any]]]) -> None:
+  def send(self, data: dict[str, Any] | Sequence[Any] | None) -> None:
     """Method for sending data to downstream Blocks.
 
     The exact same :obj:`dict` is sent to every downstream Block.
@@ -1298,7 +1314,7 @@ class Block(Process, metaclass=MetaBlock):
     return ret
 
   def recv_all_data(self,
-                    delay: Optional[float] = None,
+                    delay: float | None = None,
                     poll_delay: float = 0.1) -> dict[str, list[Any]]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns them all in a single dict.
@@ -1361,7 +1377,7 @@ class Block(Process, metaclass=MetaBlock):
     return dict(ret)
 
   def recv_all_data_raw(self,
-                        delay: Optional[float] = None,
+                        delay: float | None = None,
                         poll_delay: float = 0.1) -> list[dict[str, list[Any]]]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns them separately in a list of

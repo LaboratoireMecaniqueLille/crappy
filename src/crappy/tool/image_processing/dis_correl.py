@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Union, Literal
+from typing import Literal
 import numpy as np
 
 from ..._global import OptionalModule
@@ -27,9 +27,9 @@ class DISCorrelTool:
 
   def __init__(self,
                box: Box,
-               fields: Optional[list[Union[Literal['x', 'y', 'r', 'exx', 'eyy',
-                                                   'exy', 'eyx', 'exy2', 'z'],
-                                           np.ndarray]]] = None,
+               fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                    'exy', 'eyx', 'exy2', 'z'] |
+                            np.ndarray] | None = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
@@ -99,9 +99,9 @@ class DISCorrelTool:
         raise ValueError(f"The only allowed values for the fields given as "
                          f"strings are {allowed_fields}")
 
-      self._fields: list[Union[str, np.ndarray]] = fields
+      self._fields: list[str | np.ndarray] = fields
     else:
-      self._fields: list[Union[str, np.ndarray]] = ["x", "y", "exx", "eyy"]
+      self._fields: list[str | np.ndarray] = ["x", "y", "exx", "eyy"]
 
     self._init = init
 

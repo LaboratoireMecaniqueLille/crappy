@@ -2,8 +2,7 @@
 
 import logging
 import numpy as np
-from typing import Optional, Union
-from collections.abc import Iterable
+from collections.abc import Sequence
 from collections import defaultdict
 
 from .meta_block import Block
@@ -43,11 +42,11 @@ class Multiplexer(Block):
 
   def __init__(self,
                time_label: str = 't(s)',
-               out_labels: Optional[Union[str, Iterable[str]]] = None,
+               out_labels: str | Sequence[str] | None = None,
                interp_freq: float = 200,
-               freq: Optional[float] = 50,
+               freq: float | None = 50,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:

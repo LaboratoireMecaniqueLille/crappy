@@ -3,7 +3,6 @@
 import numpy as np
 import tkinter as tk
 import logging
-from typing import Optional
 from multiprocessing.queues import Queue
 
 from .camera_config import CameraConfig
@@ -30,8 +29,8 @@ class CameraConfigBoxes(CameraConfig):
   def __init__(self,
                camera: Camera,
                log_queue: Queue,
-               log_level: Optional[int],
-               max_freq: Optional[float]) -> None:
+               log_level: int | None,
+               max_freq: float | None) -> None:
     """Initializes the parent class and sets the spots container.
 
     Args:
@@ -109,12 +108,16 @@ class CameraConfigBoxes(CameraConfig):
     if not self._check_event_pos(event):
       return
 
-    self._select_box.x_start, \
-        self._select_box.y_start = self._coord_to_pix(event.x, event.y)
+    (self._select_box.x_start,
+     self._select_box.y_start) = self._coord_to_pix(event.x, event.y)
 
   def _extend_box(self, event: tk.Event) -> None:
     """Draws a box as the user drags the mouse while maintaining the left
     button clicked."""
+
+    if self._select_box.x_start is None or self._select_box.y_start is None:
+      self.log(logging.DEBUG, "Not extending selection box as start was empty")
+      return
 
     self.log(logging.DEBUG, "Extending the selection box")
 
@@ -122,5 +125,5 @@ class CameraConfigBoxes(CameraConfig):
     if not self._check_event_pos(event):
       return
 
-    self._select_box.x_end, \
-        self._select_box.y_end = self._coord_to_pix(event.x, event.y)
+    (self._select_box.x_end,
+     self._select_box.y_end) = self._coord_to_pix(event.x, event.y)

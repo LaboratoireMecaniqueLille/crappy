@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from typing import Optional
 import logging
 import logging.handlers
 from time import sleep
@@ -46,7 +45,7 @@ class VideoExtensoProcess(CameraProcess):
 
     super().__init__()
 
-    self._ve: Optional[VideoExtensoTool] = None
+    self._ve: VideoExtensoTool | None = None
     self._detector = detector
     self._raise_on_lost_spot = raise_on_lost_spot
     self._lost_spots = False

@@ -3,8 +3,8 @@
 from __future__ import annotations
 from datetime import timedelta
 from time import time
-from typing import Any, Optional
-from collections.abc import Iterable
+from typing import Any
+from collections.abc import Sequence
 import logging
 
 from .meta_block import Block
@@ -159,14 +159,14 @@ class Canvas(Block):
 
   def __init__(self,
                image_path: str,
-               draw: Optional[Iterable[dict[str, Any]]] = None,
+               draw: Sequence[dict[str, Any]] | None = None,
                color_range: tuple[float, float] = (20, 300),
                title: str = "Canvas",
                window_size: tuple[int, int] = (7, 5),
                backend: str = "TkAgg",
-               freq: Optional[float] = 2,
+               freq: float | None = 2,
                display_freq: bool = False,
-               debug: Optional[bool] = False) -> None:
+               debug: bool | None = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
