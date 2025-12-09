@@ -19,6 +19,16 @@ from ..tool.camera_config import CameraConfig
 from .._global import CameraPrepareError, CameraRuntimeError, CameraConfigError
 
 
+class DummyCam(BaseCam):
+  """Used to instantiate Camera object without implementing required method."""
+
+  def get_image(self) -> None:
+    """Pass ABC guard but don't alter behavior."""
+
+    return super().get_image()
+
+
+
 class Camera(Block):
   """This Block can drive a :class:`~crappy.camera.Camera` object. It can 
   acquire images, display them and record them. It can only drive one Camera at
@@ -391,7 +401,7 @@ class Camera(Block):
     # Case when the images are artificially generated and not acquired
     if self._image_generator is not None:
       self.log(logging.INFO, "Setting the image generator camera")
-      self._camera = BaseCam()
+      self._camera = DummyCam()
       self._camera.add_scale_setting('Exx', -100., 100., None, None, 0.)
       self._camera.add_scale_setting('Eyy', -100., 100., None, None, 0.)
       img = self._image_generator(0, 0)
