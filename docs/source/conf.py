@@ -3,7 +3,7 @@
 from time import gmtime, strftime
 from re import match
 
-__version__ = '2.0.7'
+__version__ = '2.0.8'
 
 # Project information
 # =============================================================================
