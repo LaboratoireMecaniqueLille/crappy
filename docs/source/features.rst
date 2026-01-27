@@ -779,20 +779,38 @@ Sensors
 
 - :ref:`Eurotherm EPC3008`
 
-  Controls an  `Eurotherm EPC3008 <https://www.eurotherm.com/us/products/temperature-controllers-us/single-loop-temperature-controllers-us/epc3000-programmable-controllers/>`_ temperature controller.  
-  Allows setting the temperature setpoint and reading the current process value.  
-  Typically used for managing the temperature of a furnace or industrial process over a serial Modbus RTU connection.
+  Controls an `Eurotherm EPC3008 <https://www.eurotherm.com/us/products/temperature-controllers-us/single-loop-temperature-controllers-us/epc3000-programmable-controllers/>`_
+  temperature controller. Allows setting the temperature setpoint and reading
+  the current process value. Typically used for managing the temperature of a
+  furnace or industrial process over a serial Modbus RTU connection.
 
-  .. Note:: This object was developed for furnace control but could be adapted to similar Eurotherm models supporting Modbus RTU.
+  .. Note::
+     This object was developed for furnace control but could be adapted to
+     similar Eurotherm models supporting Modbus RTU.
 
 - :ref:`FlowControllerAlicat`
 
-  Reads and controls an `Alicat mass flow controller <https://www.alicat.com/products/mass-flow-meters-and-controllers/mass-flow-controllers/>`_ over Modbus RTU.  
-  Can acquire several process variables such as pressure, temperature, mass flow and volumetric flow, and also set the mass flow setpoint.  
-  Communicates over a serial RS485 connection and supports flexible variable selection via the ``svp`` argument.
+  Reads and controls an `Alicat mass flow controller <https://www.alicat.com/products/mass-flow-meters-and-controllers/mass-flow-controllers/>`_
+  over Modbus RTU. Can acquire several process variables such as pressure,
+  temperature, mass flow and volumetric flow, and also set the mass flow
+  setpoint. Communicates over a serial RS485 connection and supports flexible
+  variable selection via the ``svp`` argument.
 
-  .. Note:: This object was developed for Alicat MFCs supporting the Modbus RTU protocol. Other communication protocols (e.g. ASCII) are not supported in this implementation.
+  .. Note::
+     This object was developed for Alicat MFCs supporting the Modbus RTU
+     protocol. Other communication protocols (e.g. ASCII) are not supported in
+     this implementation.
 
+- :ref:`Sager SG-GS1700`
+
+  Controls a `Sager SG-GS1700 furnace controller <https://sagerindustrial.en.alibaba.com/productgrouplist-805331243/Four_tubulaire.html?spm=a2700.shop_index.88.23.432c2d34arZxF6/>`_ over a serial link using the
+  AIBUS protocol. Allows reading the process temperature (PV) and the current
+  setpoint (SV), and writing a new temperature setpoint.
+
+  .. Note::
+     This object was developed for a specific furnace controller. The AIBUS
+     frame format and checksum (ECC) follow the implementation provided with
+     the device.
 
 Multi-device drivers
 """"""""""""""""""""
