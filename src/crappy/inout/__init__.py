@@ -24,6 +24,7 @@ from .waveshare_ad_da import WaveshareADDA
 from .waveshare_high_precision import WaveshareHighPrecision
 from .eurotherm_EPC3008 import EurothermEPC3008
 from .flow_controller_alicat import FlowControllerAlicat
+from .sager_sg_gs1700 import SagerSG_GS1700
 
 from .ft232h import ADS1115FT232H
 from .ft232h import GPIOSwitchFT232H
