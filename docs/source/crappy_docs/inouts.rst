@@ -140,6 +140,24 @@ Waveshare High Precision
    :members: open, get_data, close
    :special-members: __init__
 
+Eurotherm EPC3008
++++++++++++++++++
+.. autoclass:: crappy.inout.EurothermEPC3008
+   :members: open, get_data, set_cmd, close
+   :special-members: __init__
+
+Flow Controller Alicat
+++++++++++++++++++++++
+.. autoclass:: crappy.inout.FlowControllerAlicat
+   :members: open, get_data, set_cmd, close
+   :special-members: __init__
+
+Sager SG-GS1700
++++++++++++++++
+.. autoclass:: crappy.inout.SagerSG_GS1700
+   :members: open, begin, get_data, set_cmd, finish, close
+   :special-members: __init__
+
 FT232H In/Outs
 --------------
 
@@ -177,18 +195,6 @@ Waveshare AD/DA FT232H
 ++++++++++++++++++++++
 .. autoclass:: crappy.inout.WaveshareADDAFT232H
    :members: open, set_cmd, get_data, close
-   :special-members: __init__
-
-Eurotherm EPC3008
-++++++
-.. autoclass:: crappy.inout.EurothermEPC3008
-   :members: open, reconnect, get_data, set_cmd, close
-   :special-members: __init__
-
-Flow Controller Alicat
-++++++
-.. autoclass:: crappy.inout.FlowControllerAlicat
-   :members: open, get_data, set_cmd, close
    :special-members: __init__
 
 Parent In/Out
