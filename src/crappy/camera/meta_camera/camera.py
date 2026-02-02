@@ -258,7 +258,7 @@ class Camera(ABC):
     # Checking if the given name is valid
     if name in self._reserved:
       raise ValueError(f"The name {name} is reserved for a different type of "
-                       f"setting ! !")
+                       f"setting !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} scale setting")
