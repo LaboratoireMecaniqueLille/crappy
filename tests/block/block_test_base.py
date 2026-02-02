@@ -19,6 +19,11 @@ class TestBlock(Block):
     self.finished = Event()
     self.last_t = Value('d', -1.0)
     self.last_fps = Value('d', -1.0)
+    self.n_loops = Value('i', 0)
+
+    self.loops = Value('i', 0)
+
+    self._stop = stop
 
   def prepare(self) -> None:
     """"""
@@ -27,6 +32,7 @@ class TestBlock(Block):
     self.last_t.value = self._last_t if self._last_t is not None else -1.0
     self.last_fps.value = (self._last_fps
                            if self._last_fps is not None else -1.0)
+    self.n_loops.value = self._n_loops
 
   def begin(self) -> None:
     """"""
@@ -35,6 +41,7 @@ class TestBlock(Block):
     self.last_t.value = self._last_t if self._last_t is not None else -1.0
     self.last_fps.value = (self._last_fps
                            if self._last_fps is not None else -1.0)
+    self.n_loops.value = self._n_loops
 
   def loop(self) -> None:
     """"""
@@ -44,6 +51,10 @@ class TestBlock(Block):
     self.last_fps.value = (self._last_fps
                            if self._last_fps is not None else -1.0)
     self.stop()
+    self.n_loops.value = self._n_loops
+
+    self.loops.value += 1
+
 
   def finish(self) -> None:
     """"""
@@ -52,6 +63,7 @@ class TestBlock(Block):
     self.last_t.value = self._last_t if self._last_t is not None else -1.0
     self.last_fps.value = (self._last_fps
                            if self._last_fps is not None else -1.0)
+    self.n_loops.value = self._n_loops
 
 
 class BlockTestBase(unittest.TestCase):
