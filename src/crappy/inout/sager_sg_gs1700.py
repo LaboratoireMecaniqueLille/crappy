@@ -1,92 +1,115 @@
 # coding: utf-8
-"""
-Sager SG-GS1700 furnace interface (AIBUS over serial).
-
-This module provides a Crappy InOut driver to communicate with a Sager
-SG-GS1700 furnace controller using the AIBUS protocol over a serial link.
-
-The driver exposes:
-- get_data(): read PV (process value) and SV (setpoint/consigne)
-- set_cmd(): write the temperature setpoint (SV)
-
-Notes:
-- AIBUS frame format and ECC computation follow the user's existing implementation.
-- Register/parameter meanings depend on the controller configuration.
-"""
 
 import time
 import logging
-from typing import Optional
+from  warnings import warn
 
 from .meta_inout import InOut
+from .._global import OptionalModule
 
-import serial
+try:
+  import serial
+except (ModuleNotFoundError, ImportError):
+  serial = OptionalModule("pyserial")
+
+# Addresses of the registers of the device
+CMD_READ = 0x52
+CMD_WRITE = 0x43
+PARAM_PROGRAM = 0x15
+PARAM_SV_MV = 0x1A
+STOP_MODE_PARAM = 12
 
 
 class SagerSG_GS1700(InOut):
-  """Crappy InOut driver for Sager SG-GS1700 furnace via AIBUS (serial).
+  """Driver for Sager SG-GS1700 furnace via AIBUS (serial).
 
-  Args:
-      port: Serial port (e.g. "COM7" on Windows, "/dev/ttyUSB0" on Linux).
+  .. versionadded:: 2.0.9
+  """
+
+  def __init__(self,
+               port: str,
+               baudrate: int = 9600,
+               timeout: float = 0.8,
+               address: int = 0x0A) -> None:
+    """Sets the arguments and initializes parent class.
+
+    Args:
+      port: Serial port on which to communicate with the device (e.g. "COM7" on
+        Windows, "/dev/ttyUSB0" on Linux).
       baudrate: Serial baudrate.
       timeout: Serial timeout (seconds).
       address: AIBUS device address.
-      debug: If True, print TX/RX frames in hex.
+    """
 
-  Returns from get_data():
-      dict: {"t(s)": <timestamp>, "T(C)": <pv>, "T_cons(C)": <sv>}
-      Values are None if unavailable.
-  """
+    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
+         f"to crappy.collection. Your code that uses it will still work as "
+         f"is, except you will now need to import crappy.collection at the "
+         f"top of your script.", FutureWarning)
 
-  _CMD_READ = 0x52
-  _CMD_WRITE = 0x43
-  _PARAM_PROGRAM = 0x15
-  _PARAM_SV_MV = 0x1A
-  STOP_MODE_PARAM = 12
+    self._ser: serial.Serial | None = None
 
-  def __init__(
-      self,
-      port: str = "COM7",
-      baudrate: int = 9600,
-      timeout: float = 0.8,
-      address: int = 0x0A,
-      debug: bool = True,
-  ) -> None:
     super().__init__()
-    self._compensations_dict = {}
 
-    self.port = port
-    self.baudrate = baudrate
-    self.timeout = timeout
-    self.address = address
-    self.debug = debug
+    self._compensations_dict = dict()
+    self._port = port
+    self._baudrate = baudrate
+    self._timeout = timeout
+    self._address = address
 
-    self._ser: Optional[serial.Serial] = None
+  def open(self) -> None:
+    """Open the serial connection and put the furnace in hold mode."""
 
-  # ------------------------------------------------------------------
-  # Low-level helpers (AIBUS)
-  # ------------------------------------------------------------------
+    self._ser = serial.Serial(self._port, self._baudrate, bytesize=8,
+                              parity=serial.PARITY_NONE, stopbits=1,
+                              timeout=self._timeout)
+    self.log(logging.INFO, f"Sager SG-GS1700 connected on {self._port}")
 
-  @staticmethod
-  def _to_u16_le(lo: int, hi: int) -> int:
-    """Combine 2 bytes (little-endian) into an unsigned 16-bit integer."""
-    return (hi << 8) | lo
+    self._write_param_u16(PARAM_PROGRAM, 5)
 
-  def _log_hex(self, prefix: str, data: bytes) -> None:
-    """Print frame bytes in hex if debug is enabled."""
-    if self.debug:
-      print(f"{prefix}: {' '.join(f'{b:02X}' for b in data)}")
+  def get_data(self) -> tuple[float, float, float] | None:
+    """Read PV and SV (in °C)."""
 
-  def _calc_ecc(self, cmd: int, param: int, value_u16: int) -> int:
-    """Compute ECC (checksum) as implemented in the original script."""
-    return ((param << 8) + cmd + value_u16 + self.address) & 0xFFFF
+    now = time.time()
+
+    # Cannot interpret the read values in that case
+    if len(resp := self._read_generic(0x00)) < 4:
+      return None
+
+    pv_u16 = (resp[1] << 8) | resp[0]
+    sv_u16 = (resp[3] << 8) | resp[2]
+
+    return now, pv_u16 / 10.0, sv_u16 / 10.0
+
+  def set_cmd(self, value: float | int) -> None:
+    """Write the temperature setpoint (°C)."""
+
+    # Put the furnace in hold mode
+    self._write_param_u16(PARAM_PROGRAM, 5)
+
+    val = int(round(float(value) * 10.0)) & 0xFFFF
+    self._write_param_u16(PARAM_SV_MV, val)
+
+  def close(self) -> None:
+    """Close the serial connection."""
+
+    # Only close if the serial connection was first opened
+    if self._ser is None:
+      return
+
+    # Put the furnace in stop mode
+    self._write_param_u16(STOP_MODE_PARAM, 10)
+
+    self._ser.close()
+    self.log(logging.INFO, f"Sager SG-GS1700 disconnected from {self._port}")
 
   def _build_frame(self, cmd: int, param: int, value_u16: int) -> bytes:
-    """Build an AIBUS frame."""
+    """Build an AIBUS frame from a command and a value."""
+
     val_lo = value_u16 & 0xFF
     val_hi = (value_u16 >> 8) & 0xFF
 
-    ecc = self._calc_ecc(cmd, param, value_u16)
+    # Compute checksum
+    ecc = ((param << 8) + cmd + value_u16 + self._address) & 0xFFFF
     ecc_lo = ecc & 0xFF
     ecc_hi = (ecc >> 8) & 0xFF
 
@@ -94,102 +117,29 @@ class SagerSG_GS1700(InOut):
 
   def _send_and_recv(self, frame: bytes, read_len: int = 12) -> bytes:
     """Send a frame and read the response."""
-    if self._ser is None:
-      raise ConnectionError("Serial port not open. Call open() first.")
 
     self._ser.reset_input_buffer()
     self._ser.reset_output_buffer()
 
-    self._log_hex("TX", frame)
+    self.log(logging.DEBUG, f"TX: {' '.join(f'{b:02X}' for b in frame)}")
     self._ser.write(frame)
     self._ser.flush()
 
     time.sleep(0.08)
 
     resp = self._ser.read(read_len)
-    self._log_hex("RX", resp)
+    self.log(logging.DEBUG, f"RX: {' '.join(f'{b:02X}' for b in resp)}")
+
     return resp
 
-  def _write_param_u16(self, param: int, value: int) -> bool:
+  def _write_param_u16(self, param: int, value: int) -> None:
     """Write a 16-bit parameter."""
-    frame = self._build_frame(self._CMD_WRITE, param, value & 0xFFFF)
-    resp = self._send_and_recv(frame, read_len=8)
-    return len(resp) > 0
+
+    frame = self._build_frame(CMD_WRITE, param, value & 0xFFFF)
+    self._send_and_recv(frame, read_len=8)
 
   def _read_generic(self, param: int = 0x00) -> bytes:
     """Generic read command for a given param."""
-    frame = self._build_frame(self._CMD_READ, param, 0x0000)
+
+    frame = self._build_frame(CMD_READ, param, 0x0000)
     return self._send_and_recv(frame, read_len=12)
-
-  # ------------------------------------------------------------------
-  # Crappy API
-  # ------------------------------------------------------------------
-
-  def open(self) -> None:
-    """Open the serial connection."""
-    self._ser = serial.Serial(
-        self.port,
-        self.baudrate,
-        bytesize=8,
-        parity=serial.PARITY_NONE,
-        stopbits=1,
-        timeout=self.timeout,
-    )
-    self.log(logging.INFO, f"Sager SG-GS1700 connected on {self.port}")
-
-  def begin(self) -> None:
-    """Put the furnace in HOLD mode (as in the original script)."""
-    if self._ser is None:
-      raise ConnectionError("Sager not connected. Call open() first.")
-
-    self._write_param_u16(self._PARAM_PROGRAM, 5)
-
-  def get_data(self) -> dict[str, float | None]:
-    """Read PV and SV (in °C)."""
-    now = time.time()
-
-    try:
-      resp = self._read_generic(0x00)
-    except Exception as exc:
-      self.log(logging.ERROR, f"Sager read exception: {exc}")
-      return {"t(s)": now, "T(C)": None, "T_cons(C)": None}
-
-    if len(resp) < 4:
-      return {"t(s)": now, "T(C)": None, "T_cons(C)": None}
-
-    pv_u16 = self._to_u16_le(resp[0], resp[1])
-    sv_u16 = self._to_u16_le(resp[2], resp[3])
-
-    return {
-      "t(s)": now,
-      "T(C)": pv_u16 / 10.0,
-      "T_cons(C)": sv_u16 / 10.0,
-    }
-
-  def set_cmd(self, value: float | int) -> None:
-    """Write the temperature setpoint (°C)."""
-    if self._ser is None:
-      raise ConnectionError("Sager not connected. Call open() first.")
-
-    self._write_param_u16(self._PARAM_PROGRAM, 5)
-
-    val = int(round(float(value) * 10.0)) & 0xFFFF
-    self._write_param_u16(self._PARAM_SV_MV, val)
-
-  def finish(self) -> None:
-    """Finish sequence (as in the original script)."""
-    if self._ser is None:
-      raise ConnectionError("Sager not connected. Call open() first.")
-
-    self._write_param_u16(self.STOP_MODE_PARAM, 10)
-
-  def close(self) -> None:
-    """Close the serial connection."""
-    if self._ser is None:
-      return
-
-    try:
-      self._ser.close()
-    finally:
-      self._ser = None
-      self.log(logging.INFO, f"Sager SG-GS1700 disconnected from {self.port}")
