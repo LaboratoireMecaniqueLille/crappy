@@ -665,6 +665,10 @@ class Block(Process, ABC):
     always being saved to the log file.
     """
 
+    # Keep the existing logger if already defined
+    if cls.logger is not None:
+      return
+
     # The Logger handling all messages
     crappy_log = logging.getLogger('crappy')
 
@@ -760,6 +764,9 @@ class Block(Process, ABC):
     cls.stop_event = None
     cls.raise_event = None
     cls.kbi_event = None
+
+    cls.log_queue = None
+    cls.log_thread = None
 
     if cls.logger is not None:
       cls.cls_log(logging.INFO, 'Crappy was successfully reset')
