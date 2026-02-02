@@ -851,8 +851,7 @@ class Block(Process, ABC):
 
       # Waiting for t0 to be set, should take a few milliseconds at most
       self.log(logging.INFO, "Waiting for the start time to be set")
-      self._start_event.wait(timeout=1)
-      if not self._start_event.is_set():
+      if not self._start_event.wait(timeout=1.0):
         raise StartTimeout
       else:
         self.log(logging.INFO, "Start time set, Block starting")
