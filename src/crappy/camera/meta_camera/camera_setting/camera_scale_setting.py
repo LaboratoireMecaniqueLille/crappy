@@ -53,6 +53,11 @@ class CameraScaleSetting(CameraSetting):
     if lowest == highest:
       raise ValueError(f"The two given bounds are equal for setting {name}!")
 
+    # Ensure the step is greater than zero
+    if step == 0:
+      raise ValueError(f"The provided step is equal to zero for "
+                       f"setting {name}!")
+
     # Ensuring that the given bounds are in the correct order
     if lowest > highest:
       self.log(logging.WARNING, f"Lowest ({lowest}) higher than highest "
