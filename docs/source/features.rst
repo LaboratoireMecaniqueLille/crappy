@@ -727,6 +727,19 @@ Sensors
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
 
+- :ref:`Eurotherm EPC3008`
+
+  Controls an `Eurotherm EPC3008 <https://www.eurotherm.com/us/products/
+  temperature-controllers-us/single-loop-temperature-controllers-us/
+  epc3000-programmable-controllers/>`_ temperature controller. Allows setting
+  the temperature setpoint and reading the current process value. Typically
+  used for managing the temperature of a furnace or industrial process over a
+  serial Modbus RTU connection.
+
+  .. Note::
+     This object was developed for furnace control but could be adapted to
+     similar Eurotherm models supporting Modbus RTU.
+
 - :ref:`Fake Inout`
 
   Can acquire the current RAM usage of the computer using the :mod:`psutil`
@@ -734,6 +747,19 @@ Sensors
   (if superior to the base memory usage). It supports the streamer mode for the
   data acquisition. Mainly intended for demonstration, and used in the
   distributed examples.
+
+- :ref:`FlowControllerAlicat`
+
+  Reads and controls an `Alicat <https://www.alicat.com/products/
+  mass-flow-meters-and-controllers/mass-flow-controllers/>`_ mass flow
+  controller over Modbus RTU. Acquires several process variables such as
+  pressure, temperature, mass flow and volumetric flow, and also sets the mass
+  flow setpoint. Communicates over a serial RS485 connection.
+
+  .. Note::
+     This object was developed for Alicat MFCs supporting the Modbus RTU
+     protocol. Other communication protocols (e.g. ASCII) are not supported in
+     this implementation.
 
 - :ref:`MCP9600`
 
@@ -780,6 +806,20 @@ Sensors
   .. Important::
      This InOut was written for a specific application, so it may not be
      usable as-is in the general case.
+
+- :ref:`Sager SG-GS1700`
+
+  Controls a `Sager SG-GS1700 <https://sagerindustrial.en.alibaba.com/
+  productgrouplist-805331243/
+  Four_tubulaire.html?spm=a2700.shop_index.88.23.432c2d34arZxF6/>`_ furnace
+  controller over a serial link using the AIBUS protocol. Allows reading the
+  process temperature (PV) and the current setpoint (SV), and writing a new
+  temperature setpoint.
+
+  .. Note::
+     This object was developed for a specific furnace controller. The AIBUS
+     frame format and checksum (ECC) follow the implementation provided with
+     the device.
 
 - :ref:`Spectrum M2I 4711`
 
