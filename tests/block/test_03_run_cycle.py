@@ -2,7 +2,6 @@
 
 from crappy import Block
 from multiprocessing import Barrier, Event, Value, Queue
-from time import sleep
 
 from .block_test_base import BlockTestBase, TestBlock
 
@@ -68,7 +67,7 @@ class TestRunCycle(BlockTestBase):
 
     self._block.start()
 
-    sleep(0.5)
+    self._block.join(4.0)
 
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
@@ -102,7 +101,7 @@ class TestRunCycle(BlockTestBase):
 
     self._block.start()
 
-    sleep(0.5)
+    self._block.join(4.0)
 
     self.assertFalse(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
@@ -138,7 +137,7 @@ class TestRunCycle(BlockTestBase):
 
     self._block.start()
 
-    sleep(0.5)
+    self._block.join(4.0)
 
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
@@ -174,7 +173,7 @@ class TestRunCycle(BlockTestBase):
 
     self._block.start()
 
-    sleep(0.5)
+    self._block.join(4.0)
 
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
@@ -210,7 +209,7 @@ class TestRunCycle(BlockTestBase):
 
     self._block.start()
 
-    sleep(0.5)
+    self._block.join(4.0)
 
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
