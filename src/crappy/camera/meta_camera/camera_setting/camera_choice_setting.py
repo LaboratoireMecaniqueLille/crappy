@@ -35,6 +35,8 @@ class CameraChoiceSetting(CameraSetting):
       default: The default value to assign to the setting.
     """
 
+    self._logger: logging.Logger | None = None
+
     self.choices = choices
 
     if default is not None and default not in choices:
