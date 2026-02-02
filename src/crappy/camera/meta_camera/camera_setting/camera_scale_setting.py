@@ -47,9 +47,16 @@ class CameraScaleSetting(CameraSetting):
     .. versionadded:: 2.0.0 add *step* argument
     """
 
+    self._logger: logging.Logger | None = None
+
     # Ensuring that the two bounds are not equal
     if lowest == highest:
-      raise ValueError("The two given bounds are equal !")
+      raise ValueError(f"The two given bounds are equal for setting {name}!")
+
+    # Ensure the step is greater than zero
+    if step == 0:
+      raise ValueError(f"The provided step is equal to zero for "
+                       f"setting {name}!")
 
     # Ensuring that the given bounds are in the correct order
     if lowest > highest:

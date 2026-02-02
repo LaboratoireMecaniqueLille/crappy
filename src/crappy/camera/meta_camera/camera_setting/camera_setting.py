@@ -53,7 +53,9 @@ class CameraSetting:
     self._value_no_getter = default
     self._getter = getter
     self._setter = setter
-    self._logger: logging.Logger | None = None
+
+    if not hasattr(self, '_logger'):
+      self._logger: logging.Logger | None = None
 
   def log(self, level: int, msg: str) -> None:
     """Records log messages for the CameraSetting.
