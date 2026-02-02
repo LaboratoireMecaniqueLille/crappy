@@ -95,7 +95,7 @@ class CameraOpencv(Camera, V4L2Helper):
           highest=int(param.max),
           getter=self._add_scale_getter(param.name, self._device_num),
           setter=self._add_setter(param.name, self._device_num),
-          default=param.default,
+          default=int(param.default),
           step=int(param.step))
 
       elif param.type == 'bool':
