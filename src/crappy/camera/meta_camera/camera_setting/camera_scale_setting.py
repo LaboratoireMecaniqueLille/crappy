@@ -51,7 +51,7 @@ class CameraScaleSetting(CameraSetting):
 
     # Ensuring that the two bounds are not equal
     if lowest == highest:
-      raise ValueError("The two given bounds are equal !")
+      raise ValueError(f"The two given bounds are equal for setting {name}!")
 
     # Ensuring that the given bounds are in the correct order
     if lowest > highest:
