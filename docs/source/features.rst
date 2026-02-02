@@ -748,7 +748,7 @@ Sensors
   data acquisition. Mainly intended for demonstration, and used in the
   distributed examples.
 
-- :ref:`FlowControllerAlicat`
+- :ref:`Flow Controller Alicat`
 
   Reads and controls an `Alicat <https://www.alicat.com/products/
   mass-flow-meters-and-controllers/mass-flow-controllers/>`_ mass flow
