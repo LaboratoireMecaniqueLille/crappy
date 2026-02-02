@@ -4,7 +4,9 @@ from .ads1115 import ADS1115
 from .agilent_34420A import Agilent34420a
 from .comedi import Comedi
 from .daqmx import DAQmx
+from .eurotherm_EPC3008 import EurothermEPC3008
 from .fake_inout import FakeInOut
+from .flow_controller_alicat import FlowControllerAlicat
 from .gpio_pwm import GPIOPWM
 from .gpio_switch import GPIOSwitch
 from .kollmorgen_akd_pdmm import KollmorgenAKDPDMM
@@ -18,13 +20,11 @@ from .ni_daqmx import NIDAQmx
 from .opsens_handysens import HandySens
 from .pijuice_hat import PiJuice
 from .phidgets_wheatstone_bridge import PhidgetWheatstoneBridge
+from .sager_sg_gs1700 import SagerSG_GS1700
 from .sim868 import Sim868
 from .spectrum_m2i4711 import SpectrumM2I4711
 from .waveshare_ad_da import WaveshareADDA
 from .waveshare_high_precision import WaveshareHighPrecision
-from .eurotherm_EPC3008 import EurothermEPC3008
-from .flow_controller_alicat import FlowControllerAlicat
-from .sager_sg_gs1700 import SagerSG_GS1700
 
 from .ft232h import ADS1115FT232H
 from .ft232h import GPIOSwitchFT232H

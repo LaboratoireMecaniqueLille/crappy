@@ -29,11 +29,23 @@ DAQmx
    :members: open, set_cmd, get_data, close, make_zero
    :special-members: __init__
 
+Eurotherm EPC3008
++++++++++++++++++
+.. autoclass:: crappy.inout.EurothermEPC3008
+   :members: open, get_data, set_cmd, close
+   :special-members: __init__
+
 Fake Inout
 ++++++++++
 .. autoclass:: crappy.inout.FakeInOut
    :members: open, set_cmd, get_data, start_stream, get_stream, stop_stream,
              close
+   :special-members: __init__
+
+Flow Controller Alicat
+++++++++++++++++++++++
+.. autoclass:: crappy.inout.FlowControllerAlicat
+   :members: open, get_data, set_cmd, close
    :special-members: __init__
 
 GPIO PWM
@@ -116,6 +128,12 @@ PiJuice
    :members: open, get_data, close
    :special-members: __init__
 
+Sager SG-GS1700
++++++++++++++++
+.. autoclass:: crappy.inout.SagerSG_GS1700
+   :members: open, get_data, set_cmd, close
+   :special-members: __init__
+
 Sim868
 ++++++
 .. autoclass:: crappy.inout.Sim868
@@ -138,24 +156,6 @@ Waveshare High Precision
 ++++++++++++++++++++++++
 .. autoclass:: crappy.inout.WaveshareHighPrecision
    :members: open, get_data, close
-   :special-members: __init__
-
-Eurotherm EPC3008
-+++++++++++++++++
-.. autoclass:: crappy.inout.EurothermEPC3008
-   :members: open, get_data, set_cmd, close
-   :special-members: __init__
-
-Flow Controller Alicat
-++++++++++++++++++++++
-.. autoclass:: crappy.inout.FlowControllerAlicat
-   :members: open, get_data, set_cmd, close
-   :special-members: __init__
-
-Sager SG-GS1700
-+++++++++++++++
-.. autoclass:: crappy.inout.SagerSG_GS1700
-   :members: open, begin, get_data, set_cmd, finish, close
    :special-members: __init__
 
 FT232H In/Outs
