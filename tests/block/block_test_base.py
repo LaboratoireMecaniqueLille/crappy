@@ -8,7 +8,7 @@ from multiprocessing import Event, Value
 class TestBlock(Block):
   """"""
 
-  def __init__(self) -> None:
+  def __init__(self, stop: bool = True) -> None:
     """"""
 
     super().__init__()
@@ -50,11 +50,12 @@ class TestBlock(Block):
     self.last_t.value = self._last_t if self._last_t is not None else -1.0
     self.last_fps.value = (self._last_fps
                            if self._last_fps is not None else -1.0)
-    self.stop()
     self.n_loops.value = self._n_loops
 
     self.loops.value += 1
 
+    if self._stop:
+      self.stop()
 
   def finish(self) -> None:
     """"""
