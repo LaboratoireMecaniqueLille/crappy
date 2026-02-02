@@ -37,7 +37,7 @@ class TestClassAPI(BlockTestBase):
     self.assertEqual(0, len(Block.instances))
 
     for _ in range(10):
-      instances.append(self._block_type())
+      instances.append(TestBlock())
 
     self.assertEqual(10, len(Block.instances))
     self.assertEqual(10, len(set(Block.names)))
