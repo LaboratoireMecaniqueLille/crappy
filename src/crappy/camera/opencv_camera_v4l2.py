@@ -89,6 +89,16 @@ class CameraOpencv(Camera, V4L2Helper):
     # Creating the different settings
     for param in self._parameters:
       if param.type == 'int':
+
+        if int(param.min) == int(param.max):
+          self.log(logging.DEBUG, f"The maximum and minimum for setting "
+                                  f"{param.name} are equal, skipping")
+          continue
+        if int(param.step) == 0:
+          self.log(logging.DEBUG, f"The step for setting {param.name} is "
+                                  f"zero, skipping")
+          continue
+
         self.add_scale_setting(
           name=param.name,
           lowest=int(param.min),
