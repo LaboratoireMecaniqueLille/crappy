@@ -164,10 +164,15 @@ class Synchronizer(Block):
       else:
         to_send[label] = list(np.interp(interp_times, values[0], values[1]))
 
-      # Keeping the last data point before max_t to pass this information on
-      last = values[:, values[0] <= max_t][:, -1]
-      # Removing the used values from the buffer, except the last data point
-      self._data[label] = np.column_stack((last, values[:, values[0] > max_t]))
+      if label == self._ref_label:
+        # For the reference label no need to keep points that were already used
+        self._data[label] = values[:, values[0] > max_t]
+      else:
+        # Keeping the last data point before max_t to pass this information on
+        last = values[:, values[0] <= max_t][:, -1]
+        # Removing the used values from the buffer, except the last data point
+        self._data[label] = np.column_stack((last,
+                                             values[:, values[0] > max_t]))
 
     if to_send:
       # Adding the time values to the dict of values to send
