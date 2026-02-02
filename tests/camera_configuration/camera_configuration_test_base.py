@@ -111,6 +111,7 @@ class ConfigurationWindowTestBase(unittest.TestCase):
       self._config.finish()
 
     if self._log_queue is not None:
+      self._log_queue.cancel_join_thread()
       self._log_queue.close()
 
   def customTearDown(self) -> None:

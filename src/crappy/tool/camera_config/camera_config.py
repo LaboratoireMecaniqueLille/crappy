@@ -230,6 +230,8 @@ class CameraConfig(tk.Tk):
     # Close the queues to properly end all multiprocessing objects
     self.log(logging.DEBUG, "Closing the queues communicating with the "
                             "histogram process")
+    self._img_in.cancel_join_thread()
+    self._img_out.cancel_join_thread()
     self._img_in.close()
     self._img_out.close()
 
