@@ -1,8 +1,82 @@
 # coding: utf-8
 
 from crappy import Block
+from crappy.links.link import Link, ModifierType
+from typing import Any
+from collections.abc import Sequence
 import unittest
 from multiprocessing import Event, Value
+
+
+class TestLink(Link):
+  """"""
+
+  def __init__(self,
+               input_block,
+               output_block,
+               modifiers: list[ModifierType] | None = None,
+               name: str | None = None) -> None:
+    """"""
+
+    self.polled = Event()
+    self.sent = Event()
+    self.received = Event()
+    self.received_last = Event()
+    self.received_chunk = Event()
+
+    super().__init__(input_block, output_block, modifiers, name)
+
+  def poll(self) -> bool:
+    """"""
+
+    self.polled.set()
+    return super().poll()
+
+  def send(self, value: dict[str, Any]) -> None:
+    """"""
+
+    self.sent.set()
+    return super().send(value)
+
+  def recv(self) -> dict[str, Any]:
+    """"""
+
+    self.received.set()
+    return super().recv()
+
+  def recv_last(self) -> dict[str, Any]:
+    """"""
+
+    self.received_last.set()
+    return super().recv_last()
+
+  def recv_chunk(self) -> dict[str, list[Any]]:
+    """"""
+
+    self.received_chunk.set()
+    return super().recv_chunk()
+
+
+def link(in_block,
+         out_block,
+         /, *,
+         modifier: Sequence[ModifierType] | ModifierType | None = None,
+         name: str | None = None) -> None:
+  """"""
+
+  # Forcing the modifiers into lists
+  if modifier is not None:
+    try:
+      iter(modifier)
+      modifier = list(modifier)
+    except TypeError:
+      modifier = [modifier]
+
+  # Actually creating the Link object
+  TestLink(input_block=in_block,
+           output_block=out_block,
+           modifiers=modifier,
+           name=name)
 
 
 class TestBlock(Block):
