@@ -183,15 +183,22 @@ class BlockTestBase(unittest.TestCase):
     self._block: TestBlock | None = None
 
   def tearDown(self) -> None:
-    """Kills the test Block if needed and checks that Block was reset."""
+    """Kills the test Blocks if needed and checks that Block was reset."""
 
-    # Make sure the Block is really gone before leaving the test case.
-    if self._block is not None and self._block.is_alive():
-      self._block.kill()
-      self._block.join(3.0)
-      if self._block.is_alive():
-        self._block.terminate()
-        raise RuntimeError("Block did not terminate as expected")
+    # Make sure all Blocks are truly gone before leaving the test case.
+    try:
+      for inst in Block.instances:
+        if inst.is_alive():
+          inst.kill()
+          inst.join(3.0)
+          if inst.is_alive():
+            inst.terminate()
+            inst.join(1.0)
+
+      self.assertFalse(any(inst.is_alive() for inst in Block.instances))
+
+    finally:
+      Block.reset()
 
     # Make sure the Block was properly reset
     self.assertEqual(0, len(Block.instances))

@@ -96,11 +96,9 @@ class TestBlockTime(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     Block.launch_all()
-
-    sleep(0.5)
 
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
@@ -114,5 +112,3 @@ class TestBlockTime(BlockTestBase):
     self.assertTrue(self._block.finished.is_set())
 
     self.assertGreater(self._block.t0, 0)
-
-    Block.reset()

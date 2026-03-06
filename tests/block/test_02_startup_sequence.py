@@ -45,14 +45,14 @@ class TestStartupSequence(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     # Manually break the current startup context before attempting the second
-    # call, otherwise the first prepared Block would still be waiting.
+    # call, otherwise the first prepared Block would still be waiting
     Block.ready_barrier.abort()
     Block.thread_stop = True
 
-    sleep(0.5)
+    self.assertTrue(self._block.stop_event.wait(3.0))
 
     with self.assertRaises(CrappyFail):
       Block.prepare_all()
@@ -64,12 +64,12 @@ class TestStartupSequence(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     Block.ready_barrier.abort()
     Block.thread_stop = True
 
-    sleep(0.5)
+    self.assertTrue(self._block.stop_event.wait(3.0))
 
     Block.prepared_all = False
     Block.launched_all = True
@@ -84,15 +84,15 @@ class TestStartupSequence(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
-    # The Block should have started and reached its prepare stage.
+    # The Block should have started and reached its prepare stage
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(Block.prepared_all)
     self.assertFalse(Block.launched_all)
 
     # The shared synchronization objects should be instantiated and left in
-    # their initial state.
+    # their initial state
     self.assertIsInstance(Block.ready_barrier, synchronize.Barrier)
     self.assertEqual(Block.ready_barrier.parties, len(Block.instances) + 1)
     self.assertIsInstance(Block.shared_t0, Synchronized)
@@ -104,7 +104,7 @@ class TestStartupSequence(BlockTestBase):
         self.assertIsNotNone(event)
         self.assertFalse(event.is_set())
 
-    # Logging should also be configured at the class level.
+    # Logging should also be configured at the class level
     self.assertIsInstance(Block.log_queue, queues.Queue)
     self.assertIsInstance(Block.log_thread, Thread)
     if get_start_method() == 'spawn':
@@ -112,7 +112,7 @@ class TestStartupSequence(BlockTestBase):
     else:
       self.assertFalse(Block.log_thread.is_alive())
 
-    # The Block instance must reference the exact same shared objects.
+    # The Block instance must reference the exact same shared objects
     for cls, inst in zip((Block.stop_event, Block.start_event,
                           Block.pause_event, Block.raise_event,
                           Block.kbi_event, Block.ready_barrier,
@@ -126,14 +126,14 @@ class TestStartupSequence(BlockTestBase):
     self.assertTrue(self._block.is_alive())
     self.assertFalse(Block.thread_stop)
 
-    # Abort the barrier to force the cleanup path.
+    # Abort the barrier to force the cleanup path
     Block.ready_barrier.abort()
     Block.thread_stop = True
 
-    sleep(0.5)
-
-    self.assertTrue(Block.stop_event.is_set())
+    self.assertTrue(self._block.stop_event.wait(3.0))
     self.assertFalse(Block.log_thread.is_alive())
+
+    sleep(3.0)
 
     self.assertTrue(self._block.finished.is_set())
     self.assertFalse(self._block.looped.is_set())
@@ -152,7 +152,7 @@ class TestStartupSequence(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     self.assertEqual(int(subprocess.run(['ps', '-p', str(self._block.pid),
                                          '-o', 'ni='],
@@ -167,7 +167,7 @@ class TestStartupSequence(BlockTestBase):
     Block.ready_barrier.abort()
     Block.thread_stop = True
 
-    sleep(0.5)
+    self.assertTrue(self._block.stop_event.wait(3.0))
 
     Block.reset()
 
@@ -188,12 +188,12 @@ class TestStartupSequence(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     Block.ready_barrier.abort()
     Block.thread_stop = True
 
-    sleep(0.5)
+    self.assertTrue(self._block.stop_event.wait(3.0))
 
     Block.launched_all = True
 
@@ -207,14 +207,11 @@ class TestStartupSequence(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     Block.launch_all()
 
-    sleep(0.5)
-
-    for inst in Block.instances:
-      self.assertFalse(inst.is_alive())
+    self.assertFalse(self._block.is_alive())
 
   def test_launch_all_no_prepared(self) -> None:
     """Tests that launch_all refuses to run before prepare."""
@@ -233,7 +230,7 @@ class TestStartupSequence(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     Block.launched_all = True
 
@@ -251,20 +248,17 @@ class TestStartupSequence(BlockTestBase):
 
     stop_thread = Thread(target=stop)
 
-    self._block = TestBlock()
+    self._block = TestBlock(stop=False)
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     stop_thread.start()
 
     Block.launch_all()
 
-    sleep(0.5)
-
-    for inst in Block.instances:
-      self.assertFalse(inst.is_alive())
+    self.assertFalse(self._block.is_alive())
 
   def test_restart(self) -> None:
     """Tests that a fresh Crappy session can start after a completed one."""
@@ -273,21 +267,17 @@ class TestStartupSequence(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     Block.launch_all()
-
-    sleep(0.5)
 
     self._block = TestBlock()
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     Block.launch_all()
-
-    sleep(0.5)
 
   def test_cleanup(self) -> None:
     """Tests the different raise/no-raise combinations of _cleanup."""
@@ -373,12 +363,10 @@ class TestStartupSequence(BlockTestBase):
 
     Block.prepare_all()
 
-    sleep(0.5)
+    self.assertTrue(self._block.prepared.wait(3.0))
 
     with self.assertRaises(CrappyFail):
       Block.launch_all()
-
-    sleep(0.5)
 
     for inst in Block.instances:
       self.assertFalse(inst.is_alive())

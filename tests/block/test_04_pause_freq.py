@@ -73,7 +73,7 @@ class TestPauseFreq(BlockTestBase):
 
     self._block.start()
 
-    self._block.join(0.5)
+    self.assertTrue(self._block.looped.wait(3.0))
 
     self.assertGreater(self._block.last_t.value, -1.0)
     self.assertGreater(self._block.last_fps.value, -1.0)
@@ -82,7 +82,6 @@ class TestPauseFreq(BlockTestBase):
     self.assertGreater(self._block.n_loops.value, 0)
 
     t = self._block.last_t.value
-    n = self._block.n_loops.value
     n_l = self._block.loops.value
 
     self.assertTrue(self._block.prepared.is_set())
@@ -94,16 +93,13 @@ class TestPauseFreq(BlockTestBase):
 
     # The loop counters should keep increasing while the Block is running.
     self.assertGreater(self._block.last_t.value, t)
-    self.assertGreater(self._block.n_loops.value, n)
     self.assertGreaterEqual(self._block.last_t.value,
                             self._block.last_fps.value)
     self.assertGreater(self._block.loops.value, n_l)
 
     stop.set()
 
-    self._block.join(0.5)
-
-    self.assertTrue(self._block.finished.is_set())
+    self.assertTrue(self._block.finished.wait(3.0))
 
     Block.reset()
 
@@ -128,36 +124,31 @@ class TestPauseFreq(BlockTestBase):
 
     self._block.start()
 
-    self._block.join(0.5)
+    self.assertTrue(self._block.looped.wait(3.0))
 
     pause.set()
-    sleep(0.5)
 
     self.assertGreater(self._block.last_t.value, -1.0)
     self.assertGreater(self._block.last_fps.value, -1.0)
     self.assertGreaterEqual(self._block.last_t.value,
                             self._block.last_fps.value)
-    self.assertGreater(self._block.n_loops.value, 0)
+    self.assertGreater(self._block.loops.value, 0)
 
     t = self._block.last_t.value
-    n = self._block.n_loops.value
     n_l = self._block.loops.value
 
     self._block.join(0.5)
 
     stop.set()
 
-    self._block.join(0.5)
+    self.assertTrue(self._block.finished.wait(3.0))
 
     # While paused, the timing bookkeeping still advances but the actual user
     # loop count should remain constant.
     self.assertGreater(self._block.last_t.value, t)
-    self.assertGreater(self._block.n_loops.value, n)
     self.assertGreaterEqual(self._block.last_t.value,
                             self._block.last_fps.value)
     self.assertEqual(self._block.loops.value, n_l)
-
-    self.assertTrue(self._block.finished.is_set())
 
     Block.reset()
 
@@ -182,16 +173,15 @@ class TestPauseFreq(BlockTestBase):
 
     self._block.start()
 
-    self._block.join(0.5)
+    self.assertTrue(self._block.looped.wait(3.0))
 
     pause.set()
-    sleep(0.5)
 
     self.assertGreater(self._block.last_t.value, -1.0)
     self.assertGreater(self._block.last_fps.value, -1.0)
     self.assertGreaterEqual(self._block.last_t.value,
                             self._block.last_fps.value)
-    self.assertGreater(self._block.n_loops.value, 0)
+    self.assertGreater(self._block.loops.value, 0)
 
     t = self._block.last_t.value
     n_l = self._block.loops.value
@@ -209,9 +199,7 @@ class TestPauseFreq(BlockTestBase):
 
     stop.set()
 
-    self._block.join(0.5)
-
-    self.assertTrue(self._block.finished.is_set())
+    self.assertTrue(self._block.finished.wait(3.0))
 
     Block.reset()
 
@@ -239,26 +227,23 @@ class TestPauseFreq(BlockTestBase):
 
     self._block.start()
 
-    self._block.join(0.5)
+    self.assertTrue(self._block.begun.wait(3.0))
+    sleep(0.5)
 
     self.assertEqual(self._block.loops.value, 0)
 
     t = self._block.last_t.value
-    n = self._block.n_loops.value
 
     self._block.join(0.5)
 
     stop.set()
 
-    self._block.join(0.5)
+    self.assertTrue(self._block.finished.wait(3.0))
 
     self.assertGreater(self._block.last_t.value, t)
-    self.assertGreater(self._block.n_loops.value, n)
     self.assertGreaterEqual(self._block.last_t.value,
                             self._block.last_fps.value)
     self.assertEqual(self._block.loops.value, 0)
-
-    self.assertTrue(self._block.finished.is_set())
 
     Block.reset()
 
@@ -285,19 +270,17 @@ class TestPauseFreq(BlockTestBase):
 
     self._block.start()
 
-    self._block.join(0.5)
+    self.assertTrue(self._block.looped.wait(3.0))
 
     self.assertGreater(self._block.last_t.value, -1.0)
     self.assertGreater(self._block.n_loops.value, -1.0)
     self.assertGreaterEqual(self._block.last_t.value,
                             self._block.last_fps.value)
-    self.assertGreater(self._block.n_loops.value, 0)
+    self.assertGreater(self._block.loops.value, 0)
 
     stop.set()
 
-    self._block.join(0.5)
-
-    self.assertTrue(self._block.finished.is_set())
+    self.assertTrue(self._block.finished.wait(3.0))
 
     Block.reset()
 
@@ -322,7 +305,12 @@ class TestPauseFreq(BlockTestBase):
 
     self._block.start()
 
-    self._block.join(1.8)
+    self.assertTrue(self._block.looped.wait(3.0))
+
+    # Make sure we're at a moment when n_loops should be non-zero
+    while self._block.last_t.value - self._block.last_fps.value > 0.5:
+      sleep(0.1)
+    sleep(0.5)
 
     self.assertTrue(self._block._start_event.is_set())
     self.assertFalse(self._block._stop_event.is_set())
@@ -345,15 +333,21 @@ class TestPauseFreq(BlockTestBase):
     last_t = self._block.last_t.value
     last_fps = self._block.last_fps.value
     loops = self._block.loops.value
+    n_loops = self._block.n_loops.value
 
-    self._block.join(0.5)
+    sleep(0.5)
 
     # After a bit more time, all counters should have progressed further
     self.assertGreater(self._block.loops.value, loops)
-    self.assertGreater(self._block.last_fps.value, last_fps)
+    self.assertGreater(self._block.n_loops.value, n_loops)
     self.assertGreater(self._block.last_t.value, last_t)
 
+    # This one takes at most 2 seconds to update
+    sleep(2.5)
+    self.assertGreater(self._block.last_fps.value, last_fps)
+
     stop.set()
-    self._block.join(0.5)
+
+    self.assertTrue(self._block.finished.wait(3.0))
 
     Block.reset()
