@@ -665,6 +665,10 @@ class Block(Process, ABC):
     always being saved to the log file.
     """
 
+    # Keep the existing logger if already defined
+    if cls.logger is not None:
+      return
+
     # The Logger handling all messages
     crappy_log = logging.getLogger('crappy')
 
@@ -761,6 +765,9 @@ class Block(Process, ABC):
     cls.raise_event = None
     cls.kbi_event = None
 
+    cls.log_queue = None
+    cls.log_thread = None
+
     if cls.logger is not None:
       cls.cls_log(logging.INFO, 'Crappy was successfully reset')
   
@@ -844,8 +851,7 @@ class Block(Process, ABC):
 
       # Waiting for t0 to be set, should take a few milliseconds at most
       self.log(logging.INFO, "Waiting for the start time to be set")
-      self._start_event.wait(timeout=1)
-      if not self._start_event.is_set():
+      if not self._start_event.wait(timeout=1.0):
         raise StartTimeout
       else:
         self.log(logging.INFO, "Start time set, Block starting")
@@ -1358,7 +1364,8 @@ class Block(Process, ABC):
     # If simple recv_all, just receiving from all input links
     if delay is None:
       for link in self.inputs:
-        ret |= link.recv_chunk()
+        for label, values in link.recv_chunk().items():
+          ret[label].extend(values)
 
     # Otherwise, receiving during the given period
     else:
