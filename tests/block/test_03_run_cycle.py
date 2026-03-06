@@ -197,7 +197,7 @@ class TestRunCycle(BlockTestBase):
   def test_raise_finish(self) -> None:
     """Tests the behavior when the Block ends with an exception path."""
 
-    self._block = TestBlockRaiseLoop()
+    self._block = TestBlockRaiseFinish()
 
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
