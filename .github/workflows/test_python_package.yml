@@ -51,7 +51,9 @@ jobs:
       run: python -m pip install opencv-python scikit-image
     # Test common to all OS
     - name: Test Crappy (Common)
-      run: python -m unittest -v tests.camera_configuration_tools
+      run: |
+        python -m unittest -v tests.block
+        python -m unittest -v tests.camera_configuration_tools
     # On Windows, a graphical environment is present by default
     # Running the tests requiring a graphical environment
     - name: Test Crappy Graphical (Windows)
