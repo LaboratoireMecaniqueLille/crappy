@@ -1364,7 +1364,8 @@ class Block(Process, ABC):
     # If simple recv_all, just receiving from all input links
     if delay is None:
       for link in self.inputs:
-        ret |= link.recv_chunk()
+        for label, values in link.recv_chunk().items():
+          ret[label].extend(values)
 
     # Otherwise, receiving during the given period
     else:
