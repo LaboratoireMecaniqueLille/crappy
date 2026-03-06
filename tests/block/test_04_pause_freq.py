@@ -89,7 +89,7 @@ class TestPauseFreq(BlockTestBase):
     self.assertTrue(self._block.looped.is_set())
     self.assertFalse(self._block.finished.is_set())
 
-    self._block.join(0.5)
+    sleep(0.5)
 
     # The loop counters should keep increasing while the Block is running.
     self.assertGreater(self._block.last_t.value, t)
@@ -128,6 +128,8 @@ class TestPauseFreq(BlockTestBase):
 
     pause.set()
 
+    sleep(0.5)
+
     self.assertGreater(self._block.last_t.value, -1.0)
     self.assertGreater(self._block.last_fps.value, -1.0)
     self.assertGreaterEqual(self._block.last_t.value,
@@ -137,7 +139,7 @@ class TestPauseFreq(BlockTestBase):
     t = self._block.last_t.value
     n_l = self._block.loops.value
 
-    self._block.join(0.5)
+    sleep(0.5)
 
     stop.set()
 
@@ -176,6 +178,7 @@ class TestPauseFreq(BlockTestBase):
     self.assertTrue(self._block.looped.wait(3.0))
 
     pause.set()
+    sleep(0.5)
 
     self.assertGreater(self._block.last_t.value, -1.0)
     self.assertGreater(self._block.last_fps.value, -1.0)
@@ -186,13 +189,13 @@ class TestPauseFreq(BlockTestBase):
     t = self._block.last_t.value
     n_l = self._block.loops.value
 
-    self._block.join(0.5)
+    sleep(0.5)
 
     self.assertEqual(self._block.loops.value, n_l)
 
     pause.clear()
 
-    self._block.join(0.5)
+    sleep(0.5)
 
     self.assertGreater(self._block.last_t.value, t)
     self.assertGreater(self._block.loops.value, n_l)
@@ -234,7 +237,7 @@ class TestPauseFreq(BlockTestBase):
 
     t = self._block.last_t.value
 
-    self._block.join(0.5)
+    sleep(0.5)
 
     stop.set()
 

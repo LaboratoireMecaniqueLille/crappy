@@ -154,20 +154,22 @@ class TestStartupSequence(BlockTestBase):
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
-    self.assertEqual(int(subprocess.run(['ps', '-p', str(self._block.pid),
-                                         '-o', 'ni='],
-                                        capture_output=True).stdout), 0)
+    initial_nice = int(subprocess.run(
+        ['ps', '-p', str(self._block.pid), '-o', 'ni='],
+        capture_output=True, text=True, check=True).stdout.strip())
 
     Block.renice_all(allow_root=False)
 
-    self.assertEqual(int(subprocess.run(['ps', '-p', str(self._block.pid),
-                                         '-o', 'ni='],
-                                        capture_output=True).stdout), 5)
+    new_nice = int(subprocess.run(
+        ['ps', '-p', str(self._block.pid), '-o', 'ni='],
+        capture_output=True, text=True, check=True).stdout.strip())
+
+    self.assertEqual(new_nice, 5)
 
     Block.ready_barrier.abort()
     Block.thread_stop = True
 
-    self.assertTrue(self._block.stop_event.wait(3.0))
+    self.assertTrue(self._block._stop_event.wait(3.0))
 
     Block.reset()
 
