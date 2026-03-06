@@ -7,50 +7,50 @@ from .block_test_base import BlockTestBase, TestBlock
 
 
 class TestBlockRaisePrepare(TestBlock):
-  """"""
+  """Test Block raising an exception from prepare."""
 
   def prepare(self) -> None:
-    """"""
+    """Runs the normal prepare code and then raises."""
 
     super().prepare()
     raise ValueError
 
 
 class TestBlockRaiseBegin(TestBlock):
-  """"""
+  """Test Block raising an exception from begin."""
 
   def begin(self) -> None:
-    """"""
+    """Runs the normal begin code and then raises."""
 
     super().begin()
     raise ValueError
 
 
 class TestBlockRaiseLoop(TestBlock):
-  """"""
+  """Test Block raising an exception from loop."""
 
   def loop(self) -> None:
-    """"""
+    """Runs one normal loop iteration and then raises."""
 
     super().loop()
     raise ValueError
 
 
 class TestBlockRaiseFinish(TestBlock):
-  """"""
+  """Test Block raising an exception from finish."""
 
   def finish(self) -> None:
-    """"""
+    """Runs the normal finish code and then raises."""
 
     super().finish()
     raise ValueError
 
 
 class TestRunCycle(BlockTestBase):
-  """"""
+  """Tests the per-Block execution cycle driven by Block.run."""
 
   def test_normal_run(self) -> None:
-    """"""
+    """Tests the nominal prepare/begin/loop/finish sequence."""
 
     self._block = TestBlock()
 
@@ -69,6 +69,7 @@ class TestRunCycle(BlockTestBase):
 
     self._block.join(4.0)
 
+    # The Block should stop on its own without reporting any error.
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
@@ -86,7 +87,7 @@ class TestRunCycle(BlockTestBase):
     Block.reset()
 
   def test_raise_prepare(self) -> None:
-    """"""
+    """Tests the behavior when prepare raises."""
 
     self._block = TestBlockRaisePrepare()
 
@@ -103,6 +104,8 @@ class TestRunCycle(BlockTestBase):
 
     self._block.join(4.0)
 
+    # An exception during prepare should break the barrier and propagate to the
+    # shared raise Event.
     self.assertFalse(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertTrue(self._block._ready_barrier.broken)
@@ -120,7 +123,7 @@ class TestRunCycle(BlockTestBase):
     Block.reset()
 
   def test_raise_begin(self) -> None:
-    """"""
+    """Tests the behavior when begin raises."""
 
     self._block = TestBlockRaiseBegin()
 
@@ -156,7 +159,7 @@ class TestRunCycle(BlockTestBase):
     Block.reset()
 
   def test_raise_loop(self) -> None:
-    """"""
+    """Tests the behavior when loop raises."""
 
     self._block = TestBlockRaiseLoop()
 
@@ -192,7 +195,7 @@ class TestRunCycle(BlockTestBase):
     Block.reset()
 
   def test_raise_finish(self) -> None:
-    """"""
+    """Tests the behavior when the Block ends with an exception path."""
 
     self._block = TestBlockRaiseLoop()
 
@@ -228,7 +231,7 @@ class TestRunCycle(BlockTestBase):
     Block.reset()
 
   def test_brake_barrier(self) -> None:
-    """"""
+    """Tests the behavior when the ready barrier is already broken."""
 
     self._block = TestBlock()
 
@@ -264,7 +267,7 @@ class TestRunCycle(BlockTestBase):
     Block.reset()
 
   def test_no_start(self) -> None:
-    """"""
+    """Tests the timeout path when the start Event is never set."""
 
     self._block = TestBlock()
 

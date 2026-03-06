@@ -9,14 +9,25 @@ from multiprocessing import Event, Value
 
 
 class TestLink(Link):
-  """"""
+  """Instrumented Link used in the Block tests.
+
+  It behaves exactly like a regular Link, but also exposes Events allowing the
+  tests to check which methods were actually called.
+  """
 
   def __init__(self,
                input_block,
                output_block,
                modifiers: list[ModifierType] | None = None,
                name: str | None = None) -> None:
-    """"""
+    """Initializes the tracking Events and the parent Link.
+
+    Args:
+      input_block: The upstream Block.
+      output_block: The downstream Block.
+      modifiers: Optional list of modifiers to apply to the transmitted data.
+      name: Optional name for the Link.
+    """
 
     self.polled = Event()
     self.sent = Event()
@@ -27,31 +38,31 @@ class TestLink(Link):
     super().__init__(input_block, output_block, modifiers, name)
 
   def poll(self) -> bool:
-    """"""
+    """Records that poll was called."""
 
     self.polled.set()
     return super().poll()
 
   def send(self, value: dict[str, Any]) -> None:
-    """"""
+    """Records that send was called."""
 
     self.sent.set()
     return super().send(value)
 
   def recv(self) -> dict[str, Any]:
-    """"""
+    """Records that recv was called."""
 
     self.received.set()
     return super().recv()
 
   def recv_last(self) -> dict[str, Any]:
-    """"""
+    """Records that recv_last was called."""
 
     self.received_last.set()
     return super().recv_last()
 
   def recv_chunk(self) -> dict[str, list[Any]]:
-    """"""
+    """Records that recv_chunk was called."""
 
     self.received_chunk.set()
     return super().recv_chunk()
@@ -62,9 +73,16 @@ def link(in_block,
          /, *,
          modifier: Sequence[ModifierType] | ModifierType | None = None,
          name: str | None = None) -> None:
-  """"""
+  """Convenience wrapper creating a TestLink between two Blocks.
 
-  # Forcing the modifiers into lists
+  Args:
+    in_block: The upstream Block.
+    out_block: The downstream Block.
+    modifier: One modifier or a sequence of modifiers to attach to the Link.
+    name: Optional name for the Link.
+  """
+
+  # Forcing the modifiers into lists so that the helper mirrors crappy.link.
   if modifier is not None:
     try:
       iter(modifier)
@@ -72,7 +90,7 @@ def link(in_block,
     except TypeError:
       modifier = [modifier]
 
-  # Actually creating the Link object
+  # Actually creating the Link object.
   TestLink(input_block=in_block,
            output_block=out_block,
            modifiers=modifier,
@@ -80,10 +98,19 @@ def link(in_block,
 
 
 class TestBlock(Block):
-  """"""
+  """Minimal Block used throughout the Block testing.
+
+  It exposes Events and shared Values so that the tests can observe which
+  lifecycle methods were called and what the internal timing attributes looked
+  like at that moment.
+  """
 
   def __init__(self, stop: bool = True) -> None:
-    """"""
+    """Initializes the monitoring attributes.
+
+    Args:
+      stop: If :obj:`True`, the Block stops itself during the first loop.
+    """
 
     super().__init__()
 
@@ -100,7 +127,7 @@ class TestBlock(Block):
     self._stop = stop
 
   def prepare(self) -> None:
-    """"""
+    """Records that prepare was reached and handles loop counting."""
 
     self.prepared.set()
     self.last_t.value = self._last_t if self._last_t is not None else -1.0
@@ -109,7 +136,7 @@ class TestBlock(Block):
     self.n_loops.value = self._n_loops
 
   def begin(self) -> None:
-    """"""
+    """Records that begin was reached and handles loop counting."""
 
     self.begun.set()
     self.last_t.value = self._last_t if self._last_t is not None else -1.0
@@ -118,7 +145,7 @@ class TestBlock(Block):
     self.n_loops.value = self._n_loops
 
   def loop(self) -> None:
-    """"""
+    """Records that loop was reached and optionally stops the Block."""
 
     self.looped.set()
     self.last_t.value = self._last_t if self._last_t is not None else -1.0
@@ -132,7 +159,7 @@ class TestBlock(Block):
       self.stop()
 
   def finish(self) -> None:
-    """"""
+    """Records that finish was reached and handles loop counting."""
 
     self.finished.set()
     self.last_t.value = self._last_t if self._last_t is not None else -1.0
@@ -142,18 +169,23 @@ class TestBlock(Block):
 
 
 class BlockTestBase(unittest.TestCase):
-  """"""
+  """Base test class shared by the Block unit tests.
+
+  It mainly ensures that no stray Block process survives a test and that the
+  class-level state of Block is fully reset after each run.
+  """
 
   def __init__(self, *args, **kwargs) -> None:
-    """"""
+    """Initializes the parent test case and the tracked Block reference."""
 
     super().__init__(*args, **kwargs)
 
     self._block: TestBlock | None = None
 
   def tearDown(self) -> None:
-    """"""
+    """Kills the test Block if needed and checks that Block was reset."""
 
+    # Make sure the Block is really gone before leaving the test case.
     if self._block is not None and self._block.is_alive():
       self._block.kill()
       self._block.join(3.0)
@@ -161,6 +193,7 @@ class BlockTestBase(unittest.TestCase):
         self._block.terminate()
         raise RuntimeError("Block did not terminate as expected")
 
+    # Make sure the Block was properly reset
     self.assertEqual(0, len(Block.instances))
     self.assertEqual(0, len(Block.names))
 

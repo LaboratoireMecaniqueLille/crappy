@@ -14,28 +14,32 @@ from .block_test_base import BlockTestBase, TestBlock
 
 
 class TestBlockNoResponse(TestBlock):
-  """"""
+  """Test Block that deliberately ignores the stop sequence for a while."""
 
   def loop(self) -> None:
-    """"""
+    """Sleeps long enough for the cleanup code to have to intervene."""
 
     sleep(10)
 
 
 class TestBlockRaise(TestBlock):
-  """"""
+  """Test Block raising an exception from loop."""
 
   def loop(self) -> None:
-    """"""
+    """Raises immediately when the main loop is entered."""
 
     raise ValueError
 
 
 class TestStartupSequence(BlockTestBase):
-  """"""
+  """Tests the class methods driving the startup and shutdown sequence.
+
+  These tests cover the interactions between prepare_all, renice_all,
+  launch_all and _cleanup.
+  """
 
   def test_prepare_all_prepared(self) -> None:
-    """"""
+    """Tests that calling prepare_all twice fails cleanly."""
 
     self._block = TestBlock()
 
@@ -43,6 +47,8 @@ class TestStartupSequence(BlockTestBase):
 
     sleep(0.5)
 
+    # Manually break the current startup context before attempting the second
+    # call, otherwise the first prepared Block would still be waiting.
     Block.ready_barrier.abort()
     Block.thread_stop = True
 
@@ -52,7 +58,7 @@ class TestStartupSequence(BlockTestBase):
       Block.prepare_all()
 
   def test_prepare_all_launched(self) -> None:
-    """"""
+    """Tests that prepare_all refuses an inconsistent launched state."""
 
     self._block = TestBlock()
 
@@ -72,7 +78,7 @@ class TestStartupSequence(BlockTestBase):
       Block.prepare_all()
 
   def test_prepare_all_setup(self) -> None:
-    """"""
+    """Tests that prepare_all configures all shared objects properly."""
 
     self._block = TestBlock()
 
@@ -80,10 +86,13 @@ class TestStartupSequence(BlockTestBase):
 
     sleep(0.5)
 
+    # The Block should have started and reached its prepare stage.
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(Block.prepared_all)
     self.assertFalse(Block.launched_all)
 
+    # The shared synchronization objects should be instantiated and left in
+    # their initial state.
     self.assertIsInstance(Block.ready_barrier, synchronize.Barrier)
     self.assertEqual(Block.ready_barrier.parties, len(Block.instances) + 1)
     self.assertIsInstance(Block.shared_t0, Synchronized)
@@ -95,6 +104,7 @@ class TestStartupSequence(BlockTestBase):
         self.assertIsNotNone(event)
         self.assertFalse(event.is_set())
 
+    # Logging should also be configured at the class level.
     self.assertIsInstance(Block.log_queue, queues.Queue)
     self.assertIsInstance(Block.log_thread, Thread)
     if get_start_method() == 'spawn':
@@ -102,6 +112,7 @@ class TestStartupSequence(BlockTestBase):
     else:
       self.assertFalse(Block.log_thread.is_alive())
 
+    # The Block instance must reference the exact same shared objects.
     for cls, inst in zip((Block.stop_event, Block.start_event,
                           Block.pause_event, Block.raise_event,
                           Block.kbi_event, Block.ready_barrier,
@@ -115,6 +126,7 @@ class TestStartupSequence(BlockTestBase):
     self.assertTrue(self._block.is_alive())
     self.assertFalse(Block.thread_stop)
 
+    # Abort the barrier to force the cleanup path.
     Block.ready_barrier.abort()
     Block.thread_stop = True
 
@@ -133,7 +145,7 @@ class TestStartupSequence(BlockTestBase):
   @unittest.skipIf(system() not in ('Linux', 'Darwin'),
                    "Test irrelevant on Windows")
   def test_renice_all(self) -> None:
-    """"""
+    """Tests that renice_all applies the requested niceness."""
 
     self._block = TestBlock()
     self._block.niceness = 5
@@ -160,7 +172,7 @@ class TestStartupSequence(BlockTestBase):
     Block.reset()
 
   def test_renice_all_not_prepared(self) -> None:
-    """"""
+    """Tests that renice_all cannot be called before prepare."""
 
     self._block = TestBlock()
 
@@ -170,7 +182,7 @@ class TestStartupSequence(BlockTestBase):
     Block.reset()
 
   def test_renice_all_launched(self) -> None:
-    """"""
+    """Tests that renice_all aborts on an inconsistent launched flag."""
 
     self._block = TestBlock()
 
@@ -189,7 +201,7 @@ class TestStartupSequence(BlockTestBase):
       Block.renice_all(allow_root=False)
 
   def test_launch_all(self) -> None:
-    """"""
+    """Tests the normal end-to-end startup sequence."""
 
     self._block = TestBlock()
 
@@ -205,7 +217,7 @@ class TestStartupSequence(BlockTestBase):
       self.assertFalse(inst.is_alive())
 
   def test_launch_all_no_prepared(self) -> None:
-    """"""
+    """Tests that launch_all refuses to run before prepare."""
 
     self._block = TestBlock()
 
@@ -215,7 +227,7 @@ class TestStartupSequence(BlockTestBase):
     Block.reset()
 
   def test_launch_all_launched(self) -> None:
-    """"""
+    """Tests that launch_all aborts on a duplicated launch."""
 
     self._block = TestBlock()
 
@@ -229,10 +241,10 @@ class TestStartupSequence(BlockTestBase):
       Block.launch_all()
 
   def test_stop_all(self) -> None:
-    """"""
+    """Tests that stop_all can stop a running Crappy session."""
 
     def stop():
-      """"""
+      """Stops the running session after a short delay."""
 
       sleep(0.5)
       Block.stop_all()
@@ -255,7 +267,7 @@ class TestStartupSequence(BlockTestBase):
       self.assertFalse(inst.is_alive())
 
   def test_restart(self) -> None:
-    """"""
+    """Tests that a fresh Crappy session can start after a completed one."""
 
     self._block = TestBlock()
 
@@ -278,7 +290,7 @@ class TestStartupSequence(BlockTestBase):
     sleep(0.5)
 
   def test_cleanup(self) -> None:
-    """"""
+    """Tests the different raise/no-raise combinations of _cleanup."""
 
     Block.stop_event = Event()
     Block.raise_event = Event()
@@ -354,7 +366,7 @@ class TestStartupSequence(BlockTestBase):
     Block._cleanup()
 
   def test_block_not_responding(self) -> None:
-    """"""
+    """Tests that cleanup terminates a Block that does not stop by itself."""
 
     self._block = TestBlockNoResponse()
     _ = TestBlockRaise()

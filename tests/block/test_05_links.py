@@ -9,10 +9,10 @@ from .block_test_base import BlockTestBase, TestBlock, link
 
 
 class TestBlockLink(TestBlock):
-  """"""
+  """Test Block exercising most Link-related helper methods in one run."""
 
   def loop(self) -> None:
-    """"""
+    """Calls the different Block I/O helpers before triggering an error."""
 
     super().loop()
     self.send({'a': 0})
@@ -26,10 +26,10 @@ class TestBlockLink(TestBlock):
 
 
 class TestLinks(BlockTestBase):
-  """"""
+  """Tests the helper methods used by Blocks for exchanging data."""
 
   def test_link_blocks(self) -> None:
-    """"""
+    """Tests that creating Links populates the input/output lists properly."""
 
     block_1 = TestBlock()
     block_2 = TestBlock()
@@ -54,7 +54,7 @@ class TestLinks(BlockTestBase):
     Block.reset()
 
   def test_send(self) -> None:
-    """"""
+    """Tests the different accepted inputs of Block.send."""
 
     block_1 = TestBlock()
     block_2 = TestBlock()
@@ -65,6 +65,7 @@ class TestLinks(BlockTestBase):
 
     block_1.send(None)
 
+    # Sending None should simply do nothing
     for link_ in block_1.outputs:
       with self.subTest(link=link_):
         self.assertFalse(link_.polled.is_set())
@@ -73,6 +74,7 @@ class TestLinks(BlockTestBase):
         self.assertFalse(link_.received_last.is_set())
         self.assertFalse(link_.received_chunk.is_set())
 
+    # Sending a non-dict iterable without labels should fail
     with self.assertRaises(LinkDataError):
       block_1.send(0)
 
@@ -101,7 +103,7 @@ class TestLinks(BlockTestBase):
     Block.reset()
 
   def test_data_available(self) -> None:
-    """"""
+    """Tests Block.data_available on empty and non-empty Links."""
 
     block_1 = TestBlock()
     block_2 = TestBlock()
@@ -143,7 +145,7 @@ class TestLinks(BlockTestBase):
     Block.reset()
 
   def test_recv_data(self) -> None:
-    """"""
+    """Tests Block.recv_data with several label combinations."""
 
     block_1 = TestBlock()
     block_2 = TestBlock()
@@ -183,6 +185,7 @@ class TestLinks(BlockTestBase):
 
     self.assertEqual(block_3.recv_data(), {'a': 0, 'b': 1})
 
+    # Extra labels should be handled according to zip() semantics.
     block_1.labels = ['a', 'c']
 
     block_1.send((0, 2))
@@ -202,6 +205,7 @@ class TestLinks(BlockTestBase):
 
     self.assertEqual(block_3.recv_data(), {'a': 0, 'b': 1, 'c': 2})
 
+    # If the same label is received from both Links, the last one wins.
     block_1.labels = ['b']
 
     block_1.send((0,))
@@ -212,7 +216,7 @@ class TestLinks(BlockTestBase):
     Block.reset()
 
   def test_recv_last_data(self) -> None:
-    """"""
+    """Tests Block.recv_last_data with and without fill_missing."""
 
     block_1 = TestBlock()
     block_2 = TestBlock()
@@ -274,7 +278,7 @@ class TestLinks(BlockTestBase):
     Block.reset()
 
   def test_recv_all_data(self) -> None:
-    """"""
+    """Tests Block.recv_all_data and its label merging behavior."""
 
     block_1 = TestBlock()
     block_2 = TestBlock()
@@ -318,6 +322,8 @@ class TestLinks(BlockTestBase):
 
     self.assertEqual(block_3.recv_all_data(None), {'b': [1, 2]})
 
+    # When identical labels come from distinct Links, the values are merged in
+    # the output dict and their provenance is lost.
     block_1.send({'a': 0})
     block_1.send({'b': 2})
     block_2.send({'a': 1})
@@ -328,7 +334,7 @@ class TestLinks(BlockTestBase):
     Block.reset()
 
   def test_recv_all_data_raw(self) -> None:
-    """"""
+    """Tests Block.recv_all_data_raw, which preserves Link separation."""
 
     block_1 = TestBlock()
     block_2 = TestBlock()
@@ -385,7 +391,7 @@ class TestLinks(BlockTestBase):
     Block.reset()
 
   def test_link_data_error(self) -> None:
-    """"""
+    """Tests that a Link data conversion error sets the shared raise Event."""
 
     self._block = TestBlockLink(stop=False)
 
@@ -414,6 +420,8 @@ class TestLinks(BlockTestBase):
 
     self._block.join(4.0)
 
+    # All Link helper methods should have been exercised before the final
+    # failing send((0,)) call.
     for link_ in self._block.inputs:
       with self.subTest(link=link_):
         self.assertTrue(link_.polled.is_set())

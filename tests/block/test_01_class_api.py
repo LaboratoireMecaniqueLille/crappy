@@ -9,10 +9,14 @@ from .block_test_base import BlockTestBase, TestBlock
 
 
 class TestClassAPI(BlockTestBase):
-  """"""
+  """Tests covering the class-level API of Block.
+
+  These tests focus on the bookkeeping performed directly by the Block class,
+  independently of the full multiprocessing startup sequence.
+  """
 
   def test_init_subclass(self) -> None:
-    """"""
+    """Tests that subclass registration rejects duplicate class names."""
 
     class CustomBlock(TestBlock):
       ...
@@ -24,13 +28,12 @@ class TestClassAPI(BlockTestBase):
         ...
 
     self.assertIn('CustomBlock', Block.classes.keys())
-
     self.assertIs(Block.classes['CustomBlock'], CustomBlock)
 
     Block.reset()
 
   def test_instances(self) -> None:
-    """"""
+    """Tests the tracking of instantiated Blocks and generated names."""
 
     instances = list()
 
@@ -39,6 +42,8 @@ class TestClassAPI(BlockTestBase):
     for _ in range(10):
       instances.append(TestBlock())
 
+    # Every instantiated Block should be registered exactly once and receive a
+    # unique automatically generated name.
     self.assertEqual(10, len(Block.instances))
     self.assertEqual(10, len(set(Block.names)))
 
@@ -61,7 +66,7 @@ class TestClassAPI(BlockTestBase):
     self.assertEqual(0, len(Block.instances))
 
   def test_reset(self) -> None:
-    """"""
+    """Tests that Block.reset clears all shared class attributes."""
 
     TestBlock()
 
@@ -78,7 +83,7 @@ class TestClassAPI(BlockTestBase):
     Block.reset()
 
   def test_stop_all(self) -> None:
-    """"""
+    """Tests that Block.stop_all sets the shared stop Event."""
 
     Block.stop_event = Event()
     self.assertFalse(Block.stop_event.is_set())
