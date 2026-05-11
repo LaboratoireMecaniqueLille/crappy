@@ -212,6 +212,7 @@ class CameraProcess(Process, ABC):
     except KeyboardInterrupt:
       self.log(logging.INFO, "KeyboardInterrupt caught, stopping the "
                              "processing")
+      self._stop_event.set()
 
     # Case when another CameraProcess raised an exception while initializing
     except BrokenBarrierError:
@@ -230,7 +231,19 @@ class CameraProcess(Process, ABC):
 
     # Always calling finish in the end
     finally:
-      self.finish()
+      try:
+        self.finish()
+      except KeyboardInterrupt:
+        self.log(logging.WARNING, "KeyboardInterrupt caught while finishing, "
+                                  "ignoring it")
+        self._stop_event.set()
+      except (Exception,) as exc:
+        if self._logger is not None:
+          self._logger.exception("Exception caught while finishing !",
+                                 exc_info=exc)
+        self.log(logging.ERROR, "Setting the stop event to stop the other "
+                                "Camera processes")
+        self._stop_event.set()
 
   def init(self) -> None:
     """This method should perform any action required for initializing the
