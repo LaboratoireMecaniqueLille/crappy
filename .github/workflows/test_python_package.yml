@@ -48,6 +48,7 @@ jobs:
       run: |
         python -m unittest -v tests.block
         python -m unittest -v tests.camera_configuration_tools
+        python -m unittest -v tests.camera_processes
     # On Windows, a graphical environment is present by default
     # Running the tests requiring a graphical environment
     - name: Test Crappy Graphical (Windows)
