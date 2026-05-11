@@ -13,7 +13,7 @@ from collections.abc import Iterable
 import logging
 import logging.handlers
 from select import select
-from time import time
+from time import time, sleep
 from platform import system
 from abc import ABC, abstractmethod
 
@@ -194,6 +194,8 @@ class CameraProcess(Process, ABC):
           self.log(logging.DEBUG, "Running the loop method")
           self.loop()
           self.fps_count += 1
+        else:
+          sleep(0.001)
 
         # Displaying the looping frequency is required
         if self._display_freq:
