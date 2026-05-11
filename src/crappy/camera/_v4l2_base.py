@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from collections.abc import Callable
-from re import findall, search, finditer, split, Match, compile
+from re import findall, search, split, Match, compile
 from dataclasses import dataclass
 import logging
 from subprocess import run
@@ -23,16 +23,19 @@ class V4L2Parameter:
   flags: str | None = None
   options: tuple[str, ...] | None = None
 
-  # Regex to extract the different parameters and their information
-  param_pattern = (r'(\w+)\s+0x\w+\s+\((\w+)\)\s+:\s*'
-                   r'(min=(-?\d+)\s+)?'
-                   r'(max=(-?\d+)\s+)?'
-                   r'(step=(\d+)\s+)?'
-                   r'(default=(-?\d+)\s+)?'
-                   r'value=(-?\d+)\s*'
-                   r'(flags=([^\\n]+))?')
+  # Regex to extract a parameter and its information from a single line
+  param_pattern = compile(
+    r'^\s*(\w+)\s+0x\w+\s+\((\w+)\)\s+:\s*'
+    r'(?:min=(-?\d+)\s+)?'
+    r'(?:max=(-?\d+)\s+)?'
+    r'(?:step=(\d+)\s+)?'
+    r'(?:default=(-?\d+)\s+)?'
+    r'value=(-?\d+)'
+    r'(?:\s+\([^)]+\))?'
+    r'(?:\s+flags=(.+))?\s*$'
+  )
 
-  option_pattern = r'(\w+ \w+ \(menu\))([\s\S]+?)(?=\n\s*\w+ \w+ \(.+?\)|$)'
+  option_pattern = compile(r'^\s*(\d+):\s+(.+?)\s*$')
 
   @classmethod
   def parse_info(cls, match: Match) -> V4L2Parameter:
@@ -49,31 +52,21 @@ class V4L2Parameter:
 
     return cls(name=match.group(1),
                type=match.group(2),
-               min=match.group(4) if match.group(4) else None,
-               max=match.group(6) if match.group(6) else None,
-               step=match.group(8) if match.group(8) else None,
-               default=match.group(10) if match.group(10) else None,
-               value=match.group(11),
-               flags=match.group(13) if match.group(13) else None)
+               min=match.group(3) if match.group(3) else None,
+               max=match.group(4) if match.group(4) else None,
+               step=match.group(5) if match.group(5) else None,
+               default=match.group(6) if match.group(6) else None,
+               value=match.group(7),
+               flags=match.group(8) if match.group(8) else None)
 
-  def add_options(self, match: Match) -> None:
-    """Adds the different possible options for a menu parameter.
+  def add_options(self, options: list[str]) -> None:
+    """Adds the different possible options for a menu parameter."""
 
-    Args:
-      match: Match object returned by successful matches of the regex with
-      a string.
-    """
-
-    menu_info = match.group(1)
-    menu_values = match.group(2)
-    menu_name = search(r'(\w+) \w+ \(menu\)', menu_info).group(1)
-    if self.name == menu_name:
-      options = findall(r'\d+: .+?(?=\n|$)', menu_values)
-      num_options = findall(r'(\d+): .+?(?=\n|$)', menu_values)
-      self.options = tuple(options)
-      for num, opt in zip(num_options, options):
-        if self.default == num:
-          self.default = opt
+    self.options = tuple(options)
+    for opt in options:
+      num = search(r'^(\d+): ', opt).group(1)
+      if self.default == num:
+        self.default = opt
 
 
 class V4L2Helper:
@@ -104,18 +97,35 @@ class V4L2Helper:
     ret = run(command, capture_output=True, text=True).stdout
     self.log(logging.DEBUG, f"Got the following image settings: {ret}")
 
-    # Extract the different parameters and their information
-    matches = finditer(V4L2Parameter.param_pattern, ret)
-    for match in matches:
-      self._parameters.append(V4L2Parameter.parse_info(match))
+    self._parameters = list()
+    current_menu: V4L2Parameter | None = None
+    current_options: list[str] = list()
 
-    # Regex to extract the different options in a menu
-    menu_options = finditer(V4L2Parameter.option_pattern, ret)
+    for line in ret.splitlines():
+      match = V4L2Parameter.param_pattern.match(line)
+      if match is not None:
+        if current_menu is not None:
+          current_menu.add_options(current_options)
+          current_menu = None
+          current_options = list()
 
-    # Extract the different options
-    for menu_option in menu_options:
-      for param in self._parameters:
-        param.add_options(menu_option)
+        param = V4L2Parameter.parse_info(match)
+        self._parameters.append(param)
+        if param.type == 'menu':
+          current_menu = param
+        continue
+
+      if current_menu is None:
+        continue
+
+      option_match = V4L2Parameter.option_pattern.match(line)
+      if option_match is not None:
+        current_options.append(
+          f"{option_match.group(1)}: {option_match.group(2)}"
+        )
+
+    if current_menu is not None:
+      current_menu.add_options(current_options)
 
   @staticmethod
   def _sort_key(format_: str):
@@ -141,6 +151,7 @@ class V4L2Helper:
                             f"command {' '.join(command)}")
     ret = run(command, capture_output=True, text=True).stdout
     self.log(logging.DEBUG, f"Got the following image formats: {ret}")
+    self._formats = list()
 
     # Splitting the returned string to isolate each encoding
     if findall(r'\[\d+]', ret):
