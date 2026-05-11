@@ -596,6 +596,7 @@ class Camera(Block):
     # This is done with all the Locks acquired to avoid any conflict
     with self._save_lock, self._disp_lock, self._proc_lock:
       self.log(logging.DEBUG, f"Writing metadata to shared dict: {metadata}")
+      self._metadata.clear()
       self._metadata.update(metadata)
       self.log(logging.DEBUG, "Writing image to shared array")
       np.copyto(self._img, img)

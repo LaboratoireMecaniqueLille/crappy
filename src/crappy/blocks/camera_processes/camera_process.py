@@ -13,7 +13,7 @@ from collections.abc import Iterable
 import logging
 import logging.handlers
 from select import select
-from time import time
+from time import time, sleep
 from platform import system
 from abc import ABC, abstractmethod
 
@@ -68,10 +68,10 @@ class CameraProcess(Process, ABC):
     self._lock: RLock | None = None
     self._cam_barrier: Barrier | None = None
     self._stop_event: Event | None = None
-    self._shape: tuple[int, int] | None = None
+    self._shape: tuple[int, int] | tuple[int, int, int] | None = None
     self._to_draw_conn: Connection | None = None
     self._outputs: list[Link] = list()
-    self._labels: list[str] = list()
+    self._labels: list[str] | None = list()
     self.img: np.ndarray | None = None
     self._dtype = None
     self.metadata = {'ImageUniqueID': None}
@@ -194,6 +194,8 @@ class CameraProcess(Process, ABC):
           self.log(logging.DEBUG, "Running the loop method")
           self.loop()
           self.fps_count += 1
+        else:
+          sleep(0.001)
 
         # Displaying the looping frequency is required
         if self._display_freq:
@@ -210,6 +212,7 @@ class CameraProcess(Process, ABC):
     except KeyboardInterrupt:
       self.log(logging.INFO, "KeyboardInterrupt caught, stopping the "
                              "processing")
+      self._stop_event.set()
 
     # Case when another CameraProcess raised an exception while initializing
     except BrokenBarrierError:
@@ -219,7 +222,8 @@ class CameraProcess(Process, ABC):
 
     # Handling any other unexpected exception
     except (Exception,) as exc:
-      self._logger.exception("Exception caught wile running !", exc_info=exc)
+      if self._logger is not None:
+        self._logger.exception("Exception caught wile running !", exc_info=exc)
       self.log(logging.ERROR, "Setting the stop event to stop the other "
                               "Camera processes")
       self._stop_event.set()
@@ -227,7 +231,19 @@ class CameraProcess(Process, ABC):
 
     # Always calling finish in the end
     finally:
-      self.finish()
+      try:
+        self.finish()
+      except KeyboardInterrupt:
+        self.log(logging.WARNING, "KeyboardInterrupt caught while finishing, "
+                                  "ignoring it")
+        self._stop_event.set()
+      except (Exception,) as exc:
+        if self._logger is not None:
+          self._logger.exception("Exception caught while finishing !",
+                                 exc_info=exc)
+        self.log(logging.ERROR, "Setting the stop event to stop the other "
+                                "Camera processes")
+        self._stop_event.set()
 
   def init(self) -> None:
     """This method should perform any action required for initializing the
@@ -287,24 +303,24 @@ class CameraProcess(Process, ABC):
     if not isinstance(data, dict):
       # First, checking that labels are provided
       if self._labels is None or not self._labels:
-        self._logger.log(logging.ERROR, "Trying to send data as an iterable, "
-                                        "but no labels are specified !")
+        self.log(logging.ERROR, "Trying to send data as an iterable, "
+                                "but no labels are specified !")
         raise LinkDataError
 
       # Trying to convert iterable data to dict using the given labels
       try:
-        self._logger.log(logging.DEBUG, f"Converting {data} to dict before "
-                                        f"sending")
+        self.log(logging.DEBUG, f"Converting {data} to dict before sending")
         data = dict(zip(self._labels, data))
       except TypeError:
-        self._logger.log(logging.ERROR, f"Cannot convert data to send (of type"
-                                        f" {type(data)}) to dict ! Please "
-                                        f"ensure that the data is given as an "
-                                        f"iterable, as well as the labels.")
+        self.log(logging.ERROR, f"Cannot convert data to send (of type"
+                                f" {type(data)}) to dict ! Please "
+                                f"ensure that the data is given as an "
+                                f"iterable, as well as the labels.")
+        raise
 
     # Sending the data to the downstream Blocks
     for link in self._outputs:
-      self._logger.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
+      self.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
 
   def send_to_draw(self, to_draw: Iterable[Overlay]) -> None:
