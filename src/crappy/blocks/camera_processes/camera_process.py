@@ -68,10 +68,10 @@ class CameraProcess(Process, ABC):
     self._lock: RLock | None = None
     self._cam_barrier: Barrier | None = None
     self._stop_event: Event | None = None
-    self._shape: tuple[int, int] | None = None
+    self._shape: tuple[int, int] | tuple[int, int, int] | None = None
     self._to_draw_conn: Connection | None = None
     self._outputs: list[Link] = list()
-    self._labels: list[str] = list()
+    self._labels: list[str] | None = list()
     self.img: np.ndarray | None = None
     self._dtype = None
     self.metadata = {'ImageUniqueID': None}
