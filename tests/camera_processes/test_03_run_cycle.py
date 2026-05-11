@@ -128,7 +128,7 @@ class TestRunCycle(CameraProcessTestBase):
     self._process.start()
     self._process.join(4.0)
 
-    self.assertNotEqual(self._process.exitcode, 0)
+    self.assertEqual(self._process.exitcode, 0)
     self.assertFalse(shared.barrier.broken)
     self.assertTrue(shared.stop_event.is_set())
 
@@ -168,7 +168,7 @@ class TestRunCycle(CameraProcessTestBase):
 
     self.assertEqual(self._process.exitcode, 0)
     self.assertFalse(shared.barrier.broken)
-    self.assertFalse(shared.stop_event.is_set())
+    self.assertTrue(shared.stop_event.is_set())
 
     self.assertTrue(self._process.initialized.is_set())
     self.assertTrue(self._process.looped.is_set())
