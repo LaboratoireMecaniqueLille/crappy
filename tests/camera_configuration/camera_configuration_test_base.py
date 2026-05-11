@@ -8,6 +8,7 @@ import numpy as np
 import sys
 import cv2
 from platform import system
+from typing import Any
 
 from . import mock_messagebox
 
@@ -24,7 +25,7 @@ class DummyCamera(Camera):
   """Subclass of Camera that does nothing, but Camera cannot be instantiated
   directly."""
 
-  def get_image(self) -> None:
+  def get_image(self) -> tuple[dict[str, Any] | float, np.ndarray] | None:
     """Mandatory to implement in subclasses."""
 
     return super().get_image()
@@ -228,7 +229,7 @@ class FakeTestCameraParams(Camera):
     # Left out on purpose
     # self.set_all()
 
-  def get_image(self) -> None:
+  def get_image(self) -> tuple[dict[str, Any] | float, np.ndarray] | None:
     """Added because this method must be defined by children classes."""
 
     return super().get_image()
