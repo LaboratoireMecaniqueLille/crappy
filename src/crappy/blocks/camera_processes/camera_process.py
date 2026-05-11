@@ -219,7 +219,8 @@ class CameraProcess(Process, ABC):
 
     # Handling any other unexpected exception
     except (Exception,) as exc:
-      self._logger.exception("Exception caught wile running !", exc_info=exc)
+      if self._logger is not None:
+        self._logger.exception("Exception caught wile running !", exc_info=exc)
       self.log(logging.ERROR, "Setting the stop event to stop the other "
                               "Camera processes")
       self._stop_event.set()
@@ -287,24 +288,24 @@ class CameraProcess(Process, ABC):
     if not isinstance(data, dict):
       # First, checking that labels are provided
       if self._labels is None or not self._labels:
-        self._logger.log(logging.ERROR, "Trying to send data as an iterable, "
-                                        "but no labels are specified !")
+        self.log(logging.ERROR, "Trying to send data as an iterable, "
+                                "but no labels are specified !")
         raise LinkDataError
 
       # Trying to convert iterable data to dict using the given labels
       try:
-        self._logger.log(logging.DEBUG, f"Converting {data} to dict before "
-                                        f"sending")
+        self.log(logging.DEBUG, f"Converting {data} to dict before sending")
         data = dict(zip(self._labels, data))
       except TypeError:
-        self._logger.log(logging.ERROR, f"Cannot convert data to send (of type"
-                                        f" {type(data)}) to dict ! Please "
-                                        f"ensure that the data is given as an "
-                                        f"iterable, as well as the labels.")
+        self.log(logging.ERROR, f"Cannot convert data to send (of type"
+                                f" {type(data)}) to dict ! Please "
+                                f"ensure that the data is given as an "
+                                f"iterable, as well as the labels.")
+        raise
 
     # Sending the data to the downstream Blocks
     for link in self._outputs:
-      self._logger.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
+      self.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
 
   def send_to_draw(self, to_draw: Iterable[Overlay]) -> None:
