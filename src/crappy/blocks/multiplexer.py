@@ -99,6 +99,7 @@ class Multiplexer(Block):
     self._data: dict[str, np.ndarray] = defaultdict(self._default_array)
     self._period: float = 1 / self._interp_freq
     self._delta: float = self._period / 20
+    self._epsilon: float = self._period * 1e-12
     self._last_max_t: float = -float('inf')
 
     # Forcing the out_labels into a list
@@ -175,12 +176,12 @@ class Multiplexer(Block):
     # The minimum must be higher than the previous maximum
     min_t = max(min_t, self._last_max_t + self._delta)
     # Correcting to the closest upper multiple of the time interval
-    min_t = min_t + (1 / self._interp_freq) - min_t % (1 / self._interp_freq)
+    min_t = np.ceil((min_t - self._epsilon) / self._period) * self._period
 
     # Getting the maximum time for the interpolation (minimax over all labels)
     max_t = min(data[0, -1] for data in self._data.values())
     # Correcting to the closest lower multiple of the time interval
-    max_t = max_t - (1 / self._interp_freq) + max_t % (1 / self._interp_freq)
+    max_t = np.floor((max_t + self._epsilon) / self._period) * self._period
 
     if max_t < min_t:
       self.log(logging.DEBUG, "Ranges not matching for interpolation")
