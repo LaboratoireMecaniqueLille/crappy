@@ -74,6 +74,15 @@ class LinkReader(Block):
 
     return cls._index
 
+  def prepare(self) -> None:
+    """Checks that there's at least one incoming :class:`~crappy.links.Link`.
+
+    .. versionadded:: 2.0.9
+    """
+
+    if not self.inputs:
+      raise IOError("No Link pointing towards the LinkReader Block !")
+
   def loop(self) -> None:
     """Flushes the incoming :class:`~crappy.links.Link` and displays their
     data."""
