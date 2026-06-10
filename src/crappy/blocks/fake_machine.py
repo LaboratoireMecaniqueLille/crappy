@@ -153,8 +153,9 @@ class FakeMachine(Block):
     else:
       raise ValueError(f'Invalid mode : {self._mode} !')
 
-    # Updating the current position
+    # Updating the current position, checking it's not going below zero
     self._current_pos += speed * delta_t
+    self._current_pos = max(self._current_pos, 0.0)
 
     # If the max strain is reached, consider that the sample broke
     if self._current_pos / self._l0 > self._max_strain:
