@@ -147,6 +147,18 @@ class PID(Block):
     self._prev_t: float = 0.
     self._i_term: float = 0.
 
+  def prepare(self) -> None:
+    """Checks that there's at least one incoming and one output
+    :class:`~crappy.links.Link`.
+
+    .. versionadded:: 2.0.9
+    """
+
+    if not self.inputs:
+      raise IOError("No Link pointing towards the PID Block!")
+    if not self.outputs:
+      raise IOError("The PID Block has no output Link!")
+
   def loop(self) -> None:
     """Receives the latest target and input values, calculates the P, I and D
     terms and sends the output to the downstream Blocks."""
