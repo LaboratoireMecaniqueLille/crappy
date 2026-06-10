@@ -90,6 +90,9 @@ class Multiplexer(Block):
     self.display_freq = display_freq
     self.debug = debug
 
+    if interp_freq <= 0:
+      raise ValueError("interp_freq must be greater than 0")
+
     # Initializing the attributes
     self._time_label = time_label
     self._interp_freq = interp_freq
