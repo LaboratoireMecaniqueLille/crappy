@@ -108,6 +108,18 @@ class Multiplexer(Block):
     else:
       self._out_labels = None
 
+  def prepare(self) -> None:
+    """Checks that there's at least one incoming and one output
+    :class:`~crappy.links.Link`.
+
+    .. versionadded:: 2.0.9
+    """
+
+    if not self.inputs:
+      raise IOError("No Link pointing towards the Multiplexer Block!")
+    if not self.outputs:
+      raise IOError("The Multiplexer Block has no output Link!")
+
   def loop(self) -> None:
     """Receives data, interpolates it, and sends it to the downstream
     Blocks."""
