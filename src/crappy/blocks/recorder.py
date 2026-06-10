@@ -139,6 +139,9 @@ class Recorder(Block):
     # Keeping only the data that needs to be saved
     data = {key: val for key, val in data.items() if key in self._labels}
 
+    if not all(label in data for label in self._labels):
+      raise IOError("Not all labels received from upstream Block")
+
     if data:
       with open(self._path, 'a', newline='') as file:
         writer = csv.writer(file, lineterminator='\n')
