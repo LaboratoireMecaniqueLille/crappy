@@ -158,7 +158,7 @@ class Synchronizer(Block):
       (self._data[self._ref_label][0] <= max_t)]
 
     # Checking if there are values for the target label in the valid time range
-    if not np.any(interp_times):
+    if not interp_times.size:
       self.log(logging.DEBUG,
                "No value of the target label found between the minimum and "
                "maximum possible interpolation times")
