@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from .block_test_base import BlockTestBase, TestBlock, link
+
 from .test_01_class_api import TestClassAPI
 from .test_02_startup_sequence import TestStartupSequence
 from .test_03_run_cycle import TestRunCycle
