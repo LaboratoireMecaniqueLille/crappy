@@ -106,6 +106,9 @@ class FakeMachine(Block):
                    'Exx(%)': 1e-3, 'Eyy(%)': 1e-3} if sigma is None else sigma
     self._plastic_law = plastic_law
 
+    if mode not in ('speed', 'position'):
+      raise ValueError(f"Invalid mode: {mode}, should be in 'speed' or "
+                       f"'position'")
     self._mode = mode
     self._cmd_label = cmd_label
 
