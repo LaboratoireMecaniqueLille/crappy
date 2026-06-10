@@ -75,6 +75,10 @@ class MeanBlock(Block):
     self.freq = freq
     self.debug = debug
 
+    if delay <= 0:
+      raise ValueError("Delay must be a positive value")
+    self.delay = delay
+
     self._delay = delay
     self._time_label = time_label
 
