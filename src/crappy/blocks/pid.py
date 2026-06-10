@@ -38,7 +38,7 @@ class PID(Block):
                kd_label: str = 'kd',
                labels: tuple[str, str] | None = None,
                reverse: bool = False,
-               i_limit: tuple[float | None, float | None] = (None, None),
+               i_limit: tuple[float, float] = (-float('inf'), float('inf')),
                send_terms: bool = False,
                freq: float | None = 500,
                display_freq: bool = False,
@@ -89,6 +89,9 @@ class PID(Block):
       reverse: If :obj:`True`, reverses the action of the PID.
       i_limit: A :obj:`tuple` containing respectively the lower and upper
         boundaries for the `I` term.
+
+        .. versionchanged:: 2.0.9 :obj:`None` replaced with `float('inf')` to
+          signal absence of limit
       send_terms: If :obj:`True`, returns the weight of each term in the output
         value. It adds ``'p_term', 'i_term', 'd_term'`` to the output labels.
         This is particularly useful to tweak the gains.
@@ -126,7 +129,7 @@ class PID(Block):
     # Setting the limits
     self._out_max = out_max
     self._out_min = out_min
-    self._i_min, self._i_max = i_limit
+    self._i_min, self._i_max = sorted(i_limit)
 
     # Setting the labels
     self._target_label = setpoint_label
@@ -199,10 +202,7 @@ class PID(Block):
     self._last_input = input_
 
     # Clamping the i term if required
-    if self._i_min is not None:
-      self._i_term = max(self._i_min, self._i_term)
-    if self._i_max is not None:
-      self._i_term = min(self._i_max, self._i_term)
+    self._i_term = min(max(self._i_min, self._i_term), self._i_max)
 
     # Clamping the output if required
     out = p_term + self._i_term + d_term
