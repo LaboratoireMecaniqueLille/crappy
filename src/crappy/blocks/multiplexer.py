@@ -97,7 +97,8 @@ class Multiplexer(Block):
     self._time_label = time_label
     self._interp_freq = interp_freq
     self._data: dict[str, np.ndarray] = defaultdict(self._default_array)
-    self._delta: float = 1 / self._interp_freq / 20
+    self._period: float = 1 / self._interp_freq
+    self._delta: float = self._period / 20
     self._last_max_t: float = -float('inf')
 
     # Forcing the out_labels into a list
@@ -163,7 +164,7 @@ class Multiplexer(Block):
       return
 
     # The two values should also be separated by at least one time period
-    if any(np.ptp(self._data[label][0]) < 1 / self._interp_freq
+    if any(np.ptp(self._data[label][0]) < self._period
            for label in self._data):
       self.log(logging.DEBUG, "At least one label has values too close "
                               "together compared to interpolation frequency")
@@ -186,7 +187,7 @@ class Multiplexer(Block):
       return
 
     # The array containing the timestamps for interpolating
-    interp_times = np.arange(min_t, max_t + self._delta, 1 / self._interp_freq)
+    interp_times = np.arange(min_t, max_t + self._delta, self._period)
 
     # Making sure there are points to interpolate
     if not interp_times.size:
