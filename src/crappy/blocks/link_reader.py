@@ -85,10 +85,11 @@ class LinkReader(Block):
 
   def loop(self) -> None:
     """Flushes the incoming :class:`~crappy.links.Link` and displays their
-    data."""
+    data.
 
-    for link_data in self.recv_all_data_raw():
-      for dic in (dict(i) for i in
-                  zip(*([(key, value) for value in values]
-                        for key, values in link_data.items()))):
-        self.log(logging.INFO, f'{self._reader_name} got: {dic}')
+    .. versionchanged:: 2.0.9 Now displaying individual received messages
+    """
+
+    for link in self.inputs:
+      while link.poll():
+        self.log(logging.INFO, f'{self._reader_name} got: {link.recv()}')
