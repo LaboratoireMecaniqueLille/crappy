@@ -189,7 +189,7 @@ class Multiplexer(Block):
     interp_times = np.arange(min_t, max_t + self._delta, 1 / self._interp_freq)
 
     # Making sure there are points to interpolate
-    if not np.any(interp_times):
+    if not interp_times.size:
       self.log(logging.DEBUG, "No time points for interpolation")
       return
 
