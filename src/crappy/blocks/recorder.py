@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from pathlib import Path
+import csv
 import logging
 
 from .meta_block import Block
@@ -123,9 +124,10 @@ class Recorder(Block):
           self._labels = list(data.keys())
 
         # The first row of the file contains the names of the labels
-        with open(self._path, 'w') as file:
+        with open(self._path, 'w', newline='') as file:
           self.log(logging.INFO, f"Writing the header on file {self._path}")
-          file.write(f"{','.join(self._labels)}\n")
+          writer = csv.writer(file, lineterminator='\n')
+          writer.writerow(self._labels)
 
         self._file_initialized = True
       else:
@@ -138,11 +140,12 @@ class Recorder(Block):
     data = {key: val for key, val in data.items() if key in self._labels}
 
     if data:
-      with open(self._path, 'a') as file:
+      with open(self._path, 'a', newline='') as file:
+        writer = csv.writer(file, lineterminator='\n')
         # Sorting the lists of values in the same order as the labels
         sorted_data = [data[label] for label in self._labels]
         # Actually writing the values
         self.log(logging.DEBUG, f"Writing {sorted_data} to the file "
                                 f"{self._path}")
         for values in zip(*sorted_data):
-          file.write(f"{','.join(map(str, values))}\n")
+          writer.writerow(map(str, values))
