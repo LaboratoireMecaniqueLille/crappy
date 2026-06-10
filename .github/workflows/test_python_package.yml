@@ -47,6 +47,7 @@ jobs:
     - name: Test Crappy (Common)
       run: |
         python -m unittest -v tests.block
+        python -m unittest -v tests.blocks
         python -m unittest -v tests.camera_configuration_tools
         python -m unittest -v tests.camera_processes
     # On Windows, a graphical environment is present by default
