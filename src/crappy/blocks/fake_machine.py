@@ -130,13 +130,17 @@ class FakeMachine(Block):
     from it, checks whether the sample broke and what the plastic elongation
     is, and finally returns the data."""
 
+    # Avoid potential zero division later
+    t = time()
+    delta_t = t - self._prev_t
+    if not delta_t > 0:
+      return
+
     # Getting the latest command
     if self._cmd_label not in (data := self.recv_last_data(fill_missing=True)):
       return
     else:
       cmd = data[self._cmd_label]
-    t = time()
-    delta_t = t - self._prev_t
     self._prev_t = t
 
     # Calculating the speed based on the command and the mode
