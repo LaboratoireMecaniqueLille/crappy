@@ -92,6 +92,18 @@ class MeanBlock(Block):
 
     self._last_sent_t = time()
 
+  def prepare(self) -> None:
+    """Checks that there's at least one incoming and one output
+    :class:`~crappy.links.Link`.
+
+    .. versionadded:: 2.0.9
+    """
+
+    if not self.inputs:
+      raise IOError("No Link pointing towards the Mean Block!")
+    if not self.outputs:
+      raise IOError("The Mean Block has no output Link!")
+
   def begin(self) -> None:
     """Initializes the time counter.
     
