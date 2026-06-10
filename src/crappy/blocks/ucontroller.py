@@ -98,7 +98,8 @@ class UController(Block):
       raise TypeError("display_freq should be either True or False !")
     self.display_freq = display_freq
 
-    if not isinstance(freq, float) and not isinstance(freq, int) or freq <= 0:
+    if (freq is not None and
+        (not isinstance(freq, (float, int)) or freq <= 0)):
       raise TypeError("freq should be a positive float !")
     self.freq = freq
 
