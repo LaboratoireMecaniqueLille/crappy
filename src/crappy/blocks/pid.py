@@ -168,14 +168,14 @@ class PID(Block):
 
     # Updating the gains if provided
     if self._kp_label in data:
-      kp = data[self._kp_label]
-      self._kp = -abs(kp) if self._reverse else kp
+      kp = abs(data[self._kp_label])
+      self._kp = -kp if self._reverse else kp
     if self._ki_label in data:
-      ki = data[self._ki_label]
-      self._ki = -abs(ki) if self._reverse else ki
+      ki = abs(data[self._ki_label])
+      self._ki = -ki if self._reverse else ki
     if self._kd_label in data:
-      kd = data[self._kd_label]
-      self._kd = -abs(kd) if self._reverse else kd
+      kd = abs(data[self._kd_label])
+      self._kd = -kd if self._reverse else kd
 
     # Updating the target value if provided
     if self._target_label in data:
