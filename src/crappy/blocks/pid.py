@@ -127,8 +127,7 @@ class PID(Block):
     self._kd = sign * abs(kd)
 
     # Setting the limits
-    self._out_max = out_max
-    self._out_min = out_min
+    self._out_min, self._out_max = sorted((out_min, out_max))
     self._i_min, self._i_max = sorted(i_limit)
 
     # Setting the labels
