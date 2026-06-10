@@ -90,7 +90,7 @@ class Recorder(Block):
     if not self.inputs:
       raise ValueError('The Recorder block does not have inputs !')
     elif len(self.inputs) > 1:
-      raise ValueError('Cannot link more than one block to a Recorder block !')
+      raise ValueError('Cannot link more than one Block to a Recorder Block!')
 
     # Creating the folder for storing the data if it does not already exist
     if not Path.is_dir(parent_folder := self._path.parent):
