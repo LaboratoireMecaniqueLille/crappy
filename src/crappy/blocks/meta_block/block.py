@@ -1240,7 +1240,7 @@ class Block(Process, ABC):
     """
 
     self.log(logging.DEBUG, "Data availability requested")
-    return self.inputs and any(link.poll() for link in self.inputs)
+    return bool(self.inputs) and any(link.poll() for link in self.inputs)
 
   def recv_data(self) -> dict[str, Any]:
     """Reads the first available values from each incoming
