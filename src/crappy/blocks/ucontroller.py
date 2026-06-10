@@ -13,7 +13,9 @@ try:
   from serial.serialutil import SerialException
 except (ModuleNotFoundError, ImportError):
   Serial = OptionalModule("pyserial")
-  SerialException = OptionalModule("pyserial")
+
+  class SerialException(Exception):
+    """Fallback exception used when pyserial is not installed."""
 
 
 class UController(Block):
