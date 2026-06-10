@@ -120,7 +120,7 @@ class FakeMachine(Block):
     self._max_recorded_strain = 0
 
   def begin(self) -> None:
-    """Sends a first value that should be 0."""
+    """Sends a first value that should be 0, plus or minus the noise."""
 
     self._prev_t = self.t0
     self._send_values()
