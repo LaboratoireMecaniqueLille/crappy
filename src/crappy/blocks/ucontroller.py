@@ -123,6 +123,10 @@ class UController(Block):
     else:
       self._labels = None
 
+    if self._t_device and self._labels is not None and len(self._labels) > 8:
+      raise ValueError("Cannot manage more than 8 labels when t_device is "
+                       "True")
+
     # Forcing the cmd_labels into a list
     if cmd_labels is not None and isinstance(cmd_labels, str):
       self._cmd_labels = [cmd_labels]
