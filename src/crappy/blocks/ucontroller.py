@@ -178,6 +178,10 @@ class UController(Block):
       raise IOError("labels are specified but there's no output link !")
     if self._cmd_labels is not None and not self.inputs:
       raise IOError("cmd_labels are specified but there's no input link !")
+    if self._cmd_labels is None and self.inputs:
+      raise IOError("No cmd_label specified although there are input Links!")
+    if self._labels is None and self.outputs:
+      raise IOError("No label specified although there are output Links!")
 
     # Buffer for storing the received bytes
     if self._labels is not None:
