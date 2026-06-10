@@ -114,7 +114,13 @@ class MeanBlock(Block):
 
   def loop(self) -> None:
     """Receives all available data from the upstream Blocks, averages it and
-    sends it if the time delay is reached."""
+    sends it if the time delay is reached.
+
+    .. versionchanged:: 2.0.9 average time label computed directly from time
+      data when possible
+    """
+
+    time_data: list | None = None
 
     # Receiving data from each incoming link
     data = self.recv_all_data(delay=self._delay, poll_delay=self._delay / 10)
@@ -122,7 +128,7 @@ class MeanBlock(Block):
 
     # Removing the time label from the received data
     if self._time_label in data:
-      data.pop(self._time_label)
+      time_data = data.pop(self._time_label)
 
     # Building the output dict with the averaged values
     for label, values in data.items():
@@ -136,6 +142,10 @@ class MeanBlock(Block):
 
     # Sending the output dict
     if to_send:
-      to_send[self._time_label] = (time() + self._last_sent_t) / 2 - self.t0
+      if time_data is not None:
+        to_send[self._time_label] = (min(time_data) +
+                                     max(time_data)) / 2 - self.t0
+      else:
+        to_send[self._time_label] = (time() + self._last_sent_t) / 2 - self.t0
       self._last_sent_t = time()
       self.send(to_send)
