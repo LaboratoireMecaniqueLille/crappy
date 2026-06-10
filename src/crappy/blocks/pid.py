@@ -144,7 +144,7 @@ class PID(Block):
     # Setting the variables
     self._setpoint: float | None = None
     self._last_input: float | None = None
-    self._prev_t: float = 0.
+    self._prev_t: float | None = None
     self._i_term: float = 0.
 
   def prepare(self) -> None:
@@ -200,14 +200,18 @@ class PID(Block):
     else:
       return
 
-    delta_t = t - self._prev_t
+    # Always calculate the P term
     error = self._setpoint - input_
     d_input = input_ - self._last_input
-
-    # Calculating the three PID terms
     p_term = self._kp * error
-    self._i_term += self._ki * error * delta_t
-    d_term = - self._kd * d_input / delta_t if delta_t > 0 else 0
+
+    # Calculate the I and D term only if a delta_t is defined
+    if self._prev_t is not None:
+      delta_t = t - self._prev_t
+      self._i_term += self._ki * error * delta_t
+      d_term = - self._kd * d_input / delta_t if delta_t > 0 else 0
+    else:
+      d_term = 0
 
     self._prev_t = t
     self._last_input = input_
