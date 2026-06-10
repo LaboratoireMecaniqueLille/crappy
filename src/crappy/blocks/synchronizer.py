@@ -153,9 +153,9 @@ class Synchronizer(Block):
       return
 
     # The array containing the timestamps for interpolating
-    interp_times = self._data[self._ref_label][0,
-      (self._data[self._ref_label][0] >= min_t) &
-      (self._data[self._ref_label][0] <= max_t)]
+    ref_times = self._data[self._ref_label][0]
+    interp_mask = (ref_times >= min_t) & (ref_times <= max_t)
+    interp_times = ref_times[interp_mask]
 
     # Checking if there are values for the target label in the valid time range
     if not interp_times.size:
@@ -171,7 +171,7 @@ class Synchronizer(Block):
 
       # Keeping the values of the reference label as they are
       if label == self._ref_label:
-        to_send[label] = values[1, :]
+        to_send[label] = list(values[1, interp_mask])
       # For all the other labels, performing interpolation
       else:
         to_send[label] = list(np.interp(interp_times, values[0], values[1]))
