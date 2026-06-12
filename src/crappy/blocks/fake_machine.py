@@ -106,6 +106,9 @@ class FakeMachine(Block):
                    'Exx(%)': 1e-3, 'Eyy(%)': 1e-3} if sigma is None else sigma
     self._plastic_law = plastic_law
 
+    if mode not in ('speed', 'position'):
+      raise ValueError(f"Invalid mode: {mode}, should be in 'speed' or "
+                       f"'position'")
     self._mode = mode
     self._cmd_label = cmd_label
 
@@ -117,7 +120,7 @@ class FakeMachine(Block):
     self._max_recorded_strain = 0
 
   def begin(self) -> None:
-    """Sends a first value that should be 0."""
+    """Sends a first value that should be 0, plus or minus the noise."""
 
     self._prev_t = self.t0
     self._send_values()
@@ -127,13 +130,17 @@ class FakeMachine(Block):
     from it, checks whether the sample broke and what the plastic elongation
     is, and finally returns the data."""
 
+    # Avoid potential zero division later
+    t = time()
+    delta_t = t - self._prev_t
+    if not delta_t > 0:
+      return
+
     # Getting the latest command
     if self._cmd_label not in (data := self.recv_last_data(fill_missing=True)):
       return
     else:
       cmd = data[self._cmd_label]
-    t = time()
-    delta_t = t - self._prev_t
     self._prev_t = t
 
     # Calculating the speed based on the command and the mode
@@ -146,8 +153,9 @@ class FakeMachine(Block):
     else:
       raise ValueError(f'Invalid mode : {self._mode} !')
 
-    # Updating the current position
+    # Updating the current position, checking it's not going below zero
     self._current_pos += speed * delta_t
+    self._current_pos = max(self._current_pos, 0.0)
 
     # If the max strain is reached, consider that the sample broke
     if self._current_pos / self._l0 > self._max_strain:

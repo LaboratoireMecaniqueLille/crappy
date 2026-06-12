@@ -90,11 +90,16 @@ class Multiplexer(Block):
     self.display_freq = display_freq
     self.debug = debug
 
+    if interp_freq <= 0:
+      raise ValueError("interp_freq must be greater than 0")
+
     # Initializing the attributes
     self._time_label = time_label
     self._interp_freq = interp_freq
     self._data: dict[str, np.ndarray] = defaultdict(self._default_array)
-    self._delta: float = 1 / self._interp_freq / 20
+    self._period: float = 1 / self._interp_freq
+    self._delta: float = self._period / 20
+    self._epsilon: float = self._period * 1e-12
     self._last_max_t: float = -float('inf')
 
     # Forcing the out_labels into a list
@@ -104,6 +109,18 @@ class Multiplexer(Block):
       self._out_labels = list(out_labels)
     else:
       self._out_labels = None
+
+  def prepare(self) -> None:
+    """Checks that there's at least one incoming and one output
+    :class:`~crappy.links.Link`.
+
+    .. versionadded:: 2.0.9
+    """
+
+    if not self.inputs:
+      raise IOError("No Link pointing towards the Multiplexer Block!")
+    if not self.outputs:
+      raise IOError("The Multiplexer Block has no output Link!")
 
   def loop(self) -> None:
     """Receives data, interpolates it, and sends it to the downstream
@@ -148,7 +165,7 @@ class Multiplexer(Block):
       return
 
     # The two values should also be separated by at least one time period
-    if any(np.ptp(self._data[label][0]) < 1 / self._interp_freq
+    if any(np.ptp(self._data[label][0]) < self._period
            for label in self._data):
       self.log(logging.DEBUG, "At least one label has values too close "
                               "together compared to interpolation frequency")
@@ -159,22 +176,22 @@ class Multiplexer(Block):
     # The minimum must be higher than the previous maximum
     min_t = max(min_t, self._last_max_t + self._delta)
     # Correcting to the closest upper multiple of the time interval
-    min_t = min_t + (1 / self._interp_freq) - min_t % (1 / self._interp_freq)
+    min_t = np.ceil((min_t - self._epsilon) / self._period) * self._period
 
     # Getting the maximum time for the interpolation (minimax over all labels)
     max_t = min(data[0, -1] for data in self._data.values())
     # Correcting to the closest lower multiple of the time interval
-    max_t = max_t - (1 / self._interp_freq) + max_t % (1 / self._interp_freq)
+    max_t = np.floor((max_t + self._epsilon) / self._period) * self._period
 
     if max_t < min_t:
       self.log(logging.DEBUG, "Ranges not matching for interpolation")
       return
 
     # The array containing the timestamps for interpolating
-    interp_times = np.arange(min_t, max_t + self._delta, 1 / self._interp_freq)
+    interp_times = np.arange(min_t, max_t + self._delta, self._period)
 
     # Making sure there are points to interpolate
-    if not np.any(interp_times):
+    if not interp_times.size:
       self.log(logging.DEBUG, "No time points for interpolation")
       return
 

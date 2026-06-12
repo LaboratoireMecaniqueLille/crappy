@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from pathlib import Path
+import csv
 import logging
 
 from .meta_block import Block
@@ -90,7 +91,7 @@ class Recorder(Block):
     if not self.inputs:
       raise ValueError('The Recorder block does not have inputs !')
     elif len(self.inputs) > 1:
-      raise ValueError('Cannot link more than one block to a Recorder block !')
+      raise ValueError('Cannot link more than one Block to a Recorder Block!')
 
     # Creating the folder for storing the data if it does not already exist
     if not Path.is_dir(parent_folder := self._path.parent):
@@ -123,9 +124,10 @@ class Recorder(Block):
           self._labels = list(data.keys())
 
         # The first row of the file contains the names of the labels
-        with open(self._path, 'w') as file:
+        with open(self._path, 'w', newline='') as file:
           self.log(logging.INFO, f"Writing the header on file {self._path}")
-          file.write(f"{','.join(self._labels)}\n")
+          writer = csv.writer(file, lineterminator='\n')
+          writer.writerow(self._labels)
 
         self._file_initialized = True
       else:
@@ -137,12 +139,16 @@ class Recorder(Block):
     # Keeping only the data that needs to be saved
     data = {key: val for key, val in data.items() if key in self._labels}
 
+    if not all(label in data for label in self._labels):
+      raise IOError("Not all labels received from upstream Block")
+
     if data:
-      with open(self._path, 'a') as file:
+      with open(self._path, 'a', newline='') as file:
+        writer = csv.writer(file, lineterminator='\n')
         # Sorting the lists of values in the same order as the labels
         sorted_data = [data[label] for label in self._labels]
         # Actually writing the values
         self.log(logging.DEBUG, f"Writing {sorted_data} to the file "
                                 f"{self._path}")
         for values in zip(*sorted_data):
-          file.write(f"{','.join(map(str, values))}\n")
+          writer.writerow(map(str, values))

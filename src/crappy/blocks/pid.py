@@ -38,7 +38,7 @@ class PID(Block):
                kd_label: str = 'kd',
                labels: tuple[str, str] | None = None,
                reverse: bool = False,
-               i_limit: tuple[float | None, float | None] = (None, None),
+               i_limit: tuple[float, float] = (-float('inf'), float('inf')),
                send_terms: bool = False,
                freq: float | None = 500,
                display_freq: bool = False,
@@ -89,6 +89,9 @@ class PID(Block):
       reverse: If :obj:`True`, reverses the action of the PID.
       i_limit: A :obj:`tuple` containing respectively the lower and upper
         boundaries for the `I` term.
+
+        .. versionchanged:: 2.0.9 :obj:`None` replaced with `float('inf')` to
+          signal absence of limit
       send_terms: If :obj:`True`, returns the weight of each term in the output
         value. It adds ``'p_term', 'i_term', 'd_term'`` to the output labels.
         This is particularly useful to tweak the gains.
@@ -124,9 +127,8 @@ class PID(Block):
     self._kd = sign * abs(kd)
 
     # Setting the limits
-    self._out_max = out_max
-    self._out_min = out_min
-    self._i_min, self._i_max = i_limit
+    self._out_min, self._out_max = sorted((out_min, out_max))
+    self._i_min, self._i_max = sorted(i_limit)
 
     # Setting the labels
     self._target_label = setpoint_label
@@ -142,8 +144,20 @@ class PID(Block):
     # Setting the variables
     self._setpoint: float | None = None
     self._last_input: float | None = None
-    self._prev_t: float = 0.
+    self._prev_t: float | None = None
     self._i_term: float = 0.
+
+  def prepare(self) -> None:
+    """Checks that there's at least one incoming and one output
+    :class:`~crappy.links.Link`.
+
+    .. versionadded:: 2.0.9
+    """
+
+    if not self.inputs:
+      raise IOError("No Link pointing towards the PID Block!")
+    if not self.outputs:
+      raise IOError("The PID Block has no output Link!")
 
   def loop(self) -> None:
     """Receives the latest target and input values, calculates the P, I and D
@@ -154,14 +168,14 @@ class PID(Block):
 
     # Updating the gains if provided
     if self._kp_label in data:
-      kp = data[self._kp_label]
-      self._kp = -abs(kp) if self._reverse else kp
+      kp = abs(data[self._kp_label])
+      self._kp = -kp if self._reverse else kp
     if self._ki_label in data:
-      ki = data[self._ki_label]
-      self._ki = -abs(ki) if self._reverse else ki
+      ki = abs(data[self._ki_label])
+      self._ki = -ki if self._reverse else ki
     if self._kd_label in data:
-      kd = data[self._kd_label]
-      self._kd = -abs(kd) if self._reverse else kd
+      kd = abs(data[self._kd_label])
+      self._kd = -kd if self._reverse else kd
 
     # Updating the target value if provided
     if self._target_label in data:
@@ -186,23 +200,24 @@ class PID(Block):
     else:
       return
 
-    delta_t = t - self._prev_t
+    # Always calculate the P term
     error = self._setpoint - input_
     d_input = input_ - self._last_input
-
-    # Calculating the three PID terms
     p_term = self._kp * error
-    self._i_term += self._ki * error * delta_t
-    d_term = - self._kd * d_input / delta_t if delta_t > 0 else 0
+
+    # Calculate the I and D term only if a delta_t is defined
+    if self._prev_t is not None:
+      delta_t = t - self._prev_t
+      self._i_term += self._ki * error * delta_t
+      d_term = - self._kd * d_input / delta_t if delta_t > 0 else 0
+    else:
+      d_term = 0
 
     self._prev_t = t
     self._last_input = input_
 
     # Clamping the i term if required
-    if self._i_min is not None:
-      self._i_term = max(self._i_min, self._i_term)
-    if self._i_max is not None:
-      self._i_term = min(self._i_max, self._i_term)
+    self._i_term = min(max(self._i_min, self._i_term), self._i_max)
 
     # Clamping the output if required
     out = p_term + self._i_term + d_term
