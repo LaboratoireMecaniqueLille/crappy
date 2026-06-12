@@ -43,6 +43,15 @@ class Sink(Block):
     self.debug = debug
     self.pausable = False
 
+  def prepare(self) -> None:
+    """Checks that there's at least one incoming :class:`~crappy.links.Link`.
+
+    .. versionadded:: 2.0.9
+    """
+
+    if not self.inputs:
+      raise IOError("No Link pointing towards the Sink Block !")
+
   def loop(self) -> None:
     """Drops all the received data."""
 
