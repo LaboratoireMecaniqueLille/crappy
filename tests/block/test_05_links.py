@@ -2,6 +2,7 @@
 
 from crappy import Block
 from crappy._global import LinkDataError
+from crappy.blocks.meta_block import block as block_module
 from itertools import chain
 from multiprocessing import Barrier, Event, Value, Queue
 
@@ -387,6 +388,159 @@ class TestLinks(BlockTestBase):
 
     self.assertEqual(block_3.recv_all_data_raw(None),
                      [{'a': [0], 'b': [2]}, {'a': [1], 'b': [1, 2]}])
+
+    Block.reset()
+
+  def test_recv_all_data_default_poll_delay(self) -> None:
+    """Tests the default poll delay of the recv_all_data methods."""
+
+    delay = 10.0
+    expected_sleep = delay / 10
+
+    for method_name, expected in (('recv_all_data', dict()),
+                                  ('recv_all_data_raw', list())):
+      block = TestBlock()
+      sleep_delays = list()
+      current_t = [0.0]
+
+      def fake_time() -> float:
+        """Returns the fake current time."""
+
+        return current_t[0]
+
+      def fake_sleep(sleep_delay: float) -> None:
+        """Records the sleep delay and advances the fake time."""
+
+        sleep_delays.append(sleep_delay)
+        current_t[0] += sleep_delay
+
+      time_orig = block_module.time
+      sleep_orig = block_module.sleep
+
+      try:
+        block_module.time = fake_time
+        block_module.sleep = fake_sleep
+
+        with self.subTest(method=method_name):
+          self.assertEqual(getattr(block, method_name)(delay=delay), expected)
+
+      finally:
+        block_module.time = time_orig
+        block_module.sleep = sleep_orig
+
+      self.assertEqual(len(sleep_delays), 10)
+
+      for sleep_delay in sleep_delays:
+        with self.subTest(method=method_name, sleep_delay=sleep_delay):
+          self.assertEqual(sleep_delay, expected_sleep)
+
+    Block.reset()
+
+  def test_recv_all_data_poll_delay_cap(self) -> None:
+    """Tests that the sleep delays are capped to the remaining delay."""
+
+    delay = 1.0
+    poll_delay = 0.4
+
+    for method_name, expected in (('recv_all_data', dict()),
+                                  ('recv_all_data_raw', list())):
+      block = TestBlock()
+      sleep_delays = list()
+      current_t = [0.0]
+
+      def fake_time() -> float:
+        """Returns the fake current time."""
+
+        return current_t[0]
+
+      def fake_sleep(sleep_delay: float) -> None:
+        """Records the sleep delay and advances the fake time."""
+
+        sleep_delays.append(sleep_delay)
+        current_t[0] += sleep_delay
+
+      time_orig = block_module.time
+      sleep_orig = block_module.sleep
+
+      try:
+        block_module.time = fake_time
+        block_module.sleep = fake_sleep
+
+        with self.subTest(method=method_name):
+          self.assertEqual(getattr(block, method_name)(delay, poll_delay),
+                           expected)
+
+      finally:
+        block_module.time = time_orig
+        block_module.sleep = sleep_orig
+
+      self.assertEqual(len(sleep_delays), 3)
+      for sleep_delay, expected_sleep in zip(sleep_delays, (0.4, 0.4, 0.2)):
+        with self.subTest(method=method_name, sleep_delay=sleep_delay):
+          self.assertAlmostEqual(sleep_delay, expected_sleep)
+
+    Block.reset()
+
+  def test_recv_all_data_final_drain(self) -> None:
+    """Tests that data arriving during the last sleep is returned."""
+
+    delay = 1.0
+    poll_delay = 0.6
+
+    for method_name, expected in (('recv_all_data', {'a': [0]}),
+                                  ('recv_all_data_raw', [{'a': [0]}])):
+      block_1 = TestBlock()
+      block_2 = TestBlock()
+      link(block_1, block_2)
+
+      current_t = [0.0]
+
+      def fake_time() -> float:
+        """Returns the fake current time."""
+
+        return current_t[0]
+
+      def fake_sleep(sleep_delay: float) -> None:
+        """Sends data at the end of the acquisition window."""
+
+        if current_t[0] < delay <= current_t[0] + sleep_delay:
+          block_1.send({'a': 0})
+        current_t[0] += sleep_delay
+
+      time_orig = block_module.time
+      sleep_orig = block_module.sleep
+
+      try:
+        block_module.time = fake_time
+        block_module.sleep = fake_sleep
+
+        with self.subTest(method=method_name):
+          self.assertEqual(getattr(block_2, method_name)(delay, poll_delay),
+                           expected)
+
+      finally:
+        block_module.time = time_orig
+        block_module.sleep = sleep_orig
+        Block.reset()
+
+  def test_recv_all_data_invalid_poll_delay(self) -> None:
+    """Tests the validation of poll_delay for the recv_all_data methods."""
+
+    block = TestBlock()
+
+    for method in (block.recv_all_data, block.recv_all_data_raw):
+      with self.subTest(method=method.__name__):
+        with self.assertRaises(ValueError):
+          method(delay=1.0, poll_delay=0.9)
+
+        with self.assertRaises(ValueError):
+          method(delay=1.0, poll_delay=1.0)
+
+        with self.assertRaises(ValueError):
+          method(delay=1.0, poll_delay=0)
+
+        with self.assertRaises(ValueError):
+          method(delay=1.0, poll_delay=-0.1)
 
     Block.reset()
 
