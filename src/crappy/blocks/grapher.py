@@ -181,7 +181,7 @@ class Grapher(Block):
     else:
       # Below 10Hz, making sure to flush the pipes at least every 0.1s
       data = self.recv_all_data_raw(delay=1 / 2 / self.freq,
-                                    poll_delay=min(0.1, 1 / 2 / self.freq))
+                                    poll_delay=min(0.1, 1 / 4 / self.freq))
 
     update = False  # Should the graph be updated ?
 

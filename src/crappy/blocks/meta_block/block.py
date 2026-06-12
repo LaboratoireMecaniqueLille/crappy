@@ -1358,6 +1358,14 @@ class Block(Process, ABC):
     .. versionchanged:: 2.0.0 renamed from *get_all_last* to *recv_all_data*
     """
 
+    if (delay is not None
+        and poll_delay is not None
+        and poll_delay >= 0.9 * delay):
+      raise ValueError("The poll_delay value must be lower than the delay")
+
+    if poll_delay is not None and poll_delay <= 0:
+      raise ValueError("poll_delay should be positive")
+
     ret = defaultdict(list)
     t0 = time()
 
@@ -1409,6 +1417,14 @@ class Block(Process, ABC):
     
     .. versionadded:: 2.0.0
     """
+
+    if (delay is not None
+        and poll_delay is not None
+        and poll_delay >= 0.9 * delay):
+      raise ValueError("The poll_delay value must be lower than the delay")
+
+    if poll_delay is not None and poll_delay <= 0:
+      raise ValueError("poll_delay should be positive")
 
     ret = [defaultdict(list) for _ in self.inputs]
     t0 = time()
