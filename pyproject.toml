@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "crappy"
-dynamic = ["readme"]
 version = "2.0.9"
+readme = "README.md"
 description = "Command and Real-time Acquisition in Parallelized Python"
 license = "GPL-2.0-or-later"
 license-files = ["LICENSE"]
@@ -67,9 +67,6 @@ main = [
 [tool.setuptools]
 package-dir = {"" = "src"}
 include-package-data = false
-
-[tool.setuptools.dynamic]
-readme = {file = "README.md", content-type = "text/markdown"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
