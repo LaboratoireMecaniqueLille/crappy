@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import sleep
+from queue import Empty
 import numpy as np
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
@@ -38,8 +39,10 @@ class TestHistogram(ConfigurationWindowTestBase):
     self.assertFalse(self._config._histogram_process._stop_event.is_set())
     self.assertFalse(
         self._config._histogram_process._processing_event.is_set())
-    self.assertTrue(self._config._histogram_process._img_in.empty())
-    self.assertTrue(self._config._img_out.empty())
+    with self.assertRaises(Empty):
+      self._config._histogram_process._img_in.get_nowait()
+    with self.assertRaises(Empty):
+      self._config._img_out.get_nowait()
 
     # Acquire an image and put it in the queue for processing
     _, img = self._camera.get_image()
@@ -51,8 +54,13 @@ class TestHistogram(ConfigurationWindowTestBase):
     self.assertFalse(self._config._histogram_process._stop_event.is_set())
     self.assertFalse(
         self._config._histogram_process._processing_event.is_set())
-    self.assertFalse(self._config._histogram_process._img_in.empty())
-    self.assertTrue(self._config._img_out.empty())
+    try:
+      queued = self._config._histogram_process._img_in.get_nowait()
+    except Empty:
+      self.fail("Expected an item in the queue")
+    self._config._histogram_process._img_in.put_nowait(queued)
+    with self.assertRaises(Empty):
+      self._config._img_out.get_nowait()
 
     # Start the histogram process and wait for it to work
     self._config._histogram_process.start()
@@ -64,12 +72,14 @@ class TestHistogram(ConfigurationWindowTestBase):
       self.assertFalse(self._config._histogram_process._stop_event.is_set())
       self.assertFalse(
           self._config._histogram_process._processing_event.is_set())
-      self.assertTrue(self._config._histogram_process._img_in.empty())
-      # There should be a histogram image available in the queue
-      self.assertFalse(self._config._img_out.empty())
+      with self.assertRaises(Empty):
+        self._config._histogram_process._img_in.get_nowait()
 
       # Read the generated histogram, that should be an array
-      img = self._config._img_out.get_nowait()
+      try:
+        img = self._config._img_out.get_nowait()
+      except Empty:
+        self.fail("Expected an item in the queue")
       self.assertIsInstance(img, np.ndarray)
 
       # Raise the stop flag and wait for the histogram process to stop
@@ -82,8 +92,10 @@ class TestHistogram(ConfigurationWindowTestBase):
       self.assertTrue(self._config._histogram_process._stop_event.is_set())
       self.assertFalse(
           self._config._histogram_process._processing_event.is_set())
-      self.assertTrue(self._config._histogram_process._img_in.empty())
-      self.assertTrue(self._config._img_out.empty())
+      with self.assertRaises(Empty):
+        self._config._histogram_process._img_in.get_nowait()
+      with self.assertRaises(Empty):
+        self._config._img_out.get_nowait()
 
     # Ensure the histogram process stops in case a test fails
     finally:
