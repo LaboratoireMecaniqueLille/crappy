@@ -8,7 +8,6 @@ from queue import Empty
 import logging
 import logging.handlers
 from functools import partial
-from time import sleep
 
 
 class HistogramProcess(Process):
@@ -72,19 +71,23 @@ class HistogramProcess(Process):
     try:
       self._processing_event.clear()
 
-      # Initializing the variables
-      img, auto_range, low_thresh, high_thresh = None, None, None, None
-
       # Looping until told to stop or an exception is raised
+      latest = None
       while not self._stop_event.is_set():
 
         # Setting the processing event when busy processing an image
-        if not self._img_in.empty():
+        try:
+          # Add timeout to avoid spamming the CPU when no image is available
+          latest = self._img_in.get(timeout=0.01)
           self._processing_event.set()
-          # Receiving the image to process as well as additional parameters
-          while not self._img_in.empty():
-            (img, auto_range,
-             low_thresh, high_thresh) = self._img_in.get_nowait()
+          while True:
+            latest = self._img_in.get_nowait()
+        except Empty:
+          if latest is None:
+            continue
+
+        try:
+          img, auto_range, low_thresh, high_thresh = latest
 
           # Fast-forward without running calculation
           if self._stop_event.is_set():
@@ -110,13 +113,13 @@ class HistogramProcess(Process):
 
           # Sending back the histogram
           self._img_out.put_nowait(out_img)
-          self._processing_event.clear()
           self.log(logging.DEBUG, "Sent the histogram back to the "
                                   "CameraConfig")
 
-        # To avoid spamming the CPU in vain when idle
-        else:
-          sleep(0.001)
+        # Cleanup performed at the end of each processing
+        finally:
+          latest = None
+          self._processing_event.clear()
 
       self.log(logging.INFO, "Stop event set, stopping")
 

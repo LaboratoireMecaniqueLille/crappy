@@ -10,6 +10,7 @@ from io import BytesIO
 import logging
 from multiprocessing import current_process, Event, Queue
 from multiprocessing.queues import Queue as MPQueue
+from queue import Empty
 
 from .config_tools import Zoom, HistogramProcess
 from ...camera.meta_camera.camera_setting import CameraBoolSetting, \
@@ -1039,9 +1040,12 @@ class CameraConfig(tk.Tk):
                                self._low_thresh, self._high_thresh))
 
     # Checking if a histogram is available for display
-    while not self._img_out.empty():
-      self._hist = self._img_out.get_nowait()
-      self.log(logging.DEBUG, "Received histogram from histogram process")
+    try:
+      while True:
+        self._hist = self._img_out.get_nowait()
+        self.log(logging.DEBUG, "Received histogram from histogram process")
+    except Empty:
+      pass
 
   def _resize_hist(self) -> None:
     """Resizes the histogram image to make it fit in the GUI."""
