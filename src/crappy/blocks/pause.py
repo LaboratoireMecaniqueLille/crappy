@@ -88,7 +88,7 @@ class Pause(Block):
 
     self._raw_crit: tuple[str |
                           Callable[[dict[str, list]], bool], ...] = criteria
-    self._criteria: tuple[Callable[[dict[str, list]], bool]] | None = None
+    self._criteria: tuple[Callable[[dict[str, list]], bool], ...] | None = None
 
   def prepare(self) -> None:
     """Converts all the given criteria to :obj:`~collections.abc.Callable`."""

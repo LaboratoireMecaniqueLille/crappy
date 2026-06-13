@@ -80,6 +80,18 @@ class Synchronizer(Block):
     else:
       self._to_sync = None
 
+  def prepare(self) -> None:
+    """Checks that there's at least one incoming and one output
+    :class:`~crappy.links.Link`.
+
+    .. versionadded:: 2.0.9
+    """
+
+    if not self.inputs:
+      raise IOError("No Link pointing towards the Multiplexer Block!")
+    if not self.outputs:
+      raise IOError("The Multiplexer Block has no output Link!")
+
   def loop(self) -> None:
     """Receives data, interpolates it, and sends it to the downstream
     Blocks."""
@@ -141,12 +153,12 @@ class Synchronizer(Block):
       return
 
     # The array containing the timestamps for interpolating
-    interp_times = self._data[self._ref_label][0,
-      (self._data[self._ref_label][0] >= min_t) &
-      (self._data[self._ref_label][0] <= max_t)]
+    ref_times = self._data[self._ref_label][0]
+    interp_mask = (ref_times >= min_t) & (ref_times <= max_t)
+    interp_times = ref_times[interp_mask]
 
     # Checking if there are values for the target label in the valid time range
-    if not np.any(interp_times):
+    if not interp_times.size:
       self.log(logging.DEBUG,
                "No value of the target label found between the minimum and "
                "maximum possible interpolation times")
@@ -159,15 +171,20 @@ class Synchronizer(Block):
 
       # Keeping the values of the reference label as they are
       if label == self._ref_label:
-        to_send[label] = values[1, :]
+        to_send[label] = list(values[1, interp_mask])
       # For all the other labels, performing interpolation
       else:
         to_send[label] = list(np.interp(interp_times, values[0], values[1]))
 
-      # Keeping the last data point before max_t to pass this information on
-      last = values[:, values[0] <= max_t][:, -1]
-      # Removing the used values from the buffer, except the last data point
-      self._data[label] = np.column_stack((last, values[:, values[0] > max_t]))
+      if label == self._ref_label:
+        # For the reference label no need to keep points that were already used
+        self._data[label] = values[:, values[0] > max_t]
+      else:
+        # Keeping the last data point before max_t to pass this information on
+        last = values[:, values[0] <= max_t][:, -1]
+        # Removing the used values from the buffer, except the last data point
+        self._data[label] = np.column_stack((last,
+                                             values[:, values[0] > max_t]))
 
     if to_send:
       # Adding the time values to the dict of values to send

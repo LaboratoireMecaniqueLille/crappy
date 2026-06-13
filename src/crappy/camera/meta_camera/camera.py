@@ -258,7 +258,7 @@ class Camera(ABC):
     # Checking if the given name is valid
     if name in self._reserved:
       raise ValueError(f"The name {name} is reserved for a different type of "
-                       f"setting ! !")
+                       f"setting !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} scale setting")
@@ -517,16 +517,22 @@ class Camera(ABC):
     It is called in case :meth:`~crappy.camera.Camera.__getattribute__` doesn't
     work properly, and tries to return the corresponding setting value."""
 
-    try:
-      return self.settings[item].value
-    except (AttributeError, KeyError):
-      raise AttributeError(f'No attribute nor setting named {item}')
+    settings = self.__dict__.get("settings")
+
+    if settings is not None:
+      try:
+        return self.settings[item].value
+      except (AttributeError, KeyError):
+        pass
+    raise AttributeError(f'No attribute nor setting named {item}')
 
   def __setattr__(self, key: str, val: Any) -> None:
     """Method for setting the value of a setting directly by calling
     ``self.<setting name> = <value>``."""
 
-    if key != 'settings' and key in self.settings:
+    settings = self.__dict__.get("settings")
+
+    if settings is not None and key != 'settings' and key in settings:
       self.settings[key].value = val
     else:
       super().__setattr__(key, val)

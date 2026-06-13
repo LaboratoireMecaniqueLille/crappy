@@ -3,7 +3,7 @@
 from time import gmtime, strftime
 from re import match
 
-__version__ = '2.0.8'
+__version__ = '2.0.9'
 
 # Project information
 # =============================================================================
@@ -958,7 +958,7 @@ intersphinx_mapping = {
   'python': ('https://docs.python.org/3', None),
   'numpy': ('https://numpy.org/doc/stable/', None),
   'matplotlib': ('https://matplotlib.org/stable/', None),
-  'psutil': ('https://psutil.readthedocs.io/en/latest/',  None)}
+  'psutil': ('https://psutil.readthedocs.io/latest/',  None)}
 
 # The maximum number of days to cache remote inventories
 intersphinx_cache_limit = 5

@@ -665,6 +665,10 @@ class Block(Process, ABC):
     always being saved to the log file.
     """
 
+    # Keep the existing logger if already defined
+    if cls.logger is not None:
+      return
+
     # The Logger handling all messages
     crappy_log = logging.getLogger('crappy')
 
@@ -761,6 +765,9 @@ class Block(Process, ABC):
     cls.raise_event = None
     cls.kbi_event = None
 
+    cls.log_queue = None
+    cls.log_thread = None
+
     if cls.logger is not None:
       cls.cls_log(logging.INFO, 'Crappy was successfully reset')
   
@@ -844,8 +851,7 @@ class Block(Process, ABC):
 
       # Waiting for t0 to be set, should take a few milliseconds at most
       self.log(logging.INFO, "Waiting for the start time to be set")
-      self._start_event.wait(timeout=1)
-      if not self._start_event.is_set():
+      if not self._start_event.wait(timeout=1.0):
         raise StartTimeout
       else:
         self.log(logging.INFO, "Start time set, Block starting")
@@ -1234,7 +1240,7 @@ class Block(Process, ABC):
     """
 
     self.log(logging.DEBUG, "Data availability requested")
-    return self.inputs and any(link.poll() for link in self.inputs)
+    return bool(self.inputs) and any(link.poll() for link in self.inputs)
 
   def recv_data(self) -> dict[str, Any]:
     """Reads the first available values from each incoming
@@ -1315,7 +1321,7 @@ class Block(Process, ABC):
 
   def recv_all_data(self,
                     delay: float | None = None,
-                    poll_delay: float = 0.1) -> dict[str, list[Any]]:
+                    poll_delay: float | None = None) -> dict[str, list[Any]]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns them all in a single dict.
 
@@ -1341,6 +1347,10 @@ class Block(Process, ABC):
         once every this value seconds. It ensures that the method doesn't spam
         the CPU in vain.
 
+        .. versionchanged:: 2.0.9 now defaults to :obj:`None` as an argument,
+          and to ``delay / 10`` in practice if unset. Also, must be inferior to
+          ``delay``.
+
     Returns:
       A :obj:`dict` whose keys are the received labels and with a :obj:`list`
       of received values for each key. The first item in the list is the oldest
@@ -1350,7 +1360,16 @@ class Block(Process, ABC):
     .. versionadded:: 1.5.10 *blocking* argument
     .. versionremoved:: 2.0.0 *blocking* argument
     .. versionchanged:: 2.0.0 renamed from *get_all_last* to *recv_all_data*
+    .. versionchanged:: 2.0.9 add new mechanism to avoid oversleeping
     """
+
+    if (delay is not None
+        and poll_delay is not None
+        and poll_delay >= 0.9 * delay):
+      raise ValueError("The poll_delay value must be lower than the delay")
+
+    if poll_delay is not None and poll_delay <= 0:
+      raise ValueError("poll_delay should be positive")
 
     ret = defaultdict(list)
     t0 = time()
@@ -1358,11 +1377,17 @@ class Block(Process, ABC):
     # If simple recv_all, just receiving from all input links
     if delay is None:
       for link in self.inputs:
-        ret |= link.recv_chunk()
+        for label, values in link.recv_chunk().items():
+          ret[label].extend(values)
 
     # Otherwise, receiving during the given period
     else:
-      while time() - t0 < delay:
+      # If the poll delay is not specified, setting it much lower than delay
+      if poll_delay is None:
+        poll_delay = delay / 10
+
+      deadline = t0 + delay
+      while time() < deadline:
         last_t = time()
         # Updating the list of received values
         for link in self.inputs:
@@ -1370,7 +1395,13 @@ class Block(Process, ABC):
           for label, values in data.items():
             ret[label].extend(values)
         # Sleeping to avoid useless CPU usage
-        sleep(max(0., last_t + poll_delay - time()))
+        sleep(max(0., min(poll_delay, deadline - time())))
+
+      # Draining once more catches data that arrived during the last sleep
+      for link in self.inputs:
+        data = link.recv_chunk()
+        for label, values in data.items():
+          ret[label].extend(values)
 
     # Returning a dict, not a defaultdict
     self.log(logging.DEBUG, f"Called recv_all_data, got {dict(ret)}")
@@ -1378,7 +1409,8 @@ class Block(Process, ABC):
 
   def recv_all_data_raw(self,
                         delay: float | None = None,
-                        poll_delay: float = 0.1) -> list[dict[str, list[Any]]]:
+                        poll_delay: float | None = None
+                        ) -> list[dict[str, list[Any]]]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.Link`, and returns them separately in a list of
     dicts.
@@ -1396,12 +1428,25 @@ class Block(Process, ABC):
         once every this value seconds. It ensures that the method doesn't spam
         the CPU in vain.
 
+        .. versionchanged:: 2.0.9 now defaults to :obj:`None` as an argument,
+          and to ``delay / 10`` in practice if unset. Also, must be inferior to
+          ``delay``.
+
     Returns:
       A :obj:`list` containing :obj:`dict`, whose keys are the received labels
       and with a :obj:`list` of received value for each key.
     
     .. versionadded:: 2.0.0
+    .. versionchanged:: 2.0.9 add new mechanism to avoid oversleeping
     """
+
+    if (delay is not None
+        and poll_delay is not None
+        and poll_delay >= 0.9 * delay):
+      raise ValueError("The poll_delay value must be lower than the delay")
+
+    if poll_delay is not None and poll_delay <= 0:
+      raise ValueError("poll_delay should be positive")
 
     ret = [defaultdict(list) for _ in self.inputs]
     t0 = time()
@@ -1413,7 +1458,12 @@ class Block(Process, ABC):
 
     # Otherwise, receiving during the given period
     else:
-      while time() - t0 < delay:
+      # If the poll delay is not specified, setting it much lower than delay
+      if poll_delay is None:
+        poll_delay = delay / 10
+
+      deadline = t0 + delay
+      while time() < deadline:
         last_t = time()
         # Updating the list of received values
         for dic, link in zip(ret, self.inputs):
@@ -1421,7 +1471,13 @@ class Block(Process, ABC):
           for label, values in data.items():
             dic[label].extend(values)
         # Sleeping to avoid useless CPU usage
-        sleep(max(0., last_t + poll_delay - time()))
+        sleep(max(0., min(poll_delay, deadline - time())))
+
+      # Draining once more catches data that arrived during the last sleep
+      for dic, link in zip(ret, self.inputs):
+        data = link.recv_chunk()
+        for label, values in data.items():
+          dic[label].extend(values)
 
     self.log(logging.DEBUG, f"Called recv_all_data_raw, got "
                             f"{[dict(dic) for dic in ret]}")

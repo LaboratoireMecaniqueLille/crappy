@@ -13,7 +13,9 @@ try:
   from serial.serialutil import SerialException
 except (ModuleNotFoundError, ImportError):
   Serial = OptionalModule("pyserial")
-  SerialException = OptionalModule("pyserial")
+
+  class SerialException(Exception):
+    """Fallback exception used when pyserial is not installed."""
 
 
 class UController(Block):
@@ -96,7 +98,8 @@ class UController(Block):
       raise TypeError("display_freq should be either True or False !")
     self.display_freq = display_freq
 
-    if not isinstance(freq, float) and not isinstance(freq, int) or freq <= 0:
+    if (freq is not None and
+        (not isinstance(freq, (float, int)) or freq <= 0)):
       raise TypeError("freq should be a positive float !")
     self.freq = freq
 
@@ -119,6 +122,10 @@ class UController(Block):
       self._labels = list(labels)
     else:
       self._labels = None
+
+    if self._t_device and self._labels is not None and len(self._labels) > 8:
+      raise ValueError("Cannot manage more than 8 labels when t_device is "
+                       "True")
 
     # Forcing the cmd_labels into a list
     if cmd_labels is not None and isinstance(cmd_labels, str):
@@ -171,6 +178,10 @@ class UController(Block):
       raise IOError("labels are specified but there's no output link !")
     if self._cmd_labels is not None and not self.inputs:
       raise IOError("cmd_labels are specified but there's no input link !")
+    if self._cmd_labels is None and self.inputs:
+      raise IOError("No cmd_label specified although there are input Links!")
+    if self._labels is None and self.outputs:
+      raise IOError("No label specified although there are output Links!")
 
     # Buffer for storing the received bytes
     if self._labels is not None:
