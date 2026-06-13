@@ -123,6 +123,8 @@ class HistogramProcess(Process):
     except KeyboardInterrupt:
       self.log(logging.INFO, "Caught KeyboardInterrupt, stopping")
     except (Exception,) as exc:
+      if self._logger is None:
+        self._set_logger()
       self._logger.exception("Caught Exception while running, stopping !",
                              exc_info=exc)
     finally:
