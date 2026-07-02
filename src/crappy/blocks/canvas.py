@@ -276,6 +276,10 @@ class Canvas(Block):
       elif dic['type'] == 'time':
         self._drawing_elements.append(Time(self, **dic))
 
+    # Display the window
+    plt.show(block=False)
+    plt.pause(.001)
+
   def loop(self) -> None:
     """Receives the latest data from upstream Blocks and updates the drawing
     accordingly."""
