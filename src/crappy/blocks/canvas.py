@@ -232,7 +232,7 @@ class Canvas(Block):
 
     self._image = image_path
     self._draw = [] if draw is None else list(draw)
-    self.color_range = color_range
+    self.color_range = tuple(sorted(color_range))
     self._title = title
     self._window_size = window_size
     self._backend = backend
