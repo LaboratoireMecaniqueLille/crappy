@@ -64,6 +64,13 @@ class Button(Block):
 
     self._root: tk.Tk | None = None
 
+    if not isinstance(time_label, str):
+      raise TypeError("time_label must be a string")
+    if not isinstance(label, str):
+      raise TypeError("label must be a string")
+    if time_label == label:
+      raise ValueError("The time_label and label must be different")
+
     super().__init__()
     self.freq = freq
     self.labels = [time_label, label]
