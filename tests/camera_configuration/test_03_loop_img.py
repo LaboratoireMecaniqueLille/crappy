@@ -108,7 +108,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
     self.assertIsNone(self._config._pil_hist)
 
     # Sleeping to avoid zero division error on Windows
-    sleep(0.05)
+    sleep(2)
     # Calling a second loop
     self._config._img_acq_sched()
     self._config._upd_var_sched()
