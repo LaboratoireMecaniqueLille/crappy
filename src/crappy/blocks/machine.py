@@ -265,7 +265,7 @@ class Machine(Block):
                      f" Actuator to {recv[actuator.cmd_label]}")
             actuator.actuator.set_speed(recv[actuator.cmd_label])
           # Setting the position command
-          else:
+          elif actuator.mode == 'position':
             actuator.actuator.set_position(recv[actuator.cmd_label],
                                            actuator.speed)
             self.log(
