@@ -2,14 +2,9 @@
 
 from time import time
 import logging
+import tkinter as tk
 
 from .meta_block import Block
-from .._global import OptionalModule
-
-try:
-  import tkinter as tk
-except (ModuleNotFoundError, ImportError):
-  tk = OptionalModule("tkinter")
 
 
 class Button(Block):
