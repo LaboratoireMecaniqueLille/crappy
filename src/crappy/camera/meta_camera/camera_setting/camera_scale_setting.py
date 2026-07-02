@@ -54,9 +54,11 @@ class CameraScaleSetting(CameraSetting):
       raise ValueError(f"The two given bounds are equal for setting {name}!")
 
     # Ensure the step is greater than zero
-    if step == 0:
+    if step is not None and step == 0:
       raise ValueError(f"The provided step is equal to zero for "
                        f"setting {name}!")
+    elif step is not None and step < 0:
+      raise ValueError(f"The provided step is negative for setting {name}!")
 
     # Ensuring that the given bounds are in the correct order
     if lowest > highest:
