@@ -199,7 +199,7 @@ class FakeStepperMotor(Actuator):
             self._pos += int(-self._max_speed * delta_t
                              - 0.5 * (self._speed + self._max_speed) ** 2
                              / self._accel)
-            self._speed = self._max_speed
+            self._speed = -self._max_speed
             continue
 
           # Case when we're still not reaching the min speed
