@@ -86,6 +86,7 @@ class StopBlock(Block):
       self.log(logging.WARNING, "Stop criterion reached, stopping all the "
                                 "Blocks !")
       self.stop()
+      return
 
     self.log(logging.DEBUG, "No stop criterion reached during this loop")
   
