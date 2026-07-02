@@ -143,10 +143,19 @@ class Machine(Block):
     for actuator in actuators:
       actuator |= common
 
+    # There should be at least one actuator provided
+    if not actuators:
+      raise ValueError("No actuator to drive was specified")
+
     # Making sure all the dicts contain the 'type' key
     if not all('type' in dic for dic in actuators):
       raise ValueError("The 'type' key must be provided for all the "
                        "actuators !")
+
+    # Making sure that the provided mode is either speed or position
+    if not all('mode' not in dic or dic['mode'] in ('speed', 'position')
+               for dic in actuators):
+      raise ValueError("The 'mode' key must be either 'speed' or 'position'")
 
     # The names of the possible settings, to avoid typos and reduce verbosity
     actuator_settings = [field.name for field in fields(ActuatorInstance)
