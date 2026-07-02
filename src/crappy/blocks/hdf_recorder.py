@@ -41,6 +41,7 @@ class HDFRecorder(Block):
                atom=None,
                label: str = 'stream',
                metadata: dict | None = None,
+               flush_period: int | None = None,
                freq: float | None = None,
                display_freq: bool = False,
                debug: bool | None = False) -> None:
@@ -60,6 +61,12 @@ class HDFRecorder(Block):
       label: The label carrying the data to be saved
       metadata: A :obj:`dict` containing additional information to save in the
         `HDF5` file.
+      flush_period: An :obj:`int`, so that data is flushed to the file once
+        every flush_period loops. If set to :obj:`None`, data is only flushed
+        when the test ends. Useful to secure acquired data, but comes with a
+        performance tradeoff.
+
+        .. versionadded:: 2.0.10
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
         
@@ -88,6 +95,8 @@ class HDFRecorder(Block):
     self._label = label
     self._metadata = {} if metadata is None else metadata
     self._expected_rows = expected_rows
+    self._flush_period: int | None = flush_period
+    self._flush_count: int = 0
 
     self._node = node
     atom = tables.Int16Atom() if atom is None else atom
@@ -148,12 +157,16 @@ class HDFRecorder(Block):
       if self.data_available():
         self._first_loop()
         self._array_initialized = True
+        self._flush()
+        return
       else:
         return
 
     if self._label in (data := self.recv_all_data()):
       for elt in data[self._label]:
         self._array.append(elt)
+
+    self._flush()
 
   def finish(self) -> None:
     """Closes the HDF file."""
@@ -179,3 +192,12 @@ class HDFRecorder(Block):
                                             expectedrows=self._expected_rows)
     for elt in data[self._label]:
       self._array.append(elt)
+
+  def _flush(self) -> None:
+    """Flushes the array at the requested loop interval."""
+
+    self._flush_count += 1
+    if (self._flush_period is not None
+        and self._flush_count >= self._flush_period):
+      self._array.flush()
+      self._flush_count = 0
