@@ -90,6 +90,16 @@ class ImageSaver(CameraProcess):
       else:
         self._save_backend = 'npy'
     elif save_backend in ('sitk', 'pil', 'cv2', 'npy'):
+      if save_backend == 'sitk' and isinstance(Sitk, OptionalModule):
+        raise ModuleNotFoundError("Backend 'sitk' requested but could not "
+                                  "be imported")
+      elif save_backend == 'pil' and isinstance(PIL, OptionalModule):
+        raise ModuleNotFoundError("Backend 'pil' requested but could not "
+                                  "be imported")
+      elif save_backend == 'cv2' and isinstance(cv2, OptionalModule):
+        raise ModuleNotFoundError("Backend 'cv2' requested but could not "
+                                  "be imported")
+
       self._save_backend = save_backend
     else:
       raise ValueError("The save_backend argument should be either 'sitk', "

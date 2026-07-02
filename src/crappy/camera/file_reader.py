@@ -94,6 +94,12 @@ class FileReader(Camera):
                                   "the images")
     # Setting the backend requested by the user
     elif reader_backend in ('sitk', 'cv2'):
+      if reader_backend == 'sitk' and isinstance(Sitk, OptionalModule):
+        raise ModuleNotFoundError("Backend 'sitk' requested but could not "
+                                  "be imported")
+      elif reader_backend == 'cv2' and isinstance(cv2, OptionalModule):
+        raise ModuleNotFoundError("Backend 'cv2' requested but could not "
+                                  "be imported")
       self._backend = reader_backend
     else:
       raise ValueError("The backend argument should be either 'sitk' or "
