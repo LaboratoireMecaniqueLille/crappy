@@ -56,8 +56,8 @@ class FakeStepperMotor(Actuator):
     # The variables describing the motor
     self._accel: float = abs(acceleration * steps_per_mm * microsteps)
     self._max_speed: float = abs(max_speed * steps_per_mm * microsteps)
-    self._steps_per_mm: float = steps_per_mm
-    self._microsteps: int = microsteps
+    self._steps_per_mm: float = abs(steps_per_mm)
+    self._microsteps: int = abs(microsteps)
 
     # The variables for driving the motor
     self._speed: float = 0
@@ -94,7 +94,7 @@ class FakeStepperMotor(Actuator):
       self._target_speed = None
       self._target_pos = position * self._steps_per_mm * self._microsteps
       if speed is not None:
-        self._max_speed = speed * self._steps_per_mm * self._microsteps
+        self._max_speed = abs(speed) * self._steps_per_mm * self._microsteps
       self.log(logging.DEBUG, f"Set the target position to {self._target_pos}"
                               f", with speed {self._max_speed}")
 
