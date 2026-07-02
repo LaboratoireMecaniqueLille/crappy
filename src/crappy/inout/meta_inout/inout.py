@@ -392,7 +392,7 @@ class InOut:
         else:
           raise ValueError("The number of offsets doesn't match the shape of "
                            "the acquired array !")
-        return dict(**t, **comp)
+      return dict(**t, **comp)
 
     # Case when stream is returned as an iterable but not a dict
     else:
