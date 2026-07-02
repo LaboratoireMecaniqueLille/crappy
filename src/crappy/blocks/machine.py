@@ -203,6 +203,10 @@ class Machine(Block):
     Actuator.
     """
 
+    # Checking the consistency of the linking
+    if not self.inputs and not self.outputs:
+      raise IOError("The Machine block isn't linked to any other block !")
+
     # Instantiating the actuators and storing them
     self._actuators = [ActuatorInstance(
       actuator=actuator_dict[type_](**actuator_kw)
@@ -212,10 +216,6 @@ class Machine(Block):
       for type_, setting, actuator_kw in zip(self._types,
                                              self._settings,
                                              self._actuators_kw)]
-
-    # Checking the consistency of the linking
-    if not self.inputs and not self.outputs:
-      raise IOError("The Machine block isn't linked to any other block !")
 
     # Opening each actuator
     for actuator in self._actuators:
