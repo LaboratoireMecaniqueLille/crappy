@@ -46,6 +46,13 @@ class FakeStepperMotor(Actuator):
 
     super().__init__()
 
+    if not acceleration:
+      raise ValueError("The acceleration parameter cannot be zero")
+    if not microsteps:
+      raise ValueError("The microsteps parameter cannot be zero")
+    if not steps_per_mm:
+      raise ValueError("The steps_per_mm parameter cannot be zero")
+
     # The variables describing the motor
     self._accel: float = abs(acceleration * steps_per_mm * microsteps)
     self._max_speed: float = abs(max_speed * steps_per_mm * microsteps)
