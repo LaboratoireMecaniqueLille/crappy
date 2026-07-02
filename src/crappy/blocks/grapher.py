@@ -127,6 +127,9 @@ class Grapher(Block):
   def prepare(self) -> None:
     """Configures the figure for displaying data."""
 
+    if not self.inputs:
+      raise IOError("The Grapher Block has no input Link!")
+
     # Switch to the required backend
     if self._backend:
       self.log(logging.INFO, f"Setting matplotlib backend to {self._backend}")
