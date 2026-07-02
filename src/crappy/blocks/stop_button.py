@@ -7,8 +7,8 @@ from .meta_block import Block
 
 
 class StopButton(Block):
-  """This Block allows the user to stop the current Crapy script by clicking on
-  a button in a GUI.
+  """This Block allows the user to stop the current Crappy script by clicking
+  on a button in a GUI.
 
   Along with the :class:`~crappy.blocks.StopBlock`, it allows to stop a test in
   a clean way without resorting to CTRL+C.
