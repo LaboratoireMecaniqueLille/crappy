@@ -9,7 +9,7 @@ from .meta_block import Block
 
 try:
   import tables
-except ModuleNotFoundError:
+except (ImportError, ModuleNotFoundError):
   tables = OptionalModule("tables", "HDFRecorder needs the tables module to "
                           "write hdf files.")
 
