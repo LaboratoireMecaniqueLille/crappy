@@ -242,9 +242,9 @@ class Grapher(Block):
       self._ax.autoscale()
       try:
         self._canvas.draw()
+        self._canvas.flush_events()
       except TclError:
         pass
-      self._canvas.flush_events()
 
   def finish(self) -> None:
     """Closes all the opened :mod:`matplotlib` windows."""
