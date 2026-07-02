@@ -208,6 +208,8 @@ class Camera(ABC):
                        f"setting ! !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
+    if hasattr(self, name):
+      raise ValueError(f'The camera already has an attribute called {name}')
     self.log(logging.INFO, f"Adding the {name} bool setting")
     self.settings[name] = CameraBoolSetting(name, getter, setter, default)
 
@@ -261,6 +263,8 @@ class Camera(ABC):
                        f"setting !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
+    if hasattr(self, name):
+      raise ValueError(f'The camera already has an attribute called {name}')
     self.log(logging.INFO, f"Adding the {name} scale setting")
     self.settings[name] = CameraScaleSetting(name, lowest, highest, getter,
                                              setter, default, step)
@@ -305,6 +309,8 @@ class Camera(ABC):
                        f"setting ! !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
+    if hasattr(self, name):
+      raise ValueError(f'The camera already has an attribute called {name}')
     self.log(logging.INFO, f"Adding the {name} choice setting")
     self.settings[name] = CameraChoiceSetting(name, tuple(choices), getter,
                                               setter, default)
