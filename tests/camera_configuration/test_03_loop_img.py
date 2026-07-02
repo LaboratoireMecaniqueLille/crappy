@@ -22,7 +22,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
                      **kwargs)
 
   def test_loop_img(self) -> None:
-    """Tests whether the internal state variables of thr configuration window
+    """Tests whether the internal state variables of the configuration window
     are updated as expected when looping with an image."""
 
     # Monitoring variables should be initialized to their default values
