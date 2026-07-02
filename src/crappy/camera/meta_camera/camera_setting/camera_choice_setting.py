@@ -84,6 +84,10 @@ class CameraChoiceSetting(CameraSetting):
 
     self.log(logging.DEBUG, f"Reloading the setting {self.name}")
 
+    if not choices:
+      raise ValueError(f"No choices provided when reloading setting "
+                       f"{self.name}")
+
     # Updating the default value
     if default is not None:
       if default in choices:
