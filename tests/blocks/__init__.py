@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from .test_fake_machine import TestFakeMachine
+from .test_ioblock import TestIOBlock
 from .test_link_reader import TestLinkReader
 from .test_mean import TestMeanBlock
 from .test_multiplexer import TestMultiplexer
