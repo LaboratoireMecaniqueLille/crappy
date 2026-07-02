@@ -181,7 +181,7 @@ class Grapher(Block):
     graph."""
 
     # Receives the data sent by the upstream blocks
-    if self.freq >= 10:
+    if self.freq is None or self.freq >= 10:
       # Assuming that above 10Hz the data won't saturate the links
       data = self.recv_all_data_raw()
     else:
