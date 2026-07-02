@@ -172,7 +172,7 @@ class FileReader(Camera):
       if t - self._t0 < timestamp:
         sleep(timestamp - (t - self._t0))
 
-      return t, img
+      return time(), img
 
     # Raised when there's no more image to read
     except StopIteration:
