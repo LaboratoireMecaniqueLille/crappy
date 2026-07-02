@@ -110,13 +110,13 @@ class Pause(Block):
     # Pausing only if not paused, and stop criterion is met
     if (self._criteria and any(crit(data) for crit in self._criteria)
         and not self._pause_event.is_set()):
-      self.log(logging.WARNING, "Stop criterion reached, pausing the Blocks !")
+      self.log(logging.WARNING, "Pause criterion reached, pausing the Blocks!")
       self._pause_event.set()
       return
 
     if (self._criteria and not any(crit(data) for crit in self._criteria)
         and self._pause_event.is_set()):
-      self.log(logging.WARNING, "Stop criterion no longer satisfied, "
+      self.log(logging.WARNING, "Pause criterion no longer satisfied, "
                                 "un-pausing the Blocks !")
       self._pause_event.clear()
       return
