@@ -6,6 +6,7 @@ from time import time
 from typing import Any
 from collections.abc import Sequence
 import logging
+from tkinter import TclError
 
 from .meta_block import Block
 from .._global import OptionalModule
@@ -285,7 +286,10 @@ class Canvas(Block):
     for elt in self._drawing_elements:
       elt.update(data)
     self.log(logging.DEBUG, "Updating the drawing window")
-    self._fig.canvas.draw()
+    try:
+      self._fig.canvas.draw()
+    except TclError:
+      pass
     plt.pause(0.001)
 
   def finish(self) -> None:
