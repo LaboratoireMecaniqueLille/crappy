@@ -37,6 +37,9 @@ class CameraChoiceSetting(CameraSetting):
 
     self._logger: logging.Logger | None = None
 
+    if not choices:
+      raise ValueError(f"No choices provided for setting {name}")
+
     self.choices = choices
 
     if default is not None and default not in choices:
