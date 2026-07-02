@@ -97,9 +97,10 @@ class Button(Block):
     self._root.title("Button block")
     self._root.resizable(False, False)
 
-    self._step = tk.IntVar()
+    self._step = tk.IntVar(self._root)
     self._step.trace_add('write', self._update_text)
-    self._text = tk.StringVar(value=f'step: {self._step.get()}')
+    self._text = tk.StringVar(self._root,
+                              value=f'step: {self._step.get()}')
 
     self._label = tk.Label(self._root, textvariable=self._text)
     self._label.pack(padx=7, pady=7)
