@@ -93,6 +93,9 @@ class Pause(Block):
   def prepare(self) -> None:
     """Converts all the given criteria to :obj:`~collections.abc.Callable`."""
 
+    if not self.inputs:
+      raise IOError("No Link pointing towards the Pause Block !")
+
     # This operation cannot be performed during __init__ due to limitations of
     # the spawn start method of multiprocessing
     self._criteria = tuple(map(self._parse_criterion, self._raw_crit))
