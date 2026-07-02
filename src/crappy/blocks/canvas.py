@@ -244,6 +244,9 @@ class Canvas(Block):
   def prepare(self) -> None:
     """Initializes the different elements of the drawing."""
 
+    if not self.inputs:
+      raise IOError("The Canvas Block has no input Link!")
+
     self.log(logging.INFO, "Opening the drawing windows")
 
     # Initializing the window and the background image
