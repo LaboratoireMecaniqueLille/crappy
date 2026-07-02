@@ -180,6 +180,7 @@ class HDFRecorder(Block):
     if self._hfile is not None:
       self.log(logging.INFO, "Closing the HDF5 file")
       self._hfile.close()
+      self._hfile = None
 
   def _first_loop(self) -> None:
     """Initializes the array for saving data."""
