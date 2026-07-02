@@ -103,5 +103,5 @@ class FakeDCMotor(Actuator):
     f = (self._volt * self._kv - self._torque - self._rpm *
          (1 + self._rv + self._rpm * self._fv))
     drpm = f / self._inertia * dt
-    self._pos += dt * (self._rpm + drpm / 2)
+    self._pos += dt * (self._rpm + drpm / 2) / 60
     self._rpm += drpm
