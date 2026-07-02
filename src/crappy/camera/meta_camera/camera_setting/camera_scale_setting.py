@@ -172,8 +172,8 @@ class CameraScaleSetting(CameraSetting):
       lowest, highest = highest, lowest
 
     # Updating the lowest, highest, step and default values
-    self.lowest = lowest
-    self.highest = highest
+    self.lowest = self.type(lowest)
+    self.highest = self.type(highest)
     self.step = step
 
     # Ensuring that the default value lies between the new bounds
@@ -183,6 +183,8 @@ class CameraScaleSetting(CameraSetting):
                f"({lowest}) and highest ({highest}) values ! Setting to the "
                f"center of the interval instead")
       self.default = self.type((self.lowest + self.highest) / 2)
+    elif default is None:
+      self.default = self.type(self.default)
     if default is not None:
       if not lowest <= default <= highest:
         self.log(logging.WARNING,
@@ -191,7 +193,7 @@ class CameraScaleSetting(CameraSetting):
                  f"center of the interval instead")
         self.default = self.type((self.lowest + self.highest) / 2)
       else:
-        self.default = default
+        self.default = self.type(default)
 
     self._check_default()
 
