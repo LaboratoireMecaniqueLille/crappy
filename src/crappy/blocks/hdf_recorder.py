@@ -91,6 +91,12 @@ class HDFRecorder(Block):
     self.display_freq = display_freq
     self.debug = debug
 
+    if not isinstance(expected_rows, int) or expected_rows < 1:
+      raise ValueError('expected_rows must be a positive integer')
+    if (flush_period is not None
+        and (not isinstance(flush_period, int) or flush_period < 1)):
+      raise ValueError('flush_period must be a positive integer')
+
     self._path = Path(filename)
     self._label = label
     self._metadata = {} if metadata is None else metadata
