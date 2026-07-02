@@ -107,6 +107,9 @@ class Dashboard(Block):
     self.freq = freq
     self.debug = debug
 
+    if not isinstance(nb_digits, int) or nb_digits < 0:
+      raise ValueError("nb_digits must be a positive integer")
+
     self._labels = [labels] if isinstance(labels, str) else list(labels)
     self._nb_digits = nb_digits
 
