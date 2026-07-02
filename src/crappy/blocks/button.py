@@ -88,6 +88,9 @@ class Button(Block):
   def prepare(self) -> None:
     """Creates the graphical interface and sets its layout and callbacks."""
 
+    if not self.outputs:
+      raise IOError("The Button Block has no output Link!")
+
     self.log(logging.INFO, "Creating the GUI")
 
     self._root = tk.Tk()
