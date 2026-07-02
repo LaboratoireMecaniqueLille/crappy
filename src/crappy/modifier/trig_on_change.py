@@ -28,6 +28,7 @@ class TrigOnChange(Modifier):
     super().__init__()
     self._label = label
     self._last = None
+    self._initialized: bool = False
 
   def __call__(self, data: dict[str, T]) -> dict[str, T] | None:
     """Compares the received value with the last sent one, and if they're
@@ -39,7 +40,8 @@ class TrigOnChange(Modifier):
     self.log(logging.DEBUG, f"Received {data}")
 
     # Storing the first received value and returning the data
-    if self._last is None:
+    if not self._initialized:
+      self._initialized = True
       self._last = data[self._label]
       self.log(logging.DEBUG, f"Sending {data}")
       return data
