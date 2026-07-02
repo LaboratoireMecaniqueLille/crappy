@@ -412,6 +412,11 @@ class Camera(ABC):
       raise ValueError("There can only be one set of software settings per "
                        "camera !")
 
+    if width < 3:
+      raise ValueError("The width of the ROI should be at least 3 pixels")
+    if height < 3:
+      raise ValueError("The height of the ROI should be at least 3 pixels")
+
     # Instantiating the CameraSetting objects
     self.log(logging.INFO, "Adding the software ROI settings")
     self.settings[self.roi_x_name] = CameraScaleSetting(
