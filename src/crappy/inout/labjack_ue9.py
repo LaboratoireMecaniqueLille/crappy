@@ -4,7 +4,7 @@ from time import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 import logging
-from  warnings import warn
+from warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule

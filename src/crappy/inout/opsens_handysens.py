@@ -2,7 +2,7 @@
 
 from time import time
 import logging
-from  warnings import warn
+from warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule
