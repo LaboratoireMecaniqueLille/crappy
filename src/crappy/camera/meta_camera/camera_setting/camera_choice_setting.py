@@ -44,8 +44,8 @@ class CameraChoiceSetting(CameraSetting):
 
     if default is not None and default not in choices:
       self.log(logging.WARNING, f"The given default {default} is not part "
-                                  f"of the given choices ! Setting default "
-                                  f"to {choices[0]} instead")
+                                f"of the given choices ! Setting default "
+                                f"to {choices[0]} instead")
       default = choices[0]
 
     if default is None:
