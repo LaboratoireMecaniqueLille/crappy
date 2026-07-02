@@ -103,7 +103,7 @@ class CameraChoiceSetting(CameraSetting):
     if value is not None and value not in choices:
       self.log(logging.WARNING, f"{value} is not a possible choice for the "
                                 f"setting {self.name}, ignoring it !")
-      value  = None
+      value = None
 
     if value is None and self.value not in choices:
       self.log(logging.WARNING, f"{self.value} is no longer a possible choice "
