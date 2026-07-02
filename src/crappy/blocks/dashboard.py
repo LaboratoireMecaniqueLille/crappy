@@ -149,6 +149,9 @@ class Dashboard(Block):
           self.log(logging.DEBUG, f"Displaying {value:.{self._nb_digits}f} for"
                                   f" the label {label} on the dashboard")
           self._dashboard.tk_var[label].set(f'{value:.{self._nb_digits}f}')
+        else:
+          self.log(logging.WARNING, f"Don't know how to handle the received "
+                                    f"value: {value}")
 
     # In case the GUI has been destroyed, don't raise an error
     try:
