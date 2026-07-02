@@ -98,7 +98,8 @@ class CameraChoiceSetting(CameraSetting):
                                   f"to {choices[0]} instead")
         self.default = choices[0]
     else:
-      self.default = choices[0]
+      if self.default not in choices:
+        self.default = choices[0]
 
     if value is not None and value not in choices:
       self.log(logging.WARNING, f"{value} is not a possible choice for the "
