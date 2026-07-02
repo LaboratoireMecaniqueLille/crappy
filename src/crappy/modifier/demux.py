@@ -104,7 +104,7 @@ class Demux(Modifier):
     if self._mean:
       data[self._time_label] = float(np.mean(data[self._time_label]))
     else:
-      data[self._time_label] = float(np.squeeze(data[self._time_label])[0])
+      data[self._time_label] = float(np.ravel(data[self._time_label])[0])
 
     self.log(logging.DEBUG, f"Sending {data}")
 
