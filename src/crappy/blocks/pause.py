@@ -106,7 +106,6 @@ class Pause(Block):
 
     if not (data := self.recv_all_data()):
       self.log(logging.DEBUG, "No data received during this loop")
-      return
 
     # Pausing only if not paused, and stop criterion is met
     if (self._criteria and any(crit(data) for crit in self._criteria)
