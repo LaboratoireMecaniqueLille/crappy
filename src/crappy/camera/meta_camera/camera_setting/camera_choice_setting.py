@@ -111,6 +111,8 @@ class CameraChoiceSetting(CameraSetting):
                                 f"{self.default} instead !")
       value = self.default
 
+    self.choices = choices
+
     # Updating the radio buttons and the setting value
     if self.tk_obj:
       for button, choice in zip_longest(self.tk_obj, choices):
