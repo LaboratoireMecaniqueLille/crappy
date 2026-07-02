@@ -44,6 +44,9 @@ class FakeDCMotor(Actuator):
     super().__init__()
 
     self._inertia = inertia
+    if not inertia:
+      raise ValueError("The inertia parameter cannot be zero")
+
     self._torque = torque
     self._kv = kv
     self._rv = rv
