@@ -413,7 +413,7 @@ class InOut:
         # Case when get_data returns a dict
         elif (self._compensations_dict and
               len(self._compensations_dict) == array.shape[1]):
-          comp.append(array + self._compensations_dict.values())
+          comp.append(array + list(self._compensations_dict.values()))
         # The shapes do not match
         else:
           raise ValueError("The number of offsets doesn't match the shape "
