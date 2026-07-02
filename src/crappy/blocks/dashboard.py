@@ -3,6 +3,7 @@
 from collections.abc import Iterable
 import tkinter as tk
 import logging
+import numbers
 
 from .meta_block import Block
 
@@ -144,7 +145,7 @@ class Dashboard(Block):
           self.log(logging.DEBUG, f"Displaying {value} for the label {label} "
                                   f"on the dashboard")
           self._dashboard.tk_var[label].set(value)
-        elif isinstance(value, int) or isinstance(value, float):
+        elif isinstance(value, numbers.Real):
           self.log(logging.DEBUG, f"Displaying {value:.{self._nb_digits}f} for"
                                   f" the label {label} on the dashboard")
           self._dashboard.tk_var[label].set(f'{value:.{self._nb_digits}f}')
