@@ -262,7 +262,7 @@ class Grapher(Block):
       for line in self._lines:
         line.set_xdata([])
         line.set_ydata([])
-      self.factor = [1 for _ in self._labels]
-      self.counter = [0 for _ in self._labels]
+      self._factor = [1 for _ in self._labels]
+      self._counter = [0 for _ in self._labels]
 
       self.log(logging.INFO, "Cleared the matplotlib window")
