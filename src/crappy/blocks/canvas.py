@@ -220,6 +220,16 @@ class Canvas(Block):
     self.display_freq = display_freq
     self.debug = debug
 
+    if draw is not None:
+      if not all('type' in dic for dic in draw):
+        raise ValueError("All the draw dictionaries must contain a 'type' key")
+      if not all(dic['type'] in ('text', 'dot_text', 'time') for dic in draw):
+        raise ValueError("The 'type' key in the draw dictionary must be "
+                         "either 'text', 'dot_text', or 'time'")
+
+    if color_range[0] == color_range[1]:
+      raise ValueError("The two values of color_range cannot be equal")
+
     self._image = image_path
     self._draw = [] if draw is None else list(draw)
     self.color_range = color_range
