@@ -111,6 +111,9 @@ class Grapher(Block):
     self._interp = interp
     self._backend = backend
 
+    if not all(len(elt) == 2 for elt in labels):
+      raise ValueError("All labels must be tuples of two strings")
+
     self._labels = labels
 
     self._ax = None
