@@ -153,6 +153,14 @@ class CameraScaleSetting(CameraSetting):
 
     self.log(logging.DEBUG, f"Reloading the setting {self.name}")
 
+    # Ensure the step is greater than zero
+    if step is not None and step == 0:
+      raise ValueError(f"The provided step is equal to zero when reloading "
+                       f"setting {self.name}!")
+    elif step is not None and step < 0:
+      raise ValueError(f"The provided step is negative when reloading setting "
+                       f"{self.name}!")
+
     # Ensuring that the two bounds are not equal
     if lowest == highest:
       raise ValueError("The two given bounds are equal !")
