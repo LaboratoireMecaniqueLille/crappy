@@ -115,7 +115,7 @@ class Button(Block):
   def begin(self) -> None:
     """Sends the value of the first step (`0`) if required."""
 
-    if self._send_0:
+    if self._send_0 or self._spam:
       self.send([time() - self.t0, self._step.get()])
 
   def loop(self) -> None:
