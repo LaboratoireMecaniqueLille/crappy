@@ -47,7 +47,7 @@ class Median(Modifier):
 
     # Initializing the buffer
     if self._buf is None:
-      self._buf = {key: [value] for key, value in data.items()}
+      self._buf = {key: list() for key in data}
 
     ret = {}
     for label in data:
