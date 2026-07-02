@@ -28,7 +28,7 @@ if __name__ == '__main__':
   # times its button was clicked
   # It sends the number of clicks to the downstream Blocks
   button = crappy.blocks.Button(
-      send_0=True,  # The value 0 will be sent until the button is clicked
+      send_0=True,  # The value 0 will be sent before the first loop
       label='step',  # The number of clicks is sent over this label
       time_label='t(s)',  # The time information is carried by this label
       spam=False,  # The number of clicks is sent at each new click, not at
