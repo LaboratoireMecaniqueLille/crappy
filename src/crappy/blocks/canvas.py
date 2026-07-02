@@ -299,5 +299,6 @@ class Canvas(Block):
   def finish(self) -> None:
     """Closes the window containing the drawing."""
 
-    self.log(logging.INFO, "Closing the drawing windows")
-    plt.close()
+    if self._fig is not None:
+      self.log(logging.INFO, "Closing the drawing windows")
+      plt.close(self._fig)
