@@ -26,6 +26,10 @@ class Median(Modifier):
     """
 
     super().__init__()
+
+    if n_points < 1:
+      raise ValueError("n_points should be greater than 0")
+
     self._n_points = n_points
     self._buf = None
 
