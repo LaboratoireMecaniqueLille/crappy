@@ -100,7 +100,7 @@ class Button(Block):
     self._step = tk.IntVar(self._root)
     self._step.trace_add('write', self._update_text)
     self._text = tk.StringVar(self._root,
-                              value=f'step: {self._step.get()}')
+                              value=f'{self.labels[1]}: {self._step.get()}')
 
     self._label = tk.Label(self._root, textvariable=self._text)
     self._label.pack(padx=7, pady=7)
@@ -144,7 +144,7 @@ class Button(Block):
   def _update_text(self, _, __, ___) -> None:
     """Simply updates the displayed text."""
 
-    self._text.set(f'step: {self._step.get()}')
+    self._text.set(f'{self.labels[1]}: {self._step.get()}')
 
   def _next_step(self) -> None:
     """Increments the step counter and sends the corresponding signal."""
