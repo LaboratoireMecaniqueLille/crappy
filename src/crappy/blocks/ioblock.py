@@ -138,7 +138,7 @@ class IOBlock(Block):
     elif cmd_labels is not None:
       self._cmd_labels = list(cmd_labels)
     else:
-      self._cmd_labels = None
+      self._cmd_labels = list()
 
     # Forcing the initial_cmd into a list
     if initial_cmd is not None and isinstance(initial_cmd, str):
@@ -157,13 +157,13 @@ class IOBlock(Block):
       self._exit_cmd = None
 
     # Checking that the initial_cmd and exit_cmd length are consistent
-    if self._cmd_labels is not None:
-      if self._initial_cmd is not None \
-          and len(self._initial_cmd) != len(self._cmd_labels):
+    if self._cmd_labels:
+      if (self._initial_cmd is not None
+          and len(self._initial_cmd) != len(self._cmd_labels)):
         raise ValueError("There should be as many values in initial_cmd as "
                          "there are in cmd_labels !")
-      if self._exit_cmd is not None \
-          and len(self._exit_cmd) != len(self._cmd_labels):
+      if (self._exit_cmd is not None
+          and len(self._exit_cmd) != len(self._cmd_labels)):
         raise ValueError("There should be as many values in exit_cmd as "
                          "there are in cmd_labels !")
 
@@ -219,7 +219,7 @@ class IOBlock(Block):
       raise IOError('Error ! The IOBlock is neither an input nor an output !')
 
     # cmd_labels must be defined when the block has inputs
-    if self.inputs and self._cmd_labels is None and self._trig_label is None:
+    if self.inputs and not self._cmd_labels and self._trig_label is None:
       raise ValueError('Error ! The IOBlock has incoming links but no '
                        'cmd_labels have been given !')
 
