@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from numpy import loadtxt, interp
+import numpy as np
 import pathlib
 import logging
 
@@ -42,7 +42,7 @@ class Custom(Path):
     super().__init__()
 
     self.log(logging.DEBUG, f"Extracting data from file {file_name}")
-    array = loadtxt(pathlib.Path(file_name), delimiter=delimiter)
+    array = np.loadtxt(pathlib.Path(file_name), delimiter=delimiter)
 
     if len(array.shape) < 2 or len(array.shape) > 3:
       raise ValueError(f"The file {file_name} should contain a 2D array with "
@@ -70,4 +70,4 @@ class Custom(Path):
     if t - self.t0 > self._timestamps[-1]:
       self.log(logging.DEBUG, "Stop condition met")
       raise StopIteration
-    return float(interp(t - self.t0, self._timestamps, self._values))
+    return float(np.interp(t - self.t0, self._timestamps, self._values))
