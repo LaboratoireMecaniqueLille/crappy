@@ -180,9 +180,9 @@ class ImageSaver(CameraProcess):
         return False
 
      # In case it's too early to save the new frame
-      if self.metadata['ImageUniqueID'] is not None and \
-          self._data_dict['ImageUniqueID'] - self.metadata['ImageUniqueID'] \
-          < self._save_period:
+      if (self.metadata['ImageUniqueID'] is not None and
+          self._data_dict['ImageUniqueID'] - self.metadata['ImageUniqueID']
+          < self._save_period):
         return False
 
       # Copying the metadata
