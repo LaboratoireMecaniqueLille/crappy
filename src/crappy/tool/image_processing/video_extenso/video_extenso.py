@@ -199,7 +199,7 @@ class VideoExtensoTool:
                       min(img.shape[0], y_right + self._border))
       slice_x = slice(max(0, x_top - self._border),
                       min(img.shape[1], x_bottom + self._border))
-      pipe.send((slice_y.start, slice_x.start, img[slice_y, slice_x]))
+      self._send(pipe, (slice_y.start, slice_x.start, img[slice_y, slice_x]))
 
     for i, (pipe, spot) in enumerate(zip(self._pipes, self.spots)):
 
