@@ -159,6 +159,10 @@ class Tracker(Process):
     except KeyboardInterrupt:
       self._log(logging.INFO, "Caught KeyboardInterrupt, stopping the process")
 
+    # Always close the pipe connection on exit
+    finally:
+      self._pipe.close()
+
   def _evaluate(self, x_start: int, y_start: int, img: np.ndarray) -> Box:
     """Takes a sub-image, applies a threshold on it and tries to detect the new
     position of the spot.
