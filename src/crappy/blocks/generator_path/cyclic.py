@@ -37,8 +37,8 @@ class Cyclic(Path):
         information.
       value1: First value to send.
       value2: Second value to send.
-      cycles: Number of cycles. Half cycles are accepted. If `0`, loops
-        forever.
+      cycles: Number of cycles. Half cycles are accepted. If `0` or negative,
+        loops forever.
 
     Note:
       ::
