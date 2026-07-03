@@ -213,5 +213,5 @@ class Path(ABC):
 
     # Otherwise, it's an invalid syntax
     else:
-      raise ValueError("Wrong syntax for the condition, please refer to the "
-                       "documentation")
+      raise ValueError(f"Wrong syntax for the condition: {condition}, please "
+                       f"refer to the documentation")
