@@ -92,6 +92,14 @@ class DICVETool:
     self.patches = patches
     self._offsets = [(0, 0) for _ in patches]
 
+    if method not in ('Disflow', 'Lucas Kanade',
+                      'Pixel precision', 'Parabola'):
+      raise ValueError("Only the 'Disflow', 'Lucas Kanade', 'Pixel precision',"
+                       " 'Parabola' methods are accepted")
+
+    if not 0 <= border <= 1:
+      raise ValueError("border should be between 0 and 1")
+
     # Other attributes to set
     self._method = method
     self._border = border
