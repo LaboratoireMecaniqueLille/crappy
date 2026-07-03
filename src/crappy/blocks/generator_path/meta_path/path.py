@@ -177,7 +177,7 @@ class Path(ABC):
         threshold."""
 
         if var in data:
-          return any((val < float(thresh) for val in data[var]))
+          return any((val < thresh for val in data[var]))
         return False
 
       return cond
@@ -193,7 +193,7 @@ class Path(ABC):
         threshold."""
 
         if var in data:
-          return any((val > float(thresh) for val in data[var]))
+          return any((val > thresh for val in data[var]))
         return False
 
       return cond
