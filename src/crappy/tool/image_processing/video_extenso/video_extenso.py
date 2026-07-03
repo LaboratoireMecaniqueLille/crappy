@@ -324,7 +324,7 @@ class VideoExtensoTool:
 
   def _send(self,
             conn: Connection,
-            val: str | tuple[int, int, np.ndarray]) -> None:
+            val: tuple[int, int, np.ndarray] | tuple[str, str, str]) -> None:
     """Wrapper for sending messages to the Tracker processes.
 
     In Linux, checks that the Pipe is not full before sending the message.
