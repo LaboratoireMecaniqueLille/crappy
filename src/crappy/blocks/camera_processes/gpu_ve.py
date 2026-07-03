@@ -89,7 +89,7 @@ class GPUVEProcess(CameraProcess):
     self._mul = mul
 
     # Other attributes
-    self._correls: list[GPUCorrelTool] | None = None
+    self._correls: list[GPUCorrelTool] = list()
     self._patches = patches
     self._img_ref = img_ref
     self._context = None
