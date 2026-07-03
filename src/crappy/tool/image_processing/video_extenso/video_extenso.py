@@ -5,7 +5,7 @@ from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 import numpy as np
 from itertools import combinations
-from time import sleep, time
+from time import time
 import logging
 import logging.handlers
 from select import select
@@ -160,19 +160,43 @@ class VideoExtensoTool:
     Processes, either gently or by terminating them if they don't stop by
     themselves."""
 
-    if any((tracker.is_alive() for tracker in self._trackers)):
-      # First, gently asking the trackers to stop
-      for pipe, tracker in zip(self._pipes, self._trackers):
-        if tracker.is_alive():
-          pipe.send(('stop', 'stop', 'stop'))
-      sleep(0.1)
+    try:
+      if any((tracker.is_alive() for tracker in self._trackers)):
+        # First, gently asking the trackers to stop
+        for pipe, tracker in zip(self._pipes, self._trackers):
+          if tracker.is_alive():
+            try:
+              pipe.send(('stop', 'stop', 'stop'))
+            except (BrokenPipeError, EOFError, OSError):
+              pass
 
-      # If they're not stopping, killing the trackers
-      for tracker in self._trackers:
-        if tracker.is_alive():
-          self._log(logging.WARNING, "Tracker process did not stop properly, "
-                                     "terminating it")
-          tracker.terminate()
+        for tracker in self._trackers:
+          tracker.join(0.1)
+
+        # If they're not stopping, killing the trackers
+        for tracker in self._trackers:
+          if tracker.is_alive():
+            self._log(logging.WARNING, "Tracker process did not stop properly,"
+                                       " terminating it")
+            tracker.terminate()
+
+        for tracker in self._trackers:
+          tracker.join(0.1)
+
+        # If they're still not stopping, terminating the trackers
+        for tracker in self._trackers:
+          if tracker.is_alive():
+            self._log(logging.WARNING, "Tracker process did not stop properly,"
+                                       " killing it")
+            tracker.kill()
+
+        for tracker in self._trackers:
+          tracker.join(0.1)
+
+    # Always close the pipes in the end
+    finally:
+      for pipe in self._pipes:
+        pipe.close()
 
   def get_data(self,
                img: np.ndarray
