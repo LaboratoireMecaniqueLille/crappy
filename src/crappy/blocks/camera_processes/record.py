@@ -246,13 +246,10 @@ class ImageSaver(CameraProcess):
 
     elif self._save_backend == 'pil':
       if len(self.img.shape) == 3:
-        PIL.Image.fromarray(self.img[:, :, ::-1]).save(
-          path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
-                      if key in TAGS_INV})
+        PIL.Image.fromarray(self.img[:, :, ::-1]).save(path,
+                                                       exif=self._pil_exif())
       else:
-        PIL.Image.fromarray(self.img).save(
-          path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
-                      if key in TAGS_INV})
+        PIL.Image.fromarray(self.img).save(path, exif=self._pil_exif())
 
     elif self._save_backend == 'cv2':
       cv2.imwrite(path, self.img)
@@ -265,3 +262,29 @@ class ImageSaver(CameraProcess):
       self.send({'t(s)': self.metadata['t(s)'],
                  'img_index': self.metadata['ImageUniqueID'],
                  'meta': self.metadata})
+
+  def _pil_exif(self):
+    """Parses the metadata of the current image and converts it to a
+    PIL.Image.Exif object."""
+
+    exif = PIL.Image.Exif()
+
+    for key, value in self.metadata.items():
+      if key not in TAGS_INV:
+        continue
+
+      # Convert Numpy scalars to Python object
+      if isinstance(value, np.generic):
+        value = value.item()
+
+      # These EXIF fields are ASCII in practice
+      if key in ('ImageUniqueID', 'SubsecTimeOriginal'):
+        value = str(value)
+
+      try:
+        exif[TAGS_INV[key]] = value
+      except (TypeError, ValueError):
+        self.log(logging.DEBUG, f"Could not encode metadata field "
+                                f"{key} as EXIF")
+
+    return exif
