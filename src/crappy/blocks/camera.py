@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 from time import time, sleep, strftime, gmtime
 from types import MethodType
+from typing import Any
 from multiprocessing import Array, Manager, Event, RLock, Pipe, Barrier
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing import managers, synchronize, connection
@@ -22,11 +23,10 @@ from .._global import CameraPrepareError, CameraRuntimeError, CameraConfigError
 class DummyCam(BaseCam):
   """Used to instantiate Camera object without implementing required method."""
 
-  def get_image(self) -> None:
+  def get_image(self) -> tuple[dict[str, Any] | float, np.ndarray] | None:
     """Pass ABC guard but don't alter behavior."""
 
     return super().get_image()
-
 
 
 class Camera(Block):
