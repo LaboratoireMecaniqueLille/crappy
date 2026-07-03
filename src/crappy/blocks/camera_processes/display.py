@@ -56,15 +56,15 @@ class Displayer(CameraProcess):
         :mod:`matplotlib`.
     """
 
-    if not framerate > 0:
-      raise ValueError("framerate must be strictly positive")
-
     # The thread must be initialized later for compatibility with Windows
     self._overlay_thread: Thread | None = None
     self._overlay: Iterable[Overlay] = list()
     self._stop_thread = False
 
     super().__init__()
+
+    if not framerate > 0:
+      raise ValueError("framerate must be strictly positive")
 
     self._title = title
     self._framerate = framerate
