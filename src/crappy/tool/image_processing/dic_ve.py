@@ -304,9 +304,13 @@ class DICVETool:
     x_top, x_bottom, y_left, y_right = patch.sorted()
     center_y, center_x = (y_right - y_left) // 2, (x_bottom - x_top) // 2
 
-    next_, _, _ = cv2.calcOpticalFlowPyrLK(
+    next_, status, _ = cv2.calcOpticalFlowPyrLK(
       self._get_patch(self._img0, patch, offset), self._get_patch(img, patch),
       np.array([[center_x, center_y]]).astype('float32'), None)
+
+    if next_ is None or status is None or not status.ravel()[0]:
+      raise RuntimeError("Lucas-Kanade failed to track the patch center")
+
     new_x, new_y = np.squeeze(next_)
 
     return [new_x - center_x, new_y - center_y]
