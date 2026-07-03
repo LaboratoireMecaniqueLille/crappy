@@ -78,6 +78,9 @@ class ImageSaver(CameraProcess):
 
     super().__init__()
 
+    if not isinstance(save_period, int) or save_period < 1:
+      raise ValueError("save_period must be a strictly positive integer")
+
     # Trying the different possible backends and checking if the given one
     # is correct
     if save_backend is None:
