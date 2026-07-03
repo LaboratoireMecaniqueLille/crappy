@@ -117,7 +117,7 @@ class GPUVEProcess(CameraProcess):
                                    kernel_file=self._kernel_file,
                                    iterations=self._iterations,
                                    fields=['x', 'y'],
-                                   ref_img=self._img_ref,
+                                   ref_img=None,
                                    mask=None,
                                    mul=self._mul) for _ in self._patches]
 
