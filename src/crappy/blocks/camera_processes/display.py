@@ -175,7 +175,7 @@ class Displayer(CameraProcess):
     if self.img.dtype != np.uint8:
       self.log(logging.DEBUG, f"Casting displayed image from "
                               f"{self.img.dtype} to uint8")
-      if max_pix := int(np.max(self.img)) > 255:
+      if (max_pix := int(np.max(self.img))) > 255:
         factor = max(ceil(log2(max_pix + 1) - 8), 0)
         img = (self.img / 2 ** factor).astype(np.uint8)
       else:
