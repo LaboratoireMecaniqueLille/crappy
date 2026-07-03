@@ -283,10 +283,13 @@ class DICVETool:
     y_disp = -(max_height - height / 2)
     x_disp = -(max_width - width / 2)
 
-    x_disp -= self._parabola_fit(cross_correl[max_height,
-                                 max_width - 1: max_width + 2])
-    y_disp -= self._parabola_fit(cross_correl[max_height - 1: max_height + 2,
-                                 max_width])
+    if 0 < max_width < width - 1:
+      x_disp -= self._parabola_fit(cross_correl[max_height,
+                                                max_width - 1: max_width + 2])
+
+    if 0 < max_height < height - 1:
+      y_disp -= self._parabola_fit(cross_correl[max_height - 1: max_height + 2,
+                                                max_width])
 
     return [x_disp, y_disp]
 
