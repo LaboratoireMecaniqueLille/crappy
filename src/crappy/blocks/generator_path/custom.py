@@ -44,12 +44,20 @@ class Custom(Path):
     self.log(logging.DEBUG, f"Extracting data from file {file_name}")
     array = loadtxt(pathlib.Path(file_name), delimiter=delimiter)
 
+    if len(array.shape) < 2 or len(array.shape) > 3:
+      raise ValueError(f"The file {file_name} should contain a 2D array with "
+                       f"two columns")
+
     if array.shape[1] != 2:
       raise ValueError(f'The file {file_name} should contain exactly two'
                        f'columns !')
 
     self._timestamps = array[:, 0]
     self._values = array[:, 1]
+
+    if not np.all(self._timestamps[:-1] <= self._timestamps[1:]):
+      raise ValueError("The timestamp values are not sorted in "
+                       "chronological order")
 
   def get_cmd(self, _: dict[str, list]) -> float:
     """Returns the value to send or raises :exc:`StopIteration` if the stop

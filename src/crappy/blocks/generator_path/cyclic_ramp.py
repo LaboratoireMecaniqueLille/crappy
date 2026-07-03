@@ -69,6 +69,10 @@ class CyclicRamp(Path):
     if init_value is None and self.last_cmd is None:
       raise ValueError('For the first path, an init_value must be given !')
 
+    if cycles > 0 and cycles % 0.5 > 0:
+      raise ValueError("Full cycles or half-cycles (multiples of 0.5) are "
+                       "supported")
+
     # Creates an interator object with a given length
     if cycles > 0:
       cycles = int(2 * cycles)

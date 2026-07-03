@@ -60,6 +60,10 @@ class Cyclic(Path):
 
     super().__init__()
 
+    if cycles > 0 and cycles % 0.5 > 0:
+      raise ValueError("Full cycles or half-cycles (multiples of 0.5) are "
+                       "supported")
+
     # Creates an interator object with a given length
     if cycles > 0:
       cycles = int(2 * cycles)

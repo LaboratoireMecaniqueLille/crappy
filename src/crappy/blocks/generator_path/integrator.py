@@ -61,6 +61,9 @@ class Integrator(Path):
     if init_value is None and self.last_cmd is None:
       raise ValueError('For the first path, an init_value must be given !')
 
+    if inertia == 0:
+      raise ValueError("inertia should be non-zero")
+
     # Setting the attributes
     self._condition = self.parse_condition(condition)
     self._time_label = time_label
