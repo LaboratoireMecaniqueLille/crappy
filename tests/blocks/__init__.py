@@ -17,3 +17,4 @@ from .test_stop_block import TestStopBlock
 from .test_hdf_recorder import TestHDFRecorder
 from .test_machine import TestMachine
 from .test_auto_drive_video_extenso import TestAutoDriveVideoExtenso
+from .test_generator import TestGenerator
