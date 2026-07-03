@@ -230,6 +230,8 @@ class VideoExtensoTool:
       # Receiving the data from the tracker, if there's any
       if pipe.poll(timeout=0.1):
         box = pipe.recv()
+        while pipe.poll():
+          box = pipe.recv()
 
         # In case a tracker faced an error, stopping them all and raising
         if isinstance(box, str):
