@@ -324,7 +324,14 @@ class DICVETool:
       arr: This array contains the y values for the 3 points.
     """
 
-    return float((arr[0] - arr[2]) / (2 * (arr[0] - 2 * arr[1] + arr[2])))
+    if arr.shape[0] != 3:
+      return 0.0
+
+    denominator = 2 * (arr[0] - 2 * arr[1] + arr[2])
+    if abs(denominator) < 1e-12:
+      return 0.0
+
+    return float((arr[0] - arr[2]) / denominator)
 
   @staticmethod
   def _cross_correlation(img0: np.ndarray,
