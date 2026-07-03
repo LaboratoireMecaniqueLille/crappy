@@ -2,7 +2,7 @@
 
 from time import time, sleep
 from collections.abc import Callable
-from re import split, IGNORECASE, match
+from re import IGNORECASE, search, fullmatch
 import logging
 from multiprocessing import current_process
 from abc import ABC, abstractmethod
@@ -169,7 +169,16 @@ class Path(ABC):
     # Third case, the condition is a string containing '<'
     if '<' in condition:
       self.log(logging.DEBUG, "Condition is of type var < thresh")
-      var, thresh = split(r'\s*<\s*', condition)
+      match = fullmatch(r'\s*(.+?)\s*<\s*(.+?)\s*', condition)
+      if match is not None:
+        var, thresh = match.groups()
+        try:
+          thresh = float(thresh)
+        except ValueError:
+          raise ValueError(f"Could not convert threshold {thresh} to float")
+      else:
+        raise ValueError(f"Wrong syntax for the condition: {condition}, "
+                         f"please refer to the documentation")
 
       # Return a function that checks if received data is inferior to threshold
       def cond(data: dict[str, list]) -> bool:
@@ -185,7 +194,16 @@ class Path(ABC):
     # Fourth case, the condition is a string containing '>'
     elif '>' in condition:
       self.log(logging.DEBUG, "Condition is of type var > thresh")
-      var, thresh = split(r'\s*>\s*', condition)
+      match = fullmatch(r'\s*(.+?)\s*>\s*(.+?)\s*', condition)
+      if match is not None:
+        var, thresh = match.groups()
+        try:
+          thresh = float(thresh)
+        except ValueError:
+          raise ValueError(f"Could not convert threshold {thresh} to float")
+      else:
+        raise ValueError(f"Wrong syntax for the condition: {condition}, "
+                         f"please refer to the documentation")
 
       # Return a function that checks if received data is superior to threshold
       def cond(data: dict[str, list]) -> bool:
@@ -199,9 +217,18 @@ class Path(ABC):
       return cond
 
     # Fifth case, it is a delay condition
-    elif match(r'delay', condition, IGNORECASE) is not None:
+    elif search(r'delay', condition, IGNORECASE) is not None:
       self.log(logging.DEBUG, "Condition is of type delay=xx")
-      delay = float(split(r'=\s*', condition)[1])
+      match = fullmatch(r'\s*delay\s*=\s*(.+?)\s*', condition, IGNORECASE)
+      if match is not None:
+        delay = match.groups()[0]
+        try:
+          delay = float(delay)
+        except ValueError:
+          raise ValueError(f"Could not convert delay {delay} to float")
+      else:
+        raise ValueError(f"Wrong syntax for the condition: {condition}, "
+                         f"please refer to the documentation")
 
       # Return a function that checks if the delay is expired
       def cond(_: dict[str, list]) -> bool:
