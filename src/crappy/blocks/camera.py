@@ -380,7 +380,7 @@ class Camera(Block):
       self.log(logging.INFO, "Instantiating the saver process")
       # The ImageSaver sends a message on each saved image only if no
       # processing is performed and if there are output Links
-      send_msg = self.process_proc is None and self.outputs
+      send_msg: bool = self.process_proc is None and bool(self.outputs)
       self._save_proc = ImageSaver(img_extension=self._img_extension,
                                    save_folder=self._save_folder,
                                    save_period=self._save_period,
