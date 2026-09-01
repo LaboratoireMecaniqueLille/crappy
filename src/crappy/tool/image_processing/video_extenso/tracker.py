@@ -78,7 +78,9 @@ class Tracker(Process):
     self.name = self.get_name(logger_name, type(self).__name__)
     self._system = system()
 
-    if blur is not None and (blur < 1 or not blur % 2):
+    if blur is not None and (blur < 1
+                             or not blur % 2
+                             or not isinstance(blur, int)):
       raise ValueError("blur must be a positive odd integer, or None")
 
     self._pipe = pipe
