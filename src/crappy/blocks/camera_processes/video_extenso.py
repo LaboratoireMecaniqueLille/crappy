@@ -109,6 +109,7 @@ class VideoExtensoProcess(CameraProcess):
           self._lost_spots = True
           self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
                                     "idle until the test ends")
+          self.send_to_draw(list())
     
     # If the spots were lost, avoid spamming the CPU in vain
     else:
