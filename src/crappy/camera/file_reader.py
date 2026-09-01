@@ -133,6 +133,10 @@ class FileReader(Camera):
     # The images are stored as an iterator
     self._images = iter(images)
 
+    # In case the camera is re-opened
+    self._t0 = None
+    self._stopped = False
+
   def get_image(self) -> tuple[float, np.ndarray] | None:
     """Reads the next image in the image folder, and returns it at the right
     time so that the achieved framerate matches the original framerate.

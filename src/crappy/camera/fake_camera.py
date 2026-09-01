@@ -53,6 +53,11 @@ class FakeCamera(Camera):
 
     self.set_all(width=width, height=height, speed=speed, fps=fps)
 
+    # In case the camera is re-opened
+    self._frame_nr = -1
+    self._t0 = time()
+    self._t = -float('inf')
+
     self._gen_image()
 
   def get_image(self) -> tuple[float, np.ndarray] | None:
