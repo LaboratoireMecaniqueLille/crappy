@@ -166,7 +166,7 @@ class VideoExtensoTool:
         for pipe, tracker in zip(self._pipes, self._trackers):
           if tracker.is_alive():
             try:
-              pipe.send(('stop', 'stop', 'stop'))
+              self._send(pipe, ('stop', 'stop', 'stop'))
             except (BrokenPipeError, EOFError, OSError):
               pass
 
