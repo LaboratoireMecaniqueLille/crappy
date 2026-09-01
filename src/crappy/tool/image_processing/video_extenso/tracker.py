@@ -78,6 +78,11 @@ class Tracker(Process):
     self.name = self.get_name(logger_name, type(self).__name__)
     self._system = system()
 
+    if blur is not None and (blur < 1
+                             or not blur % 2
+                             or not isinstance(blur, int)):
+      raise ValueError("blur must be a positive odd integer, or None")
+
     self._pipe = pipe
     self._white_spots = white_spots
     self._thresh = thresh
@@ -155,6 +160,10 @@ class Tracker(Process):
     # In case the user presses CTRL+C, simply stopping the process
     except KeyboardInterrupt:
       self._log(logging.INFO, "Caught KeyboardInterrupt, stopping the process")
+
+    # Always close the pipe connection on exit
+    finally:
+      self._pipe.close()
 
   def _evaluate(self, x_start: int, y_start: int, img: np.ndarray) -> Box:
     """Takes a sub-image, applies a threshold on it and tries to detect the new

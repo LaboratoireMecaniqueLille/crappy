@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence, Callable
 import logging
-from re import split
+import re
 from time import time
 
 from .meta_block import Block
@@ -93,6 +93,9 @@ class Pause(Block):
   def prepare(self) -> None:
     """Converts all the given criteria to :obj:`~collections.abc.Callable`."""
 
+    if not self.inputs:
+      raise IOError("No Link pointing towards the Pause Block !")
+
     # This operation cannot be performed during __init__ due to limitations of
     # the spawn start method of multiprocessing
     self._criteria = tuple(map(self._parse_criterion, self._raw_crit))
@@ -103,18 +106,17 @@ class Pause(Block):
 
     if not (data := self.recv_all_data()):
       self.log(logging.DEBUG, "No data received during this loop")
-      return
 
     # Pausing only if not paused, and stop criterion is met
     if (self._criteria and any(crit(data) for crit in self._criteria)
         and not self._pause_event.is_set()):
-      self.log(logging.WARNING, "Stop criterion reached, pausing the Blocks !")
+      self.log(logging.WARNING, "Pause criterion reached, pausing the Blocks!")
       self._pause_event.set()
       return
 
     if (self._criteria and not any(crit(data) for crit in self._criteria)
         and self._pause_event.is_set()):
-      self.log(logging.WARNING, "Stop criterion no longer satisfied, "
+      self.log(logging.WARNING, "Pause criterion no longer satisfied, "
                                 "un-pausing the Blocks !")
       self._pause_event.clear()
       return
@@ -135,7 +137,8 @@ class Pause(Block):
     # Second case, the criterion is a string containing '<'
     if '<' in criterion:
       self.log(logging.DEBUG, "Criterion is of type var < thresh")
-      var, thresh = split(r'\s*<\s*', criterion)
+      var, thresh = re.fullmatch(r'\s*(.+?)\s*<\s*(.+?)\s*',
+                                 criterion).groups()
 
       # Return a function that checks if received data is inferior to threshold
       def cond(data: dict[str, list]) -> bool:
@@ -151,7 +154,8 @@ class Pause(Block):
     # Third case, the criterion is a string containing '>'
     elif '>' in criterion:
       self.log(logging.DEBUG, "Criterion is of type var > thresh")
-      var, thresh = split(r'\s*>\s*', criterion)
+      var, thresh = re.fullmatch(r'\s*(.+?)\s*>\s*(.+?)\s*',
+                                 criterion).groups()
 
       # Special case for a time criterion
       if var == 't(s)':

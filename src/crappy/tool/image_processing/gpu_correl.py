@@ -796,7 +796,8 @@ class GPUCorrelTool:
     """Needs to be called at the end, to destroy the :mod:`pycuda` context
     properly."""
 
-    GPUCorrelTool.context.pop()
+    if GPUCorrelTool.context is not None:
+      GPUCorrelTool.context.pop()
 
   def _get_fields(self,
                   y: int | None = None,

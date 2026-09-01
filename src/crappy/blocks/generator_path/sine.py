@@ -15,7 +15,7 @@ class Sine(Path):
   """
 
   def __init__(self,
-               condition: str | ConditionType,
+               condition: str | ConditionType | None,
                freq: float,
                amplitude: float,
                offset: float = 0,

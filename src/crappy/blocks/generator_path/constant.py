@@ -13,8 +13,8 @@ class Constant(Path):
   """
 
   def __init__(self,
-               condition: str | ConditionType,
-               value: float = None) -> None:
+               condition: str | ConditionType | None,
+               value: float | None = None) -> None:
     """Sets the args and initializes the parent class.
 
     Args:

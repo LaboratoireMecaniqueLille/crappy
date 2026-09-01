@@ -67,7 +67,7 @@ class Demux(Modifier):
     self._time_label = time_label
     self._transpose = transpose
 
-  def __call__(self, data: dict[str, np.ndarray]) -> dict[str, Any]:
+  def __call__(self, data: dict[str, np.ndarray | float]) -> dict[str, Any]:
     """Retrieves for each label its value in the stream, also gets the
     corresponding timestamp, and returns them.
     
@@ -104,7 +104,7 @@ class Demux(Modifier):
     if self._mean:
       data[self._time_label] = float(np.mean(data[self._time_label]))
     else:
-      data[self._time_label] = float(np.squeeze(data[self._time_label])[0])
+      data[self._time_label] = float(np.ravel(data[self._time_label])[0])
 
     self.log(logging.DEBUG, f"Sending {data}")
 

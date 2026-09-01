@@ -6,6 +6,7 @@ from time import time
 from typing import Any
 from collections.abc import Sequence
 import logging
+from tkinter import TclError
 
 from .meta_block import Block
 from .._global import OptionalModule
@@ -220,9 +221,19 @@ class Canvas(Block):
     self.display_freq = display_freq
     self.debug = debug
 
+    if draw is not None:
+      if not all('type' in dic for dic in draw):
+        raise ValueError("All the draw dictionaries must contain a 'type' key")
+      if not all(dic['type'] in ('text', 'dot_text', 'time') for dic in draw):
+        raise ValueError("The 'type' key in the draw dictionary must be "
+                         "either 'text', 'dot_text', or 'time'")
+
+    if color_range[0] == color_range[1]:
+      raise ValueError("The two values of color_range cannot be equal")
+
     self._image = image_path
     self._draw = [] if draw is None else list(draw)
-    self.color_range = color_range
+    self.color_range = tuple(sorted(color_range))
     self._title = title
     self._window_size = window_size
     self._backend = backend
@@ -233,6 +244,9 @@ class Canvas(Block):
 
   def prepare(self) -> None:
     """Initializes the different elements of the drawing."""
+
+    if not self.inputs:
+      raise IOError("The Canvas Block has no input Link!")
 
     self.log(logging.INFO, "Opening the drawing windows")
 
@@ -262,6 +276,10 @@ class Canvas(Block):
       elif dic['type'] == 'time':
         self._drawing_elements.append(Time(self, **dic))
 
+    # Display the window
+    plt.show(block=False)
+    plt.pause(.001)
+
   def loop(self) -> None:
     """Receives the latest data from upstream Blocks and updates the drawing
     accordingly."""
@@ -272,11 +290,15 @@ class Canvas(Block):
     for elt in self._drawing_elements:
       elt.update(data)
     self.log(logging.DEBUG, "Updating the drawing window")
-    self._fig.canvas.draw()
+    try:
+      self._fig.canvas.draw()
+    except TclError:
+      pass
     plt.pause(0.001)
 
   def finish(self) -> None:
     """Closes the window containing the drawing."""
 
-    self.log(logging.INFO, "Closing the drawing windows")
-    plt.close()
+    if self._fig is not None:
+      self.log(logging.INFO, "Closing the drawing windows")
+      plt.close(self._fig)

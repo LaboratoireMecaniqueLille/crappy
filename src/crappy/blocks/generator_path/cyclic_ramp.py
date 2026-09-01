@@ -38,8 +38,8 @@ class CyclicRamp(Path):
         information.
       speed1: Slope of the first generated ramp, in `units/s`.
       speed2: Slope of the second generated ramp, in `units/s`.
-      cycles: Number of cycles. Half cycles are accepted. If `0`, loops
-        forever.
+      cycles: Number of cycles. Half cycles are accepted. If `0` or negative,
+        loops forever.
       init_value: If given, overwrites the last value of the signal as the
         starting point for the first ramp. In the specific case when this Path
         is the first one in the Generator Paths, this argument must be given !
@@ -68,6 +68,10 @@ class CyclicRamp(Path):
 
     if init_value is None and self.last_cmd is None:
       raise ValueError('For the first path, an init_value must be given !')
+
+    if cycles > 0 and cycles % 0.5 > 0:
+      raise ValueError("Full cycles or half-cycles (multiples of 0.5) are "
+                       "supported")
 
     # Creates an interator object with a given length
     if cycles > 0:

@@ -42,7 +42,7 @@ class Modifier(ABC):
                             "to get your Modifier working again.")
 
     if cls.__name__ in cls.classes:
-      raise DefinitionError(f"An InOut with the name {cls.__name__} is "
+      raise DefinitionError(f"A Modifier with the name {cls.__name__} is "
                             f"already defined !")
     cls.classes[cls.__name__] = cls
 
@@ -58,7 +58,7 @@ class Modifier(ABC):
 
   @abstractmethod
   def __call__(self, data: dict[str, T]) -> dict[str, T] | None:
-    """The main method altering the inout data and returning the altered data.
+    """The main method altering the input data and returning the altered data.
 
     It should take a :obj:`dict` as its only argument, and return another
     :obj:`dict`. Both dicts should have their keys as :obj:`str`, representing

@@ -5,7 +5,7 @@ from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 import numpy as np
 from itertools import combinations
-from time import sleep, time
+from time import time
 import logging
 import logging.handlers
 from select import select
@@ -160,19 +160,43 @@ class VideoExtensoTool:
     Processes, either gently or by terminating them if they don't stop by
     themselves."""
 
-    if any((tracker.is_alive() for tracker in self._trackers)):
-      # First, gently asking the trackers to stop
-      for pipe, tracker in zip(self._pipes, self._trackers):
-        if tracker.is_alive():
-          pipe.send(('stop', 'stop', 'stop'))
-      sleep(0.1)
+    try:
+      if any((tracker.is_alive() for tracker in self._trackers)):
+        # First, gently asking the trackers to stop
+        for pipe, tracker in zip(self._pipes, self._trackers):
+          if tracker.is_alive():
+            try:
+              self._send(pipe, ('stop', 'stop', 'stop'))
+            except (BrokenPipeError, EOFError, OSError):
+              pass
 
-      # If they're not stopping, killing the trackers
-      for tracker in self._trackers:
-        if tracker.is_alive():
-          self._log(logging.WARNING, "Tracker process did not stop properly, "
-                                     "terminating it")
-          tracker.terminate()
+        for tracker in self._trackers:
+          tracker.join(0.1)
+
+        # If they're not stopping, killing the trackers
+        for tracker in self._trackers:
+          if tracker.is_alive():
+            self._log(logging.WARNING, "Tracker process did not stop properly,"
+                                       " terminating it")
+            tracker.terminate()
+
+        for tracker in self._trackers:
+          tracker.join(0.1)
+
+        # If they're still not stopping, terminating the trackers
+        for tracker in self._trackers:
+          if tracker.is_alive():
+            self._log(logging.WARNING, "Tracker process did not stop properly,"
+                                       " killing it")
+            tracker.kill()
+
+        for tracker in self._trackers:
+          tracker.join(0.1)
+
+    # Always close the pipes in the end
+    finally:
+      for pipe in self._pipes:
+        pipe.close()
 
   def get_data(self,
                img: np.ndarray
@@ -199,13 +223,15 @@ class VideoExtensoTool:
                       min(img.shape[0], y_right + self._border))
       slice_x = slice(max(0, x_top - self._border),
                       min(img.shape[1], x_bottom + self._border))
-      pipe.send((slice_y.start, slice_x.start, img[slice_y, slice_x]))
+      self._send(pipe, (slice_y.start, slice_x.start, img[slice_y, slice_x]))
 
     for i, (pipe, spot) in enumerate(zip(self._pipes, self.spots)):
 
       # Receiving the data from the tracker, if there's any
       if pipe.poll(timeout=0.1):
         box = pipe.recv()
+        while pipe.poll():
+          box = pipe.recv()
 
         # In case a tracker faced an error, stopping them all and raising
         if isinstance(box, str):
@@ -300,7 +326,7 @@ class VideoExtensoTool:
 
   def _send(self,
             conn: Connection,
-            val: str | tuple[int, int, np.ndarray]) -> None:
+            val: tuple[int, int, np.ndarray] | tuple[str, str, str]) -> None:
     """Wrapper for sending messages to the Tracker processes.
 
     In Linux, checks that the Pipe is not full before sending the message.

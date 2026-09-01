@@ -78,6 +78,9 @@ class ImageSaver(CameraProcess):
 
     super().__init__()
 
+    if not isinstance(save_period, int) or save_period < 1:
+      raise ValueError("save_period must be a strictly positive integer")
+
     # Trying the different possible backends and checking if the given one
     # is correct
     if save_backend is None:
@@ -90,6 +93,16 @@ class ImageSaver(CameraProcess):
       else:
         self._save_backend = 'npy'
     elif save_backend in ('sitk', 'pil', 'cv2', 'npy'):
+      if save_backend == 'sitk' and isinstance(Sitk, OptionalModule):
+        raise ModuleNotFoundError("Backend 'sitk' requested but could not "
+                                  "be imported")
+      elif save_backend == 'pil' and isinstance(PIL, OptionalModule):
+        raise ModuleNotFoundError("Backend 'pil' requested but could not "
+                                  "be imported")
+      elif save_backend == 'cv2' and isinstance(cv2, OptionalModule):
+        raise ModuleNotFoundError("Backend 'cv2' requested but could not "
+                                  "be imported")
+
       self._save_backend = save_backend
     else:
       raise ValueError("The save_backend argument should be either 'sitk', "
@@ -167,9 +180,9 @@ class ImageSaver(CameraProcess):
         return False
 
      # In case it's too early to save the new frame
-      if self.metadata['ImageUniqueID'] is not None and \
-          self._data_dict['ImageUniqueID'] - self.metadata['ImageUniqueID'] \
-          < self._save_period:
+      if (self.metadata['ImageUniqueID'] is not None and
+          self._data_dict['ImageUniqueID'] - self.metadata['ImageUniqueID']
+          < self._save_period):
         return False
 
       # Copying the metadata
@@ -233,13 +246,10 @@ class ImageSaver(CameraProcess):
 
     elif self._save_backend == 'pil':
       if len(self.img.shape) == 3:
-        PIL.Image.fromarray(self.img[:, :, ::-1]).save(
-          path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
-                      if key in TAGS_INV})
+        PIL.Image.fromarray(self.img[:, :, ::-1]).save(path,
+                                                       exif=self._pil_exif())
       else:
-        PIL.Image.fromarray(self.img).save(
-          path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
-                      if key in TAGS_INV})
+        PIL.Image.fromarray(self.img).save(path, exif=self._pil_exif())
 
     elif self._save_backend == 'cv2':
       cv2.imwrite(path, self.img)
@@ -252,3 +262,29 @@ class ImageSaver(CameraProcess):
       self.send({'t(s)': self.metadata['t(s)'],
                  'img_index': self.metadata['ImageUniqueID'],
                  'meta': self.metadata})
+
+  def _pil_exif(self):
+    """Parses the metadata of the current image and converts it to a
+    PIL.Image.Exif object."""
+
+    exif = PIL.Image.Exif()
+
+    for key, value in self.metadata.items():
+      if key not in TAGS_INV:
+        continue
+
+      # Convert Numpy scalars to Python object
+      if isinstance(value, np.generic):
+        value = value.item()
+
+      # These EXIF fields are ASCII in practice
+      if key in ('ImageUniqueID', 'SubsecTimeOriginal'):
+        value = str(value)
+
+      try:
+        exif[TAGS_INV[key]] = value
+      except (TypeError, ValueError):
+        self.log(logging.DEBUG, f"Could not encode metadata field "
+                                f"{key} as EXIF")
+
+    return exif
