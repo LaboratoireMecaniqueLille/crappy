@@ -66,10 +66,10 @@ class CameraScaleSetting(CameraSetting):
                                 f"({highest}), swapping them !")
       lowest, highest = highest, lowest
 
-    self.lowest = lowest
-    self.highest = highest
+    self.type = int if isinstance(lowest + highest, int) else float
+    self.lowest = self.type(lowest)
+    self.highest = self.type(highest)
     self.step = step
-    self.type = int if isinstance(self.lowest + self.highest, int) else float
 
     # Ensuring that the default value lies between the bounds
     if default is not None:
