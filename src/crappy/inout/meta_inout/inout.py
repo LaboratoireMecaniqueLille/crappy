@@ -269,6 +269,10 @@ class InOut:
                                 "aborting the zeroing")
       return
 
+    # In case the method is called multiple times
+    self._compensations = list()
+    self._compensations_dict = dict()
+
     # Averaging the values and storing them in a list
     if buf:
       for values in zip(*buf):
