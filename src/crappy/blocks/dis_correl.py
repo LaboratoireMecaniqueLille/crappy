@@ -331,10 +331,25 @@ class DISCorrel(Camera):
       raise ValueError("If the config window is disabled, the patch must be "
                        "provided !")
 
+    if patch is not None and (not isinstance(patch, tuple)
+                              or len(patch) != 4
+                              or not all(isinstance(val, int) for val in patch)
+                              or not all(val >= 0 for val in patch)):
+      raise ValueError("The patch should be provided as a tuple of 4 "
+                       "positive integer values")
+
+    if patch is not None and (patch[2] <= 0 or patch[3] <= 0):
+      raise ValueError("The width and height of the patch must be "
+                       "strictly positive integers")
+
+    # Make sure that proper labels are provided if custom fields are provided
+    if fields is not None and labels is None:
+      raise ValueError("Custom fields were provided but no custom labels!")
+
     # Forcing the fields into a list
     if fields is None:
       fields = ["x", "y", "exx", "eyy"]
-    elif isinstance(fields, str):
+    elif isinstance(fields, str) or isinstance(fields, np.ndarray):
       fields = [fields]
     else:
       fields = list(fields)
@@ -348,13 +363,23 @@ class DISCorrel(Camera):
       self.labels = list(labels)
 
     # Adding the residuals if required
-    if residual and labels is None:
+    if residual and self.labels is not None:
       self.labels.append('res')
+
+    # Make sure only string labels are provided
+    if (self.labels is not None and
+        not all(isinstance(label, str) for label in self.labels)):
+      non_str = [label for label in self.labels if not isinstance(label, str)]
+      raise ValueError(f"Some labels are not strings: "
+                       f"{', '.join(map(repr, non_str))}")
+
+    if self.labels is not None and len(set(self.labels)) != len(self.labels):
+      raise ValueError("Duplicate labels provided in the list of labels!")
 
     self._patch_int = patch
     self._patch: Box | None = None
 
-    # Making sure a coherent number of labels and fields was given
+    # Making sure a consistent number of labels and fields was given
     if 2 + len(fields) + int(residual) != len(self.labels):
       raise ValueError(
         "The number of fields is inconsistent with the number "
