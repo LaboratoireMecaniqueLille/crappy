@@ -89,4 +89,4 @@ class TestSpotBoxes(unittest.TestCase):
     self.assertTrue(all(spot.x_centroid is not None for spot in self._spots))
     self.assertTrue(all(spot.y_centroid is not None for spot in self._spots))
     self.assertEqual(self._spots.x_l0, 18.0)
-    self.assertEqual(self._spots.x_l0, 18.0)
+    self.assertEqual(self._spots.y_l0, 18.0)
