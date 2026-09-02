@@ -17,3 +17,6 @@ from .test_stop_block import TestStopBlock
 from .test_machine import TestMachine
 from .test_auto_drive_video_extenso import TestAutoDriveVideoExtenso
 from .test_generator import TestGenerator
+from .test_dic_ve import TestDICVE
+from .test_dis_correl import TestDISCorrel
+from .test_video_extenso import TestVideoExtenso
