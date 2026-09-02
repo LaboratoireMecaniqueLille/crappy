@@ -39,8 +39,8 @@ class IOBlock(Block):
                cmd_labels: str | Sequence[str] | None = None,
                trigger_label: str | None = None,
                streamer: bool = False,
-               initial_cmd: Any | Sequence[Any] | None = None,
-               exit_cmd: Any | Sequence[Any] | None = None,
+               initial_cmd: Sequence[Any] | None = None,
+               exit_cmd: Sequence[Any] | None = None,
                make_zero_delay: float | None = None,
                ft232h_ser_num: str | None = None,
                spam: bool = False,
@@ -138,7 +138,7 @@ class IOBlock(Block):
     elif cmd_labels is not None:
       self._cmd_labels = list(cmd_labels)
     else:
-      self._cmd_labels = None
+      self._cmd_labels = list()
 
     # Forcing the initial_cmd into a list
     if initial_cmd is not None and isinstance(initial_cmd, str):
@@ -157,13 +157,13 @@ class IOBlock(Block):
       self._exit_cmd = None
 
     # Checking that the initial_cmd and exit_cmd length are consistent
-    if self._cmd_labels is not None:
-      if self._initial_cmd is not None \
-          and len(self._initial_cmd) != len(self._cmd_labels):
+    if self._cmd_labels:
+      if (self._initial_cmd is not None
+          and len(self._initial_cmd) != len(self._cmd_labels)):
         raise ValueError("There should be as many values in initial_cmd as "
                          "there are in cmd_labels !")
-      if self._exit_cmd is not None \
-          and len(self._exit_cmd) != len(self._cmd_labels):
+      if (self._exit_cmd is not None
+          and len(self._exit_cmd) != len(self._cmd_labels)):
         raise ValueError("There should be as many values in exit_cmd as "
                          "there are in cmd_labels !")
 
@@ -219,7 +219,7 @@ class IOBlock(Block):
       raise IOError('Error ! The IOBlock is neither an input nor an output !')
 
     # cmd_labels must be defined when the block has inputs
-    if self.inputs and self._cmd_labels is None and self._trig_label is None:
+    if self.inputs and not self._cmd_labels and self._trig_label is None:
       raise ValueError('Error ! The IOBlock has incoming links but no '
                        'cmd_labels have been given !')
 
@@ -314,24 +314,28 @@ class IOBlock(Block):
     the driven InOut.
     """
 
-    # Stopping the stream
-    if self._streamer and self._device is not None:
-      self.log(logging.INFO, f"Stopping stream on the "
-                             f"{type(self._device).__name__} InOut")
-      self._device.stop_stream()
+    try:
+      # Stopping the stream
+      if self._streamer and self._device is not None and self._stream_started:
+        self.log(logging.INFO, f"Stopping stream on the "
+                               f"{type(self._device).__name__} InOut")
+        self._device.stop_stream()
 
-    # Setting the exit command
-    if self._write and self._exit_cmd is not None and self._device is not None:
-      self.log(logging.INFO, f"Sending the exit command to the "
-                             f"{type(self._device).__name__} InOut")
-      self._device.set_cmd(*self._exit_cmd)
+      # Setting the exit command
+      if (self._write
+          and self._exit_cmd is not None
+          and self._device is not None):
+        self.log(logging.INFO, f"Sending the exit command to the "
+                               f"{type(self._device).__name__} InOut")
+        self._device.set_cmd(*self._exit_cmd)
 
-    # Closing the device
-    if self._device is not None:
-      self.log(logging.INFO, f"Closing the {type(self._device).__name__} "
-                             f"InOut")
-      self._device.close()
-      self.log(logging.INFO, f"{type(self._device).__name__} InOut closed")
+    finally:
+      # Closing the device
+      if self._device is not None:
+        self.log(logging.INFO, f"Closing the {type(self._device).__name__} "
+                               f"InOut")
+        self._device.close()
+        self.log(logging.INFO, f"{type(self._device).__name__} InOut closed")
 
   def _read_data(self) -> None:
     """Reads the data or the stream, offsets the timestamp and sends the data

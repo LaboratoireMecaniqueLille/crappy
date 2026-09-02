@@ -106,7 +106,7 @@ class TestMeanBlock(BlockTestBase):
 
     mean, sent, recv_calls, _ = self._make_mean(
       delay=2,
-      batches=[{'t(s)': [11, 15], 'a': [1, 3], 'b': [2, 6]}])
+      batches=[{'t(s)': [1, 5], 'a': [1, 3], 'b': [2, 6]}])
 
     with patch.object(mean_module, 'time', return_value=20):
       mean.loop()
@@ -121,7 +121,7 @@ class TestMeanBlock(BlockTestBase):
     mean, sent, _, _ = self._make_mean(
       delay=1,
       out_labels='a',
-      batches=[{'t(s)': [12, 16], 'a': [1, 3], 'b': [100, 200]}])
+      batches=[{'t(s)': [2, 6], 'a': [1, 3], 'b': [100, 200]}])
 
     with patch.object(mean_module, 'time', return_value=30):
       mean.loop()
@@ -134,7 +134,7 @@ class TestMeanBlock(BlockTestBase):
     mean, sent, _, _ = self._make_mean(
       delay=1,
       time_label='time',
-      batches=[{'time': [20, 24], 'a': [1, 3]}])
+      batches=[{'time': [10, 14], 'a': [1, 3]}])
 
     with patch.object(mean_module, 'time', return_value=30):
       mean.loop()
@@ -159,7 +159,7 @@ class TestMeanBlock(BlockTestBase):
 
     mean, sent, _, logs = self._make_mean(
       delay=1,
-      batches=[{'t(s)': [10, 12], 'label': ['first', 'last']}])
+      batches=[{'t(s)': [0, 2], 'label': ['first', 'last']}])
 
     with patch.object(mean_module, 'time', return_value=30):
       mean.loop()

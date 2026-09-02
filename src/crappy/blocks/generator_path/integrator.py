@@ -23,11 +23,11 @@ class Integrator(Path):
   """
 
   def __init__(self,
-               condition: str | ConditionType,
+               condition: str | ConditionType | None,
                inertia: float,
                func_label: str,
                time_label: str = 't(s)',
-               init_value: float = None) -> None:
+               init_value: float | None = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -60,6 +60,9 @@ class Integrator(Path):
 
     if init_value is None and self.last_cmd is None:
       raise ValueError('For the first path, an init_value must be given !')
+
+    if inertia == 0:
+      raise ValueError("inertia should be non-zero")
 
     # Setting the attributes
     self._condition = self.parse_condition(condition)

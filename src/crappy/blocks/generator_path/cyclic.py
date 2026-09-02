@@ -37,8 +37,8 @@ class Cyclic(Path):
         information.
       value1: First value to send.
       value2: Second value to send.
-      cycles: Number of cycles. Half cycles are accepted. If `0`, loops
-        forever.
+      cycles: Number of cycles. Half cycles are accepted. If `0` or negative,
+        loops forever.
 
     Note:
       ::
@@ -59,6 +59,10 @@ class Cyclic(Path):
     """
 
     super().__init__()
+
+    if cycles > 0 and cycles % 0.5 > 0:
+      raise ValueError("Full cycles or half-cycles (multiples of 0.5) are "
+                       "supported")
 
     # Creates an interator object with a given length
     if cycles > 0:

@@ -14,7 +14,7 @@ class Ramp(Path):
   """
 
   def __init__(self,
-               condition: str | ConditionType,
+               condition: str | ConditionType | None,
                speed: float,
                init_value: float | None = None):
     """Sets the arguments and initializes the parent class.

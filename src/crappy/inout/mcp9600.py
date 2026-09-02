@@ -3,7 +3,7 @@
 from time import time
 from typing import Literal
 import logging
-from  warnings import warn
+from warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule

@@ -2,14 +2,9 @@
 
 from time import time
 import logging
+import tkinter as tk
 
 from .meta_block import Block
-from .._global import OptionalModule
-
-try:
-  import tkinter as tk
-except (ModuleNotFoundError, ImportError):
-  tk = OptionalModule("tkinter")
 
 
 class Button(Block):
@@ -69,6 +64,13 @@ class Button(Block):
 
     self._root: tk.Tk | None = None
 
+    if not isinstance(time_label, str):
+      raise TypeError("time_label must be a string")
+    if not isinstance(label, str):
+      raise TypeError("label must be a string")
+    if time_label == label:
+      raise ValueError("The time_label and label must be different")
+
     super().__init__()
     self.freq = freq
     self.labels = [time_label, label]
@@ -86,15 +88,19 @@ class Button(Block):
   def prepare(self) -> None:
     """Creates the graphical interface and sets its layout and callbacks."""
 
+    if not self.outputs:
+      raise IOError("The Button Block has no output Link!")
+
     self.log(logging.INFO, "Creating the GUI")
 
     self._root = tk.Tk()
     self._root.title("Button block")
     self._root.resizable(False, False)
 
-    self._step = tk.IntVar()
+    self._step = tk.IntVar(self._root)
     self._step.trace_add('write', self._update_text)
-    self._text = tk.StringVar(value=f'step: {self._step.get()}')
+    self._text = tk.StringVar(self._root,
+                              value=f'{self.labels[1]}: {self._step.get()}')
 
     self._label = tk.Label(self._root, textvariable=self._text)
     self._label.pack(padx=7, pady=7)
@@ -109,7 +115,7 @@ class Button(Block):
   def begin(self) -> None:
     """Sends the value of the first step (`0`) if required."""
 
-    if self._send_0:
+    if self._send_0 or self._spam:
       self.send([time() - self.t0, self._step.get()])
 
   def loop(self) -> None:
@@ -138,7 +144,7 @@ class Button(Block):
   def _update_text(self, _, __, ___) -> None:
     """Simply updates the displayed text."""
 
-    self._text.set(f'step: {self._step.get()}')
+    self._text.set(f'{self.labels[1]}: {self._step.get()}')
 
   def _next_step(self) -> None:
     """Increments the step counter and sends the corresponding signal."""

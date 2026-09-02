@@ -92,6 +92,14 @@ class DICVETool:
     self.patches = patches
     self._offsets = [(0, 0) for _ in patches]
 
+    if method not in ('Disflow', 'Lucas Kanade',
+                      'Pixel precision', 'Parabola'):
+      raise ValueError("Only the 'Disflow', 'Lucas Kanade', 'Pixel precision',"
+                       " 'Parabola' methods are accepted")
+
+    if not 0 <= border <= 1:
+      raise ValueError("border should be between 0 and 1")
+
     # Other attributes to set
     self._method = method
     self._border = border
@@ -275,10 +283,13 @@ class DICVETool:
     y_disp = -(max_height - height / 2)
     x_disp = -(max_width - width / 2)
 
-    x_disp -= self._parabola_fit(cross_correl[max_height,
-                                 max_width - 1: max_width + 2])
-    y_disp -= self._parabola_fit(cross_correl[max_height - 1: max_height + 2,
-                                 max_width])
+    if 0 < max_width < width - 1:
+      x_disp -= self._parabola_fit(cross_correl[max_height,
+                                                max_width - 1: max_width + 2])
+
+    if 0 < max_height < height - 1:
+      y_disp -= self._parabola_fit(cross_correl[max_height - 1: max_height + 2,
+                                                max_width])
 
     return [x_disp, y_disp]
 
@@ -293,9 +304,13 @@ class DICVETool:
     x_top, x_bottom, y_left, y_right = patch.sorted()
     center_y, center_x = (y_right - y_left) // 2, (x_bottom - x_top) // 2
 
-    next_, _, _ = cv2.calcOpticalFlowPyrLK(
+    next_, status, _ = cv2.calcOpticalFlowPyrLK(
       self._get_patch(self._img0, patch, offset), self._get_patch(img, patch),
       np.array([[center_x, center_y]]).astype('float32'), None)
+
+    if next_ is None or status is None or not status.ravel()[0]:
+      raise RuntimeError("Lucas-Kanade failed to track the patch center")
+
     new_x, new_y = np.squeeze(next_)
 
     return [new_x - center_x, new_y - center_y]
@@ -309,7 +324,14 @@ class DICVETool:
       arr: This array contains the y values for the 3 points.
     """
 
-    return float((arr[0] - arr[2]) / (2 * (arr[0] - 2 * arr[1] + arr[2])))
+    if arr.shape[0] != 3:
+      return 0.0
+
+    denominator = 2 * (arr[0] - 2 * arr[1] + arr[2])
+    if abs(denominator) < 1e-12:
+      return 0.0
+
+    return float((arr[0] - arr[2]) / denominator)
 
   @staticmethod
   def _cross_correlation(img0: np.ndarray,

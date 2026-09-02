@@ -111,6 +111,9 @@ class Grapher(Block):
     self._interp = interp
     self._backend = backend
 
+    if not all(len(elt) == 2 for elt in labels):
+      raise ValueError("All labels must be tuples of two strings")
+
     self._labels = labels
 
     self._ax = None
@@ -123,6 +126,9 @@ class Grapher(Block):
 
   def prepare(self) -> None:
     """Configures the figure for displaying data."""
+
+    if not self.inputs:
+      raise IOError("The Grapher Block has no input Link!")
 
     # Switch to the required backend
     if self._backend:
@@ -175,7 +181,7 @@ class Grapher(Block):
     graph."""
 
     # Receives the data sent by the upstream blocks
-    if self.freq >= 10:
+    if self.freq is None or self.freq >= 10:
       # Assuming that above 10Hz the data won't saturate the links
       data = self.recv_all_data_raw()
     else:
@@ -236,15 +242,15 @@ class Grapher(Block):
       self._ax.autoscale()
       try:
         self._canvas.draw()
+        self._canvas.flush_events()
       except TclError:
         pass
-      self._canvas.flush_events()
 
   def finish(self) -> None:
     """Closes all the opened :mod:`matplotlib` windows."""
 
     self.log(logging.INFO, "Closing all matplotlib windows")
-    plt.close("all")
+    plt.close(self._figure)
 
   def _on_press(self, event) -> None:
     """Callback catching the keyboard press events.
@@ -256,7 +262,7 @@ class Grapher(Block):
       for line in self._lines:
         line.set_xdata([])
         line.set_ydata([])
-      self.factor = [1 for _ in self._labels]
-      self.counter = [0 for _ in self._labels]
+      self._factor = [1 for _ in self._labels]
+      self._counter = [0 for _ in self._labels]
 
       self.log(logging.INFO, "Cleared the matplotlib window")

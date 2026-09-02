@@ -37,12 +37,15 @@ class CameraChoiceSetting(CameraSetting):
 
     self._logger: logging.Logger | None = None
 
+    if not choices:
+      raise ValueError(f"No choices provided for setting {name}")
+
     self.choices = choices
 
     if default is not None and default not in choices:
       self.log(logging.WARNING, f"The given default {default} is not part "
-                                  f"of the given choices ! Setting default "
-                                  f"to {choices[0]} instead")
+                                f"of the given choices ! Setting default "
+                                f"to {choices[0]} instead")
       default = choices[0]
 
     if default is None:
@@ -81,6 +84,10 @@ class CameraChoiceSetting(CameraSetting):
 
     self.log(logging.DEBUG, f"Reloading the setting {self.name}")
 
+    if not choices:
+      raise ValueError(f"No choices provided when reloading setting "
+                       f"{self.name}")
+
     # Updating the default value
     if default is not None:
       if default in choices:
@@ -91,18 +98,21 @@ class CameraChoiceSetting(CameraSetting):
                                   f"to {choices[0]} instead")
         self.default = choices[0]
     else:
-      self.default = choices[0]
+      if self.default not in choices:
+        self.default = choices[0]
 
     if value is not None and value not in choices:
       self.log(logging.WARNING, f"{value} is not a possible choice for the "
                                 f"setting {self.name}, ignoring it !")
-      value  = None
+      value = None
 
     if value is None and self.value not in choices:
       self.log(logging.WARNING, f"{self.value} is no longer a possible choice "
                                 f"for the setting {self.name}, setting to "
                                 f"{self.default} instead !")
       value = self.default
+
+    self.choices = choices
 
     # Updating the radio buttons and the setting value
     if self.tk_obj:

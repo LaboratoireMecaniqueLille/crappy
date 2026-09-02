@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 from time import time, sleep, strftime, gmtime
 from types import MethodType
+from typing import Any
 from multiprocessing import Array, Manager, Event, RLock, Pipe, Barrier
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing import managers, synchronize, connection
@@ -22,11 +23,10 @@ from .._global import CameraPrepareError, CameraRuntimeError, CameraConfigError
 class DummyCam(BaseCam):
   """Used to instantiate Camera object without implementing required method."""
 
-  def get_image(self) -> None:
+  def get_image(self) -> tuple[dict[str, Any] | float, np.ndarray] | None:
     """Pass ABC guard but don't alter behavior."""
 
     return super().get_image()
-
 
 
 class Camera(Block):
@@ -269,6 +269,12 @@ class Camera(Block):
     self.niceness = -10
     self.debug = debug
 
+    if display_images and not displayer_framerate > 0:
+      raise ValueError("displayer_framerate must be strictly positive")
+
+    if save_images and (not isinstance(save_period, int) or save_period < 1):
+      raise ValueError("save_period must be a strictly positive integer")
+
     # Checking for deprecated names
     if camera in deprecated_cameras:
       raise NotImplementedError(
@@ -374,7 +380,7 @@ class Camera(Block):
       self.log(logging.INFO, "Instantiating the saver process")
       # The ImageSaver sends a message on each saved image only if no
       # processing is performed and if there are output Links
-      send_msg = self.process_proc is None and self.outputs
+      send_msg: bool = self.process_proc is None and bool(self.outputs)
       self._save_proc = ImageSaver(img_extension=self._img_extension,
                                    save_folder=self._save_folder,
                                    save_period=self._save_period,

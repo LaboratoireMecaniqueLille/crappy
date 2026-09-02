@@ -3,6 +3,7 @@
 from collections.abc import Iterable
 import tkinter as tk
 import logging
+import numbers
 
 from .meta_block import Block
 
@@ -107,6 +108,9 @@ class Dashboard(Block):
     self.freq = freq
     self.debug = debug
 
+    if not isinstance(nb_digits, int) or nb_digits < 0:
+      raise ValueError("nb_digits must be a positive integer")
+
     self._labels = [labels] if isinstance(labels, str) else list(labels)
     self._nb_digits = nb_digits
 
@@ -141,10 +145,13 @@ class Dashboard(Block):
           self.log(logging.DEBUG, f"Displaying {value} for the label {label} "
                                   f"on the dashboard")
           self._dashboard.tk_var[label].set(value)
-        elif isinstance(value, int) or isinstance(value, float):
+        elif isinstance(value, numbers.Real):
           self.log(logging.DEBUG, f"Displaying {value:.{self._nb_digits}f} for"
                                   f" the label {label} on the dashboard")
           self._dashboard.tk_var[label].set(f'{value:.{self._nb_digits}f}')
+        else:
+          self.log(logging.WARNING, f"Don't know how to handle the received "
+                                    f"value: {value}")
 
     # In case the GUI has been destroyed, don't raise an error
     try:

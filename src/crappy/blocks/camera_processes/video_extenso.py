@@ -36,8 +36,7 @@ class VideoExtensoProcess(CameraProcess):
         :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` Tool,
         containing the coordinates of the detected spots to track. This
         argument is passed to the
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`
-        and not used in this class.
+        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
       raise_on_lost_spot: If :obj:`True`, raises an exception when losing the
         spots to track, which stops the test. Otherwise, stops the tracking but
         lets the test go on and silently sleeps.
@@ -110,6 +109,7 @@ class VideoExtensoProcess(CameraProcess):
           self._lost_spots = True
           self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
                                     "idle until the test ends")
+          self.send_to_draw(list())
     
     # If the spots were lost, avoid spamming the CPU in vain
     else:

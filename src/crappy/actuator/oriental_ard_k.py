@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import logging
-from  warnings import warn
+from warnings import warn
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
