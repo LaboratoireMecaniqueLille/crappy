@@ -2,13 +2,15 @@
 
 from crappy import Block
 from crappy._global import CrappyFail
+from crappy.blocks.meta_block import block as block_module
 from multiprocessing import synchronize, queues, get_start_method, Event
 from multiprocessing.sharedctypes import Synchronized
 from threading import Thread
-from time import sleep
-import subprocess
+from time import monotonic, sleep
 from platform import system
+import logging
 import unittest
+from unittest.mock import patch
 
 from .block_test_base import BlockTestBase, TestBlock
 
@@ -43,7 +45,7 @@ class TestStartupSequence(BlockTestBase):
 
     self._block = TestBlock()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
@@ -55,14 +57,14 @@ class TestStartupSequence(BlockTestBase):
     self.assertTrue(self._block.stop_event.wait(3.0))
 
     with self.assertRaises(CrappyFail):
-      Block.prepare_all()
+      Block.prepare_all(log_level=logging.CRITICAL)
 
   def test_prepare_all_launched(self) -> None:
     """Tests that prepare_all refuses an inconsistent launched state."""
 
     self._block = TestBlock()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
@@ -75,14 +77,14 @@ class TestStartupSequence(BlockTestBase):
     Block.launched_all = True
 
     with self.assertRaises(CrappyFail):
-      Block.prepare_all()
+      Block.prepare_all(log_level=logging.CRITICAL)
 
   def test_prepare_all_setup(self) -> None:
     """Tests that prepare_all configures all shared objects properly."""
 
     self._block = TestBlock()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
@@ -131,11 +133,11 @@ class TestStartupSequence(BlockTestBase):
     Block.thread_stop = True
 
     self.assertTrue(self._block.stop_event.wait(3.0))
-    self.assertFalse(Block.log_thread.is_alive())
+    self.assertTrue(self.wait_until(lambda: not Block.log_thread.is_alive()))
 
-    sleep(3.0)
+    self.assertTrue(self._block.finished.wait(3.0))
+    self._block.join(1.0)
 
-    self.assertTrue(self._block.finished.is_set())
     self.assertFalse(self._block.looped.is_set())
     self.assertFalse(self._block.begun.is_set())
     self.assertFalse(self._block.is_alive())
@@ -150,21 +152,18 @@ class TestStartupSequence(BlockTestBase):
     self._block = TestBlock()
     self._block.niceness = 5
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
-    initial_nice = int(subprocess.run(
-        ['ps', '-p', str(self._block.pid), '-o', 'ni='],
-        capture_output=True, text=True, check=True).stdout.strip())
+    # The unit under test is command construction. Mocking the system call
+    # avoids depending on external ``ps``/``renice`` executables or permissions.
+    with patch.object(block_module.subprocess, 'call') as call:
+      Block.renice_all(allow_root=False)
 
-    Block.renice_all(allow_root=False)
-
-    new_nice = int(subprocess.run(
-        ['ps', '-p', str(self._block.pid), '-o', 'ni='],
-        capture_output=True, text=True, check=True).stdout.strip())
-
-    self.assertEqual(new_nice, 5)
+    call.assert_called_once_with(
+        ['renice', '5', '-p', str(self._block.pid)],
+        stdout=block_module.subprocess.DEVNULL)
 
     Block.ready_barrier.abort()
     Block.thread_stop = True
@@ -188,7 +187,7 @@ class TestStartupSequence(BlockTestBase):
 
     self._block = TestBlock()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
@@ -207,7 +206,7 @@ class TestStartupSequence(BlockTestBase):
 
     self._block = TestBlock()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
@@ -230,7 +229,7 @@ class TestStartupSequence(BlockTestBase):
 
     self._block = TestBlock()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
@@ -245,14 +244,14 @@ class TestStartupSequence(BlockTestBase):
     def stop():
       """Stops the running session after a short delay."""
 
-      sleep(0.5)
-      Block.stop_all()
+      if self._block.looped.wait(3.0):
+        Block.stop_all()
 
     stop_thread = Thread(target=stop)
 
     self._block = TestBlock(stop=False)
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
@@ -267,7 +266,7 @@ class TestStartupSequence(BlockTestBase):
 
     self._block = TestBlock()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
@@ -275,7 +274,7 @@ class TestStartupSequence(BlockTestBase):
 
     self._block = TestBlock()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
@@ -363,12 +362,22 @@ class TestStartupSequence(BlockTestBase):
     self._block = TestBlockNoResponse()
     _ = TestBlockRaise()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
-    with self.assertRaises(CrappyFail):
-      Block.launch_all()
+    # Exercise the three-second forced-termination path without making the
+    # unit test spend three wall-clock seconds in it.
+    cleanup_start = monotonic()
+
+    def accelerated_time() -> float:
+      return cleanup_start + 100 * (monotonic() - cleanup_start)
+
+    with patch.object(block_module, 'time', side_effect=accelerated_time), \
+         patch.object(block_module, 'sleep', side_effect=lambda _: sleep(0.01)):
+      with self.assertRaises(CrappyFail):
+        Block.launch_all()
 
     for inst in Block.instances:
+      inst.join(1.0)
       self.assertFalse(inst.is_alive())

@@ -4,6 +4,9 @@ from crappy import Block
 from crappy.links.link import Link, ModifierType
 from typing import Any
 from collections.abc import Sequence
+import logging
+from time import monotonic, sleep
+from typing import Callable
 import unittest
 from multiprocessing import Event, Value
 
@@ -114,6 +117,10 @@ class TestBlock(Block):
 
     super().__init__()
 
+    # These helpers exercise behavior, not terminal logging. Keeping the child
+    # logger at CRITICAL avoids flooding test output with expected failures.
+    self.debug = None
+
     self.prepared = Event()
     self.begun = Event()
     self.looped = Event()
@@ -185,6 +192,72 @@ class BlockTestBase(unittest.TestCase):
     super().__init__(*args, **kwargs)
 
     self._block: TestBlock | None = None
+
+  def setUp(self) -> None:
+    """Give every test an isolated, quiet Crappy logger."""
+
+    logger = logging.getLogger('crappy')
+    original_state = (list(logger.handlers), logger.level, logger.disabled,
+                      logger.propagate, Block.logger,
+                      Block.log_level,
+                      logging.root.manager.disable)
+
+    logger.handlers = list()
+    logger.setLevel(logging.CRITICAL)
+    logger.disabled = False
+    logger.propagate = False
+    Block.logger = None
+    Block.log_level = logging.CRITICAL
+
+    def restore_logging() -> None:
+      (original_handlers, level, disabled, propagate, block_logger,
+       block_log_level, disable) = original_state
+      for handler in logger.handlers:
+        if handler not in original_handlers:
+          handler.close()
+      logger.handlers = original_handlers
+      logger.setLevel(level)
+      logger.disabled = disabled
+      logger.propagate = propagate
+      Block.logger = block_logger
+      Block.log_level = block_log_level
+      logging.disable(disable)
+
+    self.addCleanup(restore_logging)
+
+  def wait_until(self,
+                 predicate: Callable[[], bool],
+                 timeout: float = 3.0) -> bool:
+    """Poll a cross-process condition up to a deadline."""
+
+    deadline = monotonic() + timeout
+    while monotonic() < deadline:
+      if predicate():
+        return True
+      sleep(0.005)
+    return predicate()
+
+  def wait_until_stable(self,
+                        value_getter: Callable[[], int],
+                        stable_for: float = 0.05,
+                        timeout: float = 3.0) -> int:
+    """Return once a shared counter has stopped changing for a short period."""
+
+    deadline = monotonic() + timeout
+    last_value = value_getter()
+    unchanged_since = monotonic()
+
+    while monotonic() < deadline:
+      value = value_getter()
+      now = monotonic()
+      if value != last_value:
+        last_value = value
+        unchanged_since = now
+      elif now - unchanged_since >= stable_for:
+        return value
+      sleep(0.005)
+
+    self.fail("shared value did not stabilize before the deadline")
 
   def tearDown(self) -> None:
     """Kills the test Blocks if needed and checks that Block was reset."""
