@@ -1,9 +1,15 @@
-# coding: utf-8
+"""Tests for :class:`crappy.blocks.camera_processes.CameraProcess`."""
 
-from .test_01_class_api import TestClassAPI
-from .test_02_shared import TestSharedObjects
-from .test_03_run_cycle import TestRunCycle
-from .test_04_data import TestData
-from .test_05_links import TestLinks
-from .test_06_logging import TestLogging
-from .test_07_camera_block import TestCameraBlock
+from pathlib import Path
+from unittest import TestLoader, TestSuite
+
+
+def load_tests(loader: TestLoader,
+               standard_tests: TestSuite,
+               pattern: str | None) -> TestSuite:
+  """Discover this package without importing every test at package import."""
+
+  package_dir = Path(__file__).resolve().parent
+  return loader.discover(start_dir=str(package_dir),
+                         pattern=pattern or 'test_*.py',
+                         top_level_dir=str(package_dir.parents[1]))

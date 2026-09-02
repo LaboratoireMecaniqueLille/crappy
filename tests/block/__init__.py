@@ -1,10 +1,21 @@
 # coding: utf-8
 
+"""Tests for :class:`crappy.Block`."""
+
+from pathlib import Path
+from unittest import TestLoader, TestSuite
+
 from .block_test_base import BlockTestBase, TestBlock, link
 
-from .test_01_class_api import TestClassAPI
-from .test_02_startup_sequence import TestStartupSequence
-from .test_03_run_cycle import TestRunCycle
-from .test_04_pause_freq import TestPauseFreq
-from .test_05_links import TestLinks
-from .test_06_time import TestBlockTime
+__all__ = ('BlockTestBase', 'TestBlock', 'link')
+
+
+def load_tests(loader: TestLoader,
+               standard_tests: TestSuite,
+               pattern: str | None) -> TestSuite:
+  """Discover this package without importing every test at package import."""
+
+  package_dir = Path(__file__).resolve().parent
+  return loader.discover(start_dir=str(package_dir),
+                         pattern=pattern or 'test_*.py',
+                         top_level_dir=str(package_dir.parents[1]))
