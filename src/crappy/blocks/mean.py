@@ -143,8 +143,7 @@ class MeanBlock(Block):
     # Sending the output dict
     if to_send:
       if time_data is not None:
-        to_send[self._time_label] = (min(time_data) +
-                                     max(time_data)) / 2 - self.t0
+        to_send[self._time_label] = (min(time_data) + max(time_data)) / 2
       else:
         to_send[self._time_label] = (time() + self._last_sent_t) / 2 - self.t0
       self._last_sent_t = time()
