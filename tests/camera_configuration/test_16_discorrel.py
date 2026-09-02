@@ -1,8 +1,6 @@
 # coding: utf-8
 
 from copy import deepcopy
-from time import sleep
-from platform import system
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -29,11 +27,7 @@ class TestDISCorrel(ConfigurationWindowTestBase):
                                    self._log_level, self._freq, Box())
 
     self._config._testing = True
-    self._config.start()
-
-    # Allow some time for the HistogramProcess to start on Windows
-    if system() == 'Windows':
-      sleep(3)
+    self.start_configuration()
 
   def customTearDown(self) -> None:
     """Used for ensuring that the patch is defined, so that the interface can
@@ -44,12 +38,7 @@ class TestDISCorrel(ConfigurationWindowTestBase):
   def test_discorrel(self) -> None:
     """Tests whether the patch is correctly defined in several scenarios."""
 
-    # Sleeping to avoid zero division error on Windows
-    sleep(0.05)
-    # Calling the first loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # The box should not be set for now
     self.assertTrue(self._config.box.no_points())

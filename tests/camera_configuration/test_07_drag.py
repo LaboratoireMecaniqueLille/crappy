@@ -22,10 +22,7 @@ class TestDrag(ConfigurationWindowTestBase):
   def test_drag(self) -> None:
     """Tests whether the image is correctly updates when dragging it around."""
 
-    # Looping once to load a first image
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # The entire image should initially be displayed
     self.assertEqual(self._config._zoom_values.x_low, 0.0)
