@@ -958,7 +958,7 @@ intersphinx_mapping = {
   'python': ('https://docs.python.org/3', None),
   'numpy': ('https://numpy.org/doc/stable/', None),
   'matplotlib': ('https://matplotlib.org/stable/', None),
-  'psutil': ('https://psutil.readthedocs.io/latest/',  None)}
+  'psutil': ('https://psutil.readthedocs.io/stable/',  None)}
 
 # The maximum number of days to cache remote inventories
 intersphinx_cache_limit = 5
