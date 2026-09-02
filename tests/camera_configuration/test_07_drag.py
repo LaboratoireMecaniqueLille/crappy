@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from platform import system
+from types import SimpleNamespace
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -84,11 +85,15 @@ class TestDrag(ConfigurationWindowTestBase):
     self.assertAlmostEqual(int((level_max * img_ratio + level_max) /
                                (img_ratio + 1) * 255), max_, delta=2)
 
-    # Click and drag the image on its corner
-    self._config._img_canvas.event_generate('<ButtonPress-3>',
-                                            when="now", x=0, y=0)
+    # Start outside the image, then move onto it. This must not reuse the
+    # coordinates left by the previous drag.
+    self._config._start_move(SimpleNamespace(x=-1, y=-1))
+    self.assertIsNone(self._config._move_x)
+    self.assertIsNone(self._config._move_y)
+    center_x = self._config._img_canvas.winfo_width() // 2
+    center_y = self._config._img_canvas.winfo_height() // 2
     self._config._img_canvas.event_generate('<B3-Motion>',
-                                            when="now", x=50, y=50)
+                                            when="now", x=center_x, y=center_y)
 
     # Should have no effect on the image
     self.assertAlmostEqual(self._config._zoom_values.x_low,
