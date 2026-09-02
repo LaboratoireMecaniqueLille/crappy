@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from __future__ import annotations
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 from .box import Box
@@ -27,8 +28,6 @@ class SpotsBoxes:
   x_l0: float | None = None
   y_l0: float | None = None
 
-  _index = -1
-
   def __getitem__(self, i: int) -> Box | None:
     if i == 0:
       return self.spot_1
@@ -53,16 +52,10 @@ class SpotsBoxes:
     else:
       raise IndexError
 
-  def __iter__(self) -> SpotsBoxes:
-    self._index = -1
-    return self
+  def __iter__(self) -> Iterator[Box | None]:
+    """Iterates over the four spot slots with an independent iterator."""
 
-  def __next__(self) -> Box:
-    self._index += 1
-    try:
-      return self[self._index]
-    except IndexError:
-      raise StopIteration
+    return iter((self.spot_1, self.spot_2, self.spot_3, self.spot_4))
 
   def __len__(self) -> int:
     return len([spot for spot in self if spot is not None])
