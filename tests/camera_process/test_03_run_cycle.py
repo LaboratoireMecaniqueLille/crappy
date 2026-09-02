@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import numpy as np
+from unittest.mock import patch
 
 import crappy.blocks.camera_processes.camera_process as camera_process_module
 
@@ -60,14 +61,8 @@ class TestRunCycle(CameraProcessTestBase):
     self.write_image(shared, img)
 
     times = iter((0.0, 3.0))
-    original_time = camera_process_module.time
-    camera_process_module.time = lambda: next(times)
-
-    try:
+    with patch.object(camera_process_module, 'time', side_effect=times):
       self._process.run()
-
-    finally:
-      camera_process_module.time = original_time
 
     self.assertFalse(shared.barrier.broken)
     self.assertTrue(shared.stop_event.is_set())
@@ -118,7 +113,7 @@ class TestRunCycle(CameraProcessTestBase):
     self.assertEqual(self._process.last_image_id.value, 7)
 
   def test_raise_finish(self) -> None:
-    """Tests that an exception during finish makes the process fail."""
+    """Tests that an exception during finish is contained by the process."""
 
     self._process = TestCameraProcess(raise_in='finish')
     shared = self.make_shared()

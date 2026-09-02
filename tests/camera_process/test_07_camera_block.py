@@ -5,6 +5,7 @@ from threading import BrokenBarrierError
 from typing import Any
 import logging
 import numpy as np
+from unittest.mock import patch
 from crappy import Block
 from crappy._global import CameraPrepareError, CameraRuntimeError
 from crappy.blocks.camera import Camera
@@ -101,20 +102,19 @@ class CameraBlockTestBase(CameraProcessTestBase):
     super().__init__(*args, **kwargs)
 
     self._camera_block: Camera | None = None
-    self._original_image_saver = camera_module.ImageSaver
-    self._original_displayer = camera_module.Displayer
-
   def setUp(self) -> None:
     """Replaces concrete CameraProcess classes with stand-ins."""
 
-    camera_module.ImageSaver = TrackingImageSaver
-    camera_module.Displayer = TrackingDisplayer
+    super().setUp()
+
+    for attribute, replacement in (('ImageSaver', TrackingImageSaver),
+                                   ('Displayer', TrackingDisplayer)):
+      patcher = patch.object(camera_module, attribute, replacement)
+      patcher.start()
+      self.addCleanup(patcher.stop)
 
   def tearDown(self) -> None:
     """Restores patched classes and releases Camera Block state."""
-
-    camera_module.ImageSaver = self._original_image_saver
-    camera_module.Displayer = self._original_displayer
 
     try:
       if self._camera_block is not None:
