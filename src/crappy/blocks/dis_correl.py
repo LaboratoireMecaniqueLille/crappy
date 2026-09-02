@@ -247,9 +247,10 @@ class DISCorrel(Camera):
 
         .. versionadded:: 2.0.0
       fields: The several fields to calculate on the acquired images. They
-        should be given as an iterable containing :obj:`str`. Each string
-        represents one field to calculate, so the more fields are given the
-        heavier the computation is. The possible fields are :
+        should be given as an iterable containing :obj:`str` or
+        :obj:`numpy.ndarray`. Each string represents one field to calculate,
+        so the more fields are given the heavier the computation is. The
+        possible fields are :
         ::
 
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
