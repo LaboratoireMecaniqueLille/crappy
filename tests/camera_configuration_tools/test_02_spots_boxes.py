@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import unittest
+from itertools import combinations
 
 from crappy.tool.camera_config.config_tools import Box, SpotsBoxes
 
@@ -90,3 +91,14 @@ class TestSpotBoxes(unittest.TestCase):
     self.assertTrue(all(spot.y_centroid is not None for spot in self._spots))
     self.assertEqual(self._spots.x_l0, 18.0)
     self.assertEqual(self._spots.y_l0, 18.0)
+
+  def test_04_iteration(self) -> None:
+    """Tests iteration with consumers that request a length hint."""
+
+    boxes = [Box(x_start=i) for i in range(4)]
+    for i, box in enumerate(boxes):
+      self._spots[i] = box
+
+    self.assertEqual(list(self._spots), boxes)
+    self.assertEqual(list(combinations(self._spots, 2)),
+                     list(combinations(boxes, 2)))
