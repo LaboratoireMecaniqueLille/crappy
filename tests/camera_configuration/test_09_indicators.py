@@ -3,7 +3,6 @@
 from itertools import product
 from math import log2, ceil
 from platform import system
-from time import sleep
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -42,10 +41,7 @@ class TestIndicators(ConfigurationWindowTestBase):
     self.assertEqual(self._config._reticle_txt.get(), 'X: 0, Y: 0, V: 0')
     self.assertEqual(self._config._zoom_txt.get(), 'Zoom: 100.0%')
 
-    # Calling the first loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # The monitoring variables should change because of the acquired image
     self.assertEqual(self._config._nb_bits.get(), 8)
@@ -62,24 +58,16 @@ class TestIndicators(ConfigurationWindowTestBase):
     self.assertEqual(self._config._reticle_txt.get(), 'X: 0, Y: 0, V: 0')
     self.assertEqual(self._config._zoom_txt.get(), 'Zoom: 100.0%')
 
-    # Checking if the min, max, and bits indicators are working correctly
-    for min_, max_ in product(range(0, 256, 20), repeat=2):
+    # Exercise representative ranges, especially around bit-depth boundaries.
+    ranges = ((0, 1), (0, 2), (1, 15), (3, 16), (20, 31),
+              (20, 32), (100, 127), (100, 128), (240, 255))
+    for min_, max_ in ranges:
       with self.subTest(min=min_, max=max_):
-
-        # Ensuring that the max is greater than the min
-        if min_ >= max_:
-          continue
-
         # Updating the min and max values of the camera object
         self._camera._min = min_
         self._camera._max = max_
 
-        # Sleeping to avoid zero division error on Windows
-        sleep(0.05)
-        # Looping to update the image
-        self._config._img_acq_sched()
-        self._config._upd_var_sched()
-        self._config._upd_sched()
+        self.run_config_cycle()
 
         # Checking that the indicators have the right values
         self.assertEqual(self._config._nb_bits.get(), ceil(log2(max_ + 1)))
@@ -163,20 +151,18 @@ class TestIndicators(ConfigurationWindowTestBase):
 
     # Checking if the position and reticle values are updated correctly when
     # moving the mouse around
-    for x, y in product(range(x0 + 1, x0 + width_eff, width_eff // 10),
-                        range(y0 + 1, y0 + height_eff, height_eff // 10)):
+    x_positions = tuple(x0 + round(fraction * width_eff)
+                        for fraction in (0.05, 0.25, 0.5, 0.75, 0.95))
+    y_positions = tuple(y0 + round(fraction * height_eff)
+                        for fraction in (0.05, 0.25, 0.5, 0.75, 0.95))
+    for x, y in product(x_positions, y_positions):
       with self.subTest(x=x, y=y):
 
         # Moving the mouse over the displayed image
         self._config._img_canvas.event_generate('<Motion>', when="now",
                                                 x=x, y=y)
 
-        # Sleeping to avoid zero division error on Windows
-        sleep(0.05)
-        # Looping to update the image
-        self._config._img_acq_sched()
-        self._config._upd_var_sched()
-        self._config._upd_sched()
+        self.run_config_cycle()
 
         # Checking that the indicators are correctly updated
         reticle = int(((x - x0) + (y - y0)) / (width_eff + height_eff) * 255)

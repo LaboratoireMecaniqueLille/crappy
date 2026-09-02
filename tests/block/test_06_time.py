@@ -3,7 +3,7 @@
 from crappy import Block
 from crappy._global import T0NotSetError
 from multiprocessing import Barrier, Event, Value, Queue
-from time import sleep
+import logging
 
 from .block_test_base import BlockTestBase, TestBlock
 
@@ -94,7 +94,7 @@ class TestBlockTime(BlockTestBase):
 
     self._block = TestBlock()
 
-    Block.prepare_all()
+    Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
 

@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from time import sleep
 from re import fullmatch
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
@@ -14,6 +13,8 @@ class TestResize(ConfigurationWindowTestBase):
   .. versionadded:: 2.0.8
   """
 
+  start_histogram_process = True
+
   def __init__(self, *args, **kwargs) -> None:
     """Used to instantiate a Camera that actually generates images."""
 
@@ -23,18 +24,9 @@ class TestResize(ConfigurationWindowTestBase):
     """Tests whether the interface effectively resizes itself and the canvas
     when resizing the overall window containing it."""
 
-    # Calling the first loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
-
-    # Leave some time to the histogram calculation
-    sleep(1)
-
-    # Call a second loop to display the histogram
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
+    self.assertTrue(self.wait_for_histogram())
+    self.run_config_cycle()
 
     # Read the current sizes of the graphical objects
     hist_canvas_width = self._config._hist_canvas.winfo_width()
@@ -48,15 +40,11 @@ class TestResize(ConfigurationWindowTestBase):
     w, h, x, y = map(int, fullmatch(r'(\d+)x(\d+)\+(\d+)\+(\d+)',
                                     self._config.winfo_geometry()).groups())
     self._config.geometry(f"{int(2.5 * w)}x{int(1.5 * h)}+{x}+{y}")
+    self._config.update_idletasks()
 
     # Call new loops to apply the changes
     for _ in range(2):
-      # Sleeping to avoid zero division error on Windows
-      sleep(0.05)
-      self._config._img_acq_sched()
-      self._config._upd_var_sched()
-      self._config._upd_sched()
-      sleep(1)
+      self.run_config_cycle()
 
     # All dimensions should be greater
     self.assertGreater(self._config._hist_canvas.winfo_width(),
@@ -84,15 +72,11 @@ class TestResize(ConfigurationWindowTestBase):
     w, h, x, y = map(int, fullmatch(r'(\d+)x(\d+)\+(\d+)\+(\d+)',
                                     self._config.winfo_geometry()).groups())
     self._config.geometry(f"{int(0.6 * w)}x{int(0.8 * h)}+{x}+{y}")
+    self._config.update_idletasks()
 
     # Call new loops to apply the changes
     for _ in range(2):
-      # Sleeping to avoid zero division error on Windows
-      sleep(0.05)
-      self._config._img_acq_sched()
-      self._config._upd_var_sched()
-      self._config._upd_sched()
-      sleep(1)
+      self.run_config_cycle()
 
     # All dimensions should be smaller
     self.assertGreater(hist_canvas_width,

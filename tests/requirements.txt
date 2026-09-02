@@ -1,0 +1,7 @@
+opencv-python
+Pillow
+scikit-image
+tables
+pyserial
+psutil
+matplotlib

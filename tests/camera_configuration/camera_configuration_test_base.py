@@ -1,24 +1,55 @@
 # coding: utf-8
 
-import unittest
-from multiprocessing import Queue, queues
 import logging
-from time import time, sleep
+from multiprocessing import Queue, current_process, queues
+from time import monotonic, sleep, time
+from typing import Any, Callable
+import unittest
+from unittest.mock import patch
+
 import numpy as np
-import sys
-import cv2
-from platform import system
-from typing import Any
 
-from . import mock_messagebox
+try:
+  import tkinter as tk
+except (ImportError, ModuleNotFoundError) as exc:
+  raise unittest.SkipTest("tkinter is required for camera configuration tests") \
+      from exc
 
-sys.modules['tkinter.messagebox'] = mock_messagebox
+try:
+  from PIL import Image as _PILImage
+except (ImportError, ModuleNotFoundError) as exc:
+  raise unittest.SkipTest("Pillow is required for camera configuration tests") \
+      from exc
+
+
+def _check_graphical_environment() -> None:
+  """Skip the graphical suite when Tk cannot connect to a display server."""
+
+  root = None
+  try:
+    root = tk.Tk()
+    root.withdraw()
+    root.update_idletasks()
+  except tk.TclError as exc:
+    raise unittest.SkipTest(
+        f"a working graphical environment is required ({exc})") from exc
+  finally:
+    if root is not None:
+      root.destroy()
+
+
+_check_graphical_environment()
+
 from crappy.tool.camera_config.camera_config import CameraConfig
 from crappy.tool.camera_config.camera_config_boxes import CameraConfigBoxes
 from crappy.tool.camera_config.dic_ve_config import DICVEConfig
 from crappy.tool.camera_config.dis_correl_config import DISCorrelConfig
 from crappy.tool.camera_config.video_extenso_config import VideoExtensoConfig
 from crappy.camera.meta_camera.camera import Camera
+import crappy.tool.camera_config.camera_config as camera_config_module
+import crappy.tool.camera_config.dic_ve_config as dic_ve_config_module
+import crappy.tool.camera_config.dis_correl_config as dis_correl_config_module
+import crappy.tool.camera_config.video_extenso_config as video_extenso_config_module
 
 
 class DummyCamera(Camera):
@@ -28,7 +59,7 @@ class DummyCamera(Camera):
   def get_image(self) -> tuple[dict[str, Any] | float, np.ndarray] | None:
     """Mandatory to implement in subclasses."""
 
-    return super().get_image()
+    return None
 
 
 class ConfigurationWindowTestBase(unittest.TestCase):
@@ -39,6 +70,8 @@ class ConfigurationWindowTestBase(unittest.TestCase):
 
   .. versionadded:: 2.0.8
   """
+
+  start_histogram_process = False
 
   def __init__(self,
                *args,
@@ -73,14 +106,42 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     self._config: (CameraConfig | CameraConfigBoxes | DICVEConfig |
                    DISCorrelConfig | VideoExtensoConfig | None) = None
 
-    self._exit: bool = True
-
   def setUp(self) -> None:
     """Defines the arguments to pass to the configuration window if not already
     given."""
 
+    # Patch the references imported directly by the implementation. This keeps
+    # expected validation dialogs from blocking a test without replacing a
+    # stdlib module globally in sys.modules.
+    for module in (camera_config_module, dic_ve_config_module,
+                   dis_correl_config_module, video_extenso_config_module):
+      patcher = patch.object(module, 'showerror', return_value=None)
+      patcher.start()
+      self.addCleanup(patcher.stop)
+
+    # Negative-path GUI tests deliberately emit warnings. Silence only the
+    # loggers owned by these fixtures and restore their previous state later.
+    for class_name in ('CameraConfig', 'CameraConfigBoxes', 'DICVEConfig',
+                       'DISCorrelConfig', 'VideoExtensoConfig', 'DummyCamera',
+                       'FakeTestCameraSimple', 'FakeTestCameraSpots',
+                       'FakeTestCameraParams', 'CameraBoolSetting',
+                       'CameraChoiceSetting', 'CameraScaleSetting',
+                       'SpotsDetector'):
+      logger = logging.getLogger(f"{current_process().name}.{class_name}")
+      previous_disabled = logger.disabled
+      logger.disabled = True
+      self.addCleanup(setattr, logger, 'disabled', previous_disabled)
+
+    # CameraConfig.start contains a defensive fixed sleep for user sessions.
+    # Test methods explicitly control elapsed time, so it is unnecessary here.
+    sleep_patcher = patch.object(camera_config_module, 'sleep', return_value=None)
+    sleep_patcher.start()
+    self.addCleanup(sleep_patcher.stop)
+
     if self._log_queue is None:
       self._log_queue = Queue()
+    self.addCleanup(self._close_log_queue)
+
     if self._log_level is None:
       self._log_level = logging.CRITICAL
     if self._freq is None:
@@ -88,6 +149,9 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     if self._camera is None:
       self._camera = DummyCamera()
 
+    # Register cleanup before constructing or starting the GUI so that a setup
+    # failure cannot leave a Tk window or HistogramProcess behind.
+    self.addCleanup(self._close_configuration)
     self.customSetUp()
 
   def customSetUp(self) -> None:
@@ -97,23 +161,104 @@ class ConfigurationWindowTestBase(unittest.TestCase):
                                 self._log_level, self._freq)
 
     self._config._testing = True
-    self._config.start()
+    self.start_configuration()
 
-    # Allow some time for the HistogramProcess to start on Windows
-    if system() == 'Windows':
-      sleep(3)
+  def start_configuration(self) -> None:
+    """Initialize scheduling and start the histogram process when relevant."""
+
+    if self.start_histogram_process:
+      self._config.start()
+      return
+
+    # Most GUI tests exercise controls, drawing, or image conversion and do not
+    # assert histogram behavior. Keep that independent subsystem mocked there.
+    histogram_patcher = patch.object(self._config, '_calc_hist',
+                                     return_value=None)
+    histogram_patcher.start()
+    self.addCleanup(histogram_patcher.stop)
+    join_patcher = patch.object(self._config._histogram_process, 'join',
+                                return_value=None)
+    join_patcher.start()
+    self.addCleanup(join_patcher.stop)
+    self._config._n_loops = 0
+    self._config._last_upd_t = time()
 
   def tearDown(self) -> None:
-    """Closes the configuration window and the log Queue."""
+    """Runs subclass-specific cleanup before registered fail-safe cleanup."""
 
     self.customTearDown()
 
-    if self._config is not None and self._exit:
-      self._config.finish()
+  def _close_configuration(self) -> None:
+    """Stops the GUI and its child process, including after a test failure."""
+
+    if self._config is None:
+      return
+
+    process = self._config._histogram_process
+    try:
+      window_exists = bool(self._config.winfo_exists())
+    except tk.TclError:
+      window_exists = False
+
+    if window_exists:
+      if process.pid is None:
+        # CameraConfig.stop cannot join a process that never started.
+        for queue in (self._config._img_in, self._config._img_out):
+          queue.cancel_join_thread()
+          queue.close()
+        try:
+          self._config.destroy()
+        except tk.TclError:
+          pass
+      else:
+        self._config.finish()
+
+    if process.pid is not None:
+      process.join(1.0)
+      if process.is_alive():
+        process.kill()
+        process.join(1.0)
+
+    self.assertFalse(process.is_alive())
+
+  def _close_log_queue(self) -> None:
+    """Release the logging queue without waiting for its feeder thread."""
 
     if self._log_queue is not None:
-      self._log_queue.cancel_join_thread()
-      self._log_queue.close()
+      try:
+        self._log_queue.cancel_join_thread()
+        self._log_queue.close()
+      except (OSError, ValueError):
+        pass
+
+  def run_config_cycle(self, elapsed: float = 0.05) -> None:
+    """Run one deterministic acquisition/update cycle."""
+
+    self._config._last_upd_t -= elapsed
+    self._config._img_acq_sched()
+    self._config._upd_var_sched()
+    self._config._upd_sched()
+
+  def wait_until(self,
+                 predicate: Callable[[], bool],
+                 timeout: float = 3.0) -> bool:
+    """Poll a condition with a deadline instead of sleeping a fixed duration."""
+
+    deadline = monotonic() + timeout
+    while monotonic() < deadline:
+      if predicate():
+        return True
+      sleep(0.01)
+    return predicate()
+
+  def wait_for_histogram(self, timeout: float = 3.0) -> bool:
+    """Wait for CameraConfig to receive a histogram from its child process."""
+
+    def received_histogram() -> bool:
+      self._config._calc_hist()
+      return self._config._hist is not None
+
+    return self.wait_until(received_histogram, timeout)
 
   def customTearDown(self) -> None:
     """Meant to be overwritten in subclasses for custom behavior."""
@@ -163,10 +308,10 @@ class FakeTestCameraSpots(Camera):
     """Generates a white image with four round black spots."""
 
     ret = np.full((240, 320), 255, dtype=np.uint8)
-    ret = cv2.circle(ret, (80, 80), 20, (0,), -1)
-    ret = cv2.circle(ret, (80, 160), 20, (0,), -1)
-    ret = cv2.circle(ret, (160, 80), 20, (0,), -1)
-    ret = cv2.circle(ret, (160, 160), 20, (0,), -1)
+    y, x = np.ogrid[:ret.shape[0], :ret.shape[1]]
+    for x_center, y_center in ((80, 80), (80, 160),
+                               (160, 80), (160, 160)):
+      ret[(x - x_center) ** 2 + (y - y_center) ** 2 <= 20 ** 2] = 0
 
     return time(), ret
 

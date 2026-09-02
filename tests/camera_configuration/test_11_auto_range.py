@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from time import sleep
-
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
 
@@ -26,10 +24,7 @@ class TestAutoRange(ConfigurationWindowTestBase):
     # The auto range feature should be disabled by default
     self.assertFalse(self._config._auto_range.get())
 
-    # Calling the first loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # Both stored images should have bounds at 3 and 255
     self.assertEqual(int(self._config._img.min()), 3)
@@ -43,12 +38,7 @@ class TestAutoRange(ConfigurationWindowTestBase):
     # The auto range feature should be enabled
     self.assertTrue(self._config._auto_range.get())
 
-    # Sleeping to avoid zero division error on Windows
-    sleep(0.05)
-    # Call a second loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # The original image should have the original limits, but the other one
     # should have been extended to use the full range
@@ -63,12 +53,7 @@ class TestAutoRange(ConfigurationWindowTestBase):
     # The auto range feature should be disabled
     self.assertFalse(self._config._auto_range.get())
 
-    # Sleeping to avoid zero division error on Windows
-    sleep(0.05)
-    # Call a third loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # The behavior should be back to default
     self.assertEqual(int(self._config._img.min()), 3)

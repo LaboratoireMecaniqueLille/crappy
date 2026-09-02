@@ -1,6 +1,15 @@
-# coding: utf-8
+"""Tests for non-graphical camera-configuration helpers."""
 
-from .test_01_box import TestBox
-from .test_02_spots_boxes import TestSpotBoxes
-from .test_03_zoom import TestZoom
-from .test_04_spots_detector import TestSpotsDetector
+from pathlib import Path
+from unittest import TestLoader, TestSuite
+
+
+def load_tests(loader: TestLoader,
+               standard_tests: TestSuite,
+               pattern: str | None) -> TestSuite:
+  """Discover this package without importing every test at package import."""
+
+  package_dir = Path(__file__).resolve().parent
+  return loader.discover(start_dir=str(package_dir),
+                         pattern=pattern or 'test_*.py',
+                         top_level_dir=str(package_dir.parents[1]))

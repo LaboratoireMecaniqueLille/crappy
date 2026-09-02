@@ -1,8 +1,8 @@
 # coding: utf-8
 
 from copy import deepcopy
-from time import sleep
-from platform import system
+from importlib.util import find_spec
+import unittest
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSpots)
@@ -10,6 +10,9 @@ from crappy.tool.camera_config.video_extenso_config import VideoExtensoConfig
 from crappy.tool.camera_config import SpotsDetector, Box
 
 
+@unittest.skipUnless(
+    find_spec('cv2') is not None and find_spec('skimage') is not None,
+    "opencv-python and scikit-image are required for video extensometry tests")
 class TestVideoExtenso(ConfigurationWindowTestBase):
   """Class for testing the 
   :class:`~crappy.tool.video_extenso_config.VideoExtensoConfig` class.
@@ -30,11 +33,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
                                       SpotsDetector())
 
     self._config._testing = True
-    self._config.start()
-
-    # Allow some time for the HistogramProcess to start on Windows
-    if system() == 'Windows':
-      sleep(3)
+    self.start_configuration()
 
   def customTearDown(self) -> None:
     """Used for ensuring at least one spot is defined, so that the interface
@@ -46,12 +45,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     """Tests whether the spots are correctly detected in different
     scenarios."""
 
-    # Sleeping to avoid zero division error on Windows
-    sleep(0.05)
-    # Calling the first loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())

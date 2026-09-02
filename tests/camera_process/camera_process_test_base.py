@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from multiprocessing import (Array, Barrier, Event, Manager, Pipe, Queue,
-                             RLock, Value)
+                             RLock, Value, current_process)
 from multiprocessing.connection import Connection
 from multiprocessing.managers import SyncManager
 import multiprocessing.queues
@@ -13,6 +13,10 @@ import numpy as np
 
 from crappy._global import LinkDataError
 from crappy.blocks.camera_processes.camera_process import CameraProcess
+
+
+class ExpectedProcessError(Exception):
+  """Exception deliberately raised by the CameraProcess test fixture."""
 
 
 class SharedObjects(NamedTuple):
@@ -83,7 +87,7 @@ class TestCameraProcess(CameraProcess):
     self.initialized.set()
 
     if self._raise_in == 'init':
-      raise ValueError
+      raise ExpectedProcessError
 
   def loop(self) -> None:
     """Records one loop iteration and optionally raises or stops."""
@@ -97,13 +101,24 @@ class TestCameraProcess(CameraProcess):
       self.last_image_sum.value = float(np.sum(self.img))
 
     if self._raise_in == 'loop':
-      raise ValueError
+      raise ExpectedProcessError
 
     if self._raise_in == 'keyboard':
       raise KeyboardInterrupt
 
     if self._stop_on_loop:
       self._stop_event.set()
+
+  def run(self) -> None:
+    """Convert deliberate fixture errors into a quiet non-zero child exit."""
+
+    try:
+      super().run()
+    except ExpectedProcessError:
+      # multiprocessing prints an uncaught traceback to stderr. The tests only
+      # require a failed exit status here; unexpected exception types still
+      # propagate normally and remain visible.
+      raise SystemExit(1)
 
   def finish(self) -> None:
     """Records that finish was reached."""
@@ -126,6 +141,31 @@ class CameraProcessTestBase(unittest.TestCase):
     self._manager: SyncManager | None = None
     self._queues: list[multiprocessing.queues.Queue] = list()
     self._pipes: list[Connection] = list()
+
+  def setUp(self) -> None:
+    """Isolate logging state changed by CameraProcess._set_logger."""
+
+    logger = logging.getLogger(
+        f"{current_process().name}.TestCameraProcess")
+    original_state = (list(logger.handlers), logger.level, logger.disabled,
+                      logger.propagate, logging.root.manager.disable)
+
+    logger.handlers = list()
+    logger.disabled = False
+    logger.propagate = False
+
+    def restore_logging() -> None:
+      original_handlers, level, disabled, propagate, disable = original_state
+      for handler in logger.handlers:
+        if handler not in original_handlers:
+          handler.close()
+      logger.handlers = original_handlers
+      logger.setLevel(level)
+      logger.disabled = disabled
+      logger.propagate = propagate
+      logging.disable(disable)
+
+    self.addCleanup(restore_logging)
 
   def tearDown(self) -> None:
     """Stops child processes and releases multiprocessing resources."""
@@ -159,8 +199,6 @@ class CameraProcessTestBase(unittest.TestCase):
 
       if self._manager is not None:
         self._manager.shutdown()
-
-      logging.disable(logging.NOTSET)
 
   def make_shared(self,
                   process: TestCameraProcess | None = None,
@@ -264,6 +302,5 @@ class CameraProcessTestBase(unittest.TestCase):
       process = self._process
 
     logger = logging.getLogger(process.name)
-    logger.handlers.clear()
     logger.setLevel(logging.CRITICAL)
     process._logger = logger
