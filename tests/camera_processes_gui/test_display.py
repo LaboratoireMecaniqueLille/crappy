@@ -123,8 +123,17 @@ class TestDisplayer(CameraProcessTestBase):
   def test_mpl_backend_opens_updates_and_closes_real_window(self) -> None:
     """Checks the real Matplotlib display lifecycle."""
 
-    # The Matplotlib backend must be a real GUI backend for this GUI suite.
+    # Earlier unit tests may deliberately select Agg. This real-window test
+    # owns its graphical precondition instead of depending on suite order.
     backend = display_module.plt.get_backend().lower()
+    if (backend in {'agg', 'cairo', 'pdf', 'pgf', 'ps', 'svg', 'template'} or
+        'inline' in backend):
+      try:
+        display_module.plt.switch_backend('TkAgg')
+      except ImportError as exc:
+        self.skipTest(f'No usable Matplotlib GUI backend: {exc}')
+      backend = display_module.plt.get_backend().lower()
+
     self.assertNotIn(backend, {'agg', 'cairo', 'pdf', 'pgf', 'ps', 'svg',
                                'template'})
     self.assertNotIn('inline', backend)
