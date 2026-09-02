@@ -520,22 +520,20 @@ class Camera(Block):
       self.log(logging.INFO, "Starting the image displayer process")
       self._display_proc.start()
 
-  def begin(self) -> None:
-    """This method waits for all the 
-    :class:`~crappy.blocks.camera_processes.CameraProcess` to be ready, then
-    releases them all at once to make sure they're synchronized.
-    
-    
-    A :obj:`~multiprocessing.Barrier` is used for forcing the CameraProcesses
-    to wait for each other.
-    """
-
+    # Waiting for all the Processes to be ready
     try:
       self.log(logging.INFO, "Waiting for all Camera processes to be ready")
       self._cam_barrier.wait()
       self.log(logging.INFO, "All Camera processes ready now")
     except BrokenBarrierError:
       raise CameraPrepareError
+
+  def begin(self) -> None:
+    """Finishes startup before image acquisition begins.
+
+    The CameraProcesses have already synchronized during :meth:`prepare`,
+    before the other Blocks receive the global start time.
+    """
 
     self._last_cam_fps = time()
 
