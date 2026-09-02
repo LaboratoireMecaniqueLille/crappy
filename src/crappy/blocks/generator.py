@@ -108,8 +108,17 @@ class Generator(Block):
     self._safe_start = safe_start
     self._safe_started = False
 
-    # The path is an iterable object
+    # Basic checks for path consistency
     path = list(path)
+    if not path:
+      raise ValueError("Empty Generator Path provided")
+    if not all(isinstance(dic, dict) for dic in path):
+      raise TypeError("The Generator Path should contain dictionaries only")
+    if not all('type' in dic for dic in path):
+      raise ValueError("All Generator Path dictionaries should contain the "
+                       "'type' key")
+
+    # The path is an iterable object
     self._path = cycle(path) if repeat else iter(path)
 
     # More attributes

@@ -1,6 +1,8 @@
 # coding: utf-8
 
+import logging
 from collections.abc import Callable
+from typing import Any
 
 from .camera_setting import CameraSetting
 
@@ -31,3 +33,32 @@ class CameraBoolSetting(CameraSetting):
     """
 
     super().__init__(name, getter, setter, default)
+
+  @property
+  def value(self) -> bool:
+    """Returns the current value of the setting."""
+
+    return super().value
+
+  @value.setter
+  def value(self, val: Any) -> None:
+    if not isinstance(val, bool):
+      raise TypeError(f"Only bool values are allowed for setting {self.name}")
+
+    self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
+    self.was_set = True
+    self._value_no_getter = val
+    if self._setter is not None:
+      self._setter(val)
+
+    if self.value != val:
+      # Double-checking, got strange behavior sometimes probably because of
+      # delays in lower level APIs
+      if self.value == val:
+        return
+      self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
+                                f"value is {self.value} !")
+
+    # Update the GUI, in case the value was modified via a reload() call
+    if self.tk_var is not None:
+      self.tk_var.set(self.value)

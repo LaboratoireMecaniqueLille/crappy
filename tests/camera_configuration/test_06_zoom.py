@@ -2,7 +2,6 @@
 
 from platform import system
 from itertools import product
-from time import sleep
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -24,10 +23,7 @@ class TestZoom(ConfigurationWindowTestBase):
   def test_zoom(self) -> None:
     """Tests whether the image is correctly updates when zooming in and out."""
 
-    # Looping once to load a first image
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # The zoom level should initially be set to 0
     self.assertEqual(self._config._zoom_step, 0)
@@ -156,7 +152,9 @@ class TestZoom(ConfigurationWindowTestBase):
     self.assertEqual(self._config._zoom_values.y_high, 1.0)
 
     # Define values to use in test loop
-    to_test = range(0, 255, 50)
+    # Representative corners and interior points keep the Cartesian coverage
+    # useful without performing hundreds of expensive Tk image redraws.
+    to_test = (0, 85, 170, 255)
     img_ratio = 320 / 240
 
     # Loop over many possible zoom configurations to test if they all give the
@@ -174,12 +172,7 @@ class TestZoom(ConfigurationWindowTestBase):
         self._config._zoom_values.y_low = y_min / 255
         self._config._zoom_values.y_high = y_max / 255
 
-        # Sleeping to avoid zero division error on Windows
-        sleep(0.05)
-        # Update the displayed image
-        self._config._img_acq_sched()
-        self._config._upd_var_sched()
-        self._config._upd_sched()
+        self.run_config_cycle()
 
         # Check that the displayed sub-image is the expected one
         min_, max_ = self._config._pil_img.getextrema()

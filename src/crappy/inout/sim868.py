@@ -4,7 +4,7 @@ from time import sleep, time
 from collections.abc import Sequence
 from re import fullmatch
 import logging
-from  warnings import warn
+from warnings import warn
 
 from .meta_inout import InOut
 from .._global import OptionalModule

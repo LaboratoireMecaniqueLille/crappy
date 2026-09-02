@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from time import sleep
-
 from .camera_configuration_test_base import ConfigurationWindowTestBase
 
 
@@ -50,12 +48,7 @@ class TestLoopNoImg(ConfigurationWindowTestBase):
     self.assertIsNone(self._config._hist)
     self.assertIsNone(self._config._pil_hist)
 
-    # Sleeping to ensure the loop counter will be reset (it is every 0.5s)
-    sleep(0.5)
-    # Calling the first loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle(elapsed=0.5)
 
     # These monitoring variables should change because of the error image
     self.assertGreater(self._config._fps_var.get(), 0.)
@@ -97,12 +90,8 @@ class TestLoopNoImg(ConfigurationWindowTestBase):
     self.assertIsNone(self._config._hist)
     self.assertIsNone(self._config._pil_hist)
 
-    # Sleeping to avoid zero division error on Windows
-    sleep(0.05)
-    # Calling a second loop that should have no effect
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    # Calling a second loop should have no effect.
+    self.run_config_cycle()
 
     # Monitoring variables should be unchanged compared to previous loop
     self.assertEqual(self._config._fps_var.get(), 0.)

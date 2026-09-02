@@ -35,7 +35,7 @@ class Diff(Modifier):
     self._last_t = None
     self._last_val = None
 
-  def __call__(self, data: dict[str, T]) -> dict[str, T]:
+  def __call__(self, data: dict[str, T]) -> dict[str, T] | None:
     """Gets the data from the upstream Block, updates the derivative value,
     appends it to the data and returns the data.
     
@@ -54,6 +54,11 @@ class Diff(Modifier):
     # Updating the differentiation value with the latest received values
     t = data[self._time_label]
     val = data[self._label]
+
+    # Avoid zero-division error
+    if t == self._last_t:
+      return None
+
     diff = (val - self._last_val) / (t - self._last_t)
     # Updating the stored data
     self._last_t = t

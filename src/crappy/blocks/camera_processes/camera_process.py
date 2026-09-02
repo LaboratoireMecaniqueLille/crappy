@@ -9,7 +9,7 @@ from multiprocessing.queues import Queue
 from threading import BrokenBarrierError
 import numpy as np
 from typing import Any
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 import logging
 import logging.handlers
 from select import select
@@ -71,7 +71,7 @@ class CameraProcess(Process, ABC):
     self._shape: tuple[int, int] | tuple[int, int, int] | None = None
     self._to_draw_conn: Connection | None = None
     self._outputs: list[Link] = list()
-    self._labels: list[str] | None = list()
+    self._labels: Sequence[str] | None = list()
     self.img: np.ndarray | None = None
     self._dtype = None
     self.metadata = {'ImageUniqueID': None}
@@ -93,7 +93,7 @@ class CameraProcess(Process, ABC):
                  dtype,
                  to_draw_conn: Connection | None,
                  outputs: list[Link],
-                 labels: list[str] | None,
+                 labels: Sequence[str] | None,
                  log_queue: Queue,
                  log_level: int | None = 20,
                  display_freq: bool = False) -> None:

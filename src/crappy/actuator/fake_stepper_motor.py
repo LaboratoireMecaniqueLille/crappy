@@ -46,11 +46,18 @@ class FakeStepperMotor(Actuator):
 
     super().__init__()
 
+    if not acceleration:
+      raise ValueError("The acceleration parameter cannot be zero")
+    if not microsteps:
+      raise ValueError("The microsteps parameter cannot be zero")
+    if not steps_per_mm:
+      raise ValueError("The steps_per_mm parameter cannot be zero")
+
     # The variables describing the motor
     self._accel: float = abs(acceleration * steps_per_mm * microsteps)
     self._max_speed: float = abs(max_speed * steps_per_mm * microsteps)
-    self._steps_per_mm: float = steps_per_mm
-    self._microsteps: int = microsteps
+    self._steps_per_mm: float = abs(steps_per_mm)
+    self._microsteps: int = abs(microsteps)
 
     # The variables for driving the motor
     self._speed: float = 0
@@ -87,7 +94,7 @@ class FakeStepperMotor(Actuator):
       self._target_speed = None
       self._target_pos = position * self._steps_per_mm * self._microsteps
       if speed is not None:
-        self._max_speed = speed * self._steps_per_mm * self._microsteps
+        self._max_speed = abs(speed) * self._steps_per_mm * self._microsteps
       self.log(logging.DEBUG, f"Set the target position to {self._target_pos}"
                               f", with speed {self._max_speed}")
 
@@ -192,7 +199,7 @@ class FakeStepperMotor(Actuator):
             self._pos += int(-self._max_speed * delta_t
                              - 0.5 * (self._speed + self._max_speed) ** 2
                              / self._accel)
-            self._speed = self._max_speed
+            self._speed = -self._max_speed
             continue
 
           # Case when we're still not reaching the min speed

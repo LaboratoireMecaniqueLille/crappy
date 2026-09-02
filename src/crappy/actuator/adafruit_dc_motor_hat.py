@@ -4,7 +4,7 @@ from struct import pack_into
 from time import sleep
 from typing import Literal
 import logging
-from  warnings import warn
+from warnings import warn
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule

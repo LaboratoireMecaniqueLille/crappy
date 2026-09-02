@@ -143,10 +143,19 @@ class Machine(Block):
     for actuator in actuators:
       actuator |= common
 
+    # There should be at least one actuator provided
+    if not actuators:
+      raise ValueError("No actuator to drive was specified")
+
     # Making sure all the dicts contain the 'type' key
     if not all('type' in dic for dic in actuators):
       raise ValueError("The 'type' key must be provided for all the "
                        "actuators !")
+
+    # Making sure that the provided mode is either speed or position
+    if not all('mode' not in dic or dic['mode'] in ('speed', 'position')
+               for dic in actuators):
+      raise ValueError("The 'mode' key must be either 'speed' or 'position'")
 
     # The names of the possible settings, to avoid typos and reduce verbosity
     actuator_settings = [field.name for field in fields(ActuatorInstance)
@@ -194,6 +203,10 @@ class Machine(Block):
     Actuator.
     """
 
+    # Checking the consistency of the linking
+    if not self.inputs and not self.outputs:
+      raise IOError("The Machine block isn't linked to any other block !")
+
     # Instantiating the actuators and storing them
     self._actuators = [ActuatorInstance(
       actuator=actuator_dict[type_](**actuator_kw)
@@ -203,10 +216,6 @@ class Machine(Block):
       for type_, setting, actuator_kw in zip(self._types,
                                              self._settings,
                                              self._actuators_kw)]
-
-    # Checking the consistency of the linking
-    if not self.inputs and not self.outputs:
-      raise IOError("The Machine block isn't linked to any other block !")
 
     # Opening each actuator
     for actuator in self._actuators:
@@ -256,7 +265,7 @@ class Machine(Block):
                      f" Actuator to {recv[actuator.cmd_label]}")
             actuator.actuator.set_speed(recv[actuator.cmd_label])
           # Setting the position command
-          else:
+          elif actuator.mode == 'position':
             actuator.actuator.set_position(recv[actuator.cmd_label],
                                            actuator.speed)
             self.log(

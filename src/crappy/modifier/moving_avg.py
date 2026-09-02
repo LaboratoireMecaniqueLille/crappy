@@ -27,6 +27,10 @@ class MovingAvg(Modifier):
     """
 
     super().__init__()
+
+    if n_points < 1:
+      raise ValueError("n_points should be greater than 0")
+
     self._n_points = n_points
     self._buf = None
 
@@ -41,7 +45,7 @@ class MovingAvg(Modifier):
 
     # Initializing the buffer
     if self._buf is None:
-      self._buf = {key: [value] for key, value in data.items()}
+      self._buf = {key: list() for key in data}
 
     ret = {}
     for label in data:

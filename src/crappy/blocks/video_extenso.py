@@ -306,6 +306,10 @@ class VideoExtenso(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
+    if not config:
+      raise ValueError("The VideoExtenso Block requires the configuration "
+                       "window enabled, set config=True")
+
     # Forcing the labels into a list
     if labels is None:
       self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
@@ -314,7 +318,17 @@ class VideoExtenso(Camera):
     else:
       self.labels = list(labels)
 
-    # Making sure a coherent number of labels was given
+    # Make sure only string labels are provided
+    if (self.labels is not None and
+        not all(isinstance(label, str) for label in self.labels)):
+      non_str = [label for label in self.labels if not isinstance(label, str)]
+      raise ValueError(f"Some labels are not strings: "
+                       f"{', '.join(map(repr, non_str))}")
+
+    if self.labels is not None and len(set(self.labels)) != len(self.labels):
+      raise ValueError("Duplicate labels provided in the list of labels!")
+
+    # Making sure a consistent number of labels was given
     if len(self.labels) != 5:
       raise ValueError("The number of labels should be 5 !\n"
                        "Make sure that the time label was given")

@@ -54,9 +54,11 @@ class CameraScaleSetting(CameraSetting):
       raise ValueError(f"The two given bounds are equal for setting {name}!")
 
     # Ensure the step is greater than zero
-    if step == 0:
+    if step is not None and step == 0:
       raise ValueError(f"The provided step is equal to zero for "
                        f"setting {name}!")
+    elif step is not None and step < 0:
+      raise ValueError(f"The provided step is negative for setting {name}!")
 
     # Ensuring that the given bounds are in the correct order
     if lowest > highest:
@@ -64,10 +66,10 @@ class CameraScaleSetting(CameraSetting):
                                 f"({highest}), swapping them !")
       lowest, highest = highest, lowest
 
-    self.lowest = lowest
-    self.highest = highest
+    self.type = int if isinstance(lowest + highest, int) else float
+    self.lowest = self.type(lowest)
+    self.highest = self.type(highest)
     self.step = step
-    self.type = int if isinstance(self.lowest + self.highest, int) else float
 
     # Ensuring that the default value lies between the bounds
     if default is not None:
@@ -151,6 +153,14 @@ class CameraScaleSetting(CameraSetting):
 
     self.log(logging.DEBUG, f"Reloading the setting {self.name}")
 
+    # Ensure the step is greater than zero
+    if step is not None and step == 0:
+      raise ValueError(f"The provided step is equal to zero when reloading "
+                       f"setting {self.name}!")
+    elif step is not None and step < 0:
+      raise ValueError(f"The provided step is negative when reloading setting "
+                       f"{self.name}!")
+
     # Ensuring that the two bounds are not equal
     if lowest == highest:
       raise ValueError("The two given bounds are equal !")
@@ -161,9 +171,10 @@ class CameraScaleSetting(CameraSetting):
                                 f"({highest}), swapping them !")
       lowest, highest = highest, lowest
 
-    # Updating the lowest, highest, step and default values
-    self.lowest = lowest
-    self.highest = highest
+    # Updating the numeric type, lowest, highest, step and default values
+    self.type = int if isinstance(lowest + highest, int) else float
+    self.lowest = self.type(lowest)
+    self.highest = self.type(highest)
     self.step = step
 
     # Ensuring that the default value lies between the new bounds
@@ -173,6 +184,8 @@ class CameraScaleSetting(CameraSetting):
                f"({lowest}) and highest ({highest}) values ! Setting to the "
                f"center of the interval instead")
       self.default = self.type((self.lowest + self.highest) / 2)
+    elif default is None:
+      self.default = self.type(self.default)
     if default is not None:
       if not lowest <= default <= highest:
         self.log(logging.WARNING,
@@ -181,7 +194,7 @@ class CameraScaleSetting(CameraSetting):
                  f"center of the interval instead")
         self.default = self.type((self.lowest + self.highest) / 2)
       else:
-        self.default = default
+        self.default = self.type(default)
 
     self._check_default()
 

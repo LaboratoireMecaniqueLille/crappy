@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence, Callable
 import logging
-from re import split
+import re
 from time import time
 
 from .meta_block import Block
@@ -86,6 +86,7 @@ class StopBlock(Block):
       self.log(logging.WARNING, "Stop criterion reached, stopping all the "
                                 "Blocks !")
       self.stop()
+      return
 
     self.log(logging.DEBUG, "No stop criterion reached during this loop")
   
@@ -101,7 +102,8 @@ class StopBlock(Block):
     # Second case, the criterion is a string containing '<'
     if '<' in criterion:
       self.log(logging.DEBUG, "Criterion is of type var < thresh")
-      var, thresh = split(r'\s*<\s*', criterion)
+      var, thresh = re.fullmatch(r'\s*(.+?)\s*<\s*(.+?)\s*',
+                                 criterion).groups()
 
       # Return a function that checks if received data is inferior to threshold
       def cond(data: dict[str, list]) -> bool:
@@ -117,7 +119,8 @@ class StopBlock(Block):
     # Third case, the criterion is a string containing '>'
     elif '>' in criterion:
       self.log(logging.DEBUG, "Criterion is of type var > thresh")
-      var, thresh = split(r'\s*>\s*', criterion)
+      var, thresh = re.fullmatch(r'\s*(.+?)\s*>\s*(.+?)\s*',
+                                 criterion).groups()
 
       # Special case for a time criterion
       if var == 't(s)':

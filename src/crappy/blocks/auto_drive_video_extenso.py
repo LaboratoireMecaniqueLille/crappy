@@ -89,6 +89,19 @@ class AutoDriveVideoExtenso(Block):
                        "Actuator !")
     self._actuator = actuator
 
+    # Checking that the direction is valid
+    if direction not in ('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+'):
+      raise ValueError("Direction should be in "
+                       "('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+')")
+
+    # Checking that the pixel_range is valid
+    if pixel_range <= 0:
+      raise ValueError("Pixel range should be greater than 0")
+
+    # Checking that the max_speed is valid
+    if max_speed <= 0:
+      raise ValueError("max_speed should be greater than 0")
+
     self._gain = -gain if '-' in direction else gain
     self._direction = direction
     self._pixel_range = pixel_range

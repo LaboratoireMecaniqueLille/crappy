@@ -136,11 +136,11 @@ class Recorder(Block):
     else:
       data = self.recv_all_data(delay=self._delay)
 
+    if data and not all(label in data for label in self._labels):
+      raise IOError("Not all labels received from upstream Block")
+
     # Keeping only the data that needs to be saved
     data = {key: val for key, val in data.items() if key in self._labels}
-
-    if not all(label in data for label in self._labels):
-      raise IOError("Not all labels received from upstream Block")
 
     if data:
       with open(self._path, 'a', newline='') as file:

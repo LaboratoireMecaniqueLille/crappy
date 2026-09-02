@@ -1,8 +1,6 @@
 # coding: utf-8
 
 from copy import deepcopy
-from time import sleep
-from platform import system
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -21,7 +19,6 @@ class TestDICVE(ConfigurationWindowTestBase):
     """Used to instantiate a Camera that actually generates images."""
 
     super().__init__(*args, camera=FakeTestCameraSimple(), **kwargs)
-    self._exit = False
 
   def customSetUp(self) -> None:
     """Used for instantiating the special configuration interface and for
@@ -32,11 +29,7 @@ class TestDICVE(ConfigurationWindowTestBase):
 
     self._config._testing = True
     self._config._patch_size.value = 20
-    self._config.start()
-
-    # Allow some time for the HistogramProcess to start on Windows
-    if system() == 'Windows':
-      sleep(3)
+    self.start_configuration()
 
   def customTearDown(self) -> None:
     """Used for ensuring at least one patch is defined, so that the interface
@@ -47,12 +40,7 @@ class TestDICVE(ConfigurationWindowTestBase):
   def test_dicve(self) -> None:
     """Tests whether the patches are correctly defined in several scenarios."""
 
-    # Sleeping to avoid zero division error on Windows
-    sleep(0.05)
-    # Calling the first loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # There should be no points for now
     self.assertTrue(self._config._spots.empty())

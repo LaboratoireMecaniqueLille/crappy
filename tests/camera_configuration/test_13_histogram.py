@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from time import sleep
 from queue import Empty
 import numpy as np
 
@@ -47,7 +46,6 @@ class TestHistogram(ConfigurationWindowTestBase):
     # Acquire an image and put it in the queue for processing
     _, img = self._camera.get_image()
     self._config._img_in.put_nowait((img, False, 0, 255))
-    sleep(1)
 
     # The flags and queue should be similar to default
     self.assertFalse(self._config._histogram_process.is_alive())
@@ -55,36 +53,35 @@ class TestHistogram(ConfigurationWindowTestBase):
     self.assertFalse(
         self._config._histogram_process._processing_event.is_set())
     try:
-      queued = self._config._histogram_process._img_in.get_nowait()
+      queued = self._config._histogram_process._img_in.get(timeout=1.0)
     except Empty:
       self.fail("Expected an item in the queue")
     self._config._histogram_process._img_in.put_nowait(queued)
     with self.assertRaises(Empty):
       self._config._img_out.get_nowait()
 
-    # Start the histogram process and wait for it to work
+    # Start the histogram process and wait only until it has produced output.
     self._config._histogram_process.start()
-    sleep(3)
 
     try:
       # The process should now be alive
       self.assertTrue(self._config._histogram_process.is_alive())
       self.assertFalse(self._config._histogram_process._stop_event.is_set())
-      self.assertFalse(
-          self._config._histogram_process._processing_event.is_set())
-      with self.assertRaises(Empty):
-        self._config._histogram_process._img_in.get_nowait()
 
       # Read the generated histogram, that should be an array
       try:
-        img = self._config._img_out.get_nowait()
+        img = self._config._img_out.get(timeout=3.0)
       except Empty:
         self.fail("Expected an item in the queue")
       self.assertIsInstance(img, np.ndarray)
+      self.assertTrue(self.wait_until(
+          lambda: not self._config._histogram_process._processing_event.is_set()))
+      with self.assertRaises(Empty):
+        self._config._histogram_process._img_in.get_nowait()
 
-      # Raise the stop flag and wait for the histogram process to stop
+      # Raise the stop flag and join with a deadline.
       self._config._stop_event.set()
-      sleep(1)
+      self._config._histogram_process.join(2.0)
 
       # The process should now be stopped
       self.assertFalse(self._config._histogram_process.is_alive())
@@ -101,3 +98,4 @@ class TestHistogram(ConfigurationWindowTestBase):
     finally:
       if self._config._histogram_process.is_alive():
         self._config._histogram_process.kill()
+        self._config._histogram_process.join(1.0)

@@ -4,6 +4,7 @@ import numpy as np
 from pathlib import Path
 import logging
 import logging.handlers
+from typing import Literal
 
 from .camera_process import CameraProcess
 from ...tool.image_processing import GPUCorrelTool
@@ -36,7 +37,9 @@ class GPUCorrelProcess(CameraProcess):
                resampling_factor: float = 2,
                kernel_file: str | Path | None = None,
                iterations: int = 4,
-               fields: list[str | np.ndarray] | None = None,
+               fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                                    'exy', 'eyx', 'exy2', 'z'] |
+                            np.ndarray] | None = None,
                mask: np.ndarray | None = None,
                mul: float = 3) -> None:
     """Sets the arguments and initializes the parent class.

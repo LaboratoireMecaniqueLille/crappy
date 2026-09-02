@@ -1,6 +1,8 @@
 # coding: utf-8
 
-from time import time, sleep
+from unittest.mock import patch
+
+import crappy.tool.camera_config.camera_config as camera_config_module
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -27,33 +29,39 @@ class TestFPS(ConfigurationWindowTestBase):
     self.assertEqual(self._config._fps_txt.get(),
                      f'fps = 0.00\n(might be lower in this GUI than actual)')
 
-    # Testing a range of realistic frequencies
-    for fps in (1, 2, 3, 4, 5, 10, 15, 20):
-      with self.subTest(fps=fps):
+    current_time = [0.0]
+    self._config._last_upd_t = current_time[0]
 
-        # Setting the maximum frequency in the interface
-        self._config._max_freq = fps
+    def fake_time() -> float:
+      return current_time[0]
 
-        # Continuously updating the image
-        t0 = time()
-        while time() - t0 < 10 / fps:
-          self._config._img_acq_sched()
-          sleep(0.001)
-        # Refreshing the indicators
-        self._config._upd_var_sched()
+    def acquire_image() -> None:
+      self._config._n_loops += 1
 
-        # Checking that the frequency is less than 20% off compared to target
-        self.assertAlmostEqual(self._config._fps_var.get(), fps,
-                               delta=fps * 0.2)
-        self.assertEqual(self._config._fps_txt.get(),
-                         f'fps = {self._config._fps_var.get():.2f}\n(might be '
-                         f'lower in this GUI than actual)')
+    with patch.object(camera_config_module, 'time', side_effect=fake_time), \
+         patch.object(self._config, '_update_img', side_effect=acquire_image):
+      # Ten evenly-spaced frames are enough to verify each frequency exactly;
+      # there is no need to wait through the equivalent wall-clock duration.
+      for fps in (1, 2, 3, 4, 5, 10, 15, 20):
+        with self.subTest(fps=fps):
+          self._config._max_freq = fps
 
-    # Same test but this time with free-looping
-    self._config._max_freq = None
-    t0 = time()
-    while time() - t0 < 2:
-      self._config._img_acq_sched()
-      sleep(0.001)
-    self._config._upd_var_sched()
-    self.assertGreater(self._config._fps_var.get(), 20)
+          for _ in range(10):
+            current_time[0] += 1 / fps
+            self._config._img_acq_sched()
+          self._config._upd_var_sched()
+
+          self.assertAlmostEqual(self._config._fps_var.get(), fps)
+          self.assertEqual(
+              self._config._fps_txt.get(),
+              f'fps = {self._config._fps_var.get():.2f}\n(might be lower in '
+              f'this GUI than actual)')
+
+      # Free-looping should not impose the configured 20 FPS ceiling.
+      self._config._max_freq = None
+      for _ in range(25):
+        current_time[0] += 1 / 25
+        self._config._img_acq_sched()
+      self._config._upd_var_sched()
+
+    self.assertAlmostEqual(self._config._fps_var.get(), 25.0)

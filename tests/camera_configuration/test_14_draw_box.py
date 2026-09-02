@@ -1,8 +1,5 @@
 # coding: utf-8
 
-from time import sleep
-from platform import system
-
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
 from crappy.tool.camera_config.camera_config_boxes import CameraConfigBoxes
@@ -31,22 +28,13 @@ class TestDrawBox(ConfigurationWindowTestBase):
     self._config._img_canvas.bind('<B1-Motion>', self._config._extend_box)
 
     self._config._testing = True
-    self._config.start()
-
-    # Allow some time for the HistogramProcess to start on Windows
-    if system() == 'Windows':
-      sleep(3)
+    self.start_configuration()
 
   def test_draw_box(self) -> None:
     """Tests whether the selection box is correctly displayed on the image when
     drawing it."""
 
-    # Sleeping to avoid zero division error on Windows
-    sleep(0.05)
-    # Calling the first loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle()
 
     # There should be no points for now
     self.assertTrue(self._config._select_box.no_points())

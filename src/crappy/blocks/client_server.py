@@ -308,7 +308,7 @@ class ClientServer(Block):
 
     # Instantiating the client here as it cannot be set during __init__ in
     # spawn multiprocessing mode
-    self._client = mqtt.Client(str(time()))
+    self._client = mqtt.Client(client_id=str(time()))
     self._client.on_connect = self._on_connect
     self._client.on_message = self._on_message
     self._client.reconnect_delay_set(max_delay=10)

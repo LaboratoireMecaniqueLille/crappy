@@ -1,11 +1,22 @@
 # coding: utf-8
 
+from importlib.util import find_spec
+import logging
+from multiprocessing import current_process
 import unittest
-import cv2
+
 import numpy as np
 from dataclasses import dataclass
 
 from crappy.tool.camera_config.config_tools import SpotsDetector
+
+try:
+  import cv2
+except (ImportError, ModuleNotFoundError):
+  cv2 = None
+
+
+HAS_SPOT_DEPENDENCIES = cv2 is not None and find_spec('skimage') is not None
 
 
 @dataclass
@@ -15,12 +26,23 @@ class Prop:
   bbox: tuple[int, int, int, int]
 
 
+@unittest.skipUnless(
+    HAS_SPOT_DEPENDENCIES,
+    "opencv-python and scikit-image are required for spot detection tests")
 class TestSpotsDetector(unittest.TestCase):
   """Class for testing the 
   :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` class.
 
   .. versionadded:: 2.0.8
   """
+
+  def setUp(self) -> None:
+    """Silence warnings deliberately triggered by negative test cases."""
+
+    logger = logging.getLogger(f"{current_process().name}.SpotsDetector")
+    previous_disabled = logger.disabled
+    logger.disabled = True
+    self.addCleanup(setattr, logger, 'disabled', previous_disabled)
 
   def test_01_overlap_bbox(self) -> None:
     """Tests the SpotsDetector._overlap_bbox() method."""

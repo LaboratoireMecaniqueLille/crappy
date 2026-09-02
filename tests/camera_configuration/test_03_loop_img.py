@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from time import sleep
-
 import numpy.dtypes as np_dt
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
@@ -14,6 +12,8 @@ class TestLoopImg(ConfigurationWindowTestBase):
   .. versionadded:: 2.0.8
   """
 
+  start_histogram_process = True
+
   def __init__(self, *args, **kwargs) -> None:
     """Used to instantiate a Camera that actually generates images."""
 
@@ -22,7 +22,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
                      **kwargs)
 
   def test_loop_img(self) -> None:
-    """Tests whether the internal state variables of thr configuration window
+    """Tests whether the internal state variables of the configuration window
     are updated as expected when looping with an image."""
 
     # Monitoring variables should be initialized to their default values
@@ -60,12 +60,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
     self.assertIsNone(self._config._hist)
     self.assertIsNone(self._config._pil_hist)
 
-    # Sleeping to ensure the loop counter will be reset (it is every 0.5s)
-    sleep(0.5)
-    # Calling the first loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.run_config_cycle(elapsed=0.5)
 
     # These monitoring variables should change because of the acquired image
     self.assertGreater(self._config._fps_var.get(), 0.)
@@ -107,12 +102,8 @@ class TestLoopImg(ConfigurationWindowTestBase):
     self.assertIsNone(self._config._hist)
     self.assertIsNone(self._config._pil_hist)
 
-    # Sleeping to avoid zero division error on Windows
-    sleep(0.05)
-    # Calling a second loop
-    self._config._img_acq_sched()
-    self._config._upd_var_sched()
-    self._config._upd_sched()
+    self.assertTrue(self.wait_for_histogram())
+    self.run_config_cycle()
 
     # Monitoring variables should be unchanged compared to previous loop
     self.assertGreater(self._config._fps_var.get(), 0.)

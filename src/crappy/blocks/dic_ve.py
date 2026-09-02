@@ -344,10 +344,6 @@ class DICVE(Camera):
     .. versionremoved:: 2.0.0 *img_name* argument
     """
 
-    if not config and patches is None:
-      raise ValueError("If the config window is disabled, patches must be "
-                       "provided !")
-
     super().__init__(camera=camera,
                      transform=transform,
                      config=config,
@@ -368,6 +364,28 @@ class DICVE(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
+    if not config and (patches is None or not patches):
+      raise ValueError("If the config window is disabled, patches must be "
+                       "provided !")
+
+    if patches is not None and len(patches) > 4:
+      raise ValueError("Only 1 to 4 patches can be provided!")
+
+    if patches is not None:
+      for patch in patches:
+        if (not isinstance(patch, tuple)
+            or len(patch) != 4
+            or not all(isinstance(val, int) for val in patch)
+            or not all(val >= 0 for val in patch)):
+          raise ValueError("The patches should be provided as tuples of 4 "
+                           "positive integer values")
+
+    if patches is not None:
+      for patch in patches:
+        if patch[2] <= 0 or patch[3] <= 0:
+          raise ValueError("The widths and heights of the patches must be "
+                           "strictly positive integers")
+
     # Forcing the labels into a list
     if labels is None:
       self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
@@ -376,6 +394,16 @@ class DICVE(Camera):
       self.labels = [labels]
     else:
       self.labels = list(labels)
+
+    # Make sure only string labels are provided
+    if (self.labels is not None and
+        not all(isinstance(label, str) for label in self.labels)):
+      non_str = [label for label in self.labels if not isinstance(label, str)]
+      raise ValueError(f"Some labels are not strings: "
+                       f"{', '.join(map(repr, non_str))}")
+
+    if self.labels is not None and len(set(self.labels)) != len(self.labels):
+      raise ValueError("Duplicate labels provided in the list of labels!")
 
     # Making sure a coherent number of labels and fields was given
     if len(self.labels) != 6:

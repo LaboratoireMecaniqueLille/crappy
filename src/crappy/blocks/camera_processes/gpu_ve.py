@@ -80,10 +80,6 @@ class GPUVEProcess(CameraProcess):
     """
 
     super().__init__()
-
-    # Making a CUDA context common to all the patches
-    pycuda.driver.init()
-    self._context = pycuda.tools.make_default_context()
     
     # Arguments to pass to the GPUCorrelTools
     self._verbose = verbose
@@ -93,9 +89,10 @@ class GPUVEProcess(CameraProcess):
     self._mul = mul
 
     # Other attributes
-    self._correls: list[GPUCorrelTool] | None = None
+    self._correls: list[GPUCorrelTool] = list()
     self._patches = patches
     self._img_ref = img_ref
+    self._context = None
 
     self._spots = SpotsBoxes()
     self._spots.set_spots(patches)
@@ -105,6 +102,10 @@ class GPUVEProcess(CameraProcess):
   def init(self) -> None:
     """Initializes the GPUCorrelTool instances, and set their reference image
     if a ``img_ref`` argument was provided."""
+
+    # Making a CUDA context common to all the patches
+    pycuda.driver.init()
+    self._context = pycuda.tools.make_default_context()
 
     # Instantiating the GPUCorrelTool instances
     self.log(logging.INFO, "Instantiating the GPUCorrel tool instances")
@@ -116,7 +117,7 @@ class GPUVEProcess(CameraProcess):
                                    kernel_file=self._kernel_file,
                                    iterations=self._iterations,
                                    fields=['x', 'y'],
-                                   ref_img=self._img_ref,
+                                   ref_img=None,
                                    mask=None,
                                    mul=self._mul) for _ in self._patches]
 
@@ -174,7 +175,7 @@ class GPUVEProcess(CameraProcess):
     """Performs cleanup on the several
     :class:`~crappy.tool.image_processing.GPUCorrelTool` used."""
 
-    if self._correls is not None:
-      self.log(logging.INFO, "Cleaning up the GPUCorrel instances")
-      for correl in self._correls:
-        correl.clean()
+    if self._context is not None:
+      self.log(logging.INFO, "Cleaning up the GPU context")
+      self._context.pop()
+      self._context = None

@@ -94,6 +94,12 @@ class FileReader(Camera):
                                   "the images")
     # Setting the backend requested by the user
     elif reader_backend in ('sitk', 'cv2'):
+      if reader_backend == 'sitk' and isinstance(Sitk, OptionalModule):
+        raise ModuleNotFoundError("Backend 'sitk' requested but could not "
+                                  "be imported")
+      elif reader_backend == 'cv2' and isinstance(cv2, OptionalModule):
+        raise ModuleNotFoundError("Backend 'cv2' requested but could not "
+                                  "be imported")
       self._backend = reader_backend
     else:
       raise ValueError("The backend argument should be either 'sitk' or "
@@ -126,6 +132,10 @@ class FileReader(Camera):
 
     # The images are stored as an iterator
     self._images = iter(images)
+
+    # In case the camera is re-opened
+    self._t0 = None
+    self._stopped = False
 
   def get_image(self) -> tuple[float, np.ndarray] | None:
     """Reads the next image in the image folder, and returns it at the right
@@ -166,7 +176,7 @@ class FileReader(Camera):
       if t - self._t0 < timestamp:
         sleep(timestamp - (t - self._t0))
 
-      return t, img
+      return time(), img
 
     # Raised when there's no more image to read
     except StopIteration:

@@ -1,11 +1,39 @@
 Tests
 =====
 
-This folder contains the test suite that allows checking if CRAPPY runs as 
-expected. The unit tests check the methods and functions individually, and the
-integration tests check if the module performs well at runtime. All tests are
-performed using the ``unittest`` module.
+This directory contains Crappy's unit and integration test suites. The tests
+use Python's built-in ``unittest`` package and are organized by the package
+or feature they cover.
 
-**WARNING** :
-The test suite is currently work in progress, and should be fully functional 
-and used in the coming releases.
+Installing the test dependencies
+--------------------------------
+
+From the repository root, install Crappy and the dependencies needed by the
+test suite:
+
+    python -m pip install .
+    python -m pip install -r tests/requirements.txt
+
+The graphical tests also require Tk. It is included with the standard Python
+installers on Windows and macOS, but may need to be installed separately on
+Linux.
+
+Running the tests
+-----------------
+
+Run the complete suite from the repository root with:
+
+    python -m unittest -v tests
+
+An individual package or test module can also be run directly, for example:
+
+    python -m unittest -v tests.modifier
+    python -m unittest -v tests.modifier.test_mean
+
+The ``blocks_gui``, ``camera_configuration``, and ``camera_processes_gui``
+packages open graphical interfaces and therefore require a display. On a
+headless Linux system, run them through Xvfb, for example:
+
+    xvfb-run --auto-servernum python -m unittest -v tests.blocks_gui
+
+The tests run every non-graphical package with the Matplotlib ``Agg`` backend.

@@ -51,9 +51,9 @@ class FakeInOut(InOut):
     if not 0 <= cmd[0] <= 100:
       raise ValueError("Command should be a percentage of memory usage !")
 
-    if cmd[0] > virtual_memory().percent:
+    if cmd[0] > (mem := virtual_memory().percent):
       self._buf.append([0] * 1024*1024)
-    elif cmd[0] < virtual_memory().percent:
+    elif cmd[0] < mem:
       try:
         # If there's nothing to delete, abort
         del self._buf[-1]

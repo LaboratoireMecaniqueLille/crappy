@@ -24,7 +24,6 @@ class TestLogging(CameraProcessTestBase):
     shared = self.make_shared(log_level=logging.ERROR)
 
     logger = logging.getLogger(self._process.name)
-    logger.handlers.clear()
 
     self._process._set_logger()
 

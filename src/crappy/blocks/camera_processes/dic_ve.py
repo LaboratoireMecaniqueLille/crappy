@@ -189,12 +189,13 @@ class DICVEProcess(CameraProcess):
 
       # If the patches are lost, deciding whether to raise exception or not
       except RuntimeError as exc:
-        if self._raise_on_exit:
-          self._logger.exception("Patch exiting the ROI !", exc_info=exc)
-          raise
+        self._logger.exception("Caught exception while processing patches!",
+                               exc_info=exc)
+        self.log(logging.WARNING, "No longer processing data.\nThis may be "
+                                  "due to a patch exiting the ROI")
         self._lost_patch = True
-        self.log(logging.WARNING, "Patch exiting the ROI, not processing "
-                                  "data anymore !")
+        if self._raise_on_exit:
+          raise
     
     # If the patches are lost, sleep to avoid spamming the CPU in vain
     else:
