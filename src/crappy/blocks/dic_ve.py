@@ -344,10 +344,6 @@ class DICVE(Camera):
     .. versionremoved:: 2.0.0 *img_name* argument
     """
 
-    if not config and patches is None:
-      raise ValueError("If the config window is disabled, patches must be "
-                       "provided !")
-
     super().__init__(camera=camera,
                      transform=transform,
                      config=config,
@@ -367,6 +363,10 @@ class DICVE(Camera):
                      img_shape=img_shape,
                      img_dtype=img_dtype,
                      **kwargs)
+
+    if not config and (patches is None or not patches):
+      raise ValueError("If the config window is disabled, patches must be "
+                       "provided !")
 
     # Forcing the labels into a list
     if labels is None:

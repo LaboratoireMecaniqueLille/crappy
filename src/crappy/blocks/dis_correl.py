@@ -307,10 +307,6 @@ class DISCorrel(Camera):
     .. versionremoved:: 2.0.0 *img_name* argument
     """
 
-    if not config and patch is None:
-      raise ValueError("If the config window is disabled, the patch must be "
-                       "provided !")
-
     super().__init__(camera=camera,
                      transform=transform,
                      config=config,
@@ -330,6 +326,10 @@ class DISCorrel(Camera):
                      img_shape=img_shape,
                      img_dtype=img_dtype,
                      **kwargs)
+
+    if not config and patch is None:
+      raise ValueError("If the config window is disabled, the patch must be "
+                       "provided !")
 
     # Forcing the fields into a list
     if fields is None:
