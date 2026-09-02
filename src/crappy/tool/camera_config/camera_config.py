@@ -620,6 +620,10 @@ class CameraConfig(tk.Tk):
   def _start_move(self, event: tk.Event) -> None:
     """Stores the position of the mouse upon right-clicking on the image."""
 
+    # Invalidate previous drag before checking new start position
+    self._move_x = None
+    self._move_y = None
+
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
       return
@@ -636,8 +640,10 @@ class CameraConfig(tk.Tk):
   def _move(self, event: tk.Event) -> None:
     """Drags the image upon prolonged right-clik and drag from the user."""
 
-    # If the mouse is on the canvas but not on the image, do nothing
-    if not self._check_event_pos(event):
+    # Do nothing if the drag did not start on the image, or if the mouse is no
+    # longer on the image.
+    if (self._move_x is None or self._move_y is None or
+        not self._check_event_pos(event)):
       return
 
     self.log(logging.DEBUG, "Dragging the image")
