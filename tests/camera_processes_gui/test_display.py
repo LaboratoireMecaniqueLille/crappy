@@ -1,5 +1,10 @@
 # coding: utf-8
 
+import os
+from pathlib import Path
+from platform import system
+import subprocess
+import sys
 from time import sleep
 import unittest
 
@@ -122,6 +127,27 @@ class TestDisplayer(CameraProcessTestBase):
 
   def test_mpl_backend_opens_updates_and_closes_real_window(self) -> None:
     """Checks the real Matplotlib display lifecycle."""
+
+    # OpenCV and Tk both install process-global NSApplication state on macOS.
+    # In production each Displayer has its own process, so exercise TkAgg in a
+    # clean interpreter instead of after the OpenCV lifecycle test.
+    if (system() == 'Darwin' and
+        os.environ.get('CRAPPY_TEST_DISPLAY_BACKEND') != 'mpl'):
+      env = os.environ.copy()
+      env['CRAPPY_TEST_DISPLAY_BACKEND'] = 'mpl'
+      project_root = Path(__file__).resolve().parents[2]
+      result = subprocess.run(
+        [sys.executable, '-m', 'unittest', '-v',
+         f'{__name__}.{type(self).__name__}.{self._testMethodName}'],
+        cwd=project_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=15)
+      self.assertEqual(result.returncode, 0,
+                       f'----- stdout -----\n{result.stdout}\n'
+                       f'----- stderr -----\n{result.stderr}')
+      return
 
     # Earlier unit tests may deliberately select Agg. This real-window test
     # owns its graphical precondition instead of depending on suite order.
