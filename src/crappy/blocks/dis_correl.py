@@ -68,7 +68,7 @@ class DISCorrel(Camera):
                img_dtype: str | None = None,
                patch: tuple[int, int, int, int] | None = None,
                fields: field_type | Sequence[field_type] | None = None,
-               labels: str | Sequence[str] = None,
+               labels: str | Sequence[str] | None = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
