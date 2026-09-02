@@ -159,6 +159,7 @@ class TestVideoExtensoTool(TestCase):
     tool._trackers = [tracker_1, tracker_2]
     tool._pipes = [pipe_1, pipe_2]
     tool._log = lambda *_: None
+    tool._send = lambda pipe, value: pipe.send(value)
 
     tool.stop_tracking()
 
