@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from multiprocessing import Event, Value
-from threading import BrokenBarrierError
+from threading import BrokenBarrierError, Thread
 from typing import Any
 import logging
 import numpy as np
@@ -29,11 +29,14 @@ class TrackingCameraProcess(TestCameraProcess):
     self._alive = False
     self.args = args
     self.kwargs = kwargs
+    self._barrier_thread: Thread | None = None
 
   def start(self) -> None:
     """Records that the process would have been started."""
 
     self.started.set()
+    self._barrier_thread = Thread(target=self._cam_barrier.wait, daemon=True)
+    self._barrier_thread.start()
 
   def is_alive(self) -> bool:
     """Returns the fake liveness state."""
@@ -255,7 +258,7 @@ class TestCameraBlock(CameraBlockTestBase):
     self.assertIs(process._outputs, camera.outputs)
 
   def test_begin(self) -> None:
-    """Tests that Camera.begin releases a ready Camera barrier."""
+    """Tests Camera.begin after CameraProcesses synchronized in prepare."""
 
     camera = self.make_camera()
     camera.prepare()
@@ -264,15 +267,15 @@ class TestCameraBlock(CameraBlockTestBase):
 
     self.assertFalse(camera._cam_barrier.broken)
 
-  def test_begin_broken_barrier(self) -> None:
-    """Tests that Camera.begin converts a broken barrier into an error."""
+  def test_prepare_broken_barrier(self) -> None:
+    """Tests that Camera.prepare converts a broken barrier into an error."""
 
     camera = self.make_camera()
-    camera.prepare()
-    camera._cam_barrier.abort()
 
-    with self.assertRaises(CameraPrepareError):
-      camera.begin()
+    with patch.object(camera_module, 'Barrier') as barrier:
+      barrier.return_value.wait.side_effect = BrokenBarrierError
+      with self.assertRaises(CameraPrepareError):
+        camera.prepare()
 
   def test_loop_writes_shared_frame(self) -> None:
     """Tests that Camera.loop writes frames for CameraProcess instances."""
