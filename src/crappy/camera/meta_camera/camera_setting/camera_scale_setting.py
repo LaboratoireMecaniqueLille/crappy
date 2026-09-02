@@ -171,7 +171,8 @@ class CameraScaleSetting(CameraSetting):
                                 f"({highest}), swapping them !")
       lowest, highest = highest, lowest
 
-    # Updating the lowest, highest, step and default values
+    # Updating the numeric type, lowest, highest, step and default values
+    self.type = int if isinstance(lowest + highest, int) else float
     self.lowest = self.type(lowest)
     self.highest = self.type(highest)
     self.step = step
