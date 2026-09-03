@@ -113,8 +113,8 @@ class Block(Process, ABC):
     self._log_level: int | None = logging.INFO
 
     # Objects for displaying performance information about the block
-    self._last_t: float | None = None
-    self._last_fps: float | None = None
+    self._last_t: float = float('-inf')
+    self._last_fps: float = float('-inf')
     self._n_loops: int = 0
 
     self._last_values: list[dict[str, Any]] = list()
