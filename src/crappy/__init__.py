@@ -23,6 +23,7 @@ from ._global import OptionalModule, docs, resources
 link = links.link
 img_link = links.img_link
 Block = blocks.Block
+VisionBlock = blocks.vision.VisionBlock
 Actuator = actuator.Actuator
 Camera = camera.Camera
 InOut = inout.InOut

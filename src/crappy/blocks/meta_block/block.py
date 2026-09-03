@@ -3,7 +3,7 @@
 from platform import system
 from multiprocessing import (Process, Value, Barrier, Event, Queue,
                              get_start_method, synchronize, queues,
-                             sharedctypes)
+                             sharedctypes, Manager, managers)
 from multiprocessing.connection import wait
 from threading import BrokenBarrierError, Thread
 from queue import Empty
@@ -65,6 +65,9 @@ class Block(Process, ABC):
   thread_stop: bool = False
   no_raise: bool = False
 
+  # Used for ImageLinks
+  shared_mgr: managers.SyncManager | None = None
+
   prepared_all: bool = False
   launched_all: bool = False
 
@@ -96,6 +99,7 @@ class Block(Process, ABC):
     self.display_freq: bool = False
     self.name: str = self.get_name(type(self).__name__)
     self.pausable: bool = True
+    self.is_vision_block: bool = False
 
     # The synchronization objects will be set later
     self._instance_t0: sharedctypes.Synchronized | None = None
@@ -307,6 +311,22 @@ class Block(Process, ABC):
             instance._log_level = None
         cls.cls_log(logging.INFO, f"Log level set for the {instance.name} "
                                   f"Block")
+
+      # Initialize the common Manager for image Blocks if needed
+      if (cls.instances and
+          any(instance.is_vision_block for instance in cls.instances)):
+        cls.shared_mgr = Manager()
+        cls.cls_log(logging.INFO, 'Created the shared Manager object')
+
+        # Making vision Blocks generate their shared synchronization objects
+        for instance in cls.instances:
+          if instance.is_vision_block:
+            instance.set_shared_objects()
+            cls.cls_log(logging.INFO, f"Set shared image-related objects for "
+                                      f"the {instance.name} Block")
+      else:
+        cls.cls_log(logging.INFO, "No vision Block detected, not "
+                                  "instantiating a shared Manager")
 
       # Starting all the Blocks
       for instance in cls.instances:
@@ -644,6 +664,11 @@ class Block(Process, ABC):
         cls.cls_log(logging.INFO, "Stopping the USB server")
         USBServer.stop_server()
 
+      # Stopping the shared Manager if required
+      if cls.shared_mgr is not None:
+        cls.cls_log(logging.INFO, "Stopping the shared Manager")
+        cls.shared_mgr.shutdown()
+
       # Stopping the log thread if required
       if get_start_method() != 'fork' and cls.log_thread is not None:
         cls.thread_stop = True
@@ -848,6 +873,8 @@ class Block(Process, ABC):
     cls.stop_event = None
     cls.raise_event = None
     cls.kbi_event = None
+
+    cls.shared_mgr = None
 
     cls.log_queue = None
     cls.log_thread = None
