@@ -2,8 +2,8 @@
 
 from platform import system
 from multiprocessing import (Process, Value, Barrier, Event, Queue,
-                             get_start_method, synchronize, queues)
-from multiprocessing.sharedctypes import Synchronized
+                             get_start_method, synchronize, queues,
+                             sharedctypes)
 from multiprocessing.connection import wait
 from threading import BrokenBarrierError, Thread
 from queue import Empty
@@ -52,7 +52,7 @@ class Block(Process, ABC):
   log_level: int | None = logging.DEBUG
 
   # The synchronization objects will be set later
-  shared_t0: Synchronized | None = None
+  shared_t0: sharedctypes.Synchronized | None = None
   ready_barrier: synchronize.Barrier | None = None
   start_event: synchronize.Event | None = None
   pause_event: synchronize.Event | None = None
@@ -98,7 +98,7 @@ class Block(Process, ABC):
     self.pausable: bool = True
 
     # The synchronization objects will be set later
-    self._instance_t0: Synchronized | None = None
+    self._instance_t0: sharedctypes.Synchronized | None = None
     self._ready_barrier: synchronize.Barrier | None = None
     self._start_event: synchronize.Event | None = None
     self._pause_event: synchronize.Event | None = None
