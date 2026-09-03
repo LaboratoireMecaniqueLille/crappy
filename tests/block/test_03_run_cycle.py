@@ -117,8 +117,8 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block.looped.is_set())
     self.assertTrue(self._block.finished.is_set())
 
-    self.assertEqual(self._block.last_t.value, -1.0)
-    self.assertEqual(self._block.last_fps.value, -1.0)
+    self.assertEqual(self._block.last_t.value, float('-inf'))
+    self.assertEqual(self._block.last_fps.value, float('-inf'))
 
     Block.reset()
 
@@ -153,8 +153,8 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block.looped.is_set())
     self.assertTrue(self._block.finished.is_set())
 
-    self.assertEqual(self._block.last_t.value, -1.0)
-    self.assertEqual(self._block.last_fps.value, -1.0)
+    self.assertEqual(self._block.last_t.value, float('-inf'))
+    self.assertEqual(self._block.last_fps.value, float('-inf'))
 
     Block.reset()
 
@@ -261,8 +261,8 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block.looped.is_set())
     self.assertTrue(self._block.finished.is_set())
 
-    self.assertEqual(self._block.last_t.value, -1.0)
-    self.assertEqual(self._block.last_fps.value, -1.0)
+    self.assertEqual(self._block.last_t.value, float('-inf'))
+    self.assertEqual(self._block.last_fps.value, float('-inf'))
 
     Block.reset()
 
@@ -295,7 +295,7 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block.looped.is_set())
     self.assertTrue(self._block.finished.is_set())
 
-    self.assertEqual(self._block.last_t.value, -1.0)
-    self.assertEqual(self._block.last_fps.value, -1.0)
+    self.assertEqual(self._block.last_t.value, float('-inf'))
+    self.assertEqual(self._block.last_fps.value, float('-inf'))
 
     Block.reset()

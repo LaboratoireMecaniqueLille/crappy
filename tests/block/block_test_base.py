@@ -136,9 +136,8 @@ class TestBlock(Block):
   def prepare(self) -> None:
     """Records that prepare was reached and handles loop counting."""
 
-    self.last_t.value = self._last_t if self._last_t is not None else -1.0
-    self.last_fps.value = (self._last_fps
-                           if self._last_fps is not None else -1.0)
+    self.last_t.value = self._last_t
+    self.last_fps.value = self._last_fps
     self.n_loops.value = self._n_loops
 
     self.prepared.set()
@@ -146,9 +145,8 @@ class TestBlock(Block):
   def begin(self) -> None:
     """Records that begin was reached and handles loop counting."""
 
-    self.last_t.value = self._last_t if self._last_t is not None else -1.0
-    self.last_fps.value = (self._last_fps
-                           if self._last_fps is not None else -1.0)
+    self.last_t.value = self._last_t
+    self.last_fps.value = self._last_fps
     self.n_loops.value = self._n_loops
 
     self.begun.set()
@@ -156,9 +154,8 @@ class TestBlock(Block):
   def loop(self) -> None:
     """Records that loop was reached and optionally stops the Block."""
 
-    self.last_t.value = self._last_t if self._last_t is not None else -1.0
-    self.last_fps.value = (self._last_fps
-                           if self._last_fps is not None else -1.0)
+    self.last_t.value = self._last_t
+    self.last_fps.value = self._last_fps
     self.n_loops.value = self._n_loops
 
     self.loops.value += 1
@@ -171,9 +168,8 @@ class TestBlock(Block):
   def finish(self) -> None:
     """Records that finish was reached and handles loop counting."""
 
-    self.last_t.value = self._last_t if self._last_t is not None else -1.0
-    self.last_fps.value = (self._last_fps
-                           if self._last_fps is not None else -1.0)
+    self.last_t.value = self._last_t
+    self.last_fps.value = self._last_fps
     self.n_loops.value = self._n_loops
 
     self.finished.set()
