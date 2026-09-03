@@ -117,7 +117,7 @@ class Block(Process, ABC):
     self._last_fps: float | None = None
     self._n_loops: int = 0
 
-    self._last_values = None
+    self._last_values: list[dict[str, Any]] = list()
 
   def __new__(cls, *args, **kwargs):
     """Called when instantiating a new instance of a Block.
@@ -1454,7 +1454,7 @@ class Block(Process, ABC):
     """
 
     # Initializing the buffer storing the last received values
-    if self._last_values is None:
+    if not len(self._last_values):
       self._last_values = [dict() for _ in self.inputs]
 
     ret = dict()
