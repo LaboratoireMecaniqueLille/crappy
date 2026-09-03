@@ -110,7 +110,7 @@ class Block(Process, ABC):
     self._log_queue: queues.Queue | None = None
     self._logger: logging.Logger | None = None
     self._debug: bool | None = False
-    self._log_level: int = logging.INFO
+    self._log_level: int | None = logging.INFO
 
     # Objects for displaying performance information about the block
     self._last_t: float | None = None
