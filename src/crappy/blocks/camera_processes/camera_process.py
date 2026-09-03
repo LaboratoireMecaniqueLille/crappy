@@ -416,8 +416,9 @@ class CameraProcess(Process, ABC):
     else:
       logging.disable()
 
-    # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn" and self._log_level is not None:
+    # On spawn and forkserver, the messages need to be sent through a Queue for
+    # logging
+    if get_start_method() != 'fork' and self._log_level is not None:
       queue_handler = logging.handlers.QueueHandler(self._log_queue)
       queue_handler.setLevel(min(self._log_level, logging.INFO))
       logger.addHandler(queue_handler)

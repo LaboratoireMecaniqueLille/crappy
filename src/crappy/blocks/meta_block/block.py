@@ -271,7 +271,7 @@ class Block(Process, ABC):
       # Initializing the objects required for logging
       cls.log_queue = Queue()
       cls.log_thread = Thread(target=cls._log_target)
-      if get_start_method() == 'spawn':
+      if get_start_method() != 'fork':
         if cls.log_thread is None:
           raise RuntimeError("The log Thread was not initialized, cannot start"
                              " it!")
@@ -645,7 +645,7 @@ class Block(Process, ABC):
         USBServer.stop_server()
 
       # Stopping the log thread if required
-      if get_start_method() == 'spawn' and cls.log_thread is not None:
+      if get_start_method() != 'fork' and cls.log_thread is not None:
         cls.thread_stop = True
         cls.log_thread.join(timeout=0.1)
 
@@ -1258,8 +1258,9 @@ class Block(Process, ABC):
     else:
       logging.disable()
 
-    # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn" and self._log_level is not None:
+    # On spawn and forkserver, the messages need to be sent through a Queue for
+    # logging
+    if get_start_method() != 'fork' and self._log_level is not None:
 
       if self._log_queue is None:
         raise RuntimeError("The log queue is required but was never set")
