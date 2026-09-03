@@ -13,7 +13,7 @@ import logging
 
 from .._global import LinkDataError
 
-ModifierType = Callable[[dict[str, Any]], dict[str, Any]]
+ModifierType = Callable[[dict[str, Any]], [dict[str, Any] | None]]
 
 
 class Link:
