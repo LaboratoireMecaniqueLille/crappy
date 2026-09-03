@@ -24,6 +24,10 @@ class Link:
   Under the hood, a Link is basically a :obj:`multiprocessing.Pipe` with
   extra features.
 
+  This class should not be mistaken with :class:`~crappy.links.ImageLink`, that
+  is used for transferring images between Blocks. The regular Link can only
+  transfer linear data.
+
   Note:
     It is possible to add one or multiple :class:`~crappy.modifier.Modifier` to
     modify the transferred value. The Modifiers should be callables taking a
