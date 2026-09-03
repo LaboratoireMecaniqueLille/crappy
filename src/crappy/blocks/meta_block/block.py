@@ -1388,7 +1388,6 @@ class Block(Process, ABC):
 
       deadline = t0 + delay
       while time() < deadline:
-        last_t = time()
         # Updating the list of received values
         for link in self.inputs:
           data = link.recv_chunk()
@@ -1464,7 +1463,6 @@ class Block(Process, ABC):
 
       deadline = t0 + delay
       while time() < deadline:
-        last_t = time()
         # Updating the list of received values
         for dic, link in zip(ret, self.inputs):
           data = link.recv_chunk()
