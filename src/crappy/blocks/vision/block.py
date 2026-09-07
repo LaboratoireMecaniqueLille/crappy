@@ -10,6 +10,7 @@ from typing import Any
 from dataclasses import dataclass, field
 from uuid import uuid4
 from math import prod
+from time import time
 
 from ..meta_block import Block
 from ...links import ImageLink
@@ -147,6 +148,11 @@ class VisionBlock(Block, ABC):
     # Counter keeping track of the number of images that were sent
     self._sent_img_counter: int = 0
 
+    # Attributes for displaying the FPS counter
+    self._loop_count = 0
+    self._fps_count = 0
+    self._last_fps_img = time()
+
   def prepare(self) -> None:
     """Retrieves the shared buffers and shared arrays from upstream 
     :class:`~crappy.links.ImageLink`, then sets the shared array and makes it 
@@ -200,6 +206,11 @@ class VisionBlock(Block, ABC):
       # Also initialize the last received image buffer
       self.last_received[link.name].img = np.empty(
           shape=data.npy_buffer.shape, dtype=data.npy_buffer.dtype)
+
+  def begin(self) -> None:
+    """Updates the last FPS moment to avoid displaying it right away."""
+
+    self._last_fps_img = time()
 
   def finish(self) -> None:
     """Ensures that the resources from the SharedMemory are released."""
@@ -527,3 +538,19 @@ class VisionBlock(Block, ABC):
                             buffer=img_buffer.buf)
 
     return img_buffer, npy_buffer
+
+  def _display_freq(self) -> None:
+    """Helper method displaying every 2 seconds the actual number of frames
+    handled per seconds.
+
+    This number can be different from the number of loops per seconds, since
+    some loops might abort without actually handling a frame.
+    """
+
+    self._fps_count += 1
+    t = time()
+    if t - self._last_fps_img > 2:
+      self.log(logging.INFO, f"Frames handled per second: "
+                             f"{self._fps_count / (t - self._last_fps_img)}")
+      self._last_fps_img = t
+      self._fps_count = 0
