@@ -90,14 +90,14 @@ class VisionBlock(Block, ABC):
         **This argument is mandatory in case the Block doesn't have a
         configuration window/mechanism.** If a configuration is used, the value 
         of this argument is ignored.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        Block.
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
-      display_freq: If :obj:`True`, displays the looping frequency of the
-        Block.
     """
 
     super().__init__()

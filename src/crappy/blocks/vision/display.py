@@ -52,21 +52,21 @@ class ImageDisplayer(VisionBlock):
       backend: The module to use for displaying the images. Can be either
         ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` or
         :mod:`matplotlib`.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        Block.
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
-      display_freq: If :obj:`True`, displays the looping frequency of the
-        Block.
     """
 
     super().__init__(img_shape=None,
                      img_dtype=None,
+                     display_freq=display_freq,
                      debug=debug,
-                     freq=freq,
-                     display_freq=display_freq)
+                     freq=freq)
 
     # Validate title before setting it
     if title is not None:
@@ -120,7 +120,7 @@ class ImageDisplayer(VisionBlock):
 
     # Ensuring Link consistency
     if self.inputs:
-      raise IOError("This block does not accept input Links")
+      raise IOError("This Block does not accept input Links")
     if self.img_outputs:
       raise IOError("This VisionBlock does not support output ImageLink")
     if not self.img_inputs:

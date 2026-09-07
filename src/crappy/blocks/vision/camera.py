@@ -62,9 +62,9 @@ class CameraSource(VisionBlock):
                software_trig_label: str | None = None,
                img_shape: tuple[int, int] | tuple[int, int, int] | None = None,
                img_dtype: str | None = None,
+               display_freq: bool = False,
                debug: bool | None = False,
                freq: float | None = 100,
-               display_freq: bool = False,
                **kwargs) -> None:
     """Sets the arguments and initializes the parent class.
 
@@ -118,14 +118,14 @@ class CameraSource(VisionBlock):
         **This argument is mandatory in case the Block doesn't have a
         configuration window/mechanism.** If a configuration is used, the value
         of this argument is ignored.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        Block.
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
-      display_freq: If :obj:`True`, displays the looping frequency of the
-        Block.
       **kwargs: Any additional argument will be passed to the
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.
@@ -133,9 +133,9 @@ class CameraSource(VisionBlock):
 
     super().__init__(img_shape=img_shape,
                      img_dtype=img_dtype,
+                     display_freq=display_freq,
                      debug=debug,
-                     freq=freq,
-                     display_freq=display_freq)
+                     freq=freq)
 
     self._camera: BaseCam | None = None
 
