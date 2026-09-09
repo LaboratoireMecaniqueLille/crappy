@@ -74,11 +74,11 @@ class Recorder(Block):
 
     # Forcing the labels into a list
     if labels is not None and isinstance(labels, str):
-      self._labels = [labels]
+      self._recorder_labels = [labels]
     elif labels is not None:
-      self._labels = list(labels)
+      self._recorder_labels = list(labels)
     else:
-      self._labels = None
+      self._recorder_labels = None
 
     self._file_initialized = False
 
@@ -120,14 +120,14 @@ class Recorder(Block):
         data = self.recv_all_data(delay=self._delay)
 
         # If no labels are given, save everything that's received
-        if self._labels is None:
-          self._labels = list(data.keys())
+        if self._recorder_labels is None:
+          self._recorder_labels = list(data.keys())
 
         # The first row of the file contains the names of the labels
         with open(self._path, 'w', newline='') as file:
           self.log(logging.INFO, f"Writing the header on file {self._path}")
           writer = csv.writer(file, lineterminator='\n')
-          writer.writerow(self._labels)
+          writer.writerow(self._recorder_labels)
 
         self._file_initialized = True
       else:
@@ -136,17 +136,18 @@ class Recorder(Block):
     else:
       data = self.recv_all_data(delay=self._delay)
 
-    if data and not all(label in data for label in self._labels):
+    if data and not all(label in data for label in self._recorder_labels):
       raise IOError("Not all labels received from upstream Block")
 
     # Keeping only the data that needs to be saved
-    data = {key: val for key, val in data.items() if key in self._labels}
+    data = {key: val for key, val in data.items() if key
+            in self._recorder_labels}
 
     if data:
       with open(self._path, 'a', newline='') as file:
         writer = csv.writer(file, lineterminator='\n')
         # Sorting the lists of values in the same order as the labels
-        sorted_data = [data[label] for label in self._labels]
+        sorted_data = [data[label] for label in self._recorder_labels]
         # Actually writing the values
         self.log(logging.DEBUG, f"Writing {sorted_data} to the file "
                                 f"{self._path}")
