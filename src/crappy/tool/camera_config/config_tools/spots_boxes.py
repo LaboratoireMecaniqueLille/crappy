@@ -87,6 +87,15 @@ class SpotsBoxes:
     if len(self) > 1:
       x_centers = [spot.x_centroid for spot in self if spot is not None]
       y_centers = [spot.y_centroid for spot in self if spot is not None]
+      x_len, y_len = len(x_centers), len(y_centers)
+      x_centers = [el for el in x_centers if el is not None]
+      y_centers = [el for el in y_centers if el is not None]
+      if x_len != len(x_centers):
+        raise RuntimeError("One of the spot's x centroid wasn't computed as "
+                           "expected")
+      if y_len != len(y_centers):
+        raise RuntimeError("One of the spot's y centroid wasn't computed as "
+                           "expected")
       self.x_l0 = max(x_centers) - min(x_centers)
       self.y_l0 = max(y_centers) - min(y_centers)
 

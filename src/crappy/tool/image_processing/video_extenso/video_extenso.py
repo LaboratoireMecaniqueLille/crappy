@@ -123,6 +123,10 @@ class VideoExtensoTool:
   def __del__(self) -> None:
     """Security to ensure there are no zombie processes left when exiting."""
 
+    # Case of partly initialized object
+    if not hasattr(self, '_trackers') or not hasattr(self, '_pipes'):
+      return
+
     self.stop_tracking()
 
   def start_tracking(self) -> None:
@@ -218,6 +222,8 @@ class VideoExtensoTool:
     # Sending the latest sub-image containing the spot to track
     # Also sending the coordinates of the top left pixel
     for pipe, spot in zip(self._pipes, self.spots):
+      if spot is None:
+        continue
       x_top, x_bottom, y_left, y_right = spot.sorted()
       slice_y = slice(max(0, y_left - self._border),
                       min(img.shape[0], y_right + self._border))
@@ -289,6 +295,16 @@ class VideoExtensoTool:
     if len(self.spots) > 1:
       x = [spot.x_centroid for spot in self.spots if spot is not None]
       y = [spot.y_centroid for spot in self.spots if spot is not None]
+      # Double check that there's no None value
+      x_len, y_len = len(x), len(y)
+      x = [el for el in x if el is not None]
+      y = [el for el in y if el is not None]
+      if x_len != len(x):
+        raise RuntimeError("One of the spot's x centroid wasn't computed as "
+                           "expected")
+      if y_len != len(y):
+        raise RuntimeError("One of the spot's y centroid wasn't computed as "
+                           "expected")
       # The strain is calculated based on the positions of the extreme
       # spots in each direction
       try:
@@ -304,8 +320,13 @@ class VideoExtensoTool:
 
     # If only one spot was detected, the strain isn't computed
     else:
-      x = self.spots[0].x_centroid
-      y = self.spots[0].y_centroid
+      if (spot := self.spots[0]) is None:
+        raise RuntimeError("All the spots are None, this should not be")
+      x = spot.x_centroid
+      y = spot.y_centroid
+      if x is None or y is None:
+        raise RuntimeError("Cannot return the spot centroid, it was never "
+                           "computed!")
       return [(y, x)], 0.0, 0.0
 
   def _log(self, level: int, msg: str) -> None:
@@ -322,6 +343,8 @@ class VideoExtensoTool:
       self._logger = logging.getLogger(
         f"{current_process().name}.{type(self).__name__}")
 
+    if self._logger is None:
+      raise RuntimeError("The logger was never instantiated!")
     self._logger.log(level, msg)
 
   def _send(self,
@@ -363,5 +386,6 @@ class VideoExtensoTool:
     y_min_1, x_min_1, y_max_1, x_max_1 = prop_1.bbox
     y_min_2, x_min_2, y_max_2, x_max_2 = prop_2.bbox
 
-    return max((min(x_max_1, x_max_2) - max(x_min_1, x_min_2)), 0) * max(
-      (min(y_max_1, y_max_2) - max(y_min_1, y_min_2)), 0) > 0
+    return (max((int(min(x_max_1, x_max_2)) - int(max(x_min_1, x_min_2))), 0) *
+            max((int(min(y_max_1, y_max_2)) - int(max(y_min_1, y_min_2))), 0)
+            > 0)

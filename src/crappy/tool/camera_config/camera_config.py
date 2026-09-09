@@ -179,6 +179,8 @@ class CameraConfig(tk.Tk):
       self._logger = logging.getLogger(
         f"{current_process().name}.{type(self).__name__}")
 
+    if self._logger is None:
+      raise RuntimeError("The logger was never instantiated!")
     self._logger.log(level, msg)
 
   def report_callback_exception(self, exc: Exception, val: str, tb) -> None:
@@ -188,8 +190,9 @@ class CameraConfig(tk.Tk):
     .. versionadded:: 2.0.0
     """
 
-    self._logger.exception(f"Caught exception in {type(self).__name__}: "
-                           f"{exc.__name__}({val})", exc_info=tb)
+    if self._logger is not None:
+      self._logger.exception(f"Caught exception in {type(self).__name__}: "
+                             f"{exc.__name__}({val})", exc_info=tb)
     showerror("Error !", message=f"{exc.__name__}\n{val}")
 
   def finish(self) -> None:
@@ -1114,6 +1117,10 @@ class CameraConfig(tk.Tk):
         self.update()
         sleep(0.001)
         return
+
+    if ret is None:
+      raise RuntimeError("The returned metadata and image shouldn't be None "
+                         "at that point")
 
     # Always set, so that the error image is only ever loaded once
     self._got_first_img = True

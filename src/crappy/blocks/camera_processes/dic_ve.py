@@ -174,12 +174,18 @@ class DICVEProcess(CameraProcess):
 
         # On the first frame, initialize the correlation
         if not self._img0_set:
+          if self._disve is None:
+            raise RuntimeError("The DISVE tool should have been instantiated")
           self.log(logging.INFO, "Setting the reference image")
           self._disve.set_img0(np.copy(self.img))
           self._img0_set = True
           return
 
         # Calculating the displacement and sending it to downstream Blocks
+        if self._disve is None:
+          raise RuntimeError("The DISVE tool should have been instantiated")
+        if self.img is None:
+          raise RuntimeError("Trying to access the image but it doesn't exist")
         self.log(logging.DEBUG, "Processing the received image")
         data = self._disve.calculate_displacement(self.img)
         self.send([self.metadata['t(s)'], self.metadata, *data])
@@ -189,8 +195,9 @@ class DICVEProcess(CameraProcess):
 
       # If the patches are lost, deciding whether to raise exception or not
       except RuntimeError as exc:
-        self._logger.exception("Caught exception while processing patches!",
-                               exc_info=exc)
+        if self._logger is not None:
+          self._logger.exception("Caught exception while processing patches!",
+                                 exc_info=exc)
         self.log(logging.WARNING, "No longer processing data.\nThis may be "
                                   "due to a patch exiting the ROI")
         self._lost_patch = True

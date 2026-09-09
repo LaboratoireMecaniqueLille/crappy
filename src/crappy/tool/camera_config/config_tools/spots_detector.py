@@ -212,5 +212,6 @@ class SpotsDetector:
     y_min_1, x_min_1, y_max_1, x_max_1 = prop_1.bbox
     y_min_2, x_min_2, y_max_2, x_max_2 = prop_2.bbox
 
-    return max((min(x_max_1, x_max_2) - max(x_min_1, x_min_2)), 0) * max(
-      (min(y_max_1, y_max_2) - max(y_min_1, y_min_2)), 0) > 0
+    return (max((int(min(x_max_1, x_max_2)) - int(max(x_min_1, x_min_2))), 0) *
+            max((int(min(y_max_1, y_max_2)) - int(max(y_min_1, y_min_2))), 0)
+            > 0)

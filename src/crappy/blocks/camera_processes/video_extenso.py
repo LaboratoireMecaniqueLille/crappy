@@ -54,6 +54,16 @@ class VideoExtensoProcess(CameraProcess):
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` and
     starts tracking the spots."""
 
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+    if self._spots is None:
+      raise RuntimeError("At that point the spots to track should be set but "
+                         "they are not")
+    if self._thresh is None:
+      raise RuntimeError("At that point the threshold should be set but it is "
+                         "not")
+
     self.log(logging.INFO, "Instantiating the VideoExtenso tool")
     self._ve = VideoExtensoTool(spots=self._detector.spots,
                                 thresh=self._detector.thresh,
@@ -67,6 +77,9 @@ class VideoExtensoProcess(CameraProcess):
 
     self.log(logging.INFO, "Starting the VideoExtenso spot tracker "
                            "processes")
+    if self._ve is None:
+      raise RuntimeError("At that point the VideoExtensoTool should be set "
+                         "but it isn't")
     self._ve.start_tracking()
 
   def loop(self) -> None:
@@ -86,6 +99,11 @@ class VideoExtensoProcess(CameraProcess):
       # Processing the received frame
       try:
         self.log(logging.DEBUG, "Processing the received image")
+
+        if self._ve is None:
+          raise RuntimeError("The VideoExtensoTool isn't initialized")
+        if self.img is None:
+          raise RuntimeError("The image isn't initialized")
         
         # Sending the results to the downstream Blocks
         if (data := self._ve.get_data(self.img)) is not None:
@@ -96,8 +114,12 @@ class VideoExtensoProcess(CameraProcess):
 
       # In case the spots were just lost
       except LostSpotError:
-        self.log(logging.INFO, "Spots lost, stopping the spot trackers")
-        self._ve.stop_tracking()
+        if self._ve is None:
+          self.log(logging.ERROR, "Trying to stop the spot Trackers but they "
+                                  "are not initialized")
+        else:
+          self.log(logging.INFO, "Spots lost, stopping the spot trackers")
+          self._ve.stop_tracking()
         # Raising if specified by the user
         if self._raise_on_lost_spot:
           self.log(logging.ERROR, "Spots lost, stopping the VideoExtenso "

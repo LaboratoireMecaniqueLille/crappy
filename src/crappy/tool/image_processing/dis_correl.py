@@ -132,6 +132,9 @@ class DISCorrelTool:
 
     self._img0 = img0
     self._height, self._width, *_ = img0.shape
+    if self._width is None or self._height is None:
+      raise RuntimeError("The width and height of the reference image weren't "
+                         "set")
     self._dis_flow = np.zeros((self._height, self._width, 2))
 
   def set_box(self) -> None:
@@ -159,6 +162,8 @@ class DISCorrelTool:
 
     # These attributes will be used later
     self._base = [fields[:, :, :, i] for i in range(fields.shape[3])]
+    if self._base is None:
+      raise RuntimeError("The list of bases was not initialized")
     self._norm2 = [float(np.sum(base_field ** 2)) for base_field in self._base]
 
   def get_data(self,
@@ -194,6 +199,8 @@ class DISCorrelTool:
       self._dis_flow = self._dis.calc(self._img0, img, None)
 
     # Getting the values to calculate as floats
+    if self._norm2 is None:
+      raise RuntimeError("The list of norms2 was not initialized")
     ret = [float(np.sum(vec * self._crop(self._dis_flow))) / n2 for vec, n2 in
            zip(self._base, self._norm2)]
 

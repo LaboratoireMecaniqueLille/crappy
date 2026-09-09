@@ -174,12 +174,19 @@ class CameraProcess(Process, ABC):
       try:
         self.init()
       except (Exception,):
-        self._cam_barrier.abort()
-        self.log(logging.ERROR, "Breaking the barrier due to caught exception"
-                                " while preparing")
+        if self._cam_barrier is None:
+          self.log(logging.ERROR, "The camera Barrier should be aborted but "
+                                  "it doesn't exist!")
+        else:
+          self._cam_barrier.abort()
+          self.log(logging.ERROR, "Breaking the barrier due to caught "
+                                  "exception while preparing")
         raise
 
       # Waiting for all other CameraProcess to be ready
+      if self._cam_barrier is None:
+        raise RuntimeError("Cannot wait for the camera Barrier because it "
+                           "doesn't exist")
       self.log(logging.INFO, "Waiting for the other Camera processes to be "
                              "ready")
       self._cam_barrier.wait()
@@ -188,6 +195,9 @@ class CameraProcess(Process, ABC):
       self._last_fps = time()
 
       # Looping forever until told to stop or an exception is raised
+      if self._stop_event is None:
+        raise RuntimeError("Trying to read the stop Event but it doesn't "
+                           "exist")
       while not self._stop_event.is_set():
         # Only looping if a new image is available
         if self._get_data():
@@ -210,9 +220,13 @@ class CameraProcess(Process, ABC):
 
     # Case when CTRL+C was pressed
     except KeyboardInterrupt:
-      self.log(logging.INFO, "KeyboardInterrupt caught, stopping the "
-                             "processing")
-      self._stop_event.set()
+      if self._stop_event is None:
+        self.log(logging.ERROR, "Trying to set the stop Event but it doesn't "
+                                "exist")
+      else:
+        self.log(logging.INFO, "KeyboardInterrupt caught, stopping the "
+                               "processing")
+        self._stop_event.set()
 
     # Case when another CameraProcess raised an exception while initializing
     except BrokenBarrierError:
@@ -224,9 +238,13 @@ class CameraProcess(Process, ABC):
     except (Exception,) as exc:
       if self._logger is not None:
         self._logger.exception("Exception caught wile running !", exc_info=exc)
-      self.log(logging.ERROR, "Setting the stop event to stop the other "
-                              "Camera processes")
-      self._stop_event.set()
+      if self._stop_event is None:
+        self.log(logging.ERROR, "Trying to set the stop Event but it doesn't "
+                                "exist")
+      else:
+        self.log(logging.ERROR, "Setting the stop event to stop the other "
+                                "Camera processes")
+        self._stop_event.set()
       raise
 
     # Always calling finish in the end
@@ -236,14 +254,22 @@ class CameraProcess(Process, ABC):
       except KeyboardInterrupt:
         self.log(logging.WARNING, "KeyboardInterrupt caught while finishing, "
                                   "ignoring it")
-        self._stop_event.set()
+        if self._stop_event is None:
+          self.log(logging.ERROR, "Trying to set the stop Event but it doesn't"
+                                  " exist")
+        else:
+          self._stop_event.set()
       except (Exception,) as exc:
         if self._logger is not None:
           self._logger.exception("Exception caught while finishing !",
                                  exc_info=exc)
-        self.log(logging.ERROR, "Setting the stop event to stop the other "
-                                "Camera processes")
-        self._stop_event.set()
+        if self._stop_event is None:
+          self.log(logging.ERROR, "Trying to set the stop Event but it doesn't"
+                                  " exist")
+        else:
+          self.log(logging.ERROR, "Setting the stop event to stop the other "
+                                  "Camera processes")
+          self._stop_event.set()
 
   def init(self) -> None:
     """This method should perform any action required for initializing the
@@ -377,7 +403,12 @@ class CameraProcess(Process, ABC):
     """
 
     # Acquiring the Lock to avoid conflicts with other CameraProcesses
+    if self._lock is None:
+      raise RuntimeError("Trying to acquire the Lock but is doesn't exist")
     with self._lock:
+
+      if self._data_dict is None:
+        raise RuntimeError("The shared metadata dictionary wasn't initialized")
 
       # In case there's no frame grabbed yet
       if 'ImageUniqueID' not in self._data_dict:
@@ -394,6 +425,12 @@ class CameraProcess(Process, ABC):
                               f"{self.metadata['ImageUniqueID']}")
 
       # Copying the frame
+      if self._img_array is None:
+        raise RuntimeError("The shared image array isn't initialized")
+      if self._shape is None:
+        raise RuntimeError("The image shape isn't initialized")
+      if self.img is None:
+        raise RuntimeError("The image isn't initialized")
       np.copyto(self.img,
                 np.frombuffer(self._img_array.get_obj(),
                               dtype=self._dtype).reshape(self._shape))
@@ -415,6 +452,9 @@ class CameraProcess(Process, ABC):
       logger.setLevel(self._log_level)
     else:
       logging.disable()
+
+    if self._log_queue is None:
+      raise RuntimeError("The logging Queue isn't initialized")
 
     # On spawn and forkserver, the messages need to be sent through a Queue for
     # logging

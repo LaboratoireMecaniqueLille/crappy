@@ -328,17 +328,16 @@ class DISCorrel(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
+    # Make sure the patches are correctly provided
     if not config and patch is None:
       raise ValueError("If the config window is disabled, the patch must be "
                        "provided !")
-
     if patch is not None and (not isinstance(patch, tuple)
                               or len(patch) != 4
                               or not all(isinstance(val, int) for val in patch)
                               or not all(val >= 0 for val in patch)):
       raise ValueError("The patch should be provided as a tuple of 4 "
                        "positive integer values")
-
     if patch is not None and (patch[2] <= 0 or patch[3] <= 0):
       raise ValueError("The width and height of the patch must be "
                        "strictly positive integers")
@@ -386,6 +385,35 @@ class DISCorrel(Camera):
         "The number of fields is inconsistent with the number "
         "of labels !\nMake sure that the time label was given")
 
+    self.labels = _labels
+
+    if ((not isinstance(alpha, float) and not isinstance(alpha, int))
+        or alpha < 0):
+      raise ValueError("alpha must be a positive float")
+    if ((not isinstance(delta, float) and not isinstance(delta, int))
+        or delta < 0):
+      raise ValueError("delta must be a positive float")
+    if ((not isinstance(gamma, float) and not isinstance(gamma, int))
+        or gamma < 0):
+      raise ValueError("gamma must be a positive float")
+    if not isinstance(finest_scale, int) or finest_scale < 0:
+      raise ValueError("finest_scale must be a positive integer")
+    if not isinstance(iterations, int) or iterations < 0:
+      raise ValueError("iterations must be a positive integer")
+    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
+      raise ValueError("gradient_iterations must be a positive integer")
+    if not isinstance(patch_size, int) or patch_size < 0:
+      raise ValueError("patch_size must be a positive integer")
+    if not isinstance(patch_stride, int) or patch_stride < 0:
+      raise ValueError("patch_stride must be a positive integer")
+    if not isinstance(init, bool):
+      raise TypeError("init must be a boolean")
+    if not isinstance(residual, bool):
+      raise TypeError("residual must be a boolean")
+
+    self._patch_int: tuple[int, int, int, int] | None = patch
+    self._patch: Box | None = None
+
     # These arguments are for the DISCorrelProcess
     self._fields = fields
     self._alpha = alpha
@@ -420,6 +448,10 @@ class DISCorrel(Camera):
     else:
       self._patch = Box()
 
+    if self._patch is None:
+       raise RuntimeError("The patch should have been initialized at that "
+                          "point")
+
     # Instantiating the DISCorrelProcess
     self.process_proc = DISCorrelProcess(
         patch=self._patch,
@@ -442,6 +474,15 @@ class DISCorrel(Camera):
     :class:`~crappy.tool.camera_config.DISCorrelConfig` window for configuring
     the :class:`~crappy.camera.Camera` object.
     """
+
+    if self._camera is None:
+      raise RuntimeError("At that point the Camera should be set but it isn't")
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+    if self._patch is None:
+      raise RuntimeError("At that point the patch to track should be set but "
+                         "it is not")
 
     return DISCorrelConfig(self._camera, self._log_queue, self._log_level,
                            self.freq, self._patch)

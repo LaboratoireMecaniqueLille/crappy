@@ -335,6 +335,26 @@ class VideoExtenso(Camera):
 
     self._raise_on_lost_spot = raise_on_lost_spot
     self._spot_detector = SpotsDetector()
+    # Checking the validity of the provided arguments
+    if not isinstance(raise_on_lost_spot, bool):
+      raise TypeError("raise_on_lost_spot must be a boolean")
+    if not isinstance(white_spots, bool):
+      raise TypeError("white_spots must be a boolean")
+    if (num_spots is not None and
+        (not isinstance(num_spots, int) or not 0 < num_spots < 5)):
+      raise ValueError("When provided, num_spots must be an integer between "
+                       "1 and 4")
+    if not isinstance(min_area, int) or min_area < 0:
+      raise ValueError("min_area must be a positive integer")
+    if (blur is not None and
+        (not isinstance(blur, int) or blur < 1 or not blur % 2)):
+      raise ValueError("When provided, blur must be a positive odd integer")
+    if not isinstance(update_thresh, bool):
+      raise TypeError("update_thresh must be a boolean")
+    if not isinstance(safe_mode, bool):
+      raise TypeError("safe_mode must be a boolean")
+    if not isinstance(border, int) or border < 0:
+      raise ValueError("border must be a positive integer")
 
     # These arguments are for the SpotsDetector
     self._white_spots = white_spots
@@ -382,3 +402,9 @@ class VideoExtenso(Camera):
     return VideoExtensoConfig(self._camera, self._log_queue,
                               self._log_level, self.freq,
                               self._spot_detector)
+    if self._camera is None:
+      raise RuntimeError("At that point the Camera should be set but it isn't")
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+

@@ -96,6 +96,8 @@ class DICVEConfig(CameraConfigBoxes):
 
     self._patch_size = CameraScaleSetting("Patch size (px)", 2, 1024,
                                           default=128)
+    if self._patch_size is None:
+      raise RuntimeError("The patch size parameter was never instantiated")
     self._add_slider_setting(self._patch_size)
 
     super()._add_settings()
@@ -104,6 +106,8 @@ class DICVEConfig(CameraConfigBoxes):
     """Same as in the parent class except it also updates the Path size setting
     in addition to all the other settings."""
 
+    if self._patch_size is None:
+      raise RuntimeError("The patch size parameter was never instantiated")
     if self._patch_size.value != self._patch_size.tk_var.get():
       self._patch_size.value = self._patch_size.tk_var.get()
     self._patch_size.tk_var.set(self._patch_size.value)

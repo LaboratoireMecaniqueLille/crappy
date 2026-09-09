@@ -415,6 +415,38 @@ class DICVE(Camera):
     self._raise_on_exit = raise_on_patch_exit
     self._patches_int = list(patches) if patches is not None else None
 
+    # Checking the validity of the provided arguments
+    if method not in ('Disflow', 'Lucas Kanade',
+                      'Pixel precision', 'Parabola'):
+      raise ValueError("The method argument should be one of 'Disflow', "
+                       "'Lucas Kanade', 'Pixel precision', 'Parabola'")
+    if ((not isinstance(alpha, float) and not isinstance(alpha, int))
+        or alpha < 0):
+      raise ValueError("alpha must be a positive float")
+    if ((not isinstance(delta, float) and not isinstance(delta, int))
+        or delta < 0):
+      raise ValueError("delta must be a positive float")
+    if ((not isinstance(gamma, float) and not isinstance(gamma, int))
+        or gamma < 0):
+      raise ValueError("gamma must be a positive float")
+    if not isinstance(finest_scale, int) or finest_scale < 0:
+      raise ValueError("finest_scale must be a positive integer")
+    if not isinstance(iterations, int) or iterations < 0:
+      raise ValueError("iterations must be a positive integer")
+    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
+      raise ValueError("gradient_iterations must be a positive integer")
+    if not isinstance(patch_size, int) or patch_size < 0:
+      raise ValueError("patch_size must be a positive integer")
+    if not isinstance(patch_stride, int) or patch_stride < 0:
+      raise ValueError("patch_stride must be a positive integer")
+    if ((not isinstance(border, float) and not isinstance(border, int))
+        or not 0 <= border <= 1):
+      raise ValueError("border must be a float between 0 and 1")
+    if not isinstance(safe, bool):
+      raise TypeError("safe must be a boolean")
+    if not isinstance(follow, bool):
+      raise TypeError("follow must be a boolean")
+
     # These arguments are for the DICVEProcess
     self._method = method
     self._alpha = alpha
@@ -443,11 +475,14 @@ class DICVE(Camera):
 
     # Instantiating the SpotsBoxes containing the patches to track
     self._patches = SpotsBoxes()
-    if self._patches_int is not None:
+    if self._patches_int is not None and self._patches is not None:
       self._patches.set_spots(self._patches_int)
       self._patches.save_length()
 
     # Instantiating the DICVEProcess
+    if self._patches is None:
+       raise RuntimeError("The patches should have been initialized at that "
+                          "point")
     self.process_proc = DICVEProcess(
         patches=self._patches,
         method=self._method,
@@ -471,6 +506,15 @@ class DICVE(Camera):
     :class:`~crappy.tool.camera_config.DICVEConfig` window for configuring the
     :class:`~crappy.camera.Camera` object.
     """
+
+    if self._camera is None:
+      raise RuntimeError("At that point the Camera should be set but it isn't")
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+    if self._patches is None:
+      raise RuntimeError("At that point the patches to track should be set "
+                         "but they are not")
 
     return DICVEConfig(self._camera, self._log_queue, self._log_level,
                        self.freq, self._patches)

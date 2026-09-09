@@ -148,6 +148,9 @@ class DISCorrelProcess(CameraProcess):
         gradient_iterations=self._gradient_iterations,
         patch_size=self._patch_size,
         patch_stride=self._patch_stride)
+
+    if self._dis_correl is None:
+      raise RuntimeError("The DISCOrrelTool wasn't properly set")
     self._dis_correl.set_box()
 
   def loop(self) -> None:
@@ -163,12 +166,18 @@ class DISCorrelProcess(CameraProcess):
 
     # On the first frame, initializes the dense inverse search
     if not self._img0_set:
+      if self._dis_correl is None:
+        raise RuntimeError("The DISCorrel tool should have been instantiated")
       self.log(logging.INFO, "Setting the reference image")
       self._dis_correl.set_img0(np.copy(self.img))
       self._img0_set = True
       return
 
     # Calculating the fields and sending them to downstream Blocks
+    if self._dis_correl is None:
+      raise RuntimeError("The DISCorrel tool should have been instantiated")
+    if self.img is None:
+      raise RuntimeError("Trying to access the image but it doesn't exist")
     self.log(logging.DEBUG, "Processing the received image")
     data = self._dis_correl.get_data(self.img, self._residual)
     self.send([self.metadata['t(s)'], self.metadata, *data])

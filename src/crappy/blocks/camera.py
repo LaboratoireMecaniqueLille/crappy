@@ -298,6 +298,56 @@ class Camera(Block):
     else:
       Camera.cam_count[self._camera_name] += 1
 
+    # Checking the validity of the provided arguments
+    if transform is not None and not callable(transform):
+      raise TypeError("When provided, transform must be a callable")
+    if not isinstance(config, bool):
+      raise TypeError("config must be a boolean")
+    if not isinstance(display_images, bool):
+      raise TypeError("display_images must be a boolean")
+    if (displayer_backend is not None 
+        and displayer_backend not in ('cv2', 'mpl')):
+      raise ValueError("displayer_backend must be one of 'cv2' or 'mpl'")
+    if (not isinstance(displayer_framerate, float) and 
+        not isinstance(displayer_framerate, int)) or displayer_framerate <= 0:
+      raise ValueError("displayer_framerate must be a strictly positive float")
+    if (software_trig_label is not None and 
+        (not isinstance(software_trig_label, str) or not software_trig_label)):
+      raise ValueError("When provided, software_trig_label must be a "
+                       "non-empty string")
+    if not isinstance(save_images, bool):
+      raise TypeError("save_images must be a boolean")
+    if not isinstance(img_extension, str):
+      raise TypeError("img_extension must be a string")
+    if not img_extension and (save_backend is None or save_backend != 'npy'):
+      raise ValueError("img_extension must be a non-empty string")
+    if (save_folder is not None and 
+        ((not isinstance(save_folder, str) or not save_folder) 
+         and not isinstance(save_folder, Path))):
+      raise ValueError("When provided, save_folder must be a non-empty string "
+                       "or a Path")
+    if not isinstance(save_period, int) or save_period < 1:
+      raise ValueError("save_period must be a strictly positive integer")
+    if save_backend is not None and save_backend not in ('sitk', 'pil', 
+                                                         'cv2', 'npy'):
+      raise ValueError("When provided, save_backend must be one of 'sitk', "
+                       "'pil', 'cv2', 'npy'")
+    if image_generator is not None and not callable(image_generator):
+      raise TypeError("When provided, image_generator must be a callable")
+    if img_shape is not None and not isinstance(img_shape, tuple):
+      raise TypeError("When provided, img_shape must be a tuple of 2 or 3 "
+                      "strictly positive integers")
+    if img_shape is not None and not 1 < len(img_shape) < 4:
+      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
+                       "strictly positive integers")
+    if (img_shape is not None and 
+        not all(isinstance(el, int) for el in img_shape)):
+      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
+                       "strictly positive integers")
+    if (img_dtype is not None and 
+        (not isinstance(img_dtype, str) or not img_dtype)):
+      raise ValueError("When provided, img_dtype must be a non-empty string")
+
     # Setting the other attributes
     self._trig_label = software_trig_label
     self._config_cam = config
@@ -368,6 +418,8 @@ class Camera(Block):
     self.log(logging.DEBUG, "Instantiating the multiprocessing "
                             "synchronization objects")
     self._manager = Manager()
+    if self._manager is None:
+      raise RuntimeError("The Manager wasn't instantiated, aborting")
     self._metadata = self._manager.dict()
     self._stop_event_cam = Event()
     self._overlay_conn_in, self._overlay_conn_out = Pipe()
@@ -408,6 +460,8 @@ class Camera(Block):
     if self._image_generator is not None:
       self.log(logging.INFO, "Setting the image generator camera")
       self._camera = DummyCam()
+      if self._camera is None:
+        raise RuntimeError("The Camera wasn't set whereas it should be")
       self._camera.add_scale_setting('Exx', -100., 100., None, None, 0.)
       self._camera.add_scale_setting('Eyy', -100., 100., None, None, 0.)
       img = self._image_generator(0, 0)
@@ -426,6 +480,8 @@ class Camera(Block):
     # Instantiating the Camera object for acquiring the images
     else:
       self._camera = camera_dict[self._camera_name]()
+      if self._camera is None:
+        raise RuntimeError("The Camera wasn't set whereas it should be")
       self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
       self._camera.open(**self._camera_kwargs)
       self.log(logging.INFO, f"Opened the {self._camera_name} Camera")
@@ -444,16 +500,23 @@ class Camera(Block):
       setattr(self._camera, self._camera.trigger_name, 'Hardware')
 
     # Ensuring a dtype and a shape were given for the image
-    if self._img_dtype is None or self._img_shape is None:
+    if self._img_dtype is None:
       raise ValueError(f"Cannot launch the Camera processes for camera "
-                       f"{self._camera_name} as the image shape and/or dtype "
-                       f"wasn't specified.\n Please specify it in the args, or"
-                       f" enable the configuration window.")
+                       f"{self._camera_name} as the image dtype wasn't "
+                       f"specified.\n Please specify it in the args, or "
+                       f"enable the configuration window.")
+    if self._img_shape is None:
+      raise ValueError(f"Cannot launch the Camera processes for camera "
+                       f"{self._camera_name} as the image shape wasn't "
+                       f"specified.\n Please specify it in the args, or "
+                       f"enable the configuration window.")
 
     # Instantiating the Array for sharing the frames with the CameraProcesses
     self.log(logging.DEBUG, "Instantiating the shared objects")
     self._img_array = Array(np.ctypeslib.as_ctypes_type(self._img_dtype),
                             int(np.prod(self._img_shape)))
+    if self._img_array is None:
+      raise RuntimeError("Couldn't initialized the shared image array")
     self._img = np.frombuffer(self._img_array.get_obj(),
                               dtype=self._img_dtype).reshape(self._img_shape)
 
@@ -464,6 +527,21 @@ class Camera(Block):
       overlay_conn = (self._overlay_conn_in if self._display_proc is not None
                       else None)
       labels = self.labels if self.labels is not None else None
+      if self._metadata is None:
+        raise RuntimeError("The shared metadata isn't initialized when it "
+                           "should be")
+      if self._proc_lock is None:
+        raise RuntimeError("The processing Lock isn't initialized when it "
+                           "should be")
+      if self._cam_barrier is None:
+        raise RuntimeError("The camera barrier isn't initialized when it "
+                           "should be")
+      if self._stop_event_cam is None:
+        raise RuntimeError("The camera stop Event isn't initialized when it "
+                           "should be")
+      if self._log_queue is None:
+        raise RuntimeError("The logging Queue isn't initialized when it "
+                           "should be")
       self.process_proc.set_shared(array=self._img_array,
                                    data_dict=self._metadata,
                                    lock=self._proc_lock,
@@ -484,6 +562,21 @@ class Camera(Block):
     if self._save_proc is not None:
       self.log(logging.DEBUG, "Sharing the synchronization objects with the "
                               "image saver process")
+      if self._metadata is None:
+        raise RuntimeError("The shared metadata isn't initialized when it "
+                           "should be")
+      if self._save_lock is None:
+        raise RuntimeError("The saving Lock isn't initialized when it "
+                           "should be")
+      if self._cam_barrier is None:
+        raise RuntimeError("The camera barrier isn't initialized when it "
+                           "should be")
+      if self._stop_event_cam is None:
+        raise RuntimeError("The camera stop Event isn't initialized when it "
+                           "should be")
+      if self._log_queue is None:
+        raise RuntimeError("The logging Queue isn't initialized when it "
+                           "should be")
       self._save_proc.set_shared(array=self._img_array,
                                  data_dict=self._metadata,
                                  lock=self._save_lock,
@@ -504,6 +597,21 @@ class Camera(Block):
     if self._display_proc is not None:
       self.log(logging.DEBUG, "Sharing the synchronization objects with the "
                               "image displayer process")
+      if self._metadata is None:
+        raise RuntimeError("The shared metadata isn't initialized when it "
+                           "should be")
+      if self._disp_lock is None:
+        raise RuntimeError("The display Lock isn't initialized when it "
+                           "should be")
+      if self._cam_barrier is None:
+        raise RuntimeError("The camera barrier isn't initialized when it "
+                           "should be")
+      if self._stop_event_cam is None:
+        raise RuntimeError("The camera stop Event isn't initialized when it "
+                           "should be")
+      if self._log_queue is None:
+        raise RuntimeError("The logging Queue isn't initialized when it "
+                           "should be")
       self._display_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._disp_lock,
@@ -522,6 +630,9 @@ class Camera(Block):
 
     # Waiting for all the Processes to be ready
     try:
+      if self._cam_barrier is None:
+        raise RuntimeError("Should wait for the camera Barrier but it doesn't "
+                           "exist!")
       self.log(logging.INFO, "Waiting for all Camera processes to be ready")
       self._cam_barrier.wait()
       self.log(logging.INFO, "All Camera processes ready now")
@@ -554,6 +665,9 @@ class Camera(Block):
     """
 
     # Signaling all the Blocks to stop if a CameraProcess crashed
+    if self._stop_event_cam is None:
+      raise RuntimeError("Trying to set the Camera stop Event but it doesn't "
+                         "exist")
     if self._stop_event_cam.is_set():
       raise CameraRuntimeError
 
@@ -576,6 +690,8 @@ class Camera(Block):
         self._camera.Eyy = data['Eyy(%)']
 
     # Grabbing the frame from the Camera object
+    if self._camera is None:
+      raise RuntimeError("The Camera wasn't set whereas it should be")
     if (ret := self._camera.get_image()) is None:
       return
     metadata, img = ret
@@ -589,7 +705,11 @@ class Camera(Block):
                   'ImageUniqueID': self._loop_count}
 
     # Making the timestamp relative to the beginning of the test
-    metadata['t(s)'] -= self.t0
+    if isinstance(metadata, dict) and 't(s)' in metadata:
+      metadata['t(s)'] -= self.t0
+    else:
+      raise ValueError("At that point, the metadata must be a dictionary "
+                       "containing a 't(s)' key")
 
     # Applying the transform function if one as provided
     if self._transform is not None:
@@ -598,10 +718,23 @@ class Camera(Block):
     # Copying the metadata and the acquired frame into the shared objects for 
     # transfer to the CameraProcesses
     # This is done with all the Locks acquired to avoid any conflict
+    if self._save_lock is None:
+      raise RuntimeError("The saving Lock isn't initialized when it "
+                         "should be")
+    if self._disp_lock is None:
+      raise RuntimeError("The display Lock isn't initialized when it "
+                         "should be")
+    if self._proc_lock is None:
+      raise RuntimeError("The processing Lock isn't initialized when it "
+                         "should be")
     with self._save_lock, self._disp_lock, self._proc_lock:
+      if self._metadata is None:
+        raise RuntimeError("The shared metadata dictionary isn't initialized")
       self.log(logging.DEBUG, f"Writing metadata to shared dict: {metadata}")
       self._metadata.clear()
       self._metadata.update(metadata)
+      if self._img is None:
+        raise RuntimeError("The shared image array isn't initialized")
       self.log(logging.DEBUG, "Writing image to shared array")
       np.copyto(self._img, img)
 
@@ -683,8 +816,10 @@ class Camera(Block):
 
     # If an exception is raised in the config window, closing it before raising
     except (Exception,) as exc:
-      self._logger.exception("Caught exception in the configuration window !",
-                             exc_info=exc)
+      # Not much we can do if there's no logger set to report Exception
+      if self._logger is not None:
+        self._logger.exception("Caught exception in the configuration "
+                               "window !", exc_info=exc)
       if config is not None:
         config.stop()
       raise CameraConfigError
@@ -703,6 +838,11 @@ class Camera(Block):
     image processing Blocks rely on subclasses of
     :class:`~crappy.tool.camera_config.CameraConfig`.
     """
+
+    if self._camera is None:
+      raise RuntimeError("The Camera was never initialized")
+    if self._log_queue is None:
+      raise RuntimeError("The logging Queue was never initialized")
 
     return CameraConfig(self._camera, self._log_queue,
                         self._log_level, self.freq)
