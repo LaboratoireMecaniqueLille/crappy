@@ -29,11 +29,16 @@ class SpotsDetector:
   It takes an image from a :class:`~crappy.tool.camera_config.CameraConfig`
   window as an input of the :meth:`detect_spots` method, and tries to detect
   the requested number of spots on it. It then stores the position and size of
-  the detected spots, to pass them later on to the
-  :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` along
-  with other variables once the CameraConfig window is closed.
+  the detected spots and the calculated threshold. In the VideoExtenso
+  workflow, the
+  :class:`~crappy.tool.camera_config.VideoExtensoConfig` window creates and
+  owns this object, then exports only those detection results to the processing
+  layer through its
+  :meth:`~crappy.tool.camera_config.VideoExtensoConfig.get_config` method.
 
   .. versionadded:: 2.0.0
+  .. versionchanged:: 2.1.0 owned by VideoExtensoConfig instead of the public
+     VideoExtenso Block
   """
 
   def __init__(self,
@@ -48,9 +53,7 @@ class SpotsDetector:
 
     Args:
       white_spots: If :obj:`True`, detects white spots over a black background.
-        If :obj:`False`, detects black spots over a white background. Also
-        passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
+        If :obj:`False`, detects black spots over a white background.
       num_spots: The number of spots to detect, as an :obj:`int` between `1`
         and `4`. If given, will try to detect exactly that number of spots and
         will fail if not enough spots can be detected. If left to :obj:`None`,
@@ -62,32 +65,29 @@ class SpotsDetector:
       blur: An :obj:`int`, odd and greater than `1`, defining the size of the
         kernel to use when applying a median blur filter to the image before
         trying to detect spots. Can also be set to :obj:`None`, in which case
-        no median blur filter is applied before detecting the spots. Also
-        passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
+        no median blur filter is applied before detecting the spots.
       update_thresh: If :obj:`True`, the grey level threshold for detecting
         the spots is re-calculated at each new image. Otherwise, the first
         calculated threshold is kept for the entire test. The spots are less
         likely to be lost with adaptive threshold, but the measurement will be
         more noisy. Adaptive threshold may also yield inconsistent results when
-        spots are lost. Passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` 
-        and not used in this class.
+        spots are lost. This setting is not used during initial detection; the
+        VideoExtenso Block supplies it separately to the runtime processing
+        layer.
       safe_mode: If :obj:`True`, will stop and raise an exception as soon as
         overlapping spots are detected. Otherwise, will first try to reduce the
         detection window to get rid of overlapping. This argument should be
         used when inconsistency in the results may have critical consequences.
-        Passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` 
-        and not used in this class.
+        This setting is not used during initial detection; the VideoExtenso
+        Block supplies it separately to the runtime processing layer.
       border: When searching for the new position of a spot, will search in the
         last known bounding box of this spot plus a few additional pixels in
         each direction. This argument sets the number of additional pixels to
         use. It should be greater than the expected "speed" of the spots, in
         pixels / frame. But if set too high, noise or other spots might hinder
-        the detection. Passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` 
-        and not used in this class.
+        the detection. This setting is not used during initial detection; the
+        VideoExtenso Block supplies it separately to the runtime processing
+        layer.
     """
 
     self.white_spots = white_spots

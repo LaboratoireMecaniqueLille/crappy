@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
-from ..tool.camera_config import VideoExtensoConfig, SpotsDetector
+from ..tool.camera_config import VideoExtensoConfig
 
 
 class VideoExtenso(Camera):
@@ -36,9 +36,22 @@ class VideoExtenso(Camera):
   currently not possible to specify the coordinates of the spots to track as an
   argument, so the use of the configuration window is mandatory. This might
   change in the future.
+
+  This public Block is the orchestration layer and does not construct the
+  low-level video-extensometry helpers itself. The
+  :class:`~crappy.tool.camera_config.VideoExtensoConfig` window owns the
+  :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` used for the
+  initial selection. The
+  :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` later creates
+  the :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`,
+  which in turn creates and manages one
+  :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` process
+  per spot.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from Video_extenso to VideoExtenso
+  .. versionchanged:: 2.1.0 delegates creation of detection, processing, and
+     tracking helpers to their owning configuration and processing layers
   """
 
   def __init__(self,
@@ -346,7 +359,9 @@ class VideoExtenso(Camera):
     if not isinstance(border, int) or border < 0:
       raise ValueError("border must be a positive integer")
 
-    # These arguments are for the SpotsDetector
+    self._raise_on_lost_spot: bool = raise_on_lost_spot
+
+    # Options forwarded to the configuration and processing layers
     self._white_spots: bool = white_spots
     self._num_spots: int | None = num_spots
     self._min_area: int = min_area
@@ -361,40 +376,53 @@ class VideoExtenso(Camera):
 
     In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` object that
-    performs the video-extensometry and the tracking.
+    owns runtime video-extensometry and tracking. Initial spot detection is
+    deliberately left to the
+    :class:`~crappy.tool.camera_config.VideoExtensoConfig` created by
+    :meth:`~crappy.blocks.Camera._configure`.
     
     .. versionchanged:: 1.5.5 now accepting args and kwargs
     .. versionchanged:: 1.5.10 not accepting arguments anymore
     """
 
-    # Instantiating the SpotsDetector containing the spots to track
-    self._spot_detector = SpotsDetector(white_spots=self._white_spots,
-                                        num_spots=self._num_spots,
-                                        min_area=self._min_area,
-                                        blur=self._blur,
-                                        update_thresh=self._update_thresh,
-                                        safe_mode=self._safe_mode,
-                                        border=self._border)
-
     # Instantiating the VideoExtensoProcess
     self.process_proc = VideoExtensoProcess(
-      detector=self._spot_detector,
-      raise_on_lost_spot=self._raise_on_lost_spot)
+        white_spots=self._white_spots,
+        num_spots=self._num_spots,
+        min_area=self._min_area,
+        blur=self._blur,
+        update_thresh=self._update_thresh,
+        safe_mode=self._safe_mode,
+        border=self._border,
+        raise_on_lost_spot=self._raise_on_lost_spot)
 
     super().prepare()
 
   def _configure(self) -> VideoExtensoConfig:
-    """This method should instantiate the
+    """Instantiates the
     :class:`~crappy.tool.camera_config.VideoExtensoConfig` window for
-    configuring the :class:`~crappy.camera.Camera` object.
+    configuring the :class:`~crappy.camera.Camera` object and selecting the
+    spots.
+
+    The window creates and owns its spot detector. Once it closes,
+    :meth:`crappy.tool.camera_config.VideoExtensoConfig.get_config` exports
+    only the selected spots and detection threshold to the processing process.
     """
 
-    return VideoExtensoConfig(self._camera, self._log_queue,
-                              self._log_level, self.freq,
-                              self._spot_detector)
     if self._camera is None:
       raise RuntimeError("At that point the Camera should be set but it isn't")
     if self._log_queue is None:
       raise RuntimeError("At that point the log_queue should be set but it "
                          "isn't")
 
+    return VideoExtensoConfig(self._camera,
+                              self._log_queue,
+                              self._log_level,
+                              self.freq,
+                              white_spots=self._white_spots,
+                              num_spots=self._num_spots,
+                              min_area=self._min_area,
+                              blur=self._blur,
+                              update_thresh=self._update_thresh,
+                              safe_mode=self._safe_mode,
+                              border=self._border)

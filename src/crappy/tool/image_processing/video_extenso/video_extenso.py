@@ -22,6 +22,11 @@ class VideoExtensoTool:
   image. For each spot, the tracking is performed by an independent
   :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` Process.
 
+  This tool is created by
+  :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` and owns the
+  creation, communication, and shutdown of those Tracker processes; the public
+  :class:`~crappy.blocks.VideoExtenso` Block does not manage them directly.
+
   It is possible to track only one spot, in which case only the position of its
   center is returned and the strain values are left to `0`.
   
