@@ -1,7 +1,6 @@
 # coding: utf-8
 
-from multiprocessing import Pipe, current_process
-from multiprocessing.connection import Connection
+from multiprocessing import Pipe, current_process, connection
 from multiprocessing.queues import Queue
 import numpy as np
 from itertools import combinations
@@ -102,7 +101,7 @@ class VideoExtensoTool:
     # These attributes will be used later
     self._consecutive_overlaps = 0
     self._trackers = list()
-    self._pipes = list()
+    self._pipes: list[connection.Connection] = list()
 
     # Setting the args
     self._white_spots = white_spots
@@ -348,7 +347,7 @@ class VideoExtensoTool:
     self._logger.log(level, msg)
 
   def _send(self,
-            conn: Connection,
+            conn: connection.Connection,
             val: tuple[int, int, np.ndarray] | tuple[str, str, str]) -> None:
     """Wrapper for sending messages to the Tracker processes.
 

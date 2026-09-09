@@ -1,11 +1,8 @@
 # coding: utf-8
 
 from multiprocessing import (Process, managers, get_start_method,
-                             current_process)
-from multiprocessing.synchronize import Event, RLock, Barrier
-from multiprocessing.sharedctypes import SynchronizedArray
-from multiprocessing.connection import Connection
-from multiprocessing.queues import Queue
+                             current_process, sharedctypes, connection,
+                             synchronize, queues)
 from threading import BrokenBarrierError
 import numpy as np
 from typing import Any
@@ -58,18 +55,18 @@ class CameraProcess(Process, ABC):
     self._system = system()
 
     # Logging-related objects
-    self._log_queue: Queue | None = None
+    self._log_queue: queues.Queue | None = None
     self._logger: logging.Logger | None = None
     self._log_level: int | None = None
 
     # These objects will be shared later by the Camera Block
-    self._img_array: SynchronizedArray | None = None
+    self._img_array: sharedctypes.SynchronizedArray | None = None
     self._data_dict: managers.DictProxy | None = None
-    self._lock: RLock | None = None
-    self._cam_barrier: Barrier | None = None
-    self._stop_event: Event | None = None
+    self._lock: synchronize.RLock | None = None
+    self._cam_barrier: synchronize.Barrier | None = None
+    self._stop_event: synchronize.Event | None = None
     self._shape: tuple[int, int] | tuple[int, int, int] | None = None
-    self._to_draw_conn: Connection | None = None
+    self._to_draw_conn: connection.Connection | None = None
     self._outputs: list[Link] = list()
     self._labels: Sequence[str] | None = list()
     self.img: np.ndarray | None = None
@@ -84,17 +81,17 @@ class CameraProcess(Process, ABC):
     self._last_fps = time()
 
   def set_shared(self,
-                 array: SynchronizedArray,
+                 array: sharedctypes.SynchronizedArray,
                  data_dict: managers.DictProxy,
-                 lock: RLock,
-                 barrier: Barrier,
-                 event: Event,
+                 lock: synchronize.RLock,
+                 barrier: synchronize.Barrier,
+                 event: synchronize.Event,
                  shape: tuple[int, int] | tuple[int, int, int],
                  dtype,
-                 to_draw_conn: Connection | None,
+                 to_draw_conn: connection.Connection | None,
                  outputs: list[Link],
                  labels: Sequence[str] | None,
-                 log_queue: Queue,
+                 log_queue: queues.Queue,
                  log_level: int | None = 20,
                  display_freq: bool = False) -> None:
     """Method allowing the :class:`~crappy.blocks.Camera` Block to share

@@ -7,8 +7,8 @@ import numpy as np
 from time import time, sleep, strftime, gmtime
 from types import MethodType
 from typing import Any
-from multiprocessing import Array, Manager, Event, RLock, Pipe, Barrier
-from multiprocessing.sharedctypes import SynchronizedArray
+from multiprocessing import (Array, Manager, Event, RLock, Pipe, Barrier,
+                             sharedctypes)
 from multiprocessing import managers, synchronize, connection
 from threading import BrokenBarrierError
 import logging
@@ -358,7 +358,7 @@ class Camera(Block):
     self._camera_kwargs = kwargs
 
     # The synchronization objects are initialized later
-    self._img_array: SynchronizedArray | None = None
+    self._img_array: sharedctypes.SynchronizedArray | None = None
     self._img: np.ndarray | None = None
     self._metadata: managers.DictProxy | None = None
     self._cam_barrier: synchronize.Barrier | None = None
