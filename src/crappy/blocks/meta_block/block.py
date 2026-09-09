@@ -41,10 +41,20 @@ class Block(Process, ABC):
   This class also contains the class methods that allow driving a script with
   Crappy. They are always called in the `__main__` Process, and drive the
   execution of all the children Blocks.
+
+  The public execution settings :attr:`~crappy.blocks.Block.niceness`,
+  :attr:`~crappy.blocks.Block.labels`, :attr:`~crappy.blocks.Block.freq`,
+  :attr:`~crappy.blocks.Block.display_freq`,
+  :attr:`~crappy.blocks.Block.name`, :attr:`~crappy.blocks.Block.pausable`, and
+  :attr:`~crappy.blocks.Block.is_vision_block` are validated properties. Child
+  classes should set these public properties rather than their private backing
+  attributes.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.8 remove metaclass and perform checks in
      __init_subclass__
+  .. versionchanged:: 2.1.0 execution settings are exposed as validated
+     properties rather than plain attributes
   """
 
   instances = WeakSet()
@@ -92,14 +102,14 @@ class Block(Process, ABC):
     self.outputs: list[Link] = list()
     self.inputs: list[Link] = list()
 
-    # Various objects that should be set by child classes
-    self.niceness: int = 0
-    self.labels: Sequence[str] | None = None
-    self.freq: float | None = None
-    self.display_freq: bool = False
-    self.name: str = self.get_name(type(self).__name__)
-    self.pausable: bool = True
-    self.is_vision_block: bool = False
+    # Hidden containers for properties, can be set by children classes
+    self._display_freq: bool = False
+    self._niceness: int = 0
+    self._labels: Sequence[str] | None = None
+    self._freq: float | None = None
+    self._name: str = self.get_name(type(self).__name__)
+    self._pausable: bool = True
+    self._is_vision_block: bool = False
 
     # The synchronization objects will be set later
     self._instance_t0: sharedctypes.Synchronized | None = None
@@ -138,7 +148,7 @@ class Block(Process, ABC):
   def get_name(cls, name: str) -> str:
     """Method attributing to each new Block a unique name, based on the name of
     the class and the number of existing instances for this class.
-    
+
     .. versionadded:: 2.0.0
     """
 
@@ -222,7 +232,7 @@ class Block(Process, ABC):
         possible levels.
 
         .. versionadded:: 2.0.0
-    
+
     .. versionremoved:: 2.0.0 *verbose* argument
     """
 
@@ -1339,6 +1349,155 @@ class Block(Process, ABC):
       return self._instance_t0.value
     else:
       raise T0NotSetError
+
+  @property
+  def niceness(self) -> int:
+    """Niceness of the Block on Unix systems, from `-20` to `19`.
+
+    Not used on other systems (typically Windows).
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._niceness
+
+  @niceness.setter
+  def niceness(self, val: int) -> None:
+    if not isinstance(val, int):
+      raise TypeError("The niceness must be an integer")
+    if not -20 <= val <= 19:
+      raise ValueError("The niceness must be between -20 and 19")
+    self._niceness = val
+
+  @property
+  def labels(self) -> Sequence[str] | None:
+    """Unique labels naming the values sent to downstream Blocks.
+
+    Must be a sequence containing only strings, or :obj:`None` when data will
+    be sent as dictionaries.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._labels
+
+  @labels.setter
+  def labels(self, val: Sequence[str] | None) -> None:
+    # checking that the labels is not a string
+    if val is not None and isinstance(val, str):
+      raise TypeError("The labels must be a Sequence of strings or None")
+    # Checking that the labels is a valid Sequence type
+    if val is not None and not isinstance(val, Sequence):
+      raise TypeError("The labels must be a Sequence of strings or None")
+    # Checking that the labels is a Sequence of strings only
+    if val is not None and not all(isinstance(label, str) for label in val):
+      non_str = [label for label in val if not isinstance(label, str)]
+      raise ValueError(f"Some labels are not strings: "
+                       f"{', '.join(map(repr, non_str))}")
+    # Checking that there are no duplicate labels
+    if val is not None and len(set(val)) != len(val):
+      raise ValueError("Duplicate labels provided in the list of labels!")
+
+    self._labels = val
+
+  @property
+  def freq(self) -> float | None:
+    """Target looping frequency of the Block, in Hz.
+
+    Positive integer and floats are accepted. If :obj:`None`, the Block tries
+    to loop as fast as possible.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._freq
+
+  @freq.setter
+  def freq(self, val: float | None) -> None:
+    if (val is not None and not isinstance(val, float)
+        and not isinstance(val, int)):
+      raise TypeError("The freq must be a float or None")
+    if val is not None and val <= 0:
+      raise ValueError("The freq must be a strictly positive float")
+    self._freq = None if val is None else float(val)
+
+  @property
+  def display_freq(self) -> bool:
+    """Whether to periodically display the achieved frequency in the logs.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._display_freq
+
+  @display_freq.setter
+  def display_freq(self, val: bool) -> None:
+    if not isinstance(val, bool):
+      raise TypeError("display_freq must be a boolean")
+    self._display_freq = val
+
+  @property
+  def name(self) -> str:
+    """Unique, non-empty name of the Block used in log messages.
+
+    Assigning a new name also updates Crappy's global Block-name registry.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._name
+
+  @name.setter
+  def name(self, val: str) -> None:
+    # Checking that the name is a valid string
+    if not isinstance(val, str):
+      raise TypeError("The name must be a string")
+    if not val:
+      raise ValueError("The name must be a non-empty string")
+    # Checking that the name doesn't already exist
+    if val != self._name and val in self.names:
+      raise ValueError(f"The name {val} is already in use by another Block!")
+    # Set new name and update the list of names currently in use
+    if self._name in self.names:
+      self.names.remove(self._name)
+    self._name = val
+    self.names.append(val)
+
+  @property
+  def pausable(self) -> bool:
+    """Whether the Block can be paused by Crappy.
+
+    A non-pausable Block keeps running while the other Blocks are paused.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._pausable
+
+  @pausable.setter
+  def pausable(self, val: bool) -> None:
+    if not isinstance(val, bool):
+      raise TypeError("pausable must be a boolean")
+    self._pausable = val
+
+  @property
+  def is_vision_block(self) -> bool:
+    """Whether the Block can be connected through a
+    :class:`~crappy.links.ImageLink`.
+
+    This property is normally set by image-oriented Block base classes rather
+    than by users.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._is_vision_block
+
+  @is_vision_block.setter
+  def is_vision_block(self, val: bool) -> None:
+    if not isinstance(val, bool):
+      raise TypeError("is_vision_block must be a boolean")
+    self._is_vision_block = val
 
   def add_output(self, link: Link) -> None:
     """Adds an output :class:`~crappy.links.Link` to the list of output Links
