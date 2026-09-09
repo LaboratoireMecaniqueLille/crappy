@@ -78,6 +78,18 @@ class TestDISCorrel(CameraWrapperTestBase):
       DISCorrel(patch=(0, 0, 2, 2), fields=['r'],
                 **self.camera_kwargs())
 
+    with self.assertRaises(TypeError):
+      DISCorrel(patch=(0, 0, 2, 2),
+                fields=['x', object()],
+                labels=['time', 'meta', 'x', 'custom'],
+                **self.camera_kwargs())
+
+    with self.assertRaises(ValueError):
+      DISCorrel(patch=(0, 0, 2, 2),
+                fields=['missing'],
+                labels=['time', 'meta', 'missing'],
+                **self.camera_kwargs())
+
     cases = (
       ['too', 'few'],
       ['same'] * 6,

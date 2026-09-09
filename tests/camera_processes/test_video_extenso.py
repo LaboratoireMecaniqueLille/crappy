@@ -7,7 +7,7 @@ import numpy as np
 
 import crappy.blocks.camera_processes.video_extenso as video_extenso_module
 from crappy.blocks.camera_processes.video_extenso import VideoExtensoProcess
-from crappy.tool.camera_config import SpotsDetector
+from crappy.tool.camera_config import SpotsBoxes
 from crappy.tool.image_processing import LostSpotError
 
 from tests.camera_process.camera_process_test_base import (CameraProcessTestBase,
@@ -55,18 +55,30 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
   """Unit tests for the VideoExtenso CameraProcess wrapper."""
 
   @staticmethod
-  def _detector() -> SpotsDetector:
-    """Returns a configured detector with one spot to track."""
+  def _spots() -> SpotsBoxes:
+    """Returns a configured collection with one spot to track."""
 
-    detector = SpotsDetector(white_spots=True,
-                             blur=3,
-                             update_thresh=True,
-                             safe_mode=True,
-                             border=7)
-    detector.thresh = 123
-    detector.spots.set_spots([(1, 2, 3, 4)])
-    detector.spots.save_length()
-    return detector
+    spots = SpotsBoxes()
+    spots.set_spots([(1, 2, 3, 4)])
+    spots.save_length()
+    return spots
+
+  @staticmethod
+  def _make_process(**kwargs) -> VideoExtensoProcess:
+    """Creates a process with the public Block's default options."""
+
+    defaults = {
+      'white_spots': True,
+      'num_spots': None,
+      'min_area': 150,
+      'blur': 3,
+      'update_thresh': True,
+      'safe_mode': True,
+      'border': 7,
+      'raise_on_lost_spot': True,
+    }
+    defaults.update(kwargs)
+    return VideoExtensoProcess(**defaults)
 
   def setUp(self) -> None:
     """Resets the fake tool registry."""
@@ -78,11 +90,11 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
                     ) -> tuple[VideoExtensoProcess, DummyVideoExtensoTool]:
     """Creates a process and initializes its mocked processing tool."""
 
-    process = VideoExtensoProcess(
-      detector=self._detector(),
-      raise_on_lost_spot=raise_on_lost_spot)
+    process = self._make_process(raise_on_lost_spot=raise_on_lost_spot)
     self._process = process
     self.set_test_logger(process)
+    process._log_queue = object()
+    process.set_config(self._spots(), 123)
 
     with patch.object(video_extenso_module, 'VideoExtensoTool',
                       DummyVideoExtensoTool):
@@ -93,12 +105,13 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
   def test_init_forwards_detector_options_and_starts_tracking(self) -> None:
     """Checks tool arguments and tracker startup during initialization."""
 
-    detector = self._detector()
-    process = VideoExtensoProcess(detector=detector)
+    spots = self._spots()
+    process = self._make_process()
     self._process = process
     process._log_level = logging.DEBUG
     log_queue = object()
     process._log_queue = log_queue
+    process.set_config(spots, 123)
 
     with patch.object(video_extenso_module, 'VideoExtensoTool',
                       DummyVideoExtensoTool):
@@ -107,7 +120,7 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
     tool = DummyVideoExtensoTool.instances[0]
     self.assertIs(process._ve, tool)
     self.assertEqual(tool.kwargs, {
-      'spots': detector.spots,
+      'spots': spots,
       'thresh': 123,
       'log_level': logging.DEBUG,
       'log_queue': log_queue,
@@ -209,13 +222,15 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
   def test_finish_before_and_after_initialization(self) -> None:
     """Checks that finish is safe and stops an initialized tool."""
 
-    process = VideoExtensoProcess(detector=self._detector())
+    process = self._make_process()
     self._process = process
     self.set_test_logger(process)
 
     process.finish()
     self.assertIsNone(process._ve)
 
+    process._log_queue = object()
+    process.set_config(self._spots(), 123)
     with patch.object(video_extenso_module, 'VideoExtensoTool',
                       DummyVideoExtensoTool):
       process.init()
@@ -225,3 +240,14 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
 
     self.assertEqual(tool.start_calls, 1)
     self.assertEqual(tool.stop_calls, 1)
+
+  def test_set_config_replaces_spots_and_threshold(self) -> None:
+    """Checks GUI spot data is installed before process startup."""
+
+    process = self._make_process()
+    spots = self._spots()
+
+    process.set_config(spots, 42)
+
+    self.assertIs(process._spots, spots)
+    self.assertEqual(process._thresh, 42)

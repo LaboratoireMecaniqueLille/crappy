@@ -56,10 +56,12 @@ class TestRecorder(BlockTestBase):
 
     with TemporaryDirectory() as folder:
       path = Path(folder) / 'data.csv'
+      recorder = Recorder(path, labels=('a', 'b'))
 
-      self.assertIsNone(Recorder(path)._labels)
-      self.assertEqual(Recorder(path, labels='abc')._labels, ['abc'])
-      self.assertEqual(Recorder(path, labels=('a', 'b'))._labels, ['a', 'b'])
+      self.assertIsNone(Recorder(path)._recorder_labels)
+      self.assertEqual(Recorder(path, labels='abc')._recorder_labels, ['abc'])
+      self.assertEqual(recorder._recorder_labels, ['a', 'b'])
+      self.assertIsNone(recorder.labels)
 
   def test_prepare_requires_one_input_link(self) -> None:
     """Checks that prepare fails early when the Block is not linked right."""
@@ -150,7 +152,7 @@ class TestRecorder(BlockTestBase):
 
       recorder.loop()
 
-      self.assertEqual(recorder._labels, ['a', 'b'])
+      self.assertEqual(recorder._recorder_labels, ['a', 'b'])
       self.assertEqual(recv_calls, [0.5])
       self.assertEqual(self._read_csv(path), [
         ['a', 'b'],

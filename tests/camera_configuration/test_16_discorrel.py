@@ -122,3 +122,6 @@ class TestDISCorrel(ConfigurationWindowTestBase):
 
     # Re-populate the spots to avoid the interface crashing at exit
     self._config._correl_box = box
+
+    configured_box, = self._config.get_config()
+    self.assertIs(configured_box, self._config._correl_box)

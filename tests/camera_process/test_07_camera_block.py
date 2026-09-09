@@ -1,11 +1,11 @@
 # coding: utf-8
 
-from multiprocessing import Event, Value
+from multiprocessing import Event, Queue, Value
 from threading import BrokenBarrierError, Thread
 from typing import Any
 import logging
 import numpy as np
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch, sentinel
 from crappy import Block
 from crappy._global import CameraPrepareError, CameraRuntimeError
 from crappy.blocks.camera import Camera
@@ -151,6 +151,8 @@ class CameraBlockTestBase(CameraProcessTestBase):
 
     self._camera_block = Camera(**defaults)
     self._camera_block._log_level = logging.CRITICAL
+    self._camera_block._log_queue = Queue()
+    self._queues.append(self._camera_block._log_queue)
     self._camera_block._instance_t0 = Value('d', 1.0)
 
     return self._camera_block
@@ -266,6 +268,43 @@ class TestCameraBlock(CameraBlockTestBase):
     camera.begin()
 
     self.assertFalse(camera._cam_barrier.broken)
+
+  def test_configure_updates_shape_and_processing_config(self) -> None:
+    """Tests forwarding configuration-window output to CameraProcess."""
+
+    camera = self.make_camera()
+    process = MagicMock()
+    camera.process_proc = process
+    config = MagicMock()
+    config.shape = (6, 7)
+    config.dtype = np.dtype('uint16')
+    config.get_config.return_value = (sentinel.processing_config,)
+
+    with patch.object(camera, '_configure', return_value=config):
+      camera.configure()
+
+    config.start.assert_called_once_with()
+    config.wait_window.assert_called_once_with(config)
+    self.assertEqual(camera._img_shape, (6, 7))
+    self.assertEqual(camera._img_dtype, np.dtype('uint16'))
+    process.set_config.assert_called_once_with(sentinel.processing_config)
+
+  def test_configure_ignores_empty_processing_config(self) -> None:
+    """Tests base CameraConfig output with a custom processing process."""
+
+    camera = self.make_camera()
+    process = MagicMock()
+    camera.process_proc = process
+    config = MagicMock()
+    config.shape = None
+    config.dtype = None
+    config.get_config.return_value = None
+
+    with patch.object(camera, '_configure', return_value=config):
+      camera.configure()
+
+    config.get_config.assert_called_once_with()
+    process.set_config.assert_not_called()
 
   def test_prepare_broken_barrier(self) -> None:
     """Tests that Camera.prepare converts a broken barrier into an error."""

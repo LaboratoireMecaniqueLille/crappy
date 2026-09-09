@@ -7,7 +7,7 @@ import unittest
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSpots)
 from crappy.tool.camera_config.video_extenso_config import VideoExtensoConfig
-from crappy.tool.camera_config import SpotsDetector, Box
+from crappy.tool.camera_config import Box
 
 
 @unittest.skipUnless(
@@ -30,7 +30,13 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     self._config = VideoExtensoConfig(self._camera, self._log_queue,
                                       self._log_level, self._freq,
-                                      SpotsDetector())
+                                      white_spots=False,
+                                      num_spots=None,
+                                      min_area=150,
+                                      blur=5,
+                                      update_thresh=False,
+                                      safe_mode=False,
+                                      border=5)
 
     self._config._testing = True
     self.start_configuration()
@@ -139,3 +145,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     # Re-populate the spots to avoid the interface crashing at exit
     self._config._detector.spots = spots
+
+    configured_spots, threshold = self._config.get_config()
+    self.assertIs(configured_spots, self._config._detector.spots)
+    self.assertEqual(threshold, self._config._detector.thresh)

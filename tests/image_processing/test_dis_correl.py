@@ -70,21 +70,25 @@ class TestDISCorrelTool(TestCase):
   def _make_tool(**kwargs) -> tuple[DISCorrelTool, DummyDIS]:
     """Instantiates DISCorrelTool with a fake DIS object."""
 
+    defaults = {
+      'fields': ['x', 'y', 'exx', 'eyy'],
+      'alpha': 3,
+      'delta': 1,
+      'gamma': 0,
+      'finest_scale': 1,
+      'init': True,
+      'iterations': 1,
+      'gradient_iterations': 10,
+      'patch_size': 8,
+      'patch_stride': 3,
+    }
+    defaults.update(kwargs)
     dummy = DummyDIS()
     with patch.object(dis_correl_module.cv2,
                       'DISOpticalFlow_create',
                       return_value=dummy):
-      tool = DISCorrelTool(TestDISCorrelTool._box(), **kwargs)
+      tool = DISCorrelTool(TestDISCorrelTool._box(), **defaults)
     return tool, dummy
-
-  def test_constructor_validates_fields(self) -> None:
-    """Checks accepted and rejected field declarations."""
-
-    with self.assertRaises(TypeError):
-      self._make_tool(fields=['x', object()])
-
-    with self.assertRaises(ValueError):
-      self._make_tool(fields=['missing'])
 
   def test_constructor_applies_dis_parameters(self) -> None:
     """Checks that DIS parameters are forwarded to OpenCV."""

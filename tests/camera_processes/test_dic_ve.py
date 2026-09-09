@@ -46,6 +46,29 @@ class DummyDICVETool:
 class TestDICVEProcess(CameraProcessTestBase):
   """Unit tests for the DICVE CameraProcess wrapper."""
 
+  @classmethod
+  def _make_process(cls, **kwargs) -> DICVEProcess:
+    """Creates a process with the public Block's default options."""
+
+    defaults = {
+      'patches': cls._patches(),
+      'method': 'Disflow',
+      'alpha': 3,
+      'delta': 1,
+      'gamma': 0,
+      'finest_scale': 1,
+      'iterations': 1,
+      'gradient_iterations': 10,
+      'patch_size': 8,
+      'patch_stride': 3,
+      'border': 0.2,
+      'safe': True,
+      'follow': True,
+      'raise_on_exit': True,
+    }
+    defaults.update(kwargs)
+    return DICVEProcess(**defaults)
+
   @staticmethod
   def _patches() -> SpotsBoxes:
     """Returns deterministic patch boxes for DICVEProcess tests."""
@@ -64,19 +87,19 @@ class TestDICVEProcess(CameraProcessTestBase):
     """Checks DICVETool instantiation arguments."""
 
     patches = self._patches()
-    process = DICVEProcess(patches=patches,
-                           method='Parabola',
-                           alpha=1,
-                           delta=2,
-                           gamma=3,
-                           finest_scale=4,
-                           iterations=5,
-                           gradient_iterations=6,
-                           patch_size=7,
-                           patch_stride=8,
-                           border=0.1,
-                           safe=False,
-                           follow=False)
+    process = self._make_process(patches=patches,
+                                 method='Parabola',
+                                 alpha=1,
+                                 delta=2,
+                                 gamma=3,
+                                 finest_scale=4,
+                                 iterations=5,
+                                 gradient_iterations=6,
+                                 patch_size=7,
+                                 patch_stride=8,
+                                 border=0.1,
+                                 safe=False,
+                                 follow=False)
 
     with patch.object(dic_ve_module, 'DICVETool', DummyDICVETool):
       process.init()
@@ -103,7 +126,7 @@ class TestDICVEProcess(CameraProcessTestBase):
     """Checks first-frame setup and data/overlay forwarding."""
 
     patches = self._patches()
-    process = DICVEProcess(patches=patches)
+    process = self._make_process(patches=patches)
     self._process = process
     self.set_test_logger(process)
 
@@ -152,7 +175,7 @@ class TestDICVEProcess(CameraProcessTestBase):
   def test_loop_handles_lost_patch_without_raising(self) -> None:
     """Checks idle behavior after losing patches when configured not to raise."""
 
-    process = DICVEProcess(patches=self._patches(), raise_on_exit=False)
+    process = self._make_process(raise_on_exit=False)
     self._process = process
     self.set_test_logger(process)
     process._outputs = [TestLink()]
@@ -185,7 +208,7 @@ class TestDICVEProcess(CameraProcessTestBase):
   def test_loop_reraises_lost_patch_when_requested(self) -> None:
     """Checks RuntimeError propagation when raise_on_exit is enabled."""
 
-    process = DICVEProcess(patches=self._patches(), raise_on_exit=True)
+    process = self._make_process(raise_on_exit=True)
     self._process = process
     self.set_test_logger(process)
 
@@ -201,3 +224,13 @@ class TestDICVEProcess(CameraProcessTestBase):
       process.loop()
 
     self.assertTrue(process._lost_patch)
+
+  def test_set_config_replaces_patches(self) -> None:
+    """Checks patches selected in the GUI are installed before startup."""
+
+    process = self._make_process()
+    patches = self._patches()
+
+    process.set_config(patches)
+
+    self.assertIs(process._patches, patches)

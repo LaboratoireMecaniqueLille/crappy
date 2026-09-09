@@ -54,7 +54,7 @@ class TestGrapher(BlockTestBase):
     with self.assertRaises(ValueError):
       Grapher(('x', 'y', 'z'), backend='Agg')
 
-    self.assertEqual(Grapher(('x', 'y'), backend='Agg')._labels,
+    self.assertEqual(Grapher(('x', 'y'), backend='Agg')._graph_labels,
                      (('x', 'y'),))
 
   def test_prepare_requires_input_link(self) -> None:

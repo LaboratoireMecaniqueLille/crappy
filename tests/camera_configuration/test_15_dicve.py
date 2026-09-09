@@ -109,3 +109,6 @@ class TestDICVE(ConfigurationWindowTestBase):
     # Check that the initial lengths have been set
     self.assertIsNotNone(self._config._spots.x_l0)
     self.assertIsNotNone(self._config._spots.y_l0)
+
+    configured_spots, = self._config.get_config()
+    self.assertIs(configured_spots, self._config._spots)

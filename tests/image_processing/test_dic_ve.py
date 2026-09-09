@@ -14,6 +14,27 @@ class TestDICVETool(TestCase):
   """Unit tests for the DICVE image-processing tool."""
 
   @staticmethod
+  def _make_tool(patches: SpotsBoxes, **kwargs) -> DICVETool:
+    """Creates a tool with options validated by the public DICVE Block."""
+
+    defaults = {
+      'method': 'Disflow',
+      'alpha': 3,
+      'delta': 1,
+      'gamma': 0,
+      'finest_scale': 1,
+      'iterations': 1,
+      'gradient_iterations': 10,
+      'patch_size': 8,
+      'patch_stride': 3,
+      'border': 0.2,
+      'safe': True,
+      'follow': True,
+    }
+    defaults.update(kwargs)
+    return DICVETool(patches=patches, **defaults)
+
+  @staticmethod
   def _patches(*patches: tuple[int, int, int, int]) -> SpotsBoxes:
     """Creates SpotsBoxes from (y, x, h, w) patch declarations."""
 
@@ -22,30 +43,16 @@ class TestDICVETool(TestCase):
     spots.save_length()
     return spots
 
-  def test_constructor_validates_method_and_border(self) -> None:
-    """Checks early validation of DICVE settings."""
-
-    patches = self._patches((10, 10, 10, 10))
-
-    with self.assertRaises(ValueError):
-      DICVETool(patches, method='Bad method')
-
-    with self.assertRaises(ValueError):
-      DICVETool(patches, method='Pixel precision', border=-0.1)
-
-    with self.assertRaises(ValueError):
-      DICVETool(patches, method='Pixel precision', border=1.1)
-
   def test_set_img0_checks_patch_bounds_in_safe_mode(self) -> None:
     """Checks safe-mode patch boundary validation."""
 
     patches = self._patches((10, 10, 10, 10))
-    tool = DICVETool(patches, method='Pixel precision', safe=True)
+    tool = self._make_tool(patches, method='Pixel precision', safe=True)
 
     tool.set_img0(np.zeros((30, 30), dtype=np.uint8))
 
     patches = self._patches((25, 10, 10, 10))
-    tool = DICVETool(patches, method='Pixel precision', safe=True)
+    tool = self._make_tool(patches, method='Pixel precision', safe=True)
 
     with self.assertRaises(RuntimeError):
       tool.set_img0(np.zeros((30, 30), dtype=np.uint8))
@@ -53,8 +60,8 @@ class TestDICVETool(TestCase):
   def test_calculate_displacement_requires_reference_image(self) -> None:
     """Checks setup-order validation."""
 
-    tool = DICVETool(self._patches((10, 10, 10, 10)),
-                     method='Pixel precision')
+    tool = self._make_tool(self._patches((10, 10, 10, 10)),
+                           method='Pixel precision')
 
     with self.assertRaises(ValueError):
       tool.calculate_displacement(np.zeros((30, 30), dtype=np.uint8))
@@ -63,7 +70,9 @@ class TestDICVETool(TestCase):
     """Checks strain and displacement output with fixed patches."""
 
     patches = self._patches((10, 10, 10, 10), (10, 30, 10, 10))
-    tool = DICVETool(patches, method='Pixel precision', follow=False)
+    tool = self._make_tool(patches,
+                           method='Pixel precision',
+                           follow=False)
     tool.set_img0(np.zeros((50, 60), dtype=np.uint8))
 
     with patch.object(tool,
@@ -83,7 +92,9 @@ class TestDICVETool(TestCase):
     """Checks patch following and cumulative offset handling."""
 
     patches = self._patches((20, 10, 10, 10))
-    tool = DICVETool(patches, method='Pixel precision', follow=True)
+    tool = self._make_tool(patches,
+                           method='Pixel precision',
+                           follow=True)
     tool.set_img0(np.zeros((50, 60), dtype=np.uint8))
 
     with patch.object(tool, '_calc_pixel_precision',
@@ -102,10 +113,10 @@ class TestDICVETool(TestCase):
     """Checks DISFlow displacement extraction from a patch."""
 
     patches = self._patches((10, 10, 10, 10))
-    tool = DICVETool(patches,
-                     method='Disflow',
-                     border=0,
-                     safe=False)
+    tool = self._make_tool(patches,
+                           method='Disflow',
+                           border=0,
+                           safe=False)
     tool.set_img0(np.zeros((30, 30), dtype=np.uint8))
     flow = np.zeros((10, 10, 2), dtype=np.float32)
     flow[:, :, 0] = 4
@@ -133,7 +144,7 @@ class TestDICVETool(TestCase):
     """Checks edge maxima fall back to pixel precision on that axis."""
 
     patches = self._patches((0, 0, 5, 5))
-    tool = DICVETool(patches, method='Parabola', safe=False)
+    tool = self._make_tool(patches, method='Parabola', safe=False)
     tool.set_img0(np.zeros((8, 8), dtype=np.uint8))
     cross_correl = np.ones((5, 5), dtype=np.float32)
 
@@ -149,7 +160,7 @@ class TestDICVETool(TestCase):
     """Checks Lucas-Kanade success and failure handling."""
 
     patches = self._patches((10, 20, 10, 10))
-    tool = DICVETool(patches, method='Lucas Kanade')
+    tool = self._make_tool(patches, method='Lucas Kanade')
     tool.set_img0(np.zeros((40, 50), dtype=np.uint8))
     img = np.zeros((40, 50), dtype=np.uint8)
 

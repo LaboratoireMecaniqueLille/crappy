@@ -42,8 +42,8 @@ class TestDashboard(BlockTestBase):
   def test_labels_are_normalized(self) -> None:
     """Checks the supported label argument forms."""
 
-    self.assertEqual(Dashboard('abc')._labels, ['abc'])
-    self.assertEqual(Dashboard(('a', 'b'))._labels, ['a', 'b'])
+    self.assertEqual(Dashboard('abc')._dash_labels, ['abc'])
+    self.assertEqual(Dashboard(('a', 'b'))._dash_labels, ['a', 'b'])
 
   def test_nb_digits_is_validated(self) -> None:
     """Checks that invalid decimal precision values are rejected early."""

@@ -111,7 +111,19 @@ class TestVideoExtensoTool(TestCase):
     kwargs.setdefault('thresh', 128)
     kwargs.setdefault('log_level', None)
     kwargs.setdefault('log_queue', None)
+    kwargs.setdefault('white_spots', False)
+    kwargs.setdefault('update_thresh', False)
+    kwargs.setdefault('safe_mode', False)
+    kwargs.setdefault('border', 5)
+    kwargs.setdefault('blur', 5)
     return VideoExtensoTool(spots, **kwargs)
+
+  def test_destructor_accepts_partially_initialized_instance(self) -> None:
+    """Tests cleanup after construction fails before attributes are set."""
+
+    tool = VideoExtensoTool.__new__(VideoExtensoTool)
+
+    tool.__del__()
 
   def test_start_tracking_rejects_empty_spots(self) -> None:
     """Checks startup validation when no spot is configured."""
