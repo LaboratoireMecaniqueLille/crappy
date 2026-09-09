@@ -226,6 +226,19 @@ in a separate submodule, :mod:`crappy.tool.image_processing`. The rationale
 behind is to separate the code dealing with multiprocessing and the one
 performing image processing.
 
+VideoExtenso illustrates the complete ownership chain. The public
+:class:`~crappy.blocks.VideoExtenso` Block validates the user-facing options
+and chooses its helpers. Its
+:class:`~crappy.tool.camera_config.VideoExtensoConfig` creates and owns the
+:class:`~crappy.tool.camera_config.config_tools.SpotsDetector` used for initial
+spot selection, then exports only the spot boxes and threshold. The
+:class:`~crappy.blocks.camera_processes.VideoExtensoProcess` creates the
+:class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` after it
+starts. Finally, that tool creates, communicates with, and stops one
+:class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` process
+per spot. The public Block consequently does not construct or manage any of
+these low-level helpers directly.
+
 FT232H feature
 """"""""""""""
 
