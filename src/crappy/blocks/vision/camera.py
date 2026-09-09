@@ -325,7 +325,7 @@ class CameraSource(VisionBlock):
 
     # If requested, displays the FPS of the image acquisition
     if self.display_freq:
-      self._display_freq()
+      self._print_freq()
 
   def finish(self) -> None:
     """This method stops the image acquisition on the

@@ -539,7 +539,7 @@ class VisionBlock(Block, ABC):
 
     return img_buffer, npy_buffer
 
-  def _display_freq(self) -> None:
+  def _print_freq(self) -> None:
     """Helper method displaying every 2 seconds the actual number of frames
     handled per seconds.
 

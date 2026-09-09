@@ -195,7 +195,7 @@ class ImageDisplayer(VisionBlock):
 
     # If requested, displays the FPS of the image display
     if self.display_freq:
-      self._display_freq()
+      self._print_freq()
 
   def finish(self) -> None:
     """Closes the Displayer window."""

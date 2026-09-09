@@ -303,7 +303,7 @@ class ImageRecorder(VisionBlock):
 
     # If requested, displays the FPS of the image display
     if self.display_freq:
-      self._display_freq()
+      self._print_freq()
 
   def _pil_exif(self, metadata: dict[str, Any]):
     """Parses the metadata of the current image and converts it to a
