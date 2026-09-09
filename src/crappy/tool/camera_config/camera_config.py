@@ -729,9 +729,20 @@ class CameraConfig(tk.Tk):
 
     # The scale bar is slightly different if the setting type is int or float
     if cam_set.type == int:
-      cam_set.tk_var = tk.IntVar(value=cam_set.value)
+      cam_set.tk_var = tk.IntVar(value=int(cam_set.value))
     else:
       cam_set.tk_var = tk.DoubleVar(value=cam_set.value)
+
+    # Shouldn't use None in the Scale widget, defining default step instead
+    if cam_set.step is None:
+      if cam_set.type == int:
+        cam_set.step = 1
+        self.log(logging.WARNING, f"Set undefined step value of slider "
+                                  f"setting {cam_set.name} to 1")
+      else:
+        cam_set.step = float((cam_set.highest - cam_set.lowest) / 1000)
+        self.log(logging.WARNING, f"Set undefined step value of slider "
+                                  f"setting {cam_set.name} to {cam_set.step}")
 
     cam_set.tk_obj = tk.Scale(self._canvas_frame,
                               label=f'{cam_set.name} :',
