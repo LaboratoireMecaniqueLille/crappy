@@ -45,6 +45,16 @@ class ImageLink:
     self._img_info_proxy: managers.DictProxy | None = None
     self._img_id: sharedctypes.Synchronized | None = None
 
+    # Check that the input and output blocks are VisionBlocks
+    if not input_block.is_vision_block:
+      raise NotImplementedError(f"The input Block {input_block.name} cannot "
+                                f"handle images, impossible to link it with "
+                                f"crappy.img_link()")
+    if not output_block.is_vision_block:
+      raise NotImplementedError(f"The output Block {output_block.name} cannot "
+                                f"handle images, impossible to link it with "
+                                f"crappy.img_link()")
+
     # Associating the img_link to the input and output Blocks
     input_block.add_img_output(self)
     output_block.add_img_input(self)
