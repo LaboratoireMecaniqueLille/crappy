@@ -269,11 +269,10 @@ class Camera(Block):
     self.niceness: int = -10
     self.debug: bool | None = debug
 
-    if display_images and not displayer_framerate > 0:
-      raise ValueError("displayer_framerate must be strictly positive")
-
-    if save_images and (not isinstance(save_period, int) or save_period < 1):
-      raise ValueError("save_period must be a strictly positive integer")
+    if not isinstance(camera, str):
+      raise TypeError("camera must be a string")
+    if not camera and image_generator is None:
+      raise ValueError("camera must be a non-empty string")
 
     # Checking for deprecated names
     if camera in deprecated_cameras:
