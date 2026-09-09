@@ -61,7 +61,7 @@ class Camera(Block):
   :class:`~crappy.blocks.camera_processes.CameraProcess` objects. The display 
   is handled by the :class:`~crappy.blocks.camera_processes.Displayer`, and
   the recording by the :class:`~crappy.blocks.camera_processes.ImageSaver`.
-  This Block manages the instantiation, the synchronisation and the
+  This Block manages the instantiation, the synchronization and the
   termination of all the CameraProcess it controls.
   
   .. versionadded:: 1.4.0
@@ -495,9 +495,9 @@ class Camera(Block):
       self.log(logging.INFO, "Camera configuration done")
 
     # Setting the camera to 'Hardware' trig if it's in 'Hdw after config' mode
-    if self._camera.trigger_name in self._camera.settings and \
+    if (self._camera.trigger_name in self._camera.settings and
         getattr(self._camera,
-                self._camera.trigger_name) == 'Hdw after config':
+                self._camera.trigger_name) == 'Hdw after config'):
       self.log(logging.INFO, "Setting the trigger mode to Hardware")
       setattr(self._camera, self._camera.trigger_name, 'Hardware')
 

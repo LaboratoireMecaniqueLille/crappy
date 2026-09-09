@@ -149,7 +149,7 @@ class DISCorrelConfig(CameraConfigBoxes):
       self._draw_box(self._correl_box)
     self._draw_box(self._select_box)
 
-  def _handle_box_outside_img(self, _: Box) -> None:
+  def _handle_box_outside_img(self, box: Box) -> None:
     """If the correl box is outside the image, it means that the image size has
     been modified. Simply resetting the correl box then."""
 

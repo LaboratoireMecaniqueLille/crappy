@@ -66,7 +66,7 @@ class VideoExtensoTool:
         background, else black objects over a white background. Passed to the
         :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
         and not used in this class.
-      update_thresh: If :obj:`True`, the grey level threshold for detecting the
+      update_thresh: If :obj:`True`, the gray level threshold for detecting the
         spots is re-calculated at each new image. Otherwise, the first
         calculated threshold is kept for the entire test. The spots are less
         likely to be lost with adaptive threshold, but the measurement will be

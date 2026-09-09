@@ -83,7 +83,7 @@ class CameraConfigBoxes(CameraConfig):
       self._handle_box_outside_img(box)
       return
 
-  def _handle_box_outside_img(self, _: Box) -> None:
+  def _handle_box_outside_img(self, box: Box) -> None:
     """This method is meant to simplify the customization of the action to
     perform when a patch is outside the image in subclasses."""
 

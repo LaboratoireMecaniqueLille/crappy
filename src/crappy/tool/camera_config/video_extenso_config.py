@@ -167,7 +167,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
     self._draw_box(self._select_box)
     self._draw_spots()
 
-  def _handle_box_outside_img(self, _: Box) -> None:
+  def _handle_box_outside_img(self, box: Box) -> None:
     """If a patch is outside the image, it means that the image size has been
     modified. Simply resetting the spots then."""
 

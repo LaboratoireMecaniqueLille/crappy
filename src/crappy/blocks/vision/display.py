@@ -28,7 +28,8 @@ class ImageDisplayer(VisionBlock):
   :mod:`cv2` (OpenCV), or using :mod:`matplotlib`. OpenCV is by far the fastest
   and most convenient.
 
-  .. versionadded:: 2.1.0"""
+  .. versionadded:: 2.1.0
+  """
 
   _count: int = 0
 
