@@ -320,8 +320,11 @@ attributes will later be set equal to the synchronization and logging class
 attributes. In addition to the synchronization and logging attributes, each
 instance of Block also has :
 
-- A few attributes managing its execution (target looping frequency, niceness,
-  flag for displaying the achieved looping frequency, pausability).
+- A few validated public properties managing its execution (target looping
+  frequency, niceness, flag for displaying the achieved looping frequency,
+  pausability, and whether it supports image Links). Their private backing
+  attributes are implementation details and should not be assigned directly by
+  children Blocks.
 - A few buffers storing values needed for trying to achieve and displaying the
   looping frequency.
 - A name, given by a :obj:`classmethod` to ensure it is unique.

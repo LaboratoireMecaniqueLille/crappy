@@ -295,7 +295,8 @@ Block
 .. autoclass:: crappy.blocks.Block
    :members: get_name, start_all, prepare_all, renice_all, launch_all,
              stop_all, reset, run, main, prepare, begin, loop, finish, debug,
-             t0, add_output, add_input, log, send, data_available, recv_data,
-             recv_last_data, recv_all_data, recv_all_data_raw
+             t0, niceness, labels, freq, display_freq, name, pausable,
+             is_vision_block, add_output, add_input, log, send, data_available,
+             recv_data, recv_last_data, recv_all_data, recv_all_data_raw
    :private-members: _cleanup
    :special-members: __init__

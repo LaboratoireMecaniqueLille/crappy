@@ -852,7 +852,7 @@ one :
   desired level of granularity, but this comes of course at the cost of
   complexity. You can see that some attributes have a leading underscore in
   their name, this is discussed in the
-  :ref:`next sub-section <5.b. Useful attributes of the Block>`.
+  :ref:`next sub-section <5.b. Useful properties and attributes of the Block>`.
 - In :meth:`~crappy.blocks.Block.prepare`, quite a lot of initialization is
   performed. There are two parts in the implementation : one executed if the
   Block has input Links, the other if it has output Links. If there are input
@@ -881,74 +881,85 @@ sub-sections. You can :download:`download this custom Block example
    :class:`~crappy.blocks.Block` class. This way, the log messages are
    included in the log file and handled in a nicer way by Crappy.
 
-5.b. Useful attributes of the Block
-+++++++++++++++++++++++++++++++++++
+5.b. Useful properties and attributes of the Block
++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 While writing your own Blocks, you are free to use whatever names you want for
-the attributes you define. Any name, really ? Actually, **a few attribute**
-**names are already used by the parent** :class:`~crappy.blocks.Block`
-**class, and provide some very useful functionalities**. This sub-section lists
-them, as well as their meaning and effect when applicable. In the general case,
-none of the attributes presented here is mandatory to use. Nothing bad can
-happen if you choose not to use them, what happens if you override them is a
-different story !
+the attributes you define. Any name, really? Actually, **a few names are**
+**already used by the parent** :class:`~crappy.blocks.Block` **class, and**
+**provide some very useful functionalities**. Most execution settings are
+public properties: they are accessed just like attributes, but their setters
+validate assignments and may update internal variables. This sub-section
+lists them, as well as their meaning and effect when applicable.
 
 .. Note::
    When defining your own attributes, you can put a leading underscore in their
    names to indicate that an attribute is for internal use only and should not
-   be accessed or modified by any external user or program.
+   be accessed or modified by any external user or program. In particular, do
+   not bypass the Block properties by assigning their private backing
+   attributes (such as ``_freq`` or ``_labels``).
 
-Here is the exhaustive list of all the attributes you can access and their
-meaning :
+Here is the exhaustive list of the relevant properties and attributes you can
+access and their meaning :
 
-- :py:`outputs` is a :obj:`list` containing the reference to all the incoming
-  Links. It is useful for checking whether the Block has input Links or not. It
-  should not be modified !
-- :py:`inputs` is a :obj:`list` containing the reference to all the outgoing
+- :py:`outputs` is a :obj:`list` containing the references to all the outgoing
   Links. It is useful for checking whether the Block has output Links or not.
+  It should not be modified !
+- :py:`inputs` is a :obj:`list` containing the references to all the incoming
+  Links. It is useful for checking whether the Block has input Links or not.
   It should not be modified ! It is sometimes used to put a limit on the number
   of incoming Links (for example the :class:`~crappy.blocks.Recorder` Block
   raises an error if it has more than one incoming Link).
-- :py:`niceness` can be set during :meth:`~crappy.blocks.Block.__init__`, and
-  the corresponding niceness value will be set for the Process by
+- :attr:`~crappy.blocks.Block.niceness` is an integer property from `-20` to
+  `19`. It can be set during :meth:`~crappy.blocks.Block.__init__`, and the
+  corresponding niceness value will be set for the Process by
   :meth:`~crappy.blocks.Block.renice_all`. It is only relevant on Linux, and
   barely used. Most users can ignore it.
-- :py:`freq` sets the target looping frequency for the Block. It can be set to
-  any positive value, or to :obj:`None` to switch to free-run mode. If a value
-  is given, the Block will *try* to reach it but this is not guaranteed. It
-  can be set anytime, but is usually set during
+- :attr:`~crappy.blocks.Block.freq` sets the target looping frequency for the
+  Block. It accepts a positive integer or floating-point value, which is stored
+  as a :obj:`float`, or :obj:`None` to switch to free-run mode. If a value is
+  given, the Block will *try* to reach it but this is not guaranteed. It can be
+  set anytime, but is usually set during
   :meth:`~crappy.blocks.Block.__init__`. Depending on the application, a
-  reasonable value for this attribute is usually somewhere between 20 and 200.
-- :py:`display_freq` is a :obj:`bool` that enables the display of the achieved
-  looping frequency of the Block. If set to :obj:`True`, the looping frequency
-  is displayed in the terminal every two seconds. It can be set anytime, but is
-  usually set during :meth:`~crappy.blocks.Block.__init__`.
-- :py:`debug` can be either :obj:`True`, :obj:`False`, or :obj:`None`. If set
-  to :obj:`False` (the default), it only displays a limited amount of
-  information in the terminal. If set to :obj:`True`, additional debug
-  information is displayed for this Block. When the debug mode is enabled,
-  there is usually way too much information displayed to follow ! The extra
-  information is useful for debugging, for skilled enough users. The last
-  option is to set :py:`debug` to :obj:`None`, in which case no information is
-  displayed at all for the Block. That is not advised in the general case. This
-  attribute must be set during :meth:`~crappy.blocks.Block.__init__`.
-- :py:`labels` contains the names of the labels to send to downstream Blocks.
-  When given, the values to send can be given as a :obj:`tuple` (for example),
-  rather than as a :obj:`dict` containing both the names of the labels and the
-  values. More about it in :ref:`the next section
-  <5.c. Sending data to other Blocks>`. This attribute can be set at any moment.
-- :py:`t0` contains the timestamp of the exact moment when all the Blocks start
-  looping together. It is useful for obtaining the timestamp of the current
-  moment relative to the beginning of the test. This attribute can only be
-  read starting from :meth:`~crappy.blocks.Block.begin`, and must not be
-  modified !
-- :py:`name` contains the unique name attributed to the Block by Crappy. It can
-  be read at any time, and even modified. This name is only used for logging,
-  and appears in the log messages for identifying where a message comes from.
-- :py:`pausable` is a :obj:`bool` indicating whether the Block is affected when
-  a pause is started by a :class:`~crappy.blocks.Pause` Block. By default,
-  most Blocks are affected except for the ones managing the test flow (like the
+  reasonable value for this property is usually somewhere between 20 and 200.
+- :attr:`~crappy.blocks.Block.display_freq` is a :obj:`bool` property that
+  enables the display of the achieved looping frequency of the Block. If set
+  to :obj:`True`, the looping frequency is displayed in the terminal every two
+  seconds. It can be set anytime, but is usually set during
+  :meth:`~crappy.blocks.Block.__init__`.
+- :attr:`~crappy.blocks.Block.debug` can be either :obj:`True`, :obj:`False`,
+  or :obj:`None`. If set to :obj:`False` (the default), it only displays a
+  limited amount of information in the terminal. If set to :obj:`True`,
+  additional debug information is displayed for this Block. When the debug mode
+  is enabled, there is usually way too much information displayed to follow!
+  The extra information is useful for debugging, for skilled enough users. The
+  last option is to set ``debug`` to :obj:`None`, in which case no information
+  is displayed at all for the Block. That is not advised in the general case.
+  This property must be set during :meth:`~crappy.blocks.Block.__init__`.
+- :attr:`~crappy.blocks.Block.labels` contains the unique names of the labels
+  to send to downstream Blocks. It accepts :obj:`None` or a sequence containing
+  only strings. When given, the values to send can be given as a :obj:`tuple`
+  (for example) at runtime, rather than as a :obj:`dict` containing both the
+  names of the labels and the values. More about it in :ref:`the next section
+  <5.c. Sending data to other Blocks>`. This property can be set at any moment.
+- :attr:`~crappy.blocks.Block.t0` is a read-only property containing the
+  timestamp of the exact moment when all the Blocks start looping together. It
+  is useful for obtaining the timestamp of the current moment relative to the
+  beginning of the test. It can only be read starting from
+  :meth:`~crappy.blocks.Block.begin`.
+- :attr:`~crappy.blocks.Block.name` contains the unique, non-empty name
+  attributed to the Block by Crappy. It can be read at any time, and even
+  modified. This name is only used for logging, and appears in the log messages
+  for identifying where a message comes from.
+- :attr:`~crappy.blocks.Block.pausable` is a :obj:`bool` property indicating
+  whether the Block is affected when a pause is started by a
+  :class:`~crappy.blocks.Pause` Block. By default, most Blocks are affected
+  except for the ones managing the test flow (like the
   :class:`~crappy.blocks.StopButton` Block).
+- :attr:`~crappy.blocks.Block.is_vision_block` is a :obj:`bool` property used
+  when validating :class:`~crappy.links.ImageLink`. It is normally set by
+  image-oriented Block base classes and should rarely need to be changed in a
+  custom Block.
 
 In the presented example, you may have recognized a few of the presented
 attributes. They are highlighted here for convenience :
@@ -962,9 +973,9 @@ attributes. They are highlighted here for convenience :
 
 |
 
-There is not much more to say about the available attributes of the Block that
-you can use, you'll see for yourself which ones you need and which ones you
-don't when developing !
+Invalid assignments to these properties raise :exc:`TypeError` or
+:exc:`ValueError` immediately, which helps catch invalid custom Block
+definitions before the processes start.
 
 5.c. Sending data to other Blocks
 +++++++++++++++++++++++++++++++++
