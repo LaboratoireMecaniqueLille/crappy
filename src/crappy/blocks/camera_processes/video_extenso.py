@@ -215,3 +215,23 @@ class VideoExtensoProcess(CameraProcess):
     if self._ve is not None:
       self.log(logging.INFO, "Stopping the spot trackers before returning")
       self._ve.stop_tracking()
+
+  def set_config(self, config: SpotsBoxes, thresh: int) -> None:
+    """Stores the initial detection result from
+    :class:`~crappy.tool.camera_config.VideoExtensoConfig`.
+
+    Args:
+      config: The selected
+        :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` exported by
+        :meth:`crappy.tool.camera_config.VideoExtensoConfig.get_config`.
+      thresh: The gray-level threshold calculated while detecting those spots.
+
+    These values are received before this process starts and are used by
+    :meth:`init` to construct the
+    :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
+
+    .. versionadded:: 2.1.0
+    """
+
+    self._spots = config
+    self._thresh = thresh

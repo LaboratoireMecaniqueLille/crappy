@@ -11,6 +11,7 @@ import logging
 from multiprocessing import current_process, Event, Queue
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
+from typing import Any
 
 from .config_tools import Zoom, HistogramProcess
 from ...camera.meta_camera.camera_setting import CameraBoolSetting, \
@@ -246,6 +247,25 @@ class CameraConfig(tk.Tk):
     except tk.TclError:
       self.log(logging.WARNING, "Cannot destroy the configuration window, "
                                 "ignoring")
+
+  def get_config(self) -> tuple[Any, ...] | None:
+    """Exports the state needed by the image-processing
+    :class:`~crappy.blocks.camera_processes.CameraProcess`.
+
+    :class:`~crappy.blocks.Camera` calls this method after the configuration
+    window closes and before it starts the
+    :class:`~crappy.blocks.camera_processes.CameraProcess`. Subclasses should
+    return a tuple whose items match the positional parameters of the paired
+    :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` method.
+
+    Returns:
+      The positional arguments to pass to ``set_config()``, or :obj:`None` if
+      no processing configuration is required.
+
+    .. versionadded:: 2.1.0
+    """
+
+    ...
 
   def _upd_sched(self) -> None:
     """Updates the GUI and plans the next GUI update."""

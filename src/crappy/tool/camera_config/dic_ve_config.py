@@ -90,6 +90,20 @@ class DICVEConfig(CameraConfigBoxes):
 
     super().stop()
 
+  def get_config(self) -> tuple[SpotsBoxes]:
+    """Exports the patches selected for tracking.
+
+    Returns:
+      A one-item tuple containing the configured
+      :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`, ready to be
+      unpacked into
+      :meth:`~crappy.blocks.camera_processes.DICVEProcess.set_config`.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._spots,
+
   def _add_settings(self) -> None:
     """Same as in the parent class except it also adds a Path size setting to
     the list of possible settings."""

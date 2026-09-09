@@ -186,3 +186,16 @@ class DISCorrelProcess(CameraProcess):
 
     # Sending the ROI to the Displayer for display
     self.send_to_draw(SpotsBoxes(self._dis_correl.box))
+
+  def set_config(self, config: Box) -> None:
+    """Stores the region selected in the DISCorrelConfig window.
+
+    Args:
+      config: The configured region of interest exported by
+        :meth:`crappy.tool.camera_config.DISCorrelConfig.get_config`. It is
+        used to initialize the image-processing tool when this process starts.
+
+    .. versionadded:: 2.1.0
+    """
+
+    self._box = config

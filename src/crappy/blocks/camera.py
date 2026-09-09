@@ -796,15 +796,26 @@ class Camera(Block):
       self._manager.shutdown()
 
   def configure(self) -> None:
-    """This method should instantiate and start the 
-    :class:`~crappy.tool.camera_config.CameraConfig` window for configuring the
-    :class:`~crappy.camera.Camera` object.
-    
-    It should also handle the case when an exception is raised in the 
-    configuration window.
+    """Runs the configuration workflow shared by camera-related Blocks.
+
+    This method obtains the Block-specific
+    :class:`~crappy.tool.camera_config.CameraConfig` from :meth:`_configure`,
+    runs it, and retrieves the configured image shape and data type. If an
+    image-processing :class:`~crappy.blocks.camera_processes.CameraProcess` is
+    present, the value returned by its
+    :meth:`~crappy.tool.camera_config.CameraConfig.get_config` is unpacked into
+    :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config`. This
+    handoff occurs before the CameraProcess starts.
+
+    Exceptions raised by the configuration window are converted to
+    :exc:`~crappy._global.CameraConfigError` after the window is stopped.
 
     It is common to all camera-related Blocks, except for those that don't have
-    a configuration window.
+    a configuration window. Child Blocks should normally customize
+    :meth:`_configure`, not this method.
+
+    .. versionchanged:: 2.1.0 forwards processing-specific configuration from
+       the configuration window to the image-processing CameraProcess
     """
 
     config = None
@@ -831,13 +842,20 @@ class Camera(Block):
     if config.dtype is not None:
       self._img_dtype = config.dtype
 
+    # Apply the result of the configuration to the processing Process
+    if self.process_proc is not None:
+      if (conf := config.get_config()) is not None:
+        self.process_proc.set_config(*conf)
+
   def _configure(self) -> CameraConfig:
-    """This method contains the Block-specific part of the camera configuration
-    workflow.
+    """Creates the Block-specific camera configuration window.
 
     It is meant to be overridden by children of the Camera Block, as other
     image processing Blocks rely on subclasses of
-    :class:`~crappy.tool.camera_config.CameraConfig`.
+    :class:`~crappy.tool.camera_config.CameraConfig`. The returned window's
+    :meth:`~crappy.tool.camera_config.CameraConfig.get_config` output must
+    match the processing CameraProcess's
+    :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` signature.
     """
 
     if self._camera is None:

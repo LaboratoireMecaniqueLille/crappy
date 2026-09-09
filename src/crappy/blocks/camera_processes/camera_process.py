@@ -374,6 +374,24 @@ class CameraProcess(Process, ABC):
     else:
       self._to_draw_conn.send(to_draw)
 
+  def set_config(self, *_: Any, **__: Any) -> None:
+    """Receives processing state exported by a CameraConfig window.
+
+    :class:`~crappy.blocks.Camera` calls this method in the parent process,
+    before this CameraProcess starts. Subclasses whose configuration window
+    returns processing-specific state should override it with positional
+    parameters matching the tuple returned by
+    :meth:`~crappy.tool.camera_config.CameraConfig.get_config`. The received
+    values should normally be stored for use by :meth:`init`, where expensive
+    image-processing helpers can safely be created.
+
+    This base implementation does nothing.
+
+    .. versionadded:: 2.1.0
+    """
+
+    ...
+
   def log(self, level: int, msg: str) -> None:
     """Sends a log message to the :obj:`~logging.Logger`.
 

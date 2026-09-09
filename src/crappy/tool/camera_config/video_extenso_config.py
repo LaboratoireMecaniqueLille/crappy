@@ -144,6 +144,19 @@ class VideoExtensoConfig(CameraConfigBoxes):
 
     super().stop()
 
+  def get_config(self) -> tuple[SpotsBoxes, int]:
+    """Exports the result of initial spot detection.
+
+    Returns:
+      The configured spot boxes and gray-level threshold, ready to be unpacked
+      into
+      :meth:`~crappy.blocks.camera_processes.VideoExtensoProcess.set_config`.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._detector.spots, self._detector.thresh
+
   def _set_bindings(self) -> None:
     """Binds the left mouse button click for drawing the box in which the spots
     will be searched."""

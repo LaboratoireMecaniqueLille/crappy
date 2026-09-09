@@ -93,6 +93,20 @@ class DISCorrelConfig(CameraConfigBoxes):
 
     super().stop()
 
+  def get_config(self) -> tuple[Box]:
+    """Exports the region of interest selected for correlation.
+
+    Returns:
+      A one-item tuple containing the configured
+      :class:`~crappy.tool.camera_config.config_tools.Box`, ready to be
+      unpacked into
+      :meth:`~crappy.blocks.camera_processes.DISCorrelProcess.set_config`.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._correl_box,
+
   def _set_bindings(self) -> None:
     """Binds the left mouse button click for drawing the box on which the
     correlation will be performed."""

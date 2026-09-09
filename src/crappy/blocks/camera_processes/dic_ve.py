@@ -209,3 +209,18 @@ class DICVEProcess(CameraProcess):
     else:
       self.fps_count -= 1
       sleep(0.1)
+
+  def set_config(self, config: SpotsBoxes) -> None:
+    """Stores the patches selected in the
+    :class:`~crappy.tool.camera_config.DICVEConfig` window.
+
+    Args:
+      config: The configured
+        :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` exported by
+        :meth:`crappy.tool.camera_config.DICVEConfig.get_config`. They are used
+        to initialize the image-processing tool when this process starts.
+
+    .. versionadded:: 2.1.0
+    """
+
+    self._patches = config
