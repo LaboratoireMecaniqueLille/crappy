@@ -30,17 +30,17 @@ class DISCorrelProcess(CameraProcess):
                patch: Box,
                fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
                                     'exy', 'eyx', 'exy2', 'z']
-                            | np.ndarray] | None = None,
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               init: bool = True,
-               patch_size: int = 8,
-               patch_stride: int = 3,
-               residual: bool = False) -> None:
+                            | np.ndarray],
+               alpha: float,
+               delta: float,
+               gamma: float,
+               finest_scale: int,
+               iterations: int,
+               gradient_iterations: int,
+               init: bool,
+               patch_size: int,
+               patch_stride: int,
+               residual: bool) -> None:
     """Sets the arguments and initializes the parent class.
     
     Args:

@@ -35,11 +35,11 @@ class VideoExtensoTool:
                thresh: int,
                log_level: int | None,
                log_queue: Queue,
-               white_spots: bool = False,
-               update_thresh: bool = False,
-               safe_mode: bool = False,
-               border: int = 5,
-               blur: int | None = 5) -> None:
+               white_spots: bool,
+               update_thresh: bool,
+               safe_mode: bool,
+               border: int,
+               blur: int | None) -> None:
     """Sets the arguments and the other instance attributes.
 
     Args:

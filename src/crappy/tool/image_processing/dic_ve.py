@@ -30,18 +30,18 @@ class DICVETool:
   def __init__(self,
                patches: SpotsBoxes,
                method: Literal['Disflow', 'Lucas Kanade',
-                               'Pixel precision', 'Parabola'] = 'Disflow',
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               patch_size: int = 8,
-               patch_stride: int = 3,
-               border: float = 0.2,
-               safe: bool = True,
-               follow: bool = True) -> None:
+                               'Pixel precision', 'Parabola'],
+               alpha: float,
+               delta: float,
+               gamma: float,
+               finest_scale: int,
+               iterations: int,
+               gradient_iterations: int,
+               patch_size: int,
+               patch_stride: int,
+               border: float,
+               safe: bool,
+               follow: bool) -> None:
     """Sets a few attributes and initializes DISFlow if this method was
     selected.
 

@@ -5,7 +5,7 @@ import numpy as np
 
 from ..._global import OptionalModule
 from ..camera_config import Box
-from .fields import get_res, get_field, allowed_fields
+from .fields import get_res, get_field
 
 try:
   import cv2
@@ -29,16 +29,16 @@ class DISCorrelTool:
                box: Box,
                fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
                                     'exy', 'eyx', 'exy2', 'z'] |
-                            np.ndarray] | None = None,
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               init: bool = True,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               patch_size: int = 8,
-               patch_stride: int = 3) -> None:
+                            np.ndarray],
+               alpha: float,
+               delta: float,
+               gamma: float,
+               finest_scale: int,
+               init: bool,
+               iterations: int,
+               gradient_iterations: int,
+               patch_size: int,
+               patch_stride: int) -> None:
     """Sets the parameters of DISFlow.
 
     Args:
@@ -83,26 +83,9 @@ class DISCorrelTool:
         less than patch size.
     """
 
-    if fields is not None:
-      # Splitting the given fields into strings and numpy arrays
-      auto_fields = [field for field in fields if isinstance(field, str)]
-      user_fields = [field for field in fields
-                     if isinstance(field, np.ndarray)]
-
-      # Ensuring all the given fields are either strings or numpy arrays
-      if len(fields) != len(auto_fields) + len(user_fields):
-        raise TypeError('Correlation fields must be either strings or '
-                        'numpy arrays !')
-
-      # Ensuring all the string fields are valid ones
-      if not all((field in allowed_fields for field in auto_fields)):
-        raise ValueError(f"The only allowed values for the fields given as "
-                         f"strings are {allowed_fields}")
-
-      self._fields: list[str | np.ndarray] = fields
-    else:
-      self._fields: list[str | np.ndarray] = ["x", "y", "exx", "eyy"]
-
+    self._fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                               'exy', 'eyx', 'exy2', 'z']
+                       | np.ndarray] = fields
     self._init: bool = init
 
     # These attributes will be set later
