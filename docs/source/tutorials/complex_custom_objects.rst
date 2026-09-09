@@ -487,9 +487,16 @@ Let's review one by one the methods that you can define :
 
 The Base CameraProcess class handles the calls to these methods, as well as the
 exceptions that might be raised. All the user has to do is to define them. In
-addition to the methods that the user has to define, there are three other
+addition to the methods that the user has to define, there are four other
 methods that can be called and provide extra functionalities :
 
+- :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` is an
+  optional hook for processing state chosen in a custom CameraConfig window.
+  The base Camera Block calls it before the CameraProcess starts, unpacking the
+  tuple returned by
+  :meth:`~crappy.tool.camera_config.CameraConfig.get_config`. Its arguments
+  should be stored for use by
+  :meth:`~crappy.blocks.camera_processes.CameraProcess.init`.
 - :meth:`~crappy.blocks.camera_processes.CameraProcess.send` is the equivalent
   of the :meth:`~crappy.blocks.Block.send` method of the Block, of which it is
   almost an exact copy. It allows to send data to downstream Block, and takes
@@ -639,8 +646,12 @@ do on the Camera Block side !
    a behavior, you'll need to override the
    :meth:`~crappy.blocks.Camera._configure` method in your child Camera Block,
    and to define your own version of
-   :class:`~crappy.tool.camera_config.CameraConfig`. This possibility is very
-   specific, so it is not described in the tutorials.
+   :class:`~crappy.tool.camera_config.CameraConfig`. Its
+   :meth:`~crappy.tool.camera_config.CameraConfig.get_config` method must return
+   a tuple matching the arguments of the custom CameraProcess's
+   :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` method.
+   The base Camera Block performs this handoff after the window closes and
+   before starting the CameraProcess.
 
 5.c. Sending an overlay to the Displayer
 ++++++++++++++++++++++++++++++++++++++++

@@ -20,7 +20,7 @@ Button
 Camera Block
 ++++++++++++
 .. autoclass:: crappy.blocks.Camera
-   :members: prepare, begin, loop, finish
+   :members: prepare, begin, loop, finish, configure
    :special-members: __init__
    :private-members: _configure
 
@@ -241,20 +241,21 @@ Camera Processes
 Camera Process
 ++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.CameraProcess
-   :members: set_shared, run, init, loop, finish, send, send_to_draw, log
+   :members: set_shared, run, init, loop, finish, send, send_to_draw,
+             set_config, log
    :special-members: __init__
    :private-members: _get_data
 
 DIC VE Process
 ++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.DICVEProcess
-   :members: init, loop
+   :members: init, loop, set_config
    :special-members: __init__
 
 DIS Correl Process
 ++++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.DISCorrelProcess
-   :members: init, loop
+   :members: init, loop, set_config
    :special-members: __init__
 
 Displayer Process
@@ -284,7 +285,7 @@ Recorder Process
 Video Extenso Process
 +++++++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.VideoExtensoProcess
-   :members: init, loop, finish
+   :members: init, loop, finish, set_config
    :special-members: __init__
 
 Parent Block

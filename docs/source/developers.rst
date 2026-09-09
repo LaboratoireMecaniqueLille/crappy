@@ -193,6 +193,19 @@ and traces that generate a feature-rich GUI. It even manages a parallel process
 (:class:`~crappy.tool.camera_config.config_tools.HistogramProcess`) in which a
 histogram of the acquired images is calculated in real-time.
 
+The base Camera Block owns the configuration workflow, while its collaborators
+own their domain-specific state. A Camera child selects the appropriate
+CameraConfig and creates its processing
+:class:`~crappy.blocks.camera_processes.CameraProcess`. After the config window
+closes, :meth:`crappy.tool.camera_config.CameraConfig.get_config` returns
+either :obj:`None` or a tuple of processing-specific values. The Camera Block
+unpacks that tuple into
+:meth:`crappy.blocks.camera_processes.CameraProcess.set_config` before starting
+the CameraProcess. The signatures of these two hooks therefore form a pair.
+This exposes only explicit configuration data to the processing process and
+lets it create specific helpers later, in its own
+:meth:`~crappy.blocks.camera_processes.CameraProcess.init` method.
+
 CameraSetting objects
 """""""""""""""""""""
 
