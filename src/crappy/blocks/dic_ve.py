@@ -388,27 +388,19 @@ class DICVE(Camera):
 
     # Forcing the labels into a list
     if labels is None:
-      self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
-                     'Exx(%)', 'Disp(px)']
+      _labels: list[str] = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
+                            'Exx(%)', 'Disp(px)']
     elif isinstance(labels, str):
-      self.labels = [labels]
+      _labels: list[str] = [labels]
     else:
-      self.labels = list(labels)
+      _labels: list[str] = list(labels)
 
-    # Make sure only string labels are provided
-    if (self.labels is not None and
-        not all(isinstance(label, str) for label in self.labels)):
-      non_str = [label for label in self.labels if not isinstance(label, str)]
-      raise ValueError(f"Some labels are not strings: "
-                       f"{', '.join(map(repr, non_str))}")
-
-    if self.labels is not None and len(set(self.labels)) != len(self.labels):
-      raise ValueError("Duplicate labels provided in the list of labels!")
-
-    # Making sure a coherent number of labels and fields was given
-    if len(self.labels) != 6:
+    # Making sure a consistent number of labels and fields was given
+    if len(_labels) != 6:
       raise ValueError("The number of labels should be 6 !\n"
                        "Make sure that the time label was given")
+
+    self.labels = _labels
 
     self._patches: SpotsBoxes | None = None
 

@@ -8,6 +8,7 @@ from pathlib import Path
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
 from ..tool.camera_config import DISCorrelConfig, Box
+from ..tool.image_processing.fields import allowed_fields
 
 field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
                      'exy', 'eyx', 'exy2', 'z'] | np.ndarray
@@ -348,42 +349,37 @@ class DISCorrel(Camera):
 
     # Forcing the fields into a list
     if fields is None:
-      fields = ["x", "y", "exx", "eyy"]
+      _fields = ['x', 'y', 'exx', 'eyy']
     elif isinstance(fields, str) or isinstance(fields, np.ndarray):
-      fields = [fields]
+      _fields = [fields]
     else:
-      fields = list(fields)
+      _fields = list(fields)
+
+    if not all(isinstance(field, (np.ndarray, str)) for field in _fields):
+      raise TypeError("All the provided fields must be either strings or "
+                      "numpy arrays")
+    if not all(field in allowed_fields for field in _fields
+               if isinstance(field, str)):
+      raise ValueError(f"The only allowed values for the fields given as "
+                       f"strings are {allowed_fields}")
 
     # Forcing the labels into a list
     if labels is None:
-      self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)']
+      _labels: list[str] = ['t(s)', 'meta', 'x(pix)', 'y(pix)',
+                            'Exx(%)', 'Eyy(%)']
     elif isinstance(labels, str):
-      self.labels = [labels]
+      _labels: list[str] = [labels]
     else:
-      self.labels = list(labels)
+      _labels: list[str] = list(labels)
 
     # Adding the residuals if required
-    if residual and self.labels is not None:
-      self.labels.append('res')
-
-    # Make sure only string labels are provided
-    if (self.labels is not None and
-        not all(isinstance(label, str) for label in self.labels)):
-      non_str = [label for label in self.labels if not isinstance(label, str)]
-      raise ValueError(f"Some labels are not strings: "
-                       f"{', '.join(map(repr, non_str))}")
-
-    if self.labels is not None and len(set(self.labels)) != len(self.labels):
-      raise ValueError("Duplicate labels provided in the list of labels!")
-
-    self._patch_int = patch
-    self._patch: Box | None = None
+    if residual and _labels is not None:
+      _labels.append('res')
 
     # Making sure a consistent number of labels and fields was given
-    if 2 + len(fields) + int(residual) != len(self.labels):
-      raise ValueError(
-        "The number of fields is inconsistent with the number "
-        "of labels !\nMake sure that the time label was given")
+    if 2 + len(_fields) + int(residual) != len(_labels):
+      raise ValueError("The number of fields is inconsistent with the number "
+                       "of labels !\nMake sure that the time label was given")
 
     self.labels = _labels
 
