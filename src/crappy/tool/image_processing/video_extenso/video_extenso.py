@@ -99,25 +99,25 @@ class VideoExtensoTool:
     """
 
     # These attributes will be used later
-    self._consecutive_overlaps = 0
-    self._trackers = list()
+    self._consecutive_overlaps: int = 0
+    self._trackers: list[Tracker] = list()
     self._pipes: list[connection.Connection] = list()
 
     # Setting the args
-    self._white_spots = white_spots
-    self._update_thresh = update_thresh
-    self._safe_mode = safe_mode
-    self._border = border
-    self._blur = blur
-    self.spots = spots
-    self._thresh = thresh
+    self._white_spots: bool = white_spots
+    self._update_thresh: bool = update_thresh
+    self._safe_mode: bool = safe_mode
+    self._border: int = border
+    self._blur: int | None = blur
+    self.spots: SpotsBoxes = spots
+    self._thresh: int = thresh
 
     self._logger: logging.Logger | None = None
-    self._log_level = log_level
-    self._log_queue = log_queue
+    self._log_level: int | None = log_level
+    self._log_queue: Queue = log_queue
 
-    self._last_warn = time()
-    self._system = system()
+    self._last_warn: float = time()
+    self._system: str = system()
 
   def __del__(self) -> None:
     """Security to ensure there are no zombie processes left when exiting."""

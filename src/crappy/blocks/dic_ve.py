@@ -412,8 +412,10 @@ class DICVE(Camera):
 
     self._patches: SpotsBoxes | None = None
 
-    self._raise_on_exit = raise_on_patch_exit
-    self._patches_int = list(patches) if patches is not None else None
+    self._raise_on_exit: bool = raise_on_patch_exit
+    self._patches_int: list[
+        tuple[int, int, int, int]] | None = (list(patches) if patches
+                                             is not None else None)
 
     # Checking the validity of the provided arguments
     if method not in ('Disflow', 'Lucas Kanade',
@@ -448,18 +450,19 @@ class DICVE(Camera):
       raise TypeError("follow must be a boolean")
 
     # These arguments are for the DICVEProcess
-    self._method = method
-    self._alpha = alpha
-    self._delta = delta
-    self._gamma = gamma
-    self._finest_scale = finest_scale
-    self._iterations = iterations
-    self._gradient_iterations = gradient_iterations
-    self._patch_size = patch_size
-    self._patch_stride = patch_stride
-    self._border = border
-    self._safe = safe
-    self._follow = follow
+    self._method: Literal['Disflow', 'Lucas Kanade',
+                          'Pixel precision', 'Parabola'] = method
+    self._alpha: float = alpha
+    self._delta: float = delta
+    self._gamma: float = gamma
+    self._finest_scale: int = finest_scale
+    self._iterations: int = iterations
+    self._gradient_iterations: int = gradient_iterations
+    self._patch_size: int = patch_size
+    self._patch_stride: int = patch_stride
+    self._border: float = border
+    self._safe: bool = safe
+    self._follow: bool = follow
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare` 

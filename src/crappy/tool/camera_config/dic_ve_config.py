@@ -63,7 +63,7 @@ class DICVEConfig(CameraConfigBoxes):
     super().__init__(camera, log_queue, log_level, max_freq)
 
     # Setting the patches
-    self._spots = patches
+    self._spots: SpotsBoxes = patches
 
   def finish(self) -> None:
     """Method called when the user tries to close the configuration window.

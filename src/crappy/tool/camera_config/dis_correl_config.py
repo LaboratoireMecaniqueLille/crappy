@@ -59,8 +59,8 @@ class DISCorrelConfig(CameraConfigBoxes):
         .. versionadded:: 2.0.0
     """
 
-    self._correl_box = patch
-    self._draw_correl_box = True
+    self._correl_box: Box = patch
+    self._draw_correl_box: bool = True
 
     super().__init__(camera, log_queue, log_level, max_freq)
 

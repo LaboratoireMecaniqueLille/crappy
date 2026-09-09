@@ -357,13 +357,13 @@ class VideoExtenso(Camera):
       raise ValueError("border must be a positive integer")
 
     # These arguments are for the SpotsDetector
-    self._white_spots = white_spots
-    self._num_spots = num_spots
-    self._min_area = min_area
-    self._blur = blur
-    self._update_thresh = update_thresh
-    self._safe_mode = safe_mode
-    self._border = border
+    self._white_spots: bool = white_spots
+    self._num_spots: int | None = num_spots
+    self._min_area: int = min_area
+    self._blur: int | None = blur
+    self._update_thresh: bool = update_thresh
+    self._safe_mode: bool = safe_mode
+    self._border: int = border
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`

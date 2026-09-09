@@ -58,7 +58,7 @@ class Displayer(CameraProcess):
 
     # The thread must be initialized later for compatibility with Windows
     self._overlay_thread: Thread | None = None
-    self._overlay: Iterable[Overlay] = list()
+    self._overlay: Iterable[Overlay | None] = list()
     self._stop_thread = False
 
     super().__init__()

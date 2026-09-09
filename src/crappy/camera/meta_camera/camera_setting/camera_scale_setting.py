@@ -67,8 +67,8 @@ class CameraScaleSetting(CameraSetting):
       lowest, highest = highest, lowest
 
     self.type = int if isinstance(lowest + highest, int) else float
-    self.lowest = self.type(lowest)
-    self.highest = self.type(highest)
+    self.lowest: NbrType = self.type(lowest)
+    self.highest: NbrType = self.type(highest)
     self.step = step
 
     # Ensuring that the default value lies between the bounds

@@ -264,10 +264,10 @@ class Camera(Block):
 
     super().__init__()
 
-    self.display_freq = display_freq
-    self.freq = freq
-    self.niceness = -10
-    self.debug = debug
+    self.display_freq: bool = display_freq
+    self.freq: float | None = freq
+    self.niceness: int = -10
+    self.debug: bool | None = debug
 
     if display_images and not displayer_framerate > 0:
       raise ValueError("displayer_framerate must be strictly positive")
@@ -288,9 +288,9 @@ class Camera(Block):
         possible = ', '.join(sorted(camera_dict.keys()))
         raise ValueError(f"Unknown Camera type : {camera} ! "
                          f"The possible types are : {possible}")
-      self._camera_name = camera
+      self._camera_name: str = camera
     else:
-      self._camera_name = 'Image Generator'
+      self._camera_name: str = 'Image Generator'
 
     # Counting the number of instantiated cameras for each type
     if self._camera_name not in Camera.cam_count:
@@ -349,13 +349,14 @@ class Camera(Block):
       raise ValueError("When provided, img_dtype must be a non-empty string")
 
     # Setting the other attributes
-    self._trig_label = software_trig_label
-    self._config_cam = config
-    self._transform = transform
-    self._image_generator = image_generator
-    self._img_shape = img_shape
-    self._img_dtype = img_dtype
-    self._camera_kwargs = kwargs
+    self._trig_label: str | None = software_trig_label
+    self._config_cam: bool = config
+    self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
+    self._image_generator: Callable[[float, float],
+                                    np.ndarray] | None = image_generator
+    self._img_shape: tuple[int, int] | tuple[int, int, int] | None = img_shape
+    self._img_dtype: str | None = img_dtype
+    self._camera_kwargs: dict[str, Any] = kwargs
 
     # The synchronization objects are initialized later
     self._img_array: sharedctypes.SynchronizedArray | None = None
@@ -369,22 +370,23 @@ class Camera(Block):
     self._disp_lock: synchronize.RLock | None = None
     self._proc_lock: synchronize.RLock | None = None
 
-    self._loop_count = 0
-    self._fps_count = 0
-    self._last_cam_fps = time()
+    self._loop_count: int = 0
+    self._fps_count: int = 0
+    self._last_cam_fps: float = time()
 
     # Instantiating the ImageSaver if requested
-    self._save_images = save_images
-    self._img_extension = img_extension
-    self._save_folder = save_folder
-    self._save_period = save_period
-    self._save_backend = save_backend
+    self._save_images: bool = save_images
+    self._img_extension: str = img_extension
+    self._save_folder: str | Path | None = save_folder
+    self._save_period: int = save_period
+    self._save_backend: str | None = save_backend
 
     # Instantiating the Displayer window if requested
-    self._display_images = display_images
-    self._title = f"Displayer {camera} {Camera.cam_count[self._camera_name]}"
-    self._framerate = displayer_framerate
-    self._displayer_backend = displayer_backend
+    self._display_images: bool = display_images
+    self._title: str = (f"Displayer {camera} "
+                        f"{Camera.cam_count[self._camera_name]}")
+    self._framerate: float = displayer_framerate
+    self._displayer_backend: Literal['cv2', 'mpl'] | None = displayer_backend
 
   def __del__(self) -> None:
     """Safety method called when deleting the Block and ensuring that all the

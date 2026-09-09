@@ -89,8 +89,6 @@ class DICVETool:
     """
 
     # These attributes are accessed by the parent class
-    self.patches = patches
-    self._offsets = [(0, 0) for _ in patches]
 
     if method not in ('Disflow', 'Lucas Kanade',
                       'Pixel precision', 'Parabola'):
@@ -99,16 +97,20 @@ class DICVETool:
 
     if not 0 <= border <= 1:
       raise ValueError("border should be between 0 and 1")
+    self.patches: SpotsBoxes = patches
+    self._offsets: list[tuple[int, int]] = [(0, 0) for _ in patches]
 
     # Other attributes to set
-    self._method = method
-    self._border = border
-    self._safe = safe
-    self._follow = follow
+    self._method: Literal['Disflow', 'Lucas Kanade',
+                          'Pixel precision', 'Parabola'] = method
+    self._border: float = border
+    self._safe: bool = safe
+    self._follow: bool = follow
 
     # These attributes will be set later
-    self._img0 = None
-    self._height, self._width = None, None
+    self._img0: np.ndarray | None = None
+    self._height: int | None = None
+    self._width: int | None = None
 
     # Initialize DISFlow if it is the selected method
     if self._method == 'Disflow':

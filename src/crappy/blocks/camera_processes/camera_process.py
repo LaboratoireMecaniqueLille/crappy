@@ -346,7 +346,7 @@ class CameraProcess(Process, ABC):
       self.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
 
-  def send_to_draw(self, to_draw: Iterable[Overlay]) -> None:
+  def send_to_draw(self, to_draw: Iterable[Overlay | None]) -> None:
     """This method sends a collection of
     :class:`~crappy.tool.camera_config.config_tools.Overlay` objects to the
     :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.

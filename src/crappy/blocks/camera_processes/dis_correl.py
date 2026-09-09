@@ -114,22 +114,24 @@ class DISCorrelProcess(CameraProcess):
     super().__init__()
 
     # Arguments to pass to the DISCorrelTool
-    self._box = patch
-    self._fields = fields
-    self._alpha = alpha
-    self._delta = delta
-    self._gamma = gamma
-    self._finest_scale = finest_scale
-    self._init = init
-    self._iterations = iterations
-    self._gradient_iterations = gradient_iterations
-    self._patch_size = patch_size
-    self._patch_stride = patch_stride
+    self._box: Box = patch
+    self._fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                               'exy', 'eyx', 'exy2', 'z'] |
+                       np.ndarray] = fields
+    self._alpha: float = alpha
+    self._delta: float = delta
+    self._gamma: float = gamma
+    self._finest_scale: int = finest_scale
+    self._init: bool = init
+    self._iterations: int = iterations
+    self._gradient_iterations: int = gradient_iterations
+    self._patch_size: int = patch_size
+    self._patch_stride: int = patch_stride
     
     # Other attributes
-    self._residual = residual
+    self._residual: bool = residual
     self._dis_correl: DISCorrelTool | None = None
-    self._img0_set = False
+    self._img0_set: bool = False
 
   def init(self) -> None:
     """Instantiates the :obj:`~crappy.tool.image_processing.DISCorrelTool` that

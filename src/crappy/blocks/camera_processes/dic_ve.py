@@ -117,25 +117,26 @@ class DICVEProcess(CameraProcess):
     super().__init__()
 
     # Arguments to pass to the DICVETool
-    self._patches = patches
-    self._method = method
-    self._alpha = alpha
-    self._delta = delta
-    self._gamma = gamma
-    self._finest_scale = finest_scale
-    self._iterations = iterations
-    self._gradient_iterations = gradient_iterations
-    self._patch_size = patch_size
-    self._patch_stride = patch_stride
-    self._border = border
-    self._safe = safe
-    self._follow = follow
+    self._patches: SpotsBoxes = patches
+    self._method: Literal['Disflow', 'Lucas Kanade',
+                          'Pixel precision', 'Parabola'] = method
+    self._alpha: float = alpha
+    self._delta: float = delta
+    self._gamma: float = gamma
+    self._finest_scale: int = finest_scale
+    self._iterations: int = iterations
+    self._gradient_iterations: int = gradient_iterations
+    self._patch_size: int = patch_size
+    self._patch_stride: int = patch_stride
+    self._border: float = border
+    self._safe: bool = safe
+    self._follow: bool = follow
     
     # Other attributes
-    self._raise_on_exit = raise_on_exit
+    self._raise_on_exit: bool = raise_on_exit
     self._disve: DICVETool | None = None
-    self._img0_set = False
-    self._lost_patch = False
+    self._img0_set: bool = False
+    self._lost_patch: bool = False
 
   def init(self) -> None:
     """Instantiates the :obj:`~crappy.tool.image_processing.DICVETool` that

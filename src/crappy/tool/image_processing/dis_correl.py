@@ -103,15 +103,16 @@ class DISCorrelTool:
     else:
       self._fields: list[str | np.ndarray] = ["x", "y", "exx", "eyy"]
 
-    self._init = init
+    self._init: bool = init
 
     # These attributes will be set later
-    self._img0 = None
-    self._height, self._width = None, None
-    self.box = box
+    self._img0: np.ndarray | None = None
+    self._height: int | None = None
+    self._width: int | None = None
+    self.box: Box = box
     self._dis_flow = None
-    self._base = None
-    self._norm2 = None
+    self._base: list[np.ndarray] | None = None
+    self._norm2: list[float] | None = None
 
     # Setting the parameters of Disflow
     self._dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
