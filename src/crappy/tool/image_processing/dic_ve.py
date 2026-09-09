@@ -89,14 +89,6 @@ class DICVETool:
     """
 
     # These attributes are accessed by the parent class
-
-    if method not in ('Disflow', 'Lucas Kanade',
-                      'Pixel precision', 'Parabola'):
-      raise ValueError("Only the 'Disflow', 'Lucas Kanade', 'Pixel precision',"
-                       " 'Parabola' methods are accepted")
-
-    if not 0 <= border <= 1:
-      raise ValueError("border should be between 0 and 1")
     self.patches: SpotsBoxes = patches
     self._offsets: list[tuple[int, int]] = [(0, 0) for _ in patches]
 
