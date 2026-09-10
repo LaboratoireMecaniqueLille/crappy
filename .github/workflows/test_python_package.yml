@@ -63,6 +63,7 @@ jobs:
         python -m unittest -v tests.image_processing
         python -m unittest -v tests.inout
         python -m unittest -v tests.integration
+        python -m unittest -v tests.links
         python -m unittest -v tests.modifier
     # The Ubuntu runner is headless; xvfb-run starts and cleans up Xvfb for us
     - name: Test Crappy (graphical, Linux/Xvfb)
