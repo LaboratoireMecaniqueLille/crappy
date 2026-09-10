@@ -8,6 +8,8 @@ Link Methods
 
 .. autofunction:: crappy.img_link
 
+.. autofunction:: crappy.display_graph
+
 Open Online Documentation
 -------------------------
 .. autofunction:: crappy.docs

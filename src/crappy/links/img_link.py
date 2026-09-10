@@ -19,6 +19,10 @@ class ImageLink:
   This class should not be mistaken with :class:`~crappy.links.Link`, that can
   only transfer dictionaries between Blocks, not images.
 
+  ImageLinks are registered in Crappy's :class:`~crappy.links.LinkGraph` when
+  they are created. Parallel ImageLinks between the same pair of Blocks, as
+  well as cycles made entirely of ImageLinks are rejected.
+
   .. versionadded:: 2.1.0
   """
 
@@ -35,7 +39,8 @@ class ImageLink:
       output_block: The Block receiving images through the ImageLink.
       name: Name of the ImageLink, to differentiate it from the others. If no
         specific name is given, the ImageLinks are numbered in the
-        order in which they are instantiated in the script.
+        order in which they are instantiated in the script. Names must be
+        unique across both ImageLinks and regular Links.
     """
 
     self.name = self._get_name(name)
@@ -176,7 +181,9 @@ def img_link(input_block,
     output_block: The Block receiving images through the ImageLink.
     name: Name of the ImageLink, to differentiate it from the others. If no
       specific name is given, the ImageLinks are numbered in the order in
-      which they are instantiated in the script.
+      which they are instantiated in the script. Names must be unique across
+      both ImageLinks and regular Links. Parallel ImageLinks and cycles made
+      only of ImageLinks are rejected.
 
   .. versionadded:: 2.1.0
   """

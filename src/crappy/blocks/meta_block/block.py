@@ -865,7 +865,9 @@ class Block(Process, ABC):
   @classmethod
   def reset(cls) -> None:
     """Resets Crappy by emptying the :obj:`~weakref.WeakSet` containing
-    references to all the Blocks and resetting the synchronization objects.
+    references to all the Blocks, clearing the
+    :class:`~crappy.links.LinkGraph`, and resetting the synchronization
+    objects.
 
     This method is called at the very end of the
     :meth:`~crappy.blocks.Block._cleanup` method, but can also be called to
@@ -894,6 +896,8 @@ class Block(Process, ABC):
 
     if cls.logger is not None:
       cls.cls_log(logging.INFO, 'Crappy was successfully reset')
+
+    link_graph.reset()
   
   @classmethod
   def cls_log(cls, level: int, msg: str) -> None:
@@ -1441,7 +1445,7 @@ class Block(Process, ABC):
 
   @property
   def name(self) -> str:
-    """Unique, non-empty name of the Block used in log messages.
+    """Unique, non-empty name used in logs and the Link connection graph.
 
     Assigning a new name also updates Crappy's global Block-name registry.
 

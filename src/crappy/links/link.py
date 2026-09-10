@@ -36,6 +36,8 @@ class Link:
     or preferably children of :class:`~crappy.modifier.Modifier`.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.1.0 Links are registered in the connection graph and
+     parallel Links must be explicitly enabled
   """
 
   _count = 0
@@ -56,7 +58,13 @@ class Link:
         :class:`~crappy.modifier.Modifier` for more information.
       name: Name of the Link, to differentiate it from the others when
         debugging. If no specific name is given, the Links are numbered in the
-        order in which they are instantiated in the script.
+        order in which they are instantiated in the script. Names must be
+        unique across both regular Links and ImageLinks.
+      allow_parallel: If :obj:`True`, allows this Link to have the same source
+        and target as an existing regular Link. It does not allow duplicate
+        names. This is useful for applying multiple
+        :class:`~crappy.modifier.Modifier` independently between the same two
+        Blocks.
     
     .. versionchanged:: 1.5.9 renamed *condition* argument to *conditions*
     .. versionchanged:: 1.5.9 renamed *modifier* argument to *modifiers*
@@ -261,10 +269,15 @@ def link(in_block,
          now a keyword-only argument
     name: Name of the Link, to differentiate it from the others when debugging.
       If no specific name is given, the Links are numbered in the order in
-      which they are instantiated in the script.
+      which they are instantiated in the script. Names must be unique across
+      both regular Links and ImageLinks.
 
       .. versionchanged:: 2.0.7
          now a keyword-only argument
+    allow_parallel: If :obj:`True`, allows this Link to have the same source
+      and target as an existing regular Link. Link names must still be unique.
+
+      .. versionadded:: 2.1.0
       
   .. versionadded:: 1.4.0
   .. versionchanged:: 1.5.9
