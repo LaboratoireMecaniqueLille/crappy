@@ -19,7 +19,7 @@ from sys import stdout, stderr, argv
 from pathlib import Path
 from abc import ABC, abstractmethod
 
-from ...links import Link
+from ...links import Link, link_graph
 from ..._global import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
                         CameraPrepareError, CameraRuntimeError,
@@ -132,6 +132,9 @@ class Block(Process, ABC):
     self._n_loops: int = 0
 
     self._last_values: list[dict[str, Any]] = list()
+
+    # Add node to the LinkGraph
+    link_graph.add_node(self.name, type(self))
 
   def __new__(cls, *args, **kwargs):
     """Called when instantiating a new instance of a Block.

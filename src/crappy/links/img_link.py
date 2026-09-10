@@ -4,6 +4,8 @@ from multiprocessing import (synchronize, current_process, managers,
                              sharedctypes)
 import logging
 
+from .link_graph import link_graph
+
 
 class ImageLink:
   """This class is used for transferring images between two instances of
@@ -20,7 +22,6 @@ class ImageLink:
   .. versionadded:: 2.1.0
   """
 
-  names: list[str] = list()
   _count: int = 0
 
   def __init__(self,
@@ -55,6 +56,10 @@ class ImageLink:
                                 f"handle images, impossible to link it with "
                                 f"crappy.img_link()")
 
+    # Registering the ImageLink in the global graph
+    link_graph.add_edge(self.name, input_block.name, output_block.name,
+                        kind='image')
+
     # Associating the img_link to the input and output Blocks
     input_block.add_img_output(self)
     output_block.add_img_input(self)
@@ -69,8 +74,7 @@ class ImageLink:
 
   @classmethod
   def _get_name(cls, name: str | None) -> str:
-    """Returns a suitable name for this ImageLink, or checks the validity of
-    the one provided if any.
+    """Returns a suitable name for this ImageLink.
 
     Args:
       name: The provided name for the ImageLink, either :obj:`None` or a
@@ -80,19 +84,12 @@ class ImageLink:
       The name generated or validated for this ImageLink, as a :obj:`str`.
     """
 
-    # If the provided name is unique, OK
-    if name is not None and name not in cls.names:
-      cls.names.append(name)
-      return name
-    # If the provided name is a duplicate, raise
-    elif name is not None and name in cls.names:
-      raise ValueError(f"Name {name} already given to a different ImageLink, "
-                       f"please use a different name!")
-    # If no name was provided, generate one
-    else:
-      name = f'image_link{cls._count}'
-      cls.names.append(name)
-      return name
+    if name is not None and not isinstance(name, str):
+      raise TypeError("The ImageLink's name must be a string or None")
+    if name == '':
+      raise ValueError("The ImageLink's name must be a non-empty string")
+
+    return name if name is not None else f'image_link{cls._count}'
 
   def log(self, log_level: int, msg: str) -> None:
     """Method for recording log messages from the ImageLink.
