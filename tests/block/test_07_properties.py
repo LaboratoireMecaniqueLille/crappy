@@ -1,8 +1,10 @@
 # coding: utf-8
 
 from crappy import Block
+from crappy.links import link_graph
+from unittest.mock import patch
 
-from .block_test_base import BlockTestBase, TestBlock
+from .block_test_base import BlockTestBase, TestBlock, link
 
 
 class TestProperties(BlockTestBase):
@@ -109,18 +111,24 @@ class TestProperties(BlockTestBase):
 
     other = TestBlock()
     old_name = self._block.name
+    link(self._block, other, name='test-link')
 
     self._block.name = 'custom-name'
 
     self.assertEqual(self._block.name, 'custom-name')
     self.assertNotIn(old_name, Block.names)
     self.assertIn('custom-name', Block.names)
+    self.assertNotIn(old_name, link_graph._nodes)
+    self.assertIn('custom-name', link_graph._nodes)
+    self.assertEqual(link_graph._edges['test-link'].source, 'custom-name')
+    self.assertEqual(link_graph._edges['test-link'].target, other.name)
 
     with self.assertRaises(ValueError):
       self._block.name = other.name
 
     self.assertEqual(self._block.name, 'custom-name')
     self.assertEqual(len(Block.names), 2)
+    self.assertEqual(link_graph._edges['test-link'].source, 'custom-name')
 
   def test_name_validation(self) -> None:
     """Checks that Block names are non-empty strings."""
@@ -130,3 +138,18 @@ class TestProperties(BlockTestBase):
       with self.subTest(value=value):
         with self.assertRaises(exception):
           self._block.name = value
+
+  def test_running_block_cannot_be_renamed(self) -> None:
+    """Checks that rejected runtime renaming leaves registries unchanged."""
+
+    old_name = self._block.name
+
+    with patch.object(self._block, 'is_alive', return_value=True):
+      with self.assertRaises(RuntimeError):
+        self._block.name = 'runtime-name'
+
+    self.assertEqual(self._block.name, old_name)
+    self.assertIn(old_name, Block.names)
+    self.assertNotIn('runtime-name', Block.names)
+    self.assertIn(old_name, link_graph._nodes)
+    self.assertNotIn('runtime-name', link_graph._nodes)

@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from crappy import Block
+from crappy.links import link_graph
 from crappy.links.link import Link, ModifierType
 from typing import Any
 from collections.abc import Sequence
@@ -22,7 +23,8 @@ class TestLink(Link):
                input_block,
                output_block,
                modifiers: list[ModifierType] | None = None,
-               name: str | None = None) -> None:
+               name: str | None = None,
+               allow_parallel: bool = False) -> None:
     """Initializes the tracking Events and the parent Link.
 
     Args:
@@ -30,6 +32,7 @@ class TestLink(Link):
       output_block: The downstream Block.
       modifiers: Optional list of modifiers to apply to the transmitted data.
       name: Optional name for the Link.
+      allow_parallel: Whether another Link may connect the same two Blocks.
     """
 
     self.polled = Event()
@@ -38,7 +41,8 @@ class TestLink(Link):
     self.received_last = Event()
     self.received_chunk = Event()
 
-    super().__init__(input_block, output_block, modifiers, name)
+    super().__init__(input_block, output_block, modifiers, name,
+                     allow_parallel)
 
   def poll(self) -> bool:
     """Records that poll was called."""
@@ -75,7 +79,8 @@ def link(in_block,
          out_block,
          /, *,
          modifier: Sequence[ModifierType] | ModifierType | None = None,
-         name: str | None = None) -> None:
+         name: str | None = None,
+         allow_parallel: bool = False) -> None:
   """Convenience wrapper creating a TestLink between two Blocks.
 
   Args:
@@ -83,6 +88,7 @@ def link(in_block,
     out_block: The downstream Block.
     modifier: One modifier or a sequence of modifiers to attach to the Link.
     name: Optional name for the Link.
+    allow_parallel: Whether another Link may connect the same two Blocks.
   """
 
   # Forcing the modifiers into lists so that the helper mirrors crappy.link.
@@ -97,7 +103,8 @@ def link(in_block,
   TestLink(input_block=in_block,
            output_block=out_block,
            modifiers=modifier,
-           name=name)
+           name=name,
+           allow_parallel=allow_parallel)
 
 
 class TestBlock(Block):
@@ -292,3 +299,8 @@ class BlockTestBase(unittest.TestCase):
 
     self.assertIsNone(Block.log_queue)
     self.assertIsNone(Block.log_thread)
+
+    self.assertEqual(link_graph._nodes, dict())
+    self.assertEqual(link_graph._edges, dict())
+    self.assertEqual(link_graph._out_edges, dict())
+    self.assertEqual(link_graph._in_edges, dict())

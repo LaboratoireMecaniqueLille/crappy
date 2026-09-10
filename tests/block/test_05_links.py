@@ -3,6 +3,7 @@
 from crappy import Block
 from crappy._global import LinkDataError
 from crappy.blocks.meta_block import block as block_module
+from crappy.links import GraphStructureError, ImageLink, link_graph
 from itertools import chain
 from multiprocessing import Barrier, Event, Value, Queue
 
@@ -24,6 +25,28 @@ class TestBlockLink(TestBlock):
     self.send({'a': 0})
     self.recv_all_data()
     self.send((0,))
+
+
+class TestImageBlock(TestBlock):
+  """Minimal image-capable Block independent of the vision Block classes."""
+
+  def __init__(self) -> None:
+    """Initializes ImageLink containers and marks the Block image-capable."""
+
+    super().__init__()
+    self.is_vision_block = True
+    self.img_outputs = list()
+    self.img_inputs = list()
+
+  def add_img_output(self, img_link: ImageLink) -> None:
+    """Registers an outgoing ImageLink."""
+
+    self.img_outputs.append(img_link)
+
+  def add_img_input(self, img_link: ImageLink) -> None:
+    """Registers an incoming ImageLink."""
+
+    self.img_inputs.append(img_link)
 
 
 class TestLinks(BlockTestBase):
@@ -52,7 +75,110 @@ class TestLinks(BlockTestBase):
     self.assertEqual(len(block_3.outputs), 0)
     self.assertEqual(len(block_4.outputs), 0)
 
+    self.assertEqual(len(link_graph.link_names('link')), 4)
+    self.assertEqual(link_graph.successors(block_2.name, 'link'),
+                     {block_2.name, block_3.name, block_4.name})
+    self.assertIn(block_2.name,
+                  link_graph.descendants(block_2.name, 'link'))
+
     Block.reset()
+
+  def test_parallel_links_require_opt_in(self) -> None:
+    """Tests validation and explicit enabling of parallel regular Links."""
+
+    source = TestBlock()
+    target = TestBlock()
+
+    link(source, target, name='first')
+
+    with self.assertRaises(GraphStructureError):
+      link(source, target, name='rejected')
+
+    self.assertEqual(len(source.outputs), 1)
+    self.assertEqual(len(target.inputs), 1)
+    self.assertEqual(link_graph.link_names(), ('first',))
+
+    link(source, target, name='second', allow_parallel=True)
+
+    self.assertEqual(len(source.outputs), 2)
+    self.assertEqual(len(target.inputs), 2)
+    self.assertEqual(link_graph.link_names(), ('first', 'second'))
+
+  def test_link_names_are_globally_unique(self) -> None:
+    """Tests that a rejected duplicate name does not alter Block link lists."""
+
+    first = TestBlock()
+    second = TestBlock()
+    third = TestBlock()
+
+    link(first, second, name='shared-name')
+
+    with self.assertRaises(GraphStructureError):
+      link(first, third, name='shared-name')
+
+    self.assertEqual(len(first.outputs), 1)
+    self.assertEqual(len(second.inputs), 1)
+    self.assertEqual(len(third.inputs), 0)
+    self.assertEqual(link_graph.link_names(), ('shared-name',))
+
+  def test_regular_and_image_links_share_a_name_registry(self) -> None:
+    """Tests edge-name uniqueness across both public Link kinds."""
+
+    first = TestImageBlock()
+    second = TestImageBlock()
+    third = TestImageBlock()
+
+    link(first, second, name='shared-name')
+
+    with self.assertRaises(GraphStructureError):
+      ImageLink(first, third, name='shared-name')
+
+    self.assertEqual(len(first.outputs), 1)
+    self.assertEqual(len(first.img_outputs), 0)
+    self.assertEqual(len(third.img_inputs), 0)
+    self.assertEqual(link_graph.link_names(), ('shared-name',))
+
+  def test_image_links_are_registered_and_validated(self) -> None:
+    """Tests ImageLink registration, duplicate edges, and image cycles."""
+
+    first = TestImageBlock()
+    second = TestImageBlock()
+    third = TestImageBlock()
+
+    first_link = ImageLink(first, second, name='first-image')
+    second_link = ImageLink(second, third, name='second-image')
+
+    self.assertEqual(first.img_outputs, [first_link])
+    self.assertEqual(second.img_inputs, [first_link])
+    self.assertEqual(second.img_outputs, [second_link])
+    self.assertEqual(third.img_inputs, [second_link])
+    self.assertEqual(link_graph.link_names('image'),
+                     ('first-image', 'second-image'))
+
+    with self.assertRaises(GraphStructureError):
+      ImageLink(first, second, name='parallel-image')
+    with self.assertRaises(GraphStructureError):
+      ImageLink(third, first, name='cyclic-image')
+
+    self.assertEqual(len(first.img_outputs), 1)
+    self.assertEqual(len(second.img_inputs), 1)
+    self.assertEqual(len(third.img_outputs), 0)
+    self.assertEqual(len(first.img_inputs), 0)
+    self.assertEqual(link_graph.link_names('image'),
+                     ('first-image', 'second-image'))
+
+  def test_image_link_rejects_non_image_blocks_without_graph_changes(self) \
+      -> None:
+    """Tests that endpoint validation happens before graph registration."""
+
+    regular = TestBlock()
+    image = TestImageBlock()
+
+    with self.assertRaises(NotImplementedError):
+      ImageLink(regular, image, name='invalid-image')
+
+    self.assertEqual(link_graph.link_names('image'), tuple())
+    self.assertEqual(image.img_inputs, list())
 
   def test_send(self) -> None:
     """Tests the different accepted inputs of Block.send."""
