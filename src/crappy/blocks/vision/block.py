@@ -102,36 +102,36 @@ class VisionBlock(Block, ABC):
 
     super().__init__()
 
-    # Indicates that this Block is meant for handling images
-    self.is_vision_block = True
-
-    # Validate Block-level arguments before setting them
-    if (freq is not None and
-        (not (isinstance(freq, int) or isinstance(freq, float)) or
-         freq <= 0)):
-      raise ValueError("If provided, freq should be a strictly positive float")
-    if debug is not None and not isinstance(debug, bool):
-      raise ValueError("If provided, debug should be a boolean")
-    if display_freq is not None and not isinstance(display_freq, bool):
-      raise ValueError("If provided, display_freq should be a boolean")
+    # Set Block-level arguments
     self.freq = freq
     self.display_freq = display_freq
     self.debug = debug
+    self.is_vision_block = True
 
     # The lists of input and output ImageLinks
     self.img_outputs: list[ImageLink] = list()
     self.img_inputs: list[ImageLink] = list()
 
+    # List of configuration requests received from downstream Blocks
+    # Access it through the property, not this private attribute
+    self._config_requests_in: list[ConfigRequest] = list()
+    # List of configuration requests emitted by this Block
+    self._config_requests_out: list[ConfigRequest] = list()
+
     # If provided, the shape and dtype must be valid
+    if img_shape is not None and not isinstance(img_shape, tuple):
+      raise TypeError("When provided, img_shape must be a tuple of 2 or 3 "
+                      "strictly positive integers")
+    if img_shape is not None and not 1 < len(img_shape) < 4:
+      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
+                       "strictly positive integers")
     if (img_shape is not None and
-       (not isinstance(img_shape, tuple) or
-        len(img_shape) not in (2, 3) or
-        not all(isinstance(el, int) for el in img_shape))):
-      raise ValueError("The image shape should be a 2- or 3-tuple of "
-                       "integers")
-    if img_dtype is not None and not isinstance(img_dtype, str):
-      raise ValueError("The image dtype should be a valid Numpy type, "
-                       "provided as a string")
+        not all(isinstance(el, int) for el in img_shape)):
+      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
+                       "strictly positive integers")
+    if (img_dtype is not None and
+        (not isinstance(img_dtype, str) or not img_dtype)):
+      raise ValueError("When provided, img_dtype must be a non-empty string")
 
     # Information on the output images
     self._img_shape: tuple[int, int] | tuple[int, int, int] | None = img_shape
@@ -284,10 +284,10 @@ class VisionBlock(Block, ABC):
 
     # Make sure the mandatory keys are provided
     if 'ImageUniqueID' not in metadata:
-      raise ValueError("The metadata to send must constain an 'ImageUniqueID' "
+      raise ValueError("The metadata to send must contain an 'ImageUniqueID' "
                        "key")
     if 't(s)' not in metadata:
-      raise ValueError("The metadata to send must constain a 't(s)' key")
+      raise ValueError("The metadata to send must contain a 't(s)' key")
 
     # Double-check image type and dtype consistency
     if img.dtype != self._out_link_data.npy_buffer.dtype:

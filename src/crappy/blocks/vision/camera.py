@@ -13,12 +13,6 @@ from ...tool.camera_config import CameraConfig
 from ...camera import Camera as BaseCam
 from ..._global import CameraConfigError
 
-"""
-Argument lets source know it has to use a specific configuration window
-Otherwise, rely on a graph, that is anyway generated to avoid cyclicity
-Maybe the extra argument can override the graph finding
-"""
-
 
 class CameraSource(VisionBlock):
   """This :class:`~crappy.blocks.vision.VisionBlock` can drive a
@@ -139,6 +133,11 @@ class CameraSource(VisionBlock):
 
     self._camera: BaseCam | None = None
 
+    if not isinstance(camera, str):
+      raise TypeError("camera must be a string")
+    if not camera and image_generator is None:
+      raise ValueError("camera must be a non-empty string")
+
     # Checking for deprecated names
     if camera in deprecated_cameras:
       raise NotImplementedError(
@@ -152,24 +151,24 @@ class CameraSource(VisionBlock):
         possible = ', '.join(sorted(camera_dict.keys()))
         raise ValueError(f"Unknown Camera type: {camera}! "
                          f"The possible types are: {possible}")
-      self._camera_name = camera
+      self._camera_name: str = camera
     else:
-      self._camera_name = 'Image Generator'
+      self._camera_name: str = 'Image Generator'
 
     # Incrementing the count of opened cameras for this camera type
     CameraSource.cam_count[self._camera_name] += 1
 
-    # Validate arguments before setting them
+    # Checking the validity of the provided arguments
+    if transform is not None and not callable(transform):
+      raise TypeError("When provided, transform must be a callable")
+    if not isinstance(config, bool):
+      raise TypeError("config must be a boolean")
     if (software_trig_label is not None and
         (not isinstance(software_trig_label, str) or not software_trig_label)):
-      raise ValueError("If provided, software_trig_label must be a non-empty "
-                       "string")
-    if config is not None and not isinstance(config, bool):
-      raise ValueError("If provided, config should be a boolean")
-    if transform is not None and not callable(transform):
-      raise ValueError("If provided, transform should be a callable")
+      raise ValueError("When provided, software_trig_label must be a "
+                       "non-empty string")
     if image_generator is not None and not callable(image_generator):
-      raise ValueError("If provided, image_generator should be a callable")
+      raise TypeError("When provided, image_generator must be a callable")
 
     # Setting the other attributes
     self._trig_label: str | None = software_trig_label
@@ -239,7 +238,7 @@ class CameraSource(VisionBlock):
 
     # Ensuring a dtype and a shape were given for the image
     if self._img_dtype is None or self._img_shape is None:
-      raise ValueError(f"Cannot launch the Camera processes for camera "
+      raise ValueError(f"Cannot launch the CameraSource for camera "
                        f"{self._camera_name} as the image shape and/or dtype "
                        f"wasn't specified.\n Please specify it in the args, or"
                        f" enable the configuration window.")

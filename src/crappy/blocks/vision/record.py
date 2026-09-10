@@ -95,20 +95,19 @@ class ImageRecorder(VisionBlock):
                      freq=freq)
 
     # Validate arguments before setting them
-    if not isinstance(img_extension, str) or not img_extension:
-      raise TypeError("If provided, img_extension must be a non-empty string")
+    if not img_extension and (save_backend is None or save_backend != 'npy'):
+      raise ValueError("img_extension must be a non-empty string")
     if (save_folder is not None and
-        not isinstance(save_folder, Path) and
-        not isinstance(save_folder, str)):
-      raise TypeError("When provided, the save_folder must be a Path object "
-                      "or a string")
+        ((not isinstance(save_folder, str) or not save_folder)
+         and not isinstance(save_folder, Path))):
+      raise ValueError("When provided, save_folder must be a non-empty string "
+                       "or a Path")
     if not isinstance(save_period, int) or save_period < 1:
-      raise ValueError("save_period must be strictly positive integer")
-    if (save_backend is not None and
-        (not isinstance(save_backend, str) or
-         save_backend not in ('sitk', 'pil', 'cv2', 'npy'))):
-      raise ValueError("save_backend must be one of 'sitk', 'pil', 'cv2', "
-                       "'npy'")
+      raise ValueError("save_period must be a strictly positive integer")
+    if save_backend is not None and save_backend not in ('sitk', 'pil',
+                                                         'cv2', 'npy'):
+      raise ValueError("When provided, save_backend must be one of 'sitk', "
+                       "'pil', 'cv2', 'npy'")
 
     # Trying the different possible backends and checking if the given one
     # is correct
