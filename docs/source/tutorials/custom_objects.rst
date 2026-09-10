@@ -948,9 +948,12 @@ access and their meaning :
   beginning of the test. It can only be read starting from
   :meth:`~crappy.blocks.Block.begin`.
 - :attr:`~crappy.blocks.Block.name` contains the unique, non-empty name
-  attributed to the Block by Crappy. It can be read at any time, and even
-  modified. This name is only used for logging, and appears in the log messages
-  for identifying where a message comes from.
+  attributed to the Block by Crappy. It can be read at any time. It should only
+  be modified in :meth:`~crappy.blocks.Block.__init__`. The name identifies the
+  Block both in log messages and in Crappy's :class:`~crappy.links.LinkGraph`.
+  Renaming it before the processes start also updates all already-created Links
+  connected to it; renaming it while the Block is running raises
+  :exc:`RuntimeError`.
 - :attr:`~crappy.blocks.Block.pausable` is a :obj:`bool` property indicating
   whether the Block is affected when a pause is started by a
   :class:`~crappy.blocks.Pause` Block. By default, most Blocks are affected

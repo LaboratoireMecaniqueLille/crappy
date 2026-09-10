@@ -1447,7 +1447,9 @@ class Block(Process, ABC):
   def name(self) -> str:
     """Unique, non-empty name used in logs and the Link connection graph.
 
-    Assigning a new name also updates Crappy's global Block-name registry.
+    Assigning a new name before the Block starts also updates Crappy's global
+    Block-name registry as well as the connection graph. A running Block cannot
+    be renamed.
 
     .. versionadded:: 2.1.0
     """
@@ -1464,6 +1466,10 @@ class Block(Process, ABC):
     # Checking that the name doesn't already exist
     if val != self._name and val in self.names:
       raise ValueError(f"The name {val} is already in use by another Block!")
+    if self.is_alive():
+      raise RuntimeError("Cannot edit a Block's name at runtime!")
+    # Update the LinkGraph
+    link_graph.rename_node(self._name, val)
     # Set new name and update the list of names currently in use
     if self._name in self.names:
       self.names.remove(self._name)
