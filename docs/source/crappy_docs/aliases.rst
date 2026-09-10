@@ -2,9 +2,11 @@
 Aliases
 =======
 
-Link Method
------------
+Link Methods
+------------
 .. autofunction:: crappy.link
+
+.. autofunction:: crappy.img_link
 
 Open Online Documentation
 -------------------------
