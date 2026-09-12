@@ -381,6 +381,11 @@ class CameraSource(VisionBlock):
       if config is not None:
         config.stop()
       raise CameraConfigError
+    # Special case of KeyboardInterrupt because it's a non-local exception
+    except KeyboardInterrupt:
+      if config is not None:
+        config.stop()
+      raise
 
     # Getting the image dtype and shape for setting the shared Array
     if config.shape is not None:

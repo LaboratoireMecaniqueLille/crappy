@@ -808,7 +808,8 @@ class Camera(Block):
     handoff occurs before the CameraProcess starts.
 
     Exceptions raised by the configuration window are converted to
-    :exc:`~crappy._global.CameraConfigError` after the window is stopped.
+    :exc:`~crappy._global.CameraConfigError` after the window is stopped. A
+    :exc:`KeyboardInterrupt` is instead propagated unchanged after cleanup.
 
     It is common to all camera-related Blocks, except for those that don't have
     a configuration window. Child Blocks should normally customize
@@ -835,6 +836,11 @@ class Camera(Block):
       if config is not None:
         config.stop()
       raise CameraConfigError
+    # Special case of KeyboardInterrupt because it's a non-local exception
+    except KeyboardInterrupt:
+      if config is not None:
+        config.stop()
+      raise
 
     # Getting the image dtype and shape for setting the shared Array
     if config.shape is not None:
