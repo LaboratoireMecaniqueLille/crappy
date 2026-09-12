@@ -395,6 +395,18 @@ class CameraSource(VisionBlock):
 
     # Getting the image dtype and shape for setting the shared Array
     if config.shape is not None:
+      if self._img_shape is not None and self._img_shape != config.shape:
+        self.log(logging.WARNING, f"The img_shape from the configuration "
+                                  f"window {config_class.__name__} "
+                                  f"({config.shape}) is different from the "
+                                  f"existing one ({self._img_shape}), setting "
+                                  f"it anyway to the new value")
       self._img_shape = config.shape
     if config.dtype is not None:
+      if self._img_dtype is not None and self._img_dtype != str(config.dtype):
+        self.log(logging.WARNING, f"The img_dtype from the configuration "
+                                  f"window {config_class.__name__} "
+                                  f"({config.dtype}) is different from the "
+                                  f"existing one ({self._img_dtype}), setting "
+                                  f"it anyway to the new value")
       self._img_dtype = str(config.dtype)
