@@ -83,7 +83,7 @@ class ImageDisplayer(VisionBlock):
         not isinstance(framerate, float))
         or framerate <= 0):
       raise ValueError("framerate must be a strictly positive float or int")
-    if framerate > freq:
+    if freq is not None and framerate > freq:
       raise ValueError("The displayer framerate is by nature inferior to the "
                        "freq!")
     self._framerate: float = framerate
