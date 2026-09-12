@@ -5,9 +5,12 @@ from time import time
 import numpy as np
 import logging
 from math import ceil, log2
+from itertools import chain
+from collections.abc import Sequence
 
 from .block import VisionBlock
 from ..._global import OptionalModule
+from ...tool.camera_config import Overlay
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
@@ -109,6 +112,8 @@ class ImageDisplayer(VisionBlock):
     self._ax = None
     self._fig = None
     self._last_upd: float = float('-inf')
+    self._overlay_buffer: dict[str, Sequence[Overlay | None]] = dict()
+    self._last_warn: float = -float('inf')
 
   def __new__(cls, *args, **kwargs):
     """When instantiating a new displayer, increments the Displayer counter."""
@@ -120,8 +125,6 @@ class ImageDisplayer(VisionBlock):
     """Initializes the Displayer window"""
 
     # Ensuring Link consistency
-    if self.inputs:
-      raise IOError("This Block does not accept input Links")
     if self.img_outputs:
       raise IOError("This VisionBlock does not support output ImageLink")
     if not self.img_inputs:
@@ -144,6 +147,31 @@ class ImageDisplayer(VisionBlock):
     In addition, a message containing information on each displayed image is
     sent through the output :class:`~crappy.links.Link` if any.
     """
+
+    # Update overlay buffer with latest overlays received from upstream Blocks
+    # Not using regular Block methods as we need to differentiate overlays here
+    for link in self.inputs:
+      if 'overlay' in (data := link.recv_last()):
+        try:
+          overlays = tuple(data['overlay'])
+        except (Exception,):
+          if time() - self._last_warn > 2:
+            self.log(logging.WARNING, f"Ignoring invalid overlay data received"
+                                      f" from Link {link.name}: expected an "
+                                      f"iterable of Overlay objects")
+            self._last_warn = time()
+          continue
+
+        if not all(overlay is None or isinstance(overlay, Overlay)
+                   for overlay in overlays):
+          if time() - self._last_warn > 2:
+            self.log(logging.WARNING, f"Ignoring invalid overlay data received"
+                                      f" from Link {link.name}: expected only "
+                                      f"Overlay objects or None placeholders")
+            self._last_warn = time()
+          continue
+
+        self._overlay_buffer[link.name] = overlays
 
     # Enforce framerate by skipping loops
     if time() - self._last_upd < 1 / self._framerate:
@@ -184,6 +212,13 @@ class ImageDisplayer(VisionBlock):
         img = img.astype(np.uint8)
     else:
       img = img.copy()
+
+    # Drawing the latest known overlays
+    for overlay in chain.from_iterable(self._overlay_buffer.values()):
+      if overlay is not None:
+        self.log(logging.DEBUG, f"Drawing {overlay} on top of the image to "
+                                "display")
+        overlay.draw(img)
 
     # Calling the right update method
     if self._backend == 'cv2':
