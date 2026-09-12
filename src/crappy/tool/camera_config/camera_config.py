@@ -60,7 +60,9 @@ class CameraConfig(tk.Tk):
                camera: Camera,
                log_queue: MPQueue,
                log_level: int | None,
-               max_freq: float | None) -> None:
+               max_freq: float | None,
+               *_,
+               **__) -> None:
     """Initializes the interface and displays it.
 
     Args:
