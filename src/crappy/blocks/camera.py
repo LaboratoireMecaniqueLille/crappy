@@ -17,7 +17,8 @@ from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam, deprecated_cameras
 from ..tool.camera_config import CameraConfig
-from .._global import CameraPrepareError, CameraRuntimeError, CameraConfigError
+from .._global import (CameraPrepareError, CameraRuntimeError,
+                       CameraConfigError, PrepareError)
 
 
 class DummyCam(BaseCam):
@@ -486,6 +487,15 @@ class Camera(Block):
       self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
       self._camera.open(**self._camera_kwargs)
       self.log(logging.INFO, f"Opened the {self._camera_name} Camera")
+
+    # Fail early in case of inconsistent state
+    if self._ready_barrier is None:
+      raise ValueError("The ready Barrier should be set at this point")
+    if self._stop_event is None:
+      raise ValueError("The stop Event should be initialized at this point")
+    if self._ready_barrier.broken or self._stop_event.is_set():
+      raise PrepareError("An exception occurred in another Block, "
+                         "aborting")
 
     # Displaying the configuration window if required
     if self._config_cam:
