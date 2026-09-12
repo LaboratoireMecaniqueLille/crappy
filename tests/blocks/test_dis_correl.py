@@ -164,7 +164,11 @@ class TestDISCorrel(CameraWrapperTestBase):
   def test_configure_forwards_camera_and_box(self) -> None:
     """Checks DISCorrelConfig receives the current Camera and ROI."""
 
+    def transform(img):
+      return img
+
     block = DISCorrel(patch=(0, 0, 2, 2),
+                      transform=transform,
                       **self.camera_kwargs(config=True))
     block._camera = sentinel.camera
     block._log_queue = sentinel.log_queue
@@ -181,4 +185,5 @@ class TestDISCorrel(CameraWrapperTestBase):
                                    sentinel.log_queue,
                                    30,
                                    123,
+                                   transform,
                                    sentinel.box)

@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import numpy as np
 import numpy.dtypes as np_dt
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
@@ -140,3 +141,25 @@ class TestLoopImg(ConfigurationWindowTestBase):
     self.assertIsNotNone(self._config._pil_img)
     self.assertIsNotNone(self._config._hist)
     self.assertIsNotNone(self._config._pil_hist)
+
+  def test_loop_applies_transform_before_recording_image_properties(
+      self) -> None:
+    """Tests that preview shape and dtype describe transformed images."""
+
+    transformed = list()
+
+    def transform(img: np.ndarray) -> np.ndarray:
+      ret = np.flipud(img[:120, :160]).astype(np.uint16)
+      transformed.append(ret)
+      return ret
+
+    self._config._transform = transform
+    self.run_config_cycle(elapsed=0.5)
+
+    self.assertEqual(len(transformed), 1)
+    self.assertEqual(self._config.shape, (120, 160))
+    self.assertEqual(self._config.dtype, np.dtype('uint16'))
+    bit_depth = int(np.ceil(np.log2(int(np.max(transformed[0])) + 1)))
+    np.testing.assert_array_equal(self._config._original_img,
+                                  (transformed[0] /
+                                   2 ** (bit_depth - 8)).astype(np.uint8))

@@ -152,7 +152,11 @@ class TestDICVE(CameraWrapperTestBase):
   def test_configure_forwards_camera_and_patches(self) -> None:
     """Checks DICVEConfig receives the current Camera and patches."""
 
+    def transform(img):
+      return img
+
     block = DICVE(patches=[(0, 0, 2, 2)],
+                  transform=transform,
                   **self.camera_kwargs(config=True))
     block._camera = sentinel.camera
     block._log_queue = sentinel.log_queue
@@ -169,4 +173,5 @@ class TestDICVE(CameraWrapperTestBase):
                                    sentinel.log_queue,
                                    30,
                                    123,
+                                   transform,
                                    sentinel.patches)

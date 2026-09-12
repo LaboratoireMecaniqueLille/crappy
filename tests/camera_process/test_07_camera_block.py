@@ -1,13 +1,13 @@
 # coding: utf-8
 
-from multiprocessing import Event, Queue, Value
+from multiprocessing import Barrier, Event, Queue, Value
 from threading import BrokenBarrierError, Thread
 from typing import Any
 import logging
 import numpy as np
 from unittest.mock import MagicMock, patch, sentinel
 from crappy import Block
-from crappy._global import CameraPrepareError, CameraRuntimeError
+from crappy._global import CameraPrepareError, CameraRuntimeError, PrepareError
 from crappy.blocks.camera import Camera
 import crappy.blocks.camera as camera_module
 
@@ -305,6 +305,26 @@ class TestCameraBlock(CameraBlockTestBase):
 
     config.get_config.assert_called_once_with()
     process.set_config.assert_not_called()
+
+  def test_configure_factory_forwards_transform(self) -> None:
+    """Tests that CameraConfig previews the transformed camera image."""
+
+    def transform(img: np.ndarray) -> np.ndarray:
+      return img
+
+    camera = self.make_camera(transform=transform)
+    camera._camera = sentinel.camera
+
+    with patch.object(camera_module, 'CameraConfig',
+                      return_value=sentinel.config) as config_class:
+      ret = camera._configure()
+
+    self.assertIs(ret, sentinel.config)
+    config_class.assert_called_once_with(sentinel.camera,
+                                         camera._log_queue,
+                                         camera._log_level,
+                                         camera.freq,
+                                         transform)
 
   def test_prepare_broken_barrier(self) -> None:
     """Tests that Camera.prepare converts a broken barrier into an error."""

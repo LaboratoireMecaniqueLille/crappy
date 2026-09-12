@@ -30,6 +30,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     self._config = VideoExtensoConfig(self._camera, self._log_queue,
                                       self._log_level, self._freq,
+                                      None,
                                       white_spots=False,
                                       num_spots=None,
                                       min_area=150,

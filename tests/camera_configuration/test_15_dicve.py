@@ -25,7 +25,7 @@ class TestDICVE(ConfigurationWindowTestBase):
     setting a smaller patch size value for the tests."""
 
     self._config = DICVEConfig(self._camera, self._log_queue,
-                               self._log_level, self._freq, SpotsBoxes())
+                               self._log_level, self._freq, None, SpotsBoxes())
 
     self._config._testing = True
     self._config._patch_size.value = 20

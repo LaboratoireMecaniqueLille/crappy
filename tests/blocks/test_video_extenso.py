@@ -88,7 +88,11 @@ class TestVideoExtenso(CameraWrapperTestBase):
   def test_configure_forwards_camera_and_detector_options(self) -> None:
     """Checks VideoExtensoConfig receives Camera and detector options."""
 
-    block = VideoExtenso(**self.camera_kwargs(config=True))
+    def transform(img):
+      return img
+
+    block = VideoExtenso(transform=transform,
+                         **self.camera_kwargs(config=True))
     block._camera = sentinel.camera
     block._log_queue = sentinel.log_queue
     block._log_level = 30
@@ -103,6 +107,7 @@ class TestVideoExtenso(CameraWrapperTestBase):
                                    sentinel.log_queue,
                                    30,
                                    123.0,
+                                   transform,
                                    white_spots=False,
                                    num_spots=None,
                                    min_area=150,
