@@ -154,6 +154,8 @@ class CameraBlockTestBase(CameraProcessTestBase):
     self._camera_block._log_queue = Queue()
     self._queues.append(self._camera_block._log_queue)
     self._camera_block._instance_t0 = Value('d', 1.0)
+    self._camera_block._ready_barrier = Barrier(1)
+    self._camera_block._stop_event = Event()
 
     return self._camera_block
 
@@ -325,6 +327,32 @@ class TestCameraBlock(CameraBlockTestBase):
                                          camera._log_level,
                                          camera.freq,
                                          transform)
+
+  def test_configure_stops_window_on_keyboard_interrupt(self) -> None:
+    """Tests that an interrupted configuration window is cleaned up."""
+
+    camera = self.make_camera()
+    config = MagicMock()
+    config.start.side_effect = KeyboardInterrupt
+
+    with (patch.object(camera, '_configure', return_value=config),
+          self.assertRaises(KeyboardInterrupt)):
+      camera.configure()
+
+    config.stop.assert_called_once_with()
+
+  def test_prepare_aborts_before_configuration_after_external_failure(
+      self) -> None:
+    """Tests that a failed peer prevents opening the configuration GUI."""
+
+    camera = self.make_camera(config=True)
+    camera._stop_event.set()
+
+    with (patch.object(camera, 'configure') as configure,
+          self.assertRaises(PrepareError)):
+      camera.prepare()
+
+    configure.assert_not_called()
 
   def test_prepare_broken_barrier(self) -> None:
     """Tests that Camera.prepare converts a broken barrier into an error."""

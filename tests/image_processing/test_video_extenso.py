@@ -16,9 +16,10 @@ from crappy.tool.image_processing.video_extenso.video_extenso import VideoExtens
 class FakePipe:
   """Pipe-like test double for VideoExtensoTool tests."""
 
-  def __init__(self, responses=None, send_error=None) -> None:
+  def __init__(self, responses=None, send_error=None, recv_error=None) -> None:
     self.responses = list(responses or [])
     self.send_error = send_error
+    self.recv_error = recv_error
     self.sent = list()
     self.closed = False
 
@@ -31,6 +32,8 @@ class FakePipe:
     return bool(self.responses)
 
   def recv(self):
+    if self.recv_error is not None:
+      raise self.recv_error
     return self.responses.pop(0)
 
   def close(self) -> None:
@@ -198,6 +201,7 @@ class TestVideoExtensoTool(TestCase):
     pipe_1 = FakePipe([old_box, new_box])
     pipe_2 = FakePipe([second_box])
     tool._pipes = [pipe_1, pipe_2]
+    tool._trackers = [FakeTracker(), FakeTracker()]
     sent = list()
 
     def send(pipe, value) -> None:
@@ -216,6 +220,7 @@ class TestVideoExtensoTool(TestCase):
     self.assertEqual(ret[0], [(15, 16), (15, 38)])
     self.assertEqual(ret[1], 0)
     self.assertAlmostEqual(ret[2], 10.0)
+    tool._trackers.clear()
 
   def test_get_data_keeps_previous_box_without_tracker_reply(self) -> None:
     """Checks latest-known-state behavior when no fresh result is ready."""
@@ -224,11 +229,13 @@ class TestVideoExtensoTool(TestCase):
     spots = self._spots(first_box)
     tool = self._make_tool(spots, border=0)
     tool._pipes = [FakePipe()]
+    tool._trackers = [FakeTracker()]
     tool._send = lambda *_: None
 
     self.assertEqual(tool.get_data(np.zeros((40, 40), dtype=np.uint8)),
                      ([(15.0, 15.0)], 0.0, 0.0))
     self.assertIs(tool.spots.spot_1, first_box)
+    tool._trackers.clear()
 
   def test_get_data_raises_when_tracker_returns_error(self) -> None:
     """Checks propagation of tracker-side failures."""
@@ -236,6 +243,7 @@ class TestVideoExtensoTool(TestCase):
     spots = self._spots(self._box(10, 20, 10, 20))
     tool = self._make_tool(spots)
     tool._pipes = [FakePipe(['stop'])]
+    tool._trackers = [FakeTracker()]
     tool._send = lambda *_: None
     tool._log = lambda *_: None
     stopped = list()
@@ -245,6 +253,7 @@ class TestVideoExtensoTool(TestCase):
       tool.get_data(np.zeros((40, 40), dtype=np.uint8))
 
     self.assertEqual(stopped, [True])
+    tool._trackers.clear()
 
   def test_safe_mode_overlap_raises(self) -> None:
     """Checks overlap handling in safe mode."""
@@ -255,6 +264,7 @@ class TestVideoExtensoTool(TestCase):
     overlap_1 = self._box(10, 25, 10, 25)
     overlap_2 = self._box(20, 35, 20, 35)
     tool._pipes = [FakePipe([overlap_1]), FakePipe([overlap_2])]
+    tool._trackers = [FakeTracker(), FakeTracker()]
     tool._send = lambda *_: None
     tool._log = lambda *_: None
     stopped = list()
@@ -264,6 +274,62 @@ class TestVideoExtensoTool(TestCase):
       tool.get_data(np.zeros((50, 50), dtype=np.uint8))
 
     self.assertEqual(stopped, [True])
+    tool._trackers.clear()
+
+  def test_get_data_rejects_missing_trackers(self) -> None:
+    """Checks that tracking cannot silently run before startup."""
+
+    tool = self._make_tool(self._spots(self._box(10, 20, 10, 20)))
+
+    with self.assertRaises(RuntimeError):
+      tool.get_data(np.zeros((40, 40), dtype=np.uint8))
+
+  def test_get_data_preserves_lost_spot_from_dead_tracker(self) -> None:
+    """Checks a queued loss report is read before checking liveness."""
+
+    tool = self._make_tool(self._spots(self._box(10, 20, 10, 20)))
+    tool._pipes = [FakePipe(['stop'], send_error=BrokenPipeError)]
+    tool._trackers = [FakeTracker(alive=False)]
+    tool._send = lambda pipe, value: pipe.send(value)
+    tool._log = lambda *_: None
+    stopped = list()
+    tool.stop_tracking = lambda: stopped.append(True)
+
+    with self.assertRaises(LostSpotError):
+      tool.get_data(np.zeros((40, 40), dtype=np.uint8))
+
+    self.assertEqual(stopped, [True])
+
+  def test_get_data_rejects_dead_tracker_without_loss_report(self) -> None:
+    """Checks an unexpectedly dead Tracker cannot return stale data."""
+
+    tool = self._make_tool(self._spots(self._box(10, 20, 10, 20)))
+    tool._pipes = [FakePipe([None], recv_error=EOFError)]
+    tool._trackers = [FakeTracker(alive=False)]
+    tool._send = lambda *_: None
+    stopped = list()
+    tool.stop_tracking = lambda: stopped.append(True)
+
+    with self.assertRaises(RuntimeError):
+      tool.get_data(np.zeros((40, 40), dtype=np.uint8))
+
+    self.assertEqual(stopped, [True])
+
+  def test_get_data_applies_final_box_from_dead_tracker(self) -> None:
+    """Checks a dead Tracker's queued position is not discarded."""
+
+    initial_box = self._box(10, 20, 10, 20)
+    final_box = self._box(12, 22, 11, 21)
+    tool = self._make_tool(self._spots(initial_box))
+    tool._pipes = [FakePipe([final_box])]
+    tool._trackers = [FakeTracker(alive=False)]
+    tool._send = lambda *_: None
+    tool.stop_tracking = lambda: None
+
+    with self.assertRaises(RuntimeError):
+      tool.get_data(np.zeros((40, 40), dtype=np.uint8))
+
+    self.assertIs(tool.spots.spot_1, final_box)
 
   def test_overlap_helpers(self) -> None:
     """Checks Box and bbox overlap helpers."""
