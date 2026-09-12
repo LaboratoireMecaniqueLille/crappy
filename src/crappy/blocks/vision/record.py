@@ -214,6 +214,9 @@ class ImageRecorder(VisionBlock):
     # Nothing to do if no new image was received
     if not (upd_links := self.receive_imgs()):
       self.log(logging.DEBUG, "No new image received during this loop")
+      # If requested, displays the FPS of the image display
+      if self.display_freq:
+        self._print_freq(img_handled=False)
       return
     # Get the ImageLink name
     upd_link, = upd_links
@@ -225,6 +228,9 @@ class ImageRecorder(VisionBlock):
         self._save_period):
       self.log(logging.DEBUG, "Not processing because haven't reached the "
                               "save period yet")
+      # If requested, displays the FPS of the image display
+      if self.display_freq:
+        self._print_freq(img_handled=False)
       return
     # Storing the latest index
     self._last_processed_idx = img_idx
@@ -302,7 +308,7 @@ class ImageRecorder(VisionBlock):
 
     # If requested, displays the FPS of the image display
     if self.display_freq:
-      self._print_freq()
+      self._print_freq(img_handled=True)
 
   def _pil_exif(self, metadata: dict[str, Any]):
     """Parses the metadata of the current image and converts it to a

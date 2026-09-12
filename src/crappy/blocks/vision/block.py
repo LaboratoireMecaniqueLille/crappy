@@ -539,15 +539,19 @@ class VisionBlock(Block, ABC):
 
     return img_buffer, npy_buffer
 
-  def _print_freq(self) -> None:
+  def _print_freq(self, img_handled: bool) -> None:
     """Helper method displaying every 2 seconds the actual number of frames
     handled per seconds.
+
+    Args:
+      img_handled: :obj:`True` if a frame was handled during this loop,
+      :obj:`False` otherwise.
 
     This number can be different from the number of loops per seconds, since
     some loops might abort without actually handling a frame.
     """
 
-    self._fps_count += 1
+    self._fps_count += int(img_handled)
     t = time()
     if t - self._last_fps_img > 2:
       self.log(logging.INFO, f"Frames handled per second: "

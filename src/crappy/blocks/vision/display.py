@@ -149,6 +149,9 @@ class ImageDisplayer(VisionBlock):
     if time() - self._last_upd < 1 / self._framerate:
       self.log(logging.DEBUG, "Too early to loop, to achieve the desired "
                               "framerate")
+      # If requested, displays the FPS of the image display
+      if self.display_freq:
+        self._print_freq(img_handled=False)
       return
     # Update last received time
     self._last_upd = time()
@@ -156,6 +159,9 @@ class ImageDisplayer(VisionBlock):
     # Nothing to do if no new image was received
     if not (upd_links := self.receive_imgs()):
       self.log(logging.DEBUG, "No new image received during this loop")
+      # If requested, displays the FPS of the image display
+      if self.display_freq:
+        self._print_freq(img_handled=False)
       return
     # Get the ImageLink name
     upd_link, = upd_links
@@ -195,7 +201,7 @@ class ImageDisplayer(VisionBlock):
 
     # If requested, displays the FPS of the image display
     if self.display_freq:
-      self._print_freq()
+      self._print_freq(img_handled=True)
 
   def finish(self) -> None:
     """Closes the Displayer window."""

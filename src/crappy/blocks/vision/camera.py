@@ -273,6 +273,9 @@ class CameraSource(VisionBlock):
 
     # Waiting for the trig label if one was given
     if self._trig_label is not None and self._trig_label not in data:
+      # If requested, displays the FPS of the image acquisition
+      if self.display_freq:
+        self._print_freq(img_handled=False)
       return
     elif self._trig_label is not None and self._trig_label in data:
       self.log(logging.DEBUG, "Software trigger signal received")
@@ -291,6 +294,9 @@ class CameraSource(VisionBlock):
       raise RuntimeError("The Camera wasn't set whereas it should be")
     if (ret := self._camera.get_image()) is None:
       self.log(logging.DEBUG, "No image grabbed in this loop")
+      # If requested, displays the FPS of the image acquisition
+      if self.display_freq:
+        self._print_freq(img_handled=False)
       return
     self.log(logging.DEBUG, "Acquired an image during this loop")
     metadata, img = ret
@@ -324,7 +330,7 @@ class CameraSource(VisionBlock):
 
     # If requested, displays the FPS of the image acquisition
     if self.display_freq:
-      self._print_freq()
+      self._print_freq(img_handled=True)
 
   def finish(self) -> None:
     """This method stops the image acquisition on the
