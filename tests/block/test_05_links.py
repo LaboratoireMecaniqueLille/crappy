@@ -77,7 +77,7 @@ class TestLinks(BlockTestBase):
 
     self.assertEqual(len(link_graph.link_names('link')), 4)
     self.assertEqual(link_graph.successors(block_2.name, 'link'),
-                     {block_2.name, block_3.name, block_4.name})
+                     (block_2.name, block_3.name, block_4.name))
     self.assertIn(block_2.name,
                   link_graph.descendants(block_2.name, 'link'))
 

@@ -76,6 +76,16 @@ class LinkGraph:
     self._out_edges: dict[str, list[Edge]] = dict()
     self._in_edges: dict[str, list[Edge]] = dict()
 
+  @property
+  def nodes(self) -> dict[str, Node]:
+    """Mapping of registered Block names to their graph nodes.
+
+    The mapping preserves Block insertion order. It is exposed for inspection,
+    graph changes should be made through the dedicated methods.
+    """
+
+    return self._nodes
+
   def add_node(self, name: str, block_type: type) -> None:
     """Adds a Block description to the graph.
 
@@ -192,12 +202,17 @@ class LinkGraph:
 
   def descendants(self,
                   source: str,
-                  kind: Literal["link", "image"] | None = None) -> set[str]:
+                  kind: Literal["link",
+                                "image"] | None = None) -> tuple[str, ...]:
     """Returns all Blocks reachable from a source Block.
 
     Args:
       source: Name of the Block from which to start.
       kind: Optional edge-kind filter.
+
+    Returns:
+      Reachable Block names in breadth-first discovery order, without
+      duplicates.
 
     Raises:
       KeyError: If *source* is not registered.
@@ -207,8 +222,8 @@ class LinkGraph:
     visited = {source}
     # Buffer for iterating over the Links
     queue = deque([source])
-    # Set containing the descendants
-    ret = set()
+    # List containing the descendants
+    ret = list()
 
     # Iterating until we've exhausted all the Links from the source iteratively
     while queue:
@@ -220,37 +235,48 @@ class LinkGraph:
           continue
 
         # Adding the discovered Block to all the relevant buffers
-        ret.add(edge.target)
+        ret.append(edge.target)
         if edge.target not in visited:
           visited.add(edge.target)
           queue.append(edge.target)
 
-    return ret
+    # Use dict to remove duplicate values
+    return tuple(dict.fromkeys(ret))
 
   def successors(self,
                  source: str,
-                 kind: Literal["link", "image"] | None = None) -> set[str]:
+                 kind: Literal["link",
+                               "image"] | None = None) -> tuple[str, ...]:
     """Returns the Blocks directly downstream of a source Block.
 
     Args:
       source: Name of the source Block.
       kind: Optional edge-kind filter.
 
+    Returns:
+      Directly downstream Block names in Link insertion order, without
+      duplicates.
+
     Raises:
       KeyError: If *source* is not registered.
     """
 
-    return {edge.target for edge in self._out_edges[source]
-            if kind is None or edge.kind == kind}
+    return tuple(dict.fromkeys(edge.target for edge in self._out_edges[source]
+                               if kind is None or edge.kind == kind))
 
   def ancestors(self,
                 target: str,
-                kind: Literal["link", "image"] | None = None) -> set[str]:
+                kind: Literal["link",
+                              "image"] | None = None) -> tuple[str, ...]:
     """Returns all Blocks from which a target Block is reachable.
 
     Args:
       target: Name of the Block from which to search backwards.
       kind: Optional edge-kind filter.
+
+    Returns:
+      Reachable upstream Block names in breadth-first discovery order, without
+      duplicates.
 
     Raises:
       KeyError: If *target* is not registered.
@@ -260,8 +286,8 @@ class LinkGraph:
     visited = {target}
     # Buffer for iterating over the Links
     queue = deque([target])
-    # Set containing the ancestors
-    ret = set()
+    # List containing the ancestors
+    ret = list()
 
     # Iterating until we've exhausted all the Links to the target iteratively
     while queue:
@@ -273,39 +299,49 @@ class LinkGraph:
           continue
 
         # Adding the discovered Block to all the relevant buffers
-        ret.add(edge.source)
+        ret.append(edge.source)
         if edge.source not in visited:
           visited.add(edge.source)
           queue.append(edge.source)
 
-    return ret
+    # Use dict to remove duplicate values
+    return tuple(dict.fromkeys(ret))
 
   def predecessors(self,
                    target: str,
-                   kind: Literal["link", "image"] | None = None) -> set[str]:
+                   kind: Literal["link",
+                                 "image"] | None = None) -> tuple[str, ...]:
     """Returns the Blocks directly upstream of a target Block.
 
     Args:
       target: Name of the target Block.
       kind: Optional edge-kind filter.
 
+    Returns:
+      Directly upstream Block names in Link insertion order, without
+      duplicates.
+
     Raises:
       KeyError: If *target* is not registered.
     """
 
-    return {edge.source for edge in self._in_edges[target]
-            if kind is None or edge.kind == kind}
+    return tuple(dict.fromkeys(edge.source for edge in self._in_edges[target]
+                               if kind is None or edge.kind == kind))
 
-  def img_sources(self) -> set[str]:
+  def img_sources(self) -> tuple[str, ...]:
     """Returns image-producing roots in the image-only subgraph.
 
     A Block is an image source when it has at least one outgoing ImageLink and
     no incoming ImageLink.
+
+    Returns:
+      Image-source names in Block insertion order.
     """
 
-    return {name for name in self._nodes
-            if any(edge.kind == "image" for edge in self._out_edges[name]) and
-            not any(edge.kind == "image" for edge in self._in_edges[name])}
+    return tuple(name for name in self._nodes
+                 if any(edge.kind == "image" for edge in self._out_edges[name])
+                 and not any(edge.kind == "image"
+                             for edge in self._in_edges[name]))
 
   def rename_node(self, node: str, new_name: str) -> None:
     """Renames a Block and updates every incident edge atomically.

@@ -139,8 +139,8 @@ class TestLinkGraph(TestCase):
       self.graph.add_edge('edge', 'first', 'third', 'link')
 
     self.assertEqual(self.graph.link_names(), ('edge',))
-    self.assertEqual(self.graph.successors('first'), {'second'})
-    self.assertEqual(self.graph.predecessors('third'), set())
+    self.assertEqual(self.graph.successors('first'), ('second',))
+    self.assertEqual(self.graph.predecessors('third'), tuple())
 
   def test_parallel_regular_edges_require_opt_in(self) -> None:
     """Tests the explicit override for same-kind, same-endpoint edges."""
@@ -232,9 +232,9 @@ class TestLinkGraph(TestCase):
                       self.graph._edges['self'].target),
                      ('renamed', 'renamed'))
     self.assertEqual(self.graph.predecessors('renamed'),
-                     {'first', 'renamed'})
+                     ('first', 'renamed'))
     self.assertEqual(self.graph.successors('renamed'),
-                     {'last', 'renamed'})
+                     ('last', 'renamed'))
 
   def test_rename_node_validates_names(self) -> None:
     """Tests rename validation leaves the graph unchanged."""
