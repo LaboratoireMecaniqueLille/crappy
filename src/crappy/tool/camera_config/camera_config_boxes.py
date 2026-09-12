@@ -4,6 +4,7 @@ import numpy as np
 import tkinter as tk
 import logging
 from multiprocessing.queues import Queue
+from collections.abc import Callable
 
 from .camera_config import CameraConfig
 from .config_tools import Box, SpotsBoxes
@@ -30,7 +31,8 @@ class CameraConfigBoxes(CameraConfig):
                camera: Camera,
                log_queue: Queue,
                log_level: int | None,
-               max_freq: float | None) -> None:
+               max_freq: float | None,
+               transform: Callable[[np.ndarray], np.ndarray] | None) -> None:
     """Initializes the parent class and sets the spots container.
 
     Args:
@@ -49,11 +51,15 @@ class CameraConfigBoxes(CameraConfig):
         Block.
 
         .. versionadded:: 2.0.0
+      transform: A callable taking an image as an argument, and returning a
+        transformed image as an output.
+
+        .. versionadded:: 2.1.0
     """
 
     self._spots = SpotsBoxes()
     self._select_box = Box()
-    super().__init__(camera, log_queue, log_level, max_freq)
+    super().__init__(camera, log_queue, log_level, max_freq, transform)
 
   def _draw_box(self, box: Box) -> None:
     """Draws one line of the box after the other, making sure they fit in the

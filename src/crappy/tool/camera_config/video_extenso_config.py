@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter.messagebox import showerror
 import logging
 from multiprocessing.queues import Queue
+from collections.abc import Callable
+import numpy as np
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box, SpotsDetector, SpotsBoxes
@@ -41,6 +43,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
                log_queue: Queue,
                log_level: int | None,
                max_freq: float | None,
+               transform: Callable[[np.ndarray], np.ndarray] | None,
                white_spots: bool,
                num_spots: int | None,
                min_area: int,
@@ -66,6 +69,10 @@ class VideoExtensoConfig(CameraConfigBoxes):
         Block.
 
         .. versionadded:: 2.0.0
+      transform: A callable taking an image as an argument, and returning a
+        transformed image as an output.
+
+        .. versionadded:: 2.1.0
       white_spots: If :obj:`True`, detects white spots over a black background.
         If :obj:`False`, detects black spots over a white background.
       num_spots: The number of spots to detect, as an :obj:`int` between `1`
@@ -108,7 +115,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
     .. versionremoved:: 2.0.0 *video_extenso* argument
     """
 
-    super().__init__(camera, log_queue, log_level, max_freq)
+    super().__init__(camera, log_queue, log_level, max_freq, transform)
     self._detector: SpotsDetector = SpotsDetector(white_spots=white_spots,
                                                   num_spots=num_spots,
                                                   min_area=min_area,

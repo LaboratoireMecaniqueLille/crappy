@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter.messagebox import showerror
 import logging
 from multiprocessing.queues import Queue
+from collections.abc import Callable
+import numpy as np
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box
@@ -33,6 +35,7 @@ class DISCorrelConfig(CameraConfigBoxes):
                log_queue: Queue,
                log_level: int | None,
                max_freq: float | None,
+               transform: Callable[[np.ndarray], np.ndarray] | None,
                patch: Box) -> None:
     """Initializes the parent class and sets the correlation Box.
 
@@ -52,6 +55,10 @@ class DISCorrelConfig(CameraConfigBoxes):
         Block.
 
         .. versionadded:: 2.0.0
+      transform: A callable taking an image as an argument, and returning a
+        transformed image as an output.
+
+        .. versionadded:: 2.1.0
       patch: The :class:`~crappy.tool.camera_config.config_tools.Box` container
         that will save the information on the patch where to perform image
         correlation.
@@ -62,7 +69,7 @@ class DISCorrelConfig(CameraConfigBoxes):
     self._correl_box: Box = patch
     self._draw_correl_box: bool = True
 
-    super().__init__(camera, log_queue, log_level, max_freq)
+    super().__init__(camera, log_queue, log_level, max_freq, transform)
 
   @property
   def box(self) -> Box:

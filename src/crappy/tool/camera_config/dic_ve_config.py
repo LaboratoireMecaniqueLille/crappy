@@ -4,6 +4,8 @@ from tkinter.messagebox import showerror
 import tkinter as tk
 import logging
 from multiprocessing.queues import Queue
+from collections.abc import Callable
+import numpy as np
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box, SpotsBoxes
@@ -34,6 +36,7 @@ class DICVEConfig(CameraConfigBoxes):
                log_queue: Queue,
                log_level: int | None,
                max_freq: float | None,
+               transform: Callable[[np.ndarray], np.ndarray] | None,
                patches: SpotsBoxes) -> None:
     """Sets the patches and initializes the parent class.
 
@@ -53,6 +56,10 @@ class DICVEConfig(CameraConfigBoxes):
         Block.
 
         .. versionadded:: 2.0.0
+      transform: A callable taking an image as an argument, and returning a
+        transformed image as an output.
+
+        .. versionadded:: 2.1.0
       patches: An instance of
         :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` containing
         the patches to follow for image correlation.
@@ -60,7 +67,7 @@ class DICVEConfig(CameraConfigBoxes):
 
     self._patch_size: CameraScaleSetting | None = None
 
-    super().__init__(camera, log_queue, log_level, max_freq)
+    super().__init__(camera, log_queue, log_level, max_freq, transform)
 
     # Setting the patches
     self._spots: SpotsBoxes = patches

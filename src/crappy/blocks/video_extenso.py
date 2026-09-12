@@ -419,6 +419,7 @@ class VideoExtenso(Camera):
                               self._log_queue,
                               self._log_level,
                               self.freq,
+                              self._transform,
                               white_spots=self._white_spots,
                               num_spots=self._num_spots,
                               min_area=self._min_area,

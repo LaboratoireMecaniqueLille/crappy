@@ -512,4 +512,4 @@ class DICVE(Camera):
                          "but they are not")
 
     return DICVEConfig(self._camera, self._log_queue, self._log_level,
-                       self.freq, self._patches)
+                       self.freq, self._transform, self._patches)

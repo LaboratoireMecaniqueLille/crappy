@@ -483,4 +483,4 @@ class DISCorrel(Camera):
                          "it is not")
 
     return DISCorrelConfig(self._camera, self._log_queue, self._log_level,
-                           self.freq, self._patch)
+                           self.freq, self._transform, self._patch)

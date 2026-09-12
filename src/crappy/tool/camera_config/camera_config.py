@@ -12,6 +12,7 @@ from multiprocessing import current_process, Event, Queue
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
 from typing import Any
+from collections.abc import Callable
 
 from .config_tools import Zoom, HistogramProcess
 from ...camera.meta_camera.camera_setting import CameraBoolSetting, \
@@ -61,6 +62,7 @@ class CameraConfig(tk.Tk):
                log_queue: MPQueue,
                log_level: int | None,
                max_freq: float | None,
+               transform: Callable[[np.ndarray], np.ndarray] | None,
                *_,
                **__) -> None:
     """Initializes the interface and displays it.
@@ -81,6 +83,12 @@ class CameraConfig(tk.Tk):
         Block.
 
         .. versionadded:: 2.0.0
+      transform: A callable taking an image as an argument, and returning a
+        transformed image as an output. The transformed image is used for the
+        preview and for determining the image shape and data type reported to
+        the owning Block.
+
+        .. versionadded:: 2.1.0
     """
 
     super().__init__()
@@ -88,6 +96,7 @@ class CameraConfig(tk.Tk):
     self.shape: tuple[int, int] | tuple[int, int, int] | None = None
     self.dtype = None
     self._logger: logging.Logger | None = None
+    self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
 
     # Instantiating objects for the process managing the histogram calculation
     self._stop_event = Event()
@@ -1125,8 +1134,7 @@ class CameraConfig(tk.Tk):
     self.update()
 
   def _update_img(self) -> None:
-    """Acquires an image from the camera, casts and resizes it, calculates its
-    histogram, displays them and updates the image information."""
+    """Acquires and transforms an image, then updates the GUI information."""
 
     self.log(logging.DEBUG, "Updating the image")
 
@@ -1159,6 +1167,10 @@ class CameraConfig(tk.Tk):
     self._got_first_img = True
     self._n_loops += 1
     _, img = ret
+
+    # Apply the transform operation if one was defined
+    if not no_img and self._transform is not None:
+      img = self._transform(img)
 
     if not no_img and img.dtype != self.dtype:
       self.dtype = img.dtype

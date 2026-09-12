@@ -864,4 +864,4 @@ class Camera(Block):
       raise RuntimeError("The logging Queue was never initialized")
 
     return CameraConfig(self._camera, self._log_queue,
-                        self._log_level, self.freq)
+                        self._log_level, self.freq, self._transform)
