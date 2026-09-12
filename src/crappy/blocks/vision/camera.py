@@ -122,6 +122,10 @@ class CameraSource(VisionBlock):
         disables logging for this Block.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
+      allow_downstream_config: Whether downstream VisionBlocks may request
+        specialized configuration windows. If :obj:`False`, this Block only
+        uses its default configuration window, receiving a downstream request
+        then causes preparation to fail.
       **kwargs: Any additional argument will be passed to the
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.

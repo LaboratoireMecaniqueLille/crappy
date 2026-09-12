@@ -220,7 +220,9 @@ class Block(Process, ABC):
     """Creates the synchronization objects, shares them with the Blocks, and
     starts the :obj:`~multiprocessing.Process` associated to the Blocks.
 
-    Also initializes the :obj:`~logging.Logger` for the Crappy script.
+    Also initializes the :obj:`~logging.Logger` for the Crappy script. For
+    VisionBlocks, configuration requests are routed to their image sources
+    through one-way Pipes before the child Processes start.
 
     Once started with this method, the Blocks will call their
     :meth:`~crappy.blocks.Block.prepare` method and then be blocked by a

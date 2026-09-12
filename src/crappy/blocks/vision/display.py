@@ -22,7 +22,7 @@ except (ModuleNotFoundError, ImportError):
 
 class ImageDisplayer(VisionBlock):
   """This :class:`~crappy.blocks.vision.VisionBlock` can display images
-  received from upstream VisionBlocks Block in a dedicated window.
+  received from an upstream VisionBlock in a dedicated window.
 
   It is meant to serve as a control or validation feature, its resolution is
   thus limited to `640x480` and it should not be used at high framerates.
@@ -30,6 +30,12 @@ class ImageDisplayer(VisionBlock):
   The images can be displayed using two different backends : either using
   :mod:`cv2` (OpenCV), or using :mod:`matplotlib`. OpenCV is by far the fastest
   and most convenient.
+
+  Overlays can be received through regular :class:`~crappy.links.Link` objects
+  under the reserved ``'overlay'`` label. Each value must be an iterable of
+  :class:`~crappy.tool.camera_config.Overlay` objects or :obj:`None`. The
+  latest valid iterable from each Link is retained and drawn on subsequent
+  images. Sending an empty iterable clears the overlays associated with a Link.
 
   .. versionadded:: 2.1.0
   """
