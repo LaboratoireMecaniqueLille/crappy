@@ -166,6 +166,11 @@ class ImageDisplayer(VisionBlock):
     # Get the ImageLink name
     upd_link, = upd_links
 
+    # Handles to the received data
+    metadata = self.last_received[upd_link].metadata
+    if metadata is None:
+      raise RuntimeError("At that point, the image metadata should not be "
+                         "empty")
     img = self.last_received[upd_link].img
 
     # Casting the image to uint8 if it's not already in this format
@@ -190,10 +195,9 @@ class ImageDisplayer(VisionBlock):
     if 't(s)' not in metadata or 'ImageUniqueID' not in metadata:
       raise RuntimeError("At that point, 't(s)' and 'ImageUniqueID' should be "
                          "in the metadata dictionary")
-    self.send({
-      't(s)': self.last_received[upd_link].metadata['t(s)'],
-      'img_index': self.last_received[upd_link].metadata['ImageUniqueID'],
-      'meta': self.last_received[upd_link].metadata})
+    self.send({'t(s)': metadata['t(s)'],
+               'img_index': metadata['ImageUniqueID'],
+               'meta': metadata})
 
     # If requested, displays the FPS of the image display
     if self.display_freq:
