@@ -3,7 +3,8 @@
 from crappy import Block
 from crappy._global import CrappyFail
 from crappy.blocks.meta_block import block as block_module
-from multiprocessing import synchronize, queues, get_start_method, Event
+from multiprocessing import (synchronize, queues, get_start_method, Event,
+                             Pipe)
 from multiprocessing.sharedctypes import Synchronized
 from threading import Thread
 from time import monotonic, sleep
@@ -39,6 +40,21 @@ class TestStartupSequence(BlockTestBase):
   These tests cover the interactions between prepare_all, renice_all,
   launch_all and _cleanup.
   """
+
+  def test_close_inherited_config_connections(self) -> None:
+    """Tests that stale configuration Pipe endpoints are all closed."""
+
+    self._block = TestBlock()
+    recv_conn, send_conn = Pipe(duplex=False)
+    self.addCleanup(recv_conn.close)
+    self.addCleanup(send_conn.close)
+    self._block._config_connections_to_close.extend((recv_conn, send_conn))
+
+    self._block._close_inherited_config_connections()
+
+    self.assertTrue(recv_conn.closed)
+    self.assertTrue(send_conn.closed)
+    self.assertEqual(self._block._config_connections_to_close, list())
 
   def test_prepare_all_prepared(self) -> None:
     """Tests that calling prepare_all twice fails cleanly."""
