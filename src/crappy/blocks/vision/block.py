@@ -515,12 +515,14 @@ class VisionBlock(Block, ABC):
 
     if self._ready_barrier is None:
       raise ValueError("The ready Barrier should be set at this point")
+    if self._stop_event is None:
+      raise ValueError("The stop Event should be initialized at this point")
 
     # Periodically checks if Crappy has crashed, otherwise waits for the
     # upstream buffer to be available
     while not buffer_ready.wait(0.5):
       self.log(logging.DEBUG, f"Buffers with name {name} not ready yet")
-      if self._ready_barrier.broken:
+      if self._ready_barrier.broken or self._stop_event.is_set():
         raise PrepareError("An exception occurred in another Block, aborting")
     self.log(logging.DEBUG, f"Buffer with name {name} ready to be shared")
 
