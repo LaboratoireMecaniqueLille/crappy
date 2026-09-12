@@ -219,37 +219,72 @@ class VideoExtensoTool:
     Returns:
       A :obj:`list` containing :obj:`tuple` with the coordinates of the centers 
       of the detected spots, and the calculated x and y strain values.
+
+    Raises:
+      LostSpotError: If a Tracker reports that its spot was lost.
+      RuntimeError: If the Tracker processes were not started correctly, or
+        if one of them exited without reporting a lost spot.
     
     .. versionchanged:: 1.5.10 renamed from *get_def* to *get_data*
     """
 
+    spots = [(i, spot) for i, spot in enumerate(self.spots)
+             if spot is not None]
+
+    # Make sure one Tracker and Pipe were started for each configured spot
+    if (not self._trackers or
+        len(self._trackers) != len(spots) or
+        len(self._pipes) != len(spots)):
+      raise RuntimeError("The spot Trackers were not started correctly, "
+                         "cannot process image")
+
     # Sending the latest sub-image containing the spot to track
     # Also sending the coordinates of the top left pixel
-    for pipe, spot in zip(self._pipes, self.spots):
-      if spot is None:
-        continue
+    communication_failed = False
+    for pipe, (_, spot) in zip(self._pipes, spots):
       x_top, x_bottom, y_left, y_right = spot.sorted()
       slice_y = slice(max(0, y_left - self._border),
                       min(img.shape[0], y_right + self._border))
       slice_x = slice(max(0, x_top - self._border),
                       min(img.shape[1], x_bottom + self._border))
-      self._send(pipe, (slice_y.start, slice_x.start, img[slice_y, slice_x]))
+      try:
+        self._send(pipe, (slice_y.start, slice_x.start,
+                          img[slice_y, slice_x]))
+      except (BrokenPipeError, EOFError, OSError):
+        # A final result or lost-spot report may still be waiting in the Pipe.
+        communication_failed = True
 
-    for i, (pipe, spot) in enumerate(zip(self._pipes, self.spots)):
-
-      # Receiving the data from the tracker, if there's any
-      if pipe.poll(timeout=0.1):
+    # Receiving the latest available data from each Tracker
+    for pipe, (i, _) in zip(self._pipes, spots):
+      box = None
+      tracker_failed = False
+      try:
+        if not pipe.poll(timeout=0.1):
+          continue
         box = pipe.recv()
+        tracker_failed = isinstance(box, str)
         while pipe.poll():
           box = pipe.recv()
+          tracker_failed |= isinstance(box, str)
+      except (EOFError, OSError):
+        # Keep a response received just before the peer closed its connection.
+        communication_failed = True
 
-        # In case a tracker faced an error, stopping them all and raising
-        if isinstance(box, str):
-          self.stop_tracking()
-          self._log(logging.ERROR, "Tracker process returned exception !")
-          raise LostSpotError
+      if tracker_failed:
+        self.stop_tracking()
+        self._log(logging.ERROR, "Tracker process returned exception !")
+        raise LostSpotError
 
+      if box is not None:
         self.spots[i] = box
+
+    # Only check failures after consuming the Trackers' pending responses.
+    if (communication_failed or
+        any(not tracker.is_alive() for tracker in self._trackers)):
+      self.stop_tracking()
+      raise RuntimeError("At least one spot Tracker is dead or unreachable "
+                         "and did not report a lost spot, cannot process "
+                         "image")
 
     overlap = False
 
