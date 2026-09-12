@@ -3,7 +3,7 @@
 from abc import ABC
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import (synchronize, managers, RLock, Event, Value,
-                             sharedctypes)
+                             sharedctypes, connection)
 import numpy as np
 import logging
 from typing import Any
@@ -15,6 +15,38 @@ from time import time
 from ..meta_block import Block
 from ...links import ImageLink
 from ..._global import LinkDataError, PrepareError
+from ...tool.camera_config import CameraConfig
+
+
+@dataclass
+class ConfigRequest:
+  """Description of a configuration requested from an image source.
+
+  The request is created by a downstream :class:`VisionBlock` in
+  :meth:`VisionBlock.request_config`. Before the Blocks start, Crappy
+  duplicates it and assigns one end of a one-way :obj:`multiprocessing.Pipe` to
+  the source and the other end to the requester.
+
+  Args:
+    requester: Name of the downstream Block requesting configuration.
+    args: Positional arguments forwarded to the requested configurator.
+    kwargs: Keyword arguments forwarded to the requested configurator.
+    configurator: :class:`~crappy.tool.camera_config.CameraConfig` subclass to
+      instantiate on the image source.
+    img_source: Name of the upstream image source handling the request.
+    connection: Pipe endpoint assigned by
+      :meth:`~crappy.blocks.Block.prepare_all`. Requesters receive a readable
+      endpoint and sources receive a writable one.
+    completed: Whether the source successfully sent a response.
+  """
+
+  requester: str
+  args: tuple[Any, ...]
+  kwargs: dict[str, Any]
+  configurator: type[CameraConfig]
+  img_source: str
+  connection: connection.Connection | None = None
+  completed: bool = False
 
 
 @dataclass
@@ -157,6 +189,16 @@ class VisionBlock(Block, ABC):
     """Retrieves the shared buffers and shared arrays from upstream 
     :class:`~crappy.links.ImageLink`, then sets the shared array and makes it 
     available to downstream :class:`~crappy.links.ImageLink`."""
+
+    # If at that point not all requests have been handled, they will never be
+    if not all(request.completed for request in self.config_requests_in):
+      unhandled = [request.requester for request in self.config_requests_in
+                   if not request.completed]
+      raise RuntimeError(f"Not all configuration requests were handled, "
+                         f"aborting!\nNo configuration was provided to Blocks"
+                         f"{', '.join(unhandled)}\nTry to adjust this Block's "
+                         f"arguments, or provide configuration information to "
+                         f"the downstream Blocks")
 
     # First getting the synchronization objects, but not yet the image buffers
     # This call should return almost immediately
@@ -382,6 +424,156 @@ class VisionBlock(Block, ABC):
     self.log(logging.DEBUG, f"Data received during this call from ImageLinks: "
                             f"{', '.join(updated)}")
     return updated
+
+  def request_config(self, source: str) -> ConfigRequest | None:
+    """Returns this Block's configuration request for an image source.
+
+    Subclasses requiring source-side interactive configuration should override
+    this method and return a :class:`ConfigRequest`. The default implementation
+    makes no request.
+
+    Args:
+      source: Name of an upstream image source.
+
+    Returns:
+      The configuration request for that source, or :obj:`None` when no
+      configuration is required.
+    """
+
+    return None
+
+  def add_config_request_in(self, request: ConfigRequest) -> None:
+    """Registers a configuration request received from a downstream Block.
+
+    Args:
+      request: Request containing the writable Pipe endpoint assigned to this
+        source.
+
+    Raises:
+      TypeError: If *request* is not a :class:`ConfigRequest`.
+      RuntimeError: If no Pipe endpoint was assigned to the request.
+    """
+
+    if not isinstance(request, ConfigRequest):
+      raise TypeError("The request should be a ConfigRequest")
+    if request.connection is None:
+      raise RuntimeError("The ConfigRequest is expected to have its "
+                         "Connection set")
+    self._config_requests_in.append(request)
+
+  @property
+  def config_requests_in(self) -> list[ConfigRequest]:
+    """Configuration requests received from downstream Blocks."""
+
+    return self._config_requests_in
+
+  def send_config(self,
+                  request: ConfigRequest,
+                  config: tuple[Any, ...] | None) -> None:
+    """Sends a configuration response to a downstream Block.
+
+    The request is marked as completed after a successful send. Its Pipe
+    endpoint is closed whether sending succeeds or fails.
+
+    Args:
+      request: Incoming request to answer.
+      config: Configuration data to send, or :obj:`None` when no configuration
+        can be provided.
+
+    Raises:
+      RuntimeError: If the request has no Pipe endpoint.
+    """
+
+    if request.connection is None:
+      raise RuntimeError("The ConfigRequest is expected to have its "
+                         "Connection set")
+
+    try:
+      request.connection.send(config)
+      self.log(logging.INFO, f"Sent config back to Block {request.requester}")
+      request.completed = True
+    except (Exception,):
+      self.log(logging.ERROR, "Couldn't send the config info via the "
+                              "Connection!")
+      raise
+    finally:
+      request.connection.close()
+
+  def add_config_request_out(self, request: ConfigRequest) -> None:
+    """Registers a configuration request sent to an upstream image source.
+
+    Args:
+      request: Request containing the readable Pipe endpoint assigned to this
+        consumer.
+
+    Raises:
+      TypeError: If *request* is not a :class:`ConfigRequest`.
+      RuntimeError: If no Pipe endpoint was assigned to the request.
+    """
+
+    if not isinstance(request, ConfigRequest):
+      raise TypeError("The request should be a ConfigRequest")
+    if request.connection is None:
+      raise RuntimeError("The ConfigRequest is expected to have its "
+                         "Connection set")
+    self._config_requests_out.append(request)
+
+  def recv_configs(self) -> dict[str, tuple[Any, ...] | None]:
+    """Waits for all requested source configurations and returns them.
+
+    While waiting, this method periodically checks whether another Block broke
+    the preparation barrier or requested the test to stop. Each readable Pipe
+    endpoint is closed after receiving its one response or encountering an
+    error.
+
+    Returns:
+      A dictionary associating image-source names with their configuration
+      data.
+
+    Raises:
+      ValueError: If the preparation synchronization objects are unavailable.
+      RuntimeError: If a request has no Pipe endpoint.
+      PrepareError: If another Block fails, the test stops, or the source Pipe
+        closes without providing a response.
+    """
+
+    if self._ready_barrier is None:
+      raise ValueError("The ready Barrier should be set at this point")
+    if self._stop_event is None:
+      raise ValueError("The stop Event should be initialized at this point")
+
+    configs: dict[str, tuple[Any, ...] | None] = dict()
+
+    # For each request, wait for the configuration information to arrive
+    for request in self._config_requests_out:
+      if request.connection is None:
+        raise RuntimeError("The ConfigRequest is expected to have a "
+                           "Connection set")
+      try:
+        # Wait until config information is received
+        while not request.connection.poll(timeout=0.5):
+          self.log(logging.DEBUG, f"Config from Block {request.img_source} "
+                                  f"not ready yet")
+          # Check if we should give up on waiting for the config
+          if self._ready_barrier.broken or self._stop_event.is_set():
+            raise PrepareError("An exception occurred in another Block, "
+                               "aborting")
+
+        # Receive the configuration information
+        config = request.connection.recv()
+        self.log(logging.DEBUG, f"Received config information from Block "
+                                f"{request.img_source}")
+      # Can happen if the other end of the Pipe is broken
+      except (EOFError, OSError):
+        raise PrepareError("The other end of the Pipe seems to be broken")
+
+      finally:
+        request.connection.close()
+
+      # Just store the received configuration
+      configs[request.img_source] = config
+
+    return configs
 
   def set_shared_objects(self) -> None:
     """Sets the shared objects required for sending images, and shares them

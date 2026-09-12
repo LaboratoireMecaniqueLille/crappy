@@ -3,8 +3,7 @@
 from platform import system
 from multiprocessing import (Process, Value, Barrier, Event, Queue,
                              get_start_method, synchronize, queues,
-                             sharedctypes, Manager, managers)
-from multiprocessing.connection import wait
+                             sharedctypes, Manager, managers, Pipe, connection)
 from threading import BrokenBarrierError, Thread
 from queue import Empty
 import logging
@@ -18,8 +17,9 @@ import subprocess
 from sys import stdout, stderr, argv
 from pathlib import Path
 from abc import ABC, abstractmethod
+from dataclasses import replace
 
-from ...links import Link, link_graph
+from ...links import Link, link_graph, GraphStructureError
 from ..._global import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
                         CameraPrepareError, CameraRuntimeError,
@@ -119,6 +119,10 @@ class Block(Process, ABC):
     self._stop_event: synchronize.Event | None = None
     self._raise_event: synchronize.Event | None = None
     self._kbi_event: synchronize.Event | None = None
+
+    # Configuration Pipe endpoints that this Process inherits under fork but
+    # does not own. They are closed as soon as the child Process starts.
+    self._config_connections_to_close: list[connection.Connection] = list()
 
     # The objects for logging will be set later
     self._log_queue: queues.Queue | None = None
@@ -242,6 +246,12 @@ class Block(Process, ABC):
     # Flag indicating whether to perform the cleanup action or not
     cleanup = False
 
+    # Used for closing stale connections after the Blocks have started
+    parent_config_connections: list[connection.Connection] = list()
+    # Associates each Block with the configuration Pipe endpoints it owns
+    config_connections_by_owner: dict[
+      str, list[connection.Connection]] = defaultdict(list)
+
     try:
       # Making sure that the Block classmethods are called in the right order
       if cls.prepared_all:
@@ -325,6 +335,73 @@ class Block(Process, ABC):
         cls.cls_log(logging.INFO, f"Log level set for the {instance.name} "
                                   f"Block")
 
+      # Build the connection graph of the VisionBlocks and share configuration
+      # requests to relevant sources
+      if (cls.instances and
+          any(instance.is_vision_block for instance in cls.instances)):
+
+        # Lookup table to associate unique Block name to actual instance
+        instances_lookup = {instance.name: instance for instance
+                            in cls.instances}
+
+        graph_names = set(link_graph.nodes.keys())
+        instance_names = set(instances_lookup.keys())
+        if graph_names != instance_names:
+          raise GraphStructureError("The names of the Blocks as stored in the "
+                                    "LinkGraph and in the master Block do not "
+                                    "match")
+
+        # Manage config requests for each source-consumer pair
+        for source_name in link_graph.img_sources():
+          source = instances_lookup[source_name]
+          for consumer_name in link_graph.descendants(source_name,
+                                                      kind='image'):
+            consumer = instances_lookup[consumer_name]
+            # If there's a configuration request from the consumer, share it
+            # with the source
+            if (hasattr(consumer, 'request_config') and
+                callable(consumer.request_config) and
+                (config_request := consumer.request_config(source_name))
+                is not None):
+              config_request: Any
+              if config_request.requester != consumer.name:
+                raise ValueError("The name of the config requester doesn't "
+                                 "match the name of the downstream Block")
+              if config_request.img_source != source.name:
+                raise ValueError("The name of the image source doesn't match "
+                                 "the name of the upstream Block")
+              # Create a Pipe for sharing config data between Blocks
+              recv_conn, send_conn = Pipe(duplex=False)
+              parent_config_connections.extend((recv_conn, send_conn))
+              config_connections_by_owner[source.name].append(send_conn)
+              config_connections_by_owner[consumer.name].append(recv_conn)
+              # Duplicate the ConfigRequest and assign each an end of the Pipe
+              source_request = replace(config_request, connection=send_conn)
+              consumer_request = replace(config_request,
+                                         connection=recv_conn)
+              cls.cls_log(logging.DEBUG, f"Created config request: "
+                                         f"{config_request}, now sharing it")
+              # Register the request in both the source and the consumer Blocks
+              source.add_config_request_in(source_request)
+              consumer.add_config_request_out(consumer_request)
+
+        # With fork, every child inherits every open file descriptor from the
+        # parent. Explicitly tell each Block which unrelated endpoints it must
+        # close on startup so that a dead Block can still be detected via EOF
+        if get_start_method() == 'fork':
+          for instance in cls.instances:
+            owned_connections = {id(conn) for conn in
+                                 config_connections_by_owner[instance.name]}
+            instance._config_connections_to_close = [
+                conn for conn in parent_config_connections
+                if id(conn) not in owned_connections]
+
+        cls.cls_log(logging.INFO, "Shared configuration requests from consumer"
+                                  " vision Blocks to their sources")
+      else:
+        cls.cls_log(logging.INFO, "No vision Block detected, not building "
+                                  "graph nor sharing config requests")
+
       # Initialize the common Manager for image Blocks if needed
       if (cls.instances and
           any(instance.is_vision_block for instance in cls.instances)):
@@ -395,6 +472,12 @@ class Block(Process, ABC):
                                      "caught in prepare_all")
       # Need to clean up as some Blocks might already be running
       cls._cleanup()
+
+    # Close the stale connections between VisionBlocks as this Process should
+    # not unnecessarily own them
+    finally:
+      for conn in parent_config_connections:
+        conn.close()
 
   @classmethod
   def renice_all(cls, allow_root: bool) -> None:
@@ -572,7 +655,7 @@ class Block(Process, ABC):
       # The main Process mustn't finish before all the Blocks are stopped
       cls.cls_log(logging.INFO, 'Main Process done, waiting for all Blocks to '
                                 'finish')
-      for _ in wait([inst.sentinel for inst in cls.instances]):
+      for _ in connection.wait([inst.sentinel for inst in cls.instances]):
         cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
                                   "other ones to follow")
 
@@ -959,6 +1042,16 @@ class Block(Process, ABC):
         # Initializes the Logger for the Block
         self._set_block_logger()
         self.log(logging.INFO, "Block launched")
+
+        # Under fork, close configuration Pipe endpoints belonging to other
+        # Blocks before starting any preparation work.
+        try:
+          self.log(logging.DEBUG, "Closing stale Connections this Block "
+                                  "should not own")
+          for conn in self._config_connections_to_close:
+            conn.close()
+        finally:
+          self._config_connections_to_close.clear()
 
         # Running the preliminary actions before the test starts
         self.log(logging.INFO, "Block preparing")

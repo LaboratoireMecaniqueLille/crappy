@@ -6,12 +6,13 @@ from collections import defaultdict
 import logging
 from time import time, strftime, gmtime
 from types import MethodType
+from typing import Any
 
 from .block import VisionBlock
 from ..camera import deprecated_cameras, camera_dict, DummyCam
 from ...tool.camera_config import CameraConfig
 from ...camera import Camera as BaseCam
-from ..._global import CameraConfigError
+from ..._global import CameraConfigError, PrepareError
 
 
 class CameraSource(VisionBlock):
@@ -51,6 +52,7 @@ class CameraSource(VisionBlock):
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
+               allow_downstream_config: bool = True,
                image_generator: Callable[[float, float],
                                          np.ndarray] | None = None,
                software_trig_label: str | None = None,
@@ -163,6 +165,8 @@ class CameraSource(VisionBlock):
       raise TypeError("When provided, transform must be a callable")
     if not isinstance(config, bool):
       raise TypeError("config must be a boolean")
+    if not isinstance(allow_downstream_config, bool):
+      raise TypeError("allow_downstream_config must be a boolean")
     if (software_trig_label is not None and
         (not isinstance(software_trig_label, str) or not software_trig_label)):
       raise ValueError("When provided, software_trig_label must be a "
@@ -173,6 +177,7 @@ class CameraSource(VisionBlock):
     # Setting the other attributes
     self._trig_label: str | None = software_trig_label
     self._config_cam: bool = config
+    self._allow_downstream_config: bool = allow_downstream_config
     self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
     self._image_generator: Callable[[float, float],
                                     np.ndarray] | None = image_generator
@@ -223,11 +228,60 @@ class CameraSource(VisionBlock):
       self._camera.open(**self._camera_kwargs)
       self.log(logging.INFO, f"Opened the {self._camera_name} Camera")
 
-    # Displaying the configuration window if required
+    if (self.config_requests_in and
+        (not self._config_cam or not self._allow_downstream_config)):
+      unhandled = [request.requester for request in self.config_requests_in]
+      raise RuntimeError(f"The combination of the config and "
+                         f"allow_downstream_config arguments is leading to "
+                         f"unhandled config requests from Blocks "
+                         f"{', '.join(unhandled)}, aborting early!\nTry to "
+                         f"set config=True and allow_downstream_config=True, "
+                         f"or provide configuration information to the "
+                         f"downstream Blocks")
+
+    # Displaying the configuration windows if required
     if self._config_cam:
-      self.log(logging.INFO, "Displaying the configuration window")
-      self.configure()
-      self.log(logging.INFO, "Camera configuration done")
+
+      # Fail early in case of inconsistent state
+      if self._ready_barrier is None:
+        raise ValueError("The ready Barrier should be set at this point")
+      if self._stop_event is None:
+        raise ValueError("The stop Event should be initialized at this point")
+
+      # Downstream config allowed and config requests received
+      if self._allow_downstream_config:
+        if self.config_requests_in:
+          self.log(logging.INFO, "Running the configuration requests from "
+                                 "downstream Blocks")
+          for request in self.config_requests_in:
+
+            # First check if we should proceed with the configurations
+            if self._ready_barrier.broken or self._stop_event.is_set():
+              raise PrepareError("An exception occurred in another Block, "
+                                 "aborting")
+
+            self.log(logging.DEBUG, f"Starting configure request from Block "
+                                    f"{request.requester}")
+            config = self.configure(self._camera, request.configurator,
+                                    *request.args, **request.kwargs)
+            self.log(logging.DEBUG, f"Got configuration result {config} for "
+                                    f"Block {request.requester}")
+            self.log(logging.DEBUG, f"Sending configuration result to Block "
+                                    f"{request.requester}")
+            self.send_config(request, config)
+
+        # Downstream config allowed and no config requests received
+        else:
+          self.log(logging.INFO, "No config request from downstream Blocks, "
+                                 "falling back to default config")
+          self.default_configuration()
+
+      # Downstream config not allowed
+      if not self._allow_downstream_config:
+        self.default_configuration()
+
+    else:
+      self.log(logging.INFO, "Skipping interactive configuration as requested")
 
     # Setting the camera to 'Hardware' trig if it's in 'Hdw after config' mode
     if (self._camera.trigger_name in self._camera.settings and
@@ -349,32 +403,51 @@ class CameraSource(VisionBlock):
     # Mandatory for proper termination
     super().finish()
 
-  def configure(self) -> None:
-    """This method should instantiate and start a
-    :class:`~crappy.tool.camera_config.CameraConfig` window for configuring the
-    :class:`~crappy.camera.Camera` object.
+  def configure(self,
+                camera: BaseCam,
+                config_class: type[CameraConfig],
+                *args,
+                **kwargs) -> tuple[Any, ...] | None:
+    """Runs one interactive configuration request for a Camera.
 
-    It should also handle the case when an exception is raised in the
-    configuration window.
+    Args:
+      camera: Open Camera instance to configure.
+      config_class: :class:`~crappy.tool.camera_config.CameraConfig` subclass
+        implementing the requested configuration window.
+      *args: Positional arguments forwarded to *config_class*.
+      **kwargs: Keyword arguments forwarded to *config_class*.
 
-    It decides which specialized type(s) of
-    :class:`~crappy.tool.camera_config.CameraConfig` window(s) to open based on
-    the analysis of the :class:`~crappy.blocks.vision.VisionBlock` linking
-    graph.
+    Returns:
+      The configuration data returned by
+      :meth:`~crappy.tool.camera_config.CameraConfig.get_config`, or
+      :obj:`None` if configuration is canceled.
+
+    Raises:
+      TypeError: If *camera* is not a Camera or *config_class* is not a
+        :class:`~crappy.tool.camera_config.CameraConfig` subclass.
+      RuntimeError: If the logging queue has not been initialized.
+      CameraConfigError: If the configuration window fails.
+      KeyboardInterrupt: If configuration is interrupted by the user.
     """
+
+    # Preliminary general checks
+    if not isinstance(camera, BaseCam):
+      raise TypeError("camera must be an instance of Camera")
+    if not issubclass(config_class, CameraConfig):
+      raise TypeError("config_class must be a subclass of CameraConfig")
 
     config = None
 
     # Instantiating and starting the configuration window
     try:
-      if self._camera is None:
-        raise RuntimeError("Cannot start the configuration window because the "
-                           "Camera wasn't defined")
       if self._log_queue is None:
         raise RuntimeError("Cannot start the configuration window because the "
                            "log_queue wasn't defined")
-      config = CameraConfig(self._camera, self._log_queue,
-                            self._log_level, self.freq)
+      self.log(logging.DEBUG, f"Starting configuration window of class "
+                              f"{config_class} with camera {camera}, args "
+                              f"{args}, kwargs {kwargs}")
+      config = config_class(camera, self._log_queue, self._log_level,
+                            self.freq, self._transform, *args, **kwargs)
       config.start()
       config.wait_window(config)
 
@@ -410,3 +483,26 @@ class CameraSource(VisionBlock):
                                   f"existing one ({self._img_dtype}), setting "
                                   f"it anyway to the new value")
       self._img_dtype = str(config.dtype)
+
+    return config.get_config()
+
+  def default_configuration(self) -> None:
+    """Runs the generic Camera configuration window.
+
+    The selected image shape and dtype are stored on this Block for creation
+    of its shared image buffers. No configuration response is sent to a
+    downstream Block.
+
+    Raises:
+      RuntimeError: If the Camera has not been initialized.
+      CameraConfigError: If the configuration window fails.
+      KeyboardInterrupt: If configuration is interrupted by the user.
+    """
+
+    if self._camera is None:
+      raise RuntimeError("Cannot start the configuration window because the "
+                         "Camera wasn't defined")
+
+    self.log(logging.INFO, "Displaying the base configuration window")
+    self.configure(self._camera, CameraConfig)
+    self.log(logging.INFO, "Camera configuration done")
