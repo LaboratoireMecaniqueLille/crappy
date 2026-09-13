@@ -367,4 +367,5 @@ class VideoExtensoProcessor(VisionBlock):
                                  'safe_mode': self._safe_mode,
                                  'border': self._border},
                          configurator=VideoExtensoConfig,
-                         img_source=source)
+                         img_source=source,
+                         required=True)

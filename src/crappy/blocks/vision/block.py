@@ -38,6 +38,8 @@ class ConfigRequest:
       :meth:`~crappy.blocks.Block.prepare_all`. Requesters receive a readable
       endpoint and sources receive a writable one.
     completed: Whether the source successfully sent a response.
+    required: If :obj:`bool`, means that the Block cannot start unless it
+      receives valid configuration information from an image source.
   """
 
   requester: str
@@ -47,6 +49,15 @@ class ConfigRequest:
   img_source: str
   connection: connection.Connection | None = None
   completed: bool = False
+  required: bool = True
+
+  def __post_init__(self) -> None:
+    """Validates the types of the mutable fields."""
+
+    if not isinstance(self.completed, bool):
+      raise TypeError("completed must be a boolean")
+    if not isinstance(self.required, bool):
+      raise TypeError("required must be a boolean")
 
 
 @dataclass
@@ -484,20 +495,28 @@ class VisionBlock(Block, ABC):
       RuntimeError: If the request has no Pipe endpoint.
     """
 
-    if request.connection is None:
-      raise RuntimeError("The ConfigRequest is expected to have its "
-                         "Connection set")
-
     try:
+      if request.connection is None:
+        raise RuntimeError("The ConfigRequest is expected to have its "
+                           "Connection set")
+      # Checking if a required request was properly handled
+      if request.required and config is None:
+        raise RuntimeError(f"The request from Block {request.requester} is "
+                           f"flagged as required, yet {request.img_source} "
+                           f"answered with None")
+
       request.connection.send(config)
-      self.log(logging.INFO, f"Sent config back to Block {request.requester}")
+      self.log(logging.INFO, f"Sent "
+                             f"{'config' if config is not None else 'None'} "
+                             f"back to Block {request.requester}")
       request.completed = True
     except (Exception,):
       self.log(logging.ERROR, "Couldn't send the config info via the "
                               "Connection!")
       raise
     finally:
-      request.connection.close()
+      if request.connection is not None:
+        request.connection.close()
 
   def add_config_request_out(self, request: ConfigRequest) -> None:
     """Registers a configuration request sent to an upstream image source.

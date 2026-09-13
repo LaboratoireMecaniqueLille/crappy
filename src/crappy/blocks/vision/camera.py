@@ -234,14 +234,16 @@ class CameraSource(VisionBlock):
 
     if (self.config_requests_in and
         (not self._config_cam or not self._allow_downstream_config)):
-      unhandled = [request.requester for request in self.config_requests_in]
-      raise RuntimeError(f"The combination of the config and "
-                         f"allow_downstream_config arguments is leading to "
-                         f"unhandled config requests from Blocks "
-                         f"{', '.join(unhandled)}, aborting early!\nTry to "
-                         f"set config=True and allow_downstream_config=True, "
-                         f"or provide configuration information to the "
-                         f"downstream Blocks")
+      unhandled = [request.requester for request in self.config_requests_in
+                   if request.required]
+      if unhandled:
+        raise RuntimeError(f"The combination of the config and "
+                           f"allow_downstream_config arguments is leading to "
+                           f"unhandled required config requests from Blocks "
+                           f"{', '.join(unhandled)}, aborting early!\nTry to "
+                           f"set config=True and allow_downstream_config=True,"
+                           f" or provide configuration information to the "
+                           f"downstream Blocks")
 
     # Displaying the configuration windows if required
     if self._config_cam:
@@ -282,10 +284,32 @@ class CameraSource(VisionBlock):
 
       # Downstream config not allowed
       if not self._allow_downstream_config:
+        self.log(logging.INFO, "Performing default configuration since "
+                               "allow_downstream_config is disabled")
         self.default_configuration()
+        if self.config_requests_in:
+          self.log(logging.INFO, "Declining incoming config requests since "
+                                 "allow_downstream_config is disabled")
+          for request in self.config_requests_in:
+            if request.required:
+              raise RuntimeError(f"Can't handle required configuration "
+                                 f"request from Block {request.requester} as "
+                                 f"allow_downstream_config is False, aborting")
+            else:
+              self.send_config(request, None)
 
     else:
       self.log(logging.INFO, "Skipping interactive configuration as requested")
+      if self.config_requests_in:
+        self.log(logging.INFO, "Declining incoming config requests since "
+                               "config is disabled")
+        for request in self.config_requests_in:
+          if request.required:
+            raise RuntimeError(f"Can't handle required configuration "
+                               f"request from Block {request.requester} as "
+                               f"config is False, aborting")
+          else:
+            self.send_config(request, None)
 
     # Setting the camera to 'Hardware' trig if it's in 'Hdw after config' mode
     if (self._camera.trigger_name in self._camera.settings and
