@@ -2,6 +2,7 @@
 
 from .block import VisionBlock
 from .camera import CameraSource
+from .dis_correl import DISCorrelProcessor
 from .display import ImageDisplayer
 from .record import ImageRecorder
 from .video_extenso import VideoExtensoProcessor
