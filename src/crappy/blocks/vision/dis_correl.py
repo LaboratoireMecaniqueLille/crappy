@@ -306,7 +306,7 @@ class DISCorrelProcessor(VisionBlock):
     if self._log_queue is None:
       raise RuntimeError("At that point the log_queue should be set but it "
                          "isn't")
-    if self._patch is None:
+    if self._patch is None or self._patch.no_points():
       raise RuntimeError("At that point the patch to track should be set but "
                          "it is not")
 
