@@ -114,6 +114,11 @@ class DISCorrelTool:
     .. versionadded:: 1.5.10
     """
 
+    if not isinstance(img0, np.ndarray):
+      raise TypeError("The reference image must be a Numpy array")
+    if img0.dtype != np.uint8:
+      raise ValueError("The reference image must have dtype uint8")
+
     self._img0 = img0
     self._height, self._width, *_ = img0.shape
     if self._width is None or self._height is None:
@@ -142,6 +147,15 @@ class DISCorrelTool:
         fields[:, :, 0, i], fields[:, :, 1, i] = get_field(field, box_height,
                                                            box_width)
       elif isinstance(field, np.ndarray):
+        expected_shape = (box_height, box_width, 2)
+        if field.shape != expected_shape:
+          raise ValueError(f"Custom fields must have shape {expected_shape}, "
+                           f"got {field.shape}")
+        if not (np.issubdtype(field.dtype, np.integer) or
+                np.issubdtype(field.dtype, np.floating)):
+          raise TypeError("Custom fields must have a numeric dtype")
+        if not np.all(np.isfinite(field)):
+          raise ValueError("Custom fields must contain only finite values")
         fields[:, :, :, i] = field
 
     # These attributes will be used later
@@ -149,6 +163,8 @@ class DISCorrelTool:
     if self._base is None:
       raise RuntimeError("The list of bases was not initialized")
     self._norm2 = [float(np.sum(base_field ** 2)) for base_field in self._base]
+    if any(not np.isfinite(norm2) or norm2 <= 0 for norm2 in self._norm2):
+      raise ValueError("Fields must have a finite, non-zero norm")
 
   def get_data(self,
                img: np.ndarray,
@@ -175,6 +191,13 @@ class DISCorrelTool:
     elif self._base is None:
       raise ValueError("The method set_box must be called first for setting "
                        "the region of interest !")
+    if not isinstance(img, np.ndarray):
+      raise TypeError("The image to process must be a Numpy array")
+    if img.dtype != np.uint8:
+      raise ValueError("The image to process must have dtype uint8")
+    if img.shape != self._img0.shape:
+      raise ValueError("The image to process must have the same shape as the "
+                       "reference image")
 
     # Updating the optical flow with the latest image
     if self._init:
