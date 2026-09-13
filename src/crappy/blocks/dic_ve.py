@@ -434,8 +434,9 @@ class DICVE(Camera):
     if not isinstance(patch_stride, int) or patch_stride < 0:
       raise ValueError("patch_stride must be a positive integer")
     if ((not isinstance(border, float) and not isinstance(border, int))
-        or not 0 <= border <= 1):
-      raise ValueError("border must be a float between 0 and 1")
+        or not 0 <= border < 1):
+      raise ValueError("border must be greater than or equal to 0 and strictly"
+                       " less than 1")
     if not isinstance(safe, bool):
       raise TypeError("safe must be a boolean")
     if not isinstance(follow, bool):

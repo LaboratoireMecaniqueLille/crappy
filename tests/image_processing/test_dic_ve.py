@@ -7,7 +7,7 @@ import numpy as np
 
 import crappy.tool.image_processing.dic_ve as dic_ve_module
 from crappy.tool.camera_config import Box, SpotsBoxes
-from crappy.tool.image_processing.dic_ve import DICVETool
+from crappy.tool.image_processing.dic_ve import DICVETool, LostPatchError
 
 
 class TestDICVETool(TestCase):
@@ -54,7 +54,7 @@ class TestDICVETool(TestCase):
     patches = self._patches((25, 10, 10, 10))
     tool = self._make_tool(patches, method='Pixel precision', safe=True)
 
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(LostPatchError):
       tool.set_img0(np.zeros((30, 30), dtype=np.uint8))
 
   def test_calculate_displacement_requires_reference_image(self) -> None:
@@ -177,7 +177,7 @@ class TestDICVETool(TestCase):
                       return_value=(np.array([[[7.0, 8.0]]], dtype=np.float32),
                                     np.array([[0]], dtype=np.uint8),
                                     None)):
-      with self.assertRaises(RuntimeError):
+      with self.assertRaises(LostPatchError):
         tool._calc_lucas_kanade(patches.spot_1, img, (0, 0))
 
   def test_get_patch_applies_offsets(self) -> None:

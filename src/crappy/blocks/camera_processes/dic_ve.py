@@ -7,7 +7,7 @@ import logging.handlers
 from time import sleep
 
 from .camera_process import CameraProcess
-from ...tool.image_processing import DICVETool
+from ...tool.image_processing import DICVETool, LostPatchError
 from ...tool.camera_config import SpotsBoxes
 
 
@@ -195,7 +195,7 @@ class DICVEProcess(CameraProcess):
         self.send_to_draw(self._disve.patches)
 
       # If the patches are lost, deciding whether to raise exception or not
-      except RuntimeError as exc:
+      except LostPatchError as exc:
         if self._logger is not None:
           self._logger.exception("Caught exception while processing patches!",
                                  exc_info=exc)

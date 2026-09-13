@@ -7,6 +7,7 @@ import numpy as np
 import crappy.blocks.camera_processes.dic_ve as dic_ve_module
 from crappy.blocks.camera_processes.dic_ve import DICVEProcess
 from crappy.tool.camera_config import SpotsBoxes
+from crappy.tool.image_processing import LostPatchError
 
 from tests.camera_process.camera_process_test_base import (CameraProcessTestBase,
                                                            TestLink)
@@ -39,7 +40,7 @@ class DummyDICVETool:
 
     self.images.append(np.copy(img))
     if self.raise_on_calculate:
-      raise RuntimeError("lost patch")
+      raise LostPatchError("lost patch")
     return self.return_value
 
 
@@ -206,7 +207,7 @@ class TestDICVEProcess(CameraProcessTestBase):
     self.assertEqual(process.fps_count, 4)
 
   def test_loop_reraises_lost_patch_when_requested(self) -> None:
-    """Checks RuntimeError propagation when raise_on_exit is enabled."""
+    """Checks patch-loss propagation when raise_on_exit is enabled."""
 
     process = self._make_process(raise_on_exit=True)
     self._process = process
@@ -220,7 +221,7 @@ class TestDICVEProcess(CameraProcessTestBase):
     process.loop()
     DummyDICVETool.instances[0].raise_on_calculate = True
 
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(LostPatchError):
       process.loop()
 
     self.assertTrue(process._lost_patch)

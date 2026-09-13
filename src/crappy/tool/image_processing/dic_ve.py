@@ -12,6 +12,10 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
+class LostPatchError(Exception):
+  """Exception raised when a patch can no longer be tracked."""
+
+
 class DICVETool:
   """This class is the core of the :class:`~crappy.blocks.DICVE` Block.
 
@@ -330,7 +334,7 @@ class DICVETool:
       np.array([[center_x, center_y]]).astype('float32'), None)
 
     if next_ is None or status is None or not status.ravel()[0]:
-      raise RuntimeError("Lucas-Kanade failed to track the patch center")
+      raise LostPatchError("Lucas-Kanade failed to track the patch center")
 
     new_x, new_y = np.squeeze(next_)
 
@@ -435,16 +439,16 @@ class DICVETool:
 
       # Checking the left border
       if x_top < 0:
-        raise RuntimeError("Region exiting the ROI (left)")
+        raise LostPatchError("Region exiting the ROI (left)")
 
       # Checking the right border
       elif x_bottom > self._width:
-        raise RuntimeError("Region exiting the ROI (right)")
+        raise LostPatchError("Region exiting the ROI (right)")
 
       # Checking the top border
       if y_left < 0:
-        raise RuntimeError("Region exiting the ROI (top)")
+        raise LostPatchError("Region exiting the ROI (top)")
 
       # Checking the bottom border
       elif y_right > self._height:
-        raise RuntimeError("Region exiting the ROI (bottom)")
+        raise LostPatchError("Region exiting the ROI (bottom)")
