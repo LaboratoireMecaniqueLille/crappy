@@ -174,6 +174,74 @@ Video Extenso
    :members: prepare
    :special-members: __init__
 
+Vision Blocks
+-------------
+
+.. currentmodule:: crappy.blocks.vision
+
+Vision Block
+++++++++++++
+.. autoclass:: crappy.blocks.vision.VisionBlock
+   :members: prepare, begin, finish, add_img_output, add_img_input, send_img,
+             receive_imgs, request_config, add_config_request_in,
+             config_requests_in, send_config, add_config_request_out,
+             recv_configs, set_shared_objects
+   :special-members: __init__
+
+.. py:attribute:: VisionBlock.last_received
+
+   Mapping from each input ImageLink name to its latest locally copied
+   :class:`~crappy.blocks.vision.block.ImgData`.
+
+Camera Source
++++++++++++++
+.. autoclass:: crappy.blocks.vision.CameraSource
+   :members: prepare, loop, finish, configure, default_configuration
+   :special-members: __init__
+
+DIC VE Processor
+++++++++++++++++
+.. autoclass:: crappy.blocks.vision.DICVEProcessor
+   :members: prepare, loop, request_config
+   :special-members: __init__
+
+DIS Correl Processor
+++++++++++++++++++++
+.. autoclass:: crappy.blocks.vision.DISCorrelProcessor
+   :members: prepare, loop, request_config
+   :special-members: __init__
+
+Image Displayer
++++++++++++++++
+.. autoclass:: crappy.blocks.vision.ImageDisplayer
+   :members: prepare, loop, finish
+   :special-members: __init__
+
+Image Recorder
+++++++++++++++
+.. autoclass:: crappy.blocks.vision.ImageRecorder
+   :members: prepare, loop
+   :special-members: __init__
+
+Video Extenso Processor
++++++++++++++++++++++++
+.. autoclass:: crappy.blocks.vision.VideoExtensoProcessor
+   :members: prepare, loop, finish, request_config
+   :special-members: __init__
+
+Vision Block data classes
++++++++++++++++++++++++++
+
+Configuration Request
+"""""""""""""""""""""
+.. autoclass:: crappy.blocks.vision.block.ConfigRequest
+   :members:
+
+Received Image Data
+"""""""""""""""""""
+.. autoclass:: crappy.blocks.vision.block.ImgData(id=-1, metadata=None, img=...)
+   :members:
+
 Generator Paths
 ---------------
 There are several types of path available for the generator block.

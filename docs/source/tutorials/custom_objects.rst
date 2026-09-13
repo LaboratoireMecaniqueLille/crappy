@@ -741,6 +741,14 @@ meant to directly interact with hardware, the helper classes like the
 usually create data, perform processing on existing data, interact with the
 system, display data, etc.
 
+.. Note::
+   A custom Block that sends or receives images should normally inherit from
+   :class:`~crappy.blocks.vision.VisionBlock`, rather than setting
+   :attr:`~crappy.blocks.Block.is_vision_block` itself. The
+   :ref:`custom VisionBlock tutorial <5. Custom VisionBlocks>` describes the
+   shared-memory lifecycle and image methods, and points to a complete runnable
+   example.
+
 5.a. Methods of the Block
 +++++++++++++++++++++++++
 

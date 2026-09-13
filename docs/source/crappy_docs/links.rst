@@ -10,8 +10,28 @@ Link
 
 Image Link
 ----------
+
+ImageLinks connect :class:`~crappy.blocks.vision.VisionBlock` objects and
+carry image arrays together with their metadata. Application code normally
+creates one through :func:`crappy.img_link`, just as :func:`crappy.link`
+creates a regular Link.
+
+Unlike a regular Link, an ImageLink is not a queue. An image-producing
+VisionBlock owns a shared-memory buffer that is reused by all of its outgoing
+ImageLinks. Each consumer copies the newest coherent image and metadata when
+it is ready. A consumer that runs more slowly than the source can therefore
+skip intermediate frames without blocking the source. Commands, processing
+results, and overlays remain small dictionaries and should travel through
+regular Links.
+
 .. autoclass:: crappy.links.ImageLink
+   :members: set_buffers, get_buffers, log
    :special-members: __init__
+
+The buffer methods above are called by Crappy while preparing the Blocks. Most
+user scripts only need :func:`crappy.img_link`. Custom VisionBlocks exchange
+images through :meth:`~crappy.blocks.vision.VisionBlock.send_img` and
+:meth:`~crappy.blocks.vision.VisionBlock.receive_imgs`.
 
 Connection graph and validation
 -------------------------------
@@ -47,12 +67,16 @@ arguments can be used to hide either kind of connection. This function is an
 alias for :meth:`crappy.links.LinkGraph.display`.
 
 The graph is maintained automatically by Crappy. Application code normally
-does not need to interact with it. The class and its exception are documented
-below:
+does not need to interact with it. The graph class, the node records returned
+by its :attr:`~crappy.links.LinkGraph.nodes` property, and its exception are
+documented below:
 
 .. autoclass:: crappy.links.LinkGraph
-   :members: add_node, add_edge, descendants, successors, ancestors,
+   :members: nodes, add_node, add_edge, descendants, successors, ancestors,
              predecessors, img_sources, rename_node, link_names, reset, display
    :special-members: __init__
+
+.. autoclass:: crappy.links.link_graph.Node
+   :members:
 
 .. autoclass:: crappy.links.GraphStructureError

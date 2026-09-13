@@ -399,8 +399,205 @@ the :py:`'DateTimeOriginal'` and :py:`'SubsecTimeOriginal'` tags. For now, only
 a fraction of the Cameras implemented in Crappy return metadata as a
 :obj:`dict`, but more should come in future releases !
 
-5. Custom Camera Blocks
------------------------
+5. Custom VisionBlocks
+----------------------
+
+.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+
+The :class:`~crappy.blocks.vision.VisionBlock` class is the recommended base
+for a custom Block that produces, consumes, or transforms images. Typical
+reasons for writing one include integrating an image source that is not a
+:ref:`Camera`, implementing a new analysis algorithm, or adapting images for
+another VisionBlock. Since it is an ordinary Block, a custom VisionBlock can be
+combined with the built-in display, recording, and processing Blocks in any
+useful arrangement.
+
+Creating a new class is not necessary just to rearrange an image workflow. If
+the built-in VisionBlocks already perform the required tasks, instantiate and
+connect them directly. Likewise, use a regular :class:`~crappy.blocks.Block`
+when a custom operation only handles labeled numerical data. The
+:class:`~crappy.blocks.vision.VisionBlock` base is specifically useful when
+images must enter or leave the custom Block through an
+:class:`~crappy.links.ImageLink`.
+
+5.a. Choose the role of the Block
++++++++++++++++++++++++++++++++++
+
+Before writing code, decide what the new Block accepts and produces. Here are
+the typical categories, but exotic objects might behave differently:
+
+- An **image source** has no image input and one or more image outputs. It
+  might wrap a third-party acquisition library, read a generated image stream,
+  synthesize images, etc.
+- An **image analyzer** has one or more image inputs and normally no image
+  output. It publishes measurements or display overlays through regular Links.
+- An **image filter** has both image inputs and image outputs. It receives an
+  image, transforms it, and publishes the result for other VisionBlocks.
+
+These are design roles rather than restrictions imposed by the base class. A
+custom VisionBlock decides which combinations it supports and checks them in
+``prepare``. The ``img_inputs`` and ``img_outputs`` lists contain the
+ImageLinks connected by the script and should only be inspected, not modified.
+The separate ``inputs`` and ``outputs`` lists contain regular Links.
+
+ImageLinks can only connect VisionBlocks. Parallel ImageLinks between the same
+two Blocks and loops made entirely of ImageLinks are rejected. One source can,
+however, feed any number of different consumers. Regular Links can be added in
+either direction for results, commands, triggers, and feedback.
+
+5.b. The rules to follow
+++++++++++++++++++++++++
+
+A custom VisionBlock only needs to follow a small set of rules:
+
+1. Call the parent constructor. If the Block has image outputs, provide their
+   ``img_shape`` and ``img_dtype``. A Block with no image output can omit them.
+2. In ``prepare``, validate the supported Link arrangement and initialize any
+   library or resource used by the Block. Call the parent ``prepare`` last.
+3. Use :meth:`~crappy.blocks.vision.VisionBlock.send_img` to publish images and
+   :meth:`~crappy.blocks.vision.VisionBlock.receive_imgs` to receive them.
+   Continue to use :meth:`~crappy.blocks.Block.send` and the usual Block
+   receive methods for labeled data.
+4. Every published metadata dictionary must contain ``'t(s)'`` and
+   ``'ImageUniqueID'``. The image shape and dtype must match the values
+   declared for the output.
+5. If ``finish`` is overridden, release the custom resources and then call the
+   parent ``finish``. If no custom cleanup is needed, do not override it.
+
+The parent calls are the only image-management boilerplate required from a
+custom class. Similarly, if ``begin`` is overridden, its parent implementation
+should be called.
+
+5.c. Example: write an image source
++++++++++++++++++++++++++++++++++++
+
+The following source generates a bright column moving across a black image. It
+declares its output format in ``__init__``, checks that the script connected it
+as a source, and publishes one image from every call to ``loop``:
+
+.. code-block:: python
+
+   from time import time
+
+   import numpy as np
+   import crappy
+
+   class MovingSource(crappy.VisionBlock):
+
+       def __init__(self):
+           super().__init__(img_shape=(120, 160),
+                            img_dtype='uint8',
+                            freq=10)
+           self._index = 0
+
+       def prepare(self):
+           if self.img_inputs or not self.img_outputs:
+               raise IOError("MovingSource requires image outputs only")
+           super().prepare()
+
+       def loop(self):
+           image = np.zeros((120, 160), dtype=np.uint8)
+           image[:, self._index % 160] = 255
+           metadata = {'t(s)': time() - self.t0,
+                       'ImageUniqueID': self._index}
+
+           self.send_img(metadata, image)
+           self._index += 1
+
+           if self._index >= 30:
+               self.stop()
+
+The shape and dtype passed to ``send_img`` must stay ``(120, 160)`` and
+``uint8`` throughout the test. Extra application-specific metadata can be
+added freely. Calling ``send_img`` once makes the same image and metadata
+available to every downstream ImageLink.
+
+5.d. Example: write an image analyzer
++++++++++++++++++++++++++++++++++++++
+
+This second Block accepts exactly one image stream and sends the mean pixel
+value as ordinary labeled data:
+
+.. code-block:: python
+
+   import numpy as np
+   import crappy
+
+   class ImageMean(crappy.VisionBlock):
+
+       def __init__(self):
+           super().__init__(freq=50)
+
+       def prepare(self):
+           if len(self.img_inputs) != 1 or self.img_outputs:
+               raise IOError("ImageMean requires exactly one image input")
+           super().prepare()
+
+       def loop(self):
+           updated = self.receive_imgs()
+           if not updated:
+               return
+
+           received = self.last_received[updated[0]]
+           if received.metadata is None:
+               raise RuntimeError("Image metadata is missing")
+
+           self.send({'t(s)': received.metadata['t(s)'],
+                      'mean': float(np.mean(received.img))})
+
+``receive_imgs`` returns the names of the ImageLinks on which a new image was
+found. The matching image and metadata are available under that name in
+``last_received``. With several accepted inputs, the returned names make it
+possible to handle only the sources that were updated.
+
+The result from ``ImageMean`` is a small dictionary, so it belongs on a regular
+Link. The two custom Blocks and a standard :class:`~crappy.blocks.LinkReader`
+can now be assembled as follows:
+
+.. code-block:: python
+
+   source = MovingSource()
+   mean = ImageMean()
+   reader = crappy.blocks.LinkReader()
+
+   crappy.img_link(source, mean, name='source-images')
+   crappy.link(mean, reader)
+
+   crappy.start()
+
+This script stops after the source publishes 30 images. The `complete custom
+VisionBlock example <https://github.com/LaboratoireMecaniqueLille/crappy/blob/
+master/examples/vision_blocks/custom_vision_blocks.py>`_ adds more topology
+checks, image statistics, logging, and comments while retaining the same
+source-and-analyzer structure.
+
+5.e. Limits and advanced cases
+++++++++++++++++++++++++++++++
+
+There are a few important limits to consider when designing a custom
+VisionBlock:
+
+- An ImageLink exposes the newest image rather than queuing every image. A slow
+  consumer can skip frames and must not assume that image identifiers are
+  consecutive. If every frame must be handled, an ImageLink alone is not the
+  appropriate transport.
+- A Block has one output image format for the duration of a test. All images
+  sent by it must have that shape and dtype, and all its outgoing ImageLinks
+  expose the same published image. Use separate VisionBlocks when a workflow
+  needs distinct image variants.
+- A custom filter combines the two examples above: it declares its output
+  format, accepts both input and output ImageLinks, calls ``receive_imgs``, and
+  publishes the transformed array with ``send_img``.
+- Most custom Blocks should receive their settings through constructor
+  arguments or regular Links. Source-side interactive configuration through
+  :meth:`~crappy.blocks.vision.VisionBlock.request_config` is an advanced case:
+  refer to the built-in :class:`~crappy.blocks.vision.DICVEProcessor`,
+  :class:`~crappy.blocks.vision.DISCorrelProcessor`, and
+  :class:`~crappy.blocks.vision.VideoExtensoProcessor` implementations when
+  that behavior is required.
+
+6. Custom Camera Blocks (all-in-one architecture)
+-------------------------------------------------
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
@@ -418,16 +615,22 @@ three operations in parallel, and therefore optimize the framerate for each
 functionality. The counterpart is that these three operations must be embedded
 into a single Block, rather than performed separately by three different
 Blocks. More details about the implementation of the Camera Block can be found
-in the :ref:`Developers <Camera-related Blocks>` section of the documentation.
+in the :ref:`Developers <All-in-one Camera Blocks>` section of the
+documentation.
+
+This architecture remains supported and is not planned for deprecation. For a
+new processing stage, a custom :ref:`VisionBlock <5. Custom VisionBlocks>` is
+usually simpler and more flexible because it does not also have to own the
+Camera, displayer, and recorder. The all-in-one approach described below can
+still be convenient when those components should deliberately be exposed as a
+single Block.
 
 In the Camera Block, some lines of code provide the possibility to perform a
 fourth operation in parallel : image processing on the acquired images. While
 the Camera Block itself does not make use of this possibility, children of
 Camera can use it very easily and implement parallelized image processing. For
 instance, the :ref:`Video Extenso` and the :ref:`DIC VE` Blocks are children of
-Camera that implement real-time video-extensometry on the acquired images. So,
-in most cases, the Camera Block should be subclassed by users wishing to
-implement their own custom image processing method in Crappy.
+Camera that implement real-time video-extensometry on the acquired images.
 
 Now, in practice, how to write your own subclass of Camera ? As mentioned
 above, the base Camera Block already handles the acquisition, the display, and
@@ -436,12 +639,12 @@ correctly process the images, and what results to send to downstream Blocks.
 But remember that just like the other functionalities, the processing is also
 parallelized ! This means that it cannot be performed directly in the custom
 Camera Block, but rather in another object : a
-:class:`~crappy.blocks.camera_processes.CameraProcess`. So, anyone who wants to
-implement their own image processing in Crappy must create two new classes :
+:class:`~crappy.blocks.camera_processes.CameraProcess`. Using this all-in-one
+architecture for custom image processing therefore requires two new classes :
 one child of :class:`~crappy.blocks.Camera`, and one child of
 :class:`~crappy.blocks.camera_processes.CameraProcess` !
 
-5.a. The CameraProcess class
+6.a. The CameraProcess class
 ++++++++++++++++++++++++++++
 
 Just like the other custom objects that you can instantiate in Crappy, there is
@@ -508,7 +711,7 @@ methods that can be called and provide extra functionalities :
   send :class:`~crappy.tool.camera_config.config_tools.Overlay` objects for the
   displayer to show as an overlay on top of the displayed images. It is
   discussed in more details in a :ref:`next subsection
-  <5.c. Sending an overlay to the Displayer>`.
+  <6.c. Sending an overlay to the Displayer>`.
 - :meth:`~crappy.blocks.camera_processes.CameraProcess.log` is the equivalent
   of the :meth:`~crappy.blocks.Block.log` method of the Block, and allows
   handling log messages without resorting to the :obj:`print` function.
@@ -572,7 +775,7 @@ subsection !
    actually process the new image), you can access the :py:`self.fps_count`
    attribute and decrement or modify it yourself.
 
-5.b. Writing the custom Camera Block
+6.b. Writing the custom Camera Block
 ++++++++++++++++++++++++++++++++++++
 
 To be able to use your freshly defined custom
@@ -653,7 +856,7 @@ do on the Camera Block side !
    The base Camera Block performs this handoff after the window closes and
    before starting the CameraProcess.
 
-5.c. Sending an overlay to the Displayer
+6.c. Sending an overlay to the Displayer
 ++++++++++++++++++++++++++++++++++++++++
 
 Because the :class:`~crappy.blocks.camera_processes.CameraProcess` deals with
@@ -688,7 +891,7 @@ overlays :
    :language: python
    :lines: 1-6, 31-61
 
-5.d. Final runnable example
+6.d. Final runnable example
 +++++++++++++++++++++++++++
 
 It is now time to put together all the custom classes that were defined in the
@@ -720,13 +923,13 @@ can :download:`download it
 </downloads/complex_custom_objects/custom_camera_block.py>` to run it locally
 on your machine. Note that the :py:`'Webcam'` camera is used here, so this
 example will require a camera readable by OpenCV to be plugged to the computer.
-The instantiation of custom image processing in Crappy is definitely one of the
-most advanced things you can perform, but it is totally worth it if you want to
-have your processing parallelized with the acquisition and the display and/or
-recording of the images. There will likely be changes and improvements on these
-aspects in future releases.
+This all-in-one extension path is one of the most advanced customization tasks
+in Crappy, but remains useful when the processing should be tightly packaged
+with acquisition, display, and recording. For new image pipelines whose stages
+should be reusable or combined independently, prefer the custom VisionBlock
+approach from the previous section.
 
-6. Sharing custom objects and Blocks
+7. Sharing custom objects and Blocks
 ------------------------------------
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>

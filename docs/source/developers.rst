@@ -61,9 +61,11 @@ Regular Blocks and Links
 """"""""""""""""""""""""
 
 The Blocks are base objects that have each a specific function and are
-instantiated by users to achieve a given overall behavior in their scripts. The
-Blocks can exchange information together through Links, with no restriction on
-the number of Links and the type of Blocks they connect.
+instantiated by users to achieve a given overall behavior in their scripts.
+They exchange small dictionaries through directed
+:class:`~crappy.links.Link` objects. Multiple Links can enter or leave a Block,
+and a second regular Link between the same ordered pair must explicitly enable
+the ``allow_parallel`` option.
 
 Under the hood, every Block is a child of the base
 :class:`~crappy.blocks.Block`, which is itself a child of
@@ -82,31 +84,76 @@ Link is a :obj:`multiprocessing.Pipe`, a low-level object that carries the
 data. In addition to instantiating the Pipe, the Link object also provides
 methods for the :class:`~crappy.blocks.Block` to use when sending data.
 
-Camera-related Blocks
-"""""""""""""""""""""
+Connection graph
+""""""""""""""""
+
+Crappy records this topology in a module-level
+:class:`~crappy.links.LinkGraph`. Constructing a Block registers a graph node,
+and constructing a Link or :class:`~crappy.links.ImageLink` registers an edge.
+Block and Link names are checked for uniqueness immediately. The graph also
+rejects parallel ImageLinks and cycles consisting only of ImageLinks, while
+regular Links remain free to form feedback loops. Renaming a Block before it
+starts updates its node and every incident edge.
+
+The graph is useful for more than validation. It can be rendered with
+:func:`crappy.display_graph`, and the preparation sequence traverses its image
+subgraph to find image sources and route configuration requests to them. The
+module-level graph is cleared together with the Block registry by
+:meth:`crappy.blocks.Block.reset`.
+
+VisionBlocks and ImageLinks
+"""""""""""""""""""""""""""
 
 One major downside of the Pipes is that they can overflow, in which case data
 from the sender Block is simply discarded when trying to send it. This behavior
-is especially inconvenient for sending images (because they're so large), so an
-alternative solution was chosen for image-processing Blocks. Instead of sharing
-the acquired images via Pipes, they are instead written by the sender Block to
-a shared :obj:`~multiprocessing.Array` where they can then be read by receiver
-processes. The receiver processes can display the images, record them, or
-process them.
+is especially inconvenient for sending images because they are so large. The
+:class:`~crappy.blocks.vision.VisionBlock` family therefore transfers images
+through :class:`~crappy.links.ImageLink` objects backed by
+:class:`multiprocessing.shared_memory.SharedMemory`.
 
-Note that these receiver processes are not Blocks. Instead, they are children
-of the base :class:`~crappy.blocks.camera_processes.CameraProcess`, and are
-managed by a :class:`~crappy.blocks.Camera` Block in a quite similar way as the
-base :class:`~crappy.blocks.Block` manages all the other ones. Using this
-solution, we were able to parallelize the image acquisition, display,
-recording, and processing, which greatly improved the performance compared to
-previous versions of Crappy.
+An image-producing VisionBlock owns one shared NumPy buffer for all of its
+outgoing ImageLinks. A process-safe lock protects each write and read, while
+shared dictionaries contain the current metadata and image format. An Event
+indicates when the buffer is ready and a shared counter identifies each
+published buffer state. :meth:`~crappy.blocks.vision.VisionBlock.send_img`
+replaces the buffer's contents atomically. Each consumer's
+:meth:`~crappy.blocks.vision.VisionBlock.receive_imgs` copies a newer state to
+a local array before processing it. Consequently, a consumer can skip
+intermediate frames but cannot observe a partially written image or metadata
+belonging to another frame.
 
-The use of shared Arrays to exchange data between Blocks was not chosen in the
-general case for several reasons. First, it adds an extra complexity that is
-not needed when sending numerical data. And second, it requires to know in
-advance the size of the data to share, which is easy to determine for images
-but not for numerical data.
+Every VisionBlock is a complete Block and thus has its own graph node, Process,
+lifecycle, regular Links, and loop-frequency control. Acquisition, processing,
+display, and recording can be represented by independent Blocks that consume
+the same source at different rates. Image arrays and matching metadata use
+ImageLinks, whereas commands, measurements, and overlays continue to use
+regular Links. This explicit architecture requires more graph construction
+from the user, in exchange for significantly freer composition.
+
+All-in-one Camera Blocks
+""""""""""""""""""""""""
+
+The older :class:`~crappy.blocks.Camera` architecture also shares acquired
+images without sending them through regular Pipes, but its receiver processes
+are not Blocks. They are children of
+:class:`~crappy.blocks.camera_processes.CameraProcess` and are managed
+internally by one Camera Block in a similar way as the base
+:class:`~crappy.blocks.Block` manages all the top-level Blocks. Acquisition,
+display, recording, and processing are parallelized, but their topology is
+encapsulated inside the owning Camera Block rather than exposed in the script's
+Block graph.
+
+This all-in-one architecture remains supported and is not planned for
+deprecation. VisionBlocks are recommended for new scripts and custom image
+processing because they give each Block fewer responsibilities and allow the
+image workflow to be rearranged. The Camera Block remains convenient when its
+fixed internal architecture already matches the application.
+
+Shared buffers are not used for ordinary labeled data because they add
+complexity that is unnecessary for small dictionaries and require the data
+shape and dtype to be known in advance. This is normally straightforward for
+images, either from constructor arguments or after Camera configuration, but
+not for arbitrary numerical messages.
 
 Actuators, Cameras, InOuts
 ++++++++++++++++++++++++++
@@ -114,7 +161,8 @@ Actuators, Cameras, InOuts
 Some of the Blocks rely on specific types of helper object, that they can
 drive. It is the case for :
 
-- The :class:`~crappy.blocks.Camera` Block that drives one
+- The :class:`~crappy.blocks.vision.CameraSource` and
+  :class:`~crappy.blocks.Camera` Blocks that each drive one
   :class:`~crappy.camera.Camera` object for acquiring images.
 - The :class:`~crappy.blocks.IOBlock` Block that drives one
   :class:`~crappy.inout.InOut` object for acquiring data and/or setting outputs
@@ -179,24 +227,34 @@ own Paths was only recently added.
 CameraConfig window
 """""""""""""""""""
 
-During the :meth:`~crappy.blocks.Camera.prepare` method of the Camera Block (or
-one of its children), the user can choose to enable the display of a
+Both image architectures can use a
 :class:`~crappy.tool.camera_config.CameraConfig` window. This interactive
-`tkinter` based GUI allows to visualize the images acquired by the
-:class:`~crappy.camera.Camera` object, and to interactively adjust the settings
-available for the Camera. All the code managing the configuration GUI is stored
-in the :mod:`crappy.tool.camera_config` submodule of Crappy. There, children
-of CameraConfig are defined to handle the specific needs of each child of the
-Camera Block. Also, helper classes are stored in separate files. The base
-CameraConfig is quite complex on its own, with a number of variables, bindings
-and traces that generate a feature-rich GUI. It even manages a parallel process
-(:class:`~crappy.tool.camera_config.config_tools.HistogramProcess`) in which a
-histogram of the acquired images is calculated in real-time.
+`tkinter` based GUI allows the user to visualize images acquired by a
+:class:`~crappy.camera.Camera` object and adjust its settings. All the code
+managing the GUI is stored in :mod:`crappy.tool.camera_config`, where
+specialized CameraConfig children and their helper classes are defined. The
+base CameraConfig contains the variables, bindings, and traces required for a
+feature-rich interface. It even manages a parallel
+:class:`~crappy.tool.camera_config.config_tools.HistogramProcess` that
+calculates an image histogram in real time.
 
-The base Camera Block owns the configuration workflow, while its collaborators
-own their domain-specific state. A Camera child selects the appropriate
-CameraConfig and creates its processing
-:class:`~crappy.blocks.camera_processes.CameraProcess`. After the config window
+In the VisionBlock architecture,
+:class:`~crappy.blocks.vision.CameraSource` owns the Camera and runs the
+configuration windows. A downstream processor can override
+:meth:`~crappy.blocks.vision.VisionBlock.request_config` to describe the
+specialized configurator and arguments that it needs. Before the Block
+processes start, :meth:`~crappy.blocks.Block.prepare_all` uses the ImageLink
+graph to copy this request to the source and consumer and gives each copy one
+end of a one-way Pipe. CameraSource runs accepted requests sequentially and
+sends each resulting tuple back to its requester. Required requests must be
+answered, optional requests may receive :obj:`None`. The processor calls
+:meth:`~crappy.blocks.vision.VisionBlock.recv_configs` during preparation and
+creates its image-processing helpers from the explicit result.
+
+In the all-in-one architecture, the base Camera Block instead owns the entire
+configuration workflow. A Camera child selects the appropriate CameraConfig
+and creates its processing
+:class:`~crappy.blocks.camera_processes.CameraProcess`. After the window
 closes, :meth:`crappy.tool.camera_config.CameraConfig.get_config` returns
 either :obj:`None` or a tuple of processing-specific values. The Camera Block
 unpacks that tuple into
@@ -230,16 +288,31 @@ for applying a software ROI on the acquired images.
 Image processing
 """"""""""""""""
 
-The children of the :class:`~crappy.blocks.Camera` Block manage the execution
-of the various :class:`~crappy.blocks.camera_processes.CameraProcess` that
-might be requested by the user, including the one performing the image
-processing. The code performing the processing is however not included in the
-children of the Camera Block or the CameraProcess class. It is instead stored
-in a separate submodule, :mod:`crappy.tool.image_processing`. The rationale
-behind is to separate the code dealing with multiprocessing and the one
-performing image processing.
+In both architectures, the actual processing algorithms are stored in
+:mod:`crappy.tool.image_processing`. This separates reusable correlation and
+tracking code from the Blocks and multiprocessing code that schedule it. A
+:class:`~crappy.blocks.vision.DICVEProcessor`,
+:class:`~crappy.blocks.vision.DISCorrelProcessor`, or
+:class:`~crappy.blocks.vision.VideoExtensoProcessor` creates the corresponding
+tool directly in its own Block process after receiving any requested
+configuration. In the all-in-one architecture, a child of
+:class:`~crappy.blocks.Camera` instead manages a
+:class:`~crappy.blocks.camera_processes.CameraProcess`, which creates and owns
+the same kind of tool.
 
-VideoExtenso illustrates the complete ownership chain. The public
+The two VideoExtenso implementations illustrate the different ownership
+chains. For :class:`~crappy.blocks.vision.VideoExtensoProcessor`, the
+:class:`~crappy.blocks.vision.CameraSource` runs
+:class:`~crappy.tool.camera_config.VideoExtensoConfig`, which owns the
+:class:`~crappy.tool.camera_config.config_tools.SpotsDetector` used for initial
+spot selection. Only the spot boxes and threshold cross the configuration
+Pipe. The VideoExtensoProcessor then creates
+:class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` in its
+own Process, and that tool manages one
+:class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` process
+per spot.
+
+For the all-in-one implementation, the public
 :class:`~crappy.blocks.VideoExtenso` Block validates the user-facing options
 and chooses its helpers. Its
 :class:`~crappy.tool.camera_config.VideoExtensoConfig` creates and owns the
@@ -327,10 +400,12 @@ for managing the execution of all the Processes. They include :
   the Blocks.
 - A :obj:`multiprocessing.Barrier` used for ensuring that all the Blocks wait
   for each other before starting.
-- Two :obj:`multiprocessing.Event` indicating the Blocks when to start and when
-  to stop running.
+- Three :obj:`multiprocessing.Event` objects indicating when the Blocks should
+  start, pause, and stop running.
 - Two :obj:`multiprocessing.Event` signaling an :exc:`Exception` or a
   :exc:`KeyboardInterrupt` encountered by Crappy.
+- An optional ``multiprocessing.Manager`` providing the shared dictionaries
+  used by ImageLinks when at least one VisionBlock is present.
 - A :obj:`logging.Logger` recording all the log messages from all the Blocks.
 - A :obj:`multiprocessing.Queue` used for sending all the log messages to the
   Logger.
@@ -354,6 +429,15 @@ instance of Block also has :
 - A few buffers storing values needed for trying to achieve and displaying the
   looping frequency.
 - A name, given by a :obj:`classmethod` to ensure it is unique.
+- Lists of regular input and output Links. VisionBlocks additionally keep lists
+  of their input and output ImageLinks and the associated image state.
+- A list of configuration Pipe endpoints to close when the ``fork`` start
+  method makes the child inherit endpoints owned by other Blocks.
+
+The constructor also registers the Block's name and type as a node in the
+module-level :class:`~crappy.links.LinkGraph`. Creating regular Links and
+ImageLinks adds the corresponding edges during this phase, so the complete
+connection topology is available before Crappy starts any Process.
 
 Each instance of Block might of course also perform extra tasks, depending how
 the ``__init__`` method of the child class is implemented. The ``__init__``
@@ -380,10 +464,34 @@ needed (see :ref:`FT232H feature`). After that, for each Block, its
 synchronization instance attributes are set to the corresponding class
 attributes of Block. Basically, the class attributes are shared with all the
 instances of Block. This is only possible because at that point the Blocks do
-not live in a separate Process yet, they all run in ``__main__``. Short after,
-all the Blocks are started, meaning that they all run in a separate Process. If
-an exception is caught during the *prepare* phase, it first breaks the
-:obj:`~multiprocessing.Barrier` and then triggers :ref:`The cleanup phase`.
+not live in a separate Process yet, they all run in ``__main__``.
+
+When at least one VisionBlock is present, ``prepare_all`` also performs the
+graph-level image setup before starting the children. It first verifies that
+the Block registry and :class:`~crappy.links.LinkGraph` contain the same names.
+For each image source, it walks every downstream ImageLink descendant and asks
+that consumer whether it needs source-side configuration. Each returned
+:class:`~crappy.blocks.vision.block.ConfigRequest` is checked against the
+source and requester names, duplicated, and registered at both ends with a
+dedicated one-way :obj:`multiprocessing.Pipe`. Under the ``fork`` start method,
+each Block also receives the list of unrelated endpoints that it will inherit
+and must close when its child Process begins. This is important because
+otherwise an unintended open copy could prevent a requester from detecting a
+failed source through end-of-file.
+
+The main Process then creates one ``multiprocessing.Manager`` for the shared
+image metadata and format dictionaries. Each image-producing VisionBlock
+creates a shared-memory name, lock, readiness Event, and image counter, and
+publishes this same set of objects to all its outgoing ImageLinks. This is the
+framework-level state for one source buffer, the actual shared-memory segment
+is created later by the image-producing child, after its configuration has
+established the final image format.
+
+Finally, all the Blocks are started in separate Processes. The main Process
+closes its copies of all configuration Pipe endpoints after starting them,
+whether preparation succeeds or fails. If an exception is caught during the
+*prepare* phase, it first breaks the :obj:`~multiprocessing.Barrier` and then
+triggers :ref:`The cleanup phase`.
 
 The renice phase
 """"""""""""""""
@@ -429,15 +537,21 @@ corresponding method is :meth:`crappy.blocks.Block._cleanup`. Its goal is to
 make sure that all the Blocks stop as expected, and that the other Processes
 and Threads of Crappy terminate as well. It first sets the stop
 :obj:`~multiprocessing.Event`, indicating all the Blocks to stop looping and to
-finish as soon as possible. It then lets 3 seconds for all the Blocks to
-finish. If any Block is still alive passed this delay, it is mercilessly
-terminated. Then, the :obj:`~multiprocessing.Process` in charge of the
-:class:`~crappy.tool.ft232h.USBServer` is stopped, if applicable. Same goes for
-the :obj:`~threading.Thread` collecting all the log messages. Short before
-returning, Crappy is reset by the :meth:`~crappy.blocks.Block.reset` method,
-that re-initializes all the synchronization objects. They are after all not
-needed anymore at that point. Finally, an exception might be raised in three
-cases :
+finish as soon as possible. During a normal VisionBlock finish, incoming
+shared-memory handles are closed without unlinking them, while an image source
+closes and unlinks the output segment that it owns.
+
+The main Process gives all Blocks 3 seconds to finish. If any Block is still
+alive past this delay, it is terminated. Then, the
+:obj:`~multiprocessing.Process` in charge of the
+:class:`~crappy.tool.ft232h.USBServer` is stopped, if applicable. The shared
+Manager that provided the ImageLink dictionaries is shut down only after the
+Block Processes have finished, and the :obj:`~threading.Thread` collecting all
+log messages is also stopped. Shortly before returning, Crappy is reset by
+:meth:`~crappy.blocks.Block.reset`. This clears the Block registry and
+:class:`~crappy.links.LinkGraph`, drops the shared Manager reference, and
+re-initializes the synchronization state because it is no longer needed.
+Finally, an exception might be raised in three cases :
 
 - If all the Blocks are not done running at the end of this phase.
 - If an :exc:`Exception` was caught during Crappy's execution.
@@ -455,17 +569,36 @@ In the children Processes
 
 As soon as the start method of a :class:`~crappy.blocks.Block` is called, it
 starts running in a new :obj:`~multiprocessing.Process` separate from the
-``__main__`` one. It therefore lives it own independent life, and is only
+``__main__`` one. It therefore lives its own independent life, and is only
 linked to the ``__main__`` Process by the :mod:`multiprocessing`
 synchronization objects. The ``__main__`` Process still has the option to kill
 the Blocks, if at the end of Crappy they do not stop by themselves.
 
-When a Block is started, it firsts sets its :obj:`~logging.Logger` and runs its
-:meth:`~crappy.blocks.Block.prepare` method to perform any preliminary task.
-Then, it reaches the :obj:`~multiprocessing.Barrier`, where it waits for all
-the other Blocks and the ``__main__`` Process to be ready. If anything wrong
-happens before that, the Block breaks the Barrier, thus signaling its failure
-to the other ones through a :obj:`~threading.BrokenBarrierError`.
+When a Block is started, it first sets its :obj:`~logging.Logger`. Under the
+``fork`` start method, it immediately closes the configuration Pipe endpoints
+that belong to other Blocks. It then runs
+:meth:`~crappy.blocks.Block.prepare` to perform any preliminary task.
+
+For a VisionBlock, its specialized ``prepare`` method first performs the work
+needed to determine its final image format and processing state. An image
+source handles its incoming configuration requests and sends the results.
+Requesting consumers wait for these responses and create their processing
+helpers. Their eventual call to
+:meth:`crappy.blocks.vision.VisionBlock.prepare` obtains the synchronization
+objects stored on all incoming ImageLinks. A source with image outputs creates
+its single :class:`multiprocessing.shared_memory.SharedMemory` segment,
+publishes its shape and dtype, and signals that the buffer is ready. Each
+consumer waits for that signal, attaches to the segment, and allocates a local
+array into which coherent frames will be copied. These waits periodically
+check the preparation Barrier and stop Event, so another Block's failure does
+not leave them waiting indefinitely. Rejecting image-only cycles when the
+graph is constructed also ensures that buffer dependencies can be resolved.
+
+After preparation, the Block reaches the :obj:`~multiprocessing.Barrier`,
+where it waits for all the other Blocks and the ``__main__`` Process to be
+ready. If anything goes wrong before that, the Block breaks the Barrier, thus
+signaling its failure to the other ones through a
+:obj:`~threading.BrokenBarrierError`.
 
 As soon as all the other Processes are ready, the Barrier breaks and releases
 the Block. This one then waits a second time for the ``__main__`` Process to

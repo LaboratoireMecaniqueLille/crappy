@@ -20,6 +20,8 @@ Classes aliases
    :noindex:
 .. autoclass:: crappy.Block
    :noindex:
+.. autoclass:: crappy.VisionBlock
+   :noindex:
 .. autoclass:: crappy.Camera
    :noindex:
 .. autoclass:: crappy.InOut

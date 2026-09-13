@@ -30,7 +30,9 @@ data. There are many different types of Blocks, that all have a unique
 function. Some will acquire data, others transform it, or use it to drive
 hardware, etc. As the Blocks perform very specific tasks, a test script usually
 contains several Blocks (there is no upper limit). **Blocks either take data**
-**as an input, or they output data, or both**.
+**as an input, or they output data, or both**. This also applies to image
+workflows, in which independent VisionBlocks can acquire, process, display, or
+record images.
 
 0.b. Links
 ++++++++++
@@ -38,22 +40,31 @@ contains several Blocks (there is no upper limit). **Blocks either take data**
 Blocks are always blissfully ignorants of each other, so the Links are there to
 allow data transfers between them. **A Link is established between two Blocks**
 and is oriented. Establishing a link between Block 1 and Block 2 means that
-Block 2 will receive of all of Block 1's outputs. Because the Link is oriented,
-Block 1 will however not be aware of Block 2's outputs. There is no upper limit
-in the number of Links pointing towards and originating from a given Block.
+Block 2 will receive all of Block 1's outputs. Because the Link is oriented,
+Block 1 will however not be aware of Block 2's outputs.
+
+Crappy provides two types of Link. A regular :ref:`Link` carries small
+dictionaries containing commands, measurements, or other labeled values. It is
+created with :func:`crappy.link`. An :ref:`Image Link` carries an image and its
+matching metadata between two :class:`~crappy.blocks.vision.VisionBlock`
+objects, and is created with :func:`crappy.img_link`.
 
 0.c. Labels
 +++++++++++
 
-**Data flowing between the Blocks through the Links is always labeled**. Labels
-are simply names associated with a given stream of data. Let's say that Block 1
-outputs three data streams labeled :py:`'time', 'Force', 'Position'`, and is
-linked with Block 2 that only takes two inputs. As we said, Block 2 is aware of
-all of Block 1's outputs and thus needs a way to differentiate them. Thanks to
-labels, the user can simply specify in the arguments of Block 2 which labels to
-consider (for example only :py`'time', 'Position'`). The data stream labeled
-:py:`'Force'` will be lost to Block 2, but maybe Block 1 is also linked with a
-Block 3 that's using it !
+**Data flowing between Blocks through regular Links is always labeled**.
+Labels are simply names associated with a given stream of data. Let's say that
+Block 1 outputs three data streams labeled
+:py:`'time', 'Force', 'Position'`, and is linked with Block 2 that only takes
+two inputs. As we said, Block 2 is aware of all of Block 1's outputs and thus
+needs a way to differentiate them. Thanks to labels, the user can simply
+specify in the arguments of Block 2 which labels to consider (for example only
+:py:`'time', 'Position'`). The data stream labeled :py:`'Force'` will be lost
+to Block 2, but maybe Block 1 is also linked with a Block 3 that's using it !
+
+An ImageLink instead carries one :mod:`numpy` image array together with a
+metadata dictionary. This metadata must identify the frame with the
+:py:`'ImageUniqueID'` key and give its timestamp under :py:`'t(s)'`.
 
 1. Understanding Crappy's syntax
 --------------------------------
@@ -301,33 +312,34 @@ More examples of the Generator Block can be found in the `examples folder on
 GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
 examples/blocks>`__.
 
-2.b. The Camera Block
-+++++++++++++++++++++
+2.b. Camera acquisition and VisionBlocks
+++++++++++++++++++++++++++++++++++++++++
 
-For this second highlighted Block, let's introduce the :ref:`Camera` Block. It
-allows to **acquire images from real or virtual** :ref:`Cameras` objects, and
-to **record, display, and process** them. No processing is included in the base
-Camera Block, but all of its children are meant to perform some sort of
-processing (see the :ref:`Video extenso`, :ref:`DIS Correl` or :ref:`DIC VE`
-Blocks). The instantiation of a Camera Block is quite simple, here's how it
-looks like :
+For this second example, let's build a basic image-acquisition pipeline. For
+new scripts, the recommended approach is to combine independent
+:class:`~crappy.blocks.vision.VisionBlock` objects. A :ref:`Camera Source` only
+acquires images from a real or virtual :ref:`Camera`, while separate
+VisionBlocks can process, display, or record the images. These stages are
+connected explicitly with :ref:`Image Links <Image Link>`.
+
+The minimal pipeline for acquiring and displaying images therefore contains a
+:ref:`Camera Source` and an :ref:`Image Displayer` :
 
 .. literalinclude:: /downloads/getting_started/tuto_camera.py
    :language: python
    :emphasize-lines: 7-12
-   :lines: 1-13
+   :lines: 1-12
 
 .. Note::
-   To run this example, you'll need to have the *opencv-python*,
-   :mod:`matplotlib` and *Pillow* Python modules installed.
+   To run this example, you'll need to have *Pillow* and either the
+   *opencv-python* or :mod:`matplotlib` Python modules installed.
 
-The first given argument is the name of the :class:`~crappy.camera.Camera` to
-use for acquiring the images. In this demo, the :ref:`Fake Camera` is used so
-that the code can run without any hardware. Then, the user specifies whether
-they want the captured images to be displayed and/or recorded. There are more
-options available for tuning the acquisition, the recording and the display,
-they are all listed in the documentation of the :class:`~crappy.blocks.Camera`
-Block in the API.
+The first argument of :class:`~crappy.blocks.vision.CameraSource` is the name
+of the :class:`~crappy.camera.Camera` object to use for acquiring the images.
+In this demo, the :ref:`Fake Camera` is used so that the code can run without
+any hardware. The acquisition-loop frequency belongs to CameraSource, whereas
+the maximum display framerate and the loop that checks for new frames belong
+to :class:`~crappy.blocks.vision.ImageDisplayer`.
 
 Another important argument is the *config* one. When enabled, a
 :class:`~crappy.tool.camera_config.CameraConfig` window is displayed before the
@@ -335,15 +347,32 @@ main part of the script runs. In this window, the user can **interactively**
 **tune the available settings** for the selected Camera object. The possible
 settings can be viewed by looking at the documentation in the API, for example
 in the *open* method of :class:`~crappy.camera.FakeCamera` for the Fake Camera.
-If the config windows is disabled, the settings can still be adjusted by
-providing them as *kwargs* to the Camera Block. Note that disabling the config
-window makes some arguments mandatory, as detailed in the documentation of the
-Camera Block.
+If the config window is disabled, the settings can still be adjusted by
+providing them as *kwargs* to CameraSource. In that case, ``img_shape`` and
+``img_dtype`` must also be given so that the shared image buffer can be created
+before acquisition starts. Some processing VisionBlocks can instead ask their
+upstream CameraSource to open a specialized configuration window. These
+requests are handled automatically before the test starts when ``config`` and
+``allow_downstream_config`` are enabled.
+
+The two VisionBlocks must now be connected. A regular :func:`crappy.link` is
+not intended for image transport, so this pipeline uses
+:func:`crappy.img_link` :
+
+.. literalinclude:: /downloads/getting_started/tuto_camera.py
+   :language: python
+   :emphasize-lines: 7, 11, 16
+   :lines: 1-16
+
+The CameraSource owns one shared image buffer, and the ImageDisplayer copies
+the newest image when it is ready. Consequently, setting a lower display
+framerate does not slow down acquisition. Intermediate images may be skipped
+by the displayer.
 
 To have a functional and clean example script, we still need to add a few
-lines. In particular, unlike the :ref:`Generator` Block, the Camera does not
-automatically stop after a condition is met. To allow the script to stop in a
-proper way, a :ref:`Stop Button` Block should be added. It will display a
+lines. In particular, unlike the :ref:`Generator` Block, the image source does
+not automatically stop after a condition is met. To allow the script to stop
+in a proper way, a :ref:`Stop Button` Block should be added. It will display a
 button, that will stop the execution of the script when clicked upon. It is
 always possible to stop Crappy using :kbd:`Control-c`, but this is not
 considered a proper way of ending the script. After inserting the stop button,
@@ -351,18 +380,34 @@ here's the final runnable script :
 
 .. literalinclude:: /downloads/getting_started/tuto_camera.py
    :language: python
-   :emphasize-lines: 14, 16
+   :emphasize-lines: 14, 16, 18
 
-:download:`Download this Camera example
+:download:`Download this CameraSource and ImageDisplayer example
 </downloads/getting_started/tuto_camera.py>` to run it locally on your
-machine ! You can adjust the parameters to see what the effect is. You'll find
-more information on the possible arguments and their effects in the
-documentation. **The children of the Camera Block that perform image**
-**processing work on the exact sample principle**, except they accept extra
-arguments and can output data to downstream Blocks. More examples of the Camera
-Block and its children can be found in the `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
-blocks>`__.
+machine ! A more extensively commented version is available in the `vision
+examples folder <https://github.com/LaboratoireMecaniqueLille/crappy/blob/
+master/examples/vision_blocks/camera_basic_display.py>`__.
+
+The explicit architecture becomes especially useful as the workflow grows. An
+:ref:`Image Recorder` can be connected to the same CameraSource with a second
+call to :func:`crappy.img_link`, without changing or slowing the displayer.
+Similarly, the :ref:`DIC VE Processor`, :ref:`DIS Correl Processor`, and
+:ref:`Video Extenso Processor` can analyze the same source while sending their
+small results and display overlays through regular Links. See the `basic
+recording example <https://github.com/LaboratoireMecaniqueLille/crappy/blob/
+master/examples/vision_blocks/camera_basic_record.py>`__, the `software
+trigger example <https://github.com/LaboratoireMecaniqueLille/crappy/blob/
+master/examples/vision_blocks/camera_software_trigger.py>`__, and the other
+`VisionBlock examples <https://github.com/LaboratoireMecaniqueLille/crappy/
+tree/master/examples/vision_blocks>`__ for complete pipelines.
+
+The older :class:`~crappy.blocks.Camera` Block combines acquisition with
+optional display, recording, and processing children inside a single Block, and
+can still be convenient when this fixed architecture is exactly what is needed.
+New scripts are nevertheless encouraged to use VisionBlocks for their greater
+flexibility. Examples of the all-in-one Camera Block remain available in the
+`Camera examples folder <https://github.com/LaboratoireMecaniqueLille/crappy/
+tree/master/examples/blocks/camera>`__.
 
 2.c. The Grapher Block
 ++++++++++++++++++++++
