@@ -21,21 +21,35 @@ except (ModuleNotFoundError, ImportError):
 
 
 class ImageDisplayer(VisionBlock):
-  """This :class:`~crappy.blocks.vision.VisionBlock` can display images
-  received from an upstream VisionBlock in a dedicated window.
+  """Displays an image stream and optional overlays in a control window.
 
-  It is meant to serve as a control or validation feature, its resolution is
-  thus limited to `640x480` and it should not be used at high framerates.
+  This Block receives images from exactly one upstream VisionBlock through an
+  input :class:`~crappy.links.ImageLink` and supports no output ImageLink. It
+  is intended for live monitoring rather than high-rate or full-resolution
+  image inspection: displayed images are limited to 640x480 pixels and updates
+  are capped by ``framerate``. When the consumer falls behind, it displays the
+  newest available image and skips intermediate frames.
 
-  The images can be displayed using two different backends : either using
-  :mod:`cv2` (OpenCV), or using :mod:`matplotlib`. OpenCV is by far the fastest
-  and most convenient.
+  OpenCV and Matplotlib display backends are supported. If no backend is
+  selected, OpenCV is preferred when available and Matplotlib is used as a
+  fallback. Images whose dtype is not ``uint8`` are converted before display
+  and large positive integer ranges are reduced by a power-of-two scale factor.
 
-  Overlays can be received through regular :class:`~crappy.links.Link` objects
-  under the reserved ``'overlay'`` label. Each value must be an iterable of
-  :class:`~crappy.tool.camera_config.Overlay` objects or :obj:`None`. The
-  latest valid iterable from each Link is retained and drawn on subsequent
-  images. Sending an empty iterable clears the overlays associated with a Link.
+  Regular input :class:`~crappy.links.Link` objects can provide overlays under
+  the reserved ``'overlay'`` label. Each value must be an iterable containing
+  :class:`~crappy.tool.camera_config.Overlay` objects or :obj:`None`
+  placeholders. The latest valid iterable from each Link is retained and drawn
+  on subsequent images. Sending an empty iterable clears that Link's overlays,
+  and malformed overlay values are ignored with a warning.
+
+  After displaying an image, the Block sends its timestamp, unique image ID,
+  and complete metadata through regular output Links under ``'t(s)'``,
+  ``'img_index'``, and ``'meta'``. This makes downstream actions depend on
+  images that were actually displayed rather than merely acquired.
+
+  Unlike :class:`~crappy.blocks.camera_processes.Displayer`, which is managed
+  internally by the older :class:`~crappy.blocks.Camera`, this class is an
+  independent Block that can be connected anywhere in a VisionBlock pipeline.
 
   .. versionadded:: 2.1.0
   """
@@ -49,27 +63,26 @@ class ImageDisplayer(VisionBlock):
                display_freq: bool = False,
                debug: bool | None = False,
                freq: float | None = 100) -> None:
-    """Sets the arguments and initializes the parent class.
+    """Sets the display backend, rate, and standard Block options.
 
     Args:
-      title: The name of the Displayer window, that will be displayed on the
-        window border, as a :obj:`str`. If not provided, a name will be
-        automatically assigned based on the number of already instantiated
-        Displayers in the script.
-      framerate: The target framerate for the display, as a :obj:`float`. The
-        actual achieved framerate might be lower, but never greater than this
-        value.
-      backend: The module to use for displaying the images. Can be either
-        ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` or
-        :mod:`matplotlib`.
-      display_freq: If :obj:`True`, displays the looping frequency of the
-        Block.
-      debug: If :obj:`True`, displays all the log messages including the
+      title: Text displayed in the window title bar. If omitted, a unique title
+        based on the number of instantiated ImageDisplayers is generated.
+      framerate: Maximum display update frequency. The achieved rate can be
+        lower, but will never exceed this value. It must be strictly positive
+        and no greater than ``freq`` when ``freq`` is set.
+      backend: Display backend, either ``'cv2'`` for OpenCV or ``'mpl'`` for
+        Matplotlib. If omitted, OpenCV is preferred and Matplotlib is used as a
+        fallback.
+      display_freq: If :obj:`True`, periodically reports the achieved display
+        frequency.
+      debug: If :obj:`True`, displays all log messages, including
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-      freq: The target looping frequency for the Block. If :obj:`None`, loops
-        as fast as possible.
+      freq: Target frequency for checking overlays and images. If :obj:`None`,
+        loops as fast as possible. It bounds how often the requested display
+        framerate can be reached.
     """
 
     super().__init__(img_shape=None,
@@ -122,13 +135,21 @@ class ImageDisplayer(VisionBlock):
     self._last_warn: float = -float('inf')
 
   def __new__(cls, *args, **kwargs):
-    """When instantiating a new displayer, increments the Displayer counter."""
+    """Allocates an instance and advances the automatic-title counter."""
 
     cls._count += 1
     return super().__new__(cls)
 
   def prepare(self) -> None:
-    """Initializes the Displayer window"""
+    """Validates the ImageLink topology and opens the display window.
+
+    The selected backend is initialized before the input shared image buffer is
+    attached by :class:`VisionBlock`.
+
+    Raises:
+      IOError: If the Block does not have exactly one input ImageLink or has an
+        output ImageLink.
+    """
 
     # Ensuring Link consistency
     if self.img_outputs:
@@ -147,11 +168,22 @@ class ImageDisplayer(VisionBlock):
     super().prepare()
 
   def loop(self) -> None:
-    """This method grabs the latest frame, casts it to 8 bits if necessary,
-    and updates the Displayer window to draw it.
+    """Displays the newest eligible image with the latest overlays.
 
-    In addition, a message containing information on each displayed image is
-    sent through the output :class:`~crappy.links.Link` if any.
+    Overlay inputs are consumed first so their newest values are retained even
+    during loops skipped by the display-rate limit. Once the next display time
+    is reached, the newest image is copied from the input ImageLink, converted
+    to ``uint8`` when necessary, decorated with every retained overlay, and
+    displayed by the selected backend.
+
+    A dictionary containing ``'t(s)'``, ``'img_index'``, and ``'meta'`` is sent
+    through regular output Links after a successful display update. If no new
+    image is available or the framerate interval has not elapsed, the method
+    returns without updating the window.
+
+    Raises:
+      RuntimeError: If image metadata is unavailable or does not contain
+        ``'t(s)'`` and ``'ImageUniqueID'``.
     """
 
     # Update overlay buffer with latest overlays received from upstream Blocks
@@ -245,7 +277,7 @@ class ImageDisplayer(VisionBlock):
       self._print_freq(img_handled=True)
 
   def finish(self) -> None:
-    """Closes the Displayer window."""
+    """Closes the display window and releases the input image buffer."""
 
     # Closing the Displayer window
     self.log(logging.INFO, "Closing the displayer window")
@@ -257,7 +289,7 @@ class ImageDisplayer(VisionBlock):
     super().finish()
 
   def _prepare_cv2(self) -> None:
-    """Instantiates the display window of :mod:`cv2`."""
+    """Creates a resizable OpenCV display window."""
 
     try:
       flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
@@ -266,14 +298,17 @@ class ImageDisplayer(VisionBlock):
     cv2.namedWindow(self._title, flags)
 
   def _prepare_mpl(self) -> None:
-    """Creates a :mod:`matplotlib` Figure."""
+    """Enables interactive Matplotlib mode and creates a Figure."""
 
     plt.ion()
     self._fig, self._ax = plt.subplots()
 
   def _update_cv2(self, img: np.ndarray) -> None:
-    """Reshapes the image to a maximum shape of 640x480 and displays it in
-    :mod:`cv2`."""
+    """Downscales an image when needed and displays it with OpenCV.
+
+    Args:
+      img: ``uint8`` image to display.
+    """
 
     if img.shape[0] > 480 or img.shape[1] > 640:
       factor = min(480 / img.shape[0], 640 / img.shape[1])
@@ -288,8 +323,11 @@ class ImageDisplayer(VisionBlock):
     cv2.waitKey(1)
 
   def _update_mpl(self, img: np.ndarray) -> None:
-    """Reshapes the image to a dimension inferior or equal to 640x480 and
-    displays it in :mod:`matplotlib`."""
+    """Subsamples an image when needed and displays it with Matplotlib.
+
+    Args:
+      img: ``uint8`` image to display.
+    """
 
     if img.shape[0] > 480 or img.shape[1] > 640:
       factor = max(ceil(img.shape[0] / 480), ceil(img.shape[1] / 640))
@@ -305,13 +343,13 @@ class ImageDisplayer(VisionBlock):
     plt.show()
 
   def _finish_cv2(self) -> None:
-    """Destroys the opened :mod:`cv2` window."""
+    """Destroys the OpenCV display window."""
 
     if self._title is not None:
       cv2.destroyWindow(self._title)
 
   def _finish_mpl(self) -> None:
-    """Destroys the opened :mod:`matplotlib` window."""
+    """Closes the Matplotlib Figure when it was created."""
 
     if self._fig is not None:
       plt.close(self._fig)

@@ -29,20 +29,36 @@ except (ModuleNotFoundError, ImportError):
 
 
 class ImageRecorder(VisionBlock):
-  """This :class:`~crappy.blocks.vision.VisionBlock` can record images acquired
-  by a :class:`~crappy.blocks.Camera` Block to the desired location and in the
-  desired format.
+  """Records an image stream and its metadata to disk.
 
-  The images are received through a :class:`~crappy.links.ImageLink`. Whenever
-  an image is saved, its information is sent through the downstream
-  :class:`~crappy.links.Link` if any, containing the timestamp, the
-  image index, and the metadata. They are respectively carried by the `'t(s)'`,
-  `'img_index'` and `'meta'` labels. This is useful for performing an action
-  conditionally at each new saved image.
+  This Block receives images from exactly one upstream
+  :class:`~crappy.blocks.vision.VisionBlock` through an input
+  :class:`~crappy.links.ImageLink`. It accepts no regular input Link and has no
+  output ImageLink. The latest eligible frame is saved on each handling cycle,
+  so a slow recorder may skip intermediate frames that were overwritten in the
+  source's shared buffer. ``save_period`` can deliberately reduce the recording
+  rate further by retaining at most one out of a given number of source images.
 
-  Various backends can be used for recording the images, some may be faster or
-  slower depending on the machine. It is possible to only save one out of a
-  given number of images, if not all frames are needed.
+  SimpleITK, Pillow, OpenCV, and raw NumPy output are supported. When no
+  backend is requested, the first available backend is selected in that order,
+  with NumPy always available as a fallback. NumPy output uses ``.npy`` files
+  and ignores ``img_extension``. Pillow additionally embeds compatible metadata
+  fields as EXIF data.
+
+  Images are stored under a filename containing their zero-padded
+  ``'ImageUniqueID'`` and ``'t(s)'`` timestamp. A ``metadata.csv`` file records
+  the complete metadata of each saved frame. If the requested folder already
+  contains such a file, a new sibling folder with a numeric suffix is chosen so
+  existing recordings are not overwritten.
+
+  Whenever a saved-frame notification is emitted through regular output
+  :class:`~crappy.links.Link` objects, it contains the image timestamp, unique
+  ID, and complete metadata under ``'t(s)'``, ``'img_index'``, and ``'meta'``.
+  This allows downstream actions to depend on images selected for recording.
+
+  Unlike :class:`~crappy.blocks.camera_processes.ImageSaver`, which is managed
+  internally by the older :class:`~crappy.blocks.Camera`, this class is an
+  independent Block that can record images from any compatible VisionBlock.
 
   .. versionadded:: 2.1.0
   """
@@ -56,36 +72,37 @@ class ImageRecorder(VisionBlock):
                display_freq: bool = False,
                debug: bool | None = False,
                freq: float | None = 100) -> None:
-    """Sets the arguments and initializes the parent class.
+    """Sets the destination, image format, and recording rate.
 
     Args:
-      img_extension: The file extension for the recorded images, as a
-        :obj:`str` and without the dot. Common file extensions include `tiff`,
-        `png`, `jpg`, etc.
-      save_folder: :obj:`pathlib.Path` to the folder where to save the images.
-        Can be an absolute or a relative path. The folder does not need to
-        already exist, in which case it is created.
-      save_period: Only one out of that number (as an :obj:`int`) images at
-        most will be saved. Allows to have a known periodicity in case the
-        framerate is too high to record all the images. Or simply to reduce the
-        number of saved images if saving them all is not needed.
-      save_backend: The backend to use for saving the images. Should be one of:
+      img_extension: File extension used for encoded images, without the
+        leading dot. Common values include ``'tiff'``, ``'png'``, and
+        ``'jpg'``. It is ignored by the ``'npy'`` backend.
+      save_folder: Absolute or relative directory in which recordings are
+        stored. Missing directories are created. If omitted, images are saved
+        in ``Crappy_images`` under the current working directory. A numeric
+        suffix is added when the target already contains Crappy metadata.
+      save_period: Saves at most one image for every this many transport-level
+        source image identifiers. It must be a strictly positive integer. A
+        value of one considers every newly received frame.
+      save_backend: Image-writing backend, chosen from:
         ::
 
           'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
-        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Depending on the machine,
-        some may be faster or slower. The ``img_extension`` is ignored for the
-        backend ``'npy'``, that saves the images as raw numpy arrays.
-      display_freq: If :obj:`True`, displays the looping frequency of the
-        Block.
-      debug: If :obj:`True`, displays all the log messages including the
+        These correspond to :mod:`SimpleITK`, :mod:`PIL`, :mod:`cv2`, and
+        :mod:`numpy`. If omitted, they are tried in that order and the first
+        installed backend is selected. Requesting an unavailable optional
+        backend raises :exc:`ModuleNotFoundError`.
+      display_freq: If :obj:`True`, periodically reports the achieved image
+        recording frequency.
+      debug: If :obj:`True`, displays all log messages, including
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-      freq: The target looping frequency for the Block. If :obj:`None`, loops
-        as fast as possible.
+      freq: Target frequency for checking and recording new images. If
+        :obj:`None`, loops as fast as possible. Storage performance and the
+        source frequency may limit the actual recording rate.
     """
 
     super().__init__(img_shape=None,
@@ -155,10 +172,17 @@ class ImageRecorder(VisionBlock):
     self._last_processed_idx: int = -1
 
   def prepare(self) -> None:
-    """Creates the folder for saving the images.
+    """Validates the topology and prepares the recording directory.
 
-    If a folder is already present at the indicated path and contains images,
-    saving to a new folder with the same name but ending with a suffix.
+    The Block requires exactly one input ImageLink, accepts no regular input
+    Link, and supports no output ImageLink. If the target directory already
+    contains ``metadata.csv``, a free sibling name ending in ``_00001``,
+    ``_00002``, and so on is selected. The directory is then created when
+    necessary before the upstream shared image buffer is attached.
+
+    Raises:
+      IOError: If the Link or ImageLink topology is unsupported.
+      OSError: If the recording directory cannot be inspected or created.
     """
 
     # Ensuring Link consistency
@@ -202,13 +226,24 @@ class ImageRecorder(VisionBlock):
     super().prepare()
 
   def loop(self) -> None:
-    """This method grabs the latest frame, writes its metadata to a `.csv` file
-    and saves the image at the chosen location using the chosen backend.
+    """Saves the newest frame selected by the configured period.
 
-    On the first frame, the metadata file is created and its header is
-    populated using the metadata of the frame.
+    If no new image is available, or fewer than ``save_period`` source image
+    identifiers separate it from the last saved frame, this method returns
+    without writing. For the first saved frame, ``metadata.csv`` is created and
+    its header is populated from that frame's metadata keys. Every selected
+    frame appends one metadata row and is written using a filename of the form
+    ``<ImageUniqueID>_<timestamp>.<extension>``. The extension is omitted from
+    the requested path for NumPy output, allowing :func:`numpy.save` to append
+    ``.npy``.
 
-    Frames may be skipped depending on th echosen save period.
+    Saved-frame information is also sent through regular output Links under
+    ``'t(s)'``, ``'img_index'``, and ``'meta'``.
+
+    Raises:
+      RuntimeError: If copied image metadata is unavailable.
+      KeyError: If metadata lacks ``'t(s)'`` or ``'ImageUniqueID'``.
+      OSError: If metadata or image files cannot be written.
     """
 
     # Nothing to do if no new image was received
@@ -311,8 +346,18 @@ class ImageRecorder(VisionBlock):
       self._print_freq(img_handled=True)
 
   def _pil_exif(self, metadata: dict[str, Any]):
-    """Parses the metadata of the current image and converts it to a
-    PIL.Image.Exif object."""
+    """Converts compatible image metadata to Pillow EXIF fields.
+
+    Unknown fields and values that Pillow cannot encode are skipped.
+    :mod:`numpy` scalar values are converted to their native Python
+    equivalents first.
+
+    Args:
+      metadata: Metadata associated with the image being saved.
+
+    Returns:
+      A :class:`PIL.Image.Exif` object containing encodable known fields.
+    """
 
     exif = PIL.Image.Exif()
 

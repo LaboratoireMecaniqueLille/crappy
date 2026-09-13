@@ -38,8 +38,10 @@ class ConfigRequest:
       :meth:`~crappy.blocks.Block.prepare_all`. Requesters receive a readable
       endpoint and sources receive a writable one.
     completed: Whether the source successfully sent a response.
-    required: If :obj:`bool`, means that the Block cannot start unless it
-      receives valid configuration information from an image source.
+    required: Whether the requester can start without configuration data. A
+      required request must receive a non-:obj:`None` response.
+
+  .. versionadded:: 2.1.0
   """
 
   requester: str
@@ -62,10 +64,18 @@ class ConfigRequest:
 
 @dataclass
 class ImgLinkData:
-  """Class containing all the attributes that are needed for sending or
-  receiving images through :class:`~crappy.links.ImageLink`.
+  """Groups the shared-memory state associated with one ImageLink endpoint.
 
-  Useful as a convenience to enforce a clear data structure.
+  Args:
+    memory_name: Name of the shared-memory segment containing image data.
+    img_lock: Process-safe lock guarding a consistent image and metadata read
+      or write.
+    metadata_dict: Shared dictionary containing the current image metadata.
+    buffer_ready: Event set after the image buffer has been created.
+    img_info_dict: Shared dictionary containing the image shape and dtype.
+    img_id: Shared counter identifying the current buffer contents.
+    img_buffer: Shared-memory handle owned or attached by this Block.
+    npy_buffer: :mod:`numpy` view over ``img_buffer``.
 
   .. versionadded:: 2.1.0
   """
@@ -85,8 +95,12 @@ class ImgLinkData:
 
 @dataclass
 class ImgData:
-  """Class containing all the information about the last received image from an
-  upstream :class:`~crappy.links.ImageLink`.
+  """Stores the latest image copied from one upstream ImageLink.
+
+  Args:
+    id: Last transport-level image identifier handled by this Block.
+    metadata: Metadata copied together with the image.
+    img: Local :mod:`numpy` buffer containing the copied image.
 
   .. versionadded:: 2.1.0
   """
@@ -97,17 +111,36 @@ class ImgData:
 
 
 class VisionBlock(Block, ABC):
-  """Base class for Blocks that can send and/or receive images in Crappy.
-  
-  It implements all the mechanisms necessary for handling images, such as the
-  generation, sharing and cleanup of synchronization objects and shared 
-  buffers, or methods for sending and receiving images.
-  
-  This class cannot be used as-is, since it doesn't actually perform any 
-  action. It simply exposes methods for other Blocks to use.
-  
-  It works in combination with :class:`~crappy.links.ImageLink`, through which
-  images are sent and received.
+  """Base class for Blocks that exchange images through shared memory.
+
+  :class:`VisionBlock` extends :class:`~crappy.blocks.Block` with input and
+  output :class:`~crappy.links.ImageLink` support. Regular Links remain
+  available for commands, measurements, metadata, and overlays, while
+  ImageLinks carry image arrays and their metadata without serializing the
+  image through a Pipe.
+
+  Each image source owns one shared-memory buffer for all of its downstream
+  ImageLinks. :meth:`send_img` updates that buffer atomically under a shared
+  lock, and :meth:`receive_imgs` copies its newest contents into a local buffer
+  in each consumer. ImageLinks therefore expose the latest frame rather than a
+  queue: a slow consumer can skip intermediate images, but never reads a
+  partially updated image or mismatched metadata.
+
+  This class also implements source-side configuration requests. Before Block
+  processes start, a downstream VisionBlock can return a
+  :class:`ConfigRequest` from :meth:`request_config`. Crappy routes that
+  request to the relevant upstream image source and creates a one-way Pipe for
+  the response. Sources answer with :meth:`send_config`, while requesters
+  collect responses with :meth:`recv_configs` during preparation.
+
+  Subclasses define their supported ImageLink topology and implement the
+  actual acquisition, processing, display, or recording behavior. This class
+  manages buffer creation, attachment, synchronization, and cleanup.
+
+  Unlike :class:`~crappy.blocks.camera_processes.CameraProcess`, which is a
+  helper Process owned by the older :class:`~crappy.blocks.Camera`, a
+  VisionBlock is a complete :class:`~crappy.blocks.Block` with its own graph
+  node, regular Links, lifecycle, logging, and loop-frequency control.
 
   .. versionadded:: 2.1.0
   """
@@ -118,29 +151,28 @@ class VisionBlock(Block, ABC):
                display_freq: bool = False,
                debug: bool | None = False,
                freq: float | None = 200) -> None:
-    """Sets the arguments and initializes the attributes.
-    
+    """Sets the output image format and standard Block options.
+
     Args:
-      img_shape: The shape of the images that this Block sends to downstream 
-        Blocks. Set to :obj:`None` if it doesn't output images. The shape 
-        should be given as a :obj:`tuple` of :obj:`int`, as returned by 
-        :obj:`numpy.shape`. **This argument is mandatory in case the Block 
-        doesn't have a configuration window/mechanism.** If a configuration is
-        used, the value of this argument is ignored.
-      img_dtype: The dtype of the images that this Block sends to downstream 
-        Blocks. Set to :obj:`None` if it doesn't output images. The dtype 
-        should be given as a :obj:`str`, as returned by :obj:`numpy.dtype`. 
-        **This argument is mandatory in case the Block doesn't have a
-        configuration window/mechanism.** If a configuration is used, the value 
-        of this argument is ignored.
-      display_freq: If :obj:`True`, displays the looping frequency of the
-        Block.
+      img_shape: Shape of images sent through output ImageLinks, as a two- or
+        three-item tuple matching :attr:`numpy.ndarray.shape`. It can initially
+        be :obj:`None` when a subclass determines the format during
+        configuration, and is unnecessary for Blocks without output
+        ImageLinks. Otherwise, it must be known before :meth:`prepare` creates
+        the shared buffer.
+      img_dtype: Dtype of images sent through output ImageLinks, written as a
+        non-empty string accepted by :func:`numpy.dtype`. Like ``img_shape``,
+        it can initially be :obj:`None` when discovered during configuration or
+        when the Block has no output ImageLinks.
+      display_freq: If :obj:`True`, periodically reports the rate at which
+        images are actually handled.
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
-      freq: The target looping frequency for the Block. If :obj:`None`, loops
-        as fast as possible.
+      freq: Target looping frequency for this Block. If :obj:`None`, loops as
+        fast as possible. This limits how often a subclass can check or handle
+        images, not the frequency of an upstream source.
     """
 
     super().__init__()
@@ -197,9 +229,26 @@ class VisionBlock(Block, ABC):
     self._last_fps_img = time()
 
   def prepare(self) -> None:
-    """Retrieves the shared buffers and shared arrays from upstream 
-    :class:`~crappy.links.ImageLink`, then sets the shared array and makes it 
-    available to downstream :class:`~crappy.links.ImageLink`."""
+    """Creates outgoing image buffers and attaches to incoming ones.
+
+    Any configuration requests received by this Block as an image source must
+    already have been answered. The method then retrieves synchronization
+    objects from all input ImageLinks, creates one shared output buffer when
+    needed, waits for upstream buffers to become available, and creates a local
+    receive buffer for each input.
+
+    Subclasses overriding this method normally validate their ImageLink
+    topology and complete format/configuration setup before calling
+    ``super().prepare()``.
+
+    Raises:
+      RuntimeError: If a configuration request was not handled or an incoming
+        ImageLink has no shared-buffer information.
+      ValueError: If output shape or dtype information is missing or invalid,
+        or if shared synchronization and buffer objects are inconsistent.
+      PrepareError: If another Block fails while this Block waits for an
+        upstream image buffer.
+    """
 
     # If at that point not all requests have been handled, they will never be
     if not all(request.completed for request in self.config_requests_in):
@@ -261,12 +310,17 @@ class VisionBlock(Block, ABC):
           shape=data.npy_buffer.shape, dtype=data.npy_buffer.dtype)
 
   def begin(self) -> None:
-    """Updates the last FPS moment to avoid displaying it right away."""
+    """Starts handled-image frequency measurement when the test begins."""
 
     self._last_fps_img = time()
 
   def finish(self) -> None:
-    """Ensures that the resources from the SharedMemory are released."""
+    """Releases shared-memory resources owned or attached by this Block.
+
+    Incoming shared-memory handles are closed without unlinking their
+    source-owned segments. The output segment, when present, is both closed and
+    unlinked by its owning Block.
+    """
 
     # Close the SharedMemory objects of incoming ImageLinks
     if hasattr(self, '_in_link_data'):
@@ -285,14 +339,23 @@ class VisionBlock(Block, ABC):
                                "Blocks")
 
   def add_img_output(self, img_link) -> None:
-    """Adds an output :class:`~crappy.links.ImageLink` to the list of output
-    ImageLinks of the Block."""
+    """Registers an ImageLink through which this Block sends images.
+
+    Args:
+      img_link: Output :class:`~crappy.links.ImageLink` being connected.
+    """
 
     self.img_outputs.append(img_link)
 
   def add_img_input(self, img_link: ImageLink) -> None:
-    """Adds an input :class:`~crappy.links.ImageLink` to the list of input
-    ImageLinks of the Block"""
+    """Registers an ImageLink from which this Block receives images.
+
+    A placeholder :class:`ImgData` entry is created immediately and populated
+    with a correctly shaped local buffer during :meth:`prepare`.
+
+    Args:
+      img_link: Input :class:`~crappy.links.ImageLink` being connected.
+    """
 
     self.img_inputs.append(img_link)
 
@@ -300,15 +363,23 @@ class VisionBlock(Block, ABC):
     self.last_received[img_link.name] = ImgData()
 
   def send_img(self, metadata: dict[str, Any], img: np.ndarray) -> None:
-    """Sends an image to downstream Blocks.
+    """Publishes an image and its metadata to all output ImageLinks.
 
-    In practice, the image is written in a share memory object accessible by
-    all the downstream Blocks. The metadata associated to the frame is written
-    separately in a shared dictionary.
+    Under the output lock, the metadata proxy and shared :mod:`numpy` buffer
+    are updated before the transport-level image counter is incremented.
+    Consumers use that counter to determine whether a new frame is available.
+    The supplied metadata must contain ``'t(s)'`` and ``'ImageUniqueID'``.
+    The image shape and dtype must exactly match the prepared shared buffer.
 
     Args:
-      metadata: A :obj:`dict` containing the metadata associated to the image.
-      img: The image to send, as a :obj:`numpy.ndarray`.
+      metadata: Metadata associated with the image.
+      img: Image array to copy into shared memory.
+
+    Raises:
+      LinkDataError: If ``metadata`` is not a dictionary or ``img`` is not a
+        :class:`numpy.ndarray`.
+      ValueError: If shared objects are unavailable, mandatory metadata keys
+        are missing, or the image format differs from the prepared buffer.
     """
 
     # Checking data integrity before sending
@@ -366,14 +437,20 @@ class VisionBlock(Block, ABC):
       self._sent_img_counter += 1
 
   def receive_imgs(self) -> list[str]:
-    """Checks incoming :class:`~crappy.links.ImageLink` for new images, and
-    copies the new images and their metadata to a local buffer.
+    """Copies the newest frame available on each input ImageLink.
 
-    The ImageLinks with no new image are simply ignored.
+    Each source is checked under its shared lock. If its transport-level image
+    identifier differs from the last handled identifier, both metadata and
+    image data are copied into :attr:`last_received`. Sources without a new
+    frame are ignored. Since an ImageLink owns only one shared buffer,
+    intermediate frames may have been overwritten by the newest one.
 
     Returns:
-      A :obj:`list` containing the names of all the ImageLinks whose images
-      were grabbed.
+      Names of the ImageLinks from which a new image was copied.
+
+    Raises:
+      ValueError: If shared synchronization objects or buffers are unavailable,
+        or if local and shared image formats are inconsistent.
     """
 
     updated: list[str] = list()
@@ -474,7 +551,7 @@ class VisionBlock(Block, ABC):
 
   @property
   def config_requests_in(self) -> list[ConfigRequest]:
-    """Configuration requests received from downstream Blocks."""
+    """Configuration requests this image source received from consumers."""
 
     return self._config_requests_in
 
@@ -488,11 +565,12 @@ class VisionBlock(Block, ABC):
 
     Args:
       request: Incoming request to answer.
-      config: Configuration data to send, or :obj:`None` when no configuration
-        can be provided.
+      config: Configuration data to send, or :obj:`None` when an optional
+        request was declined or no configuration can be provided.
 
     Raises:
-      RuntimeError: If the request has no Pipe endpoint.
+      RuntimeError: If the request has no Pipe endpoint or a required request
+        is answered with :obj:`None`.
     """
 
     try:
@@ -595,11 +673,18 @@ class VisionBlock(Block, ABC):
     return configs
 
   def set_shared_objects(self) -> None:
-    """Sets the shared objects required for sending images, and shares them
-    with all the :class:`~crappy.links.ImageLink`.
+    """Creates and distributes synchronization objects for output images.
 
-    Called by the master Block in the `__main__` Process, before this Block's
-    Process even starts.
+    This method runs in the main Process before Block processes start. When the
+    Block has output ImageLinks, it creates the shared-memory name, lock,
+    metadata and format proxies, readiness event, and image identifier used by
+    every downstream consumer. The objects are then registered on each output
+    ImageLink. The actual shared-memory segment is created later in
+    :meth:`prepare`, once the output format is final.
+
+    Raises:
+      ValueError: If the shared Manager is unavailable or synchronization
+        objects could not be initialized completely.
     """
 
     # If there's no downstream image Block, no need for synchronization objects
@@ -636,8 +721,12 @@ class VisionBlock(Block, ABC):
                          "initialized yet")
 
   def _get_shared_objects(self) -> None:
-    """Retrieves the shared objects necessary for receiving images from the
-    incoming ImageLinks."""
+    """Retrieves synchronization objects from all input ImageLinks.
+
+    Raises:
+      RuntimeError: If an ImageLink does not expose complete shared-buffer
+        information.
+    """
 
     for link in self.img_inputs:
       if (ret := link.get_buffers()) is not None:
@@ -651,17 +740,20 @@ class VisionBlock(Block, ABC):
   def _set_image_buffer(self,
                         img_shape: tuple[int, int] | tuple[int, int, int],
                         dtype: str) -> None:
-    """Initializes the image buffer and metadata buffer for sending images to
-    downstream Blocks.
+    """Creates the shared image array used by all output ImageLinks.
 
-    Also raises a flag indicating downstream Blocks that the buffers are ready
-    to use.
+    After allocating the named shared-memory segment, this method creates a
+    :mod:`numpy` view over it, publishes its shape and dtype, and sets the
+    readiness event so downstream Blocks can attach.
 
     Args:
-      img_shape: The shape of the images to share, as a :obj:`tuple` of
-        `obj:`int`, as returned by ``array.shape``.
-      dtype: The dtype of the image data, as a :obj:`str`, and as returned by
-        a call to ``array.dtype``.
+      img_shape: Shape of the images to share, as returned by
+        :attr:`numpy.ndarray.shape`.
+      dtype: Image dtype as a string accepted by :func:`numpy.dtype`.
+
+    Raises:
+      ValueError: If the shared-memory name, information proxy, or readiness
+        event has not been initialized.
     """
 
     if self._out_link_data.memory_name is None:
@@ -708,20 +800,26 @@ class VisionBlock(Block, ABC):
                         buffer_ready: synchronize.Event,
                         img_info_dict: managers.DictProxy
                         ) -> tuple[SharedMemory, np.ndarray]:
-    """Retrieves the image buffer and its associated Numpy array for receiving
-    images from an upstream Block.
+    """Attaches to an upstream shared image buffer.
+
+    The method waits for the source to publish its image shape and dtype, while
+    periodically checking whether preparation was aborted. It then opens the
+    named shared-memory segment and creates a :mod:`numpy` view over it.
 
     Args:
-      name: The name of the Shared Memory object that will contain the shared
-        images, as a :obj:`str`.
-      buffer_ready: The Event indicating when the shared buffer is ready to be
-        used.
-      img_info_dict: The shared dictionary containing the image shape and
-        dtype.
+      name: Name of the upstream shared-memory segment.
+      buffer_ready: Event indicating that the source buffer is ready.
+      img_info_dict: Shared dictionary containing image ``'shape'`` and
+        ``'dtype'`` entries.
 
     Returns:
-      The shared memory and the convenience Numpy buffer obtained using the
-      provided name.
+      The attached shared-memory handle and its :mod:`numpy` array view.
+
+    Raises:
+      ValueError: If preparation synchronization objects or image format
+        entries are unavailable.
+      PrepareError: If another Block fails or the test stops while waiting for
+        the source buffer.
     """
 
     if self._ready_barrier is None:
@@ -753,15 +851,13 @@ class VisionBlock(Block, ABC):
     return img_buffer, npy_buffer
 
   def _print_freq(self, img_handled: bool) -> None:
-    """Helper method displaying every 2 seconds the actual number of frames
-    handled per seconds.
+    """Periodically logs the achieved handled-image frequency.
+
+    The count can differ from the Block's loop frequency because loops that do
+    not acquire, process, display, or save an image are excluded.
 
     Args:
-      img_handled: :obj:`True` if a frame was handled during this loop,
-      :obj:`False` otherwise.
-
-    This number can be different from the number of loops per seconds, since
-    some loops might abort without actually handling a frame.
+      img_handled: Whether an image was handled during the current loop.
     """
 
     self._fps_count += int(img_handled)
