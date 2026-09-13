@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from crappy import Block
-from multiprocessing import Barrier, Event, Value, Queue
+from multiprocessing import Barrier, Event, Value, Queue, Pipe
 
 from .block_test_base import BlockTestBase, TestBlock
 
@@ -48,6 +48,31 @@ class TestBlockRaiseFinish(TestBlock):
 
 class TestRunCycle(BlockTestBase):
   """Tests the per-Block execution cycle driven by Block.run."""
+
+  def test_run_closes_inherited_config_connections(self) -> None:
+    """Tests that run closes stale configuration Pipe endpoints."""
+
+    self._block = TestBlock()
+    recv_conn, send_conn = Pipe(duplex=False)
+    self.addCleanup(recv_conn.close)
+    self.addCleanup(send_conn.close)
+    self._block._config_connections_to_close.extend((recv_conn, send_conn))
+
+    self._block._ready_barrier = Barrier(1)
+    self._block._start_event = Event()
+    self._block._stop_event = Event()
+    self._block._raise_event = Event()
+    self._block._kbi_event = Event()
+    self._block._pause_event = Event()
+    self._block._instance_t0 = Value('d', 0.0)
+    self._block._log_queue = Queue()
+    self._block._start_event.set()
+
+    self._block.run()
+
+    self.assertTrue(recv_conn.closed)
+    self.assertTrue(send_conn.closed)
+    self.assertEqual(self._block._config_connections_to_close, list())
 
   def test_normal_run(self) -> None:
     """Tests the nominal prepare/begin/loop/finish sequence."""
