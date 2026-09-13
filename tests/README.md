@@ -30,9 +30,9 @@ An individual package or test module can also be run directly, for example:
     python -m unittest -v tests.modifier
     python -m unittest -v tests.modifier.test_mean
 
-The ``blocks_gui``, ``camera_configuration``, and ``camera_processes_gui``
-packages open graphical interfaces and therefore require a display. On a
-headless Linux system, run them through Xvfb, for example:
+The ``blocks_gui``, ``camera_configuration``, ``camera_processes_gui``, and
+``vision_gui`` packages open graphical interfaces and therefore require a 
+display. On a headless Linux system, run them through Xvfb, for example:
 
     xvfb-run --auto-servernum python -m unittest -v tests.blocks_gui
 
