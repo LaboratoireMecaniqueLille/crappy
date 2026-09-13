@@ -65,6 +65,7 @@ jobs:
         python -m unittest -v tests.integration
         python -m unittest -v tests.links
         python -m unittest -v tests.modifier
+        python -m unittest -v tests.vision
     # The Ubuntu runner is headless; xvfb-run starts and cleans up Xvfb for us
     - name: Test Crappy (graphical, Linux/Xvfb)
       if: runner.os == 'Linux'
@@ -74,6 +75,7 @@ jobs:
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.blocks_gui
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_configuration
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_processes_gui
+        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.vision_gui
     # GitHub-hosted Windows and macOS runners provide a native GUI session
     - name: Test Crappy (graphical, native)
       if: runner.os == 'Windows' || runner.os == 'macOS'
@@ -84,3 +86,4 @@ jobs:
         python -m unittest -v tests.blocks_gui
         python -m unittest -v tests.camera_configuration
         python -m unittest -v tests.camera_processes_gui
+        python -m unittest -v tests.vision_gui
