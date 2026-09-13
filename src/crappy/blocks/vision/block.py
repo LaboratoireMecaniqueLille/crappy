@@ -201,12 +201,14 @@ class VisionBlock(Block, ABC):
       raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
                        "strictly positive integers")
     if (img_shape is not None and
-        not all(isinstance(el, int) for el in img_shape)):
+        not all(isinstance(el, int) and el > 0 for el in img_shape)):
       raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
                        "strictly positive integers")
     if (img_dtype is not None and
         (not isinstance(img_dtype, str) or not img_dtype)):
       raise ValueError("When provided, img_dtype must be a non-empty string")
+    if img_dtype is not None:
+      np.dtype(img_dtype)
 
     # Information on the output images
     self._img_shape: tuple[int, int] | tuple[int, int, int] | None = img_shape
