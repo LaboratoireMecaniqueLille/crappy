@@ -109,7 +109,7 @@ class CameraSource(VisionBlock):
         is :obj:`False`. When configuration supplies a different shape, the
         configured value takes precedence.
       img_dtype: Dtype of the published images, as a string accepted by
-        :func:`numpy.dtype`. It is mandatory when ``config`` is :obj:`False`.
+        :class:`numpy.dtype`. It is mandatory when ``config`` is :obj:`False`.
         When configuration supplies a different dtype, the configured value
         takes precedence.
       display_freq: If :obj:`True`, periodically reports the achieved image
@@ -193,7 +193,7 @@ class CameraSource(VisionBlock):
 
     The method also resolves ``'Hdw after config'`` trigger mode, verifies that
     the final output image shape and dtype are known, and delegates shared
-    buffer creation to :class:`VisionBlock`.
+    buffer creation to :class:`~crappy.blocks.vision.VisionBlock`.
 
     Raises:
       IOError: If the Block has an input ImageLink or no output ImageLink.

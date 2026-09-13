@@ -31,8 +31,8 @@ class VideoExtensoProcessor(VisionBlock):
   The configuration window owns the
   :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` used for the
   initial detection. Once configuration is complete, this Block creates a
-  :class:`~crappy.tool.image_processing.VideoExtensoTool`, which starts one
-  independent
+  :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`, which
+  starts one independent
   :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` Process
   per spot. Up to four spots can be tracked. With a single spot, only its
   position is meaningful and both strain values remain zero.

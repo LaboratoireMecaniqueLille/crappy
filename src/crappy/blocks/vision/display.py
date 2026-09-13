@@ -37,10 +37,11 @@ class ImageDisplayer(VisionBlock):
 
   Regular input :class:`~crappy.links.Link` objects can provide overlays under
   the reserved ``'overlay'`` label. Each value must be an iterable containing
-  :class:`~crappy.tool.camera_config.Overlay` objects or :obj:`None`
-  placeholders. The latest valid iterable from each Link is retained and drawn
-  on subsequent images. Sending an empty iterable clears that Link's overlays,
-  and malformed overlay values are ignored with a warning.
+  :class:`~crappy.tool.camera_config.config_tools.Overlay` objects or
+  :obj:`None` placeholders. The latest valid iterable from each Link is
+  retained and drawn on subsequent images. Sending an empty iterable clears
+  that Link's overlays, and malformed overlay values are ignored with a
+  warning.
 
   After displaying an image, the Block sends its timestamp, unique image ID,
   and complete metadata through regular output Links under ``'t(s)'``,
@@ -144,7 +145,7 @@ class ImageDisplayer(VisionBlock):
     """Validates the ImageLink topology and opens the display window.
 
     The selected backend is initialized before the input shared image buffer is
-    attached by :class:`VisionBlock`.
+    attached by :class:`~crappy.blocks.vision.VisionBlock`.
 
     Raises:
       IOError: If the Block does not have exactly one input ImageLink or has an

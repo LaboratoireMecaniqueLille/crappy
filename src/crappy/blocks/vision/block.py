@@ -3,7 +3,7 @@
 from abc import ABC
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import (synchronize, managers, RLock, Event, Value,
-                             sharedctypes, connection)
+                             sharedctypes, connection as mp_connection)
 import numpy as np
 import logging
 from typing import Any
@@ -22,10 +22,11 @@ from ...tool.camera_config import CameraConfig
 class ConfigRequest:
   """Description of a configuration requested from an image source.
 
-  The request is created by a downstream :class:`VisionBlock` in
-  :meth:`VisionBlock.request_config`. Before the Blocks start, Crappy
-  duplicates it and assigns one end of a one-way :obj:`multiprocessing.Pipe` to
-  the source and the other end to the requester.
+  The request is created by a downstream
+  :class:`~crappy.blocks.vision.VisionBlock` in
+  :meth:`~crappy.blocks.vision.VisionBlock.request_config`. Before the Blocks
+  start, Crappy duplicates it and assigns one end of a one-way
+  :obj:`multiprocessing.Pipe` to the source and the other end to the requester.
 
   Args:
     requester: Name of the downstream Block requesting configuration.
@@ -49,7 +50,7 @@ class ConfigRequest:
   kwargs: dict[str, Any]
   configurator: type[CameraConfig]
   img_source: str
-  connection: connection.Connection | None = None
+  connection: mp_connection.Connection | None = None
   completed: bool = False
   required: bool = True
 
@@ -113,25 +114,30 @@ class ImgData:
 class VisionBlock(Block, ABC):
   """Base class for Blocks that exchange images through shared memory.
 
-  :class:`VisionBlock` extends :class:`~crappy.blocks.Block` with input and
-  output :class:`~crappy.links.ImageLink` support. Regular Links remain
+  :class:`~crappy.blocks.vision.VisionBlock` extends
+  :class:`~crappy.blocks.Block` with input and output
+  :class:`~crappy.links.ImageLink` support. Regular Links remain
   available for commands, measurements, metadata, and overlays, while
   ImageLinks carry image arrays and their metadata without serializing the
   image through a Pipe.
 
   Each image source owns one shared-memory buffer for all of its downstream
-  ImageLinks. :meth:`send_img` updates that buffer atomically under a shared
-  lock, and :meth:`receive_imgs` copies its newest contents into a local buffer
-  in each consumer. ImageLinks therefore expose the latest frame rather than a
-  queue: a slow consumer can skip intermediate images, but never reads a
-  partially updated image or mismatched metadata.
+  ImageLinks. :meth:`~crappy.blocks.vision.VisionBlock.send_img` updates that
+  buffer atomically under a shared lock, and
+  :meth:`~crappy.blocks.vision.VisionBlock.receive_imgs` copies its newest
+  contents into a local buffer in each consumer. ImageLinks therefore expose
+  the latest frame rather than a queue: a slow consumer can skip intermediate
+  images, but never reads a partially updated image or mismatched metadata.
 
   This class also implements source-side configuration requests. Before Block
   processes start, a downstream VisionBlock can return a
-  :class:`ConfigRequest` from :meth:`request_config`. Crappy routes that
+  :class:`~crappy.blocks.vision.block.ConfigRequest` from
+  :meth:`~crappy.blocks.vision.VisionBlock.request_config`. Crappy routes that
   request to the relevant upstream image source and creates a one-way Pipe for
-  the response. Sources answer with :meth:`send_config`, while requesters
-  collect responses with :meth:`recv_configs` during preparation.
+  the response. Sources answer with
+  :meth:`~crappy.blocks.vision.VisionBlock.send_config`, while requesters
+  collect responses with
+  :meth:`~crappy.blocks.vision.VisionBlock.recv_configs` during preparation.
 
   Subclasses define their supported ImageLink topology and implement the
   actual acquisition, processing, display, or recording behavior. This class
@@ -161,7 +167,7 @@ class VisionBlock(Block, ABC):
         ImageLinks. Otherwise, it must be known before :meth:`prepare` creates
         the shared buffer.
       img_dtype: Dtype of images sent through output ImageLinks, written as a
-        non-empty string accepted by :func:`numpy.dtype`. Like ``img_shape``,
+        non-empty string accepted by :class:`numpy.dtype`. Like ``img_shape``,
         it can initially be :obj:`None` when discovered during configuration or
         when the Block has no output ImageLinks.
       display_freq: If :obj:`True`, periodically reports the rate at which
@@ -352,8 +358,9 @@ class VisionBlock(Block, ABC):
   def add_img_input(self, img_link: ImageLink) -> None:
     """Registers an ImageLink from which this Block receives images.
 
-    A placeholder :class:`ImgData` entry is created immediately and populated
-    with a correctly shaped local buffer during :meth:`prepare`.
+    A placeholder :class:`~crappy.blocks.vision.block.ImgData` entry is created
+    immediately and populated with a correctly shaped local buffer during
+    :meth:`prepare`.
 
     Args:
       img_link: Input :class:`~crappy.links.ImageLink` being connected.
@@ -443,8 +450,9 @@ class VisionBlock(Block, ABC):
 
     Each source is checked under its shared lock. If its transport-level image
     identifier differs from the last handled identifier, both metadata and
-    image data are copied into :attr:`last_received`. Sources without a new
-    frame are ignored. Since an ImageLink owns only one shared buffer,
+    image data are copied into
+    :attr:`~crappy.blocks.vision.VisionBlock.last_received`. Sources without a
+    new frame are ignored. Since an ImageLink owns only one shared buffer,
     intermediate frames may have been overwritten by the newest one.
 
     Returns:
@@ -519,8 +527,9 @@ class VisionBlock(Block, ABC):
     """Returns this Block's configuration request for an image source.
 
     Subclasses requiring source-side interactive configuration should override
-    this method and return a :class:`ConfigRequest`. The default implementation
-    makes no request.
+    this method and return a
+    :class:`~crappy.blocks.vision.block.ConfigRequest`. The default
+    implementation makes no request.
 
     Args:
       source: Name of an upstream image source.
@@ -540,7 +549,8 @@ class VisionBlock(Block, ABC):
         source.
 
     Raises:
-      TypeError: If *request* is not a :class:`ConfigRequest`.
+      TypeError: If *request* is not a
+        :class:`~crappy.blocks.vision.block.ConfigRequest`.
       RuntimeError: If no Pipe endpoint was assigned to the request.
     """
 
@@ -606,7 +616,8 @@ class VisionBlock(Block, ABC):
         consumer.
 
     Raises:
-      TypeError: If *request* is not a :class:`ConfigRequest`.
+      TypeError: If *request* is not a
+        :class:`~crappy.blocks.vision.block.ConfigRequest`.
       RuntimeError: If no Pipe endpoint was assigned to the request.
     """
 
@@ -751,7 +762,7 @@ class VisionBlock(Block, ABC):
     Args:
       img_shape: Shape of the images to share, as returned by
         :attr:`numpy.ndarray.shape`.
-      dtype: Image dtype as a string accepted by :func:`numpy.dtype`.
+      dtype: Image dtype as a string accepted by :class:`numpy.dtype`.
 
     Raises:
       ValueError: If the shared-memory name, information proxy, or readiness
