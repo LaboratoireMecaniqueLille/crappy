@@ -10,6 +10,10 @@ It is where you should look if you want to learn how to use a specific Block.
 - **custom_objects** contains examples of instantiation and use of custom
 defined objects in CRAPPY. It is where you should look to learn how to 
 implement your own functionalities and hardware.
+- **vision_blocks** contains examples of the independent image acquisition,
+processing, display and recording Blocks, as well as custom VisionBlock
+implementations. It is where you should look to learn how to build image
+pipelines using ImageLinks.
 - **fake_tests** contains various examples that use the ``FakeMachine`` Block.
 - **modifiers** contains for each ``Modifier`` object a usage example. It is
 where you should look if you want to learn how to use ``Modifier`` objects.
