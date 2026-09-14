@@ -8,6 +8,7 @@ import numpy as np
 import logging
 from typing import Any
 from dataclasses import dataclass, field
+from base64 import urlsafe_b64encode
 from uuid import uuid4
 from math import prod
 from time import time
@@ -307,7 +308,8 @@ class VisionBlock(Block, ABC):
        data.npy_buffer) = self._get_image_buffer(data.memory_name,
                                                  data.buffer_ready,
                                                  data.img_info_dict)
-      self.log(logging.INFO, f"Received shared image buffers from ImageLink "
+      self.log(logging.INFO, f"Received shared image buffer "
+                             f"{data.memory_name!r} from ImageLink "
                              f"{link.name}")
 
       if data.npy_buffer is None:
@@ -704,7 +706,10 @@ class VisionBlock(Block, ABC):
     if not self.img_outputs:
       return
 
-    self._out_link_data.memory_name = f"{self.name}_img_buffer_{uuid4()}"
+    # macOS limits POSIX shared-memory names to 31 bytes. A URL-safe base64
+    # UUID allows to generate a unique name within that limit
+    uuid = urlsafe_b64encode(uuid4().bytes).rstrip(b'=').decode('ascii')
+    self._out_link_data.memory_name = f"crappy_{uuid}"
     self._out_link_data.img_lock = RLock()
     self._out_link_data.buffer_ready = Event()
     if self.shared_mgr is not None:
@@ -778,7 +783,10 @@ class VisionBlock(Block, ABC):
         name=self._out_link_data.memory_name,
         create=True,
         size=prod(img_shape) * np.dtype(dtype).itemsize)
-    self.log(logging.DEBUG, "Initialized the SharedMemory object")
+    links = ', '.join(link.name for link in self.img_outputs)
+    self.log(logging.DEBUG, f"Initialized SharedMemory object "
+                            f"{self._out_link_data.memory_name!r} for "
+                            f"ImageLinks {links}")
 
     if self._out_link_data.img_buffer is None:
       raise ValueError("Cannot initialize the shared array if the shared "

@@ -58,6 +58,8 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     self.assertIsNotNone(buffers)
     name, lock, metadata, ready, info, img_id = buffers
     self.assertEqual(name, source._out_link_data.memory_name)
+    self.assertRegex(name, r'^crappy_[A-Za-z0-9_-]{22}$')
+    self.assertLessEqual(len(f'/{name}'.encode('ascii')), 31)
     self.assertIs(lock, source._out_link_data.img_lock)
     self.assertIs(metadata, source._out_link_data.metadata_dict)
     self.assertIs(ready, source._out_link_data.buffer_ready)
@@ -65,6 +67,29 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     self.assertIs(img_id, source._out_link_data.img_id)
     self.assertEqual(img_id.value, -1)
     self.assertFalse(ready.is_set())
+
+  def test_shared_memory_name_does_not_depend_on_block_or_link_length(
+      self) -> None:
+    """Checks long user-facing names cannot exceed the macOS SHM limit."""
+
+    source = StubVisionBlock(img_shape=(2, 3), img_dtype='uint8')
+    source.name = 'source-' + 'x' * 100
+    consumer = StubVisionBlock()
+    link = ImageLink(source, consumer, name='images-' + 'y' * 100)
+    self.make_manager(source)
+    source.log = Mock()
+
+    source.set_shared_objects()
+    source.prepare()
+
+    name, *_ = link.get_buffers()
+    self.assertRegex(name, r'^crappy_[A-Za-z0-9_-]{22}$')
+    self.assertLessEqual(len(f'/{name}'.encode('ascii')), 31)
+    self.assertNotIn(source.name, name)
+    self.assertNotIn(link.name, name)
+    messages = [call.args[1] for call in source.log.call_args_list]
+    self.assertTrue(any(name in message and link.name in message
+                        for message in messages))
 
   def test_prepare_validates_output_format_and_shared_state(self) -> None:
     """Checks failures before allocation of an invalid output buffer."""

@@ -481,11 +481,11 @@ failed source through end-of-file.
 
 The main Process then creates one ``multiprocessing.Manager`` for the shared
 image metadata and format dictionaries. Each image-producing VisionBlock
-creates a shared-memory name, lock, readiness Event, and image counter, and
-publishes this same set of objects to all its outgoing ImageLinks. This is the
-framework-level state for one source buffer, the actual shared-memory segment
-is created later by the image-producing child, after its configuration has
-established the final image format.
+creates a compact shared-memory name, lock, readiness Event, and image counter,
+and publishes this same set of objects to all its outgoing ImageLinks. This is
+the framework-level state for one source buffer, the actual shared-memory
+segment is created later by the image-producing child, after its configuration
+has established the final image format.
 
 Finally, all the Blocks are started in separate Processes. The main Process
 closes its copies of all configuration Pipe endpoints after starting them,
