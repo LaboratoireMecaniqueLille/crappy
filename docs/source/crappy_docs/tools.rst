@@ -115,37 +115,6 @@ in several examples to demonstrate the use of
 requiring any camera. The `pad.png` image is used for demonstrating the
 use of the :class:`~crappy.blocks.Canvas` Block.
 
-FT232H Tools
-------------
-
-FT232H
-++++++
-.. autoclass:: crappy.tool.ft232h.FT232H
-   :members: write_byte, write_byte_data, write_word_data, write_block_data,
-             write_i2c_block_data, read_byte, read_byte_data, read_word_data,
-             read_i2c_block_data, i2c_rdwr, bits_per_word, cshigh, loop, no_cs,
-             lsbfirst, max_speed_hz, mode, threewire, readbytes, writebytes,
-             writebytes2, xfer, xfer2, xfer3, get_gpio, set_gpio, close, log
-   :special-members: __init__
-
-FT232H Server
-+++++++++++++
-.. autoclass:: crappy.tool.ft232h.FT232HServer
-   :members: close
-   :special-members: __init__
-
-I2C Message
-+++++++++++
-.. autoclass:: crappy.tool.ft232h.I2CMessage
-   :members: read, write, addr, buf, len
-   :special-members: __init__
-
-USB Server
-++++++++++
-.. autoclass:: crappy.tool.ft232h.USBServer
-   :members: register, start_server, stop_server, run, log
-   :special-members: __init__
-
 Image Processing Tools
 ----------------------
 

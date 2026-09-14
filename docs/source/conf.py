@@ -200,7 +200,6 @@ nitpick_ignore = {('py:mod', 'smbus2'),
                   ('py:mod', 'pycuda'),
                   ('py:mod', 'crappy.tool.camera_config'),
                   ('py:mod', 'crappy.tool.image_processing'),
-                  ('py:mod', 'crappy.tool.ft232h'),
                   ('py:mod', 'gphoto2'),
                   ('py:class', 'pathlib._local.Path'),
                   ('py:class', 'multiprocessing.synchronize.RLock'),
@@ -214,7 +213,6 @@ nitpick_ignore = {('py:mod', 'smbus2'),
                   ('py:class', 'multiprocessing.queues.Queue'),
                   ('py:class', 'picamera.PiCamera'),
                   ('py:class', 'smbus2.i2c_msg'),
-                  ('py:class', 'crappy.tool.ft232h.usb_server.BlockObjects'),
                   ('py:class',
                    'crappy.tool.image_processing.gpu_correl.CorrelStage'),
                   ('py:class', "b'RES'"),
@@ -227,9 +225,7 @@ nitpick_ignore = {('py:mod', 'smbus2'),
                   ('py:meth', 'nidaqmx.task.add_ao_voltage_chan'),
                   ('py:meth', 'nidaqmx.task.add_do_chan'),
                   ('py:meth', 'nidaqmx.task.add_di_chan'),
-                  ('py:meth', 'nidaqmx.task.add_ai_[type]_chan'),
-                  ('py:attr',
-                   'crappy.tool.ft232h.ft232h_server.FT232HServer.no_cs')}
+                  ('py:meth', 'nidaqmx.task.add_ai_[type]_chan')}
 
 # An extended version of nitpick_ignore, which instead interprets the
 # warning_type and target strings as regular expressions

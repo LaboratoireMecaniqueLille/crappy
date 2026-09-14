@@ -69,16 +69,6 @@ Schneider MDrive 23
    :members: open, get_position, set_speed, set_position, stop, close
    :special-members: __init__
 
-FT232H Actuators
-----------------
-
-Adafruit DC Motor Hat FT232H
-++++++++++++++++++++++++++++
-
-.. autoclass:: crappy.actuator.DCMotorHatFT232H
-   :members: open, set_speed, stop, close
-   :special-members: __init__
-
 Parent Actuator
 ---------------
 
