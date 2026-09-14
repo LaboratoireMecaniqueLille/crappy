@@ -11,8 +11,6 @@ from .phidgets_stepper4a import Phidget4AStepper
 from .pololu_tic import PololuTic
 from .schneider_mdrive_23 import SchneiderMDrive23
 
-from .ft232h import DCMotorHatFT232H
-
 from .meta_actuator import Actuator
 
 from ._deprecated import deprecated_actuators

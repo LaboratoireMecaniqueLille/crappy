@@ -26,13 +26,6 @@ from .spectrum_m2i4711 import SpectrumM2I4711
 from .waveshare_ad_da import WaveshareADDA
 from .waveshare_high_precision import WaveshareHighPrecision
 
-from .ft232h import ADS1115FT232H
-from .ft232h import GPIOSwitchFT232H
-from .ft232h import MCP9600FT232H
-from .ft232h import MPRLSFT232H
-from .ft232h import NAU7802FT232H
-from .ft232h import WaveshareADDAFT232H
-
 from .meta_inout import InOut
 
 # All the inout objects
