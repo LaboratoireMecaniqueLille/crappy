@@ -6,7 +6,6 @@ import logging
 
 from .meta_block import Block
 from ..actuator import actuator_dict, Actuator
-from ..tool.ft232h import USBServer
 
 
 class AutoDriveVideoExtenso(Block):
@@ -25,6 +24,8 @@ class AutoDriveVideoExtenso(Block):
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *AutoDrive* to *AutoDriveVideoExtenso*
+  .. versionchanged:: 2.1.0 removed support for Actuators communicating through
+     an FT232H
   """
 
   def __init__(self,
@@ -33,7 +34,6 @@ class AutoDriveVideoExtenso(Block):
                direction: Literal['X-', 'X+', 'Y-', 'Y+'] = 'Y-',
                pixel_range: int = 2048,
                max_speed: float = 200000,
-               ft232h_ser_num: str | None = None,
                freq: float | None = 200,
                display_freq: bool = False,
                debug: bool | None = False) -> None:
@@ -72,10 +72,11 @@ class AutoDriveVideoExtenso(Block):
         disables logging for this Block.
 
         .. versionadded:: 2.0.0
+
+    .. versionremoved:: 2.1.0 *ft232h_ser_num* argument
     """
 
     self._device: Actuator | None = None
-    self._ft232h_args = None
 
     super().__init__()
     self.labels = ['t(s)', 'diff(pix)']
@@ -107,10 +108,6 @@ class AutoDriveVideoExtenso(Block):
     self._pixel_range = pixel_range
     self._max_speed = max_speed
 
-    # Checking whether the Actuator communicates through an FT232H
-    if actuator_dict[actuator['type']].ft232h:
-      self._ft232h_args = USBServer.register(ft232h_ser_num)
-
   def prepare(self) -> None:
     """Checks the consistency of the linking and initializes the 
     :class:`~crappy.actuator.Actuator` to drive."""
@@ -125,11 +122,7 @@ class AutoDriveVideoExtenso(Block):
 
     # Opening and initializing the actuator to drive
     actuator_name = self._actuator.pop('type')
-    if self._ft232h_args is None:
-      self._device = actuator_dict[actuator_name](**self._actuator)
-    else:
-      self._device = actuator_dict[actuator_name](
-        **self._actuator, _ft232h_args=self._ft232h_args)
+    self._device = actuator_dict[actuator_name](**self._actuator)
     self.log(logging.INFO, f"Opening the {type(self._device).__name__} "
                            f"actuator")
     self._device.open()

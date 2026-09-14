@@ -25,7 +25,6 @@ from ..._global import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
                         CameraPrepareError, CameraRuntimeError,
                         CameraConfigError, CrappyFail, DefinitionError)
-from ...tool.ft232h import USBServer
 
 
 class Block(Process, ABC):
@@ -56,6 +55,7 @@ class Block(Process, ABC):
      __init_subclass__
   .. versionchanged:: 2.1.0 execution settings are exposed as validated
      properties rather than plain attributes
+  .. versionchanged:: 2.1.0 removed management of the FT232H USB server
   """
 
   instances = WeakSet()
@@ -307,14 +307,6 @@ class Block(Process, ABC):
                              " it!")
         cls.log_thread.start()
         cls.cls_log(logging.INFO, 'Logger thread started')
-
-      # Starting the USB server if required
-      if USBServer.initialized:
-        if cls.log_queue is None:
-          raise RuntimeError("The log queue was not initialized, cannot start "
-                             "the USBServer")
-        cls.cls_log(logging.INFO, "Starting the USB server")
-        USBServer.start_server(cls.log_queue, logging.INFO)
 
       # Passing the synchronization and logging objects to each Block
       for instance in cls.instances:
@@ -725,8 +717,8 @@ class Block(Process, ABC):
     """Method called at the very end of every script execution.
 
     It first waits for all the Blocks to end, and kills them if they don't stop
-    by themselves. Then, it also stops, if relevant, the USBServer and the
-    log_thread, and warns the user in case Processes would still be running.
+    by themselves. Then, it stops the log_thread and warns the user in case
+    Processes would still be running.
 
     Finally, it raises an exception if needed, in order to stop the script of
     the main Process. This way, any action that could follow the normal
@@ -764,11 +756,6 @@ class Block(Process, ABC):
               cls.cls_log(logging.INFO, f'Block {inst.name} done')
 
           break
-
-      # Stopping the USB server if required
-      if USBServer.initialized:
-        cls.cls_log(logging.INFO, "Stopping the USB server")
-        USBServer.stop_server()
 
       # Stopping the shared Manager if required
       if cls.shared_mgr is not None:
