@@ -59,12 +59,11 @@ class TestInOut(TestCase):
     with self.assertRaises(DefinitionError):
       type('TestDuplicateInOut', (InOut,), {})
 
-  def test_default_attributes_and_ft232h_flag(self) -> None:
-    """Checks base instance initialization and class defaults."""
+  def test_default_attributes(self) -> None:
+    """Checks base instance initialization."""
 
     inout = InOut('unused', option='ignored')
 
-    self.assertFalse(inout.ft232h)
     self.assertEqual(inout._compensations, [])
     self.assertEqual(inout._compensations_dict, {})
     self.assertIsNone(inout._logger)

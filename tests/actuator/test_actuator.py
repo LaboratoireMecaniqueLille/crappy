@@ -37,12 +37,11 @@ class TestActuator(TestCase):
     with self.assertRaises(DefinitionError):
       type('TestDuplicateActuator', (Actuator,), {})
 
-  def test_default_attributes_and_ft232h_flag(self) -> None:
-    """Checks base instance initialization and class defaults."""
+  def test_default_attributes(self) -> None:
+    """Checks base instance initialization."""
 
     actuator = Actuator('unused', option='ignored')
 
-    self.assertFalse(actuator.ft232h)
     self.assertIsNone(actuator._logger)
 
   def test_log_initializes_process_scoped_logger(self) -> None:

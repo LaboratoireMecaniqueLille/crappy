@@ -14,7 +14,6 @@ from ..block import BlockTestBase, TestBlock, link
 
 
 InOut.classes.pop('IOBlockTestInOut', None)
-InOut.classes.pop('IOBlockFT232HInOut', None)
 
 
 class IOBlockTestInOut(InOut):
@@ -83,12 +82,6 @@ class IOBlockTestInOut(InOut):
       raise self.stop_error
 
 
-class IOBlockFT232HInOut(IOBlockTestInOut):
-  """FT232H-enabled test double."""
-
-  ft232h = True
-
-
 class TestIOBlock(BlockTestBase):
   """Unit tests for the IOBlock Block-specific behavior."""
 
@@ -98,7 +91,6 @@ class TestIOBlock(BlockTestBase):
     """Clears fake InOut instances before each test."""
 
     IOBlockTestInOut.reset()
-    IOBlockFT232HInOut.reset()
 
   def _make_block(self, **kwargs) -> IOBlock:
     """Creates an IOBlock ready for direct loop calls."""
@@ -230,27 +222,6 @@ class TestIOBlock(BlockTestBase):
     self.assertTrue(block._write)
     self.assertEqual(block._last_cmd, [1, 2])
     self.assertEqual(block._prev_values, {'a': 1, 'b': 2})
-
-  def test_ft232h_inout_gets_registered_connection_arguments(self) -> None:
-    """Checks FT232H registration and constructor forwarding."""
-
-    source = TestBlock()
-
-    with patch.object(ioblock_module.USBServer, 'register',
-                      return_value=('server', 'args')) as register:
-      block = IOBlock('IOBlockFT232HInOut',
-                      cmd_labels='cmd',
-                      ft232h_ser_num='ABC',
-                      freq=None,
-                      option=1)
-      link(source, block)
-      block.prepare()
-
-    device = IOBlockFT232HInOut.instances[-1]
-
-    register.assert_called_once_with('ABC')
-    self.assertEqual(device.kwargs, {'option': 1,
-                                     '_ft232h_args': ('server', 'args')})
 
   def test_loop_reads_iterable_data_and_offsets_time(self) -> None:
     """Checks regular acquisition from iterable data."""
