@@ -4,6 +4,7 @@ from ast import literal_eval
 import csv
 import json
 from math import isfinite
+from multiprocessing import get_all_start_methods
 from multiprocessing.shared_memory import SharedMemory
 from pathlib import Path
 import unittest
@@ -186,6 +187,16 @@ class TestVisionBlocksIntegration(IntegrationTestBase):
             self.assertTrue(isfinite(entry['timestamp']))
             self.assertGreaterEqual(entry['timestamp'], 0)
 
+      self._assert_shared_memory_unlinked(source['memory_name'])
+
+  @unittest.skipUnless('fork' in get_all_start_methods(),
+                       "The fork start method is unavailable")
+  def test_fork_shared_memory_tracker_lifecycle(self) -> None:
+    """Checks forked consumers do not unlink their source-owned buffer."""
+
+    with self.run_scenario('vision_required_config_fanout',
+                           start_method='fork') as output_dir:
+      source = self._read_json(output_dir / 'config_source.json')
       self._assert_shared_memory_unlinked(source['memory_name'])
 
   @unittest.skipIf(cv2 is None, 'OpenCV is not available')

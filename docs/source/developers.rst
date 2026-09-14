@@ -487,6 +487,10 @@ the framework-level state for one source buffer, the actual shared-memory
 segment is created later by the image-producing child, after its configuration
 has established the final image format.
 
+With the ``fork`` start method, the main Process also starts Python's
+shared-memory resource tracker before starting the Blocks. It ensures that
+the SharedMemory resources are managed consistently across Blocks.
+
 Finally, all the Blocks are started in separate Processes. The main Process
 closes its copies of all configuration Pipe endpoints after starting them,
 whether preparation succeeds or fails. If an exception is caught during the

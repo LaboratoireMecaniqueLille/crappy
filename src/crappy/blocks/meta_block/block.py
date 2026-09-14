@@ -3,7 +3,8 @@
 from platform import system
 from multiprocessing import (Process, Value, Barrier, Event, Queue,
                              get_start_method, synchronize, queues,
-                             sharedctypes, Manager, managers, Pipe, connection)
+                             sharedctypes, Manager, managers, Pipe, connection,
+                             resource_tracker)
 from threading import BrokenBarrierError, Thread
 from queue import Empty
 import logging
@@ -419,6 +420,13 @@ class Block(Process, ABC):
       else:
         cls.cls_log(logging.INFO, "No vision Block detected, not "
                                   "instantiating a shared Manager")
+
+      # Under fork, ensures proper management of SharedMemory tracking at the
+      # Process-level
+      if (get_start_method() == 'fork' and cls.instances and
+          any(instance.is_vision_block for instance in cls.instances)):
+        resource_tracker.ensure_running()
+        cls.cls_log(logging.INFO, 'Shared-memory resource tracker started')
 
       # Starting all the Blocks
       for instance in cls.instances:

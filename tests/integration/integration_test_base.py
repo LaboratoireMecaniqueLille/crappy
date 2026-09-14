@@ -25,7 +25,8 @@ class IntegrationTestBase(unittest.TestCase):
   @contextmanager
   def run_scenario(self,
                    scenario: str,
-                   timeout: float | None = None) -> Iterator[Path]:
+                   timeout: float | None = None,
+                   start_method: str | None = None) -> Iterator[Path]:
     """Runs one scenario and yields its temporary artifact directory."""
 
     with TemporaryDirectory(prefix=f'crappy-{scenario}-') as folder:
@@ -33,7 +34,15 @@ class IntegrationTestBase(unittest.TestCase):
       stdout, stderr = self._execute_scenario(
         scenario,
         output_dir,
-        self.scenario_timeout if timeout is None else timeout)
+        self.scenario_timeout if timeout is None else timeout,
+        start_method)
+
+      self.assertNotIn(
+        'leaked shared_memory objects',
+        stderr,
+        self._failure_message(
+          scenario, stdout, stderr,
+          'The scenario leaked a tracked shared-memory object.'))
 
       completion_path = output_dir / 'completed.json'
       self.assertTrue(
@@ -50,11 +59,12 @@ class IntegrationTestBase(unittest.TestCase):
   def _execute_scenario(self,
                         scenario: str,
                         output_dir: Path,
-                        timeout: float) -> tuple[str, str]:
+                        timeout: float,
+                        start_method: str | None = None) -> tuple[str, str]:
     """Runs a scenario subprocess and requires successful completion."""
 
     returncode, stdout, stderr = self._run_scenario_process(
-      scenario, output_dir, timeout)
+      scenario, output_dir, timeout, start_method)
 
     self.assertEqual(
       returncode,
@@ -101,14 +111,19 @@ class IntegrationTestBase(unittest.TestCase):
   def _run_scenario_process(self,
                             scenario: str,
                             output_dir: Path,
-                            timeout: float) -> tuple[int, str, str]:
+                            timeout: float,
+                            start_method: str | None = None
+                            ) -> tuple[int, str, str]:
     """Starts a scenario subprocess and enforces its hard timeout."""
 
     env = os.environ.copy()
     env['PYTHONUNBUFFERED'] = '1'
+    command = [sys.executable, '-m', 'tests.integration.run_scenario',
+               scenario, str(output_dir)]
+    if start_method is not None:
+      command.extend(('--start-method', start_method))
     process = subprocess.Popen(
-      [sys.executable, '-m', 'tests.integration.run_scenario',
-       scenario, str(output_dir)],
+      command,
       cwd=self._project_root,
       env=env,
       stdout=subprocess.PIPE,
