@@ -25,7 +25,7 @@ class TestDICVE(ConfigurationWindowTestBase):
     setting a smaller patch size value for the tests."""
 
     self._config = DICVEConfig(self._camera, self._log_queue,
-                               self._log_level, self._freq, SpotsBoxes())
+                               self._log_level, self._freq, None, SpotsBoxes())
 
     self._config._testing = True
     self._config._patch_size.value = 20
@@ -109,3 +109,6 @@ class TestDICVE(ConfigurationWindowTestBase):
     # Check that the initial lengths have been set
     self.assertIsNotNone(self._config._spots.x_l0)
     self.assertIsNotNone(self._config._spots.y_l0)
+
+    configured_spots, = self._config.get_config()
+    self.assertIs(configured_spots, self._config._spots)

@@ -23,6 +23,21 @@ the tutorials, you can learn more about :ref:`how to use Blocks
 <1. Understanding Crappy's syntax>` and :ref:`how to create new Blocks
 <5. Custom Blocks>`.
 
+Image-handling Blocks are available in two complementary styles. The
+:class:`~crappy.blocks.vision.VisionBlock` family separates image acquisition,
+processing, display, and recording into independent Blocks connected by
+:ref:`Image Links <Image Link>`. This explicit architecture requires a few
+more Blocks and connections to reproduce a simple all-in-one Camera workflow,
+but it allows each image stream to be combined and fanned out much more freely.
+Each VisionBlock also has fewer responsibilities and arguments, which makes
+individual Blocks easier to use and custom image processing easier to add.
+Users are encouraged to choose VisionBlocks for new scripts.
+
+The existing :ref:`Camera Block` and its processing subclasses remain
+available and are not planned for deprecation. They continue to provide a
+convenient all-in-one interface when their fixed acquisition, processing,
+display, and recording architecture matches the intended workflow.
+
 Data display
 ++++++++++++
 
@@ -60,6 +75,22 @@ Data display
   :ref:`A tutorial section <2.c. The Grapher Block>` is also dedicated to the
   Grapher Block.
 
+- :ref:`Image Displayer`
+
+  Displays the newest image received from one VisionBlock through an
+  :ref:`Image Link`, with OpenCV or Matplotlib. It runs independently from
+  acquisition and image processing, and can combine the image with overlays
+  received through regular Links. A slow display can skip intermediate frames
+  without slowing down the image source.
+
+  The examples folder on GitHub contains a `basic CameraSource and
+  ImageDisplayer pipeline <https://github.com/LaboratoireMecaniqueLille/
+  crappy/blob/master/examples/vision_blocks/camera_basic_display.py>`_. The
+  `combined DIC VE and DIS Correl example <https://github.com/
+  LaboratoireMecaniqueLille/crappy/blob/master/examples/vision_blocks/
+  dic_ve_dis_correl.py>`_ shows one displayer drawing overlays from multiple
+  processors.
+
 - :ref:`Link Reader`
 
   Prints the values it receives in the terminal. Mostly useful for debugging.
@@ -80,6 +111,22 @@ Data recording
   The examples folder on GitHub contains `one example of the HDF Recorder Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/hdf5_recorder.py>`_.
+
+- :ref:`Image Recorder`
+
+  Saves the newest images and their metadata received through one ImageLink.
+  Recording runs independently from acquisition and can deliberately keep only
+  one image out of a chosen number. SimpleITK, Pillow, OpenCV, and raw NumPy
+  files are supported, and a regular Link can notify downstream Blocks after
+  an image is actually saved.
+
+  The examples folder on GitHub contains a `basic image-recording pipeline
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  vision_blocks/camera_basic_record.py>`_. The `combined processing,
+  displaying and recording example <https://github.com/
+  LaboratoireMecaniqueLille/crappy/blob/master/examples/vision_blocks/
+  dic_ve_dis_correl.py>`_ demonstrates that these tasks can consume the same
+  source independently.
 
 - :ref:`Recorder`
 
@@ -133,6 +180,21 @@ Data processing
 Real-time image correlation
 +++++++++++++++++++++++++++
 
+- :ref:`DIS Correl Processor`
+
+  Receives images from a VisionBlock and performs real-time Dense Inverse
+  Search (DIS) image correlation on one selected patch. It projects the
+  displacement field onto predefined or custom fields and sends the results
+  through regular Links. Acquisition, display, and recording can be connected
+  independently according to the needs of the script.
+
+  The examples folder on GitHub contains a `non-interactive DIS Correl
+  Processor example <https://github.com/LaboratoireMecaniqueLille/crappy/blob/
+  master/examples/vision_blocks/dis_correl.py>`_ and an example `combining it
+  with DIC VE processing, display, and recording <https://github.com/
+  LaboratoireMecaniqueLille/crappy/blob/master/examples/vision_blocks/
+  dic_ve_dis_correl.py>`_.
+
 - :ref:`DIS Correl`
 
   Child of the :ref:`Camera` Block that can acquire, record and display images.
@@ -144,6 +206,10 @@ Real-time image correlation
   The examples folder on GitHub contains `several examples of the DIS Correl
   Block <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
   examples/blocks/dis_correl>`_.
+
+  This all-in-one Block remains supported. For new scripts, the :ref:`DIS
+  Correl Processor` offers the same kind of processing in the more flexible
+  VisionBlock architecture.
 
 - :ref:`GPU Correl`
 
@@ -193,6 +259,24 @@ Video-extensometry
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
   blocks/dic_ve>`_.
 
+  This all-in-one Block remains supported. For new scripts, the :ref:`DIC VE
+  Processor` separates this processing from acquisition, display, and
+  recording.
+
+- :ref:`DIC VE Processor`
+
+  Tracks between one and four textured patches in images received from a
+  VisionBlock, and calculates their displacement and the sample strain. Patch
+  selection can be requested from the upstream image source or provided
+  directly. Measurements and patch overlays are published through regular
+  Links, leaving the user free to connect display and recording independently.
+
+  The examples folder on GitHub contains a `DIC VE Processor pipeline
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  vision_blocks/dic_ve.py>`_ and a `combined DIC VE and DIS Correl pipeline
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  vision_blocks/dic_ve_dis_correl.py>`_.
+
 - :ref:`GPU VE`
 
   Same as :ref:`DIC VE`, except the computation is done on a Cuda-compatible
@@ -225,6 +309,22 @@ Video-extensometry
   The examples folder on GitHub contains `one example of the Video Extenso
   Block <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/
   examples/blocks/video_extenso.py>`_.
+
+  This all-in-one Block remains supported. For new scripts, the :ref:`Video
+  Extenso Processor` provides the tracking stage as an independent
+  VisionBlock.
+
+- :ref:`Video Extenso Processor`
+
+  Tracks up to four contrasted spots in images received through an ImageLink,
+  and sends their positions and the calculated strain through regular Links.
+  Spot selection is performed in a specialized configuration window requested
+  from the upstream image source. Acquisition and optional display or
+  recording remain independent Blocks.
+
+  The examples folder on GitHub contains a `complete Video Extenso Processor
+  pipeline <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/
+  examples/vision_blocks/video_extenso.py>`_.
 
 Signal generation
 +++++++++++++++++
@@ -270,6 +370,22 @@ Signal generation
 Hardware control
 ++++++++++++++++
 
+- :ref:`Camera Source`
+
+  Drives one :ref:`Camera` object and publishes the acquired images and their
+  metadata through one or more ImageLinks. It is intentionally limited to
+  acquisition, so independent processors, displayers, and recorders can all
+  consume the same image stream at their own frequencies. It can also serve
+  specialized configuration requests from downstream processing Blocks.
+
+  The examples folder on GitHub contains a `basic display pipeline
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  vision_blocks/camera_basic_display.py>`_, a `recording pipeline
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
+  vision_blocks/camera_basic_record.py>`_, and a `software-triggered
+  acquisition example <https://github.com/LaboratoireMecaniqueLille/crappy/
+  blob/master/examples/vision_blocks/camera_software_trigger.py>`_.
+
 - :ref:`Camera <Camera Block>`
 
   Acquires images from a :ref:`Camera` object, and then displays and/or records
@@ -282,9 +398,13 @@ Hardware control
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
   blocks/camera>`_.
 
-  :ref:`A tutorial section <2.b. The Camera Block>` is also dedicated to the
-  Camera Block, and :ref:`another one <4. Custom Cameras>` is dedicated to the
-  creation of custom Camera objects.
+  This Block remains supported and is not planned for deprecation. New scripts
+  are encouraged to use a :ref:`Camera Source` connected to the desired
+  VisionBlocks when a more flexible image architecture is useful.
+
+  :ref:`A tutorial section <2.b. Camera acquisition and VisionBlocks>` is also
+  dedicated to camera acquisition, and :ref:`another one <4. Custom Cameras>`
+  is dedicated to the creation of custom Camera objects.
 
 - :ref:`IOBlock`
 

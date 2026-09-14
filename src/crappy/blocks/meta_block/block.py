@@ -2,9 +2,9 @@
 
 from platform import system
 from multiprocessing import (Process, Value, Barrier, Event, Queue,
-                             get_start_method, synchronize, queues)
-from multiprocessing.sharedctypes import Synchronized
-from multiprocessing.connection import wait
+                             get_start_method, synchronize, queues,
+                             sharedctypes, Manager, managers, Pipe, connection,
+                             resource_tracker)
 from threading import BrokenBarrierError, Thread
 from queue import Empty
 import logging
@@ -18,8 +18,9 @@ import subprocess
 from sys import stdout, stderr, argv
 from pathlib import Path
 from abc import ABC, abstractmethod
+from dataclasses import replace
 
-from ...links import Link
+from ...links import Link, link_graph, GraphStructureError
 from ..._global import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
                         CameraPrepareError, CameraRuntimeError,
@@ -41,10 +42,20 @@ class Block(Process, ABC):
   This class also contains the class methods that allow driving a script with
   Crappy. They are always called in the `__main__` Process, and drive the
   execution of all the children Blocks.
+
+  The public execution settings :attr:`~crappy.blocks.Block.niceness`,
+  :attr:`~crappy.blocks.Block.labels`, :attr:`~crappy.blocks.Block.freq`,
+  :attr:`~crappy.blocks.Block.display_freq`,
+  :attr:`~crappy.blocks.Block.name`, :attr:`~crappy.blocks.Block.pausable`, and
+  :attr:`~crappy.blocks.Block.is_vision_block` are validated properties. Child
+  classes should set these public properties rather than their private backing
+  attributes.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.8 remove metaclass and perform checks in
      __init_subclass__
+  .. versionchanged:: 2.1.0 execution settings are exposed as validated
+     properties rather than plain attributes
   """
 
   instances = WeakSet()
@@ -52,7 +63,7 @@ class Block(Process, ABC):
   log_level: int | None = logging.DEBUG
 
   # The synchronization objects will be set later
-  shared_t0: Synchronized | None = None
+  shared_t0: sharedctypes.Synchronized | None = None
   ready_barrier: synchronize.Barrier | None = None
   start_event: synchronize.Event | None = None
   pause_event: synchronize.Event | None = None
@@ -64,6 +75,9 @@ class Block(Process, ABC):
   log_thread: Thread | None = None
   thread_stop: bool = False
   no_raise: bool = False
+
+  # Used for ImageLinks
+  shared_mgr: managers.SyncManager | None = None
 
   prepared_all: bool = False
   launched_all: bool = False
@@ -89,16 +103,17 @@ class Block(Process, ABC):
     self.outputs: list[Link] = list()
     self.inputs: list[Link] = list()
 
-    # Various objects that should be set by child classes
-    self.niceness: int = 0
-    self.labels: Sequence[str] | None = None
-    self.freq: float | None = None
-    self.display_freq: bool = False
-    self.name: str = self.get_name(type(self).__name__)
-    self.pausable: bool = True
+    # Hidden containers for properties, can be set by children classes
+    self._display_freq: bool = False
+    self._niceness: int = 0
+    self._labels: Sequence[str] | None = None
+    self._freq: float | None = None
+    self._name: str = self.get_name(type(self).__name__)
+    self._pausable: bool = True
+    self._is_vision_block: bool = False
 
     # The synchronization objects will be set later
-    self._instance_t0: Synchronized | None = None
+    self._instance_t0: sharedctypes.Synchronized | None = None
     self._ready_barrier: synchronize.Barrier | None = None
     self._start_event: synchronize.Event | None = None
     self._pause_event: synchronize.Event | None = None
@@ -106,18 +121,25 @@ class Block(Process, ABC):
     self._raise_event: synchronize.Event | None = None
     self._kbi_event: synchronize.Event | None = None
 
+    # Configuration Pipe endpoints that this Process inherits under fork but
+    # does not own. They are closed as soon as the child Process starts.
+    self._config_connections_to_close: list[connection.Connection] = list()
+
     # The objects for logging will be set later
     self._log_queue: queues.Queue | None = None
     self._logger: logging.Logger | None = None
     self._debug: bool | None = False
-    self._log_level: int = logging.INFO
+    self._log_level: int | None = logging.INFO
 
     # Objects for displaying performance information about the block
-    self._last_t: float | None = None
-    self._last_fps: float | None = None
+    self._last_t: float = float('-inf')
+    self._last_fps: float = float('-inf')
     self._n_loops: int = 0
 
-    self._last_values = None
+    self._last_values: list[dict[str, Any]] = list()
+
+    # Add node to the LinkGraph
+    link_graph.add_node(self.name, type(self))
 
   def __new__(cls, *args, **kwargs):
     """Called when instantiating a new instance of a Block.
@@ -134,7 +156,7 @@ class Block(Process, ABC):
   def get_name(cls, name: str) -> str:
     """Method attributing to each new Block a unique name, based on the name of
     the class and the number of existing instances for this class.
-    
+
     .. versionadded:: 2.0.0
     """
 
@@ -199,7 +221,9 @@ class Block(Process, ABC):
     """Creates the synchronization objects, shares them with the Blocks, and
     starts the :obj:`~multiprocessing.Process` associated to the Blocks.
 
-    Also initializes the :obj:`~logging.Logger` for the Crappy script.
+    Also initializes the :obj:`~logging.Logger` for the Crappy script. For
+    VisionBlocks, configuration requests are routed to their image sources
+    through one-way Pipes before the child Processes start.
 
     Once started with this method, the Blocks will call their
     :meth:`~crappy.blocks.Block.prepare` method and then be blocked by a
@@ -218,12 +242,18 @@ class Block(Process, ABC):
         possible levels.
 
         .. versionadded:: 2.0.0
-    
+
     .. versionremoved:: 2.0.0 *verbose* argument
     """
 
     # Flag indicating whether to perform the cleanup action or not
     cleanup = False
+
+    # Used for closing stale connections after the Blocks have started
+    parent_config_connections: list[connection.Connection] = list()
+    # Associates each Block with the configuration Pipe endpoints it owns
+    config_connections_by_owner: dict[
+      str, list[connection.Connection]] = defaultdict(list)
 
     try:
       # Making sure that the Block classmethods are called in the right order
@@ -271,12 +301,18 @@ class Block(Process, ABC):
       # Initializing the objects required for logging
       cls.log_queue = Queue()
       cls.log_thread = Thread(target=cls._log_target)
-      if get_start_method() == 'spawn':
+      if get_start_method() != 'fork':
+        if cls.log_thread is None:
+          raise RuntimeError("The log Thread was not initialized, cannot start"
+                             " it!")
         cls.log_thread.start()
         cls.cls_log(logging.INFO, 'Logger thread started')
 
       # Starting the USB server if required
       if USBServer.initialized:
+        if cls.log_queue is None:
+          raise RuntimeError("The log queue was not initialized, cannot start "
+                             "the USBServer")
         cls.cls_log(logging.INFO, "Starting the USB server")
         USBServer.start_server(cls.log_queue, logging.INFO)
 
@@ -302,6 +338,96 @@ class Block(Process, ABC):
         cls.cls_log(logging.INFO, f"Log level set for the {instance.name} "
                                   f"Block")
 
+      # Build the connection graph of the VisionBlocks and share configuration
+      # requests to relevant sources
+      if (cls.instances and
+          any(instance.is_vision_block for instance in cls.instances)):
+
+        # Lookup table to associate unique Block name to actual instance
+        instances_lookup = {instance.name: instance for instance
+                            in cls.instances}
+
+        graph_names = set(link_graph.nodes.keys())
+        instance_names = set(instances_lookup.keys())
+        if graph_names != instance_names:
+          raise GraphStructureError("The names of the Blocks as stored in the "
+                                    "LinkGraph and in the master Block do not "
+                                    "match")
+
+        # Manage config requests for each source-consumer pair
+        for source_name in link_graph.img_sources():
+          source = instances_lookup[source_name]
+          for consumer_name in link_graph.descendants(source_name,
+                                                      kind='image'):
+            consumer = instances_lookup[consumer_name]
+            # If there's a configuration request from the consumer, share it
+            # with the source
+            if (hasattr(consumer, 'request_config') and
+                callable(consumer.request_config) and
+                (config_request := consumer.request_config(source_name))
+                is not None):
+              config_request: Any
+              if config_request.requester != consumer.name:
+                raise ValueError("The name of the config requester doesn't "
+                                 "match the name of the downstream Block")
+              if config_request.img_source != source.name:
+                raise ValueError("The name of the image source doesn't match "
+                                 "the name of the upstream Block")
+              # Create a Pipe for sharing config data between Blocks
+              recv_conn, send_conn = Pipe(duplex=False)
+              parent_config_connections.extend((recv_conn, send_conn))
+              config_connections_by_owner[source.name].append(send_conn)
+              config_connections_by_owner[consumer.name].append(recv_conn)
+              # Duplicate the ConfigRequest and assign each an end of the Pipe
+              source_request = replace(config_request, connection=send_conn)
+              consumer_request = replace(config_request,
+                                         connection=recv_conn)
+              cls.cls_log(logging.DEBUG, f"Created config request: "
+                                         f"{config_request}, now sharing it")
+              # Register the request in both the source and the consumer Blocks
+              source.add_config_request_in(source_request)
+              consumer.add_config_request_out(consumer_request)
+
+        # With fork, every child inherits every open file descriptor from the
+        # parent. Explicitly tell each Block which unrelated endpoints it must
+        # close on startup so that a dead Block can still be detected via EOF
+        if get_start_method() == 'fork':
+          for instance in cls.instances:
+            owned_connections = {id(conn) for conn in
+                                 config_connections_by_owner[instance.name]}
+            instance._config_connections_to_close = [
+                conn for conn in parent_config_connections
+                if id(conn) not in owned_connections]
+
+        cls.cls_log(logging.INFO, "Shared configuration requests from consumer"
+                                  " vision Blocks to their sources")
+      else:
+        cls.cls_log(logging.INFO, "No vision Block detected, not building "
+                                  "graph nor sharing config requests")
+
+      # Initialize the common Manager for image Blocks if needed
+      if (cls.instances and
+          any(instance.is_vision_block for instance in cls.instances)):
+        cls.shared_mgr = Manager()
+        cls.cls_log(logging.INFO, 'Created the shared Manager object')
+
+        # Making vision Blocks generate their shared synchronization objects
+        for instance in cls.instances:
+          if instance.is_vision_block:
+            instance.set_shared_objects()
+            cls.cls_log(logging.INFO, f"Set shared image-related objects for "
+                                      f"the {instance.name} Block")
+      else:
+        cls.cls_log(logging.INFO, "No vision Block detected, not "
+                                  "instantiating a shared Manager")
+
+      # Under fork, ensures proper management of SharedMemory tracking at the
+      # Process-level
+      if (get_start_method() == 'fork' and cls.instances and
+          any(instance.is_vision_block for instance in cls.instances)):
+        resource_tracker.ensure_running()
+        cls.cls_log(logging.INFO, 'Shared-memory resource tracker started')
+
       # Starting all the Blocks
       for instance in cls.instances:
         instance.start()
@@ -323,25 +449,45 @@ class Block(Process, ABC):
         cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
                                      "Process while running prepare_all !")
         # Special Event for the KeyboardInterrupt
-        cls.kbi_event.set()
-        cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
-                                     'KeyboardInterrupt in the main Process '
-                                     'in prepare_all')
+        if cls.kbi_event is None:
+          cls.cls_log(logging.ERROR, "The KBI Event should be set but doesn't "
+                                     "exist!")
+        else:
+          cls.kbi_event.set()
+          cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
+                                       'KeyboardInterrupt in the main Process '
+                                       'in prepare_all')
       # General case
       else:
-        cls.logger.exception("Caught exception while running prepare_all, "
-                             "aborting", exc_info=exc)
+        # Not much we can do if there's no logger set to report Exception
+        if cls.logger is not None:
+          cls.logger.exception("Caught exception while running prepare_all, "
+                               "aborting", exc_info=exc)
         # Any Exception caught in the main Process must stop the script
-        cls.raise_event.set()
-        cls.cls_log(logging.WARNING, 'Set the raise Event after exception was '
-                                     'caught in the main Process in '
-                                     'prepare_all')
+        if cls.raise_event is None:
+          cls.cls_log(logging.ERROR, "The raise Event should be set but "
+                                     "doesn't exist!")
+        else:
+          cls.raise_event.set()
+          cls.cls_log(logging.WARNING, 'Set the raise Event after exception '
+                                       'was caught in the main Process in '
+                                       'prepare_all')
       # Breaking the Barrier to warn other Processes that something went wrong
-      cls.ready_barrier.abort()
-      cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
-                                   "caught in prepare_all")
+      if cls.ready_barrier is None:
+        cls.cls_log(logging.ERROR, "The ready Barrier should be aborted but "
+                                   "doesn't exit!")
+      else:
+        cls.ready_barrier.abort()
+        cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
+                                     "caught in prepare_all")
       # Need to clean up as some Blocks might already be running
       cls._cleanup()
+
+    # Close the stale connections between VisionBlocks as this Process should
+    # not unnecessarily own them
+    finally:
+      for conn in parent_config_connections:
+        conn.close()
 
   @classmethod
   def renice_all(cls, allow_root: bool) -> None:
@@ -415,23 +561,37 @@ class Block(Process, ABC):
         cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
                                      "Process while running renice_all !")
         # Special Event for the KeyboardInterrupt
-        cls.kbi_event.set()
-        cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
-                                     'KeyboardInterrupt in the main Process '
-                                     'in renice_all')
+        if cls.kbi_event is None:
+          cls.cls_log(logging.ERROR, "The KBI Event should be set but doesn't "
+                                     "exist!")
+        else:
+          cls.kbi_event.set()
+          cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
+                                       'KeyboardInterrupt in the main Process '
+                                       'in renice_all')
       # General case
       else:
-        cls.logger.exception("Caught exception while running renice_all, "
-                             "aborting", exc_info=exc)
+        # Not much we can do if there's no logger set to report Exception
+        if cls.logger is not None:
+          cls.logger.exception("Caught exception while running renice_all, "
+                               "aborting", exc_info=exc)
         # Any Exception caught in the main Process must stop the script
-        cls.raise_event.set()
-        cls.cls_log(logging.WARNING, 'Set the raise Event after exception was '
-                                     'caught in the main Process in '
-                                     'renice_all')
+        if cls.raise_event is None:
+          cls.cls_log(logging.ERROR, "The raise Event should be set but "
+                                     "doesn't exist!")
+        else:
+          cls.raise_event.set()
+          cls.cls_log(logging.WARNING, 'Set the raise Event after exception '
+                                       'was caught in the main Process in '
+                                       'renice_all')
       # Breaking the Barrier to warn other Processes that something went wrong
-      cls.ready_barrier.abort()
-      cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
-                                   "caught in renice_all")
+      if cls.ready_barrier is None:
+        cls.cls_log(logging.ERROR, "The ready Barrier should be aborted but "
+                                   "doesn't exit!")
+      else:
+        cls.ready_barrier.abort()
+        cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
+                                     "caught in renice_all")
       # Need to clean up the running Blocks and other Processes / Threads
       cls._cleanup()
 
@@ -486,19 +646,26 @@ class Block(Process, ABC):
       # prepare_all and launch_all methods can be used separately for a finer
       # grained control
       cls.cls_log(logging.INFO, 'Waiting for all Blocks to be ready')
+      if cls.ready_barrier is None:
+        raise RuntimeError("Should wait for the ready Barrier but it doesn't "
+                           "exist!")
       cls.ready_barrier.wait()
       cls.cls_log(logging.INFO, 'All Blocks ready now')
 
       # Setting t0 and telling all the Blocks to start
+      if cls.shared_t0 is None:
+        raise RuntimeError("Should set shared_t0 but it doesn't exist!")
       cls.shared_t0.value = time_ns() / 1e9
       cls.cls_log(logging.INFO, f'Start time set to {cls.shared_t0.value}s')
+      if cls.start_event is None:
+        raise RuntimeError("Should set the start Event but it doesn't exist!")
       cls.start_event.set()
       cls.cls_log(logging.INFO, 'Start event set, all Blocks can now start')
 
       # The main Process mustn't finish before all the Blocks are stopped
       cls.cls_log(logging.INFO, 'Main Process done, waiting for all Blocks to '
                                 'finish')
-      for _ in wait([inst.sentinel for inst in cls.instances]):
+      for _ in connection.wait([inst.sentinel for inst in cls.instances]):
         cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
                                   "other ones to follow")
 
@@ -513,27 +680,41 @@ class Block(Process, ABC):
         cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
                                      "Process while running launch_all !")
         # Special Event for the KeyboardInterrupt
-        cls.kbi_event.set()
-        cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
-                                     'KeyboardInterrupt in the main Process '
-                                     'in launch_all')
+        if cls.kbi_event is None:
+          cls.cls_log(logging.ERROR, "The KBI Event should be set but doesn't "
+                                     "exist!")
+        else:
+          cls.kbi_event.set()
+          cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
+                                       'KeyboardInterrupt in the main Process '
+                                       'in launch_all')
       # Case when a Block crashed while preparing
       elif isinstance(exc, BrokenBarrierError):
         cls.cls_log(logging.ERROR, "Exception raised in a Block while waiting "
                                    "for all Blocks to be ready, stopping")
       # General case
       else:
-        cls.logger.exception("Caught exception while running launch_all, "
-                             "aborting", exc_info=exc)
+        # Not much we can do if there's no logger set to report Exception
+        if cls.logger is not None:
+          cls.logger.exception("Caught exception while running launch_all, "
+                               "aborting", exc_info=exc)
         # Any Exception caught in the main Process must stop the script
-        cls.raise_event.set()
-        cls.cls_log(logging.WARNING, 'Set the raise Event after exception was '
-                                     'caught in the main Process in '
-                                     'launch_all')
+        if cls.raise_event is None:
+          cls.cls_log(logging.ERROR, "The raise Event should be set but "
+                                     "doesn't exist!")
+        else:
+          cls.raise_event.set()
+          cls.cls_log(logging.WARNING, 'Set the raise Event after exception '
+                                       'was caught in the main Process in '
+                                       'launch_all')
       # Breaking the Barrier to warn other Processes that something went wrong
-      cls.ready_barrier.abort()
-      cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
-                                   "caught in launch_all")
+      if cls.ready_barrier is None:
+        cls.cls_log(logging.ERROR, "The ready Barrier should be aborted but "
+                                   "doesn't exit!")
+      else:
+        cls.ready_barrier.abort()
+        cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
+                                     "caught in launch_all")
     finally:
       # Need to clean up the running Blocks and other Processes / Threads
       if cleanup:
@@ -556,9 +737,13 @@ class Block(Process, ABC):
     try:
 
       # Setting the stop Event, to indicate all the Blocks to finish
-      cls.stop_event.set()
-      cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks to '
-                                'finish')
+      if cls.stop_event is None:
+        cls.cls_log(logging.ERROR, "The stop Event should be set but "
+                                   "doesn't exist!")
+      else:
+        cls.stop_event.set()
+        cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks to '
+                                  'finish')
       t = time()
 
       # Waiting at most 3 seconds for all the Blocks to finish
@@ -585,8 +770,13 @@ class Block(Process, ABC):
         cls.cls_log(logging.INFO, "Stopping the USB server")
         USBServer.stop_server()
 
+      # Stopping the shared Manager if required
+      if cls.shared_mgr is not None:
+        cls.cls_log(logging.INFO, "Stopping the shared Manager")
+        cls.shared_mgr.shutdown()
+
       # Stopping the log thread if required
-      if get_start_method() == 'spawn' and cls.log_thread is not None:
+      if get_start_method() != 'fork' and cls.log_thread is not None:
         cls.thread_stop = True
         cls.log_thread.join(timeout=0.1)
 
@@ -602,9 +792,13 @@ class Block(Process, ABC):
         cls.cls_log(logging.ERROR, f"Crappy failed to finish gracefully, "
                                    f"Block(s) {running} still running !")
         # An Exception is raised in case all the Blocks don't finish gracefully
-        cls.raise_event.set()
-        cls.cls_log(logging.WARNING, 'Set the raise Event because all the '
-                                     'Blocks did not terminate as requested')
+        if cls.raise_event is None:
+          cls.cls_log(logging.ERROR, "The raise Event should be set but "
+                                     "doesn't exist!")
+        else:
+          cls.raise_event.set()
+          cls.cls_log(logging.WARNING, 'Set the raise Event because all the '
+                                       'Blocks did not terminate as requested')
       else:
         cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
                                   'gracefully !\n')
@@ -617,28 +811,49 @@ class Block(Process, ABC):
         cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt while "
                                      "cleaning up, ignoring it !")
         # Special Event for the KeyboardInterrupt
-        cls.kbi_event.set()
-        cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
-                                     'KeyboardInterrupt while cleaning up')
+        if cls.kbi_event is None:
+          cls.cls_log(logging.ERROR, "The KBI Event should be set but doesn't "
+                                     "exist!")
+        else:
+          cls.kbi_event.set()
+          cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
+                                       'KeyboardInterrupt while cleaning up')
       else:
-        cls.logger.exception("Caught exception while cleaning up !",
-                             exc_info=exc)
+        # Not much we can do if there's no logger set to report Exception
+        if cls.logger is not None:
+          cls.logger.exception("Caught exception while cleaning up !",
+                               exc_info=exc)
 
         # Any Exception caught in the main Process must stop the script
-        cls.raise_event.set()
-        cls.cls_log(logging.WARNING, 'Set the raise Event after exception was '
-                                     'caught in the main Process while '
-                                     'cleaning up')
+        if cls.raise_event is None:
+          cls.cls_log(logging.ERROR, "The raise Event should be set but "
+                                     "doesn't exist!")
+        else:
+          cls.raise_event.set()
+          cls.cls_log(logging.WARNING, 'Set the raise Event after exception '
+                                       'was caught in the main Process while '
+                                       'cleaning up')
 
     # Deciding whether to raise and stop the main Process, and also resetting
     finally:
       # The try/finally is needed to reset Crappy before the exception is
       # raised but after the class Events are accessed
       try:
+        # Really messed-up states
+        if cls.raise_event is None:
+          cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                     "execution, so bad that the raise Event "
+                                     "doesn't even exist, raising CrappyFail!")
+          raise CrappyFail
+        if cls.kbi_event is None:
+          cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                     "execution, so bad that the KBI Event "
+                                     "doesn't even exist, raising CrappyFail!")
+          raise CrappyFail
         # Deciding whether to raise or not
         if cls.raise_event.is_set() and not cls.no_raise:
           cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
-                                     "execution, raising CrappyFail !")
+                                     "execution, raising CrappyFail!")
           raise CrappyFail
         elif cls.kbi_event.is_set() and not cls.no_raise:
           cls.cls_log(logging.ERROR, "KeyboardInterrupt called while running "
@@ -743,7 +958,9 @@ class Block(Process, ABC):
   @classmethod
   def reset(cls) -> None:
     """Resets Crappy by emptying the :obj:`~weakref.WeakSet` containing
-    references to all the Blocks and resetting the synchronization objects.
+    references to all the Blocks, clearing the
+    :class:`~crappy.links.LinkGraph`, and resetting the synchronization
+    objects.
 
     This method is called at the very end of the
     :meth:`~crappy.blocks.Block._cleanup` method, but can also be called to
@@ -765,11 +982,15 @@ class Block(Process, ABC):
     cls.raise_event = None
     cls.kbi_event = None
 
+    cls.shared_mgr = None
+
     cls.log_queue = None
     cls.log_thread = None
 
     if cls.logger is not None:
       cls.cls_log(logging.INFO, 'Crappy was successfully reset')
+
+    link_graph.reset()
   
   @classmethod
   def cls_log(cls, level: int, msg: str) -> None:
@@ -792,6 +1013,9 @@ class Block(Process, ABC):
     It reads log messages from a Queue and passes them to the Logger for
     handling.
     """
+
+    if cls.log_queue is None:
+      raise RuntimeError("The log queue doesn't exist!")
 
     while not cls.thread_stop:
       try:
@@ -829,6 +1053,16 @@ class Block(Process, ABC):
         self._set_block_logger()
         self.log(logging.INFO, "Block launched")
 
+        # Under fork, close configuration Pipe endpoints belonging to other
+        # Blocks before starting any preparation work.
+        try:
+          self.log(logging.DEBUG, "Closing stale Connections this Block "
+                                  "should not own")
+          for conn in self._config_connections_to_close:
+            conn.close()
+        finally:
+          self._config_connections_to_close.clear()
+
         # Running the preliminary actions before the test starts
         self.log(logging.INFO, "Block preparing")
         self.prepare()
@@ -836,14 +1070,21 @@ class Block(Process, ABC):
       # If an Exception is raised, warning the other Blocks by breaking the
       # Barrier
       except (Exception, KeyboardInterrupt):
-        self._ready_barrier.abort()
-        self.log(logging.WARNING, "Broke the Barrier after an Exception was "
-                                  "caught while preparing")
+        if self._ready_barrier is None:
+          self.log(logging.ERROR, "The ready Barrier should be aborted but it "
+                                  "doesn't exist!")
+        else:
+          self._ready_barrier.abort()
+          self.log(logging.WARNING, "Broke the Barrier after an Exception was "
+                                    "caught while preparing")
         raise
 
       # Waiting for all Blocks to be ready, except if the Barrier was broken
       try:
         self.log(logging.INFO, "Waiting for the other Blocks to be ready")
+        if self._ready_barrier is None:
+          raise RuntimeError("Cannot wait for the ready Barrier because it "
+                             "doesn't exist")
         self._ready_barrier.wait()
         self.log(logging.INFO, "All Blocks ready now")
       except BrokenBarrierError:
@@ -851,6 +1092,9 @@ class Block(Process, ABC):
 
       # Waiting for t0 to be set, should take a few milliseconds at most
       self.log(logging.INFO, "Waiting for the start time to be set")
+      if self._start_event is None:
+        raise RuntimeError("Cannot wait for the start Event because it "
+                           "doesn't exist")
       if not self._start_event.wait(timeout=1.0):
         raise StartTimeout
       else:
@@ -875,9 +1119,13 @@ class Block(Process, ABC):
       self.log(logging.ERROR, "Tried to send a wrong data type through a Link,"
                               " stopping !")
       # Any unexpected Exception should stop the script
-      self._raise_event.set()
-      self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                'unexpected Exception while running')
+      if self._raise_event is None:
+        self.log(logging.ERROR, "The raise Event should be set but doesn't "
+                                "exist!")
+      else:
+        self._raise_event.set()
+        self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                  'unexpected Exception while running')
     # An error occurred in another Block while preparing
     except PrepareError:
       self.log(logging.ERROR, "Exception raised in another Block while waiting"
@@ -887,41 +1135,61 @@ class Block(Process, ABC):
       self.log(logging.ERROR, "Exception raised in a configuration window, "
                               "stopping")
       # Any unexpected Exception should stop the script
-      self._raise_event.set()
-      self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                'unexpected Exception while running')
+      if self._raise_event is None:
+        self.log(logging.ERROR, "The raise Event should be set but doesn't "
+                                "exist!")
+      else:
+        self._raise_event.set()
+        self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                  'unexpected Exception while running')
     # An error occurred in a Camera process while preparing
     except CameraPrepareError:
       self.log(logging.ERROR, "Exception raised in a Camera Process while "
                               "preparing, stopping")
       # Any unexpected Exception should stop the script
-      self._raise_event.set()
-      self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                'unexpected Exception while running')
+      if self._raise_event is None:
+        self.log(logging.ERROR, "The raise Event should be set but doesn't "
+                                "exist!")
+      else:
+        self._raise_event.set()
+        self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                  'unexpected Exception while running')
       # An error occurred in a Camera Process while running
     except CameraRuntimeError:
       self.log(logging.ERROR, "Exception raised in a Camera process while "
                               "running, stopping")
       # Any unexpected Exception should stop the script
-      self._raise_event.set()
-      self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                'unexpected Exception while running')
+      if self._raise_event is None:
+        self.log(logging.ERROR, "The raise Event should be set but doesn't "
+                                "exist!")
+      else:
+        self._raise_event.set()
+        self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                  'unexpected Exception while running')
     # The start Event took too long to be set
     except StartTimeout:
       self.log(logging.ERROR, "Waited too long for start time to be set, "
                               "aborting !")
       # Any unexpected Exception should stop the script
-      self._raise_event.set()
-      self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                'unexpected Exception while running')
+      if self._raise_event is None:
+        self.log(logging.ERROR, "The raise Event should be set but doesn't "
+                                "exist!")
+      else:
+        self._raise_event.set()
+        self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                  'unexpected Exception while running')
     # Tried to access t0 but it's not set yet
     except T0NotSetError:
       self.log(logging.ERROR, "Trying to get the value of t0 when it's not "
                               "set yet, aborting")
       # Any unexpected Exception should stop the script
-      self._raise_event.set()
-      self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                'unexpected Exception while running')
+      if self._raise_event is None:
+        self.log(logging.ERROR, "The raise Event should be set but doesn't "
+                                "exist!")
+      else:
+        self._raise_event.set()
+        self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                  'unexpected Exception while running')
     # A Generator Block finished its Path
     except GeneratorStop:
       self.log(logging.WARNING, f"Generator Path exhausted, stopping the "
@@ -934,46 +1202,75 @@ class Block(Process, ABC):
     except KeyboardInterrupt:
       self.log(logging.WARNING, f"KeyboardInterrupt caught, stopping")
       # A KeyboardInterrupt should stop the script and be raised as is
-      self._kbi_event.set()
-      self.log(logging.WARNING, 'Set the KbI Event after catching a '
-                                'KeyboardInterrupt while running')
+      if self._kbi_event is None:
+        self.log(logging.ERROR, "The KBI Event should be set but doesn't "
+                                "exist!")
+      else:
+        self._kbi_event.set()
+        self.log(logging.WARNING, 'Set the KbI Event after catching a '
+                                  'KeyboardInterrupt while running')
     # Another Exception occurred
     except (Exception,) as exc:
-      self._logger.exception("Caught Exception while running !", exc_info=exc)
+      # Not much we can do if there's no logger set to report Exception
+      if self._logger is not None:
+        self._logger.exception("Caught Exception while running !",
+                               exc_info=exc)
       # Any unexpected Exception should stop the script
-      self._raise_event.set()
-      self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                'unexpected Exception while running')
+      if self._raise_event is None:
+        self.log(logging.ERROR, "The raise Event should be set but doesn't "
+                                "exist!")
+      else:
+        self._raise_event.set()
+        self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                  'unexpected Exception while running')
 
     # In all cases, trying to properly close the Block
     finally:
       try:
         self.log(logging.INFO, "Setting the stop Event")
-        self._stop_event.set()
+        if self._stop_event is None:
+          self.log(logging.ERROR, "The stop Event should be set but doesn't "
+                                  "exist!")
+        else:
+          self._stop_event.set()
         self.log(logging.INFO, "Calling the finish method")
         self.finish()
       except KeyboardInterrupt:
         self.log(logging.WARNING, "Caught KeyboardInterrupt while finishing, "
                                   "ignoring it")
         # A KeyboardInterrupt should stop the script and be raised as is
-        self._kbi_event.set()
-        self.log(logging.WARNING, 'Set the KbI Event after catching a '
-                                  'KeyboardInterrupt while finishing')
+        if self._kbi_event is None:
+          self.log(logging.ERROR, "The KBI Event should be set but doesn't "
+                                  "exist!")
+        else:
+          self._kbi_event.set()
+          self.log(logging.WARNING, 'Set the KbI Event after catching a '
+                                    'KeyboardInterrupt while finishing')
       except (Exception,) as exc:
-        self._logger.exception("Caught Exception while finishing !",
-                               exc_info=exc)
+        # Not much we can do if there's no logger set to report Exception
+        if self._logger is not None:
+          self._logger.exception("Caught Exception while finishing !",
+                                 exc_info=exc)
         # Any unexpected Exception should stop the script
-        self._raise_event.set()
-        self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                  'unexpected Exception while finishing')
+        if self._raise_event is None:
+          self.log(logging.ERROR, "The raise Event should be set but doesn't "
+                                  "exist!")
+        else:
+          self._raise_event.set()
+          self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                    'unexpected Exception while finishing')
 
   def main(self) -> None:
     """The main loop of the :meth:`~crappy.blocks.Block.run` method. Repeatedly
     calls the :meth:`~crappy.blocks.Block.loop` method and manages the looping
     frequency."""
 
+    if self._stop_event is None:
+      raise RuntimeError("The stop Event doesn't exist, it should")
     # Looping until told to stop or an error occurs
     while not self._stop_event.is_set():
+      if self._pause_event is None:
+        raise RuntimeError("The pause Event doesn't exist, it should")
       # Only looping if the Block is not paused
       if not self._pause_event.is_set() or not self.pausable:
         self.log(logging.DEBUG, "Looping")
@@ -1108,8 +1405,13 @@ class Block(Process, ABC):
     else:
       logging.disable()
 
-    # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn" and self._log_level is not None:
+    # On spawn and forkserver, the messages need to be sent through a Queue for
+    # logging
+    if get_start_method() != 'fork' and self._log_level is not None:
+
+      if self._log_queue is None:
+        raise RuntimeError("The log queue is required but was never set")
+
       queue_handler = logging.handlers.QueueHandler(self._log_queue)
       queue_handler.setLevel(self._log_level)
       logger.addHandler(queue_handler)
@@ -1157,6 +1459,161 @@ class Block(Process, ABC):
       return self._instance_t0.value
     else:
       raise T0NotSetError
+
+  @property
+  def niceness(self) -> int:
+    """Niceness of the Block on Unix systems, from `-20` to `19`.
+
+    Not used on other systems (typically Windows).
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._niceness
+
+  @niceness.setter
+  def niceness(self, val: int) -> None:
+    if not isinstance(val, int):
+      raise TypeError("The niceness must be an integer")
+    if not -20 <= val <= 19:
+      raise ValueError("The niceness must be between -20 and 19")
+    self._niceness = val
+
+  @property
+  def labels(self) -> Sequence[str] | None:
+    """Unique labels naming the values sent to downstream Blocks.
+
+    Must be a sequence containing only strings, or :obj:`None` when data will
+    be sent as dictionaries.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._labels
+
+  @labels.setter
+  def labels(self, val: Sequence[str] | None) -> None:
+    # checking that the labels is not a string
+    if val is not None and isinstance(val, str):
+      raise TypeError("The labels must be a Sequence of strings or None")
+    # Checking that the labels is a valid Sequence type
+    if val is not None and not isinstance(val, Sequence):
+      raise TypeError("The labels must be a Sequence of strings or None")
+    # Checking that the labels is a Sequence of strings only
+    if val is not None and not all(isinstance(label, str) for label in val):
+      non_str = [label for label in val if not isinstance(label, str)]
+      raise ValueError(f"Some labels are not strings: "
+                       f"{', '.join(map(repr, non_str))}")
+    # Checking that there are no duplicate labels
+    if val is not None and len(set(val)) != len(val):
+      raise ValueError("Duplicate labels provided in the list of labels!")
+
+    self._labels = val
+
+  @property
+  def freq(self) -> float | None:
+    """Target looping frequency of the Block, in Hz.
+
+    Positive integer and floats are accepted. If :obj:`None`, the Block tries
+    to loop as fast as possible.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._freq
+
+  @freq.setter
+  def freq(self, val: float | None) -> None:
+    if (val is not None and not isinstance(val, float)
+        and not isinstance(val, int)):
+      raise TypeError("The freq must be a float or None")
+    if val is not None and val <= 0:
+      raise ValueError("The freq must be a strictly positive float")
+    self._freq = None if val is None else float(val)
+
+  @property
+  def display_freq(self) -> bool:
+    """Whether to periodically display the achieved frequency in the logs.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._display_freq
+
+  @display_freq.setter
+  def display_freq(self, val: bool) -> None:
+    if not isinstance(val, bool):
+      raise TypeError("display_freq must be a boolean")
+    self._display_freq = val
+
+  @property
+  def name(self) -> str:
+    """Unique, non-empty name used in logs and the Link connection graph.
+
+    Assigning a new name before the Block starts also updates Crappy's global
+    Block-name registry as well as the connection graph. A running Block cannot
+    be renamed.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._name
+
+  @name.setter
+  def name(self, val: str) -> None:
+    # Checking that the name is a valid string
+    if not isinstance(val, str):
+      raise TypeError("The name must be a string")
+    if not val:
+      raise ValueError("The name must be a non-empty string")
+    # Checking that the name doesn't already exist
+    if val != self._name and val in self.names:
+      raise ValueError(f"The name {val} is already in use by another Block!")
+    if self.is_alive():
+      raise RuntimeError("Cannot edit a Block's name at runtime!")
+    # Update the LinkGraph
+    link_graph.rename_node(self._name, val)
+    # Set new name and update the list of names currently in use
+    if self._name in self.names:
+      self.names.remove(self._name)
+    self._name = val
+    self.names.append(val)
+
+  @property
+  def pausable(self) -> bool:
+    """Whether the Block can be paused by Crappy.
+
+    A non-pausable Block keeps running while the other Blocks are paused.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._pausable
+
+  @pausable.setter
+  def pausable(self, val: bool) -> None:
+    if not isinstance(val, bool):
+      raise TypeError("pausable must be a boolean")
+    self._pausable = val
+
+  @property
+  def is_vision_block(self) -> bool:
+    """Whether the Block can be connected through a
+    :class:`~crappy.links.ImageLink`.
+
+    This property is normally set by image-oriented Block base classes rather
+    than by users.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._is_vision_block
+
+  @is_vision_block.setter
+  def is_vision_block(self, val: bool) -> None:
+    if not isinstance(val, bool):
+      raise TypeError("is_vision_block must be a boolean")
+    self._is_vision_block = val
 
   def add_output(self, link: Link) -> None:
     """Adds an output :class:`~crappy.links.Link` to the list of output Links
@@ -1300,7 +1757,7 @@ class Block(Process, ABC):
     """
 
     # Initializing the buffer storing the last received values
-    if self._last_values is None:
+    if not len(self._last_values):
       self._last_values = [dict() for _ in self.inputs]
 
     ret = dict()
@@ -1388,7 +1845,6 @@ class Block(Process, ABC):
 
       deadline = t0 + delay
       while time() < deadline:
-        last_t = time()
         # Updating the list of received values
         for link in self.inputs:
           data = link.recv_chunk()
@@ -1464,7 +1920,6 @@ class Block(Process, ABC):
 
       deadline = t0 + delay
       while time() < deadline:
-        last_t = time()
         # Updating the list of received values
         for dic, link in zip(ret, self.inputs):
           data = link.recv_chunk()

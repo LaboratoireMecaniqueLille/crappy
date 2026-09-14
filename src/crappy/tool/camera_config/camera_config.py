@@ -11,6 +11,8 @@ import logging
 from multiprocessing import current_process, Event, Queue
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
+from typing import Any
+from collections.abc import Callable
 
 from .config_tools import Zoom, HistogramProcess
 from ...camera.meta_camera.camera_setting import CameraBoolSetting, \
@@ -59,7 +61,10 @@ class CameraConfig(tk.Tk):
                camera: Camera,
                log_queue: MPQueue,
                log_level: int | None,
-               max_freq: float | None) -> None:
+               max_freq: float | None,
+               transform: Callable[[np.ndarray], np.ndarray] | None,
+               *_,
+               **__) -> None:
     """Initializes the interface and displays it.
 
     Args:
@@ -78,6 +83,12 @@ class CameraConfig(tk.Tk):
         Block.
 
         .. versionadded:: 2.0.0
+      transform: A callable taking an image as an argument, and returning a
+        transformed image as an output. The transformed image is used for the
+        preview and for determining the image shape and data type reported to
+        the owning Block.
+
+        .. versionadded:: 2.1.0
     """
 
     super().__init__()
@@ -85,6 +96,7 @@ class CameraConfig(tk.Tk):
     self.shape: tuple[int, int] | tuple[int, int, int] | None = None
     self.dtype = None
     self._logger: logging.Logger | None = None
+    self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
 
     # Instantiating objects for the process managing the histogram calculation
     self._stop_event = Event()
@@ -179,6 +191,8 @@ class CameraConfig(tk.Tk):
       self._logger = logging.getLogger(
         f"{current_process().name}.{type(self).__name__}")
 
+    if self._logger is None:
+      raise RuntimeError("The logger was never instantiated!")
     self._logger.log(level, msg)
 
   def report_callback_exception(self, exc: Exception, val: str, tb) -> None:
@@ -188,8 +202,9 @@ class CameraConfig(tk.Tk):
     .. versionadded:: 2.0.0
     """
 
-    self._logger.exception(f"Caught exception in {type(self).__name__}: "
-                           f"{exc.__name__}({val})", exc_info=tb)
+    if self._logger is not None:
+      self._logger.exception(f"Caught exception in {type(self).__name__}: "
+                             f"{exc.__name__}({val})", exc_info=tb)
     showerror("Error !", message=f"{exc.__name__}\n{val}")
 
   def finish(self) -> None:
@@ -243,6 +258,25 @@ class CameraConfig(tk.Tk):
     except tk.TclError:
       self.log(logging.WARNING, "Cannot destroy the configuration window, "
                                 "ignoring")
+
+  def get_config(self) -> tuple[Any, ...] | None:
+    """Exports the state needed by the image-processing
+    :class:`~crappy.blocks.camera_processes.CameraProcess`.
+
+    :class:`~crappy.blocks.Camera` calls this method after the configuration
+    window closes and before it starts the
+    :class:`~crappy.blocks.camera_processes.CameraProcess`. Subclasses should
+    return a tuple whose items match the positional parameters of the paired
+    :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` method.
+
+    Returns:
+      The positional arguments to pass to ``set_config()``, or :obj:`None` if
+      no processing configuration is required.
+
+    .. versionadded:: 2.1.0
+    """
+
+    ...
 
   def _upd_sched(self) -> None:
     """Updates the GUI and plans the next GUI update."""
@@ -726,9 +760,20 @@ class CameraConfig(tk.Tk):
 
     # The scale bar is slightly different if the setting type is int or float
     if cam_set.type == int:
-      cam_set.tk_var = tk.IntVar(value=cam_set.value)
+      cam_set.tk_var = tk.IntVar(value=int(cam_set.value))
     else:
       cam_set.tk_var = tk.DoubleVar(value=cam_set.value)
+
+    # Shouldn't use None in the Scale widget, defining default step instead
+    if cam_set.step is None:
+      if cam_set.type == int:
+        cam_set.step = 1
+        self.log(logging.WARNING, f"Set undefined step value of slider "
+                                  f"setting {cam_set.name} to 1")
+      else:
+        cam_set.step = float((cam_set.highest - cam_set.lowest) / 1000)
+        self.log(logging.WARNING, f"Set undefined step value of slider "
+                                  f"setting {cam_set.name} to {cam_set.step}")
 
     cam_set.tk_obj = tk.Scale(self._canvas_frame,
                               label=f'{cam_set.name} :',
@@ -1089,8 +1134,7 @@ class CameraConfig(tk.Tk):
     self.update()
 
   def _update_img(self) -> None:
-    """Acquires an image from the camera, casts and resizes it, calculates its
-    histogram, displays them and updates the image information."""
+    """Acquires and transforms an image, then updates the GUI information."""
 
     self.log(logging.DEBUG, "Updating the image")
 
@@ -1115,10 +1159,18 @@ class CameraConfig(tk.Tk):
         sleep(0.001)
         return
 
+    if ret is None:
+      raise RuntimeError("The returned metadata and image shouldn't be None "
+                         "at that point")
+
     # Always set, so that the error image is only ever loaded once
     self._got_first_img = True
     self._n_loops += 1
     _, img = ret
+
+    # Apply the transform operation if one was defined
+    if not no_img and self._transform is not None:
+      img = self._transform(img)
 
     if not no_img and img.dtype != self.dtype:
       self.dtype = img.dtype

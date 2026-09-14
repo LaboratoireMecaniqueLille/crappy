@@ -20,7 +20,7 @@ Button
 Camera Block
 ++++++++++++
 .. autoclass:: crappy.blocks.Camera
-   :members: prepare, begin, loop, finish
+   :members: prepare, begin, loop, finish, configure
    :special-members: __init__
    :private-members: _configure
 
@@ -174,6 +174,74 @@ Video Extenso
    :members: prepare
    :special-members: __init__
 
+Vision Blocks
+-------------
+
+.. currentmodule:: crappy.blocks.vision
+
+Vision Block
+++++++++++++
+.. autoclass:: crappy.blocks.vision.VisionBlock
+   :members: prepare, begin, finish, add_img_output, add_img_input, send_img,
+             receive_imgs, request_config, add_config_request_in,
+             config_requests_in, send_config, add_config_request_out,
+             recv_configs, set_shared_objects
+   :special-members: __init__
+
+.. py:attribute:: VisionBlock.last_received
+
+   Mapping from each input ImageLink name to its latest locally copied
+   :class:`~crappy.blocks.vision.block.ImgData`.
+
+Camera Source
++++++++++++++
+.. autoclass:: crappy.blocks.vision.CameraSource
+   :members: prepare, loop, finish, configure, default_configuration
+   :special-members: __init__
+
+DIC VE Processor
+++++++++++++++++
+.. autoclass:: crappy.blocks.vision.DICVEProcessor
+   :members: prepare, loop, request_config
+   :special-members: __init__
+
+DIS Correl Processor
+++++++++++++++++++++
+.. autoclass:: crappy.blocks.vision.DISCorrelProcessor
+   :members: prepare, loop, request_config
+   :special-members: __init__
+
+Image Displayer
++++++++++++++++
+.. autoclass:: crappy.blocks.vision.ImageDisplayer
+   :members: prepare, loop, finish
+   :special-members: __init__
+
+Image Recorder
+++++++++++++++
+.. autoclass:: crappy.blocks.vision.ImageRecorder
+   :members: prepare, loop
+   :special-members: __init__
+
+Video Extenso Processor
++++++++++++++++++++++++
+.. autoclass:: crappy.blocks.vision.VideoExtensoProcessor
+   :members: prepare, loop, finish, request_config
+   :special-members: __init__
+
+Vision Block data classes
++++++++++++++++++++++++++
+
+Configuration Request
+"""""""""""""""""""""
+.. autoclass:: crappy.blocks.vision.block.ConfigRequest
+   :members:
+
+Received Image Data
+"""""""""""""""""""
+.. autoclass:: crappy.blocks.vision.block.ImgData(id=-1, metadata=None, img=...)
+   :members:
+
 Generator Paths
 ---------------
 There are several types of path available for the generator block.
@@ -241,20 +309,21 @@ Camera Processes
 Camera Process
 ++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.CameraProcess
-   :members: set_shared, run, init, loop, finish, send, send_to_draw, log
+   :members: set_shared, run, init, loop, finish, send, send_to_draw,
+             set_config, log
    :special-members: __init__
    :private-members: _get_data
 
 DIC VE Process
 ++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.DICVEProcess
-   :members: init, loop
+   :members: init, loop, set_config
    :special-members: __init__
 
 DIS Correl Process
 ++++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.DISCorrelProcess
-   :members: init, loop
+   :members: init, loop, set_config
    :special-members: __init__
 
 Displayer Process
@@ -284,7 +353,7 @@ Recorder Process
 Video Extenso Process
 +++++++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.VideoExtensoProcess
-   :members: init, loop, finish
+   :members: init, loop, finish, set_config
    :special-members: __init__
 
 Parent Block
@@ -295,7 +364,8 @@ Block
 .. autoclass:: crappy.blocks.Block
    :members: get_name, start_all, prepare_all, renice_all, launch_all,
              stop_all, reset, run, main, prepare, begin, loop, finish, debug,
-             t0, add_output, add_input, log, send, data_available, recv_data,
-             recv_last_data, recv_all_data, recv_all_data_raw
+             t0, niceness, labels, freq, display_freq, name, pausable,
+             is_vision_block, add_output, add_input, log, send, data_available,
+             recv_data, recv_last_data, recv_all_data, recv_all_data_raw
    :private-members: _cleanup
    :special-members: __init__

@@ -25,7 +25,8 @@ class IntegrationTestBase(unittest.TestCase):
   @contextmanager
   def run_scenario(self,
                    scenario: str,
-                   timeout: float | None = None) -> Iterator[Path]:
+                   timeout: float | None = None,
+                   start_method: str | None = None) -> Iterator[Path]:
     """Runs one scenario and yields its temporary artifact directory."""
 
     with TemporaryDirectory(prefix=f'crappy-{scenario}-') as folder:
@@ -33,7 +34,15 @@ class IntegrationTestBase(unittest.TestCase):
       stdout, stderr = self._execute_scenario(
         scenario,
         output_dir,
-        self.scenario_timeout if timeout is None else timeout)
+        self.scenario_timeout if timeout is None else timeout,
+        start_method)
+
+      self.assertNotIn(
+        'leaked shared_memory objects',
+        stderr,
+        self._failure_message(
+          scenario, stdout, stderr,
+          'The scenario leaked a tracked shared-memory object.'))
 
       completion_path = output_dir / 'completed.json'
       self.assertTrue(
@@ -50,14 +59,71 @@ class IntegrationTestBase(unittest.TestCase):
   def _execute_scenario(self,
                         scenario: str,
                         output_dir: Path,
-                        timeout: float) -> tuple[str, str]:
+                        timeout: float,
+                        start_method: str | None = None) -> tuple[str, str]:
+    """Runs a scenario subprocess and requires successful completion."""
+
+    returncode, stdout, stderr = self._run_scenario_process(
+      scenario, output_dir, timeout, start_method)
+
+    self.assertEqual(
+      returncode,
+      0,
+      self._failure_message(
+        scenario,
+        stdout,
+        stderr,
+        f'The scenario exited with code {returncode}.'))
+
+    return stdout, stderr
+
+  def assert_scenario_fails(self,
+                            scenario: str,
+                            expected_error: str,
+                            timeout: float | None = None) -> None:
+    """Checks that a scenario fails promptly with the expected diagnostic."""
+
+    with TemporaryDirectory(prefix=f'crappy-{scenario}-') as folder:
+      output_dir = Path(folder)
+      returncode, stdout, stderr = self._run_scenario_process(
+        scenario,
+        output_dir,
+        self.scenario_timeout if timeout is None else timeout)
+
+      self.assertNotEqual(
+        returncode,
+        0,
+        self._failure_message(
+          scenario, stdout, stderr,
+          'The scenario unexpectedly exited successfully.'))
+      self.assertFalse(
+        (output_dir / 'completed.json').exists(),
+        self._failure_message(
+          scenario, stdout, stderr,
+          'A failing scenario generated a completion marker.'))
+      self.assertIn(
+        expected_error,
+        f'{stdout}\n{stderr}',
+        self._failure_message(
+          scenario, stdout, stderr,
+          f'The expected diagnostic {expected_error!r} was not emitted.'))
+
+  def _run_scenario_process(self,
+                            scenario: str,
+                            output_dir: Path,
+                            timeout: float,
+                            start_method: str | None = None
+                            ) -> tuple[int, str, str]:
     """Starts a scenario subprocess and enforces its hard timeout."""
 
     env = os.environ.copy()
     env['PYTHONUNBUFFERED'] = '1'
+    command = [sys.executable, '-m', 'tests.integration.run_scenario',
+               scenario, str(output_dir)]
+    if start_method is not None:
+      command.extend(('--start-method', start_method))
     process = subprocess.Popen(
-      [sys.executable, '-m', 'tests.integration.run_scenario',
-       scenario, str(output_dir)],
+      command,
       cwd=self._project_root,
       env=env,
       stdout=subprocess.PIPE,
@@ -75,16 +141,10 @@ class IntegrationTestBase(unittest.TestCase):
         stderr,
         f'The scenario exceeded its {timeout:g}s timeout.'))
 
-    self.assertEqual(
-      process.returncode,
-      0,
-      self._failure_message(
-        scenario,
-        stdout,
-        stderr,
-        f'The scenario exited with code {process.returncode}.'))
+    if process.returncode is None:
+      raise RuntimeError("The completed scenario has no return code")
 
-    return stdout, stderr
+    return process.returncode, stdout, stderr
 
   @staticmethod
   def _terminate_process_tree(process: subprocess.Popen) -> None:

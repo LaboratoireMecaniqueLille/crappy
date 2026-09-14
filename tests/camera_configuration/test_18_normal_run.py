@@ -21,7 +21,7 @@ class TestNormalRun(ConfigurationWindowTestBase):
     """Used for setting the testing mode to :obj:`False`."""
 
     self._config = CameraConfig(self._camera, self._log_queue,
-                                self._log_level, self._freq)
+                                self._log_level, self._freq, None)
 
     self._config._testing = False
     self._config.start()

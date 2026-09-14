@@ -111,7 +111,7 @@ class Dashboard(Block):
     if not isinstance(nb_digits, int) or nb_digits < 0:
       raise ValueError("nb_digits must be a positive integer")
 
-    self._labels = [labels] if isinstance(labels, str) else list(labels)
+    self._dash_labels = [labels] if isinstance(labels, str) else list(labels)
     self._nb_digits = nb_digits
 
   def prepare(self) -> None:
@@ -125,7 +125,7 @@ class Dashboard(Block):
       raise IOError("No Link pointing towards the Dashboard Block !")
 
     self.log(logging.INFO, "Creating the dashboard window")
-    self._dashboard = DashboardWindow(self._labels)
+    self._dashboard = DashboardWindow(self._dash_labels)
     self._dashboard.update()
 
   def loop(self) -> None:
@@ -139,7 +139,7 @@ class Dashboard(Block):
 
     for label, value in data.items():
       # Only displays the required labels
-      if label in self._labels:
+      if label in self._dash_labels:
         # Possibility to display str values carried by the links
         if isinstance(value, str):
           self.log(logging.DEBUG, f"Displaying {value} for the label {label} "

@@ -22,7 +22,7 @@ class TestDrawBox(ConfigurationWindowTestBase):
     adding bindings, otherwise the test wouldn't work."""
 
     self._config = CameraConfigBoxes(self._camera, self._log_queue,
-                                     self._log_level, self._freq)
+                                     self._log_level, self._freq, None)
 
     self._config._img_canvas.bind('<ButtonPress-1>', self._config._start_box)
     self._config._img_canvas.bind('<B1-Motion>', self._config._extend_box)

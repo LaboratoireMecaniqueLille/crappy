@@ -171,3 +171,21 @@ class TestSetParams(ConfigurationWindowTestBase):
     self.assertEqual(self._camera.settings['scale_int_setting'].value, 42)
     self.assertEqual(self._camera.settings['scale_float_setting'].value, 4.2)
     self.assertEqual(self._camera.settings['choice_setting'].value, 'choice_4')
+
+  def test_scale_settings_without_step_get_default_resolution(self) -> None:
+    """Tests the GUI defaults for scale settings with no explicit step."""
+
+    self._camera.add_scale_setting('scale_int_without_step', -100, 100,
+                                   default=0)
+    self._camera.add_scale_setting('scale_float_without_step', -10.0, 10.0,
+                                   default=0.0)
+
+    int_setting = self._camera.settings['scale_int_without_step']
+    float_setting = self._camera.settings['scale_float_without_step']
+    self._config._add_slider_setting(int_setting)
+    self._config._add_slider_setting(float_setting)
+
+    self.assertEqual(int_setting.step, 1)
+    self.assertEqual(int_setting.tk_obj.cget('resolution'), 1)
+    self.assertAlmostEqual(float_setting.step, 0.02)
+    self.assertAlmostEqual(float_setting.tk_obj.cget('resolution'), 0.02)

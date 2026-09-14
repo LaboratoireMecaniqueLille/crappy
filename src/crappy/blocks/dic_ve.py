@@ -388,46 +388,74 @@ class DICVE(Camera):
 
     # Forcing the labels into a list
     if labels is None:
-      self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
-                     'Exx(%)', 'Disp(px)']
+      _labels: list[str] = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
+                            'Exx(%)', 'Disp(px)']
     elif isinstance(labels, str):
-      self.labels = [labels]
+      _labels: list[str] = [labels]
     else:
-      self.labels = list(labels)
+      _labels: list[str] = list(labels)
 
-    # Make sure only string labels are provided
-    if (self.labels is not None and
-        not all(isinstance(label, str) for label in self.labels)):
-      non_str = [label for label in self.labels if not isinstance(label, str)]
-      raise ValueError(f"Some labels are not strings: "
-                       f"{', '.join(map(repr, non_str))}")
-
-    if self.labels is not None and len(set(self.labels)) != len(self.labels):
-      raise ValueError("Duplicate labels provided in the list of labels!")
-
-    # Making sure a coherent number of labels and fields was given
-    if len(self.labels) != 6:
+    # Making sure a consistent number of labels and fields was given
+    if len(_labels) != 6:
       raise ValueError("The number of labels should be 6 !\n"
                        "Make sure that the time label was given")
 
+    self.labels = _labels
+
     self._patches: SpotsBoxes | None = None
 
-    self._raise_on_exit = raise_on_patch_exit
-    self._patches_int = list(patches) if patches is not None else None
+    self._raise_on_exit: bool = raise_on_patch_exit
+    self._patches_int: list[
+        tuple[int, int, int, int]] | None = (list(patches) if patches
+                                             is not None else None)
+
+    # Checking the validity of the provided arguments
+    if method not in ('Disflow', 'Lucas Kanade',
+                      'Pixel precision', 'Parabola'):
+      raise ValueError("The method argument should be one of 'Disflow', "
+                       "'Lucas Kanade', 'Pixel precision', 'Parabola'")
+    if ((not isinstance(alpha, float) and not isinstance(alpha, int))
+        or alpha < 0):
+      raise ValueError("alpha must be a positive float")
+    if ((not isinstance(delta, float) and not isinstance(delta, int))
+        or delta < 0):
+      raise ValueError("delta must be a positive float")
+    if ((not isinstance(gamma, float) and not isinstance(gamma, int))
+        or gamma < 0):
+      raise ValueError("gamma must be a positive float")
+    if not isinstance(finest_scale, int) or finest_scale < 0:
+      raise ValueError("finest_scale must be a positive integer")
+    if not isinstance(iterations, int) or iterations < 0:
+      raise ValueError("iterations must be a positive integer")
+    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
+      raise ValueError("gradient_iterations must be a positive integer")
+    if not isinstance(patch_size, int) or patch_size < 0:
+      raise ValueError("patch_size must be a positive integer")
+    if not isinstance(patch_stride, int) or patch_stride < 0:
+      raise ValueError("patch_stride must be a positive integer")
+    if ((not isinstance(border, float) and not isinstance(border, int))
+        or not 0 <= border < 1):
+      raise ValueError("border must be greater than or equal to 0 and strictly"
+                       " less than 1")
+    if not isinstance(safe, bool):
+      raise TypeError("safe must be a boolean")
+    if not isinstance(follow, bool):
+      raise TypeError("follow must be a boolean")
 
     # These arguments are for the DICVEProcess
-    self._method = method
-    self._alpha = alpha
-    self._delta = delta
-    self._gamma = gamma
-    self._finest_scale = finest_scale
-    self._iterations = iterations
-    self._gradient_iterations = gradient_iterations
-    self._patch_size = patch_size
-    self._patch_stride = patch_stride
-    self._border = border
-    self._safe = safe
-    self._follow = follow
+    self._method: Literal['Disflow', 'Lucas Kanade',
+                          'Pixel precision', 'Parabola'] = method
+    self._alpha: float = alpha
+    self._delta: float = delta
+    self._gamma: float = gamma
+    self._finest_scale: int = finest_scale
+    self._iterations: int = iterations
+    self._gradient_iterations: int = gradient_iterations
+    self._patch_size: int = patch_size
+    self._patch_stride: int = patch_stride
+    self._border: float = border
+    self._safe: bool = safe
+    self._follow: bool = follow
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare` 
@@ -443,11 +471,14 @@ class DICVE(Camera):
 
     # Instantiating the SpotsBoxes containing the patches to track
     self._patches = SpotsBoxes()
-    if self._patches_int is not None:
+    if self._patches_int is not None and self._patches is not None:
       self._patches.set_spots(self._patches_int)
       self._patches.save_length()
 
     # Instantiating the DICVEProcess
+    if self._patches is None:
+       raise RuntimeError("The patches should have been initialized at that "
+                          "point")
     self.process_proc = DICVEProcess(
         patches=self._patches,
         method=self._method,
@@ -472,5 +503,14 @@ class DICVE(Camera):
     :class:`~crappy.camera.Camera` object.
     """
 
+    if self._camera is None:
+      raise RuntimeError("At that point the Camera should be set but it isn't")
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+    if self._patches is None:
+      raise RuntimeError("At that point the patches to track should be set "
+                         "but they are not")
+
     return DICVEConfig(self._camera, self._log_queue, self._log_level,
-                       self.freq, self._patches)
+                       self.freq, self._transform, self._patches)

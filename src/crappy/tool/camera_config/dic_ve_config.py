@@ -4,6 +4,8 @@ from tkinter.messagebox import showerror
 import tkinter as tk
 import logging
 from multiprocessing.queues import Queue
+from collections.abc import Callable
+import numpy as np
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box, SpotsBoxes
@@ -34,6 +36,7 @@ class DICVEConfig(CameraConfigBoxes):
                log_queue: Queue,
                log_level: int | None,
                max_freq: float | None,
+               transform: Callable[[np.ndarray], np.ndarray] | None,
                patches: SpotsBoxes) -> None:
     """Sets the patches and initializes the parent class.
 
@@ -53,6 +56,10 @@ class DICVEConfig(CameraConfigBoxes):
         Block.
 
         .. versionadded:: 2.0.0
+      transform: A callable taking an image as an argument, and returning a
+        transformed image as an output.
+
+        .. versionadded:: 2.1.0
       patches: An instance of
         :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` containing
         the patches to follow for image correlation.
@@ -60,10 +67,10 @@ class DICVEConfig(CameraConfigBoxes):
 
     self._patch_size: CameraScaleSetting | None = None
 
-    super().__init__(camera, log_queue, log_level, max_freq)
+    super().__init__(camera, log_queue, log_level, max_freq, transform)
 
     # Setting the patches
-    self._spots = patches
+    self._spots: SpotsBoxes = patches
 
   def finish(self) -> None:
     """Method called when the user tries to close the configuration window.
@@ -90,12 +97,28 @@ class DICVEConfig(CameraConfigBoxes):
 
     super().stop()
 
+  def get_config(self) -> tuple[SpotsBoxes]:
+    """Exports the patches selected for tracking.
+
+    Returns:
+      A one-item tuple containing the configured
+      :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`, ready to be
+      unpacked into
+      :meth:`~crappy.blocks.camera_processes.DICVEProcess.set_config`.
+
+    .. versionadded:: 2.1.0
+    """
+
+    return self._spots,
+
   def _add_settings(self) -> None:
     """Same as in the parent class except it also adds a Path size setting to
     the list of possible settings."""
 
     self._patch_size = CameraScaleSetting("Patch size (px)", 2, 1024,
                                           default=128)
+    if self._patch_size is None:
+      raise RuntimeError("The patch size parameter was never instantiated")
     self._add_slider_setting(self._patch_size)
 
     super()._add_settings()
@@ -104,6 +127,8 @@ class DICVEConfig(CameraConfigBoxes):
     """Same as in the parent class except it also updates the Path size setting
     in addition to all the other settings."""
 
+    if self._patch_size is None:
+      raise RuntimeError("The patch size parameter was never instantiated")
     if self._patch_size.value != self._patch_size.tk_var.get():
       self._patch_size.value = self._patch_size.tk_var.get()
     self._patch_size.tk_var.set(self._patch_size.value)

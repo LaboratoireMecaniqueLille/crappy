@@ -1,11 +1,8 @@
 # coding: utf-8
 
 from multiprocessing import (Process, managers, get_start_method,
-                             current_process)
-from multiprocessing.synchronize import Event, RLock, Barrier
-from multiprocessing.sharedctypes import SynchronizedArray
-from multiprocessing.connection import Connection
-from multiprocessing.queues import Queue
+                             current_process, sharedctypes, connection,
+                             synchronize, queues)
 from threading import BrokenBarrierError
 import numpy as np
 from typing import Any
@@ -58,18 +55,18 @@ class CameraProcess(Process, ABC):
     self._system = system()
 
     # Logging-related objects
-    self._log_queue: Queue | None = None
+    self._log_queue: queues.Queue | None = None
     self._logger: logging.Logger | None = None
     self._log_level: int | None = None
 
     # These objects will be shared later by the Camera Block
-    self._img_array: SynchronizedArray | None = None
+    self._img_array: sharedctypes.SynchronizedArray | None = None
     self._data_dict: managers.DictProxy | None = None
-    self._lock: RLock | None = None
-    self._cam_barrier: Barrier | None = None
-    self._stop_event: Event | None = None
+    self._lock: synchronize.RLock | None = None
+    self._cam_barrier: synchronize.Barrier | None = None
+    self._stop_event: synchronize.Event | None = None
     self._shape: tuple[int, int] | tuple[int, int, int] | None = None
-    self._to_draw_conn: Connection | None = None
+    self._to_draw_conn: connection.Connection | None = None
     self._outputs: list[Link] = list()
     self._labels: Sequence[str] | None = list()
     self.img: np.ndarray | None = None
@@ -84,17 +81,17 @@ class CameraProcess(Process, ABC):
     self._last_fps = time()
 
   def set_shared(self,
-                 array: SynchronizedArray,
+                 array: sharedctypes.SynchronizedArray,
                  data_dict: managers.DictProxy,
-                 lock: RLock,
-                 barrier: Barrier,
-                 event: Event,
+                 lock: synchronize.RLock,
+                 barrier: synchronize.Barrier,
+                 event: synchronize.Event,
                  shape: tuple[int, int] | tuple[int, int, int],
                  dtype,
-                 to_draw_conn: Connection | None,
+                 to_draw_conn: connection.Connection | None,
                  outputs: list[Link],
                  labels: Sequence[str] | None,
-                 log_queue: Queue,
+                 log_queue: queues.Queue,
                  log_level: int | None = 20,
                  display_freq: bool = False) -> None:
     """Method allowing the :class:`~crappy.blocks.Camera` Block to share
@@ -174,12 +171,19 @@ class CameraProcess(Process, ABC):
       try:
         self.init()
       except (Exception,):
-        self._cam_barrier.abort()
-        self.log(logging.ERROR, "Breaking the barrier due to caught exception"
-                                " while preparing")
+        if self._cam_barrier is None:
+          self.log(logging.ERROR, "The camera Barrier should be aborted but "
+                                  "it doesn't exist!")
+        else:
+          self._cam_barrier.abort()
+          self.log(logging.ERROR, "Breaking the barrier due to caught "
+                                  "exception while preparing")
         raise
 
       # Waiting for all other CameraProcess to be ready
+      if self._cam_barrier is None:
+        raise RuntimeError("Cannot wait for the camera Barrier because it "
+                           "doesn't exist")
       self.log(logging.INFO, "Waiting for the other Camera processes to be "
                              "ready")
       self._cam_barrier.wait()
@@ -188,6 +192,9 @@ class CameraProcess(Process, ABC):
       self._last_fps = time()
 
       # Looping forever until told to stop or an exception is raised
+      if self._stop_event is None:
+        raise RuntimeError("Trying to read the stop Event but it doesn't "
+                           "exist")
       while not self._stop_event.is_set():
         # Only looping if a new image is available
         if self._get_data():
@@ -210,9 +217,13 @@ class CameraProcess(Process, ABC):
 
     # Case when CTRL+C was pressed
     except KeyboardInterrupt:
-      self.log(logging.INFO, "KeyboardInterrupt caught, stopping the "
-                             "processing")
-      self._stop_event.set()
+      if self._stop_event is None:
+        self.log(logging.ERROR, "Trying to set the stop Event but it doesn't "
+                                "exist")
+      else:
+        self.log(logging.INFO, "KeyboardInterrupt caught, stopping the "
+                               "processing")
+        self._stop_event.set()
 
     # Case when another CameraProcess raised an exception while initializing
     except BrokenBarrierError:
@@ -224,9 +235,13 @@ class CameraProcess(Process, ABC):
     except (Exception,) as exc:
       if self._logger is not None:
         self._logger.exception("Exception caught wile running !", exc_info=exc)
-      self.log(logging.ERROR, "Setting the stop event to stop the other "
-                              "Camera processes")
-      self._stop_event.set()
+      if self._stop_event is None:
+        self.log(logging.ERROR, "Trying to set the stop Event but it doesn't "
+                                "exist")
+      else:
+        self.log(logging.ERROR, "Setting the stop event to stop the other "
+                                "Camera processes")
+        self._stop_event.set()
       raise
 
     # Always calling finish in the end
@@ -236,14 +251,22 @@ class CameraProcess(Process, ABC):
       except KeyboardInterrupt:
         self.log(logging.WARNING, "KeyboardInterrupt caught while finishing, "
                                   "ignoring it")
-        self._stop_event.set()
+        if self._stop_event is None:
+          self.log(logging.ERROR, "Trying to set the stop Event but it doesn't"
+                                  " exist")
+        else:
+          self._stop_event.set()
       except (Exception,) as exc:
         if self._logger is not None:
           self._logger.exception("Exception caught while finishing !",
                                  exc_info=exc)
-        self.log(logging.ERROR, "Setting the stop event to stop the other "
-                                "Camera processes")
-        self._stop_event.set()
+        if self._stop_event is None:
+          self.log(logging.ERROR, "Trying to set the stop Event but it doesn't"
+                                  " exist")
+        else:
+          self.log(logging.ERROR, "Setting the stop event to stop the other "
+                                  "Camera processes")
+          self._stop_event.set()
 
   def init(self) -> None:
     """This method should perform any action required for initializing the
@@ -323,7 +346,7 @@ class CameraProcess(Process, ABC):
       self.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
 
-  def send_to_draw(self, to_draw: Iterable[Overlay]) -> None:
+  def send_to_draw(self, to_draw: Iterable[Overlay | None]) -> None:
     """This method sends a collection of
     :class:`~crappy.tool.camera_config.config_tools.Overlay` objects to the
     :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.
@@ -351,6 +374,24 @@ class CameraProcess(Process, ABC):
     else:
       self._to_draw_conn.send(to_draw)
 
+  def set_config(self, *_: Any, **__: Any) -> None:
+    """Receives processing state exported by a CameraConfig window.
+
+    :class:`~crappy.blocks.Camera` calls this method in the parent process,
+    before this CameraProcess starts. Subclasses whose configuration window
+    returns processing-specific state should override it with positional
+    parameters matching the tuple returned by
+    :meth:`~crappy.tool.camera_config.CameraConfig.get_config`. The received
+    values should normally be stored for use by :meth:`init`, where expensive
+    image-processing helpers can safely be created.
+
+    This base implementation does nothing.
+
+    .. versionadded:: 2.1.0
+    """
+
+    ...
+
   def log(self, level: int, msg: str) -> None:
     """Sends a log message to the :obj:`~logging.Logger`.
 
@@ -377,7 +418,12 @@ class CameraProcess(Process, ABC):
     """
 
     # Acquiring the Lock to avoid conflicts with other CameraProcesses
+    if self._lock is None:
+      raise RuntimeError("Trying to acquire the Lock but is doesn't exist")
     with self._lock:
+
+      if self._data_dict is None:
+        raise RuntimeError("The shared metadata dictionary wasn't initialized")
 
       # In case there's no frame grabbed yet
       if 'ImageUniqueID' not in self._data_dict:
@@ -394,6 +440,12 @@ class CameraProcess(Process, ABC):
                               f"{self.metadata['ImageUniqueID']}")
 
       # Copying the frame
+      if self._img_array is None:
+        raise RuntimeError("The shared image array isn't initialized")
+      if self._shape is None:
+        raise RuntimeError("The image shape isn't initialized")
+      if self.img is None:
+        raise RuntimeError("The image isn't initialized")
       np.copyto(self.img,
                 np.frombuffer(self._img_array.get_obj(),
                               dtype=self._dtype).reshape(self._shape))
@@ -416,8 +468,12 @@ class CameraProcess(Process, ABC):
     else:
       logging.disable()
 
-    # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn" and self._log_level is not None:
+    if self._log_queue is None:
+      raise RuntimeError("The logging Queue isn't initialized")
+
+    # On spawn and forkserver, the messages need to be sent through a Queue for
+    # logging
+    if get_start_method() != 'fork' and self._log_level is not None:
       queue_handler = logging.handlers.QueueHandler(self._log_queue)
       queue_handler.setLevel(min(self._log_level, logging.INFO))
       logger.addHandler(queue_handler)

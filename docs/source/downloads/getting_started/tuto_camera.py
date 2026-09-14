@@ -4,13 +4,15 @@ import crappy
 
 if __name__ == '__main__':
 
-  cam = crappy.blocks.Camera('FakeCamera',
-                             config=True,
-                             display_images=True,
-                             displayer_framerate=30,
-                             save_images=False,
-                             freq=40)
+  camera = crappy.blocks.vision.CameraSource('FakeCamera',
+                                             config=True,
+                                             freq=40)
+
+  displayer = crappy.blocks.vision.ImageDisplayer(framerate=30,
+                                                  freq=40)
 
   stop = crappy.blocks.StopButton()
+
+  crappy.img_link(camera, displayer)
 
   crappy.start()

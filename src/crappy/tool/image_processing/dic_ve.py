@@ -12,6 +12,10 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
+class LostPatchError(Exception):
+  """Exception raised when a patch can no longer be tracked."""
+
+
 class DICVETool:
   """This class is the core of the :class:`~crappy.blocks.DICVE` Block.
 
@@ -30,18 +34,18 @@ class DICVETool:
   def __init__(self,
                patches: SpotsBoxes,
                method: Literal['Disflow', 'Lucas Kanade',
-                               'Pixel precision', 'Parabola'] = 'Disflow',
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               patch_size: int = 8,
-               patch_stride: int = 3,
-               border: float = 0.2,
-               safe: bool = True,
-               follow: bool = True) -> None:
+                               'Pixel precision', 'Parabola'],
+               alpha: float,
+               delta: float,
+               gamma: float,
+               finest_scale: int,
+               iterations: int,
+               gradient_iterations: int,
+               patch_size: int,
+               patch_stride: int,
+               border: float,
+               safe: bool,
+               follow: bool) -> None:
     """Sets a few attributes and initializes DISFlow if this method was
     selected.
 
@@ -89,26 +93,20 @@ class DICVETool:
     """
 
     # These attributes are accessed by the parent class
-    self.patches = patches
-    self._offsets = [(0, 0) for _ in patches]
-
-    if method not in ('Disflow', 'Lucas Kanade',
-                      'Pixel precision', 'Parabola'):
-      raise ValueError("Only the 'Disflow', 'Lucas Kanade', 'Pixel precision',"
-                       " 'Parabola' methods are accepted")
-
-    if not 0 <= border <= 1:
-      raise ValueError("border should be between 0 and 1")
+    self.patches: SpotsBoxes = patches
+    self._offsets: list[tuple[int, int]] = [(0, 0) for _ in patches]
 
     # Other attributes to set
-    self._method = method
-    self._border = border
-    self._safe = safe
-    self._follow = follow
+    self._method: Literal['Disflow', 'Lucas Kanade',
+                          'Pixel precision', 'Parabola'] = method
+    self._border: float = border
+    self._safe: bool = safe
+    self._follow: bool = follow
 
     # These attributes will be set later
-    self._img0 = None
-    self._height, self._width = None, None
+    self._img0: np.ndarray | None = None
+    self._height: int | None = None
+    self._width: int | None = None
 
     # Initialize DISFlow if it is the selected method
     if self._method == 'Disflow':
@@ -182,10 +180,22 @@ class DICVETool:
                                                    self._offsets,
                                                    self.patches):
 
+        if patch is None:
+          continue
+        if (patch.x_start is None or patch.y_start is None
+            or patch.x_end is None or patch.y_end is None):
+          raise RuntimeError("The patch dimensions shouldn't be None at that "
+                             "point")
+
         patch.x_start = round(patch.x_start + disp[0])
         patch.x_end = round(patch.x_end + disp[0])
         patch.y_start = round(patch.y_start + disp[1])
         patch.y_end = round(patch.y_end + disp[1])
+
+        if (patch.x_start is None or patch.y_start is None
+            or patch.x_end is None or patch.y_end is None):
+          raise RuntimeError("The patch dimensions shouldn't be None at that "
+                             "point")
         
         patch.x_centroid = (patch.x_end + patch.x_start) / 2
         patch.y_centroid = (patch.y_end + patch.y_start) / 2
@@ -223,6 +233,11 @@ class DICVETool:
 
     # If there are multiple spots, the x and y strains can be computed
     if len(self.patches) > 1:
+      if max_x is None or min_x is None or max_y is None or min_y is None:
+        raise RuntimeError("The max and min patches are not initialized")
+      if (max_x.x_disp is None or min_x.x_disp is None
+          or max_y.y_disp is None or min_y.y_disp is None):
+        raise RuntimeError("The max and min patches are not initialized")
       try:
         exx = ((max_x.x_disp - min_x.x_disp) / self.patches.x_l0) * 100
       except ZeroDivisionError:
@@ -252,6 +267,10 @@ class DICVETool:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using DISFlow."""
 
+    if self._img0 is None:
+      raise RuntimeError("The reference image isn't set")
+    if self._dis is None:
+      raise RuntimeError("The optical flow isn't initialized")
     disp_img = self._dis.calc(self._get_patch(self._img0, patch, offset),
                               self._get_patch(img, patch), None)
     return np.average(self._trim_patch(disp_img), axis=(0, 1)).tolist()
@@ -262,6 +281,9 @@ class DICVETool:
                             offset: tuple[int, int]) -> list[float]:
     """Returns the displacement between the original and the current image with
     a precision limited to 1 pixel."""
+
+    if self._img0 is None:
+      raise RuntimeError("The reference image isn't set")
 
     cross_correl, max_width, max_height = self._cross_correlation(
       self._get_patch(self._img0, patch, offset), self._get_patch(img, patch))
@@ -275,6 +297,9 @@ class DICVETool:
                      offset: tuple[int, int]) -> list[float]:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using two parabola fits (one in x and one in y)."""
+
+    if self._img0 is None:
+      raise RuntimeError("The reference image isn't set")
 
     cross_correl, max_width, max_height = self._cross_correlation(
       self._get_patch(self._img0, patch, offset), self._get_patch(img, patch))
@@ -309,7 +334,7 @@ class DICVETool:
       np.array([[center_x, center_y]]).astype('float32'), None)
 
     if next_ is None or status is None or not status.ravel()[0]:
-      raise RuntimeError("Lucas-Kanade failed to track the patch center")
+      raise LostPatchError("Lucas-Kanade failed to track the patch center")
 
     new_x, new_y = np.squeeze(next_)
 
@@ -414,16 +439,16 @@ class DICVETool:
 
       # Checking the left border
       if x_top < 0:
-        raise RuntimeError("Region exiting the ROI (left)")
+        raise LostPatchError("Region exiting the ROI (left)")
 
       # Checking the right border
       elif x_bottom > self._width:
-        raise RuntimeError("Region exiting the ROI (right)")
+        raise LostPatchError("Region exiting the ROI (right)")
 
       # Checking the top border
       if y_left < 0:
-        raise RuntimeError("Region exiting the ROI (top)")
+        raise LostPatchError("Region exiting the ROI (top)")
 
       # Checking the bottom border
       elif y_right > self._height:
-        raise RuntimeError("Region exiting the ROI (bottom)")
+        raise LostPatchError("Region exiting the ROI (bottom)")

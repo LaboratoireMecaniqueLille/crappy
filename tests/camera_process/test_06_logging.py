@@ -30,7 +30,7 @@ class TestLogging(CameraProcessTestBase):
     self.assertIs(self._process._logger, logger)
     self.assertEqual(logger.level, logging.ERROR)
 
-    if get_start_method() == "spawn":
+    if get_start_method() != 'fork':
       self.assertTrue(any(isinstance(handler, logging.handlers.QueueHandler)
                           for handler in logger.handlers))
 

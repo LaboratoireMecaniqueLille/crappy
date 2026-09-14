@@ -7,7 +7,7 @@ import logging.handlers
 from time import sleep
 
 from .camera_process import CameraProcess
-from ...tool.image_processing import DICVETool
+from ...tool.image_processing import DICVETool, LostPatchError
 from ...tool.camera_config import SpotsBoxes
 
 
@@ -30,19 +30,19 @@ class DICVEProcess(CameraProcess):
   def __init__(self,
                patches: SpotsBoxes,
                method: Literal['Disflow', 'Lucas Kanade',
-                               'Pixel precision', 'Parabola'] = 'Disflow',
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               patch_size: int = 8,
-               patch_stride: int = 3,
-               border: float = 0.2,
-               safe: bool = True,
-               follow: bool = True,
-               raise_on_exit: bool = True) -> None:
+                               'Pixel precision', 'Parabola'],
+               alpha: float,
+               delta: float,
+               gamma: float,
+               finest_scale: int,
+               iterations: int,
+               gradient_iterations: int,
+               patch_size: int,
+               patch_stride: int,
+               border: float,
+               safe: bool,
+               follow: bool,
+               raise_on_exit: bool) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -117,25 +117,26 @@ class DICVEProcess(CameraProcess):
     super().__init__()
 
     # Arguments to pass to the DICVETool
-    self._patches = patches
-    self._method = method
-    self._alpha = alpha
-    self._delta = delta
-    self._gamma = gamma
-    self._finest_scale = finest_scale
-    self._iterations = iterations
-    self._gradient_iterations = gradient_iterations
-    self._patch_size = patch_size
-    self._patch_stride = patch_stride
-    self._border = border
-    self._safe = safe
-    self._follow = follow
+    self._patches: SpotsBoxes = patches
+    self._method: Literal['Disflow', 'Lucas Kanade',
+                          'Pixel precision', 'Parabola'] = method
+    self._alpha: float = alpha
+    self._delta: float = delta
+    self._gamma: float = gamma
+    self._finest_scale: int = finest_scale
+    self._iterations: int = iterations
+    self._gradient_iterations: int = gradient_iterations
+    self._patch_size: int = patch_size
+    self._patch_stride: int = patch_stride
+    self._border: float = border
+    self._safe: bool = safe
+    self._follow: bool = follow
     
     # Other attributes
-    self._raise_on_exit = raise_on_exit
+    self._raise_on_exit: bool = raise_on_exit
     self._disve: DICVETool | None = None
-    self._img0_set = False
-    self._lost_patch = False
+    self._img0_set: bool = False
+    self._lost_patch: bool = False
 
   def init(self) -> None:
     """Instantiates the :obj:`~crappy.tool.image_processing.DICVETool` that
@@ -174,12 +175,18 @@ class DICVEProcess(CameraProcess):
 
         # On the first frame, initialize the correlation
         if not self._img0_set:
+          if self._disve is None:
+            raise RuntimeError("The DISVE tool should have been instantiated")
           self.log(logging.INFO, "Setting the reference image")
           self._disve.set_img0(np.copy(self.img))
           self._img0_set = True
           return
 
         # Calculating the displacement and sending it to downstream Blocks
+        if self._disve is None:
+          raise RuntimeError("The DISVE tool should have been instantiated")
+        if self.img is None:
+          raise RuntimeError("Trying to access the image but it doesn't exist")
         self.log(logging.DEBUG, "Processing the received image")
         data = self._disve.calculate_displacement(self.img)
         self.send([self.metadata['t(s)'], self.metadata, *data])
@@ -188,9 +195,10 @@ class DICVEProcess(CameraProcess):
         self.send_to_draw(self._disve.patches)
 
       # If the patches are lost, deciding whether to raise exception or not
-      except RuntimeError as exc:
-        self._logger.exception("Caught exception while processing patches!",
-                               exc_info=exc)
+      except LostPatchError as exc:
+        if self._logger is not None:
+          self._logger.exception("Caught exception while processing patches!",
+                                 exc_info=exc)
         self.log(logging.WARNING, "No longer processing data.\nThis may be "
                                   "due to a patch exiting the ROI")
         self._lost_patch = True
@@ -201,3 +209,18 @@ class DICVEProcess(CameraProcess):
     else:
       self.fps_count -= 1
       sleep(0.1)
+
+  def set_config(self, config: SpotsBoxes) -> None:
+    """Stores the patches selected in the
+    :class:`~crappy.tool.camera_config.DICVEConfig` window.
+
+    Args:
+      config: The configured
+        :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` exported by
+        :meth:`crappy.tool.camera_config.DICVEConfig.get_config`. They are used
+        to initialize the image-processing tool when this process starts.
+
+    .. versionadded:: 2.1.0
+    """
+
+    self._patches = config

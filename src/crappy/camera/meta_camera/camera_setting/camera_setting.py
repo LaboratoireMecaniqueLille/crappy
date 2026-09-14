@@ -26,8 +26,8 @@ class CameraSetting:
 
   def __init__(self,
                name: str,
-               getter: Callable[[], Any],
-               setter: Callable[[Any], None],
+               getter: Callable[[], Any] | None,
+               setter: Callable[[Any], None] | None,
                default: Any) -> None:
     """Sets the attributes.
 

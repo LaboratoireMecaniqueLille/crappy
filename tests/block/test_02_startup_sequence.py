@@ -109,7 +109,7 @@ class TestStartupSequence(BlockTestBase):
     # Logging should also be configured at the class level
     self.assertIsInstance(Block.log_queue, queues.Queue)
     self.assertIsInstance(Block.log_thread, Thread)
-    if get_start_method() == 'spawn':
+    if get_start_method() != 'fork':
       self.assertTrue(Block.log_thread.is_alive())
     else:
       self.assertFalse(Block.log_thread.is_alive())

@@ -24,7 +24,7 @@ class TestDISCorrel(ConfigurationWindowTestBase):
     """Used for instantiating the special configuration interface."""
 
     self._config = DISCorrelConfig(self._camera, self._log_queue,
-                                   self._log_level, self._freq, Box())
+                                   self._log_level, self._freq, None, Box())
 
     self._config._testing = True
     self.start_configuration()
@@ -122,3 +122,6 @@ class TestDISCorrel(ConfigurationWindowTestBase):
 
     # Re-populate the spots to avoid the interface crashing at exit
     self._config._correl_box = box
+
+    configured_box, = self._config.get_config()
+    self.assertIs(configured_box, self._config._correl_box)

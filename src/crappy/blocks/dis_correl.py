@@ -8,6 +8,7 @@ from pathlib import Path
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
 from ..tool.camera_config import DISCorrelConfig, Box
+from ..tool.image_processing.fields import allowed_fields
 
 field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
                      'exy', 'eyx', 'exy2', 'z'] | np.ndarray
@@ -328,17 +329,16 @@ class DISCorrel(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
+    # Make sure the patches are correctly provided
     if not config and patch is None:
       raise ValueError("If the config window is disabled, the patch must be "
                        "provided !")
-
     if patch is not None and (not isinstance(patch, tuple)
                               or len(patch) != 4
                               or not all(isinstance(val, int) for val in patch)
                               or not all(val >= 0 for val in patch)):
       raise ValueError("The patch should be provided as a tuple of 4 "
                        "positive integer values")
-
     if patch is not None and (patch[2] <= 0 or patch[3] <= 0):
       raise ValueError("The width and height of the patch must be "
                        "strictly positive integers")
@@ -349,55 +349,81 @@ class DISCorrel(Camera):
 
     # Forcing the fields into a list
     if fields is None:
-      fields = ["x", "y", "exx", "eyy"]
+      _fields = ['x', 'y', 'exx', 'eyy']
     elif isinstance(fields, str) or isinstance(fields, np.ndarray):
-      fields = [fields]
+      _fields = [fields]
     else:
-      fields = list(fields)
+      _fields = list(fields)
+
+    if not all(isinstance(field, (np.ndarray, str)) for field in _fields):
+      raise TypeError("All the provided fields must be either strings or "
+                      "numpy arrays")
+    if not all(field in allowed_fields for field in _fields
+               if isinstance(field, str)):
+      raise ValueError(f"The only allowed values for the fields given as "
+                       f"strings are {allowed_fields}")
 
     # Forcing the labels into a list
     if labels is None:
-      self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)']
+      _labels: list[str] = ['t(s)', 'meta', 'x(pix)', 'y(pix)',
+                            'Exx(%)', 'Eyy(%)']
     elif isinstance(labels, str):
-      self.labels = [labels]
+      _labels: list[str] = [labels]
     else:
-      self.labels = list(labels)
+      _labels: list[str] = list(labels)
 
     # Adding the residuals if required
-    if residual and self.labels is not None:
-      self.labels.append('res')
-
-    # Make sure only string labels are provided
-    if (self.labels is not None and
-        not all(isinstance(label, str) for label in self.labels)):
-      non_str = [label for label in self.labels if not isinstance(label, str)]
-      raise ValueError(f"Some labels are not strings: "
-                       f"{', '.join(map(repr, non_str))}")
-
-    if self.labels is not None and len(set(self.labels)) != len(self.labels):
-      raise ValueError("Duplicate labels provided in the list of labels!")
-
-    self._patch_int = patch
-    self._patch: Box | None = None
+    if residual and _labels is not None:
+      _labels.append('res')
 
     # Making sure a consistent number of labels and fields was given
-    if 2 + len(fields) + int(residual) != len(self.labels):
-      raise ValueError(
-        "The number of fields is inconsistent with the number "
-        "of labels !\nMake sure that the time label was given")
+    if 2 + len(_fields) + int(residual) != len(_labels):
+      raise ValueError("The number of fields is inconsistent with the number "
+                       "of labels !\nMake sure that the time label was given")
+
+    self.labels = _labels
+
+    if ((not isinstance(alpha, float) and not isinstance(alpha, int))
+        or alpha < 0):
+      raise ValueError("alpha must be a positive float")
+    if ((not isinstance(delta, float) and not isinstance(delta, int))
+        or delta < 0):
+      raise ValueError("delta must be a positive float")
+    if ((not isinstance(gamma, float) and not isinstance(gamma, int))
+        or gamma < 0):
+      raise ValueError("gamma must be a positive float")
+    if not isinstance(finest_scale, int) or finest_scale < 0:
+      raise ValueError("finest_scale must be a positive integer")
+    if not isinstance(iterations, int) or iterations < 0:
+      raise ValueError("iterations must be a positive integer")
+    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
+      raise ValueError("gradient_iterations must be a positive integer")
+    if not isinstance(patch_size, int) or patch_size < 0:
+      raise ValueError("patch_size must be a positive integer")
+    if not isinstance(patch_stride, int) or patch_stride < 0:
+      raise ValueError("patch_stride must be a positive integer")
+    if not isinstance(init, bool):
+      raise TypeError("init must be a boolean")
+    if not isinstance(residual, bool):
+      raise TypeError("residual must be a boolean")
+
+    self._patch_int: tuple[int, int, int, int] | None = patch
+    self._patch: Box | None = None
 
     # These arguments are for the DISCorrelProcess
-    self._fields = fields
-    self._alpha = alpha
-    self._delta = delta
-    self._gamma = gamma
-    self._finest_scale = finest_scale
-    self._init = init
-    self._iterations = iterations
-    self._gradient_iterations = gradient_iterations
-    self._patch_size = patch_size
-    self._patch_stride = patch_stride
-    self._residual = residual
+    self._fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                               'exy', 'eyx', 'exy2', 'z'] |
+                       np.ndarray] = _fields
+    self._alpha: float = alpha
+    self._delta: float = delta
+    self._gamma: float = gamma
+    self._finest_scale: int = finest_scale
+    self._init: bool = init
+    self._iterations: int = iterations
+    self._gradient_iterations: int = gradient_iterations
+    self._patch_size: int = patch_size
+    self._patch_stride: int = patch_stride
+    self._residual: bool = residual
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
@@ -419,6 +445,10 @@ class DISCorrel(Camera):
                         y_end=self._patch_int[0] + self._patch_int[2])
     else:
       self._patch = Box()
+
+    if self._patch is None:
+       raise RuntimeError("The patch should have been initialized at that "
+                          "point")
 
     # Instantiating the DISCorrelProcess
     self.process_proc = DISCorrelProcess(
@@ -443,5 +473,14 @@ class DISCorrel(Camera):
     the :class:`~crappy.camera.Camera` object.
     """
 
+    if self._camera is None:
+      raise RuntimeError("At that point the Camera should be set but it isn't")
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+    if self._patch is None:
+      raise RuntimeError("At that point the patch to track should be set but "
+                         "it is not")
+
     return DISCorrelConfig(self._camera, self._log_queue, self._log_level,
-                           self.freq, self._patch)
+                           self.freq, self._transform, self._patch)

@@ -38,7 +38,7 @@ Camera Configurators
 Camera Configurator
 +++++++++++++++++++
 .. autoclass:: crappy.tool.camera_config.CameraConfig
-   :members: start, log
+   :members: start, get_config, log
    :special-members: __init__
 
 Camera Configurator with Boxes
@@ -49,16 +49,19 @@ Camera Configurator with Boxes
 DIS Correl Configurator
 +++++++++++++++++++++++
 .. autoclass:: crappy.tool.camera_config.DISCorrelConfig
+   :members: get_config
    :special-members: __init__
 
 DIS VE Configurator
 +++++++++++++++++++
 .. autoclass:: crappy.tool.camera_config.DICVEConfig
+   :members: get_config
    :special-members: __init__
 
 Video Extenso Configurator
 ++++++++++++++++++++++++++
 .. autoclass:: crappy.tool.camera_config.VideoExtensoConfig
+   :members: get_config
    :special-members: __init__
 
 Configurator Tools

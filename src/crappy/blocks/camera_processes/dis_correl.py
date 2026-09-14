@@ -30,17 +30,17 @@ class DISCorrelProcess(CameraProcess):
                patch: Box,
                fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
                                     'exy', 'eyx', 'exy2', 'z']
-                            | np.ndarray] | None = None,
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               init: bool = True,
-               patch_size: int = 8,
-               patch_stride: int = 3,
-               residual: bool = False) -> None:
+                            | np.ndarray],
+               alpha: float,
+               delta: float,
+               gamma: float,
+               finest_scale: int,
+               iterations: int,
+               gradient_iterations: int,
+               init: bool,
+               patch_size: int,
+               patch_stride: int,
+               residual: bool) -> None:
     """Sets the arguments and initializes the parent class.
     
     Args:
@@ -114,22 +114,24 @@ class DISCorrelProcess(CameraProcess):
     super().__init__()
 
     # Arguments to pass to the DISCorrelTool
-    self._box = patch
-    self._fields = fields
-    self._alpha = alpha
-    self._delta = delta
-    self._gamma = gamma
-    self._finest_scale = finest_scale
-    self._init = init
-    self._iterations = iterations
-    self._gradient_iterations = gradient_iterations
-    self._patch_size = patch_size
-    self._patch_stride = patch_stride
+    self._box: Box = patch
+    self._fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                               'exy', 'eyx', 'exy2', 'z'] |
+                       np.ndarray] = fields
+    self._alpha: float = alpha
+    self._delta: float = delta
+    self._gamma: float = gamma
+    self._finest_scale: int = finest_scale
+    self._init: bool = init
+    self._iterations: int = iterations
+    self._gradient_iterations: int = gradient_iterations
+    self._patch_size: int = patch_size
+    self._patch_stride: int = patch_stride
     
     # Other attributes
-    self._residual = residual
+    self._residual: bool = residual
     self._dis_correl: DISCorrelTool | None = None
-    self._img0_set = False
+    self._img0_set: bool = False
 
   def init(self) -> None:
     """Instantiates the :obj:`~crappy.tool.image_processing.DISCorrelTool` that
@@ -148,6 +150,9 @@ class DISCorrelProcess(CameraProcess):
         gradient_iterations=self._gradient_iterations,
         patch_size=self._patch_size,
         patch_stride=self._patch_stride)
+
+    if self._dis_correl is None:
+      raise RuntimeError("The DISCOrrelTool wasn't properly set")
     self._dis_correl.set_box()
 
   def loop(self) -> None:
@@ -163,15 +168,34 @@ class DISCorrelProcess(CameraProcess):
 
     # On the first frame, initializes the dense inverse search
     if not self._img0_set:
+      if self._dis_correl is None:
+        raise RuntimeError("The DISCorrel tool should have been instantiated")
       self.log(logging.INFO, "Setting the reference image")
       self._dis_correl.set_img0(np.copy(self.img))
       self._img0_set = True
       return
 
     # Calculating the fields and sending them to downstream Blocks
+    if self._dis_correl is None:
+      raise RuntimeError("The DISCorrel tool should have been instantiated")
+    if self.img is None:
+      raise RuntimeError("Trying to access the image but it doesn't exist")
     self.log(logging.DEBUG, "Processing the received image")
     data = self._dis_correl.get_data(self.img, self._residual)
     self.send([self.metadata['t(s)'], self.metadata, *data])
 
     # Sending the ROI to the Displayer for display
     self.send_to_draw(SpotsBoxes(self._dis_correl.box))
+
+  def set_config(self, config: Box) -> None:
+    """Stores the region selected in the DISCorrelConfig window.
+
+    Args:
+      config: The configured region of interest exported by
+        :meth:`crappy.tool.camera_config.DISCorrelConfig.get_config`. It is
+        used to initialize the image-processing tool when this process starts.
+
+    .. versionadded:: 2.1.0
+    """
+
+    self._box = config

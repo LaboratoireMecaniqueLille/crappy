@@ -5,7 +5,7 @@ import numpy as np
 
 from ..._global import OptionalModule
 from ..camera_config import Box
-from .fields import get_res, get_field, allowed_fields
+from .fields import get_res, get_field
 
 try:
   import cv2
@@ -29,16 +29,16 @@ class DISCorrelTool:
                box: Box,
                fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
                                     'exy', 'eyx', 'exy2', 'z'] |
-                            np.ndarray] | None = None,
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               init: bool = True,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               patch_size: int = 8,
-               patch_stride: int = 3) -> None:
+                            np.ndarray],
+               alpha: float,
+               delta: float,
+               gamma: float,
+               finest_scale: int,
+               init: bool,
+               iterations: int,
+               gradient_iterations: int,
+               patch_size: int,
+               patch_stride: int) -> None:
     """Sets the parameters of DISFlow.
 
     Args:
@@ -83,35 +83,19 @@ class DISCorrelTool:
         less than patch size.
     """
 
-    if fields is not None:
-      # Splitting the given fields into strings and numpy arrays
-      auto_fields = [field for field in fields if isinstance(field, str)]
-      user_fields = [field for field in fields
-                     if isinstance(field, np.ndarray)]
-
-      # Ensuring all the given fields are either strings or numpy arrays
-      if len(fields) != len(auto_fields) + len(user_fields):
-        raise TypeError('Correlation fields must be either strings or '
-                        'numpy arrays !')
-
-      # Ensuring all the string fields are valid ones
-      if not all((field in allowed_fields for field in auto_fields)):
-        raise ValueError(f"The only allowed values for the fields given as "
-                         f"strings are {allowed_fields}")
-
-      self._fields: list[str | np.ndarray] = fields
-    else:
-      self._fields: list[str | np.ndarray] = ["x", "y", "exx", "eyy"]
-
-    self._init = init
+    self._fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                               'exy', 'eyx', 'exy2', 'z']
+                       | np.ndarray] = fields
+    self._init: bool = init
 
     # These attributes will be set later
-    self._img0 = None
-    self._height, self._width = None, None
-    self.box = box
+    self._img0: np.ndarray | None = None
+    self._height: int | None = None
+    self._width: int | None = None
+    self.box: Box = box
     self._dis_flow = None
-    self._base = None
-    self._norm2 = None
+    self._base: list[np.ndarray] | None = None
+    self._norm2: list[float] | None = None
 
     # Setting the parameters of Disflow
     self._dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
@@ -130,8 +114,16 @@ class DISCorrelTool:
     .. versionadded:: 1.5.10
     """
 
+    if not isinstance(img0, np.ndarray):
+      raise TypeError("The reference image must be a Numpy array")
+    if img0.dtype != np.uint8:
+      raise ValueError("The reference image must have dtype uint8")
+
     self._img0 = img0
     self._height, self._width, *_ = img0.shape
+    if self._width is None or self._height is None:
+      raise RuntimeError("The width and height of the reference image weren't "
+                         "set")
     self._dis_flow = np.zeros((self._height, self._width, 2))
 
   def set_box(self) -> None:
@@ -155,11 +147,24 @@ class DISCorrelTool:
         fields[:, :, 0, i], fields[:, :, 1, i] = get_field(field, box_height,
                                                            box_width)
       elif isinstance(field, np.ndarray):
+        expected_shape = (box_height, box_width, 2)
+        if field.shape != expected_shape:
+          raise ValueError(f"Custom fields must have shape {expected_shape}, "
+                           f"got {field.shape}")
+        if not (np.issubdtype(field.dtype, np.integer) or
+                np.issubdtype(field.dtype, np.floating)):
+          raise TypeError("Custom fields must have a numeric dtype")
+        if not np.all(np.isfinite(field)):
+          raise ValueError("Custom fields must contain only finite values")
         fields[:, :, :, i] = field
 
     # These attributes will be used later
     self._base = [fields[:, :, :, i] for i in range(fields.shape[3])]
+    if self._base is None:
+      raise RuntimeError("The list of bases was not initialized")
     self._norm2 = [float(np.sum(base_field ** 2)) for base_field in self._base]
+    if any(not np.isfinite(norm2) or norm2 <= 0 for norm2 in self._norm2):
+      raise ValueError("Fields must have a finite, non-zero norm")
 
   def get_data(self,
                img: np.ndarray,
@@ -186,6 +191,13 @@ class DISCorrelTool:
     elif self._base is None:
       raise ValueError("The method set_box must be called first for setting "
                        "the region of interest !")
+    if not isinstance(img, np.ndarray):
+      raise TypeError("The image to process must be a Numpy array")
+    if img.dtype != np.uint8:
+      raise ValueError("The image to process must have dtype uint8")
+    if img.shape != self._img0.shape:
+      raise ValueError("The image to process must have the same shape as the "
+                       "reference image")
 
     # Updating the optical flow with the latest image
     if self._init:
@@ -194,6 +206,8 @@ class DISCorrelTool:
       self._dis_flow = self._dis.calc(self._img0, img, None)
 
     # Getting the values to calculate as floats
+    if self._norm2 is None:
+      raise RuntimeError("The list of norms2 was not initialized")
     ret = [float(np.sum(vec * self._crop(self._dis_flow))) / n2 for vec, n2 in
            zip(self._base, self._norm2)]
 

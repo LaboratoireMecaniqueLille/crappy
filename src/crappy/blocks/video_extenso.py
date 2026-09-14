@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
-from ..tool.camera_config import VideoExtensoConfig, SpotsDetector
+from ..tool.camera_config import VideoExtensoConfig
 
 
 class VideoExtenso(Camera):
@@ -36,9 +36,22 @@ class VideoExtenso(Camera):
   currently not possible to specify the coordinates of the spots to track as an
   argument, so the use of the configuration window is mandatory. This might
   change in the future.
+
+  This public Block is the orchestration layer and does not construct the
+  low-level video-extensometry helpers itself. The
+  :class:`~crappy.tool.camera_config.VideoExtensoConfig` window owns the
+  :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` used for the
+  initial selection. The
+  :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` later creates
+  the :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`,
+  which in turn creates and manages one
+  :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` process
+  per spot.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from Video_extenso to VideoExtenso
+  .. versionchanged:: 2.1.0 delegates creation of detection, processing, and
+     tracking helpers to their owning configuration and processing layers
   """
 
   def __init__(self,
@@ -312,38 +325,50 @@ class VideoExtenso(Camera):
 
     # Forcing the labels into a list
     if labels is None:
-      self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
+      _labels: list[str] = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
     elif isinstance(labels, str):
-      self.labels = [labels]
+      _labels: list[str] = [labels]
     else:
-      self.labels = list(labels)
-
-    # Make sure only string labels are provided
-    if (self.labels is not None and
-        not all(isinstance(label, str) for label in self.labels)):
-      non_str = [label for label in self.labels if not isinstance(label, str)]
-      raise ValueError(f"Some labels are not strings: "
-                       f"{', '.join(map(repr, non_str))}")
-
-    if self.labels is not None and len(set(self.labels)) != len(self.labels):
-      raise ValueError("Duplicate labels provided in the list of labels!")
+      _labels: list[str] = list(labels)
 
     # Making sure a consistent number of labels was given
-    if len(self.labels) != 5:
+    if len(_labels) != 5:
       raise ValueError("The number of labels should be 5 !\n"
                        "Make sure that the time label was given")
 
-    self._raise_on_lost_spot = raise_on_lost_spot
-    self._spot_detector = SpotsDetector()
+    self.labels = _labels
 
-    # These arguments are for the SpotsDetector
-    self._white_spots = white_spots
-    self._num_spots = num_spots
-    self._min_area = min_area
-    self._blur = blur
-    self._update_thresh = update_thresh
-    self._safe_mode = safe_mode
-    self._border = border
+    # Checking the validity of the provided arguments
+    if not isinstance(raise_on_lost_spot, bool):
+      raise TypeError("raise_on_lost_spot must be a boolean")
+    if not isinstance(white_spots, bool):
+      raise TypeError("white_spots must be a boolean")
+    if (num_spots is not None and
+        (not isinstance(num_spots, int) or not 0 < num_spots < 5)):
+      raise ValueError("When provided, num_spots must be an integer between "
+                       "1 and 4")
+    if not isinstance(min_area, int) or min_area < 0:
+      raise ValueError("min_area must be a positive integer")
+    if (blur is not None and
+        (not isinstance(blur, int) or blur < 1 or not blur % 2)):
+      raise ValueError("When provided, blur must be a positive odd integer")
+    if not isinstance(update_thresh, bool):
+      raise TypeError("update_thresh must be a boolean")
+    if not isinstance(safe_mode, bool):
+      raise TypeError("safe_mode must be a boolean")
+    if not isinstance(border, int) or border < 0:
+      raise ValueError("border must be a positive integer")
+
+    self._raise_on_lost_spot: bool = raise_on_lost_spot
+
+    # Options forwarded to the configuration and processing layers
+    self._white_spots: bool = white_spots
+    self._num_spots: int | None = num_spots
+    self._min_area: int = min_area
+    self._blur: int | None = blur
+    self._update_thresh: bool = update_thresh
+    self._safe_mode: bool = safe_mode
+    self._border: int = border
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
@@ -351,34 +376,54 @@ class VideoExtenso(Camera):
 
     In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` object that
-    performs the video-extensometry and the tracking.
+    owns runtime video-extensometry and tracking. Initial spot detection is
+    deliberately left to the
+    :class:`~crappy.tool.camera_config.VideoExtensoConfig` created by
+    :meth:`~crappy.blocks.Camera._configure`.
     
     .. versionchanged:: 1.5.5 now accepting args and kwargs
     .. versionchanged:: 1.5.10 not accepting arguments anymore
     """
 
-    # Instantiating the SpotsDetector containing the spots to track
-    self._spot_detector = SpotsDetector(white_spots=self._white_spots,
-                                        num_spots=self._num_spots,
-                                        min_area=self._min_area,
-                                        blur=self._blur,
-                                        update_thresh=self._update_thresh,
-                                        safe_mode=self._safe_mode,
-                                        border=self._border)
-
     # Instantiating the VideoExtensoProcess
     self.process_proc = VideoExtensoProcess(
-      detector=self._spot_detector,
-      raise_on_lost_spot=self._raise_on_lost_spot)
+        white_spots=self._white_spots,
+        num_spots=self._num_spots,
+        min_area=self._min_area,
+        blur=self._blur,
+        update_thresh=self._update_thresh,
+        safe_mode=self._safe_mode,
+        border=self._border,
+        raise_on_lost_spot=self._raise_on_lost_spot)
 
     super().prepare()
 
   def _configure(self) -> VideoExtensoConfig:
-    """This method should instantiate the
+    """Instantiates the
     :class:`~crappy.tool.camera_config.VideoExtensoConfig` window for
-    configuring the :class:`~crappy.camera.Camera` object.
+    configuring the :class:`~crappy.camera.Camera` object and selecting the
+    spots.
+
+    The window creates and owns its spot detector. Once it closes,
+    :meth:`crappy.tool.camera_config.VideoExtensoConfig.get_config` exports
+    only the selected spots and detection threshold to the processing process.
     """
 
-    return VideoExtensoConfig(self._camera, self._log_queue,
-                              self._log_level, self.freq,
-                              self._spot_detector)
+    if self._camera is None:
+      raise RuntimeError("At that point the Camera should be set but it isn't")
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+
+    return VideoExtensoConfig(self._camera,
+                              self._log_queue,
+                              self._log_level,
+                              self.freq,
+                              self._transform,
+                              white_spots=self._white_spots,
+                              num_spots=self._num_spots,
+                              min_area=self._min_area,
+                              blur=self._blur,
+                              update_thresh=self._update_thresh,
+                              safe_mode=self._safe_mode,
+                              border=self._border)

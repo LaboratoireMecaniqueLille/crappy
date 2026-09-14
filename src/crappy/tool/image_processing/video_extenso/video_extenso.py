@@ -1,7 +1,6 @@
 # coding: utf-8
 
-from multiprocessing import Pipe, current_process
-from multiprocessing.connection import Connection
+from multiprocessing import Pipe, current_process, connection
 from multiprocessing.queues import Queue
 import numpy as np
 from itertools import combinations
@@ -23,6 +22,11 @@ class VideoExtensoTool:
   image. For each spot, the tracking is performed by an independent
   :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` Process.
 
+  This tool is created by
+  :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` and owns the
+  creation, communication, and shutdown of those Tracker processes; the public
+  :class:`~crappy.blocks.VideoExtenso` Block does not manage them directly.
+
   It is possible to track only one spot, in which case only the position of its
   center is returned and the strain values are left to `0`.
   
@@ -36,11 +40,11 @@ class VideoExtensoTool:
                thresh: int,
                log_level: int | None,
                log_queue: Queue,
-               white_spots: bool = False,
-               update_thresh: bool = False,
-               safe_mode: bool = False,
-               border: int = 5,
-               blur: int | None = 5) -> None:
+               white_spots: bool,
+               update_thresh: bool,
+               safe_mode: bool,
+               border: int,
+               blur: int | None) -> None:
     """Sets the arguments and the other instance attributes.
 
     Args:
@@ -67,7 +71,7 @@ class VideoExtensoTool:
         background, else black objects over a white background. Passed to the
         :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
         and not used in this class.
-      update_thresh: If :obj:`True`, the grey level threshold for detecting the
+      update_thresh: If :obj:`True`, the gray level threshold for detecting the
         spots is re-calculated at each new image. Otherwise, the first
         calculated threshold is kept for the entire test. The spots are less
         likely to be lost with adaptive threshold, but the measurement will be
@@ -100,28 +104,32 @@ class VideoExtensoTool:
     """
 
     # These attributes will be used later
-    self._consecutive_overlaps = 0
-    self._trackers = list()
-    self._pipes = list()
+    self._consecutive_overlaps: int = 0
+    self._trackers: list[Tracker] = list()
+    self._pipes: list[connection.Connection] = list()
 
     # Setting the args
-    self._white_spots = white_spots
-    self._update_thresh = update_thresh
-    self._safe_mode = safe_mode
-    self._border = border
-    self._blur = blur
-    self.spots = spots
-    self._thresh = thresh
+    self._white_spots: bool = white_spots
+    self._update_thresh: bool = update_thresh
+    self._safe_mode: bool = safe_mode
+    self._border: int = border
+    self._blur: int | None = blur
+    self.spots: SpotsBoxes = spots
+    self._thresh: int = thresh
 
     self._logger: logging.Logger | None = None
-    self._log_level = log_level
-    self._log_queue = log_queue
+    self._log_level: int | None = log_level
+    self._log_queue: Queue = log_queue
 
-    self._last_warn = time()
-    self._system = system()
+    self._last_warn: float = time()
+    self._system: str = system()
 
   def __del__(self) -> None:
     """Security to ensure there are no zombie processes left when exiting."""
+
+    # Case of partly initialized object
+    if not hasattr(self, '_trackers') or not hasattr(self, '_pipes'):
+      return
 
     self.stop_tracking()
 
@@ -211,35 +219,72 @@ class VideoExtensoTool:
     Returns:
       A :obj:`list` containing :obj:`tuple` with the coordinates of the centers 
       of the detected spots, and the calculated x and y strain values.
+
+    Raises:
+      LostSpotError: If a Tracker reports that its spot was lost.
+      RuntimeError: If the Tracker processes were not started correctly, or
+        if one of them exited without reporting a lost spot.
     
     .. versionchanged:: 1.5.10 renamed from *get_def* to *get_data*
     """
 
+    spots = [(i, spot) for i, spot in enumerate(self.spots)
+             if spot is not None]
+
+    # Make sure one Tracker and Pipe were started for each configured spot
+    if (not self._trackers or
+        len(self._trackers) != len(spots) or
+        len(self._pipes) != len(spots)):
+      raise RuntimeError("The spot Trackers were not started correctly, "
+                         "cannot process image")
+
     # Sending the latest sub-image containing the spot to track
     # Also sending the coordinates of the top left pixel
-    for pipe, spot in zip(self._pipes, self.spots):
+    communication_failed = False
+    for pipe, (_, spot) in zip(self._pipes, spots):
       x_top, x_bottom, y_left, y_right = spot.sorted()
       slice_y = slice(max(0, y_left - self._border),
                       min(img.shape[0], y_right + self._border))
       slice_x = slice(max(0, x_top - self._border),
                       min(img.shape[1], x_bottom + self._border))
-      self._send(pipe, (slice_y.start, slice_x.start, img[slice_y, slice_x]))
+      try:
+        self._send(pipe, (slice_y.start, slice_x.start,
+                          img[slice_y, slice_x]))
+      except (BrokenPipeError, EOFError, OSError):
+        # A final result or lost-spot report may still be waiting in the Pipe.
+        communication_failed = True
 
-    for i, (pipe, spot) in enumerate(zip(self._pipes, self.spots)):
-
-      # Receiving the data from the tracker, if there's any
-      if pipe.poll(timeout=0.1):
+    # Receiving the latest available data from each Tracker
+    for pipe, (i, _) in zip(self._pipes, spots):
+      box = None
+      tracker_failed = False
+      try:
+        if not pipe.poll(timeout=0.1):
+          continue
         box = pipe.recv()
+        tracker_failed = isinstance(box, str)
         while pipe.poll():
           box = pipe.recv()
+          tracker_failed |= isinstance(box, str)
+      except (EOFError, OSError):
+        # Keep a response received just before the peer closed its connection.
+        communication_failed = True
 
-        # In case a tracker faced an error, stopping them all and raising
-        if isinstance(box, str):
-          self.stop_tracking()
-          self._log(logging.ERROR, "Tracker process returned exception !")
-          raise LostSpotError
+      if tracker_failed:
+        self.stop_tracking()
+        self._log(logging.ERROR, "Tracker process returned exception !")
+        raise LostSpotError
 
+      if box is not None:
         self.spots[i] = box
+
+    # Only check failures after consuming the Trackers' pending responses.
+    if (communication_failed or
+        any(not tracker.is_alive() for tracker in self._trackers)):
+      self.stop_tracking()
+      raise RuntimeError("At least one spot Tracker is dead or unreachable "
+                         "and did not report a lost spot, cannot process "
+                         "image")
 
     overlap = False
 
@@ -289,6 +334,16 @@ class VideoExtensoTool:
     if len(self.spots) > 1:
       x = [spot.x_centroid for spot in self.spots if spot is not None]
       y = [spot.y_centroid for spot in self.spots if spot is not None]
+      # Double check that there's no None value
+      x_len, y_len = len(x), len(y)
+      x = [el for el in x if el is not None]
+      y = [el for el in y if el is not None]
+      if x_len != len(x):
+        raise RuntimeError("One of the spot's x centroid wasn't computed as "
+                           "expected")
+      if y_len != len(y):
+        raise RuntimeError("One of the spot's y centroid wasn't computed as "
+                           "expected")
       # The strain is calculated based on the positions of the extreme
       # spots in each direction
       try:
@@ -304,8 +359,13 @@ class VideoExtensoTool:
 
     # If only one spot was detected, the strain isn't computed
     else:
-      x = self.spots[0].x_centroid
-      y = self.spots[0].y_centroid
+      if (spot := self.spots[0]) is None:
+        raise RuntimeError("All the spots are None, this should not be")
+      x = spot.x_centroid
+      y = spot.y_centroid
+      if x is None or y is None:
+        raise RuntimeError("Cannot return the spot centroid, it was never "
+                           "computed!")
       return [(y, x)], 0.0, 0.0
 
   def _log(self, level: int, msg: str) -> None:
@@ -322,10 +382,12 @@ class VideoExtensoTool:
       self._logger = logging.getLogger(
         f"{current_process().name}.{type(self).__name__}")
 
+    if self._logger is None:
+      raise RuntimeError("The logger was never instantiated!")
     self._logger.log(level, msg)
 
   def _send(self,
-            conn: Connection,
+            conn: connection.Connection,
             val: tuple[int, int, np.ndarray] | tuple[str, str, str]) -> None:
     """Wrapper for sending messages to the Tracker processes.
 
@@ -363,5 +425,6 @@ class VideoExtensoTool:
     y_min_1, x_min_1, y_max_1, x_max_1 = prop_1.bbox
     y_min_2, x_min_2, y_max_2, x_max_2 = prop_2.bbox
 
-    return max((min(x_max_1, x_max_2) - max(x_min_1, x_min_2)), 0) * max(
-      (min(y_max_1, y_max_2) - max(y_min_1, y_min_2)), 0) > 0
+    return (max((int(min(x_max_1, x_max_2)) - int(max(x_min_1, x_min_2))), 0) *
+            max((int(min(y_max_1, y_max_2)) - int(max(y_min_1, y_min_2))), 0)
+            > 0)

@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import numpy as np
+from unittest.mock import MagicMock
 
 from .camera_process_test_base import CameraProcessTestBase, TestCameraProcess
 
@@ -34,3 +35,12 @@ class TestData(CameraProcessTestBase):
     self.assertTrue(self._process._get_data())
     self.assertEqual(self._process.metadata, metadata_2)
     np.testing.assert_array_equal(self._process.img, img_2)
+
+  def test_get_data_rejects_missing_metadata_dictionary(self) -> None:
+    """Tests the defensive check for an uninitialized metadata dictionary."""
+
+    self._process = TestCameraProcess()
+    self._process._lock = MagicMock()
+
+    with self.assertRaisesRegex(RuntimeError, 'metadata dictionary'):
+      self._process._get_data()

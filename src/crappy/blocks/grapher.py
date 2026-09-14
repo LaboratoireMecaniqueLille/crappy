@@ -114,7 +114,7 @@ class Grapher(Block):
     if not all(len(elt) == 2 for elt in labels):
       raise ValueError("All labels must be tuples of two strings")
 
-    self._labels = labels
+    self._graph_labels = labels
 
     self._ax = None
     self._canvas = None
@@ -145,22 +145,22 @@ class Grapher(Block):
 
     # Add the lines or the dots
     self._lines = []
-    for _ in self._labels:
+    for _ in self._graph_labels:
       if self._interp:
         self._lines.append(self._ax.plot([], [])[0])
       else:
         self._lines.append(self._ax.plot([], [], 'o', markersize=3)[0])
 
     # Keep only 1/factor points on each line
-    self._factor = [1 for _ in self._labels]
+    self._factor = [1 for _ in self._graph_labels]
     # Count to drop exactly 1/factor points, no more and no less
-    self._counter = [0 for _ in self._labels]
+    self._counter = [0 for _ in self._graph_labels]
 
     # Add the legend
-    legend = [y for _, y in self._labels]
+    legend = [y for _, y in self._graph_labels]
     plt.legend(legend)
-    plt.xlabel(', '.join(set(x for x, _ in self._labels)))
-    plt.ylabel(', '.join(set(y for _, y in self._labels)))
+    plt.xlabel(', '.join(set(x for x, _ in self._graph_labels)))
+    plt.ylabel(', '.join(set(y for _, y in self._graph_labels)))
 
     # Add a grid
     plt.grid()
@@ -192,7 +192,7 @@ class Grapher(Block):
     update = False  # Should the graph be updated ?
 
     # For each curve, looking for the corresponding labels in the received data
-    for i, (lx, ly) in enumerate(self._labels):
+    for i, (lx, ly) in enumerate(self._graph_labels):
       x, y = None, None
       for dic in data:
         if lx in dic and ly in dic:
@@ -262,7 +262,7 @@ class Grapher(Block):
       for line in self._lines:
         line.set_xdata([])
         line.set_ydata([])
-      self._factor = [1 for _ in self._labels]
-      self._counter = [0 for _ in self._labels]
+      self._factor = [1 for _ in self._graph_labels]
+      self._counter = [0 for _ in self._graph_labels]
 
       self.log(logging.INFO, "Cleared the matplotlib window")

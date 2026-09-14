@@ -117,13 +117,14 @@ class UController(Block):
 
     # Forcing the labels into a list
     if labels is not None and isinstance(labels, str):
-      self._labels = [labels]
+      self._uc_labels = [labels]
     elif labels is not None:
-      self._labels = list(labels)
+      self._uc_labels = list(labels)
     else:
-      self._labels = None
+      self._uc_labels = None
 
-    if self._t_device and self._labels is not None and len(self._labels) > 8:
+    if (self._t_device and self._uc_labels is not None and
+        len(self._uc_labels) > 8):
       raise ValueError("Cannot manage more than 8 labels when t_device is "
                        "True")
 
@@ -135,7 +136,7 @@ class UController(Block):
     else:
       self._cmd_labels = None
 
-    if self._labels is not None and len(self._labels) > 9:
+    if self._uc_labels is not None and len(self._uc_labels) > 9:
       raise ValueError("Sorry, a maximum of 9 labels is allowed !")
     if self._cmd_labels is not None and len(self._cmd_labels) > 9:
       raise ValueError("Sorry, a maximum of 9 cmd_labels is allowed !")
@@ -145,9 +146,9 @@ class UController(Block):
 
     if init_output is not None and not isinstance(init_output, dict):
       raise TypeError("init_output should be a dict !")
-    if self._labels is not None and not all(
+    if self._uc_labels is not None and not all(
         label in (init_output if init_output is not None else dict())
-        for label in self._labels):
+        for label in self._uc_labels):
       raise ValueError("Every label should have an init_output value !")
     self._out = init_output
 
@@ -174,17 +175,17 @@ class UController(Block):
     """
 
     # Checking if the link layout is relevant with respect to the arguments
-    if self._labels is not None and not self.outputs:
+    if self._uc_labels is not None and not self.outputs:
       raise IOError("labels are specified but there's no output link !")
     if self._cmd_labels is not None and not self.inputs:
       raise IOError("cmd_labels are specified but there's no input link !")
     if self._cmd_labels is None and self.inputs:
       raise IOError("No cmd_label specified although there are input Links!")
-    if self._labels is None and self.outputs:
+    if self._uc_labels is None and self.outputs:
       raise IOError("No label specified although there are output Links!")
 
     # Buffer for storing the received bytes
-    if self._labels is not None:
+    if self._uc_labels is not None:
       self._buffer = b''
 
     # Opening the serial port
@@ -207,15 +208,15 @@ class UController(Block):
       self._cmd_table = dict()
     self.log(logging.DEBUG, f"Command table : {self._cmd_table}")
 
-    if self._labels is not None:
+    if self._uc_labels is not None:
       self._labels_table = {label: i for i, label
-                            in enumerate(self._labels, start=1)}
+                            in enumerate(self._uc_labels, start=1)}
     else:
       self._labels_table = dict()
 
     # The presence of the label 't(s)' indicates that the device should return
     # a timestamp along with the data
-    if self._labels is not None and self._t_device:
+    if self._uc_labels is not None and self._t_device:
       self._labels_table |= {'t(s)': 0}
 
     self.log(logging.DEBUG, f"Labels table : {self._labels_table}")
@@ -312,7 +313,7 @@ class UController(Block):
     present in labels, its value is updated, as well as the timestamp. The
     values of ALL the labels are then sent to downstream blocks.
     """
-    if self._labels is not None:
+    if self._uc_labels is not None:
       # Reading the message from the device
       retries = 3
       while retries:
@@ -354,7 +355,7 @@ class UController(Block):
       self.log(logging.DEBUG, f"Read value {read} from the device")
 
       # Updating the label value and sending to the downstream blocks
-      for label in self._labels:
+      for label in self._uc_labels:
         if read[0] == self._labels_table[label]:
           value = read[1]
           self._out[label] = self._post_process[label](value) if \

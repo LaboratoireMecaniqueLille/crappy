@@ -70,6 +70,18 @@ class TestDICVE(CameraWrapperTestBase):
           DICVE(patches=[(0, 0, 2, 2)], labels=labels,
                 **self.camera_kwargs())
 
+  def test_constructor_validates_processing_options(self) -> None:
+    """Checks validation moved from DICVETool to the public Block."""
+
+    for kwargs in ({'method': 'Bad method'},
+                   {'border': -0.1},
+                   {'border': 1.1}):
+      with self.subTest(kwargs=kwargs):
+        with self.assertRaises(ValueError):
+          DICVE(patches=[(0, 0, 2, 2)],
+                **kwargs,
+                **self.camera_kwargs())
+
   def test_prepare_builds_patches_and_forwards_process_options(self) -> None:
     """Checks ROI conversion and DICVEProcess option forwarding."""
 
@@ -140,7 +152,11 @@ class TestDICVE(CameraWrapperTestBase):
   def test_configure_forwards_camera_and_patches(self) -> None:
     """Checks DICVEConfig receives the current Camera and patches."""
 
+    def transform(img):
+      return img
+
     block = DICVE(patches=[(0, 0, 2, 2)],
+                  transform=transform,
                   **self.camera_kwargs(config=True))
     block._camera = sentinel.camera
     block._log_queue = sentinel.log_queue
@@ -157,4 +173,5 @@ class TestDICVE(CameraWrapperTestBase):
                                    sentinel.log_queue,
                                    30,
                                    123,
+                                   transform,
                                    sentinel.patches)

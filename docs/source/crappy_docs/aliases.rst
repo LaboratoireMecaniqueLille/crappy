@@ -2,9 +2,13 @@
 Aliases
 =======
 
-Link Method
------------
+Link Methods
+------------
 .. autofunction:: crappy.link
+
+.. autofunction:: crappy.img_link
+
+.. autofunction:: crappy.display_graph
 
 Open Online Documentation
 -------------------------
@@ -15,6 +19,8 @@ Classes aliases
 .. autoclass:: crappy.Actuator
    :noindex:
 .. autoclass:: crappy.Block
+   :noindex:
+.. autoclass:: crappy.VisionBlock
    :noindex:
 .. autoclass:: crappy.Camera
    :noindex:
