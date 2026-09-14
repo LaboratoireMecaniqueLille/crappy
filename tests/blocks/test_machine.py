@@ -13,7 +13,6 @@ from ..block import BlockTestBase, TestBlock, link
 class TrackingActuator:
   """Small Actuator test double for Machine tests."""
 
-  ft232h = False
   instances: list['TrackingActuator'] = list()
   events: list[tuple[str, int]] = list()
 
@@ -76,12 +75,6 @@ class TrackingActuator:
     self.events.append(('close', self.id))
 
 
-class FT232HTrackingActuator(TrackingActuator):
-  """Tracking actuator declaring FT232H support."""
-
-  ft232h = True
-
-
 class TestMachine(BlockTestBase):
   """Unit tests for the Machine Block-specific behavior."""
 
@@ -98,7 +91,6 @@ class TestMachine(BlockTestBase):
 
     return patch.dict(machine_module.actuator_dict, {
       'TrackingActuator': TrackingActuator,
-      'FT232HTrackingActuator': FT232HTrackingActuator,
     })
 
   @staticmethod
@@ -179,19 +171,6 @@ class TestMachine(BlockTestBase):
     self.assertTrue(block._spam)
     self.assertIsNone(block.freq)
 
-  def test_constructor_registers_ft232h_once_when_needed(self) -> None:
-    """Checks FT232H registration for compatible actuators."""
-
-    with (self._actuator_patch(),
-          patch.object(machine_module.USBServer,
-                       'register',
-                       return_value=('ft232h',)) as register):
-      block = Machine([{'type': 'FT232HTrackingActuator'}],
-                      ft232h_ser_num='ABC')
-
-    register.assert_called_once_with('ABC')
-    self.assertEqual(block._ft232h_args, ('ft232h',))
-
   def test_prepare_requires_a_link_before_instantiating_actuators(
       self) -> None:
     """Checks link validation happens before Actuator construction."""
@@ -208,23 +187,17 @@ class TestMachine(BlockTestBase):
     """Checks actuator creation, settings, and open calls."""
 
     source = TestBlock()
-    with (self._actuator_patch(),
-          patch.object(machine_module.USBServer,
-                       'register',
-                       return_value=('ft232h',))):
+    with self._actuator_patch():
       block = Machine([
         {'type': 'TrackingActuator', 'custom': 1},
-        {'type': 'FT232HTrackingActuator', 'custom': 2},
+        {'type': 'TrackingActuator', 'custom': 2},
       ])
       link(source, block)
       block.prepare()
 
     self.assertEqual(len(block._actuators), 2)
     self.assertEqual(TrackingActuator.instances[0].kwargs, {'custom': 1})
-    self.assertEqual(TrackingActuator.instances[1].kwargs, {
-      'custom': 2,
-      '_ft232h_args': ('ft232h',),
-    })
+    self.assertEqual(TrackingActuator.instances[1].kwargs, {'custom': 2})
     self.assertTrue(all(actuator.opened
                         for actuator in TrackingActuator.instances))
 

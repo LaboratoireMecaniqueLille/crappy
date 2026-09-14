@@ -158,45 +158,6 @@ Waveshare High Precision
    :members: open, get_data, close
    :special-members: __init__
 
-FT232H In/Outs
---------------
-
-ADS1115 FT232H
-++++++++++++++
-.. autoclass:: crappy.inout.ADS1115FT232H
-   :members: open, get_data, close
-   :special-members: __init__
-
-GPIO Switch FT232H
-++++++++++++++++++
-.. autoclass:: crappy.inout.GPIOSwitchFT232H
-   :members: open, set_cmd, close
-   :special-members: __init__
-
-MCP9600 FT232H
-++++++++++++++
-.. autoclass:: crappy.inout.MCP9600FT232H
-   :members: open, get_data, close
-   :special-members: __init__
-
-MPRLS FT232H
-++++++++++++
-.. autoclass:: crappy.inout.MPRLSFT232H
-   :members: open, get_data, close
-   :special-members: __init__
-
-NAU7802 FT232H
-++++++++++++++
-.. autoclass:: crappy.inout.NAU7802FT232H
-   :members: open, get_data, close
-   :special-members: __init__
-
-Waveshare AD/DA FT232H
-++++++++++++++++++++++
-.. autoclass:: crappy.inout.WaveshareADDAFT232H
-   :members: open, set_cmd, get_data, close
-   :special-members: __init__
-
 Parent In/Out
 -------------
 

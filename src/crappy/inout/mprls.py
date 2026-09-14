@@ -115,9 +115,6 @@ class MPRLS(InOut):
       if backend == 'blinka' and not isinstance(eoc_pin, str):
         raise TypeError('eoc_pin should be a string when using the blinka '
                         'backend !')
-      elif backend == 'ft232h' and not isinstance(eoc_pin, str):
-        raise TypeError('eoc_pin should be a string when using the ft232h '
-                        'backend !')
       elif backend == 'Pi4' and not isinstance(eoc_pin, int):
         raise TypeError('eoc_pin should be an int when using the Pi4 '
                         'backend !')

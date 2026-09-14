@@ -6,7 +6,6 @@ import logging
 
 from .meta_block import Block
 from ..inout import inout_dict, InOut, deprecated_inouts
-from ..tool.ft232h import USBServer
 
 
 class IOBlock(Block):
@@ -31,6 +30,8 @@ class IOBlock(Block):
   more detailed description.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.1.0 removed support for InOuts communicating through
+     an FT232H
   """
 
   def __init__(self,
@@ -42,7 +43,6 @@ class IOBlock(Block):
                initial_cmd: Sequence[Any] | None = None,
                exit_cmd: Sequence[Any] | None = None,
                make_zero_delay: float | None = None,
-               ft232h_ser_num: str | None = None,
                spam: bool = False,
                freq: float | None = 200,
                display_freq: bool = False,
@@ -108,10 +108,11 @@ class IOBlock(Block):
         
         .. versionadded:: 2.0.0
       **kwargs: The arguments to be passed to the :class:`~crappy.inout.InOut`.
+
+    .. versionremoved:: 2.1.0 *ft232h_ser_num* argument
     """
 
     self._device: InOut | None = None
-    self._ft232h_args = None
     self._read: bool = False
     self._write: bool = False
 
@@ -193,10 +194,6 @@ class IOBlock(Block):
     self._last_cmd = None
     self._prev_values = dict()
 
-    # Checking whether the InOut communicates through an FT232H
-    if inout_dict[self._io_name].ft232h:
-      self._ft232h_args = USBServer.register(ft232h_ser_num)
-
   def prepare(self) -> None:
     """Checks the consistency of the Link layout, opens the InOut and sets the
     initial command if required.
@@ -205,14 +202,8 @@ class IOBlock(Block):
     driven InOut.
     """
 
-    # Instantiating the device in a regular way
-    if self._ft232h_args is None:
-      self._device = inout_dict[self._io_name](**self._inout_kwargs)
-    # Instantiating the device and the connection to the FT232H
-    else:
-      self.log(logging.INFO, "The InOut to open communicates over an FT232H")
-      self._device = inout_dict[self._io_name](**self._inout_kwargs,
-                                               _ft232h_args=self._ft232h_args)
+    # Instantiating the device
+    self._device = inout_dict[self._io_name](**self._inout_kwargs)
 
     # Checking that the block has inputs or outputs
     if not self.inputs and not self.outputs:

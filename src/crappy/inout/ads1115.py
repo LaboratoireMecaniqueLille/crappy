@@ -202,10 +202,7 @@ class ADS1115(InOut):
       self._multiplexer = multiplexer
 
     if dry_pin is not None:
-      if backend == 'ft232h' and not isinstance(dry_pin, str):
-        raise TypeError('int_pin should be a string when using the ft232h '
-                        'backend !')
-      elif backend == 'Pi4' and not isinstance(dry_pin, int):
+      if backend == 'Pi4' and not isinstance(dry_pin, int):
         raise TypeError('int_pin should be an int when using the Pi4 '
                         'backend !')
       elif backend == 'blinka' and dry_pin is not None:
@@ -348,7 +345,5 @@ class ADS1115(InOut):
                                            Ads1115_pointer_config,
                                            1)[0] & 0x80
     # EOC signal from a GPIO
-    elif self._backend == 'ft232h':
-      return not bool(self._bus.get_gpio(self._dry_pin))
     else:
       return not bool(GPIO.input(self._dry_pin))

@@ -13,7 +13,6 @@ from ..block import BlockTestBase, TestBlock, link
 class TrackingAutoDriveActuator:
   """Small Actuator test double for AutoDriveVideoExtenso tests."""
 
-  ft232h = False
   instances: list['TrackingAutoDriveActuator'] = list()
 
   def __init__(self, **kwargs) -> None:
@@ -53,12 +52,6 @@ class TrackingAutoDriveActuator:
     self.closed = True
 
 
-class FT232HTrackingAutoDriveActuator(TrackingAutoDriveActuator):
-  """Tracking AutoDrive actuator declaring FT232H support."""
-
-  ft232h = True
-
-
 class TestAutoDriveVideoExtenso(BlockTestBase):
   """Unit tests for the AutoDriveVideoExtenso Block-specific behavior."""
 
@@ -75,7 +68,6 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
 
     return patch.dict(auto_drive_module.actuator_dict, {
       'TrackingAutoDriveActuator': TrackingAutoDriveActuator,
-      'FT232HTrackingAutoDriveActuator': FT232HTrackingAutoDriveActuator,
     })
 
   @staticmethod
@@ -155,20 +147,6 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
           with self.assertRaises(exception):
             AutoDriveVideoExtenso(actuator, **kwargs)
 
-  def test_constructor_registers_ft232h_when_needed(self) -> None:
-    """Checks FT232H registration for compatible actuators."""
-
-    with (self._actuator_patch(),
-          patch.object(auto_drive_module.USBServer,
-                       'register',
-                       return_value=('ft232h',)) as register):
-      block = AutoDriveVideoExtenso(
-        {'type': 'FT232HTrackingAutoDriveActuator'},
-        ft232h_ser_num='ABC')
-
-    register.assert_called_once_with('ABC')
-    self.assertEqual(block._ft232h_args, ('ft232h',))
-
   def test_prepare_requires_exactly_one_input_link(self) -> None:
     """Checks AutoDriveVideoExtenso input link validation."""
 
@@ -207,26 +185,6 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     self.assertEqual(actuator.kwargs, {'custom': 1})
     self.assertTrue(actuator.opened)
     self.assertEqual(actuator.speed_commands, [0])
-
-  def test_prepare_passes_ft232h_args_to_actuator(self) -> None:
-    """Checks FT232H constructor argument injection."""
-
-    source = TestBlock()
-    with (self._actuator_patch(),
-          patch.object(auto_drive_module.USBServer,
-                       'register',
-                       return_value=('ft232h',))):
-      block = AutoDriveVideoExtenso({
-        'type': 'FT232HTrackingAutoDriveActuator',
-        'custom': 1,
-      })
-      link(source, block)
-      block.prepare()
-
-    self.assertEqual(TrackingAutoDriveActuator.instances[-1].kwargs, {
-      'custom': 1,
-      '_ft232h_args': ('ft232h',),
-    })
 
   def test_loop_returns_when_no_new_coordinates_are_available(self) -> None:
     """Checks that missing input data does not command the actuator."""

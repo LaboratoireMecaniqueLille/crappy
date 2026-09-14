@@ -14,15 +14,13 @@ cd /etc/udev/rules.d >/dev/null 2>&1 || { echo "The udev rules directory (/etc/u
 
 # The different rules that can be written
 pololu="SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1ffb\", MODE=\"0666\""
-ft232h="SUBSYSTEM==\"usb\", ATTR{idVendor}==\"0403\", MODE=\"0666\""
 seekth="SUBSYSTEM==\"usb\", ATTR{idVendor}==\"289d\", MODE=\"0777\""
 
 
 # Choosing the rule to write, retrying if the input is not valid
 echo "Which rule should be written ?"
 echo "1. Pololu Tic"
-echo "2. FT232H"
-echo "3. Seek Thermal Pro"
+echo "2. Seek Thermal Pro"
 echo "(ctrl + c to escape)"
 echo ""
 
@@ -31,7 +29,7 @@ read -r rule
 echo ""
 
 
-while { ! echo "$rule" | grep -q '^[0-9]' || [ "$rule" -gt 3 ] || [ "$rule" -le 0 ]; }; do
+while { ! echo "$rule" | grep -q '^[0-9]' || [ "$rule" -gt 2 ] || [ "$rule" -le 0 ]; }; do
   echo "Invalid choice !"
   echo "Which rule should be written ?"
   echo ""
@@ -44,8 +42,7 @@ done
 # Writing the rule
 case $rule in
         1)          echo "$pololu" > pololu.rules           ;;
-        2)          echo "$ft232h" > ftdi.rules             ;;
-        3)          echo "$seekth" > seek_thermal.rules     ;;
+        2)          echo "$seekth" > seek_thermal.rules     ;;
         *)          echo "Unexpected rule, aborting"; exit  ;;
 esac
 
@@ -57,12 +54,7 @@ case $rule in
                     else
                       echo "Something went wrong, the rule is missing !"                 
                     fi                                                   ;;
-        2)          if [ -f "ftdi.rules" ]; then
-                      echo "Writing successful !"
-                    else
-                      echo "Something went wrong, the rule is missing !"                 
-                    fi                                                   ;;
-        3)          if [ -f "seek_thermal.rules" ]; then
+        2)          if [ -f "seek_thermal.rules" ]; then
                       echo "Writing successful !"
                     else
                       echo "Something went wrong, the rule is missing !"                 

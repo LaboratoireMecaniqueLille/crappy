@@ -325,29 +325,6 @@ starts. Finally, that tool creates, communicates with, and stops one
 per spot. The public Block consequently does not construct or manage any of
 these low-level helpers directly.
 
-FT232H feature
-""""""""""""""
-
-While exploring the module, you will notice many occurrences of the term
-*FT232H*. It refers to a chip from FTDI, performing USB to I2C, SPI, Serial and
-GPIO conversion. It was integrated on one of Adafruit's boards. We considered
-at some point the possibility to use it for achieving communication on
-low-level buses with Crappy, using only a PC and an FT232H. It turned out that
-the :mod:`pyusb` Python module required to talk to the chip is not
-process-safe, and a complex architecture had to be implemented to ensure
-multiprocess safety. This code can be found in the :mod:`crappy.tool.ft232h`
-submodule. For all the InOuts and Actuators communicating over low-level buses,
-a second version communicating through an FT232H was written and stored in the
-`ft232h` submodules.
-
-After testing quite many options, we could not get the communication over
-FT232H to be completely stable. We always ended up with crashes, probably due
-to a wrong design of the server architecture used to ensure multiprocessing
-safety. In some cases though, the FT232H option worked really great and could
-be used on experimental setups without any problem. We thus decided to keep
-this feature in the module, but not to advertise it in the documentation and in
-the examples.
-
 Detailed runtime sequence of Crappy
 -----------------------------------
 
@@ -459,12 +436,11 @@ known, so the :obj:`~multiprocessing.Barrier` is set to this number +1 for the
 timestamp is initialized to a negative value, to make it clear that it is not
 set yet.
 
-Then, the :class:`~crappy.tool.ft232h.USBServer` Process tool is started if
-needed (see :ref:`FT232H feature`). After that, for each Block, its
-synchronization instance attributes are set to the corresponding class
-attributes of Block. Basically, the class attributes are shared with all the
-instances of Block. This is only possible because at that point the Blocks do
-not live in a separate Process yet, they all run in ``__main__``.
+Then, for each Block, its synchronization instance attributes are set to the
+corresponding class attributes of Block. Basically, the class attributes are
+shared with all the instances of Block. This is only possible because at that
+point the Blocks do not live in a separate Process yet, they all run in
+``__main__``.
 
 When at least one VisionBlock is present, ``prepare_all`` also performs the
 graph-level image setup before starting the children. It first verifies that
@@ -546,12 +522,10 @@ shared-memory handles are closed without unlinking them, while an image source
 closes and unlinks the output segment that it owns.
 
 The main Process gives all Blocks 3 seconds to finish. If any Block is still
-alive past this delay, it is terminated. Then, the
-:obj:`~multiprocessing.Process` in charge of the
-:class:`~crappy.tool.ft232h.USBServer` is stopped, if applicable. The shared
-Manager that provided the ImageLink dictionaries is shut down only after the
-Block Processes have finished, and the :obj:`~threading.Thread` collecting all
-log messages is also stopped. Shortly before returning, Crappy is reset by
+alive past this delay, it is terminated. The shared Manager that provided the
+ImageLink dictionaries is shut down only after the Block Processes have
+finished, and the :obj:`~threading.Thread` collecting all log messages is also
+stopped. Shortly before returning, Crappy is reset by
 :meth:`~crappy.blocks.Block.reset`. This clears the Block registry and
 :class:`~crappy.links.LinkGraph`, drops the shared Manager reference, and
 re-initializes the synchronization state because it is no longer needed.

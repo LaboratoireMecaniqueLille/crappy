@@ -8,7 +8,6 @@ import logging
 
 from .meta_block import Block
 from ..actuator import actuator_dict, Actuator, deprecated_actuators
-from ..tool.ft232h import USBServer
 
 
 @dataclass
@@ -49,13 +48,14 @@ class Machine(Block):
   independently for each Actuator.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.1.0 removed support for Actuators communicating through
+     an FT232H
   """
 
   def __init__(self,
                actuators: Sequence[dict[str, Any]],
                common: dict[str, Any] | None = None,
                time_label: str = 't(s)',
-               ft232h_ser_num: str | None = None,
                spam: bool = False,
                freq: float | None = 200,
                display_freq: bool = False,
@@ -74,10 +74,6 @@ class Machine(Block):
         one will prevail.
       time_label: If reading speed or position from one or more Actuators, the
         time information will be carried by this label.
-      ft232h_ser_num: Serial number of the FT232H device to use for driving
-        the controlled Actuator.
-        
-        .. versionadded:: 2.0.0
       spam: If :obj:`True`, a command is sent to the Actuators at each loop of
         the Block, else it is sent every time a new command is received.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
@@ -122,10 +118,11 @@ class Machine(Block):
         - ``speed_cmd_label``: The label carrying the speed to set when driving
           in `'position'` mode. Each time a value is received, the stored speed
           value is updated. It will also overwrite the ``speed`` key if given.
+
+    .. versionremoved:: 2.1.0 *ft232h_ser_num* argument
     """
 
     self._actuators: list[ActuatorInstance] = list()
-    self._ft232h_args = None
 
     super().__init__()
     self.freq = freq
@@ -191,10 +188,6 @@ class Machine(Block):
                            if key not in ('type', *actuator_settings)}
                           for actuator in actuators]
 
-    # Checking whether the Actuators communicate through an FT232H
-    if any(actuator_dict[type_].ft232h for type_ in self._types):
-      self._ft232h_args = USBServer.register(ft232h_ser_num)
-
   def prepare(self) -> None:
     """Checks the validity of the linking and initializes all the Actuator
     objects to drive.
@@ -209,9 +202,7 @@ class Machine(Block):
 
     # Instantiating the actuators and storing them
     self._actuators = [ActuatorInstance(
-      actuator=actuator_dict[type_](**actuator_kw)
-      if not actuator_dict[type_].ft232h else
-      actuator_dict[type_](**actuator_kw, _ft232h_args=self._ft232h_args),
+      actuator=actuator_dict[type_](**actuator_kw),
       **setting)
       for type_, setting, actuator_kw in zip(self._types,
                                              self._settings,
