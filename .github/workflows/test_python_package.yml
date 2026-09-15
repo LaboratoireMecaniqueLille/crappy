@@ -56,6 +56,7 @@ jobs:
         python -m unittest -v tests.block
         python -m unittest -v tests.blocks
         python -m unittest -v tests.camera
+        python -m unittest -v tests.collection
         python -m unittest -v tests.camera_configuration_tools
         python -m unittest -v tests.camera_process
         python -m unittest -v tests.camera_processes
