@@ -4,10 +4,9 @@ from time import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 import logging
-from warnings import warn
 
-from .meta_inout import InOut
-from ..tool.bindings import comedi_bind as comedi
+from ...inout.meta_inout import InOut
+from ...tool.bindings import comedi_bind as comedi
 
 
 @dataclass
@@ -130,11 +129,6 @@ class Comedi(InOut):
        *range_num*, *gain*, *offset*, *make_zero*, *out_subdevice*,
        *out_channels*, *out_range_num*, *out_gain* and *out_offset* arguments
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._device = None
 

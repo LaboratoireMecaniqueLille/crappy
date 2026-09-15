@@ -2,15 +2,9 @@
 
 import logging
 import time
-from warnings import warn
+from pymodbus.client.serial import ModbusSerialClient
 
-from .meta_inout import InOut
-from .._global import OptionalModule
-
-try:
-  from pymodbus.client.serial import ModbusSerialClient
-except (ModuleNotFoundError, ImportError):
-  ModbusSerialClient = OptionalModule("pymodbus")
+from ...inout.meta_inout import InOut
 
 REGISTERS: dict[str, tuple[int, int]] = {"process_value": (1, 1),
                                          "setpoint": (2, 1)}
@@ -34,11 +28,6 @@ class EurothermEPC3008(InOut):
       address: Modbus slave address (unit id).
       timeout: Read/write timeout (seconds).
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._client: ModbusSerialClient | None = None
 

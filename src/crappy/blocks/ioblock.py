@@ -5,7 +5,9 @@ from collections.abc import Sequence
 import logging
 
 from .meta_block import Block
-from ..inout import inout_dict, InOut, deprecated_inouts
+from .._collection import (CollectionEntry, collection_registry,
+                           load_collection_class)
+from ..inout import inout_dict, InOut, deprecated_inouts, moved_to_collection
 
 
 class IOBlock(Block):
@@ -170,6 +172,9 @@ class IOBlock(Block):
 
     self._trig_label = trigger_label
 
+    # None means that this is an ordinary core or user-defined InOut
+    self._collection_entry: CollectionEntry | None = None
+
     # Checking for deprecated names
     if name in deprecated_inouts:
       raise NotImplementedError(
@@ -177,11 +182,31 @@ class IOBlock(Block):
           f"to {deprecated_inouts[name]} ! Please update your code "
           f"accordingly and check the documentation for more information")
 
-    # Checking that all the given actuators are valid
+    # Check if the requested InOut is part of crappy.collection
+    entry = collection_registry.get("InOut", name)
+
+    # Checking that the given InOut name is valid
     if name not in inout_dict:
-      possible = ', '.join(sorted(inout_dict.keys()))
-      raise ValueError(f"Unknown InOut type : {name} ! "
-                       f"The possible types are : {possible}")
+      # First option, the InOut should be loaded from crappy.collection
+      if entry is not None:
+        # This call raises early if the module cannot be loaded
+        load_collection_class(entry, inout_dict)
+        self._collection_entry = entry
+      # Second case, the InOut was moved to crappy.collection but this module
+      # was not imported
+      elif name in moved_to_collection:
+        raise NotImplementedError(f"The InOut {name} was moved to "
+                                  f"crappy.collection. To use it, simply add "
+                                  f"import crappy.collection at the beginning "
+                                  f"of your script")
+      # The name of the InOut simply cannot be found anywhere
+      else:
+        possible = ', '.join(sorted(inout_dict.keys()))
+        raise ValueError(f"Unknown InOut name : {name}! "
+                         f"The currently available ones are: {possible}")
+    # Case when the InOut was already loaded in a separate Block
+    elif entry is not None and inout_dict[name].__module__ == entry.module:
+      self._collection_entry = entry
 
     self._io_name = name
     self._inout_kwargs = kwargs
@@ -201,6 +226,11 @@ class IOBlock(Block):
     This method mainly calls the :meth:`~crappy.inout.InOut.open` method of the
     driven InOut.
     """
+
+    # Under the spawn multiprocessing start method, it is necessary to re-load
+    # the modules from crappy.collection
+    if self._collection_entry is not None:
+      load_collection_class(self._collection_entry, inout_dict)
 
     # Instantiating the device
     self._device = inout_dict[self._io_name](**self._inout_kwargs)

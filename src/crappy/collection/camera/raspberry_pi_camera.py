@@ -5,22 +5,11 @@ from typing import Any
 import numpy as np
 from threading import Thread, RLock
 import logging
-from warnings import warn
+import cv2
+from picamera import PiCamera as PiCameraRPi
+from picamera.array import PiRGBArray
 
-from .meta_camera import Camera
-from .._global import OptionalModule
-
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
-
-try:
-  from picamera import PiCamera as PiCameraRPi
-  from picamera.array import PiRGBArray
-except (ModuleNotFoundError, ImportError, OSError):
-  PiCameraRPi = OptionalModule("picamera")
-  PiRGBArray = OptionalModule("picamera")
+from ...camera.meta_camera import Camera
 
 picamera_iso = [0, 100, 200, 320, 400, 500, 640, 800]
 
@@ -47,11 +36,6 @@ class RaspberryPiCamera(Camera):
 
   def __init__(self) -> None:
     """Instantiates the available settings."""
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     super().__init__()
 

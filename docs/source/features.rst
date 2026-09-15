@@ -526,6 +526,9 @@ Supported hardware (Cameras, InOuts, Actuators)
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
+Each hardware category below separates the drivers maintained with Crappy from
+the community-driven :ref:`Driver collection`.
+
 Supported Cameras
 +++++++++++++++++
 
@@ -545,20 +548,6 @@ Supported Cameras
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected ! On the long-term, it should be totally
      removed.
-
-- :ref:`Camera gPhoto2`
-
-  Reads images over USB from a camera supported by gPhoto2, including most of
-  the Canon and Nikon models. It can either acquire images continuously, or
-  wait for an acquisition to be triggered via a remote controller button.
-
-  .. Important::
-     This class was only tested on Linux. The installation of its dependencies
-     is expected to be troublesome on macOS and Windows.
-
-  .. Important::
-     This class relies on the `gphoto2 <https://pypi.org/project/gphoto2/>`_
-     Python module, that must be installed before using it.
 
 - :ref:`Camera GStreamer`
 
@@ -615,6 +604,51 @@ Supported Cameras
      that it still works as expected ! On the long-term, it should be totally
      removed.
 
+- :ref:`Raspberry Pi Camera 2`
+
+  Allows reading images from an official Raspberry Pi Camera, with Crappy
+  running on a Raspberry Pi. It has been tested on Raspberry Pi 4 and 5, with
+  Raspberry Pi camera HQ and V3 models. Probably works with other official and
+  unofficial Raspberry Pi cameras.
+
+  .. Note::
+     This Camera is an updated version of :ref:`Raspberry Pi Camera`, which is
+     now deprecated and should only be used for compatibility with old
+     Raspberry Pi OS versions.
+
+- :ref:`Webcam`
+
+  Reads images from a video device recognized by OpenCV. Usually webcams fall
+  into this category, but some other cameras as well. This class is really
+  basic and is intended for demonstration, see :ref:`Camera OpenCV` and
+  :ref:`Camera GStreamer` for classes providing a finer controls over the
+  devices.
+
+- :ref:`Xi API`
+
+  Allows reading images from any `Ximea <https://www.ximea.com/>`_ camera. The
+  backend is the official Ximea API.
+
+Collection Camera drivers
+"""""""""""""""""""""""""
+
+The following drivers are not actively maintained and require an explicit
+``import crappy.collection`` before they can be selected by name.
+
+- :ref:`Camera gPhoto2`
+
+  Reads images over USB from a camera supported by gPhoto2, including most of
+  the Canon and Nikon models. It can either acquire images continuously, or
+  wait for an acquisition to be triggered via a remote controller button.
+
+  .. Important::
+     This class was only tested on Linux. The installation of its dependencies
+     is expected to be troublesome on macOS and Windows.
+
+  .. Important::
+     This class relies on the `gphoto2 <https://pypi.org/project/gphoto2/>`_
+     Python module, that must be installed before using it.
+
 - :ref:`Raspberry Pi Camera`
 
   Allows reading images from a Raspberry Pi Camera, with Crappy running on a
@@ -630,54 +664,14 @@ Supported Cameras
      with the *Buster* version of Raspberry Pi OS, or with *Bullseye* in legacy
      camera mode.
 
-- :ref:`Raspberry Pi Camera 2`
-
-  Allows reading images from an official Raspberry Pi Camera, with Crappy
-  running on a Raspberry Pi. It has been tested on Raspberry Pi 4 and 5, with
-  Raspberry Pi camera HQ and V3 models. Probably works with other official and
-  unofficial Raspberry Pi cameras.
-
-  .. Note::
-     This Camera is an updated version of :ref:`Raspberry Pi Camera`, which is
-     now deprecated and should only be used for compatibility with old
-     Raspberry Pi OS versions.
-
 - :ref:`Seek Thermal Pro`
 
   Allows reading images from a Seek Thermal `Compact Pro <https://
   www.thermal.com/compact-series-cameras.html>`_ infrared camera.
 
-- :ref:`Webcam`
-
-  Reads images from a video device recognized by OpenCV. Usually webcams fall
-  into this category, but some other cameras as well. This class is really
-  basic and is intended for demonstration, see :ref:`Camera OpenCV` and
-  :ref:`Camera GStreamer` for classes providing a finer controls over the
-  devices.
-
-- :ref:`Xi API`
-
-  Allows reading images from any `Ximea <https://www.ximea.com/>`_ camera. The
-  backend is the official Ximea API.
-
 Supported Actuators
 +++++++++++++++++++
 
-- :ref:`Adafruit DC Motor Hat`
-
-  Drives up to 4 DC motors using Adafruit's `DC & Stepper Motor HAT for
-  Raspberry Pi <https://www.adafruit.com/product/2348>`_, using either
-  Adafruit's Blinka library or :mod:`smbus2` if driven from a Raspberry Pi.
-  Although this component can also drive stepper motors, this feature was not
-  implemented.
-
-  .. Important::
-     This Actuator was written for a specific application, so it may not be
-     usable as-is in the general case.
-
-  .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
 
 - :ref:`Fake DC Motor`
 
@@ -720,6 +714,45 @@ Supported Actuators
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
 
+- :ref:`Phidget Stepper4A`
+
+  Drives 4A bipolar stepper motors using Phidget's `Stepper4A <https://
+  www.phidgets.com/?prodid=1278>`_ in speed or in position, by using several
+  Phidget libraries.
+
+  .. Important::
+     This Actuator must be connected to Phidget's VINT Hub to work. See the
+     following link `<https://www.phidgets.com/?prodid=1278#Tab_User_Guide>`_
+     to connect properly to the Hub.
+
+- :ref:`Pololu Tic`
+
+  Drives Pololu's `Tic <https://www.pololu.com/category/212/tic-stepper-motor-
+  controllers>`_ stepper motor drivers in speed or in position. Designed for
+  driving all the Tic drivers, but tested only on the 36v4 model.
+
+Collection Actuator drivers
+"""""""""""""""""""""""""""
+
+The following drivers are not actively maintained and require an explicit
+``import crappy.collection`` before they can be selected by name.
+
+- :ref:`Adafruit DC Motor Hat`
+
+  Drives up to 4 DC motors using Adafruit's `DC & Stepper Motor HAT for
+  Raspberry Pi <https://www.adafruit.com/product/2348>`_, using either
+  Adafruit's Blinka library or :mod:`smbus2` if driven from a Raspberry Pi.
+  Although this component can also drive stepper motors, this feature was not
+  implemented.
+
+  .. Important::
+     This Actuator was written for a specific application, so it may not be
+     usable as-is in the general case.
+
+  .. Important::
+     This object hasn't been maintained nor tested for a while, it is not sure
+     that it still works as expected !
+
 - :ref:`Newport TRA6PPD`
 
   Drives Newport's `TRA6PPD <https://www.newport.com/p/TRA6PPD>`_ miniature
@@ -744,23 +777,6 @@ Supported Actuators
   .. Important::
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
-
-- :ref:`Phidget Stepper4A`
-
-  Drives 4A bipolar stepper motors using Phidget's `Stepper4A <https://
-  www.phidgets.com/?prodid=1278>`_ in speed or in position, by using several
-  Phidget libraries.
-
-  .. Important::
-     This Actuator must be connected to Phidget's VINT Hub to work. See the
-     following link `<https://www.phidgets.com/?prodid=1278#Tab_User_Guide>`_
-     to connect properly to the Hub.
-
-- :ref:`Pololu Tic`
-
-  Drives Pololu's `Tic <https://www.pololu.com/category/212/tic-stepper-motor-
-  controllers>`_ stepper motor drivers in speed or in position. Designed for
-  driving all the Tic drivers, but tested only on the 36v4 model.
 
 - :ref:`Schneider MDrive 23`
 
@@ -796,39 +812,6 @@ Acquisition boards
   acquisition board in streaming mode. In this mode, it can only acquire data
   from the ADCs and does not support any other function.
 
-- :ref:`Labjack UE9`
-
-  Controls Labjack's `UE9 <https://labjack.com/products/
-  calibration-service-with-cert>`_ acquisition board. It can only read the
-  input analog channels of the board.
-
-  .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
-
-- :ref:`Waveshare AD/DA`
-
-  Controls Waveshare's `AD/DA <https://www.waveshare.com/product/raspberry-pi/
-  hats/ad-da-audio-sensors/high-precision-ad-da-board.htm>`_ Raspberry Pi
-  acquisition hat. May be used from any device with a proper wiring, but more
-  convenient to use from a Raspberry Pi. Communicates over SPI.
-
-  .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
-
-- :ref:`Waveshare High Precision`
-
-  Controls Waveshare's `High Precision HAT
-  <https://www.waveshare.com/18983.htm>`_ Raspberry Pi acquisition hat. It
-  features a 10-channels 32 bits ADC. It may be used from any device able to
-  communicate over SPI, but is originally meant for interfacing with a
-  Raspberry Pi.
-
-  .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
-
 Sensors
 """""""
 
@@ -837,29 +820,6 @@ Sensors
   Reads voltages from Adafruit's `ADS 1115 <https://www.adafruit.com/product/
   1085>`_ ADC. Communicates over I2C.
 
-- :ref:`Agilent 34420A`
-
-  Reads voltages or resistances from Agilent's `34420A <https://www.keysight.
-  com/us/en/product/34420A/micro-ohm-meter.html?&cc=FR&lc=fre>`_ precision
-  multimeter. Communicates over serial.
-
-  .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
-
-- :ref:`Eurotherm EPC3008`
-
-  Controls an `Eurotherm EPC3008 <https://www.eurotherm.com/us/products/
-  temperature-controllers-us/single-loop-temperature-controllers-us/
-  epc3000-programmable-controllers/>`_ temperature controller. Allows setting
-  the temperature setpoint and reading the current process value. Typically
-  used for managing the temperature of a furnace or industrial process over a
-  serial Modbus RTU connection.
-
-  .. Note::
-     This object was developed for furnace control but could be adapted to
-     similar Eurotherm models supporting Modbus RTU.
-
 - :ref:`Fake Inout`
 
   Can acquire the current RAM usage of the computer using the :mod:`psutil`
@@ -867,24 +827,6 @@ Sensors
   (if superior to the base memory usage). It supports the streamer mode for the
   data acquisition. Mainly intended for demonstration, and used in the
   distributed examples.
-
-- :ref:`Flow Controller Alicat`
-
-  Reads and controls an `Alicat <https://www.alicat.com/products/
-  mass-flow-meters-and-controllers/mass-flow-controllers/>`_ mass flow
-  controller over Modbus RTU. Acquires several process variables such as
-  pressure, temperature, mass flow and volumetric flow, and also sets the mass
-  flow setpoint. Communicates over a serial RS485 connection.
-
-  .. Note::
-     This object was developed for Alicat MFCs supporting the Modbus RTU
-     protocol. Other communication protocols (e.g. ASCII) are not supported in
-     this implementation.
-
-- :ref:`MCP9600`
-
-  Reads temperatures from Adafruit's `MCP9600 <https://www.adafruit.com/product
-  /4101>`_ thermocouple amplifier. Communicates over I2C.
 
 - :ref:`MPRLS`
 
@@ -896,17 +838,6 @@ Sensors
   Reads voltages from Sparfun's `'Qwiic Scale' NAU7802 <https://www.sparkfun.
   com/products/15242>`_ load cell conditioner. Communicates over I2C.
 
-- :ref:`OpSens HandySens`
-
-  Reads data from OpSens' `single channel signal conditioner <https://opsens-
-  solutions.com/products/signal-conditioners-oem-boards/handysens-w/>`_ for
-  fiber-optics temperature, strain, pressure or position measurement.
-  Communicates over serial.
-
-  .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
-
 - :ref:`Phidget Wheatstone Bridge`
 
   Reads volatges from Phidget's `Wheatstone Bridge <https://www.phidgets.com/
@@ -917,54 +848,8 @@ Sensors
      following link `<https://www.phidgets.com/?prodid=957#Tab_User_Guide>`_ to
      connect properly to the Hub.
 
-- :ref:`PiJuice`
-
-  Reads the charging status and battery level of Kubii's `PiJuice <https://
-  www.kubii.com/fr/14-chargeurs-alimentations-raspberry/2019-pijuice-hat-kubii
-  -3272496008793.html>`_ Raspberry Pi power supply.
-
-  .. Important::
-     This InOut was written for a specific application, so it may not be
-     usable as-is in the general case.
-
-- :ref:`Sager SG-GS1700`
-
-  Controls a `Sager SG-GS1700 <https://sagerindustrial.en.alibaba.com/
-  productgrouplist-805331243/
-  Four_tubulaire.html?spm=a2700.shop_index.88.23.432c2d34arZxF6/>`_ furnace
-  controller over a serial link using the AIBUS protocol. Allows reading the
-  process temperature (PV) and the current setpoint (SV), and writing a new
-  temperature setpoint.
-
-  .. Note::
-     This object was developed for a specific furnace controller. The AIBUS
-     frame format and checksum (ECC) follow the implementation provided with
-     the device.
-
-- :ref:`Spectrum M2I 4711`
-
-  Reads voltages from Spectrum's `M2i 4711 EXP <https://spectrum-
-  instrumentation.com/products/details/M2i4711.php>`_ high-speed ADC
-  communicating over PCIexpress.
-
-  .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
-
 Multi-device drivers
 """"""""""""""""""""
-
-- :ref:`Comedi`
-
-  Reads voltages from an `USB-DUX Sigma <https://github.com/glasgowneuro/usbdux/
-  tree/main/usbdux-sigma>`_ ADC (not manufactured anymore) using the `Comedi
-  <https://www.comedi.org/>`_ driver. The code was written to work as-is on
-  other acquisition boards supporting the Comedi driver, but this hasn't been
-  tested. Communicates over serial.
-
-  .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
 
 - :ref:`DAQmx`
 
@@ -1003,6 +888,155 @@ Outputs
   .. Important:: Only works on a Raspberry Pi ! Tested on Raspberry Pi 3 and 4,
      with the *Buster* and *Bullseye* Raspberry Pi Os for the latter.
 
+Collection InOut drivers
+""""""""""""""""""""""""
+
+The following drivers are not actively maintained and require an explicit
+``import crappy.collection`` before they can be selected by name.
+
+Collection acquisition boards
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- :ref:`Labjack UE9`
+
+  Controls Labjack's `UE9 <https://labjack.com/products/
+  calibration-service-with-cert>`_ acquisition board. It can only read the
+  input analog channels of the board.
+
+  .. Important::
+     This object hasn't been maintained nor tested for a while, it is not sure
+     that it still works as expected !
+
+- :ref:`Waveshare AD/DA`
+
+  Controls Waveshare's `AD/DA <https://www.waveshare.com/product/raspberry-pi/
+  hats/ad-da-audio-sensors/high-precision-ad-da-board.htm>`_ Raspberry Pi
+  acquisition hat. May be used from any device with a proper wiring, but more
+  convenient to use from a Raspberry Pi. Communicates over SPI.
+
+  .. Important::
+     This object hasn't been maintained nor tested for a while, it is not sure
+     that it still works as expected !
+
+- :ref:`Waveshare High Precision`
+
+  Controls Waveshare's `High Precision HAT
+  <https://www.waveshare.com/18983.htm>`_ Raspberry Pi acquisition hat. It
+  features a 10-channels 32 bits ADC. It may be used from any device able to
+  communicate over SPI, but is originally meant for interfacing with a
+  Raspberry Pi.
+
+  .. Important::
+     This object hasn't been maintained nor tested for a while, it is not sure
+     that it still works as expected !
+
+Collection sensors
+^^^^^^^^^^^^^^^^^^
+
+- :ref:`Agilent 34420A`
+
+  Reads voltages or resistances from Agilent's `34420A <https://www.keysight.
+  com/us/en/product/34420A/micro-ohm-meter.html?&cc=FR&lc=fre>`_ precision
+  multimeter. Communicates over serial.
+
+  .. Important::
+     This object hasn't been maintained nor tested for a while, it is not sure
+     that it still works as expected !
+
+- :ref:`Eurotherm EPC3008`
+
+  Controls an `Eurotherm EPC3008 <https://www.eurotherm.com/us/products/
+  temperature-controllers-us/single-loop-temperature-controllers-us/
+  epc3000-programmable-controllers/>`_ temperature controller. Allows setting
+  the temperature setpoint and reading the current process value. Typically
+  used for managing the temperature of a furnace or industrial process over a
+  serial Modbus RTU connection.
+
+  .. Note::
+     This object was developed for furnace control but could be adapted to
+     similar Eurotherm models supporting Modbus RTU.
+
+- :ref:`Flow Controller Alicat`
+
+  Reads and controls an `Alicat <https://www.alicat.com/products/
+  mass-flow-meters-and-controllers/mass-flow-controllers/>`_ mass flow
+  controller over Modbus RTU. Acquires several process variables such as
+  pressure, temperature, mass flow and volumetric flow, and also sets the mass
+  flow setpoint. Communicates over a serial RS485 connection.
+
+  .. Note::
+     This object was developed for Alicat MFCs supporting the Modbus RTU
+     protocol. Other communication protocols (e.g. ASCII) are not supported in
+     this implementation.
+
+- :ref:`MCP9600`
+
+  Reads temperatures from Adafruit's `MCP9600 <https://www.adafruit.com/product
+  /4101>`_ thermocouple amplifier. Communicates over I2C.
+
+- :ref:`OpSens HandySens`
+
+  Reads data from OpSens' `single channel signal conditioner <https://opsens-
+  solutions.com/products/signal-conditioners-oem-boards/handysens-w/>`_ for
+  fiber-optics temperature, strain, pressure or position measurement.
+  Communicates over serial.
+
+  .. Important::
+     This object hasn't been maintained nor tested for a while, it is not sure
+     that it still works as expected !
+
+- :ref:`PiJuice`
+
+  Reads the charging status and battery level of Kubii's `PiJuice <https://
+  www.kubii.com/fr/14-chargeurs-alimentations-raspberry/2019-pijuice-hat-kubii
+  -3272496008793.html>`_ Raspberry Pi power supply.
+
+  .. Important::
+     This InOut was written for a specific application, so it may not be
+     usable as-is in the general case.
+
+- :ref:`Sager SG-GS1700`
+
+  Controls a `Sager SG-GS1700 <https://sagerindustrial.en.alibaba.com/
+  productgrouplist-805331243/
+  Four_tubulaire.html?spm=a2700.shop_index.88.23.432c2d34arZxF6/>`_ furnace
+  controller over a serial link using the AIBUS protocol. Allows reading the
+  process temperature (PV) and the current setpoint (SV), and writing a new
+  temperature setpoint.
+
+  .. Note::
+     This object was developed for a specific furnace controller. The AIBUS
+     frame format and checksum (ECC) follow the implementation provided with
+     the device.
+
+- :ref:`Spectrum M2I 4711`
+
+  Reads voltages from Spectrum's `M2i 4711 EXP <https://spectrum-
+  instrumentation.com/products/details/M2i4711.php>`_ high-speed ADC
+  communicating over PCIexpress.
+
+  .. Important::
+     This object hasn't been maintained nor tested for a while, it is not sure
+     that it still works as expected !
+
+Collection multi-device drivers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- :ref:`Comedi`
+
+  Reads voltages from an `USB-DUX Sigma <https://github.com/glasgowneuro/usbdux/
+  tree/main/usbdux-sigma>`_ ADC (not manufactured anymore) using the `Comedi
+  <https://www.comedi.org/>`_ driver. The code was written to work as-is on
+  other acquisition boards supporting the Comedi driver, but this hasn't been
+  tested. Communicates over serial.
+
+  .. Important::
+     This object hasn't been maintained nor tested for a while, it is not sure
+     that it still works as expected !
+
+Collection outputs
+^^^^^^^^^^^^^^^^^^
+
 - :ref:`Sim868`
 
   Uses Waveshare's `GSM/GPRS/GNSS/Bluetooth hat <https://www.waveshare.com/
@@ -1014,8 +1048,8 @@ Outputs
      This InOut was written for a specific application, so it may not be
      usable as-is in the general case.
 
-Enhanced Actuators
-""""""""""""""""""
+Collection enhanced actuators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - :ref:`Kollmorgen AKD PDMM`
 

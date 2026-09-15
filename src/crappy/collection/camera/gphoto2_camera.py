@@ -5,21 +5,10 @@ from io import BytesIO
 from time import time
 from typing import Any
 import logging
-from warnings import warn
+import gphoto2 as gp
+from PIL import Image, ExifTags
 
-from .meta_camera import Camera
-from .._global import OptionalModule
-
-try:
-  from PIL import Image, ExifTags
-except (ModuleNotFoundError, ImportError):
-  Image = OptionalModule("Pillow")
-  ExifTags = OptionalModule("Pillow")
-
-try:
-  import gphoto2 as gp
-except (ModuleNotFoundError, ImportError):
-  gp = OptionalModule("gphoto2")
+from ...camera.meta_camera import Camera
 
 
 class CameraGPhoto2(Camera):
@@ -40,11 +29,6 @@ class CameraGPhoto2(Camera):
 
   def __init__(self) -> None:
     """Instantiates the available settings."""
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     super().__init__()
 

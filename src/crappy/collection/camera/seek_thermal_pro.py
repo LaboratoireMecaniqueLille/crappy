@@ -4,27 +4,10 @@ from typing import Any
 import numpy as np
 from time import time
 import logging
-from  warnings import warn
+import usb.util
+import usb.core
 
-from .meta_camera import Camera
-from .._global import OptionalModule
-
-try:
-  import usb.util
-  import usb.core
-
-  Seek_therm_usb_req = {'Write': usb.util.CTRL_OUT |
-                        usb.util.CTRL_TYPE_VENDOR |
-                        usb.util.CTRL_RECIPIENT_INTERFACE,
-                        'Read': usb.util.CTRL_IN |
-                        usb.util.CTRL_TYPE_VENDOR |
-                        usb.util.CTRL_RECIPIENT_INTERFACE,
-                        'Read_img': usb.util.CTRL_IN |
-                        usb.util.CTRL_TYPE_STANDARD |
-                        usb.util.CTRL_RECIPIENT_INTERFACE}
-
-except (ModuleNotFoundError, ImportError):
-  usb = OptionalModule("usb")
+from ...camera.meta_camera import Camera
 
 Seek_thermal_pro_vendor = 0x289D
 Seek_thermal_pro_product = 0x0011
@@ -72,12 +55,17 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
   def __init__(self) -> None:
     """Selects the right USB device."""
 
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
-
     super().__init__()
+
+    self._usb_req = {'Write': usb.util.CTRL_OUT |
+                     usb.util.CTRL_TYPE_VENDOR |
+                     usb.util.CTRL_RECIPIENT_INTERFACE,
+                     'Read': usb.util.CTRL_IN |
+                     usb.util.CTRL_TYPE_VENDOR |
+                     usb.util.CTRL_RECIPIENT_INTERFACE,
+                     'Read_img': usb.util.CTRL_IN |
+                     usb.util.CTRL_TYPE_STANDARD |
+                     usb.util.CTRL_RECIPIENT_INTERFACE}
 
     self._dev = None
     self._calib = None
@@ -216,7 +204,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     # Reading all the chunks containing the frame information
     while to_read - len(ret) > 512:
       ret += self._dev.read(
-        endpoint=Seek_therm_usb_req['Read_img'],
+        endpoint=self._usb_req['Read_img'],
         size_or_buffer=int(to_read / (Seek_thermal_pro_dimensions['Raw height']
                            / 20)),
         timeout=1000)
@@ -273,12 +261,12 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     """Wrapper for sending USB messages."""
 
     self.log(logging.DEBUG, f"Sending USB command with request type "
-                            f"{Seek_therm_usb_req['Write']}, request "
+                            f"{self._usb_req['Write']}, request "
                             f"{request}, value {0}, index {0},length or "
                             f"data {data}")
 
     try:
-      return self._dev.ctrl_transfer(bmRequestType=Seek_therm_usb_req['Write'],
+      return self._dev.ctrl_transfer(bmRequestType=self._usb_req['Write'],
                                      bRequest=request,
                                      wValue=0,
                                      wIndex=0,
@@ -291,11 +279,11 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     """Wrapper for reading USB messages."""
 
     self.log(logging.DEBUG, f"Sending USB command with request type "
-                            f"{Seek_therm_usb_req['Read']}, request {request},"
+                            f"{self._usb_req['Read']}, request {request},"
                             f" value {0}, index {0},length or data {data}")
 
     try:
-      return self._dev.ctrl_transfer(bmRequestType=Seek_therm_usb_req['Read'],
+      return self._dev.ctrl_transfer(bmRequestType=self._usb_req['Read'],
                                      bRequest=request,
                                      wValue=0,
                                      wIndex=0,

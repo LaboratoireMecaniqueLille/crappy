@@ -1,33 +1,20 @@
 # coding: utf-8
 
 from .ads1115 import ADS1115
-from .agilent_34420A import Agilent34420a
-from .comedi import Comedi
 from .daqmx import DAQmx
-from .eurotherm_EPC3008 import EurothermEPC3008
 from .fake_inout import FakeInOut
-from .flow_controller_alicat import FlowControllerAlicat
 from .gpio_pwm import GPIOPWM
 from .gpio_switch import GPIOSwitch
-from .kollmorgen_akd_pdmm import KollmorgenAKDPDMM
 from .labjack_t7 import LabjackT7
 from .labjack_t7_streamer import T7Streamer
-from .labjack_ue9 import LabjackUE9
-from .mcp9600 import MCP9600
 from .mprls import MPRLS
 from .nau7802 import NAU7802
 from .ni_daqmx import NIDAQmx
-from .opsens_handysens import HandySens
-from .pijuice_hat import PiJuice
 from .phidgets_wheatstone_bridge import PhidgetWheatstoneBridge
-from .sager_sg_gs1700 import SagerSG_GS1700
-from .sim868 import Sim868
-from .spectrum_m2i4711 import SpectrumM2I4711
-from .waveshare_ad_da import WaveshareADDA
-from .waveshare_high_precision import WaveshareHighPrecision
 
 from .meta_inout import InOut
 
 # All the inout objects
 from ._deprecated import deprecated_inouts
+from ._collection import moved_to_collection
 inout_dict: dict[str, type[InOut]] = InOut.classes

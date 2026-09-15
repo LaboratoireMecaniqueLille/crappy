@@ -184,8 +184,9 @@ class RaspberryPiCamera2(Camera):
 
   Important:
     This class interfaces with the same hardware as
-    :class:`~crappy.camera.RaspberryPiCamera`, but using an updated library.
-    It is strongly recommended to use this class instead of the legacy one.
+    :class:`~crappy.collection.camera.raspberry_pi_camera.RaspberryPiCamera`,
+    but using an updated library. It is strongly recommended to use this class
+    instead of the legacy one.
 
   .. versionadded:: 2.0.7
   """

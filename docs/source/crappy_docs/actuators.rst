@@ -2,12 +2,16 @@
 Actuators
 =========
 
-Regular Actuators
------------------
+Actuator drivers
+----------------
+
+Drivers whose documented path starts with ``crappy.collection`` are retained
+for compatibility but are not actively maintained. Import
+``crappy.collection`` before selecting one of them in a Machine Block.
 
 Adafruit DC Motor Hat
 +++++++++++++++++++++
-.. autoclass:: crappy.actuator.DCMotorHat
+.. autoclass:: crappy.collection.actuator.adafruit_dc_motor_hat.DCMotorHat
    :members: open, set_speed, stop, close
    :special-members: __init__
 
@@ -39,13 +43,13 @@ Kollmorgen ServoStar 300
 
 Newport TRA6PPD
 +++++++++++++++
-.. autoclass:: crappy.actuator.NewportTRA6PPD
+.. autoclass:: crappy.collection.actuator.newport_tra6ppd.NewportTRA6PPD
    :members: open, get_position, set_position, stop, close
    :special-members: __init__
 
 Oriental ARD-K
 ++++++++++++++
-.. autoclass:: crappy.actuator.OrientalARDK
+.. autoclass:: crappy.collection.actuator.oriental_ard_k.OrientalARDK
    :members: open, get_position, set_speed, set_position, stop, close
    :special-members: __init__
 
@@ -65,7 +69,7 @@ Pololu Tic
 
 Schneider MDrive 23
 +++++++++++++++++++
-.. autoclass:: crappy.actuator.SchneiderMDrive23
+.. autoclass:: crappy.collection.actuator.schneider_mdrive_23.SchneiderMDrive23
    :members: open, get_position, set_speed, set_position, stop, close
    :special-members: __init__
 

@@ -1,15 +1,9 @@
 # coding: utf-8
 
 import logging
-from warnings import warn
+from serial import Serial
 
-from .meta_actuator import Actuator
-from .._global import OptionalModule
-
-try:
-  from serial import Serial
-except (ModuleNotFoundError, ImportError):
-  Serial = OptionalModule("pyserial")
+from ...actuator.meta_actuator import Actuator
 
 
 class OrientalARDK(Actuator):
@@ -36,11 +30,6 @@ class OrientalARDK(Actuator):
       gain: The gain to apply to speed commands, in `mm/min`. The default value
         corresponds to `0.07mm/min` for a command value of `1`.
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._ser = None
 

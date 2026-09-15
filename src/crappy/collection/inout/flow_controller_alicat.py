@@ -2,20 +2,11 @@
 
 import logging
 import time
-from warnings import warn
+from pymodbus.client.serial import ModbusSerialClient
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
-from .meta_inout import InOut
-from .._global import OptionalModule
-
-try:
-  from pymodbus.client.serial import ModbusSerialClient
-  from pymodbus.constants import Endian
-  from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
-except (ModuleNotFoundError, ImportError):
-  ModbusSerialClient = OptionalModule("pymodbus")
-  Endian = OptionalModule("pymodbus")
-  BinaryPayloadBuilder = OptionalModule("pymodbus")
-  BinaryPayloadDecoder = OptionalModule("pymodbus")
+from ...inout.meta_inout import InOut
 
 
 REGISTERS: dict[str, tuple[int, int]] = {"Pressure": (1202, 2),
@@ -43,11 +34,6 @@ class FlowControllerAlicat(InOut):
         Windows, "/dev/ttyUSB0" on Linux).
       timeout: Read/write timeout (seconds).
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._client: ModbusSerialClient | None = None
 

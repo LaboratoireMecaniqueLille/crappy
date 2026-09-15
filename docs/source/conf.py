@@ -915,7 +915,18 @@ autodoc_default_options = {'undoc-members': True}
 autodoc_docstring_signature = True
 
 # This value contains a list of modules to be mocked up
-autodoc_mock_imports = list()
+# It contains in particular the modules imported in crappy.collection, that are
+# not guarded with OptionalModule like in regular Crappy
+autodoc_mock_imports = ['PIL',
+                        'RPi',
+                        'cv2',
+                        'gphoto2',
+                        'picamera',
+                        'pymodbus',
+                        'serial',
+                        'spidev',
+                        'usb',
+                        'ue9']
 
 # This value controls how to represent typehints
 autodoc_typehints = 'signature'

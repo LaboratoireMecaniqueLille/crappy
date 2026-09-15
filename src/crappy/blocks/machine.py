@@ -7,7 +7,10 @@ from dataclasses import dataclass, fields
 import logging
 
 from .meta_block import Block
-from ..actuator import actuator_dict, Actuator, deprecated_actuators
+from .._collection import (CollectionEntry, collection_registry,
+                           load_collection_class)
+from ..actuator import (actuator_dict, Actuator, deprecated_actuators,
+                        moved_to_collection)
 
 
 @dataclass
@@ -170,13 +173,43 @@ class Machine(Block):
           f"to {deprecated_actuators[type_]} ! Please update your code "
           f"accordingly and check the documentation for more information")
 
-    # Checking that all the given actuators are valid
-    if not all(type_ in actuator_dict for type_ in self._types):
-      unknown = ', '.join(tuple(type_ for type_ in self._types if type_
-                          not in actuator_dict))
+    # None means that this is an ordinary core or user-defined InOut
+    self._collection_entries: list[CollectionEntry] = list()
+    unknown = list()
+
+    # Checking that all the given Actuators names are valid
+    for type_ in self._types:
+      # Check if the requested Actuator is part of crappy.collection
+      entry = collection_registry.get("Actuator", type_)
+      # This loop only handles invalid Actuators
+      if type_ in actuator_dict:
+        # Store the Actuator if it was already loaded in a separate Block
+        if (entry is not None and
+            actuator_dict[type_].__module__ == entry.module):
+          self._collection_entries.append(entry)
+        continue
+      # First option, the Actuator should be loaded from crappy.collection
+      if entry is not None:
+        # This call raises early if the module cannot be loaded
+        load_collection_class(entry, actuator_dict)
+        self._collection_entries.append(entry)
+      # Second case, the Actuator was moved to crappy.collection but this
+      # module was not imported
+      # Not reporting all moved Actuators at once but temporary for migration
+      elif type_ in moved_to_collection:
+        raise NotImplementedError(f"The Actuator {type_} was moved to "
+                                  f"crappy.collection. To use it, simply "
+                                  f"add import crappy.collection at the "
+                                  f"beginning of your script")
+      # The name of the Actuator simply cannot be found anywhere
+      else:
+        unknown.append(type_)
+    # Report all the missing Actuators at once instead of raising for only one
+    if unknown:
+      unknown = ', '.join(unknown)
       possible = ', '.join(sorted(actuator_dict.keys()))
-      raise ValueError(f"Unknown actuator type(s) : {unknown} ! "
-                       f"The possible types are : {possible}")
+      raise ValueError(f"Unknown actuator name(s) : {unknown}! "
+                       f"The currently available ones are: {possible}")
 
     # The settings that won't be passed to the Actuator objects
     self._settings = [{key: value for key, value in actuator.items()
@@ -199,6 +232,11 @@ class Machine(Block):
     # Checking the consistency of the linking
     if not self.inputs and not self.outputs:
       raise IOError("The Machine block isn't linked to any other block !")
+
+    # Under the spawn multiprocessing start method, it is necessary to re-load
+    # the modules from crappy.collection
+    for entry in self._collection_entries:
+      load_collection_class(entry, actuator_dict)
 
     # Instantiating the actuators and storing them
     self._actuators = [ActuatorInstance(

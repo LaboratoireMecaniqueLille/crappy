@@ -2,12 +2,16 @@
 Cameras
 =======
 
-Regular Cameras
----------------
+Camera drivers
+--------------
+
+Drivers whose documented path starts with ``crappy.collection`` are retained
+for compatibility but are not actively maintained. Import
+``crappy.collection`` before selecting one of them in a Camera Block.
 
 Camera gPhoto2
 ++++++++++++++
-.. autoclass:: crappy.camera.CameraGPhoto2
+.. autoclass:: crappy.collection.camera.gphoto2_camera.CameraGPhoto2
    :members: open, get_image, close
    :special-members: __init__
 
@@ -37,7 +41,7 @@ File Reader
 
 Raspberry Pi Camera
 +++++++++++++++++++
-.. autoclass:: crappy.camera.RaspberryPiCamera
+.. autoclass:: crappy.collection.camera.raspberry_pi_camera.RaspberryPiCamera
    :members: open, get_image, close
    :special-members: __init__
 
@@ -49,7 +53,7 @@ Raspberry Pi Camera 2
 
 Seek Thermal Pro
 ++++++++++++++++
-.. autoclass:: crappy.camera.SeekThermalPro
+.. autoclass:: crappy.collection.camera.seek_thermal_pro.SeekThermalPro
    :members: open, get_image, close
    :special-members: __init__
 

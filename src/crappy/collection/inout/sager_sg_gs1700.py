@@ -2,15 +2,9 @@
 
 import time
 import logging
-from warnings import warn
+import serial
 
-from .meta_inout import InOut
-from .._global import OptionalModule
-
-try:
-  import serial
-except (ModuleNotFoundError, ImportError):
-  serial = OptionalModule("pyserial")
+from ...inout.meta_inout import InOut
 
 # Addresses of the registers of the device
 CMD_READ = 0x52
@@ -40,11 +34,6 @@ class SagerSG_GS1700(InOut):
       timeout: Serial timeout (seconds).
       address: AIBUS device address.
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._ser: serial.Serial | None = None
 

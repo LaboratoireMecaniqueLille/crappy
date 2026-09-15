@@ -3,15 +3,9 @@
 from time import time
 from typing import Literal
 import logging
-from warnings import warn
+import serial
 
-from .meta_inout import InOut
-from .._global import OptionalModule
-
-try:
-  import serial
-except (ModuleNotFoundError, ImportError):
-  serial = OptionalModule("pyserial")
+from ...inout.meta_inout import InOut
 
 
 class Agilent34420a(InOut):
@@ -40,11 +34,6 @@ class Agilent34420a(InOut):
       baudrate: Desired baudrate for serial communication.
       timeout: Timeout for the serial connection, as a :obj:`float`.
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._ser = None
 

@@ -5,20 +5,10 @@ from time import sleep, time
 from re import fullmatch, findall
 from collections.abc import Sequence
 import logging
-from warnings import warn
+import RPi.GPIO as GPIO
+import spidev
 
-from .meta_inout import InOut
-from .._global import OptionalModule
-
-try:
-  import RPi.GPIO as GPIO
-except (ModuleNotFoundError, ImportError):
-  GPIO = OptionalModule("RPi.GPIO")
-
-try:
-  import spidev
-except (ModuleNotFoundError, ImportError):
-  spidev = OptionalModule("spidev")
+from ...inout.meta_inout import InOut
 
 # ADS1256 gain channel
 Ads1256_gain = {1: 0b000,
@@ -182,14 +172,9 @@ class WaveshareADDA(InOut):
 
       - ``vref``:
         `VREF` can be set independently of the chosen `VCC` value. The `VCC`
-        value has no influence on the ADC behaviour as it is always powered
+        value has no influence on the ADC behavior as it is always powered
         up with `5V`. Same goes for the DAC.
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._bus = None
 

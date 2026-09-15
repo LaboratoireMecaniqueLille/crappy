@@ -4,17 +4,10 @@ from time import sleep, time
 from collections.abc import Sequence
 from re import fullmatch
 import logging
-from warnings import warn
+from serial import Serial
+from serial.serialutil import SerialException
 
-from .meta_inout import InOut
-from .._global import OptionalModule
-
-try:
-  from serial import Serial
-  from serial.serialutil import SerialException
-except (ModuleNotFoundError, ImportError):
-  Serial = OptionalModule("pyserial")
-  SerialException = OptionalModule("pyserial")
+from ...inout.meta_inout import InOut
 
 
 class Sim868(InOut):
@@ -54,11 +47,6 @@ class Sim868(InOut):
 
         .. versionadded:: 2.0.0
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._ser = None
 
