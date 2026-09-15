@@ -26,17 +26,8 @@ if not is_installed:
 try:
   from usb import core
   from usb import util
-
-  Tic_usb_request = {'Cmd': util.CTRL_OUT |
-                     util.CTRL_TYPE_VENDOR |
-                     util.CTRL_RECIPIENT_DEVICE,
-                     'Var': util.CTRL_IN |
-                     util.CTRL_TYPE_VENDOR |
-                     util.CTRL_RECIPIENT_DEVICE}
 except (ModuleNotFoundError, ImportError):
   util = core = OptionalModule("pyusb")
-  Tic_usb_request = {'Cmd': 0x40,
-                     'Var': 0xC0}
 
 Tic_vendor_id = 0x1FFB
 
@@ -440,6 +431,13 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     super().__init__()
 
+    self._usb_request = {'Cmd': (util.CTRL_OUT |
+                                 util.CTRL_TYPE_VENDOR |
+                                 util.CTRL_RECIPIENT_DEVICE),
+                         'Var': (util.CTRL_IN |
+                                 util.CTRL_TYPE_VENDOR |
+                                 util.CTRL_RECIPIENT_DEVICE)}
+
     if backend not in Tic_backends:
       raise ValueError("backend should be in {}".format(Tic_backends))
     else:
@@ -724,7 +722,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         self._to_mm(yaml.load(self._ticcmd('-s'))['Current velocity'] / 10000)
     elif self._backend == 'USB':
       return self._to_mm(int.from_bytes(
-        self._usb_command(request_type=Tic_usb_request['Var'],
+        self._usb_command(request_type=self._usb_request['Var'],
                           request=Tic_cmd['Get_variable'],
                           index=Tic_var['Current_velocity'],
                           data_or_length=4),
@@ -746,7 +744,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         self._to_mm(yaml.load(self._ticcmd('-s'))['Current position'])
     elif self._backend == 'USB':
       return self._to_mm(int.from_bytes(
-        self._usb_command(request_type=Tic_usb_request['Var'],
+        self._usb_command(request_type=self._usb_request['Var'],
                           request=Tic_cmd['Get_variable'],
                           index=Tic_var['Current_position'],
                           data_or_length=4),
@@ -1018,7 +1016,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
                     ['Max speed'] / 10000)
     elif self._backend == 'USB':
       return self._to_mm(int.from_bytes(
-          self._usb_command(request_type=Tic_usb_request['Var'],
+          self._usb_command(request_type=self._usb_request['Var'],
                             request=Tic_cmd['Get_variable'],
                             index=Tic_var['Max_speed'],
                             data_or_length=4),
@@ -1040,21 +1038,21 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     elif self._backend == 'USB':
       # Reads the current bitfields
       kill_switch_map = int.from_bytes(
-        self._usb_command(request_type=Tic_usb_request['Var'],
+        self._usb_command(request_type=self._usb_request['Var'],
                           request=Tic_cmd['Get_setting'],
                           index=Tic_settings['Kill_switch_map'],
                           data_or_length=1),
         byteorder='little',
         signed=False)
       limit_forward_map = int.from_bytes(
-        self._usb_command(request_type=Tic_usb_request['Var'],
+        self._usb_command(request_type=self._usb_request['Var'],
                           request=Tic_cmd['Get_setting'],
                           index=Tic_settings['Limit_switch_forward_map'],
                           data_or_length=1),
         byteorder='little',
         signed=False)
       limit_reverse_map = int.from_bytes(
-        self._usb_command(request_type=Tic_usb_request['Var'],
+        self._usb_command(request_type=self._usb_request['Var'],
                           request=Tic_cmd['Get_setting'],
                           index=Tic_settings['Limit_switch_reverse_map'],
                           data_or_length=1),
@@ -1104,7 +1102,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       pass
     elif self._backend == 'USB':
       current = int.from_bytes(
-        self._usb_command(request_type=Tic_usb_request['Var'],
+        self._usb_command(request_type=self._usb_request['Var'],
                           request=Tic_cmd['Get_setting'],
                           index=Tic_settings['Switch_polarity_map'],
                           data_or_length=1),
@@ -1130,7 +1128,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       self._usb_command(request=Tic_cmd['Reset'])
 
   def _usb_command(self,
-                   request_type: int = Tic_usb_request['Cmd'],
+                   request_type: int = 0x40,
                    request: int = 0,
                    value: int = 0,
                    index: int = 0,
