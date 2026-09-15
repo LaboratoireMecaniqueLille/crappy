@@ -1,0 +1,62 @@
+# coding: utf-8
+
+from ..._collection import CollectionEntry
+
+DRIVERS: tuple[CollectionEntry, ...] = (
+  CollectionEntry(
+      name="Agilent34420a",
+      kind="InOut",
+      module="crappy.collection.inout.agilent_34420A"),
+  CollectionEntry(
+      name="Comedi",
+      kind="InOut",
+      module="crappy.collection.inout.comedi"),
+  CollectionEntry(
+      name="EurothermEPC3008",
+      kind="InOut",
+      module="crappy.collection.inout.eurotherm_EPC3008"),
+  CollectionEntry(
+      name="FlowControllerAlicat",
+      kind="InOut",
+      module="crappy.collection.inout.flow_controller_alicat"),
+  CollectionEntry(
+      name="KollmorgenAKDPDMM",
+      kind="InOut",
+      module="crappy.collection.inout.kollmorgen_akd_pdmm"),
+  CollectionEntry(
+      name="LabjackUE9",
+      kind="InOut",
+      module="crappy.collection.inout.labjack_ue9"),
+  CollectionEntry(
+      name="MCP9600",
+      kind="InOut",
+      module="crappy.collection.inout.mcp9600"),
+  CollectionEntry(
+      name="HandySens",
+      kind="InOut",
+      module="crappy.collection.inout.opsens_handysens"),
+  CollectionEntry(
+      name="PiJuice",
+      kind="InOut",
+      module="crappy.collection.inout.pijuice_hat"),
+  CollectionEntry(
+      name="SagerSG_GS1700",
+      kind="InOut",
+      module="crappy.collection.inout.sager_sg_gs1700"),
+  CollectionEntry(
+      name="Sim868",
+      kind="InOut",
+      module="crappy.collection.inout.sim868"),
+  CollectionEntry(
+      name="SpectrumM2I4711",
+      kind="InOut",
+      module="crappy.collection.inout.spectrum_m2i4711"),
+  CollectionEntry(
+      name="WaveshareADDA",
+      kind="InOut",
+      module="crappy.collection.inout.waveshare_ad_da"),
+  CollectionEntry(
+      name="WaveshareHighPrecision",
+      kind="InOut",
+      module="crappy.collection.inout.waveshare_high_precision"),
+)

@@ -9,9 +9,12 @@ from types import MethodType
 from typing import Any
 
 from .block import VisionBlock
-from ..camera import deprecated_cameras, camera_dict, DummyCam
+from ..camera import (deprecated_cameras, camera_dict, DummyCam,
+                      moved_to_collection)
 from ...tool.camera_config import CameraConfig
 from ...camera import Camera as BaseCam
+from ..._collection import (CollectionEntry, collection_registry,
+                            load_collection_class)
 from ..._global import CameraConfigError, PrepareError
 
 
@@ -144,12 +147,37 @@ class CameraSource(VisionBlock):
           f"to {deprecated_cameras[camera]} ! Please update your code "
           f"accordingly and check the documentation for more information")
 
-    # Checking if the requested camera exists in Crappy
+    # None means that this is an ordinary core or user-defined Camera
+    self._collection_entry: CollectionEntry | None = None
+
+    # Checking if the requested Camera exists in Crappy
     if image_generator is None:
+      # Check if the requested Camera is part of crappy.collection
+      entry = collection_registry.get("Camera", camera)
+      # Cannot find the Camera in the list of available ones
       if camera not in camera_dict:
-        possible = ', '.join(sorted(camera_dict.keys()))
-        raise ValueError(f"Unknown Camera type: {camera}! "
-                         f"The possible types are: {possible}")
+        # First option, the Camera should be loaded from crappy.collection
+        if entry is not None:
+          # This call raises early if the module cannot be loaded
+          load_collection_class(entry, camera_dict)
+          self._collection_entry = entry
+        # Second case, the Camera was moved to crappy.collection but this
+        # module was not imported
+        elif camera in moved_to_collection:
+          raise NotImplementedError(f"The Camera {camera} was moved to "
+                                    f"crappy.collection. To use it, simply "
+                                    f"add import crappy.collection at the "
+                                    f"beginning of your script")
+        # The name of the Camera simply cannot be found anywhere
+        else:
+          possible = ', '.join(sorted(camera_dict.keys()))
+          raise ValueError(f"Unknown Camera name : {camera}! "
+                           f"The currently available ones are: {possible}")
+      # Case when the Camera was already loaded in a separate Block
+      elif (entry is not None
+            and camera_dict[camera].__module__ == entry.module):
+        self._collection_entry = entry
+
       self._camera_name: str = camera
     else:
       self._camera_name: str = 'Image Generator'
@@ -234,6 +262,11 @@ class CameraSource(VisionBlock):
 
     # Instantiating the Camera object for acquiring the images
     else:
+      # Under the spawn multiprocessing start method, it is necessary to
+      # re-load the modules from crappy.collection
+      if self._collection_entry is not None:
+        load_collection_class(self._collection_entry, camera_dict)
+
       self._camera = camera_dict[self._camera_name]()
       self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
       if self._camera is None:
