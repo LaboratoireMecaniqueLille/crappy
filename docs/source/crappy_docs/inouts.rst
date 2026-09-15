@@ -2,8 +2,12 @@
 In / Out
 ========
 
-Regular In/Outs
----------------
+In/Out drivers
+--------------
+
+Drivers whose documented path starts with ``crappy.collection`` are retained
+for compatibility but are not actively maintained. Import
+``crappy.collection`` before selecting one of them in an IOBlock.
 
 ADS1115
 +++++++
@@ -13,13 +17,13 @@ ADS1115
 
 Agilent 34420A
 ++++++++++++++
-.. autoclass:: crappy.inout.Agilent34420a
+.. autoclass:: crappy.collection.inout.agilent_34420A.Agilent34420a
    :members: open, get_data, close
    :special-members: __init__
 
 Comedi
 ++++++
-.. autoclass:: crappy.inout.Comedi
+.. autoclass:: crappy.collection.inout.comedi.Comedi
    :members: open, set_cmd, get_data, close, make_zero
    :special-members: __init__
 
@@ -31,7 +35,7 @@ DAQmx
 
 Eurotherm EPC3008
 +++++++++++++++++
-.. autoclass:: crappy.inout.EurothermEPC3008
+.. autoclass:: crappy.collection.inout.eurotherm_EPC3008.EurothermEPC3008
    :members: open, get_data, set_cmd, close
    :special-members: __init__
 
@@ -44,7 +48,7 @@ Fake Inout
 
 Flow Controller Alicat
 ++++++++++++++++++++++
-.. autoclass:: crappy.inout.FlowControllerAlicat
+.. autoclass:: crappy.collection.inout.flow_controller_alicat.FlowControllerAlicat
    :members: open, get_data, set_cmd, close
    :special-members: __init__
 
@@ -62,7 +66,7 @@ GPIO Switch
 
 Kollmorgen AKD PDMM
 +++++++++++++++++++
-.. autoclass:: crappy.inout.KollmorgenAKDPDMM
+.. autoclass:: crappy.collection.inout.kollmorgen_akd_pdmm.KollmorgenAKDPDMM
    :members: open, set_cmd, get_data, close
    :special-members: __init__
 
@@ -81,13 +85,13 @@ Labjack T7 Streamer
 
 Labjack UE9
 +++++++++++
-.. autoclass:: crappy.inout.LabjackUE9
+.. autoclass:: crappy.collection.inout.labjack_ue9.LabjackUE9
    :members: open, get_data, close, make_zero
    :special-members: __init__
 
 MCP9600
 +++++++
-.. autoclass:: crappy.inout.MCP9600
+.. autoclass:: crappy.collection.inout.mcp9600.MCP9600
    :members: open, get_data, close
    :special-members: __init__
 
@@ -112,7 +116,7 @@ NI DAQmx
 
 OpSens HandySens
 ++++++++++++++++
-.. autoclass:: crappy.inout.HandySens
+.. autoclass:: crappy.collection.inout.opsens_handysens.HandySens
    :members: open, get_data, close
    :special-members: __init__
 
@@ -124,37 +128,37 @@ Phidget Wheatstone Bridge
 
 PiJuice
 +++++++
-.. autoclass:: crappy.inout.PiJuice
+.. autoclass:: crappy.collection.inout.pijuice_hat.PiJuice
    :members: open, get_data, close
    :special-members: __init__
 
 Sager SG-GS1700
 +++++++++++++++
-.. autoclass:: crappy.inout.SagerSG_GS1700
+.. autoclass:: crappy.collection.inout.sager_sg_gs1700.SagerSG_GS1700
    :members: open, get_data, set_cmd, close
    :special-members: __init__
 
 Sim868
 ++++++
-.. autoclass:: crappy.inout.Sim868
+.. autoclass:: crappy.collection.inout.sim868.Sim868
    :members: open, set_cmd, close
    :special-members: __init__
 
 Spectrum M2I 4711
 +++++++++++++++++
-.. autoclass:: crappy.inout.SpectrumM2I4711
+.. autoclass:: crappy.collection.inout.spectrum_m2i4711.SpectrumM2I4711
    :members: open, start_stream, get_stream, stop_stream, close
    :special-members: __init__
 
 Waveshare AD/DA
 +++++++++++++++
-.. autoclass:: crappy.inout.WaveshareADDA
+.. autoclass:: crappy.collection.inout.waveshare_ad_da.WaveshareADDA
    :members: open, set_cmd, get_data, close
    :special-members: __init__
 
 Waveshare High Precision
 ++++++++++++++++++++++++
-.. autoclass:: crappy.inout.WaveshareHighPrecision
+.. autoclass:: crappy.collection.inout.waveshare_high_precision.WaveshareHighPrecision
    :members: open, get_data, close
    :special-members: __init__
 

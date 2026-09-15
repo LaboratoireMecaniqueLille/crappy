@@ -526,6 +526,11 @@ Supported hardware (Cameras, InOuts, Actuators)
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
+Drivers marked **Collection driver** belong to the :ref:`Driver collection`.
+These drivers are not actively maintained and require an explicit
+``import crappy.collection`` before they can be selected by name like the
+regular ones distributed and maintained with Crappy.
+
 Supported Cameras
 +++++++++++++++++
 
@@ -546,7 +551,7 @@ Supported Cameras
      that it still works as expected ! On the long-term, it should be totally
      removed.
 
-- :ref:`Camera gPhoto2`
+- :ref:`Camera gPhoto2` — **Collection driver**
 
   Reads images over USB from a camera supported by gPhoto2, including most of
   the Canon and Nikon models. It can either acquire images continuously, or
@@ -615,7 +620,7 @@ Supported Cameras
      that it still works as expected ! On the long-term, it should be totally
      removed.
 
-- :ref:`Raspberry Pi Camera`
+- :ref:`Raspberry Pi Camera` — **Collection driver**
 
   Allows reading images from a Raspberry Pi Camera, with Crappy running on a
   Raspberry Pi. It has been tested on Raspberry Pi 3 and 4, with a variety of
@@ -642,7 +647,7 @@ Supported Cameras
      now deprecated and should only be used for compatibility with old
      Raspberry Pi OS versions.
 
-- :ref:`Seek Thermal Pro`
+- :ref:`Seek Thermal Pro` — **Collection driver**
 
   Allows reading images from a Seek Thermal `Compact Pro <https://
   www.thermal.com/compact-series-cameras.html>`_ infrared camera.
@@ -663,7 +668,7 @@ Supported Cameras
 Supported Actuators
 +++++++++++++++++++
 
-- :ref:`Adafruit DC Motor Hat`
+- :ref:`Adafruit DC Motor Hat` — **Collection driver**
 
   Drives up to 4 DC motors using Adafruit's `DC & Stepper Motor HAT for
   Raspberry Pi <https://www.adafruit.com/product/2348>`_, using either
@@ -720,7 +725,7 @@ Supported Actuators
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
 
-- :ref:`Newport TRA6PPD`
+- :ref:`Newport TRA6PPD` — **Collection driver**
 
   Drives Newport's `TRA6PPD <https://www.newport.com/p/TRA6PPD>`_ miniature
   linear stepper motor actuator, in speed or in position.
@@ -729,7 +734,7 @@ Supported Actuators
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
 
-- :ref:`Oriental ARD-K`
+- :ref:`Oriental ARD-K` — **Collection driver**
 
   Drives Oriental Motor's `ARD-K <https://catalog.orientalmotor.com/item/s-
   closed-loop-stepper-motor-drivers-dc-input/ard-closed-loop-stepper-driver-
@@ -762,7 +767,7 @@ Supported Actuators
   controllers>`_ stepper motor drivers in speed or in position. Designed for
   driving all the Tic drivers, but tested only on the 36v4 model.
 
-- :ref:`Schneider MDrive 23`
+- :ref:`Schneider MDrive 23` — **Collection driver**
 
   Drives Schneider Electric's `MDrive 23 <https://www.novantaims.com/downloads
   /quickreference/mdi23plus_qr.pdf>`_ stepper motor in speed or in position.
@@ -796,7 +801,7 @@ Acquisition boards
   acquisition board in streaming mode. In this mode, it can only acquire data
   from the ADCs and does not support any other function.
 
-- :ref:`Labjack UE9`
+- :ref:`Labjack UE9` — **Collection driver**
 
   Controls Labjack's `UE9 <https://labjack.com/products/
   calibration-service-with-cert>`_ acquisition board. It can only read the
@@ -806,7 +811,7 @@ Acquisition boards
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
 
-- :ref:`Waveshare AD/DA`
+- :ref:`Waveshare AD/DA` — **Collection driver**
 
   Controls Waveshare's `AD/DA <https://www.waveshare.com/product/raspberry-pi/
   hats/ad-da-audio-sensors/high-precision-ad-da-board.htm>`_ Raspberry Pi
@@ -817,7 +822,7 @@ Acquisition boards
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
 
-- :ref:`Waveshare High Precision`
+- :ref:`Waveshare High Precision` — **Collection driver**
 
   Controls Waveshare's `High Precision HAT
   <https://www.waveshare.com/18983.htm>`_ Raspberry Pi acquisition hat. It
@@ -837,7 +842,7 @@ Sensors
   Reads voltages from Adafruit's `ADS 1115 <https://www.adafruit.com/product/
   1085>`_ ADC. Communicates over I2C.
 
-- :ref:`Agilent 34420A`
+- :ref:`Agilent 34420A` — **Collection driver**
 
   Reads voltages or resistances from Agilent's `34420A <https://www.keysight.
   com/us/en/product/34420A/micro-ohm-meter.html?&cc=FR&lc=fre>`_ precision
@@ -847,7 +852,7 @@ Sensors
      This object hasn't been maintained nor tested for a while, it is not sure
      that it still works as expected !
 
-- :ref:`Eurotherm EPC3008`
+- :ref:`Eurotherm EPC3008` — **Collection driver**
 
   Controls an `Eurotherm EPC3008 <https://www.eurotherm.com/us/products/
   temperature-controllers-us/single-loop-temperature-controllers-us/
@@ -868,7 +873,7 @@ Sensors
   data acquisition. Mainly intended for demonstration, and used in the
   distributed examples.
 
-- :ref:`Flow Controller Alicat`
+- :ref:`Flow Controller Alicat` — **Collection driver**
 
   Reads and controls an `Alicat <https://www.alicat.com/products/
   mass-flow-meters-and-controllers/mass-flow-controllers/>`_ mass flow
@@ -881,7 +886,7 @@ Sensors
      protocol. Other communication protocols (e.g. ASCII) are not supported in
      this implementation.
 
-- :ref:`MCP9600`
+- :ref:`MCP9600` — **Collection driver**
 
   Reads temperatures from Adafruit's `MCP9600 <https://www.adafruit.com/product
   /4101>`_ thermocouple amplifier. Communicates over I2C.
@@ -896,7 +901,7 @@ Sensors
   Reads voltages from Sparfun's `'Qwiic Scale' NAU7802 <https://www.sparkfun.
   com/products/15242>`_ load cell conditioner. Communicates over I2C.
 
-- :ref:`OpSens HandySens`
+- :ref:`OpSens HandySens` — **Collection driver**
 
   Reads data from OpSens' `single channel signal conditioner <https://opsens-
   solutions.com/products/signal-conditioners-oem-boards/handysens-w/>`_ for
@@ -917,7 +922,7 @@ Sensors
      following link `<https://www.phidgets.com/?prodid=957#Tab_User_Guide>`_ to
      connect properly to the Hub.
 
-- :ref:`PiJuice`
+- :ref:`PiJuice` — **Collection driver**
 
   Reads the charging status and battery level of Kubii's `PiJuice <https://
   www.kubii.com/fr/14-chargeurs-alimentations-raspberry/2019-pijuice-hat-kubii
@@ -927,7 +932,7 @@ Sensors
      This InOut was written for a specific application, so it may not be
      usable as-is in the general case.
 
-- :ref:`Sager SG-GS1700`
+- :ref:`Sager SG-GS1700` — **Collection driver**
 
   Controls a `Sager SG-GS1700 <https://sagerindustrial.en.alibaba.com/
   productgrouplist-805331243/
@@ -941,7 +946,7 @@ Sensors
      frame format and checksum (ECC) follow the implementation provided with
      the device.
 
-- :ref:`Spectrum M2I 4711`
+- :ref:`Spectrum M2I 4711` — **Collection driver**
 
   Reads voltages from Spectrum's `M2i 4711 EXP <https://spectrum-
   instrumentation.com/products/details/M2i4711.php>`_ high-speed ADC
@@ -954,7 +959,7 @@ Sensors
 Multi-device drivers
 """"""""""""""""""""
 
-- :ref:`Comedi`
+- :ref:`Comedi` — **Collection driver**
 
   Reads voltages from an `USB-DUX Sigma <https://github.com/glasgowneuro/usbdux/
   tree/main/usbdux-sigma>`_ ADC (not manufactured anymore) using the `Comedi
@@ -1003,7 +1008,7 @@ Outputs
   .. Important:: Only works on a Raspberry Pi ! Tested on Raspberry Pi 3 and 4,
      with the *Buster* and *Bullseye* Raspberry Pi Os for the latter.
 
-- :ref:`Sim868`
+- :ref:`Sim868` — **Collection driver**
 
   Uses Waveshare's `GSM/GPRS/GNSS/Bluetooth hat <https://www.waveshare.com/
   gsm-gprs-gnss-hat.htm>`_ for sending SMS. The other functionalities are not
@@ -1017,7 +1022,7 @@ Outputs
 Enhanced Actuators
 """"""""""""""""""
 
-- :ref:`Kollmorgen AKD PDMM`
+- :ref:`Kollmorgen AKD PDMM` — **Collection driver**
 
   Drives Kollmorgen's `AKD PDMM <https://www.kollmorgen.com/en-us/products/
   drives/servo/akd-pdmm/akd-pdmm-programmable-drive-multi-axis-master/>`_

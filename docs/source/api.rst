@@ -13,6 +13,7 @@ object in Crappy is to read its source code !
    :maxdepth: 2
 
    crappy_docs/actuators.rst
+   crappy_docs/collection.rst
    crappy_docs/blocks.rst
    crappy_docs/cameras.rst
    crappy_docs/modifiers.rst
