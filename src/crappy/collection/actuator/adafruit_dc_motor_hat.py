@@ -4,10 +4,9 @@ from struct import pack_into
 from time import sleep
 from typing import Literal
 import logging
-from warnings import warn
 
-from .meta_actuator import Actuator
-from .._global import OptionalModule
+from ...actuator.meta_actuator import Actuator
+from ..._global import OptionalModule
 
 try:
   from adafruit_motorkit import MotorKit
@@ -91,11 +90,6 @@ class DCMotorHat(Actuator):
       i2c_port: The I2C port over which the HAT should communicate. On most
         Raspberry Pi models the default I2C port is `1`.
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._bus = None
     self._buf = bytearray(4)

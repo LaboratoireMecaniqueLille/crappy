@@ -5,15 +5,9 @@ from struct import pack, unpack
 from typing import Literal
 from collections.abc import Sequence
 import logging
-from warnings import warn
+from pymodbus.client.tcp import ModbusTcpClient
 
-from .meta_inout import InOut
-from .._global import OptionalModule
-try:
-  from pymodbus.client.tcp import ModbusTcpClient
-except (ModuleNotFoundError, ImportError):
-  ModbusTcpClient = OptionalModule("pymodbus", "Cannot use KollMorgenVariator")
-
+from ...inout.meta_inout import InOut
 
 coil_addr = {'power': 0,
              'move_abs': 1,
@@ -67,11 +61,6 @@ class KollmorgenAKDPDMM(InOut):
     
     .. versionremoved:: 1.5.10 *speed*, *acc*, *decc* and *labels* arguments
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._variator = None
 

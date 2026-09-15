@@ -2,15 +2,9 @@
 
 from time import time
 import logging
-from warnings import warn
+import serial
 
-from .meta_inout import InOut
-from .._global import OptionalModule
-
-try:
-  import serial
-except (ModuleNotFoundError, ImportError):
-  serial = OptionalModule("pyserial")
+from ...inout.meta_inout import InOut
 
 
 class HandySens(InOut):
@@ -32,11 +26,6 @@ class HandySens(InOut):
       device: Address of the serial connection for communicating with the
         OpSens.
     """
-
-    warn(f"Starting from version 2.1.0, {type(self).__name__} will be moved "
-         f"to crappy.collection. Your code that uses it will still work as "
-         f"is, except you will now need to import crappy.collection at the "
-         f"top of your script.", FutureWarning)
 
     self._dev = None
 
