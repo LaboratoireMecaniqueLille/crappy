@@ -11,6 +11,7 @@ video-extensometry.
 from time import strftime, gmtime
 from pathlib import Path
 import crappy
+import crappy.collection
 
 save_path = Path(f"biotens_data/{strftime('%a %b %d %H_%M_%S', gmtime())}")
 
