@@ -24,6 +24,18 @@ The Actuator, Camera, and InOut API pages still contain the class-level
 documentation for collection drivers. Their import paths start with
 ``crappy.collection`` to distinguish them from actively maintained drivers.
 
+Contributing drivers
+--------------------
+
+User contributions to ``crappy.collection`` are welcome. The aim is to build a
+larger community-driven base of hardware drivers, including drivers written for
+specialized devices or individual experimental setups.
+
+Unlike contributions to the actively maintained parts of Crappy, collection
+drivers are not expected to meet a particular code-quality standard. A driver
+can therefore be shared with other users even when it is application-specific,
+experimental, or not maintained over time.
+
 Discovering and checking drivers
 --------------------------------
 
