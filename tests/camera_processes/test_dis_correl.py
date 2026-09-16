@@ -66,6 +66,8 @@ class TestDISCorrelProcess(CameraProcessTestBase):
       'patch_size': 8,
       'patch_stride': 3,
       'residual': False,
+      'border': 16,
+      'follow': False,
     }
     defaults.update(kwargs)
     return DISCorrelProcess(**defaults)
@@ -97,7 +99,9 @@ class TestDISCorrelProcess(CameraProcessTestBase):
                                  gradient_iterations=6,
                                  patch_size=7,
                                  patch_stride=8,
-                                 residual=True)
+                                 residual=True,
+                                 border=(9, 10),
+                                 follow=True)
 
     with patch.object(dis_correl_module, 'DISCorrelTool',
                       DummyDISCorrelTool):
@@ -118,6 +122,8 @@ class TestDISCorrelProcess(CameraProcessTestBase):
       'gradient_iterations': 6,
       'patch_size': 7,
       'patch_stride': 8,
+      'border': (9, 10),
+      'follow': True,
     })
 
   def test_loop_sets_reference_then_sends_data_and_overlay(self) -> None:

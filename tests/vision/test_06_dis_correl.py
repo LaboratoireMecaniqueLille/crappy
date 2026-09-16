@@ -108,6 +108,8 @@ class TestDISCorrelProcessor(VisionTestBase):
     self.assertEqual((processor._patch.x_start, processor._patch.x_end,
                       processor._patch.y_start, processor._patch.y_end),
                      (2, 6, 1, 4))
+    self.assertEqual(processor._border, 16)
+    self.assertFalse(processor._follow)
 
   def test_constructor_normalizes_custom_fields_and_residual(self) -> None:
     """Checks scalar/iterable fields and automatic residual labeling."""
@@ -165,6 +167,11 @@ class TestDISCorrelProcessor(VisionTestBase):
       {'patch_stride': 0},
       {'patch_size': 3, 'patch_stride': 3},
       {'residual': 1},
+      {'border': 'wide'},
+      {'border': (1,)},
+      {'border': (1, -1)},
+      {'border': -1},
+      {'follow': 1},
     )
     for options in invalid:
       with self.subTest(options=options):
@@ -227,7 +234,9 @@ class TestDISCorrelProcessor(VisionTestBase):
                                     gradient_iterations=6,
                                     patch_size=9,
                                     patch_stride=7,
-                                    residual=True)
+                                    residual=True,
+                                    border=(9, 10),
+                                    follow=True)
     self.add_image_input(processor)
     processor.recv_configs = Mock(return_value={})
     processor._log_queue = Mock()
@@ -252,6 +261,8 @@ class TestDISCorrelProcessor(VisionTestBase):
       'gradient_iterations': 6,
       'patch_size': 9,
       'patch_stride': 7,
+      'border': (9, 10),
+      'follow': True,
     })
     inherited.assert_called_once_with()
     self.assertEqual(tool.set_box_calls, 1)
