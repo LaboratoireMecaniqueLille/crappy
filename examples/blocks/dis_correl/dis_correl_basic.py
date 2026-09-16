@@ -69,6 +69,8 @@ if __name__ == '__main__':
       # here only the strain values
       # The labels for sending the calculated strain to downstream Blocks
       labels=('t(s)', 'meta', 'Exx(%)', 'Eyy(%)'),
+      follow=True  # Required because we're applying 20% strain which is quite
+      # a large strain and the patch might be lost if it's not in the center
 
       # Sticking to default for the other arguments
   )
