@@ -40,7 +40,9 @@ class DISCorrelProcess(CameraProcess):
                init: bool,
                patch_size: int,
                patch_stride: int,
-               residual: bool) -> None:
+               residual: bool,
+               border: int | tuple[int, int] | None,
+               follow: bool) -> None:
     """Sets the arguments and initializes the parent class.
     
     Args:
@@ -109,6 +111,20 @@ class DISCorrelProcess(CameraProcess):
       residual: If :obj:`True`, the residuals will be computed at each new
         frame and sent to downstream Blocks, by default under the ``'res'``
         label.
+      border: Width in pixels of the additional area around the correlation
+        patch that is passed to DISFlow. An :obj:`int` applies the same border
+        in both directions, while a ``(x, y)`` tuple allows setting the
+        horizontal and vertical borders independently. ``None`` uses the full
+        image, which corresponds to the former behavior.
+
+        ..  versionadded:: 2.1.0
+      follow: If :obj:`True`, shifts the correlation area according to the
+        average rigid-body displacement measured on the patch. This allows the
+        patch to follow large cumulative translations while keeping the
+        correlation area small. The reported fields remain relative to the
+        original reference image.
+
+        .. versionadded:: 2.1.0
     """
 
     super().__init__()
@@ -127,6 +143,8 @@ class DISCorrelProcess(CameraProcess):
     self._gradient_iterations: int = gradient_iterations
     self._patch_size: int = patch_size
     self._patch_stride: int = patch_stride
+    self._border: int | tuple[int, int] | None = border
+    self._follow: bool = follow
     
     # Other attributes
     self._residual: bool = residual
@@ -149,7 +167,9 @@ class DISCorrelProcess(CameraProcess):
         iterations=self._iterations,
         gradient_iterations=self._gradient_iterations,
         patch_size=self._patch_size,
-        patch_stride=self._patch_stride)
+        patch_stride=self._patch_stride,
+        border=self._border,
+        follow=self._follow)
 
     if self._dis_correl is None:
       raise RuntimeError("The DISCOrrelTool wasn't properly set")

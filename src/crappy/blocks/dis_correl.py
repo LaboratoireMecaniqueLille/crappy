@@ -80,6 +80,8 @@ class DISCorrel(Camera):
                patch_size: int = 8,
                patch_stride: int = 3,
                residual: bool = False,
+               border: int | tuple[int, int] | None = 16,
+               follow: bool = False,
                **kwargs) -> None:
     """Sets the arguments and initializes the parent class.
 
@@ -300,6 +302,25 @@ class DISCorrel(Camera):
         label, that should not be included in the given labels. This option is
         mainly intended as a debug feature, to monitor the quality of the
         image correlation.
+      border: Width in pixels of the additional area around the correlation
+        patch that is passed to DISFlow. An :obj:`int` applies the same border
+        in both directions, while a ``(x, y)`` tuple allows setting the
+        horizontal and vertical borders independently. ``None`` uses the full
+        image, which corresponds to the legacy behavior. A larger border
+        provides stability under large displacements, at the cost of a
+        performance penalty. Without ``follow``, it should exceed the maximum
+        displacement from the reference image; with ``follow``, it should
+        exceed the expected displacement between consecutive frames.
+
+        ..  versionadded:: 2.1.0
+      follow: If :obj:`True`, shifts the correlation area according to the
+        average rigid-body displacement measured on the patch. This allows the
+        patch to follow large cumulative translations while keeping the
+        correlation area small. The reported fields remain relative to the
+        original reference image. This option is relevant when large
+        displacements of the observed area are expected.
+
+        .. versionadded:: 2.1.0
       **kwargs: Any additional argument will be passed to the
         :class:`~crappy.camera.Camera` object, and used as a kwarg to its
         :meth:`~crappy.camera.Camera.open` method.
@@ -406,6 +427,19 @@ class DISCorrel(Camera):
       raise TypeError("init must be a boolean")
     if not isinstance(residual, bool):
       raise TypeError("residual must be a boolean")
+    if border is not None and not isinstance(border, (int, tuple)):
+      raise TypeError("border must be either None, an integer, or a tuple of "
+                      "two integers")
+    if (isinstance(border, tuple) and
+        (len(border) != 2 or not all(isinstance(val, int) for val in border) or
+         not all(val >= 0 for val in border))):
+      raise ValueError("If provided as a tuple, border must contain exactly "
+                       "two non-negative integers")
+    if isinstance(border, int) and border < 0:
+      raise ValueError("If provided as an integer, border must be "
+                       "non-negative")
+    if not isinstance(follow, bool):
+      raise TypeError("follow must be a boolean")
 
     self._patch_int: tuple[int, int, int, int] | None = patch
     self._patch: Box | None = None
@@ -424,6 +458,8 @@ class DISCorrel(Camera):
     self._patch_size: int = patch_size
     self._patch_stride: int = patch_stride
     self._residual: bool = residual
+    self._border: int | tuple[int, int] | None = border
+    self._follow: bool = follow
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
@@ -463,7 +499,9 @@ class DISCorrel(Camera):
         gradient_iterations=self._gradient_iterations,
         patch_size=self._patch_size,
         patch_stride=self._patch_stride,
-        residual=self._residual)
+        residual=self._residual,
+        border=self._border,
+        follow=self._follow)
 
     super().prepare()
 
