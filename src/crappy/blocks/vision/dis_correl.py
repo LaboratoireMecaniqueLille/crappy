@@ -413,8 +413,9 @@ class DISCorrelProcessor(VisionBlock):
       raise RuntimeError("The DISCorrel tool should have been instantiated")
     self.log(logging.DEBUG, "Processing the received image")
     data = self._dis_correl.get_data(img, self._residual)
+    x_offset, y_offset = self._dis_correl.offset
     self.send([metadata['t(s)'], metadata, *data,
-               SpotsBoxes(self._dis_correl.box)])
+               SpotsBoxes(self._dis_correl.box + (x_offset, y_offset))])
 
     # If requested, displays the FPS of the image display
     if self.display_freq:

@@ -205,7 +205,8 @@ class DISCorrelProcess(CameraProcess):
     self.send([self.metadata['t(s)'], self.metadata, *data])
 
     # Sending the ROI to the Displayer for display
-    self.send_to_draw(SpotsBoxes(self._dis_correl.box))
+    x_offset, y_offset = self._dis_correl.offset
+    self.send_to_draw(SpotsBoxes(self._dis_correl.box + (x_offset, y_offset)))
 
   def set_config(self, config: Box) -> None:
     """Stores the region selected in the DISCorrelConfig window.

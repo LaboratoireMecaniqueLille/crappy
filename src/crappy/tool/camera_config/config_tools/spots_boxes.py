@@ -114,3 +114,31 @@ class SpotsBoxes:
 
     for i in range(4):
       self[i] = None
+
+  def copy(self, use_displacements: bool = False) -> SpotsBoxes:
+    """Returns an independent copy of the stored boxes.
+
+    Args:
+      use_displacements: If :obj:`True`, adds each Box's rounded ``x_disp``
+        and ``y_disp`` to its coordinates. Undefined displacements are treated
+        as zero. This is useful for generating overlays when the tracked boxes
+        themselves remain at their reference positions.
+
+    Returns:
+      A new SpotsBoxes instance with the same populated slots and initial
+      lengths. Each populated slot contains a new Box created using
+      :meth:`~crappy.tool.camera_config.config_tools.Box.__add__`.
+    """
+
+    spots = SpotsBoxes(x_l0=self.x_l0, y_l0=self.y_l0)
+    for i, spot in enumerate(self):
+      if spot is None:
+        continue
+
+      x_offset = spot.x_disp if (use_displacements
+                                 and spot.x_disp is not None) else 0
+      y_offset = spot.y_disp if (use_displacements
+                                 and spot.y_disp is not None) else 0
+      spots[i] = spot + (round(x_offset), round(y_offset))
+
+    return spots

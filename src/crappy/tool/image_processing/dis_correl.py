@@ -126,7 +126,7 @@ class DISCorrelTool:
     self._base: list[np.ndarray] | None = None
     self._norm2: list[float] | None = None
     self._correl_box: tuple[int, int, int, int] | None = None
-    self._offset: tuple[int, int] = (0, 0)
+    self.offset: tuple[int, int] = (0, 0)
 
     # Setting the parameters of Disflow
     self._dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
@@ -266,7 +266,7 @@ class DISCorrelTool:
 
     # Get the cropped reference image and offset current image
     x_min, x_max, y_min, y_max = self._correl_box
-    x_offset, y_offset = self._offset
+    x_offset, y_offset = self.offset
     img0_crop = np.ascontiguousarray(self._img0[y_min:y_max, x_min:x_max])
     img_crop = np.ascontiguousarray(img[y_min + y_offset:y_max + y_offset,
                                         x_min + x_offset:x_max + x_offset])
@@ -283,7 +283,7 @@ class DISCorrelTool:
     # Keeping only the user-defined patch for projection, and adding the
     # displacement offset to the optical flow
     flow = self._crop_to_box(self._dis_flow).copy()
-    x_offset, y_offset = self._offset
+    x_offset, y_offset = self.offset
     flow[:, :, 0] += x_offset
     flow[:, :, 1] += y_offset
 
@@ -337,7 +337,7 @@ class DISCorrelTool:
     new_x_offset = min(max(new_x_offset, -x_min), self._width - x_max)
     new_y_offset = min(max(new_y_offset, -y_min), self._height - y_max)
 
-    old_x_offset, old_y_offset = self._offset
+    old_x_offset, old_y_offset = self.offset
 
     # If the previous flow is reused as an initialization, correct it to match
     # the new coordinates system
@@ -345,4 +345,4 @@ class DISCorrelTool:
       self._dis_flow[:, :, 0] -= new_x_offset - old_x_offset
       self._dis_flow[:, :, 1] -= new_y_offset - old_y_offset
 
-    self._offset = (new_x_offset, new_y_offset)
+    self.offset = (new_x_offset, new_y_offset)
