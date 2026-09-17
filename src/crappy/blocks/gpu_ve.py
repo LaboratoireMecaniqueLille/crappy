@@ -226,7 +226,7 @@ class GPUVE(Camera):
         .. versionadded:: 1.5.10
       kernel_file: The path to the file containing the kernels to use for the
         correlation. Can be a :obj:`pathlib.Path` object or a :obj:`str`. If
-        not provided, the default :ref:`GPU Kernels` are used.
+        not provided, the default :ref:`GPU Kernels <gpu-kernels>` are used.
 
         .. versionadded:: 1.5.10
       iterations: The maximum number of iterations to run before returning the

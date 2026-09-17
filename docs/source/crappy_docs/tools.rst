@@ -142,6 +142,8 @@ GPU Correl Tool
              get_res, clean
    :special-members: __init__
 
+.. _gpu-kernels:
+
 GPU Kernels
 +++++++++++
 The `src/crappy/tool/image_processing/kernels.cu` file contains the default
