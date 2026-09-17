@@ -97,35 +97,27 @@ Once you have a compatible version of Python installed, and after optionally
 setting up a virtual environment, you're **ready to install Crappy**. A single
 line of code is necessary to install Crappy :
 
-.. tabs::
+**Without a virtual environment**
 
-   .. group-tab:: Without virtual environment
+.. code-block:: shell-session
 
-      .. code-block:: shell-session
+   python -m pip install crappy
 
-         python -m pip install crappy
+**In a virtual environment**
 
-   .. group-tab:: In a virtual environment
+On Linux and macOS, assuming your console is at the location of the virtual
+environment:
 
-      .. tabs::
+.. code-block:: shell-session
 
-         .. group-tab:: Linux & MacOS
+   venv_crappy/bin/python -m pip install crappy
 
-            Assuming your console is at the location of the virtual
-            environment :
+On Windows, assuming your console is at the location of the virtual
+environment:
 
-            .. code-block:: shell-session
+.. code-block:: shell-session
 
-               venv_crappy/bin/python -m pip install crappy
-
-         .. group-tab:: Windows
-
-            Assuming your console is at the location of the virtual
-            environment :
-
-            .. code-block:: shell-session
-
-               venv_crappy\Scripts\python.exe -m pip install crappy
+   venv_crappy\Scripts\python.exe -m pip install crappy
 
 Following th same pattern, you can also **install any additional module** that
 you would need to use along with Crappy. For example :
@@ -156,38 +148,30 @@ you would need to use along with Crappy. For example :
 Once you have installed Crappy, you can **run a few checks** to make sure it
 works fine on your system. First, try to simply import it :
 
-.. tabs::
+**Without a virtual environment**
 
-   .. group-tab:: Without virtual environment
+.. code-block:: shell-session
 
-      .. code-block:: shell-session
+   python -c "import crappy;print(crappy.__version__)"
 
-         python -c "import crappy;print(crappy.__version__)"
+**In a virtual environment**
 
-   .. group-tab:: In a virtual environment
+On Linux and macOS, assuming your console is at the location of the virtual
+environment:
 
-      .. tabs::
+.. code-block:: shell-session
 
-         .. group-tab:: Linux & MacOS
+   venv_crappy/bin/python -c "import crappy;print(crappy.__version__)"
 
-            Assuming your console is at the location of the virtual
-            environment :
+On Windows, assuming your console is at the location of the virtual
+environment:
 
-            .. code-block:: shell-session
+.. code-block:: shell-session
 
-               venv_crappy/bin/python -c "import crappy;print(crappy.__version__)"
-
-         .. group-tab:: Windows
-
-            Assuming your console is at the location of the virtual
-            environment :
-
-            .. code-block:: shell-session
-
-               venv_crappy\Scripts\python.exe -c "import crappy;print(crappy.__version__)"
+   venv_crappy\Scripts\python.exe -c "import crappy;print(crappy.__version__)"
 
 This command should return without an error and print the installed version of
-Crappy. If that is not the case, please refer to the :ref:`Troubleshooting`
+Crappy. If that is not the case, please refer to the :ref:`Troubleshooting <troubleshooting:troubleshooting>`
 page of the documentation.
 
 If you can successfully import Crappy, you can then try to run a few examples
@@ -197,37 +181,28 @@ the GitHub repository contains a wide collection of readily-runnable examples.
 To execute a test script called :file:`example.py`, run the following lines in
 a console :
 
-.. tabs::
+**Without a virtual environment**
 
-   .. group-tab:: Without virtual environment
+.. code-block:: shell-session
 
-      .. code-block:: shell-session
+   python example.py
 
-         python example.py
+**In a virtual environment**
 
-   .. group-tab:: In a virtual environment
+On Linux and macOS, assuming your console is at the location of the virtual
+environment and that :file:`example.py` is at the same level as the virtual
+environment:
 
-      .. tabs::
+.. code-block:: shell-session
 
-         .. group-tab:: Linux & MacOS
+   venv_crappy/bin/python example.py
 
-            Assuming your console is at the location of the virtual environment
-            and that :file:`example.py` is at the same level as the virtual
-            environment :
+On Windows, assuming your console is at the location of the virtual environment
+and that :file:`example.py` is at the same level as the virtual environment:
 
-            .. code-block:: shell-session
+.. code-block:: shell-session
 
-               venv_crappy/bin/python example.py
-
-         .. group-tab:: Windows
-
-            Assuming your console is at the location of the virtual environment
-            and that :file:`example.py` is at the same level as the virtual
-            environment :
-
-            .. code-block:: shell-session
-
-               venv_crappy\Scripts\python.exe example.py
+   venv_crappy\Scripts\python.exe example.py
 
 If you're successful with all these steps, congratulations ! You just installed
 Crappy on your machine ! We wish you success in your work.
