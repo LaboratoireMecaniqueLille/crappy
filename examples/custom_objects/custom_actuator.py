@@ -1,30 +1,27 @@
 # coding: utf-8
 
 """
-This example demonstrates the instantiation of a custom Actuator object in
-Crappy, in the case when the Actuator is driven in position. The example
-presented here shows only the basic steps for creating an Actuator object. It
-does not require any hardware to run, but necessitates the matplotlib Python
-module to be installed.
+This example demonstrates how to instantiate a custom Actuator object in Crappy
+that is driven in position. It shows the basic steps for creating an Actuator
+object. It does not require any hardware, but requires the matplotlib Python
+module.
 
-In Crappy, users can define their own Actuator objects and use them along with
-the Machine Block. This way, users can interface with their own hardware
-without having to integrate it in the distributed version of Crappy.
+In Crappy, users can define their own Actuator objects and use them with
+the Machine Block. This lets users interface with their own hardware without
+integrating it into the distributed version of Crappy.
 
 Here, a very simple Actuator object is instantiated. It can be driven in
-position, and output its current speed and position. It is controlled by a
-Machine Block, that sets the target position commands it receives from a
-Generator Block. The Generator and the Machine Block send respectively the
-target and measured positions to a Grapher Block for display. The goal here is
-to show the basic methods to use for creating a custom Actuator object driven
-in position mode. There is no example of a custom Actuator driven in speed
-mode, but it is very similar to the position mode.
+position and output its current speed and position. It is controlled by a
+Machine Block that sets the target position commands received from a Generator
+Block. The Generator and Machine Block send the target and measured positions,
+respectively, to a Grapher Block for display. The goal is to show the basic
+methods for creating a custom Actuator driven in position mode. A speed-mode
+Actuator can be implemented similarly.
 
 After starting this script, watch how the target position is set on the
 Actuator and how its position is simultaneously acquired. Notice how the
-position of the Actuator evolves towards the target. This demo ends after 42s.
-You can also hit CTRL+C to stop it earlier, but it is not a clean way to stop
-Crappy.
+position of the Actuator evolves towards the target. This demo ends after 42
+seconds. Click the stop button to end the demo early.
 """
 
 import crappy
@@ -36,9 +33,9 @@ class CustomActuator(crappy.actuator.Actuator):
   """This class demonstrates the instantiation of a custom Actuator object in
   Crappy.
 
-  It is fully recognized as an Actuator, and can be used by any Machine Block.
-  Each Actuator must be a child of crappy.actuator.Actuator, otherwise it is
-  not recognized as such.
+  It is fully recognized as an Actuator and can be used by any Machine Block.
+  Each Actuator must inherit from crappy.actuator.Actuator, otherwise, Crappy
+  does not recognize it as an Actuator.
   """
 
   def __init__(self, init_speed: float = 1) -> None:
@@ -97,7 +94,7 @@ class CustomActuator(crappy.actuator.Actuator):
   def get_speed(self) -> float:
     """This method should acquire and return the current speed of the Actuator.
 
-    Here, it first updates the state variables then returns the current speed
+    Here, it first updates the state variables, then returns the current speed
     value. In a real-life Actuator, this method would certainly communicate
     with hardware.
     """
@@ -109,7 +106,7 @@ class CustomActuator(crappy.actuator.Actuator):
     """This method should acquire and return the current position of the
     Actuator.
 
-    Here, it first updates the state variables then returns the current
+    Here, it first updates the state variables, then returns the current
     position value. In a real-life Actuator, this method would certainly
     communicate with hardware.
     """
@@ -121,7 +118,7 @@ class CustomActuator(crappy.actuator.Actuator):
     """In this method you would perform any action needed to disconnect from
     the hardware and release the resources.
 
-    There is no action to perform in this simple demo though.
+    There is no action to perform in this simple demo.
     """
 
     ...
@@ -196,6 +193,9 @@ if __name__ == '__main__':
   crappy.link(gen, graph)
   crappy.link(gen, mot)
   crappy.link(mot, graph)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

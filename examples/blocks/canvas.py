@@ -12,13 +12,10 @@ spots are updated based on the values received from the upstream Blocks.
 In this example, the Canvas displays the image of a brake pad. A Generator
 simulates a temperature variation and sends it to the Canvas. It is displayed
 as a spot whose color changes according to the temperature value. The current
-time and the current path index of the Generator are also displayed. Note that
-in addition, A StopButton Block allows stopping the script properly without
-using CTRL+C by clicking on a button.
+time and the current path index of the Generator are also displayed.
 
 After starting this script, just watch how the Canvas evolves. To end this
-demo, click on the stop button that appears. You can also hit CTRL+C, but it is
-not a clean way to stop Crappy.
+demo, click on the stop button that appears.
 """
 
 import crappy
@@ -29,8 +26,7 @@ if __name__ == '__main__':
   # This image is distributed with Crappy
   img_path = crappy.resources.paths['pad']
 
-  # This list of dict contains the information to provide about the elements to
-  # draw on the Canvas
+  # This list of dictionaries describes the elements to draw on the Canvas
   # The description of the mandatory and optional keys is given in the
   # documentation of the Canvas
   options = [
@@ -66,7 +62,7 @@ if __name__ == '__main__':
       cmd_label='T(°C)',  # The label carrying the value of the sine
       path_index_label='Index',  # The label carrying the index of the current
       # path
-      repeat=True,  # After 5 seconds when the paths ends, repeat it and
+      repeat=True,  # After 5 seconds, when the path ends, repeat it and
       # increment the path index
       freq=50,  # Lowering the default frequency because it's just a demo
 
@@ -81,7 +77,7 @@ if __name__ == '__main__':
       draw=options,  # The list of elements to draw on the Canvas
       color_range=(150, 250),  # The range of the color bar for dot text
       # elements
-      title="Demo Canvas",  # The title of the Canvas windows
+      title="Demo Canvas",  # The title of the Canvas window
       freq=10,  # Already a quite high value for this Block
 
       # Sticking to default for the other arguments

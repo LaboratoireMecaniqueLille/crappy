@@ -5,7 +5,8 @@ This program is often used as the starting point when performing tests on the
 "Biotens" machine.
 
 It creates a new folder for each experiment and performs tensile tests using
-video-extensometry.
+video extensometry. The test ends automatically when the force threshold is
+reached; the stop button can end it earlier.
 """
 
 from time import strftime, gmtime
@@ -41,7 +42,7 @@ if __name__ == '__main__':
                                     'cmd_label': 'cmd'}])
   crappy.link(generator, biotens)
 
-  # The Block acquiring images from the setup and performing video-extensometry
+  # The Block acquiring images from the setup and performing video extensometry
   extenso = crappy.blocks.VideoExtenso(camera="XiAPI")
 
   # The Blocks saving the recorded data to text files
@@ -58,5 +59,8 @@ if __name__ == '__main__':
   graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
   crappy.link(effort, graph_effort)
   crappy.link(extenso, graph_extenso)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   crappy.start()

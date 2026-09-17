@@ -1,23 +1,19 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the Camera Block, for the use case of
+This example demonstrates the use of the Camera Block for the use case of
 displaying the acquired images but with the configuration window disabled. It
 does not require any hardware to run, but necessitates the opencv-python module
 to be installed.
 
-It acquires images on a fake camera, and displays them in a small visualization
-window. The difference with the basic examples is that the configuration
-window is disabled. It means that the arguments to pass to the Camera must be
-given as arguments of the Camera Block, and two arguments become mandatory.
-Note that in addition, A StopButton Block allows stopping the script properly
-without using CTRL+C by clicking on a button.
+It acquires images from a fake camera and displays them in a small
+visualization window. The difference with the basic examples is that the
+configuration window is disabled. This means that Camera arguments must be
+passed through the Camera Block, and two additional arguments become mandatory.
 
 After starting this script, the acquired images start being displayed right
-away. To end this demo, click on the stop button that appears. You can also hit
-CTRL+C, but it is not a clean way to stop Crappy. You can restart the script
-with different values for the parameters of the FakeCamera, and see how it's
-reflected in the acquired images.
+away. To end this demo, click the stop button. You can restart the script with
+different FakeCamera parameters and see how they affect the acquired images.
 """
 
 import crappy
@@ -34,7 +30,7 @@ if __name__ == '__main__':
       'FakeCamera',  # Using the FakeCamera camera so that no hardware is
       # required
       config=False,  # No configuration window is displayed before the test
-      # starts !
+      # starts
       display_images=True,  # During the test, the acquired images are
       # displayed in a dedicated window
       displayer_framerate=30,  # The maximum framerate for displaying the

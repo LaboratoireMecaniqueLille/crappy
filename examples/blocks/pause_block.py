@@ -1,25 +1,24 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the Pause Block. It does not require
-any hardware to run, but necessitates the Python module psutil to be installed.
+This example demonstrates the use of the Pause Block. It does not require any
+hardware, but requires the psutil Python module.
 
-This Block allows to pause other Blocks during a test based on a given set of
-conditions, and to later resume the paused Blocks. This can be useful when
-human intervention is needed on a setup while a test is running, to make sure
-no command is sent to hardware during that time.
+This Block pauses other Blocks during a test based on a given set of
+conditions, then resumes them later. This can be useful when human intervention
+is needed on a setup during a test, ensuring that no command is sent to the
+hardware during that time.
 
-Here, a Generator Block generates a signal, based on which a Pause Block
+Here, a Generator Block generates a signal on which a Pause Block
 decides to pause or resume the other Blocks. The Generator is of course
 configured to be insensitive to the pauses. In parallel, an IOBlock monitors
-the current RAM usage, and sends it to a LinkReader Block for display.
+the current RAM usage and sends it to a LinkReader Block for display.
 
-After starting this script, the values acquired by the IOBlock start appearing
-in the console. After 8s, they should stop appearing, as the IOBlock is put in
-pause. After 12s, it is resumed and the values appear again. Same goes after
-28s, except the pause never ends due to a second pause condition being
-satisfied for t>30s. To end this demo, click on the stop button that appears.
-You can also hit CTRL+C, but it is not a clean way to stop Crappy.
+After starting this script, the values acquired by the IOBlock appear in the
+console. After 8 seconds, they stop because the IOBlock is paused. After 12
+seconds, it resumes and the values appear again. The same happens after 28
+seconds, except that the pause never ends because a second pause condition is
+satisfied when t > 30 seconds. To end this demo, click the stop button.
 """
 
 import crappy
@@ -30,7 +29,7 @@ if __name__ == '__main__':
   # the Pause Block
   gen = crappy.blocks.Generator(
       # Generating a cyclic ramp signal, oscillating in a linear way between 0
-      # and 10 with a period of 20s
+      # and 10 with a period of 20 seconds
       ({'type': 'CyclicRamp', 'init_value': 0, 'cycles': 0,
         'condition1': 'delay=10', 'condition2': 'delay=10',
         'speed1': 1, 'speed2': -1},),
@@ -44,11 +43,11 @@ if __name__ == '__main__':
   # the pause therefore never ends
   gen.pausable = False
 
-  # This Block checks if any of the pause criteria are met, and if so puts all
-  # the pausable Blocks in pause
+  # This Block checks whether any pause criteria are met and, if so, pauses all
+  # pausable Blocks
   pause = crappy.blocks.Pause(
       # The pause lasts as long as the "value" label is higher than 8, or when
-      # the time reaches 30s
+      # the time reaches 30 seconds
       criteria=('value>8', 't(s)>30'),
       freq=20,  # Setting a low frequency because we don't need more
 

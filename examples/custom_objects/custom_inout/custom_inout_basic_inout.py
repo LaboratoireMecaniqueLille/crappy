@@ -1,30 +1,30 @@
 # coding: utf-8
 
 """
-This example demonstrates the instantiation of a custom InOut object in Crappy,
-in the case when the InOut both acquires data from hardware and sets received
-commands on it. The example presented here shows only the basic steps for
-creating an InOut object that acquires and sets values. This example is an
-extension of the custom_inout_basic_in.py example, so you should read it before
-this one. It does not require any hardware nor specific Python module to run.
+This example demonstrates the instantiation of a custom InOut object in Crappy
+that both acquires data from hardware and applies received commands to it. The
+example shows the basic steps for creating an InOut object that acquires and
+sets values. It extends custom_inout_basic_in.py, so you should read that
+example first. It requires neither hardware nor any specific Python modules to
+run.
 
-In Crappy, users can define their own InOut objects and use them along with
-the IOBlock. This way, users can interface with their own hardware without
-having to integrate it in the distributed version of Crappy.
+In Crappy, users can define their own InOut objects and use them with the
+IOBlock. This lets users interface with their own hardware without integrating
+it into the distributed version of Crappy.
 
 Here, a very simple InOut object is instantiated for setting received commands.
 It can also return data, so that the effect of the command can be read and
-displayed to the user. This InOut is driven by an IOBlock, that receives
+displayed to the user. This InOut is driven by an IOBlock that receives
 commands from a Generator and sends measured values to a Dashboard for display.
 The Generator also sends its command to the Dashboard. The command sent to the
-IOBlock and the measured one should match, with a small delay.
+IOBlock and the measured value should match, with a small delay.
 
 After starting this script, simply watch how the command values are
 successfully sent to the IOBlock, set on the InOut, read back from the InOut,
 and transmitted to the Dashboard. You can adjust the value of the max_value
-setting on the IOBlock, and see how it is successfully set on the InOut and
-modifies its output accordingly. This demo ends after 22s. You can also hit
-CTRL+C to stop it earlier, but it is not a clean way to stop Crappy.
+setting on the IOBlock and see how it is successfully set on the InOut and
+modifies its output accordingly. This demo ends after 22 seconds. Click the
+stop button to end the demo early.
 """
 
 import crappy
@@ -35,9 +35,9 @@ class CustomInOut(crappy.inout.InOut):
   """This class demonstrates the instantiation of a custom InOut object in
   Crappy.
 
-  It is fully recognized as an InOut, and can be used by any IOBlock. Each
-  InOut must be a child of crappy.inout.InOut, otherwise it is not recognized
-  as such.
+  It is fully recognized as an InOut and can be used by any IOBlock. Each InOut
+  must inherit from crappy.inout.InOut, otherwise, Crappy does not recognize
+  it as an InOut.
   """
 
   def __init__(self, max_value: float | None = None) -> None:
@@ -58,7 +58,7 @@ class CustomInOut(crappy.inout.InOut):
     """In this method you would perform any action needed to connect to the
     hardware, initialize it, and tune its settings.
 
-    There is no action to perform in this simple demo though.
+    There is no action to perform in this simple demo.
     """
 
     ...
@@ -66,8 +66,8 @@ class CustomInOut(crappy.inout.InOut):
   def get_data(self) -> dict[str, float] | None:
     """This method is used for acquiring data from the hardware.
 
-    Here, it returns the current timestamp as well as the value of the _buffer
-    value if it was already set.
+    Here, it returns the current timestamp and the value of _value, if it has
+    already been set.
 
     Note that unlike in the custom_inout_basic_in.py example, a dictionary is
     returned here so the labels are provided directly in this method. The
@@ -92,7 +92,7 @@ class CustomInOut(crappy.inout.InOut):
     """In this method you would perform any action needed to disconnect from
     the hardware and release the resources.
 
-    There is no action to perform in this simple demo though.
+    There is no action to perform in this simple demo.
     """
 
     ...
@@ -104,9 +104,9 @@ if __name__ == '__main__':
   # a command to set on the InOut
   gen = crappy.blocks.Generator(
       # Generating a sine wave of amplitude 2 and frequency 0.2 centered on 0
-      ({'type': 'Sine', 'amplitude': 2, 'condition': 'delay=20', 
+      ({'type': 'Sine', 'amplitude': 2, 'condition': 'delay=20',
         'freq': 1 / 5},),
-      cmd_label='cmd',  # Tha label carrying the generated signal
+      cmd_label='cmd',  # The label carrying the generated signal
       freq=10,  # Lowering the default frequency because it's just a demo
 
       # Sticking to default for the other arguments
@@ -143,6 +143,9 @@ if __name__ == '__main__':
   crappy.link(gen, io)
   crappy.link(io, dash)
   crappy.link(gen, dash)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

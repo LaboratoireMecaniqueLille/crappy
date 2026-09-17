@@ -5,19 +5,17 @@ This example demonstrates the use of the Grapher Block. It does not require any
 specific hardware to run, but necessitates the matplotlib Python module to be
 installed.
 
-The Grapher Block displays the data it received from 1 or more Blocks in a
-scatter plot. It can display the values of a label vs time, or vs another label
-if both labels are received from the same Link.
+The Grapher Block displays the data it receives from one or more Blocks in a
+scatter plot. It can display the values of a label against time or another
+label if both labels are received from the same Link.
 
-Here, two Graphers are instantiated. The first one displays data vs time, the
-second one displays a stress-strain curve with the stress label on the y-axis
-and the strain label on the x-axis. Just for showcasing some options of the
-Grapher, the first one limits the number of datapoints it can display, and the
-second displays non-interpolated data points.
+Here, two Graphers are instantiated. The first displays data against time, the
+second displays a force-strain curve with force on the y-axis and strain on the
+x-axis. To showcase several Grapher options, the first limits the number of
+data points it can display, and the second displays non-interpolated points.
 
 After starting this script, just watch the curves evolve on the two Graphers.
-This demo ends after 27s. You can also hit CTRL+C to stop it earlier, but it is
-not a clean way to stop Crappy.
+This demo ends after 27 seconds. Click the stop button to end the demo early.
 """
 
 import crappy
@@ -27,7 +25,7 @@ if __name__ == '__main__':
   # This Generator generates a signal for driving the FakeMachine
   # It simply outputs a constant speed
   gen = crappy.blocks.Generator(
-      # Generating the constant signal with a value of 0.1 during 25s
+      # Generating the constant signal with a value of 0.1 during 25 seconds
       ({'type': 'Constant',
         'value': 0.1,
         'condition': 'delay=25'},),
@@ -40,7 +38,7 @@ if __name__ == '__main__':
 
   # This Block emulates the behavior of a tensile test machine
   # It is used here because it generates data that can be plotted in a
-  # stress-strain curve
+  # force-strain curve
   machine = crappy.blocks.FakeMachine(
       mode='speed',  # Driving the fake machine in speed, not in position
       cmd_label='cmd',  # The label carrying the speed command
@@ -61,7 +59,7 @@ if __name__ == '__main__':
       # Sticking to default for the other arguments
   )
 
-  # This Grapher displays on the same graph the stress and the strain it
+  # This Grapher displays on the same graph the force and the strain it
   # receives from the FakeMachine
   # It demonstrates the possibility to put any label on the x and y axes, as
   # long as they are received from the same Link
@@ -73,12 +71,15 @@ if __name__ == '__main__':
       # Sticking to default for the other arguments
   )
 
-  # Linking the Blocks together so that each one sends and received the correct
+  # Linking the Blocks together so that each one sends and receives the correct
   # information
   crappy.link(gen, machine)
   crappy.link(gen, graph_1)
   crappy.link(machine, graph_1)
   crappy.link(machine, graph_2)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

@@ -3,11 +3,13 @@
 """
 This example demonstrates the use of a Labjack in Crappy for acquiring data at
 high rates in streamer mode. It is presented here because we want to promote
-the use of Labjack equipment, that we use and appreciate in our laboratory. It
-is recommended to first read and use the blocks/ioblock/ioblock_streamer.py and
-the blocks/hdf5_recorder.py examples before starting this one. This example
-requires the Python modules tables, labjack and matplotlib to be installed. It
-also necessitates a working Labjack T7.
+the Labjack equipment that we use and appreciate in our laboratory. We
+recommend reading and using the blocks/ioblock/ioblock_streamer.py and
+blocks/hdf5_recorder.py examples before starting this one. This example
+requires the tables, labjack, and matplotlib Python modules, as well as a
+working Labjack T7.
+
+Click the stop button to end the test cleanly.
 """
 
 import crappy

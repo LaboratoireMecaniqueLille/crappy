@@ -22,9 +22,8 @@ After starting this script, adjust the FakeCamera settings if desired and close
 the configuration window. The display window then shows the acquired images.
 Notice that the Camera source may acquire images faster than the displayer
 updates: an ImageLink always exposes the newest frame, so a slower consumer can
-skip intermediate frames without delaying acquisition. Click the stop button
-to end the demo. CTRL+C also stops it, but is not the cleanest way to stop
-Crappy.
+skip intermediate frames without delaying acquisition. Click the stop button to
+end the demo.
 """
 
 import crappy

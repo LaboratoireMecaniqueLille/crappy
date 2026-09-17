@@ -10,18 +10,15 @@ are available, each with a different behavior and different options. They can
 be combined to form a custom global path.
 
 Here, the Generator is used to output cyclic constant signals. The given path
-first oscillates 3 times between 1 and -1, then 3 times between 2 and -2. When
-the path is exhausted, it is then repeated and loops forever. This example
-demonstrates how the path_index_label allows to track the index of the current
-path, even when the repeat argument is set to True. Note that in addition, A
-StopButton Block allows stopping the script properly without using CTRL+C by
-clicking on a button.
+first oscillates three times between 1 and -1, then three times between 2 and
+-2. When the path is exhausted, it repeats and loops forever. This example
+demonstrates how the path_index_label tracks the index of the current path,
+even when the repeat argument is set to True.
 
 After starting this script, you can visualize the shape of the generated signal
 in the Grapher window, and watch how the 'index' label is updated each time the
 Generator switches to a new path. To end this demo, click on the stop button
-that appears. You can also hit CTRL+C, but it is not a clean way to stop
-Crappy.
+that appears.
 """
 
 import crappy
@@ -30,12 +27,12 @@ if __name__ == '__main__':
 
   # This Generator Block outputs a cyclic signal oscillating first between 1
   # and -1 and then between 2 and -2. The given path ends after 3 cycles of
-  # each, but it is then repeated. The path_index_label allows to follow which
-  # step of the overall path is currently being output
+  # each, but it is then repeated. The path_index_label shows which step of the
+  # overall path is currently being output
   gen = crappy.blocks.Generator(
-      # The cyclic paths oscillate 3 times between 1 and -1 and then 2 and -2,
-      # and then the path is exhausted. It is though repeated because 'repeat'
-      # is set to True
+      # The cyclic paths oscillate three times between 1 and -1 and then three
+      # times between 2 and -2. The exhausted path repeats because 'repeat' is
+      # set to True
       ({'type': 'Cyclic',
         'condition1': 'delay=1',
         'condition2': 'delay=1',
@@ -55,10 +52,8 @@ if __name__ == '__main__':
       path_index_label='index',  # This label carries the index of the current
       # path
       repeat=True,  # When reaching the end of the path, loop endlessly
-      spam=True,  # Send a value at each loop. Allows to plot nice graphs even
-      # though the output value does not change
-      end_delay=2,  # When the path is exhausted, wait for 2 seconds before
-      # ending the test
+      spam=True,  # Send a value at each loop to plot smooth graphs even when
+      # the output value does not change
 
       # Sticking to default for the other arguments
   )
@@ -73,7 +68,7 @@ if __name__ == '__main__':
   )
 
   # Linking the Block so that the information is correctly sent and received
-  # The Generator is linked to itself because it takes decision based on its
+  # The Generator is linked to itself because it makes decisions based on its
   # own output
   crappy.link(gen, gen)
   crappy.link(gen, graph)

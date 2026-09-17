@@ -17,8 +17,8 @@ of the Mean Block is just the offset of the signals.
 
 After starting the script, wait a few seconds for the average values to be
 calculated. Then, a graph appears on which you should normally only see the
-offsets of the signals. This demo ends after 22s. You can also hit CTRL+C to
-stop it earlier, but it is not a clean way to stop Crappy.
+offsets of the signals. This demo ends after 22 seconds. Click the stop button
+to end the demo early.
 """
 
 import crappy
@@ -28,9 +28,9 @@ if __name__ == '__main__':
   # This Generator Block generates a sine wave and sends it to the Mean Block
   # for averaging
   gen_1 = crappy.blocks.Generator(
-      # Generating a sine wave of frequency 2, offset -1, and amplitude 1
-      ({'type': 'Sine', 'freq': 2, 'amplitude': 1, 'condition': 'delay=20',
-        'offset': -1},),
+      # Generating a sine wave of frequency 0.5 Hz, offset -1, and amplitude 1
+      ({'type': 'Sine', 'freq': 0.5, 'amplitude': 1,
+        'condition': 'delay=20', 'offset': -1},),
       cmd_label='label_1',  # The label carrying the generated signal
       freq=30,  # Lowering the default frequency because it's just a demo
 
@@ -40,8 +40,8 @@ if __name__ == '__main__':
   # This Generator Block generates a sine wave and sends it to the Mean Block
   # for averaging
   gen_2 = crappy.blocks.Generator(
-      # Generating a sine wave of frequency 2, offset 1, and amplitude 1
-      ({'type': 'Sine', 'freq': 2, 'amplitude': 1, 'condition': None,
+      # Generating a sine wave of frequency 0.5 Hz, offset 1, and amplitude 1
+      ({'type': 'Sine', 'freq': 0.5, 'amplitude': 1, 'condition': None,
         'offset': 1},),
       cmd_label='label_2',  # The label carrying the generated signal
       freq=30,  # Lowering the default frequency because it's just a demo
@@ -77,6 +77,9 @@ if __name__ == '__main__':
   crappy.link(gen_1, mean)
   crappy.link(gen_2, mean)
   crappy.link(mean, graph)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

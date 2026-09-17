@@ -1,31 +1,27 @@
 # coding: utf-8
 
 """
-This example demonstrates the instantiation of a custom InOut object in Crappy,
-in the case when the InOut only acquires data from hardware. The example
-presented here shows only the basic steps for creating an InOut object that
-acquires data. See the custom_inout_basic_inout.py for an example of InOut
-setting commands on hardware. It does not require any hardware nor specific
-Python module to run.
+This example demonstrates the instantiation of a custom InOut object in Crappy
+that only acquires data from hardware. It shows the basic steps for creating an
+InOut object that acquires data. See custom_inout_basic_inout.py for an example
+of an InOut that sets commands on hardware. It requires neither hardware nor
+any specific Python modules to run.
 
-In Crappy, users can define their own InOut objects and use them along with
-the IOBlock. This way, users can interface with their own hardware without
-having to integrate it in the distributed version of Crappy.
+In Crappy, users can define their own InOut objects and use them with the
+IOBlock. This lets users interface with their own hardware without integrating
+it into the distributed version of Crappy.
 
 Here, a very simple InOut object is instantiated for reading data. It is driven
 by an IOBlock that sends the acquired data to a Dashboard Block for display.
-The InOut object simply returns the index of its current loop, and has one
-parameter that can be tuned. The goal here is to show the basic methods to
-use for creating a custom InOut object that acquires data. Note that in
-addition, A StopButton Block allows stopping the script properly without using
-CTRL+C by clicking on a button.
+The InOut object returns its current loop index modulo a configurable maximum
+value. The goal is to show the basic methods for creating a custom InOut object
+that acquires data.
 
 After starting this script, simply watch how the data is successfully generated
-by the InOut object, transmitted by the IOBlock and displayed by the Dashboard
+by the InOut object, transmitted by the IOBlock, and displayed by the Dashboard
 Block. You can adjust the value of the max_value setting in the IOBlock and see
 how it is successfully set on the InOut. To end this demo, click on the stop
-button that appears. You can also hit CTRL+C, but it is not a clean way to stop
-Crappy.
+button that appears.
 """
 
 import crappy
@@ -36,9 +32,9 @@ class CustomInOut(crappy.inout.InOut):
   """This class demonstrates the instantiation of a custom InOut object in
   Crappy.
 
-  It is fully recognized as an InOut, and can be used by any IOBlock. Each
-  InOut must be a child of crappy.inout.InOut, otherwise it is not recognized
-  as such.
+  It is fully recognized as an InOut and can be used by any IOBlock. Each InOut
+  must inherit from crappy.inout.InOut, otherwise, Crappy does not recognize
+  it as an InOut.
   """
 
   def __init__(self, max_value: int | None = None) -> None:
@@ -60,7 +56,7 @@ class CustomInOut(crappy.inout.InOut):
     """In this method you would perform any action needed to connect to the
     hardware, initialize it, and tune its settings.
 
-    There is no action to perform in this simple demo though.
+    There is no action to perform in this simple demo.
     """
 
     ...
@@ -77,7 +73,7 @@ class CustomInOut(crappy.inout.InOut):
     self._count += 1
 
     # Returning the timestamp and the counter modulo the maximum allowed value
-    return time(), self._count
+    return time(), self._count % self._max_val
 
   def set_cmd(self, *_) -> None:
     """This method is used for setting commands on hardware when the IOBlock
@@ -92,7 +88,7 @@ class CustomInOut(crappy.inout.InOut):
     """In this method you would perform any action needed to disconnect from
     the hardware and release the resources.
 
-    There is no action to perform in this simple demo though.
+    There is no action to perform in this simple demo.
     """
 
     ...

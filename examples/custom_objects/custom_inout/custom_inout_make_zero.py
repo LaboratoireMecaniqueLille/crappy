@@ -1,32 +1,29 @@
 # coding: utf-8
 
 """
-This example demonstrates the instantiation of a custom InOut object in Crappy,
-in the case when the make_zero method is customized by the user. The example
-presented here is almost the same as the custom_inout_basic_in.py, except the
-make_zero method is also defined in the custom InOut. It does not require any
-hardware nor specific Python module to run.
+This example demonstrates the instantiation of a custom InOut object in Crappy
+whose make_zero method is customized by the user. The example is almost the
+same as custom_inout_basic_in.py, except that the custom InOut also defines the
+make_zero method. It requires neither hardware nor any specific Python modules
+to run.
 
-In Crappy, users can define their own InOut objects and use them along with
-the IOBlock. This way, users can interface with their own hardware without
-having to integrate it in the distributed version of Crappy.
+In Crappy, users can define their own InOut objects and use them with the
+IOBlock. This lets users interface with their own hardware without integrating
+it into the distributed version of Crappy.
 
 Here, a very simple InOut object is instantiated for reading data. It is driven
 by an IOBlock that sends the acquired data to a Dashboard Block for display.
 The InOut object returns random data centered on an adjustable offset value.
 Because the make_zero_delay argument of the IOBlock is given, values are
 acquired before the test starts. While the normal behavior would be for these
-values to be used for offsetting the signal to 0, the behavior is here modified
-by supplying a custom make_zero method in the custom InOut. The goal here is to
-show how to define a custom make_zero method for InOut objects. Note that in
-addition, a StopButton Block allows stopping the script properly without using
-CTRL+C by clicking on a button.
+values to be used for offsetting the signal to zero, this behavior is modified
+by supplying a custom make_zero method in the custom InOut. The goal is to
+show how to define a custom make_zero method for InOut objects.
 
 After starting this script, observe how the given offset is inverted instead of
-being compensated to 0. You can modify the delay of the acquisition, or the
-value of the offset, and see how the behavior persists. To end this demo, click
-on the stop button that appears. You can also hit CTRL+C, but it is not a clean
-way to stop Crappy.
+being compensated to zero. You can modify the acquisition delay or the offset
+and see how the behavior persists. To end this demo, click on the stop button
+that appears.
 """
 
 import crappy
@@ -38,9 +35,9 @@ class CustomInOut(crappy.inout.InOut):
   """This class demonstrates the instantiation of a custom InOut object in
   Crappy.
 
-  It is fully recognized as an InOut, and can be used by any IOBlock. Each
-  InOut must be a child of crappy.inout.InOut, otherwise it is not recognized
-  as such.
+  It is fully recognized as an InOut and can be used by any IOBlock. Each InOut
+  must inherit from crappy.inout.InOut, otherwise, Crappy does not recognize
+  it as an InOut.
   """
 
   def __init__(self, offset: float | None = None) -> None:
@@ -61,7 +58,7 @@ class CustomInOut(crappy.inout.InOut):
     """In this method you would perform any action needed to connect to the
     hardware, initialize it, and tune its settings.
 
-    There is no action to perform in this simple demo though.
+    There is no action to perform in this simple demo.
     """
 
     ...
@@ -89,13 +86,13 @@ class CustomInOut(crappy.inout.InOut):
     """In this method you would perform any action needed to disconnect from
     the hardware and release the resources.
 
-    There is no action to perform in this simple demo though.
+    There is no action to perform in this simple demo.
     """
 
     ...
 
   def make_zero(self, delay: float) -> None:
-    """By overwriting this method you can customize the behavior of the zeroing
+    """By overriding this method, you can customize the zeroing behavior
     when the make_zero_delay argument of the IOBlock is set.
 
     For example, you can retrieve the compensation values calculated by the

@@ -2,7 +2,7 @@
 
 """
 This example demonstrates the use of a UController Block for communicating with
-a microcontroller over a USB connection It necessitates a microcontroller with
+a microcontroller over a USB connection. It requires a microcontroller with
 MicroPython installed to run, and does not require any specific Python module.
 It was written for and tested on Adafruit's Huzzah ESP32 board, but should
 work on other microcontrollers or boards with minor adjustments.
@@ -32,9 +32,9 @@ the number of the driven pin in the microcontroller.py file and/or to connect a
 LED to your microcontroller.
 
 After starting the script, watch how the LED blinks at the target frequency,
-and how the frequency increases every 10s. The blink count is also successfully
-returned and displayed. This script automatically ends after 52s. You can also
-hit CTRL+C to stop it earlier, but it is not a clean way to stop Crappy.
+and how the frequency increases every 10 seconds. The blink count is also
+successfully returned and displayed. This script automatically ends after 52
+seconds. Click the stop button to end the demo early.
 """
 
 import crappy
@@ -42,7 +42,7 @@ import crappy
 if __name__ == '__main__':
 
   # This Generator Block generates the frequency command for the UController
-  # Block. It outputs a constant signal whose value increases each 10s
+  # Block. It outputs a constant signal whose value increases every 10 seconds
   gen = crappy.blocks.Generator(
       # Generating constant signals of increasing values
       ({'type': 'Constant', 'condition': 'delay=10', 'value': 1},
@@ -75,7 +75,7 @@ if __name__ == '__main__':
       # microcontroller type
       baudrate=115200,  # This baudrate is fine for the ESP32, but may need to
       # be adjusted for other microcontrollers
-      freq=30,  # Lowering the default frequency because it's just  demo
+      freq=30,  # Lowering the default frequency because it's just a demo
 
       # Sticking to default for the other arguments
   )
@@ -92,6 +92,9 @@ if __name__ == '__main__':
   # Linking the Block so that the information is correctly sent and received
   crappy.link(gen, micro)
   crappy.link(micro, dash)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

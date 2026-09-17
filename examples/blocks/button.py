@@ -7,17 +7,14 @@ hardware to run.
 This Block displays a button on which the user can click, keeps track of the
 number of clicks, and sends it to downstream Blocks.
 
-In this example, the number of clicks is simply displayed on the window of a
-Dashboard Block. The windows of the Button and the Dashboard might first be
-overlapping, you may need to move one to uncover the other. Note that in
-addition, A StopButton Block allows stopping the script properly without using
-CTRL+C by clicking on a button.
+In this example, the number of clicks is simply displayed in the window of a
+Dashboard Block. The Button and Dashboard windows may initially overlap, so
+you may need to move one to uncover the other.
 
 After starting this script, you should click on the button that appeared and
-watch how the Dashboard reacts accordingly. You can try to click multiple times
-at once, or to leave a few seconds between you clicks. To end this demo, click
-on the stop button that appears. You can also hit CTRL+C, but it is not a clean
-way to stop Crappy.
+watch how the Dashboard reacts accordingly. You can click multiple times in
+quick succession or leave a few seconds between clicks. To end this demo, click
+on the stop button that appears.
 """
 
 import crappy

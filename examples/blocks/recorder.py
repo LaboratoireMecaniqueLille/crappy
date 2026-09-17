@@ -8,17 +8,14 @@ The Recorder Block saves the data it receives to a .csv file created at the
 desired location. It can only record data from one Block, so multiple Recorders
 must be used for recording data from multiple Blocks.
 
-Here, a Recorder Block is used for saving the data recorded by an IOBlock
-driving a FakeInOut that measures the RAM usage of the computer. Note that in
-addition, A StopButton Block allows stopping the script properly without using
-CTRL+C by clicking on a button.
+Here, a Recorder Block saves the data acquired by an IOBlock driving a
+FakeInOut that measures the RAM usage of the computer.
 
 After starting the script, a new file is created at demo_recorder/data.csv.
 Nothing visual should happen. To end this demo, click on the stop button that
-appears. You can also hit CTRL+C, but it is not a clean way to stop Crappy.
-After stopping it, you can check that the data was recorded by opening the
-created .csv file. Try to open and close memory-intensive applications (like
-web browsers) during the test to see important RAM variations in the data.
+appears. After stopping it, check the recorded data by opening the newly
+created .csv file. Try opening and closing memory-intensive applications, such
+as web browsers, during the test to see significant RAM variations in the data.
 """
 
 import crappy
@@ -26,8 +23,8 @@ import crappy
 if __name__ == '__main__':
 
   # This IOBlock acquires the data for the Recorder Block to save
-  # It acquires data from the FakeInOut InOut, that reads the current RAM usage
-  # of the computer
+  # It acquires data from the FakeInOut object, which reads the current RAM
+  # usage of the computer
   mem = crappy.blocks.IOBlock(
       'FakeInOut',  # The name of the InOut to read data from
       labels=('t(s)', 'memory(%)'),  # The names of the labels to send to

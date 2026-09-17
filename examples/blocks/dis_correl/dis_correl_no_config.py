@@ -1,13 +1,14 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the DISCorrel Block in the case when the
-patch is manually entered by the user. It does not require any hardware to run,
-but necessitates the opencv-python and matplotlib modules to be installed.
+This example demonstrates the use of the DISCorrel Block when the user provides
+the patch manually. It does not require any hardware to run, but necessitates
+the opencv-python and matplotlib modules to be installed.
 
-It is the exact same script as dis_correl_basic.py, except the patch is
-manually provided and the configuration window is disabled. Refer to the other
-script for more information.
+It is the same script as dis_correl_basic.py, except that the patch is provided
+manually and the configuration window is disabled. Refer to the other script
+for more information. The stop button can end the demo before the Generator
+finishes its loading cycles.
 """
 
 import crappy
@@ -28,7 +29,7 @@ if __name__ == '__main__':
         'condition1': 'Exx(%)>20',  # Stretching until 20% strain
         'condition2': 'Exx(%)<0',  # Relaxing until 0% strain
         'cycles': 3,  # The test stops after 3 cycles
-        'init_value': 0},),  # Mandatory to give as it's the first Path
+        'init_value': 0},),  # Required because this is the first Path
       freq=50,  # Lowering the default frequency because it's just a demo
       cmd_label='Exx(%)',  # The generated signal corresponds to a strain
 
@@ -45,8 +46,8 @@ if __name__ == '__main__':
       # given
       config=False,  # Not displaying the configuration window before starting
       # the test, the patches must be provided
-      display_images=True,  # The displayer window will allow to follow the
-      # patches on the speckle image
+      display_images=True,  # The displayer window follows the patch on the
+      # speckle image
       freq=50,  # Lowering the default frequency because it's just a demo
       save_images=False,  # We don't want images to be recorded in this demo
       image_generator=crappy.tool.ApplyStrainToImage(img),  # This argument
@@ -58,6 +59,7 @@ if __name__ == '__main__':
       # here only the strain values
       # The labels for sending the calculated strain to downstream Blocks
       labels=('t(s)', 'meta', 'Exx(%)', 'Eyy(%)'),
+      follow=True,  # Following the patch prevents losing it at large strains
 
       # Arguments to provide because the configuration window is disabled
       img_dtype='uint8',
@@ -66,16 +68,19 @@ if __name__ == '__main__':
       # Sticking to default for the other arguments
   )
 
-  # This Grapher displays the extension as computed by the DISCorrel Block
+  # This Grapher displays the strain computed by the DISCorrel Block
   graph = crappy.blocks.Grapher(('t(s)', 'Exx(%)'))
 
-  # Linking the Blocks together so that each one sends and received the correct
+  # Linking the Blocks together so that each one sends and receives the correct
   # information
-  # The Generator drives the DISCorrel, but also takes decision based on its
+  # The Generator drives the DISCorrel but also makes decisions based on its
   # feedback
   crappy.link(gen, disco)
   crappy.link(disco, gen)
   crappy.link(disco, graph)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

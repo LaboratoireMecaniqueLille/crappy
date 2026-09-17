@@ -22,8 +22,7 @@ precision triggering and should generally stay below approximately 10 Hz.
 After starting this script, adjust the FakeCamera settings if desired and close
 the configuration window. Click the trigger button to acquire and display a new
 frame; the display remains on the last acquired image between clicks. Click the
-separate stop button to end the demo cleanly. CTRL+C also stops it, but is not
-the cleanest way to stop Crappy.
+separate stop button to end the demo cleanly.
 """
 
 import crappy
