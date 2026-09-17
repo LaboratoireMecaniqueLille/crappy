@@ -71,7 +71,7 @@ Box
 """
 .. autoclass:: crappy.tool.camera_config.config_tools.Box
    :members: no_points, reset, sorted, draw
-   :special-members: __init__, __post_init__
+   :special-members: __init__, __post_init__, __add__
 
 Histogram Process
 """""""""""""""""
@@ -88,7 +88,7 @@ Overlay
 Spots Boxes
 """""""""""
 .. autoclass:: crappy.tool.camera_config.config_tools.SpotsBoxes
-   :members: set_spots, empty, reset
+   :members: set_spots, empty, reset, copy
    :special-members: __init__
 
 Spots Detector
