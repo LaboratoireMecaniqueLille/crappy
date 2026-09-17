@@ -15,7 +15,7 @@ Blocks and other objects natively distributed with Crappy. **It is now time**
 **for you to create your own objects in Crappy, to adapt your scripts to your**
 **own needs** ! This page of the tutorials covers the basics of the
 instantiation of custom objects, while the :ref:`next and last page of the
-tutorials <More about custom objects in Crappy>` covers the advanced aspects of
+tutorials <tutorials/complex_custom_objects:more about custom objects in crappy>` covers the advanced aspects of
 custom object instantiation.
 
 1. Custom Modifiers
@@ -24,7 +24,7 @@ custom object instantiation.
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 The first type of custom objects that we'll cover here are the
-:ref:`Modifiers`, because they are by far the simplest objects ! **The**
+:ref:`Modifiers <crappy_docs/modifiers:modifiers>`, because they are by far the simplest objects ! **The**
 **Modifiers come in use in a variety of situations, and it is often required**
 **to write your own ones as the catalog of Crappy cannot cover every single**
 **case**. Luckily, the only requirement for an object to qualify as a Modifier
@@ -34,7 +34,7 @@ provided !
 More precisely, a Modifier should accept a :obj:`dict` as its sole argument and
 return a :obj:`dict` as well (:obj:`None` is also accepted). **This**
 **dictionary is the representation of a chunk of data flowing through the**
-:ref:`Link`, **and the Modifier has direct access to it** ! It can add keys,
+:ref:`Link <crappy_docs/links:link>`, **and the Modifier has direct access to it** ! It can add keys,
 delete others, change the value of a key, etc. Each key is a label, and has a
 value it carries. In the end, all a Modifier does is to modify the incoming
 dictionary and return it after modification. As usual, let's put these concepts
@@ -62,7 +62,7 @@ In this first example, you can see that instead of replacing the value of the
 :py:`'cmd'` label with its double, it was chosen to store the double value in
 the newly created :py:`'cmdx2'` label. A new label was added ! This is just how
 powerful of a tool the Modifiers are ! Notice how the Modifier is added to the
-Link between the :ref:`Generator` and the :ref:`Grapher`, the syntax couldn't
+Link between the :ref:`Generator <crappy_docs/blocks:generator>` and the :ref:`Grapher <crappy_docs/blocks:grapher>`, the syntax couldn't
 be more straightforward. If you need to change the name of the target label, or
 the value of the multiplier, they can simply be modified in the definition of
 the function. Alternatively, you could add arguments to you function and use
@@ -152,7 +152,7 @@ custom Modifiers ! They stand after all among the simplest objects in Crappy.
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 After introducing how custom Modifiers work in the first section, this second
-section will focus on the use of custom :ref:`Actuators`. Knowing how to add
+section will focus on the use of custom :ref:`Actuators <crappy_docs/actuators:actuators>`. Knowing how to add
 and use your own :class:`~crappy.actuator.Actuator` objects in Crappy is
 critical for anyone who wants to drive their own tests, as **the equipment**
 **that we already integrated in the module will likely not match the one you**
@@ -229,7 +229,7 @@ the interest is limited. Let's review what each method is intended for :
 
 - :meth:`~crappy.actuator.Actuator.__init__` is where you should initialize the
   Python objects that your class uses. It is also where the class accepts its
-  arguments, that are given in the dictionary passed to the :ref:`Machine`
+  arguments, that are given in the dictionary passed to the :ref:`Machine <crappy_docs/blocks:machine>`
   Block. Avoid interacting with hardware already in this method. Also, don't
   forget to initialize the parent class with :py:`super().__init__()` !
 - In :meth:`~crappy.actuator.Actuator.open` you should perform any action
@@ -245,11 +245,11 @@ the interest is limited. Let's review what each method is intended for :
   Actuator is driven in *speed* mode, and
   :meth:`~crappy.actuator.Actuator.set_position` is called if the Actuator is
   driven in *position* mode. These methods are only called if the Machine Block
-  receives commands via an incoming :ref:`Link`. Note that the
+  receives commands via an incoming :ref:`Link <crappy_docs/links:link>`. Note that the
   :meth:`~crappy.actuator.Actuator.set_position` method always accepts a second
   :py:`speed` argument, that may be equal to :obj:`None`. You'll find more
   about it in :ref:`a dedicated section on the next page
-  <3. More about custom Actuators>`.
+  <tutorials/complex_custom_objects:3. more about custom actuators>`.
 - In a similar way, :meth:`~crappy.actuator.Actuator.get_speed` and
   :meth:`~crappy.actuator.Actuator.get_position` are for acquiring the current
   speed or position of the device. These methods do not take any argument, and
@@ -323,8 +323,8 @@ actuator>`_ to see how the implementation of real-life Actuators looks like.
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
-Creating custom :ref:`In / Out` objects is extremely similar to creating custom
-:ref:`Actuators`, so make sure to first read and understand the previous
+Creating custom :ref:`In / Out <crappy_docs/inouts:in / out>` objects is extremely similar to creating custom
+:ref:`Actuators <crappy_docs/actuators:actuators>`, so make sure to first read and understand the previous
 section first ! Just like for Actuators, **anyone who wants to drive their**
 **own setups with Crappy will surely need at some point to create their own**
 :class:`~crappy.inout.InOut` **objects**. This section covers the specificities
@@ -335,7 +335,7 @@ of creating new InOuts.
 
 First, let's cover the similarities with the creation of Actuator objects, in
 the case of a regular usage. The case of the *streamer* mode is covered in
-:ref:`the next sub-section <3.b. Streamer mode>`. Just like for an Actuator,
+:ref:`the next sub-section <tutorials/custom_objects:3.b. streamer mode>`. Just like for an Actuator,
 you'll need to write your class before the :py:`if __name__ == "__main__"`
 statement, or to import it from another file. You should also start from a
 working draft in which you're able to drive your device in Python. And in both
@@ -377,8 +377,8 @@ Actuators. The new methods are :
   return as many values as you want, usually corresponding to different
   channels you device can acquire. The number of returned values should always
   be the same, and for each value a label should be given in the :py:`labels`
-  argument of the :ref:`IOBlock`. The data will only be acquired if the IOBlock
-  has outgoing :ref:`Links` !
+  argument of the :ref:`IOBlock <crappy_docs/blocks:ioblock>`. The data will only be acquired if the IOBlock
+  has outgoing :ref:`Links <crappy_docs/links:links>` !
 - :meth:`~crappy.inout.InOut.set_cmd` takes one or several arguments, and does
   not return anything. Instead, the arguments it receives should be used to set
   commands on the device to drive. The number of arguments this method receives
@@ -412,11 +412,11 @@ new stored values. Let's now integrate the InOut into a runnable code :
    To run this example, you'll need to have the :mod:`matplotlib` Python module
    installed.
 
-In order to obtain two commands from a single :ref:`Generator`, a
-:ref:`Modifier` is added to create a new label. In the IOBlock, the two labels
+In order to obtain two commands from a single :ref:`Generator <crappy_docs/blocks:generator>`, a
+:ref:`Modifier <crappy_docs/modifiers:modifier>` is added to create a new label. In the IOBlock, the two labels
 carrying the commands are indicated in the :py:`cmd_labels` argument. The
 values acquired by the :py:`get_data` method are transmitted to the
-:ref:`Grapher` Block over the labels indicated in the :py:`labels` argument of
+:ref:`Grapher <crappy_docs/blocks:grapher>` Block over the labels indicated in the :py:`labels` argument of
 the IOBlock. And in the end it all works fine together ! You can
 :download:`download this custom InOut example
 </downloads/custom_objects/custom_inout.py>` to run it locally on your
@@ -438,7 +438,7 @@ If you want to be able to use your custom InOut object in *streamer* mode, the
 methods described above will not be sufficient. Instead, **there is a**
 **particular framework to follow that is detailed in this sub-section**. For
 more details on how to use the *streamer* mode, refer to the :ref:`Dealing with
-streams section <4. Dealing with streams>` of the tutorials. Getting straight
+streams section <tutorials/more_complexity:4. dealing with streams>` of the tutorials. Getting straight
 to the point, here's how the template for an InOut supporting the *streamer*
 mode looks like :
 
@@ -477,7 +477,7 @@ additional methods. **You can still define the**
 :meth:`~crappy.inout.InOut.get_data` **and**
 :meth:`~crappy.inout.InOut.set_cmd` **methods, so that your InOut can be used**
 **both in regular and streamer mode** depending on the value of the
-:py:`streamer` argument of the :ref:`IOBlock` ! Now, what are the new methods
+:py:`streamer` argument of the :ref:`IOBlock <crappy_docs/blocks:ioblock>` ! Now, what are the new methods
 supposed to do ?
 
 - :meth:`~crappy.inout.InOut.start_stream` should perform any action required
@@ -536,7 +536,7 @@ sent by the driven device. Just like previously, the
 :meth:`~crappy.inout.InOut.open` and :meth:`~crappy.inout.InOut.close` methods
 don't need to be defined. At the IOBlock level, the :py:`streamer` argument is
 now set to :obj:`True`, and the :py:`labels` argument has also been updated.
-Finally, a :ref:`Demux` Modifier is now needed on the :ref:`Link` from the
+Finally, a :ref:`Demux <crappy_docs/modifiers:demux>` Modifier is now needed on the :ref:`Link <crappy_docs/links:link>` from the
 IOBlock to the Grapher in order for the data to be displayed.
 
 You can :download:`download this custom streamer InOut example
@@ -555,20 +555,20 @@ inout>`_.
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Now that you're getting familiar with the instantiation of custom objects in
-Crappy, adding your own :ref:`Cameras` to Crappy should not present any
+Crappy, adding your own :ref:`Cameras <crappy_docs/cameras:cameras>` to Crappy should not present any
 particular difficulty. **The camera management is one of the big strengths of**
 **Crappy, as Crappy handles the parallelization of the acquisition, display,**
 **recording and processing of the images.** The result is a very high
 performance when dealing with images. Also, **Crappy comes with a variety of**
 **Blocks for performing advanced and optimized image processing**, that you can
 use with your own :class:`~crappy.camera.Camera` objects (see the
-:ref:`DIS Correl`, :ref:`DIC VE` or :ref:`Video Extenso` Blocks for example).
+:ref:`DIS Correl <crappy_docs/blocks:dis correl>`, :ref:`DIC VE <crappy_docs/blocks:dic ve>` or :ref:`Video Extenso <crappy_docs/blocks:video extenso>` Blocks for example).
 For these reasons, integrating your own cameras into Crappy might prove very
 advantageous.
 
 The first step for integrating a camera in Crappy is to check whether it can be
-read by one of the existing :ref:`Cameras`. The :ref:`Camera OpenCV` and
-:ref:`Camera GStreamer` objects in particular are designed to be compatible
+read by one of the existing :ref:`Cameras <crappy_docs/cameras:cameras>`. The :ref:`Camera OpenCV <crappy_docs/cameras:camera opencv>` and
+:ref:`Camera GStreamer <crappy_docs/cameras:camera gstreamer>` objects in particular are designed to be compatible
 with a wide range of cameras, using the :mod:`opencv-python` and GStreamer
 modules respectively, so it might be worth testing them on your hardware
 first ! If your camera is not compatible, you'll have to write your own
@@ -605,7 +605,7 @@ Instead, all the arguments to pass to the Camera will be given as *kwargs* to
 the :meth:`~crappy.camera.Camera.open` method. Why did we choose a different
 implementation ? As detailed below, it is possible to define settings of the
 Camera objects that can be adjusted interactively in a nice
-:ref:`Camera Configurator` interface. Because the settings are handled in a
+:ref:`Camera Configurator <crappy_docs/tools:camera configurator>` interface. Because the settings are handled in a
 special way and applied during :meth:`~crappy.camera.Camera.open`, it then
 makes sense to catch the arguments here !
 
@@ -661,7 +661,7 @@ methods are :
   the configuration window as a horizontal slider that the user can adjust.
 
 There are actually more methods available, but they are covered in :ref:`a
-dedicated section <4. More about custom Cameras>` on the next page. By calling
+dedicated section <tutorials/complex_custom_objects:4. more about custom cameras>` on the next page. By calling
 any of the presented methods, you'll add a
 :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` that manages
 automatically the integration of your setting in the configuration window. It
@@ -729,7 +729,7 @@ inout>`_ to see how they are implemented.
 
 For the last section of this tutorial page, we are going to **cover the most**
 **difficult but also most interesting and powerful object that you can**
-**customize in Crappy : the** :ref:`Block`. Unlike the other objects introduced
+**customize in Crappy : the** :ref:`Block <crappy_docs/blocks:block>`. Unlike the other objects introduced
 on this page, Blocks are much more complex and as a user you are only supposed
 to tune a very small part of it for your application. The rest of the code
 should remain untouched, as it is the one that allows Crappy to run smoothly.
@@ -737,7 +737,7 @@ If you are able to define your own :class:`~crappy.blocks.Block`, **you**
 **should be able to highly customize your scripts in Crappy and to drive**
 **almost any experimental setup** ! Remember that the Blocks are usually not
 meant to directly interact with hardware, the helper classes like the
-:ref:`Actuators` and the :ref:`Cameras` are here for that. Instead, Blocks
+:ref:`Actuators <crappy_docs/actuators:actuators>` and the :ref:`Cameras <crappy_docs/cameras:cameras>` are here for that. Instead, Blocks
 usually create data, perform processing on existing data, interact with the
 system, display data, etc.
 
@@ -745,7 +745,7 @@ system, display data, etc.
    A custom Block that sends or receives images should normally inherit from
    :class:`~crappy.blocks.vision.VisionBlock`, rather than setting
    :attr:`~crappy.blocks.Block.is_vision_block` itself. The
-   :ref:`custom VisionBlock tutorial <5. Custom VisionBlocks>` describes the
+   :ref:`custom VisionBlock tutorial <tutorials/complex_custom_objects:5. custom visionblocks>` describes the
    shared-memory lifecycle and image methods, and points to a complete runnable
    example.
 
@@ -827,7 +827,7 @@ sub-section.
 
 For this example, we have created a fully functional Block that can send and/or
 receive data to/from network sockets. It can be useful for communicating with
-remote devices over a network, although the :ref:`Client Server` Block already
+remote devices over a network, although the :ref:`Client Server <crappy_docs/blocks:client server>` Block already
 provides this functionality using MQTT. The demo Block is really not advanced
 enough to be distributed with Crappy, but it will do just fine for this
 tutorial ! Here is the full code :
@@ -860,7 +860,7 @@ one :
   desired level of granularity, but this comes of course at the cost of
   complexity. You can see that some attributes have a leading underscore in
   their name, this is discussed in the
-  :ref:`next sub-section <5.b. Useful properties and attributes of the Block>`.
+  :ref:`next sub-section <tutorials/custom_objects:5.b. useful properties and attributes of the block>`.
 - In :meth:`~crappy.blocks.Block.prepare`, quite a lot of initialization is
   performed. There are two parts in the implementation : one executed if the
   Block has input Links, the other if it has output Links. If there are input
@@ -949,7 +949,7 @@ access and their meaning :
   only strings. When given, the values to send can be given as a :obj:`tuple`
   (for example) at runtime, rather than as a :obj:`dict` containing both the
   names of the labels and the values. More about it in :ref:`the next section
-  <5.c. Sending data to other Blocks>`. This property can be set at any moment.
+  <tutorials/custom_objects:5.c. sending data to other blocks>`. This property can be set at any moment.
 - :attr:`~crappy.blocks.Block.t0` is a read-only property containing the
   timestamp of the exact moment when all the Blocks start looping together. It
   is useful for obtaining the timestamp of the current moment relative to the
@@ -1012,8 +1012,8 @@ data to downstream Blocks in Crappy !
 
 .. Note::
    The dictionary sent through the Links are exactly the same that the
-   :ref:`Modifiers` can access and modify. See the :ref:`dedicated section
-   <1. Custom Modifiers>` for more information.
+   :ref:`Modifiers <crappy_docs/modifiers:modifiers>` can access and modify. See the :ref:`dedicated section
+   <tutorials/custom_objects:1. custom modifiers>` for more information.
 
 The line in the example where the data gets sent is outlined below :
 
@@ -1040,7 +1040,7 @@ different purpose, let's review them all in this sub-section :
 
 - :meth:`~crappy.blocks.Block.recv_data` is by far the simplest method. It
   creates an empty :obj:`dict`, that it updates with **one** message (i.e. one
-  sent :obj:`dict`) from each of the incoming :ref:`Links`, and then returns
+  sent :obj:`dict`) from each of the incoming :ref:`Links <crappy_docs/links:links>`, and then returns
   it. This means that some data might be lost if several Links carry a same
   label, which is very often the case with the time label ! Also, only the
   first available message of each Link is read, meaning that if there are
@@ -1118,4 +1118,4 @@ as extensive as possible, and we provide a wide variety of `ready-to-run
 examples <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
 examples>`_. At that point of the tutorials, there are still a few uncovered
 topics only relevant to advanced users. You can check them on the :ref:`next
-and last page of the tutorials <More about custom objects in Crappy>`.
+and last page of the tutorials <tutorials/complex_custom_objects:more about custom objects in crappy>`.

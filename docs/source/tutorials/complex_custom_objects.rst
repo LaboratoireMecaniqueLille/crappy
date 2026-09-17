@@ -20,12 +20,13 @@ understanding of the module, or users with a specific need.
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 Starting from version 2.0.0, **it is now possible for users to create their**
-**own** :ref:`Generator Paths` ! There are two reasons why this possibility was
-added so late in the module. First, we're not certain that there is a need for
-it. But since only a few modifications were needed to allow the creation of
-custom Paths, it was decided to make it possible anyway. And second, the
-implementation is a bit messier than for other custom objects. It should still
-be accessible for most users though, don't worry !
+**own** :ref:`Generator Paths <crappy_docs/blocks:generator paths>` ! There are
+two reasons why this possibility was added so late in the module. First, we're
+not certain that there is a need for it. But since only a few modifications
+were needed to allow the creation of custom Paths, it was decided to make it
+possible anyway. And second, the implementation is a bit messier than for other
+custom objects. It should still be accessible for most users though, don't
+worry !
 
 Just like for the other custom objects, there is a template for creating
 custom Paths and the Paths have to be children of
@@ -47,9 +48,10 @@ As you can see, there are only two methods to define ! Just like for the other
 custom objects, :meth:`~crappy.blocks.generator_path.meta_path.Path.__init__`
 should initialize the parent class. It can also accept arguments, that will
 correspond to the keys and values given in the :obj:`dict` passed to the
-:ref:`Generator` Block. Note that in addition to these arguments, the value of
-the last command sent by the Generator and the moment when it was sent are
-accessible through the :py:`self.t0` and :py:`self.last_cmd` attributes.
+:ref:`Generator <crappy_docs/blocks:generator>` Block. Note that in addition to
+these arguments, the value of the last command sent by the Generator and the
+moment when it was sent are accessible through the :py:`self.t0` and
+:py:`self.last_cmd` attributes.
 
 The :meth:`~crappy.blocks.generator_path.meta_path.Path.get_cmd` method is for
 generating the next command for the Generator to send. It must return the next
@@ -59,7 +61,7 @@ the :meth:`~crappy.blocks.Block.recv_all_data` method of the Generator, and
 that contains all the data recently received over incoming Links. It allows to
 handle the case when Generator Paths have stop conditions based on the value of
 a label, described in :ref:`this tutorials section
-<3. Advanced Generator condition>`.
+<tutorials/more_complexity:3. advanced generator condition>`.
 
 But how to handle the stop conditions ? And how to signal the Generator that a
 stop condition was met ? This is where things get a bit trickier ! To indicate
@@ -154,15 +156,18 @@ labels).
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In addition to what was described in the tutorial section about :ref:`how to
-create custom InOut objects <3. Custom InOuts>`, there is one more minor
-feature that the :ref:`In / Out` possess and that is worth describing in the
-tutorials. That is **the ability for an InOut to acquire data before a test**
-**starts, and to use this data to offset the channels to zero**. To do so, the
-script must match two conditions. First, the :py:`make_zero_delay` argument of
-the :ref:`IOBlock` must be set to a positive value. And second, the used InOut
-must have its :meth:`~crappy.inout.InOut.get_data` method defined (it cannot be
-a pure stream class). If both of these conditions are met, then the InOut will
-acquire data using :meth:`~crappy.inout.InOut.get_data` during
+create custom InOut objects <tutorials/custom_objects:3. custom inouts>`, there
+is one more minor feature that the
+:ref:`In / Out <crappy_docs/inouts:in / out>` possess and that is worth
+describing in the tutorials. That is **the ability for an InOut to acquire**
+**data before a test starts, and to use this data to offset the channels to**
+**zero**. To do so, the script must match two conditions. First, the
+:py:`make_zero_delay` argument of the
+:ref:`IOBlock <crappy_docs/blocks:ioblock>` must be set to a positive value.
+And second, the used InOut must have its :meth:`~crappy.inout.InOut.get_data`
+method defined (it cannot be a pure stream class). If both of these conditions
+are met, then the InOut will acquire data using
+:meth:`~crappy.inout.InOut.get_data` during
 :meth:`~crappy.blocks.IOBlock.prepare` for the specified delay, and create
 offsets so that for each acquired channel its value starts from zero at the
 beginning of the test. It also works for streams, provided that the number of
@@ -178,9 +183,11 @@ the way it is performed depends on the capabilities of the hardware. What is
 usually done is that the :meth:`~crappy.inout.InOut.make_zero` method of the
 base class calculates the offset values, and the one of the child class sets
 these values on the hardware and resets the offsets on Crappy's side. This
-kind of implementation can be found in the :ref:`Labjack T7` or the
-:ref:`Comedi` InOuts. Check their code to see how it looks ! There is also a
-very basic example of offsetting in the `examples on GitHub
+kind of implementation can be found in the
+:ref:`Labjack T7 <crappy_docs/inouts:labjack t7>` or the
+:ref:`Comedi <crappy_docs/inouts:comedi>` InOuts. Check their code to see how
+it looks ! There is also a very basic example of offsetting in the `examples
+on GitHub
 <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
 custom_objects>`_ where the method is overriden and the offsets are simply
 doubled.
@@ -195,11 +202,11 @@ users to override it.
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 In the tutorial section about :ref:`how to create custom Actuator objects
-<2. Custom Actuators>`, then entire speed management aspect in :py:`position`
-mode was left out. **In this section, we're going to cover in more details**
-**the possibilities for driving the speed in** :py:`position` mode, **and how**
-**to write a** :meth:`~crappy.actuator.Actuator.set_position` **method**
-**accordingly**.
+<tutorials/custom_objects:2. custom actuators>`, then entire speed management
+aspect in :py:`position` mode was left out. **In this section, we're going to**
+**cover in more details the possibilities for driving the speed in**
+:py:`position` mode, **and how to write a**
+:meth:`~crappy.actuator.Actuator.set_position` **method accordingly**.
 
 In the :obj:`dict` containing information about the
 :class:`~crappy.actuator.Actuator` to drive, there are two optional keys that
@@ -230,10 +237,10 @@ mode, this argument can always be ignored. You can have a look at the
 `Actuators distributed with Crappy <https://github.com/
 LaboratoireMecaniqueLille/crappy/tree/master/src/crappy/actuator>`_ to see how
 the various :meth:`~crappy.actuator.Actuator.set_position` methods implement
-the speed management in position mode. Also, an example of a :ref:`Machine`
-Block with a variable target speed can be found in the `blocks examples folder
-on GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
-examples/blocks>`_.
+the speed management in position mode. Also, an example of a
+:ref:`Machine <crappy_docs/blocks:machine>` Block with a variable target speed
+can be found in the `blocks examples folder on GitHub
+<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/blocks>`_.
 
 4. More about custom Cameras
 ----------------------------
@@ -253,10 +260,11 @@ other features already presented !
 4.a.1. Trigger setting
 """"""""""""""""""""""
 
-:ref:`On the previous page <4. Custom Cameras>`, the three methods allowing to
-instantiate a :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
-were presented. While these methods cover a wide range of situations, we found
-that they were not always well-suited to manage the trigger setting that some
+:ref:`On the previous page <tutorials/custom_objects:4. custom cameras>`, the
+three methods allowing to instantiate a
+:class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` were
+presented. While these methods cover a wide range of situations, we found that
+they were not always well-suited to manage the trigger setting that some
 cameras possess. Indeed, when a camera is switched to external trigger mode, it
 will only acquire images when receiving an external signal. But if this signal
 is itself issued by a device controlled from Crappy, then the camera cannot
@@ -294,8 +302,8 @@ set the camera to hardware trigger mode. For the getter now, it should return
 :py:`'Free run'` or :py:`'Hdw after config'` otherwise, depending on the last
 value set by the setter. It is not the most straightforward getter to
 implement, we know ! This aspect might be improved in future releases, but for
-now you'll have to cope with it. You can get inspiration from the :ref:`Xi API`
-Camera that implements it already.
+now you'll have to cope with it. You can get inspiration from the
+:ref:`Xi API <crappy_docs/cameras:xi api>` Camera that implements it already.
 
 4.a.2. Software ROI setting
 """""""""""""""""""""""""""
@@ -361,7 +369,7 @@ a class implementing a setting reload.
 .. Important::
    The possibility to reload settings is still recent, and might not be fully
    stable. If you have trouble using it, please report it (see the
-   :ref:`Troubleshooting` page).
+   :ref:`Troubleshooting <troubleshooting:troubleshooting>` page).
 
 4.c. Manage the metadata of the images
 ++++++++++++++++++++++++++++++++++++++
@@ -407,10 +415,10 @@ a fraction of the Cameras implemented in Crappy return metadata as a
 The :class:`~crappy.blocks.vision.VisionBlock` class is the recommended base
 for a custom Block that produces, consumes, or transforms images. Typical
 reasons for writing one include integrating an image source that is not a
-:ref:`Camera`, implementing a new analysis algorithm, or adapting images for
-another VisionBlock. Since it is an ordinary Block, a custom VisionBlock can be
-combined with the built-in display, recording, and processing Blocks in any
-useful arrangement.
+:ref:`Camera <crappy_docs/cameras:camera>`, implementing a new analysis
+algorithm, or adapting images for another VisionBlock. Since it is an ordinary
+Block, a custom VisionBlock can be combined with the built-in display,
+recording, and processing Blocks in any useful arrangement.
 
 Creating a new class is not necessary just to rearrange an image workflow. If
 the built-in VisionBlocks already perform the required tasks, instantiate and
@@ -601,25 +609,28 @@ VisionBlock:
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
-On the previous tutorial page, :ref:`a section <5. Custom Blocks>` was
-dedicated to the instantiation of custom :ref:`Blocks`. Always moving one step
-further into customization, we're going to see in this section how you can
-create your own subclass of a particular subclass of Block, namely the
-:class:`~crappy.blocks.Camera` Block !
+On the previous tutorial page,
+:ref:`a section <tutorials/custom_objects:5. custom blocks>` was dedicated to
+the instantiation of custom :ref:`Blocks <crappy_docs/blocks:blocks>`. Always
+moving one step further into customization, we're going to see in this section
+how you can create your own subclass of a particular subclass of Block, namely
+the :class:`~crappy.blocks.Camera` Block !
 
 Basically, the Camera Block provides three functionalities. First, it acquires
-images by driving a :ref:`Camera` object. Then, it can optionally display the
-acquired images in a dedicated window. And third, it can optionally record the
-acquired images. The great advantage of this Block is that it can perform these
-three operations in parallel, and therefore optimize the framerate for each
-functionality. The counterpart is that these three operations must be embedded
-into a single Block, rather than performed separately by three different
-Blocks. More details about the implementation of the Camera Block can be found
-in the :ref:`Developers <All-in-one Camera Blocks>` section of the
+images by driving a :ref:`Camera <crappy_docs/cameras:camera>` object. Then, it
+can optionally display the acquired images in a dedicated window. And third, it
+can optionally record the acquired images. The great advantage of this Block is
+that it can perform these three operations in parallel, and therefore optimize
+the framerate for each functionality. The counterpart is that these three
+operations must be embedded into a single Block, rather than performed
+separately by three different Blocks. More details about the implementation of
+the Camera Block can be found in the
+:ref:`Developers <developers:all-in-one camera blocks>` section of the
 documentation.
 
 This architecture remains supported and is not planned for deprecation. For a
-new processing stage, a custom :ref:`VisionBlock <5. Custom VisionBlocks>` is
+new processing stage, a custom
+:ref:`VisionBlock <tutorials/complex_custom_objects:5. custom visionblocks>` is
 usually simpler and more flexible because it does not also have to own the
 Camera, displayer, and recorder. The all-in-one approach described below can
 still be convenient when those components should deliberately be exposed as a
@@ -629,8 +640,9 @@ In the Camera Block, some lines of code provide the possibility to perform a
 fourth operation in parallel : image processing on the acquired images. While
 the Camera Block itself does not make use of this possibility, children of
 Camera can use it very easily and implement parallelized image processing. For
-instance, the :ref:`Video Extenso` and the :ref:`DIC VE` Blocks are children of
-Camera that implement real-time video-extensometry on the acquired images.
+instance, the :ref:`Video Extenso <crappy_docs/blocks:video extenso>` and the
+:ref:`DIC VE <crappy_docs/blocks:dic ve>` Blocks are children of Camera that
+implement real-time video-extensometry on the acquired images.
 
 Now, in practice, how to write your own subclass of Camera ? As mentioned
 above, the base Camera Block already handles the acquisition, the display, and
@@ -711,7 +723,7 @@ methods that can be called and provide extra functionalities :
   send :class:`~crappy.tool.camera_config.config_tools.Overlay` objects for the
   displayer to show as an overlay on top of the displayed images. It is
   discussed in more details in a :ref:`next subsection
-  <6.c. Sending an overlay to the Displayer>`.
+  <tutorials/complex_custom_objects:6.c. sending an overlay to the displayer>`.
 - :meth:`~crappy.blocks.camera_processes.CameraProcess.log` is the equivalent
   of the :meth:`~crappy.blocks.Block.log` method of the Block, and allows
   handling log messages without resorting to the :obj:`print` function.
@@ -727,9 +739,9 @@ class :
   :py:`self.img` should be a different image at every call !
 - :py:`self.metadata` contains the metadata associated with the image stored in
   :py:`self.img`. The metadata is in the format described in :ref:`the
-  dedicated section <4.c. Manage the metadata of the images>`. It is especially
-  useful for retrieving the timestamp and the frame index of the processed
-  image.
+  dedicated section <tutorials/complex_custom_objects:4.c. manage the metadata
+  of the images>`. It is especially useful for retrieving the timestamp and the
+  frame index of the processed image.
 
 Now that you have a general overview of the methods and attribute that the
 CameraProcess exposes, it is time to demonstrate how to use them in a demo
@@ -975,14 +987,15 @@ integration of your work on the official repository of Crappy. Again, this
 paragraph is not a *git* or GitHub tutorial, and we're not going to give more
 details about this whole process. If you wish to contribute to Crappy, you
 should anyway get in touch with the developers on GitHub at some point ! For
-contributors, the :ref:`Developers information` page of the documentation
-provides a few guidelines, as well as more insights on the content of the
-module than the tutorials. If there's a feature you would like to see in
-Crappy, but that you don't feel capable of implementing yourself, you can also
-request improvements directly on GitHub.
+contributors, the
+:ref:`Developers information <developers:developers information>` page of the
+documentation provides a few guidelines, as well as more insights on the
+content of the module than the tutorials. If there's a feature you would like
+to see in Crappy, but that you don't feel capable of implementing yourself, you
+can also request improvements directly on GitHub.
 
 That concludes the tutorials of Crappy ! We hope they have been helpful for
 getting started with the module, and that you were able to find an answer to
 all your questions here. If not, do not hesitate to request halp on our GitHub
 page ! Also, **if you publish any academic work conducted with the help of**
-**Crappy, please do not forget to** :ref:`cite us <Citing Crappy>` !
+**Crappy, please do not forget to** :ref:`cite us <citing:citing crappy>` !

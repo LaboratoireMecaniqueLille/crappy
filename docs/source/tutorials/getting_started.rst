@@ -43,9 +43,9 @@ and is oriented. Establishing a link between Block 1 and Block 2 means that
 Block 2 will receive all of Block 1's outputs. Because the Link is oriented,
 Block 1 will however not be aware of Block 2's outputs.
 
-Crappy provides two types of Link. A regular :ref:`Link` carries small
+Crappy provides two types of Link. A regular :ref:`Link <crappy_docs/links:link>` carries small
 dictionaries containing commands, measurements, or other labeled values. It is
-created with :func:`crappy.link`. An :ref:`Image Link` carries an image and its
+created with :func:`crappy.link`. An :ref:`Image Link <crappy_docs/links:image link>` carries an image and its
 matching metadata between two :class:`~crappy.blocks.vision.VisionBlock`
 objects, and is created with :func:`crappy.img_link`.
 
@@ -75,7 +75,7 @@ In this second part of the tutorials, we're going to **write step-by-step an**
 **actual script for Crappy** that you can run locally on your machine ! All the
 following tutorials will also follow the same principle. If a script would not
 work as expected, please signal it to the developers (see the
-:ref:`Troubleshooting` page). Note that this first example script requires the
+:ref:`Troubleshooting <troubleshooting:troubleshooting>` page). Note that this first example script requires the
 :mod:`matplotlib` Python module to run.
 
 The first thing to do when writing a script for Crappy is to open a new *.py*
@@ -91,7 +91,7 @@ Then, depending on the requirements of your experimental setup, you can **add**
 that we want to acquire both the position and the force signal from a tensile
 test machine, plot the data against time and save it. So that everyone can run
 this first example without requiring any hardware, let's use the
-:ref:`Fake machine` Block instead of a real machine. To add this Block to the
+:ref:`Fake machine <crappy_docs/blocks:fake machine>` Block instead of a real machine. To add this Block to the
 script, follow this syntax :
 
 .. code-block:: python
@@ -100,8 +100,8 @@ script, follow this syntax :
 
 :py:`<chosen_name>` is the name of the instance of the Block. There can be
 several instances of a same Block running simultaneously, for example several
-:ref:`Grapher` Blocks plotting different labels. :py:`<Block_name>` is the
-exact name of the Block, as given in Crappy's :ref:`API`. The possible
+:ref:`Grapher <crappy_docs/blocks:grapher>` Blocks plotting different labels. :py:`<Block_name>` is the
+exact name of the Block, as given in Crappy's :ref:`API <api:api>`. The possible
 :py:`<arguments>` differ for every Block, the only way to know for sure is to
 **refer to the documentation** !
 
@@ -128,10 +128,10 @@ optional, and it outputs data over specific labels. Let's still specify the
    <https://docs.python.org/3/library/__main__.html>`_. Crappy might not run if
    you don't wrap your code in this statement !
 
-In addition to the Fake Machine, we also need a :ref:`Recorder` Block for
-saving the data, and two :ref:`Grapher` Blocks for plotting it. There will also
-be a :ref:`Generator` Block for driving the Fake Machine. The usage of the most
-used Blocks is detailed in :ref:`the next section <2. The most used Blocks>`.
+In addition to the Fake Machine, we also need a :ref:`Recorder <crappy_docs/blocks:recorder>` Block for
+saving the data, and two :ref:`Grapher <crappy_docs/blocks:grapher>` Blocks for plotting it. There will also
+be a :ref:`Generator <crappy_docs/blocks:generator>` Block for driving the Fake Machine. The usage of the most
+used Blocks is detailed in :ref:`the next section <tutorials/getting_started:2. the most used blocks>`.
 In our specific example, the script could be as follows :
 
 .. literalinclude:: /downloads/getting_started/crappy_syntax.py
@@ -195,7 +195,7 @@ also stop earlier if an error occurs (e.g. missing dependency), or if the user
 hits :kbd:`Control-c`. Note that this last way of ending a script should only
 be used in case something goes wrong, e.g. if the script crashes. You can find
 more about the different ways to stop a script in Crappy in :ref:`a later
-section <3. Properly stopping a script>`.
+section <tutorials/getting_started:3. properly stopping a script>`.
 
 **You now know learned the very basics of writing scripts for Crappy** ! You
 can :download:`download this first example
@@ -211,12 +211,12 @@ there's still much more to learn in the following sections !
 In this third section, you will **learn how to handle the most used Blocks of**
 **Crappy**. These Blocks are all essential, and you'll come across at least one
 of them in most scripts. For an extensive list of all the implemented Blocks,
-refer to the :ref:`Current functionalities` section of the documentation.
+refer to the :ref:`Current functionalities <features:current functionalities>` section of the documentation.
 
 2.a. The Generator Block and its Paths
 ++++++++++++++++++++++++++++++++++++++
 
-Let's start this tour of the most used Blocks with the :ref:`Generator`. It
+Let's start this tour of the most used Blocks with the :ref:`Generator <crappy_docs/blocks:generator>`. It
 allows to **generate a signal according to a pre-defined pattern**, and to send
 it to downstream Blocks. It is mostly used for generating commands when driving
 actuators or motors, but has actually many more possible applications (trigger
@@ -246,10 +246,10 @@ dictionary, the default behavior for the Generator is to stop the current
 script.
 
 To know the available types of signals and their mandatory and optional
-arguments, you'll need to refer to the :ref:`Generator Paths` section of the
-:ref:`API` page. There are quite many options available, and if you have a very
+arguments, you'll need to refer to the :ref:`Generator Paths <crappy_docs/blocks:generator paths>` section of the
+:ref:`API <api:api>` page. There are quite many options available, and if you have a very
 specific need you can always
-:ref:`create your own Generator Path <1. Custom Generator Paths>`. The name of
+:ref:`create your own Generator Path <tutorials/complex_custom_objects:1. custom generator paths>`. The name of
 the :class:`~crappy.blocks.generator_path.meta_path.Path` to use (the type of
 signal to generate) is given by the :py:`'type'` key of each dictionary. The
 other keys represent the possible arguments for the given Path, and thus
@@ -262,12 +262,12 @@ indeed present in the dictionary. The Constant Path generates a constant signal
 of value :py:`'value'`, and stops when :py:`'condition'` is met. The syntax for
 the conditions is described in detail in the
 :meth:`~crappy.blocks.generator_path.meta_path.Path.parse_condition` method of
-the base Path, and :ref:`a tutorial section <3. Advanced Generator condition>`
+the base Path, and :ref:`a tutorial section <tutorials/more_complexity:3. advanced generator condition>`
 is dedicated to the advanced uses of this argument. For a number of
 applications, setting it to :py:`'delay=xx'` (next Path after *xx* seconds) or
 to :obj:`None` (never switches to next Path) is fine.
 
-Let's now try to modify the previous example, so that the :ref:`Fake machine`
+Let's now try to modify the previous example, so that the :ref:`Fake machine <crappy_docs/blocks:fake machine>`
 is driven with a more complex pattern than just a constant speed. Let's say
 that we now want to perform cyclic stretching and relaxation on the fake
 sample, and then stretch it until failure. Compared to the previous example, we
@@ -307,7 +307,7 @@ locally on your machine !
 selecting the Paths that you want to use, and include them in the *path*
 argument of the Generator Block with the correct parameters. As mentioned
 earlier in this section, more information about the Generator Paths can be
-found in :ref:`another tutorial section <3. Advanced Generator condition>`.
+found in :ref:`another tutorial section <tutorials/more_complexity:3. advanced generator condition>`.
 More examples of the Generator Block can be found in the `examples folder on
 GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
 examples/blocks>`__.
@@ -317,13 +317,13 @@ examples/blocks>`__.
 
 For this second example, let's build a basic image-acquisition pipeline. For
 new scripts, the recommended approach is to combine independent
-:class:`~crappy.blocks.vision.VisionBlock` objects. A :ref:`Camera Source` only
-acquires images from a real or virtual :ref:`Camera`, while separate
+:class:`~crappy.blocks.vision.VisionBlock` objects. A :ref:`Camera Source <crappy_docs/blocks:camera source>` only
+acquires images from a real or virtual :ref:`Camera <crappy_docs/cameras:camera>`, while separate
 VisionBlocks can process, display, or record the images. These stages are
-connected explicitly with :ref:`Image Links <Image Link>`.
+connected explicitly with :ref:`Image Links <crappy_docs/links:image link>`.
 
 The minimal pipeline for acquiring and displaying images therefore contains a
-:ref:`Camera Source` and an :ref:`Image Displayer` :
+:ref:`Camera Source <crappy_docs/blocks:camera source>` and an :ref:`Image Displayer <crappy_docs/blocks:image displayer>` :
 
 .. literalinclude:: /downloads/getting_started/tuto_camera.py
    :language: python
@@ -336,7 +336,7 @@ The minimal pipeline for acquiring and displaying images therefore contains a
 
 The first argument of :class:`~crappy.blocks.vision.CameraSource` is the name
 of the :class:`~crappy.camera.Camera` object to use for acquiring the images.
-In this demo, the :ref:`Fake Camera` is used so that the code can run without
+In this demo, the :ref:`Fake Camera <crappy_docs/cameras:fake camera>` is used so that the code can run without
 any hardware. The acquisition-loop frequency belongs to CameraSource, whereas
 the maximum display framerate and the loop that checks for new frames belong
 to :class:`~crappy.blocks.vision.ImageDisplayer`.
@@ -370,9 +370,9 @@ framerate does not slow down acquisition. Intermediate images may be skipped
 by the displayer.
 
 To have a functional and clean example script, we still need to add a few
-lines. In particular, unlike the :ref:`Generator` Block, the image source does
+lines. In particular, unlike the :ref:`Generator <crappy_docs/blocks:generator>` Block, the image source does
 not automatically stop after a condition is met. To allow the script to stop
-in a proper way, a :ref:`Stop Button` Block should be added. It will display a
+in a proper way, a :ref:`Stop Button <crappy_docs/blocks:stop button>` Block should be added. It will display a
 button, that will stop the execution of the script when clicked upon. It is
 always possible to stop Crappy using :kbd:`Control-c`, but this is not
 considered a proper way of ending the script. After inserting the stop button,
@@ -389,10 +389,10 @@ examples folder <https://github.com/LaboratoireMecaniqueLille/crappy/blob/
 master/examples/vision_blocks/camera_basic_display.py>`__.
 
 The explicit architecture becomes especially useful as the workflow grows. An
-:ref:`Image Recorder` can be connected to the same CameraSource with a second
+:ref:`Image Recorder <crappy_docs/blocks:image recorder>` can be connected to the same CameraSource with a second
 call to :func:`crappy.img_link`, without changing or slowing the displayer.
-Similarly, the :ref:`DIC VE Processor`, :ref:`DIS Correl Processor`, and
-:ref:`Video Extenso Processor` can analyze the same source while sending their
+Similarly, the :ref:`DIC VE Processor <crappy_docs/blocks:dic ve processor>`, :ref:`DIS Correl Processor <crappy_docs/blocks:dis correl processor>`, and
+:ref:`Video Extenso Processor <crappy_docs/blocks:video extenso processor>` can analyze the same source while sending their
 small results and display overlays through regular Links. See the `basic
 recording example <https://github.com/LaboratoireMecaniqueLille/crappy/blob/
 master/examples/vision_blocks/camera_basic_record.py>`__, the `software
@@ -412,7 +412,7 @@ tree/master/examples/blocks/camera>`__.
 2.c. The Grapher Block
 ++++++++++++++++++++++
 
-For displaying the data acquired or generated by a Block, the :ref:`Grapher`
+For displaying the data acquired or generated by a Block, the :ref:`Grapher <crappy_docs/blocks:grapher>`
 Block is by far the most popular solution. It allows to **plot the received**
 **data**, always one label against another one. In the first example, you can
 see that the syntax for providing the labels is :py:`('label_x', 'label_y')`.
@@ -431,7 +431,7 @@ arguments of the Grapher Block are set :
    :emphasize-lines: 17-19, 24
 
 Note that **there are other ways of displaying data in Crappy**, check the
-:ref:`Dashboard` and the :ref:`Link Reader` Blocks for example. The Grapher
+:ref:`Dashboard <crappy_docs/blocks:dashboard>` and the :ref:`Link Reader <crappy_docs/blocks:link reader>` Blocks for example. The Grapher
 Block takes up quite much CPU and memory, so it is better not to have too many
 of its instances in a script. You can :download:`download this Grapher example
 </downloads/getting_started/tuto_grapher.py>` to run it locally on your
@@ -443,26 +443,26 @@ master/examples/blocks>`__.
 +++++++++++++++++++++++
 
 For saving the data acquired or generated by a Block, the preferred solution in
-Crappy is to use the :ref:`Recorder` Block. It must be linked to one and only
+Crappy is to use the :ref:`Recorder <crappy_docs/blocks:recorder>` Block. It must be linked to one and only
 one upstream Block, and will **save all the data it receives from it in a**
 *.csv* **(or equivalent text format) file**. This Block is quite basic, so the
 first example given above should be enough for you to understand its syntax.
 Another example of the Recorder Block can be found in the `examples folder on
 GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
-examples/blocks>`__. Note that for recording streams, the :ref:`HDF Recorder`
+examples/blocks>`__. Note that for recording streams, the :ref:`HDF Recorder <crappy_docs/blocks:hdf recorder>`
 Block should be used instead (see :ref:`this later section
-<4. Dealing with streams>`).
+<tutorials/more_complexity:4. dealing with streams>`).
 
 2.e. The IOBlock Block
 ++++++++++++++++++++++
 
-Along with the Camera and Actuator Blocks, the :ref:`IOBlock` is one of the
+Along with the Camera and Actuator Blocks, the :ref:`IOBlock <crappy_docs/blocks:ioblock>` is one of the
 few Blocks in Crappy that can interact with hardware. It serves two purposes :
 first, **it can acquire data from a device and send it to downstream Blocks**.
 And second, **it can also receive commands from upstream Blocks and set them**
 **on active hardware**. These two functions can be used simultaneously, for
 hardware supporting it. To communicate with hardware, the IOBlock relies on the
-:ref:`In / Out` objects, that each implement the communication with a different
+:ref:`In / Out <crappy_docs/inouts:in / out>` objects, that each implement the communication with a different
 device. Here's an example of code featuring an IOBlock for data acquisition :
 
 .. literalinclude:: /downloads/getting_started/tuto_ioblock.py
@@ -510,21 +510,21 @@ single common script. You can :download:`download this IOBlock example
 machine. More examples of the IOBlock can be found in the `examples folder on
 GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/
 examples/blocks>`_. Note that the *streamer* mode of the IOBlock is presented
-in :ref:`a dedicated section <4. Dealing with streams>`, and same goes for the
-:ref:`make_zero functionality <2. More about custom InOuts>`. Directly check
+in :ref:`a dedicated section <tutorials/more_complexity:4. dealing with streams>`, and same goes for the
+:ref:`make_zero functionality <tutorials/complex_custom_objects:2. more about custom inouts>`. Directly check
 the documentation of the IOBlock to learn more about it.
 
 2.f. The Machine Block
 ++++++++++++++++++++++
 
-Similar to the :ref:`IOBlock`, the :ref:`Machine` Block can send commands to
+Similar to the :ref:`IOBlock <crappy_docs/blocks:ioblock>`, the :ref:`Machine <crappy_docs/blocks:machine>` Block can send commands to
 hardware and acquire data from it. The difference is that the IOBlock can send
 any type of command and acquire any type of data, whereas the Machine Block can
 only send speed or position commands and acquire speed and position data.
 **The Machine Block is therefore specifically designed to drive motors**, or
-comparable actuators. The Machine Block relies on the :ref:`Actuators` objects
+comparable actuators. The Machine Block relies on the :ref:`Actuators <crappy_docs/actuators:actuators>` objects
 for communicating with the hardware. The syntax of the arguments to provide to
-the Machine Block is quite similar to that of the :ref:`Generator` Block, as
+the Machine Block is quite similar to that of the :ref:`Generator <crappy_docs/blocks:generator>` Block, as
 demonstrated here :
 
 .. literalinclude:: /downloads/getting_started/tuto_machine.py
@@ -591,7 +591,7 @@ internally and **should lead to a proper termination of the Blocks**. As it
 might lead to unexpected behavior, and to deter users from using it, we chose
 to have :kbd:`Control-c` raise an Exception once all the Blocks are correctly
 stopped. This behavior can be tuned, see the :ref:`7. Advanced control over the
-runtime` section of the tutorials. The take-home message about :kbd:`Control-c`
+runtime <tutorials/more_complexity:7. advanced control over the runtime>` section of the tutorials. The take-home message about :kbd:`Control-c`
 is : **using :kbd:`Control-c` to stop a script is fine in most cases but it**
 **is preferable to do otherwise, so it will by default raise an error even if**
 **everything went fine** !
@@ -599,14 +599,14 @@ is : **using :kbd:`Control-c` to stop a script is fine in most cases but it**
 Now that we know what are the forbidden and not recommended ways of stopping
 Crappy, let's review the 100% approved ones ! As you should have noticed in the
 tutorials above, some objects in Crappy have the ability to stop a script once
-they are done. The most common one is the :ref:`Generator`, that can stop a
-script once its :ref:`Generator Paths` are exhausted. Same goes for the
-:ref:`File Reader` Camera object, that can stop a script once its images are
+they are done. The most common one is the :ref:`Generator <crappy_docs/blocks:generator>`, that can stop a
+script once its :ref:`Generator Paths <crappy_docs/blocks:generator paths>` are exhausted. Same goes for the
+:ref:`File Reader <crappy_docs/cameras:file reader>` Camera object, that can stop a script once its images are
 exhausted. In addition to these two Blocks, two other ones are specifically
-designed to stop a test in a clean way. They are the :ref:`Stop Block` and
-:ref:`Stop Button` Blocks, designed to respectively stop a test automatically
+designed to stop a test in a clean way. They are the :ref:`Stop Block <crappy_docs/blocks:stop block>` and
+:ref:`Stop Button <crappy_docs/blocks:stop button>` Blocks, designed to respectively stop a test automatically
 when a condition is met, and stop a test manually when the user clicks on a
-button. For users integrating Crappy in a GUI, the :ref:`crappy.stop()` method
+button. For users integrating Crappy in a GUI, the :ref:`crappy.stop() <crappy_docs/aliases:crappy.stop()>` method
 is also an option.
 
 .. Note::
@@ -623,5 +623,5 @@ that would make the duration of a test unpredictable). **And if there's an**
 **objective condition that signals the end of your test, rather choose the**
 **Stop Block or rely on the Generator Block** if applicable. Note that you can
 use both a Stop Button and a Stop Block together. And in the specific case when
-you want to trigger Crappy's termination from a GUI, use :ref:`crappy.stop()`
+you want to trigger Crappy's termination from a GUI, use :ref:`crappy.stop() <crappy_docs/aliases:crappy.stop()>`
 instead.

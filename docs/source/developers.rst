@@ -99,7 +99,7 @@ the module. The main downsides of this architecture are a high complexity, and
 potential difficulties to ensure a smooth termination of all the processes. A
 detailed description of the objects and strategies used to achieve a clean
 parallelization can be found in the
-:ref:`next section <Detailed runtime sequence of Crappy>`.
+:ref:`next section <developers:detailed runtime sequence of crappy>`.
 
 As Blocks live each in a separate process, sharing data between each other is
 not straightforward. In Crappy, data can be sent from one Block to another only
@@ -368,7 +368,7 @@ In the main Process
 The __init__ phase
 """"""""""""""""""
 
-Before calling :ref:`crappy.start()` or :ref:`crappy.prepare()`, only one
+Before calling :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` or :ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>`, only one
 Process is running (the ``__main__`` Process). All the instantiated Blocks will
 be children Processes of the ``__main__`` Process, as soon as the next phase
 starts. The ``__main__`` Process will normally live until the test is over and
@@ -442,14 +442,14 @@ connection topology is available before Crappy starts any Process.
 
 Each instance of Block might of course also perform extra tasks, depending how
 the ``__init__`` method of the child class is implemented. The ``__init__``
-phase ends when either :ref:`crappy.start()` or :ref:`crappy.prepare()` is
+phase ends when either :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` or :ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` is
 called (the first thing *start* does is to call *prepare*).
 
 The prepare phase
 """""""""""""""""
 
 When the :meth:`crappy.blocks.Block.prepare_all` :obj:`classmethod` (aliased to
-:ref:`crappy.prepare()` for conciseness) is called, it first sets the
+:ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` for conciseness) is called, it first sets the
 :obj:`logging.Logger` of the ``__main__`` Process. Note that
 :meth:`~crappy.blocks.Block.prepare_all` accepts one argument indicating the
 minimum level for logging. Then, all the synchronization class attributes
@@ -495,27 +495,27 @@ Finally, all the Blocks are started in separate Processes. The main Process
 closes its copies of all configuration Pipe endpoints after starting them,
 whether preparation succeeds or fails. If an exception is caught during the
 *prepare* phase, it first breaks the :obj:`~multiprocessing.Barrier` and then
-triggers :ref:`The cleanup phase`.
+triggers :ref:`The cleanup phase <developers:the cleanup phase>`.
 
 The renice phase
 """"""""""""""""
 
 Right after the *prepare* phase should follow the *renice* phase. It
 corresponds to the call of the :meth:`crappy.blocks.Block.renice_all`
-:obj:`classmethod` of the Block (aliased to :ref:`crappy.renice()` for
+:obj:`classmethod` of the Block (aliased to :ref:`crappy.renice() <crappy_docs/aliases:crappy.renice()>` for
 conciseness). This method accepts one attribute, indicating whether negative
 nicenesses can be accepted (Linux and macOS only). On Windows, it does nothing
 as the concept of niceness is not defined. On Linux and macOS, it renices all
 the running Blocks to the value specified in their ``niceness`` attribute.
 Whether this value differs from default (0) depends on how the Blocks are
 written. If an exception is caught during the *renice* phase, it first breaks
-the :obj:`~multiprocessing.Barrier` and then triggers :ref:`The cleanup phase`.
+the :obj:`~multiprocessing.Barrier` and then triggers :ref:`The cleanup phase <developers:the cleanup phase>`.
 
 The launch phase
 """"""""""""""""
 
 The first thing happening after calling :meth:`crappy.blocks.Block.launch_all`
-(aliased to :ref:`crappy.launch()` for conciseness) is that the ``__main__``
+(aliased to :ref:`crappy.launch() <crappy_docs/aliases:crappy.launch()>` for conciseness) is that the ``__main__``
 Process starts waiting at the synchronization :obj:`~multiprocessing.Barrier`.
 This Barrier is shared by all the Blocks, and its value is set to the number of
 Blocks +1. Therefore, the Barrier only breaks when all the Blocks have reached
@@ -529,7 +529,7 @@ is set to the current time (in seconds since epoch). After that, the start
 :obj:`~multiprocessing.Event` indicating all the Blocks to start looping is
 set, which releases them all. After that, the ``__main__`` Process remains idle
 for most of the test, only waiting for one of the Blocks to finish. As soon as
-at least one Block is done, :ref:`The cleanup phase` starts. This phase also
+at least one Block is done, :ref:`The cleanup phase <developers:the cleanup phase>` starts. This phase also
 starts in case an Exception is caught.
 
 The cleanup phase

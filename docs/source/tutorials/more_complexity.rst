@@ -21,18 +21,18 @@ complexity. So, make sure to read this page until the end !
 
 In the previous tutorials page, we only used linear data flow patterns. Here,
 we're going to **introduce the concept of feedback loops in a script**. The
-main idea is that although :ref:`Links` are unidirectional, it is totally
+main idea is that although :ref:`Links <crappy_docs/links:links>` are unidirectional, it is totally
 possible to have them form a loop to send back information to a Block. This is
-especially useful for driving :ref:`Generator` Blocks, as detailed in
-:ref:`a next section <3. Advanced Generator condition>`. For now, let's look at
+especially useful for driving :ref:`Generator <crappy_docs/blocks:generator>` Blocks, as detailed in
+:ref:`a next section <tutorials/more_complexity:3. advanced generator condition>`. For now, let's look at
 the example script given in :ref:`the tutorial section dedicated to the Machine
-Block <2.f. The Machine Block>`. The :ref:`Fake Machine` Actuator that is used
+Block <tutorials/getting_started:2.f. the machine block>`. The :ref:`Fake Machine <crappy_docs/blocks:fake machine>` Actuator that is used
 takes its commands as a voltage, which is quite unsatisfying since the achieved
 speed will vary depending on the characteristics of the motor. Instead, it
 would be preferable to send speed commands, and to somehow have the motor adapt
 and reach this speed.
 
-To achieve this behavior, a possibility is to use the :ref:`PID` Block. It will
+To achieve this behavior, a possibility is to use the :ref:`PID <crappy_docs/blocks:pid>` Block. It will
 receive on the one hand the target speed, and on the other hand the current
 speed of the motor. Based on these inputs, it will generate a voltage command
 to send to the Machine Block driving the Fake Motor. If the PID is well set,
@@ -78,12 +78,12 @@ how the PID will react.
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 One of Crappy's most powerful features is the possibility to **use**
-:ref:`Modifiers` **to alter the data flowing through the** :ref:`Links`. The
+:ref:`Modifiers <crappy_docs/modifiers:modifiers>` **to alter the data flowing through the** :ref:`Links <crappy_docs/links:links>`. The
 rationale behind is that the data that a Block outputs might not always be
 exactly what you need. For example, data from a sensor might be too noisy and
 require some filtering. Or a command might have to be sent to two different
 motors, but with an offset on one of them. Such small alterations of the data
-should not necessitate to use a new :ref:`Block`, or to modify an existing
+should not necessitate to use a new :ref:`Block <crappy_docs/blocks:block>`, or to modify an existing
 one ! To deal with these minor adjustments, we created the
 :class:`~crappy.modifier.Modifier` objects.
 
@@ -100,9 +100,9 @@ Starting from the example of the previous section, we now want to know the
 current position of the motor. To calculate this value, we just have to
 integrate the measured speed over time. This is numerically a very simple
 operation, since it is equivalent to a sum. It is thus a perfect job for a
-Modifier ! Luckily, Crappy already implements the :ref:`Integrate` Modifier for
+Modifier ! Luckily, Crappy already implements the :ref:`Integrate <crappy_docs/modifiers:integrate>` Modifier for
 integrating a signal over time. Let's add it on a Link starting from the
-Machine Block and pointing towards a new :ref:`Grapher` for the position :
+Machine Block and pointing towards a new :ref:`Grapher <crappy_docs/blocks:grapher>` for the position :
 
 .. literalinclude:: /downloads/more_complexity/tuto_modifiers.py
    :language: python
@@ -115,7 +115,7 @@ Machine Block and pointing towards a new :ref:`Grapher` for the position :
 As you can see, the Modifiers are expected to be given to the :py:`'modifier'`
 argument of the :func:`crappy.link()` function. Each Modifier has to be
 instantiated, and might require arguments. To know what the effect of a
-Modifier is, and which argument it takes, refer to the :ref:`Modifiers` section
+Modifier is, and which argument it takes, refer to the :ref:`Modifiers <crappy_docs/modifiers:modifiers>` section
 of the API. Here, the chosen Modifier is :class:`~crappy.modifier.Integrate`.
 It must be given the name of the label to integrate, and here the name of the
 label carrying the integral value is also specified. This new label is added to
@@ -127,7 +127,7 @@ As illustrated with this example, Modifiers are a simple yet powerful way to
 tune the data flowing through the Links. As the Modifiers distributed with
 Crappy will surely not cover all the possible use cases, we strongly encourage
 you to have a look at the section detailing :ref:`how to code your own
-Modifiers <1. Custom Modifiers>`. You can :download:`download this Modifier
+Modifiers <tutorials/custom_objects:1. custom modifiers>`. You can :download:`download this Modifier
 example </downloads/more_complexity/tuto_modifiers.py>` to run it locally on
 your machine. The Modifiers distributed with Crappy are also showcased in the
 `examples folder on GitHub <https://github.com/LaboratoireMecaniqueLille/
@@ -138,8 +138,8 @@ crappy/tree/master/examples/modifiers>`_.
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
-In :ref:`a previous section <2.a. The Generator Block and its Paths>`, the
-:ref:`Generator` Block and its :ref:`Generator Paths` were introduced. In that
+In :ref:`a previous section <tutorials/getting_started:2.a. the generator block and its paths>`, the
+:ref:`Generator <crappy_docs/blocks:generator>` Block and its :ref:`Generator Paths <crappy_docs/blocks:generator paths>` were introduced. In that
 section, two possible syntax were given for the :py:`'condition'` key of a
 Path :obj:`dict`. The value :obj:`None` can be given, in which case the Path
 never ends. Alternatively, a :obj:`str` in the format :py:`'delay=xx'` can be
@@ -157,7 +157,7 @@ of condition is that the Generator should be sent the label to monitor. **At**
 Path ends. The reason why this type of stop condition was not introduced in the
 section dedicated to Generators is that it requires the concept of feedback
 loop, that is only introduced :ref:`earlier on this page
-<1. Using feedback loops>` !
+<tutorials/more_complexity:1. using feedback loops>` !
 
 .. Note::
    In the stop conditions given as :obj:`str`, you can freely add spaces around
@@ -197,16 +197,16 @@ the Generator, you are now ready to use this block to its full extent !
 .. Note::
    There is actually one more possibility to define custom stop conditions,
    that is much more advanced and is described in :ref:`a later tutorial
-   section <1. Custom Generator Paths>`.
+   section <tutorials/complex_custom_objects:1. custom generator paths>`.
 
 4. Dealing with streams
 -----------------------
 
 .. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
-In :ref:`the tutorial section dedicated to IOBlocks <2.e. The IOBlock Block>`,
-only the regular usage mode of the :ref:`IOBlock` was presented. In this mode,
-the data points are acquired from the :ref:`In / Out` object one by one, which
+In :ref:`the tutorial section dedicated to IOBlocks <tutorials/getting_started:2.e. the ioblock block>`,
+only the regular usage mode of the :ref:`IOBlock <crappy_docs/blocks:ioblock>` was presented. In this mode,
+the data points are acquired from the :ref:`In / Out <crappy_docs/inouts:in / out>` object one by one, which
 results in a limited data rate usually around a few hundred samples per second.
 To circumvent this limitation, another acquisition mode was added for InOuts
 supporting it : the *streamer* mode. **In streamer mode, the data rate of**
@@ -217,7 +217,7 @@ As you may have guessed, in *streamer* mode the data points are acquired and
 returned as chunks rather than individually. This means that the IOBlock sends
 multiple points at once to the downstream Blocks, which is totally unexpected
 for most Blocks. Therefore, only two objects in Crappy are natively compatible
-with the *streamer* mode : the :ref:`HDF Recorder` Block and the :ref:`Demux`
+with the *streamer* mode : the :ref:`HDF Recorder <crappy_docs/blocks:hdf recorder>` Block and the :ref:`Demux <crappy_docs/modifiers:demux>`
 Modifier. Let's see with an example how to use these objects together !
 
 The first requirement when using the *streamer* mode is to use an InOut
@@ -235,7 +235,7 @@ beginning of the example script looks as follows :
 
 Notice how the :py:`'streamer'` is indeed set on the IOBlock. Except for that,
 the syntax for the IOBlock is the same as usual, and the HDFRecorder Block is
-also very close to the regular :ref:`Recorder` one. The differences are that
+also very close to the regular :ref:`Recorder <crappy_docs/blocks:recorder>` one. The differences are that
 instead of multiple labels to record, it only expects one stream label
 containing all the data at once. It also requires the expected data format to
 be specified. Now that the involved Blocks are instantiated, it is time to link
@@ -251,7 +251,7 @@ them together :
 
 Compared to the regular IOBlock usage, this is when things get a bit more
 complicated ! As the IOBlock and HDFRecorder are both meant to handle stream
-data, they can be linked together in a normal way. However, the :ref:`Grapher`
+data, they can be linked together in a normal way. However, the :ref:`Grapher <crappy_docs/blocks:grapher>`
 Block cannot accept stream data, so the Demux Modifier must be added to their
 Link ! Basically, this :class:`~crappy.modifier.Modifier` accepts stream data
 as an input and outputs regular data usable by most other Blocks. Since streams
@@ -392,28 +392,28 @@ Using :mod:`pathlib`, write instead :
 
 In the new section of the tutorial, let's see how you can use the classes
 distributed with Crappy to interact freely with hardware outside the context of
-a Crappy test (i.e. without calling :ref:`crappy.start()` or an equivalent
+a Crappy test (i.e. without calling :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` or an equivalent
 method). But first, why would you do that ? Well, while Crappy is a nice
 framework for running entire experimental protocols, it is a bit cumbersome if
 you only want to acquire one image or one data point from a sensor. That's why
 this "hack" is presented here ! Note that it is truly not an intended feature
 of Crappy, but rather a consequence of its implementation.
 
-In Crappy, the :ref:`In / Out`, :ref:`Actuators` and :ref:`Cameras` objects
+In Crappy, the :ref:`In / Out <crappy_docs/inouts:in / out>`, :ref:`Actuators <crappy_docs/actuators:actuators>` and :ref:`Cameras <crappy_docs/cameras:cameras>` objects
 each implement the code needed to interact with a specific equipment. They make
 sure that this code is organized and can be called in a standard way, so that
-it can be used by the :ref:`IOBlock`, :ref:`Machine` and :ref:`Camera` Blocks
+it can be used by the :ref:`IOBlock <crappy_docs/blocks:ioblock>`, :ref:`Machine <crappy_docs/blocks:machine>` and :ref:`Camera <crappy_docs/cameras:camera>` Blocks
 respectively. Knowing how to properly call the corresponding code, **it is**
 **thus possible to use these classes to directly interface with hardware**
 **outside the context of a Crappy test**.
 
 To learn more about the mandatory and optional methods that each class can
 implement, you should refer to the :ref:`Creating and using custom objects in
-Crappy` page of the tutorials. Here, a very basic example will be used to
+Crappy <tutorials/custom_objects:creating and using custom objects in crappy>` page of the tutorials. Here, a very basic example will be used to
 demonstrate how a :class:`~crappy.camera.Camera` object can be used for
 acquiring and visualizing images. The :class:`~crappy.camera.FakeCamera` will
 be used, so that no hardware is required to run the script. The trick to use
-this class directly is to instantiate it, without using a :ref:`Camera` Block.
+this class directly is to instantiate it, without using a :ref:`Camera <crappy_docs/cameras:camera>` Block.
 Let's write the first part of the script :
 
 .. literalinclude:: /downloads/more_complexity/outside_test.py
@@ -444,7 +444,7 @@ You can :download:`download this FakeCamera example
 </downloads/more_complexity/outside_test.py>` to run it locally on your
 machine. With the visualization added, it should now acquire a picture from the
 FakeCamera, display it for 3 seconds and return. With this example, we managed
-to use a Camera object without ever calling :ref:`crappy.start()`. Note that
+to use a Camera object without ever calling :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`. Note that
 the same principle applies to InOut and Actuator objects, the Camera was only
 used here because it is more visual.
 
@@ -455,34 +455,34 @@ used here because it is more visual.
 
 For the last section of this tutorial page, let's see how you can achieve a
 finer-grained control over Crappy's runtime. **There are two ways to control**
-**Crappy in a more accurate way : passing arguments to** :ref:`crappy.start()`,
+**Crappy in a more accurate way : passing arguments to** :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`,
 **and/or using alternative startup methods**.
 
 7.a. Alternative startup methods
 ++++++++++++++++++++++++++++++++
 
 So far, the only option that was presented for starting a script in Crappy was
-to use the :ref:`crappy.start()` method. There are actually more options
+to use the :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` method. There are actually more options
 available, that can be used in very specific situations.
 
 If you look inside the :meth:`~crappy.blocks.Block.start_all` method, that is
-the alias behind :ref:`crappy.start()`, you'll see that it is just made of
+the alias behind :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`, you'll see that it is just made of
 three consecutive calls to :meth:`~crappy.blocks.Block.prepare_all`,
 :meth:`~crappy.blocks.Block.renice_all` and
 :meth:`~crappy.blocks.Block.launch_all`. These methods are aliased to
-:ref:`crappy.prepare()`, :ref:`crappy.renice()` and :ref:`crappy.launch()` for
+:ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>`, :ref:`crappy.renice() <crappy_docs/aliases:crappy.renice()>` and :ref:`crappy.launch() <crappy_docs/aliases:crappy.launch()>` for
 being called by the user in a script. To get an exact description of what each
-of these methods do, refer to the :ref:`Developers information` section of
-the documentation. In short, the :ref:`crappy.prepare()` method initializes all
+of these methods do, refer to the :ref:`Developers information <developers:developers information>` section of
+the documentation. In short, the :ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` method initializes all
 the Blocks, but does not start the test. For example, after calling this
 method, the actuators are powered on, the sensors are configured, and the files
-for recording data are created. The :ref:`crappy.renice()` method can be
-ignored by most users. And the :ref:`crappy.launch()` actually starts the test
-and is blocking, just like :ref:`crappy.start()`.
+for recording data are created. The :ref:`crappy.renice() <crappy_docs/aliases:crappy.renice()>` method can be
+ignored by most users. And the :ref:`crappy.launch() <crappy_docs/aliases:crappy.launch()>` actually starts the test
+and is blocking, just like :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`.
 
 But why would you want to split up the three methods of
-:ref:`crappy.start()` ? By doing so, you gain the possibility to add some code
-between the :ref:`crappy.prepare()` and :ref:`crappy.launch()` methods. This
+:ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` ? By doing so, you gain the possibility to add some code
+between the :ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` and :ref:`crappy.launch() <crappy_docs/aliases:crappy.launch()>` methods. This
 mostly gives you the capacity to interact with hardware once it is initialized
 but the test is not yet started. For example, it is used on some setups to
 allow the user to place samples on the device once the motors reach an initial
@@ -491,13 +491,13 @@ only start the test once the desired position is reached and the actuator is
 switched back to software-controlled mode.
 
 .. Warning::
-   If code is included between the :ref:`crappy.prepare()` and
-   :ref:`crappy.launch()` methods, there is no warranty that Crappy terminates
+   If code is included between the :ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` and
+   :ref:`crappy.launch() <crappy_docs/aliases:crappy.launch()>` methods, there is no warranty that Crappy terminates
    gracefully in case this code crashes ! Be extremely cautious when performing
    operations that can potentially fail, and make sure to understand what the
    effects would be on your setup !
 
-As the alternatives :ref:`crappy.start()` are much more difficult to use in a
+As the alternatives :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` are much more difficult to use in a
 safe way, and have very few clean use cases, no example will be showed for this
 section. We consider that users skilled enough to use these methods safely
 should be able to do so without an example. Still, these methods exist and are
@@ -506,7 +506,7 @@ part of the API, and as such they are presented in this tutorial section.
 7.b. Arguments to the startup method
 ++++++++++++++++++++++++++++++++++++
 
-The :ref:`crappy.start()` method, alias to the
+The :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` method, alias to the
 :meth:`~crappy.blocks.Block.start_all` method of the class
 :class:`~crappy.blocks.Block`, accepts three arguments that can help customize
 a bit the behavior of Crappy. They are briefly detailed in this section.
@@ -532,7 +532,7 @@ the exceptions raised at the end of a script. The default behavior of Crappy is
 to raise an exception when it stops, if either an unexpected error was raised
 during its execution or if a :exc:`KeyboardInterrupt` was caught (script
 stopped using :kbd:`Control-c`). The purpose of this behavior is to prevent the
-execution of any line of code that would come after :ref:`crappy.start()`,
+execution of any line of code that would come after :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`,
 since it might not be safe to run it after Crappy has failed or the user
 interrupted the test. By setting :py:`'no_raise'` to :obj:`True`, the
 exceptions are disabled and Python goes on after Crappy finishes, even if it
