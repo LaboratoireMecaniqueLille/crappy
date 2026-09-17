@@ -25,6 +25,7 @@ class RecordingDISCorrelTool:
     self.reference = None
     self.calls = list()
     self.return_value = [10.0, 20.0, 30.0]
+    self.offset = (2, -1)
     type(self).instances.append(self)
 
   def set_box(self) -> None:
@@ -341,7 +342,12 @@ class TestDISCorrelProcessor(VisionTestBase):
     sent = processor.send.call_args.args[0]
     self.assertEqual(sent[:-1], [0.2, metadata, 10.0, 20.0, 30.0])
     self.assertIsInstance(sent[-1], SpotsBoxes)
-    self.assertIs(sent[-1].spot_1, tool.box)
+    self.assertIsNot(sent[-1].spot_1, tool.box)
+    self.assertEqual((sent[-1].spot_1.x_start,
+                      sent[-1].spot_1.x_end,
+                      sent[-1].spot_1.y_start,
+                      sent[-1].spot_1.y_end),
+                     (4, 8, 0, 3))
     np.testing.assert_array_equal(tool.calls[-1][0], image)
     self.assertTrue(tool.calls[-1][1])
 

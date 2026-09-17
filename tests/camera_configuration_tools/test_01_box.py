@@ -137,3 +137,32 @@ class TestBox(unittest.TestCase):
 
     self.assertEqual(other, self._box)
 
+  def test_05_add_offset(self) -> None:
+    """Tests creating an independent Box shifted by integer offsets."""
+
+    self._box = Box(x_start=10, x_end=20,
+                    y_start=30, y_end=40,
+                    x_disp=1.5, y_disp=-2.5,
+                    x_centroid=15.0, y_centroid=35.0)
+
+    shifted = self._box + (3, -4)
+
+    self.assertIsNot(shifted, self._box)
+    self.assertEqual((shifted.x_start, shifted.x_end,
+                      shifted.y_start, shifted.y_end),
+                     (13, 23, 26, 36))
+    self.assertEqual((shifted.x_disp, shifted.y_disp), (4.5, -6.5))
+    self.assertEqual((shifted.x_centroid, shifted.y_centroid), (18.0, 31.0))
+    self.assertEqual((self._box.x_start, self._box.x_end,
+                      self._box.y_start, self._box.y_end),
+                     (10, 20, 30, 40))
+
+    with self.assertRaises(TypeError):
+      _ = self._box + [1, 2]
+    for offset in ((1,), (1, 2.0)):
+      with self.subTest(offset=offset):
+        with self.assertRaises(ValueError):
+          _ = self._box + offset
+
+    incomplete = Box(x_start=1)
+    self.assertIs(incomplete + (1, 2), incomplete)

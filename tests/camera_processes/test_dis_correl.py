@@ -26,6 +26,7 @@ class DummyDISCorrelTool:
     self.img0 = None
     self.calls = list()
     self.return_value = [10.0, 20.0, 30.0]
+    self.offset = (2, -1)
 
     type(self).instances.append(self)
 
@@ -178,7 +179,12 @@ class TestDISCorrelProcess(CameraProcessTestBase):
     self.assertTrue(tool.calls[0][1])
     self.assertEqual(len(sent_overlays), 1)
     self.assertIsInstance(sent_overlays[0], SpotsBoxes)
-    self.assertIs(sent_overlays[0].spot_1, box)
+    self.assertIsNot(sent_overlays[0].spot_1, box)
+    self.assertEqual((sent_overlays[0].spot_1.x_start,
+                      sent_overlays[0].spot_1.x_end,
+                      sent_overlays[0].spot_1.y_start,
+                      sent_overlays[0].spot_1.y_end),
+                     (4, 8, 0, 3))
 
   def test_set_config_replaces_box(self) -> None:
     """Checks the ROI selected in the GUI is installed before startup."""

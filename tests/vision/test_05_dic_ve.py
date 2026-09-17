@@ -296,7 +296,7 @@ class TestDICVEProcessor(VisionTestBase):
   def test_loop_sets_reference_then_sends_results_and_overlay(self) -> None:
     """Checks reference copying and formatted result publication."""
 
-    processor = self.make_processor()
+    processor = self.make_processor(follow=False)
     tool = RecordingDICVETool(patches=processor._patches)
     processor._disve = tool
     processor.send = Mock()
@@ -314,12 +314,22 @@ class TestDICVEProcessor(VisionTestBase):
     image[:] = 20
     metadata = {'ImageUniqueID': 2, 't(s)': 0.2}
     processor.last_received['dic-image'].metadata = metadata
+    tool.patches.spot_1.x_disp = 2.4
+    tool.patches.spot_1.y_disp = -1.6
     processor.loop()
 
-    processor.send.assert_called_once_with([
+    sent = processor.send.call_args.args[0]
+    self.assertEqual(sent[:-1], [
       0.2, metadata, [(1.0, 2.0)], 3.0, 4.0, [(5.0, 6.0)],
-      tool.patches,
     ])
+    self.assertIsInstance(sent[-1], SpotsBoxes)
+    self.assertIsNot(sent[-1], tool.patches)
+    self.assertIsNot(sent[-1].spot_1, tool.patches.spot_1)
+    self.assertEqual((sent[-1].spot_1.x_start,
+                      sent[-1].spot_1.x_end,
+                      sent[-1].spot_1.y_start,
+                      sent[-1].spot_1.y_end),
+                     (4, 8, -1, 2))
     np.testing.assert_array_equal(tool.images[-1], image)
     self.assertEqual(processor._last_data, tool.return_value)
 

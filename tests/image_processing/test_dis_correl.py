@@ -245,12 +245,12 @@ class TestDISCorrelTool(TestCase):
     tool.set_box()
 
     self.assertEqual(tool.get_data(image), [2.0, 3.0])
-    self.assertEqual(tool._offset, (2, 3))
+    self.assertEqual(tool.offset, (2, 3))
     np.testing.assert_array_equal(tool._dis_flow,
                                   np.zeros((20, 20, 2), dtype=np.float32))
 
     self.assertEqual(tool.get_data(image), [4.0, 6.0])
-    self.assertEqual(tool._offset, (4, 6))
+    self.assertEqual(tool.offset, (4, 6))
 
   def test_follow_keeps_correlation_crop_inside_image(self) -> None:
     """Checks that large measured translations are clamped to image bounds."""
@@ -267,4 +267,4 @@ class TestDISCorrelTool(TestCase):
     tool.set_box()
 
     self.assertEqual(tool.get_data(image), [100.0, -100.0])
-    self.assertEqual(tool._offset, (2, -2))
+    self.assertEqual(tool.offset, (2, -2))
