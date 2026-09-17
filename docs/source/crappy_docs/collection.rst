@@ -54,10 +54,12 @@ collection, and report either successful loading or import failures:
 Below are the classes on which the collection import machinery is relying:
 
 .. autoclass:: crappy.collection.api.CheckResult
-   :members:
+   :members: name, kind, module, available, error_type, error_message
+   :undoc-members:
 
 .. autoclass:: crappy._collection.CollectionEntry
-   :members:
+   :members: name, kind, module
+   :undoc-members:
 
 .. autoclass:: crappy._collection.CollectionUnavailableError
-   :members:
+   :special-members: __init__

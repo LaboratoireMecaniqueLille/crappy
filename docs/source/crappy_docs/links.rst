@@ -77,6 +77,7 @@ documented below:
    :special-members: __init__
 
 .. autoclass:: crappy.links.link_graph.Node
-   :members:
+   :members: name, block_type
+   :undoc-members:
 
 .. autoclass:: crappy.links.GraphStructureError

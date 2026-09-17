@@ -235,12 +235,15 @@ Vision Block data classes
 Configuration Request
 """""""""""""""""""""
 .. autoclass:: crappy.blocks.vision.block.ConfigRequest
-   :members:
+   :members: requester, args, kwargs, configurator, img_source, connection,
+             completed, required
+   :undoc-members:
 
 Received Image Data
 """""""""""""""""""
 .. autoclass:: crappy.blocks.vision.block.ImgData(id=-1, metadata=None, img=...)
-   :members:
+   :members: id, metadata, img
+   :undoc-members:
 
 Generator Paths
 ---------------
