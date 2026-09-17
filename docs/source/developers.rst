@@ -39,6 +39,30 @@ the one on which you should commit. Starting from v2.0.0, the `master branch
 <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master>`_ is never
 directly committed to.
 
+Building the documentation
+--------------------------
+
+Build the documentation in a clean virtual environment with a supported
+Python version. From the repository root, run:
+
+.. code-block:: console
+
+   $ python -m venv .venv-docs
+   $ source .venv-docs/bin/activate
+   $ python -m pip install --upgrade pip
+   $ python -m pip install -r docs/source/requirements.txt
+   $ python -m pip install .
+   $ make -C docs clean html
+
+The final command performs a fresh, nitpicky Sphinx build and treats warnings
+as errors. The generated site is available in ``docs/build/html``.
+
+The documentation requirements constrain Sphinx to one feature release line
+shared by all supported Python versions and pin each direct third-party
+extension. Crappy's runtime dependencies, including NumPy, are resolved from
+``pyproject.toml``. Review the Sphinx constraint and extension pins together
+when updating the documentation toolchain.
+
 Technical description of Crappy
 -------------------------------
 
