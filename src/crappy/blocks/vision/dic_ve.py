@@ -411,7 +411,9 @@ class DICVEProcessor(VisionBlock):
 
       # Sending the results to the downstream Blocks, including the overlay
       data = self._disve.calculate_displacement(img)
-      self.send([metadata['t(s)'], metadata, *data, self._disve.patches])
+      overlay = self._disve.patches.copy(
+          use_displacements=not self._follow)
+      self.send([metadata['t(s)'], metadata, *data, overlay])
 
       # Save the last data points for the case when patches are lost
       self._last_data = data

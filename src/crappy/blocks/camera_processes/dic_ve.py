@@ -192,7 +192,8 @@ class DICVEProcess(CameraProcess):
         self.send([self.metadata['t(s)'], self.metadata, *data])
 
         # Sending the patches to the Displayer for display
-        self.send_to_draw(self._disve.patches)
+        self.send_to_draw(self._disve.patches.copy(
+            use_displacements=not self._follow))
 
       # If the patches are lost, deciding whether to raise exception or not
       except LostPatchError as exc:

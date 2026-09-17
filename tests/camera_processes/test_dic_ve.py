@@ -127,7 +127,7 @@ class TestDICVEProcess(CameraProcessTestBase):
     """Checks first-frame setup and data/overlay forwarding."""
 
     patches = self._patches()
-    process = self._make_process(patches=patches)
+    process = self._make_process(patches=patches, follow=False)
     self._process = process
     self.set_test_logger(process)
 
@@ -157,6 +157,8 @@ class TestDICVEProcess(CameraProcessTestBase):
     metadata = {'ImageUniqueID': 2, 't(s)': 0.2}
     process.img = img
     process.metadata = metadata
+    patches.spot_1.x_disp = 2.4
+    patches.spot_1.y_disp = -1.6
 
     process.loop()
 
@@ -171,7 +173,15 @@ class TestDICVEProcess(CameraProcessTestBase):
     })
     self.assertEqual(len(tool.images), 1)
     np.testing.assert_array_equal(tool.images[0], img)
-    self.assertEqual(sent_overlays, [patches])
+    self.assertEqual(len(sent_overlays), 1)
+    self.assertIsInstance(sent_overlays[0], SpotsBoxes)
+    self.assertIsNot(sent_overlays[0], patches)
+    self.assertIsNot(sent_overlays[0].spot_1, patches.spot_1)
+    self.assertEqual((sent_overlays[0].spot_1.x_start,
+                      sent_overlays[0].spot_1.x_end,
+                      sent_overlays[0].spot_1.y_start,
+                      sent_overlays[0].spot_1.y_end),
+                     (4, 8, -1, 2))
 
   def test_loop_handles_lost_patch_without_raising(self) -> None:
     """Checks idle behavior after losing patches when configured not to raise."""

@@ -31,6 +31,8 @@ class TestDISCorrel(CameraWrapperTestBase):
       't(s)', 'meta', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)',
     ])
     self.assertEqual(block._patch_int, (1, 2, 3, 4))
+    self.assertEqual(block._border, 16)
+    self.assertFalse(block._follow)
 
   def test_constructor_normalizes_custom_fields_and_residual_label(self
                                                                     ) -> None:
@@ -102,6 +104,30 @@ class TestDISCorrel(CameraWrapperTestBase):
           DISCorrel(patch=(0, 0, 2, 2), labels=labels,
                     **self.camera_kwargs())
 
+  def test_constructor_validates_border_and_follow(self) -> None:
+    """Checks correlation crop and following option validation."""
+
+    invalid = (
+      {'border': 'wide'},
+      {'border': (1,)},
+      {'border': (1, -1)},
+      {'border': -1},
+      {'follow': 1},
+    )
+    for options in invalid:
+      with self.subTest(options=options):
+        with self.assertRaises((TypeError, ValueError)):
+          DISCorrel(patch=(0, 0, 2, 2),
+                    **options,
+                    **self.camera_kwargs())
+
+    block = DISCorrel(patch=(0, 0, 2, 2),
+                      border=(0, 0),
+                      follow=True,
+                      **self.camera_kwargs())
+    self.assertEqual(block._border, (0, 0))
+    self.assertTrue(block._follow)
+
   def test_prepare_builds_box_and_forwards_process_options(self) -> None:
     """Checks ROI conversion and DISCorrelProcess option forwarding."""
 
@@ -119,6 +145,8 @@ class TestDISCorrel(CameraWrapperTestBase):
                       patch_size=7,
                       patch_stride=8,
                       residual=True,
+                      border=(9, 10),
+                      follow=True,
                       **self.camera_kwargs())
 
     with (patch.object(dis_correl_module, 'DISCorrelProcess', RecordingProcess),
@@ -146,6 +174,8 @@ class TestDISCorrel(CameraWrapperTestBase):
       'patch_size': 7,
       'patch_stride': 8,
       'residual': True,
+      'border': (9, 10),
+      'follow': True,
     })
 
   def test_prepare_allows_gui_to_populate_box(self) -> None:

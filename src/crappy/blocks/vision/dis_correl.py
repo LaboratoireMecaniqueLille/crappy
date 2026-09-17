@@ -68,6 +68,8 @@ class DISCorrelProcessor(VisionBlock):
                patch_size: int = 8,
                patch_stride: int = 3,
                residual: bool = False,
+               border: int | tuple[int, int] | None = 16,
+               follow: bool = False,
                display_freq: bool = False,
                debug: bool | None = False,
                freq: float | None = 200) -> None:
@@ -119,6 +121,25 @@ class DISCorrelProcessor(VisionBlock):
         values generally improve flow quality at the cost of computation time.
       residual: If :obj:`True`, calculates the average absolute optical-flow
         residual and sends it under the automatically added ``'res'`` label.
+      border: Width in pixels of the additional area around the correlation
+        patch that is passed to DISFlow. An :obj:`int` applies the same border
+        in both directions, while a ``(x, y)`` tuple allows setting the
+        horizontal and vertical borders independently. ``None`` uses the full
+        image, which corresponds to the legacy behavior. A larger border
+        provides stability under large displacements, at the cost of a
+        performance penalty. Without ``follow``, it should exceed the maximum
+        displacement from the reference image; with ``follow``, it should
+        exceed the expected displacement between consecutive frames.
+
+        ..  versionadded:: 2.1.0
+      follow: If :obj:`True`, shifts the correlation area according to the
+        average rigid-body displacement measured on the patch. This allows the
+        patch to follow large cumulative translations while keeping the
+        correlation area small. The reported fields remain relative to the
+        original reference image. This option is relevant when large
+        displacements of the observed area are expected.
+
+        .. versionadded:: 2.1.0
       display_freq: If :obj:`True`, periodically displays the image-processing
         frequency.
       debug: If :obj:`True`, displays all log messages, including
@@ -222,6 +243,19 @@ class DISCorrelProcessor(VisionBlock):
       raise ValueError("patch_stride must be a positive integer")
     if patch_stride >= patch_size:
       raise ValueError("patch_stride must be strictly less than patch_size")
+    if border is not None and not isinstance(border, (int, tuple)):
+      raise TypeError("border must be either None, an integer, or a tuple of "
+                      "two integers")
+    if (isinstance(border, tuple) and
+        (len(border) != 2 or not all(isinstance(val, int) for val in border) or
+         not all(val >= 0 for val in border))):
+      raise ValueError("If provided as a tuple, border must contain exactly "
+                       "two non-negative integers")
+    if isinstance(border, int) and border < 0:
+      raise ValueError("If provided as an integer, border must be "
+                       "non-negative")
+    if not isinstance(follow, bool):
+      raise TypeError("follow must be a boolean")
 
     # These arguments are for the DISCorrelTool
     self._fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
@@ -236,6 +270,8 @@ class DISCorrelProcessor(VisionBlock):
     self._gradient_iterations: int = gradient_iterations
     self._patch_size: int = patch_size
     self._patch_stride: int = patch_stride
+    self._border: int | tuple[int, int] | None = border
+    self._follow: bool = follow
 
     # Other attributes
     self._request_configuration: bool = request_configuration
@@ -322,7 +358,9 @@ class DISCorrelProcessor(VisionBlock):
         iterations=self._iterations,
         gradient_iterations=self._gradient_iterations,
         patch_size=self._patch_size,
-        patch_stride=self._patch_stride)
+        patch_stride=self._patch_stride,
+        border=self._border,
+        follow=self._follow)
 
     # Mandatory otherwise the Block won't run
     super().prepare()
@@ -375,8 +413,9 @@ class DISCorrelProcessor(VisionBlock):
       raise RuntimeError("The DISCorrel tool should have been instantiated")
     self.log(logging.DEBUG, "Processing the received image")
     data = self._dis_correl.get_data(img, self._residual)
+    x_offset, y_offset = self._dis_correl.offset
     self.send([metadata['t(s)'], metadata, *data,
-               SpotsBoxes(self._dis_correl.box)])
+               SpotsBoxes(self._dis_correl.box + (x_offset, y_offset))])
 
     # If requested, displays the FPS of the image display
     if self.display_freq:

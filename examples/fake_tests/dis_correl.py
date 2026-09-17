@@ -68,6 +68,8 @@ if __name__ == "__main__":
       image_generator=crappy.tool.ApplyStrainToImage(img),  # This argument
       # makes the Block generate fake strain on the given image, only useful
       # for demos
+      follow=True,  # Required because we're applying 20% strain which is quite
+      # a large strain and the patch might be lost if it's not in the center
       freq=50,  # Lowering the default frequency because it's just a demo
 
       # Sticking to default for the other arguments

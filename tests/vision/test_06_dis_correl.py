@@ -25,6 +25,7 @@ class RecordingDISCorrelTool:
     self.reference = None
     self.calls = list()
     self.return_value = [10.0, 20.0, 30.0]
+    self.offset = (2, -1)
     type(self).instances.append(self)
 
   def set_box(self) -> None:
@@ -108,6 +109,8 @@ class TestDISCorrelProcessor(VisionTestBase):
     self.assertEqual((processor._patch.x_start, processor._patch.x_end,
                       processor._patch.y_start, processor._patch.y_end),
                      (2, 6, 1, 4))
+    self.assertEqual(processor._border, 16)
+    self.assertFalse(processor._follow)
 
   def test_constructor_normalizes_custom_fields_and_residual(self) -> None:
     """Checks scalar/iterable fields and automatic residual labeling."""
@@ -165,6 +168,11 @@ class TestDISCorrelProcessor(VisionTestBase):
       {'patch_stride': 0},
       {'patch_size': 3, 'patch_stride': 3},
       {'residual': 1},
+      {'border': 'wide'},
+      {'border': (1,)},
+      {'border': (1, -1)},
+      {'border': -1},
+      {'follow': 1},
     )
     for options in invalid:
       with self.subTest(options=options):
@@ -227,7 +235,9 @@ class TestDISCorrelProcessor(VisionTestBase):
                                     gradient_iterations=6,
                                     patch_size=9,
                                     patch_stride=7,
-                                    residual=True)
+                                    residual=True,
+                                    border=(9, 10),
+                                    follow=True)
     self.add_image_input(processor)
     processor.recv_configs = Mock(return_value={})
     processor._log_queue = Mock()
@@ -252,6 +262,8 @@ class TestDISCorrelProcessor(VisionTestBase):
       'gradient_iterations': 6,
       'patch_size': 9,
       'patch_stride': 7,
+      'border': (9, 10),
+      'follow': True,
     })
     inherited.assert_called_once_with()
     self.assertEqual(tool.set_box_calls, 1)
@@ -330,7 +342,12 @@ class TestDISCorrelProcessor(VisionTestBase):
     sent = processor.send.call_args.args[0]
     self.assertEqual(sent[:-1], [0.2, metadata, 10.0, 20.0, 30.0])
     self.assertIsInstance(sent[-1], SpotsBoxes)
-    self.assertIs(sent[-1].spot_1, tool.box)
+    self.assertIsNot(sent[-1].spot_1, tool.box)
+    self.assertEqual((sent[-1].spot_1.x_start,
+                      sent[-1].spot_1.x_end,
+                      sent[-1].spot_1.y_start,
+                      sent[-1].spot_1.y_end),
+                     (4, 8, 0, 3))
     np.testing.assert_array_equal(tool.calls[-1][0], image)
     self.assertTrue(tool.calls[-1][1])
 

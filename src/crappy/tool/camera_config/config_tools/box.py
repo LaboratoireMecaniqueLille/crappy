@@ -46,6 +46,39 @@ class Box(Overlay):
     return (f"Box with coordinates ({self.x_start}, {self.y_start}), "
             f"({self.x_end}, {self.y_end})")
 
+  def __add__(self, other: tuple[int, int]) -> Box:
+    """Adds an offset to the coordinates of the current Box.
+
+    Args:
+      other: a :obj:`tuple` of two obj:`int` containing the x and y offset to
+        apply.
+
+    Returns:
+      Either the current Box if any of its corners is undefined, or the current
+      Box offset by the provided values otherwise. The disp and centroid
+      parameters are also shifted.
+    """
+
+    if not isinstance(other, tuple):
+      raise TypeError("Can only add a Box with a tuple of two integers")
+    if len(other) != 2 or not all(isinstance(el, int) for el in other):
+      raise ValueError("Can only add a Box with a tuple of two integers")
+
+    if self.no_points():
+      return self
+
+    x_offset, y_offset = other
+    return Box(self.x_start + x_offset,
+               self.x_end + x_offset,
+               self.y_start + y_offset,
+               self.y_end + y_offset,
+               self.x_disp + x_offset if self.x_disp is not None else None,
+               self.y_disp + y_offset if self.y_disp is not None else None,
+               self.x_centroid + x_offset if self.x_centroid is not None
+               else None,
+               self.y_centroid + y_offset if self.y_centroid is not None
+               else None)
+
   def draw(self, img: np.ndarray) -> None:
     """Draws the Box on top of the given image, and returns the modified image.
 
