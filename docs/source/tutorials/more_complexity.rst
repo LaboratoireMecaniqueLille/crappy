@@ -18,8 +18,8 @@ feedback loops. Although :ref:`Links <crappy_docs/links:links>` are unidirection
 possible to have them form a loop to send back information to a Block. This is
 especially useful for driving :ref:`Generator <crappy_docs/blocks:generator>` Blocks, as detailed in
 :ref:`a next section <tutorials/more_complexity:3. advanced generator condition>`. For now, let's look at
-the example script given in :ref:`the tutorial section dedicated to the Machine
-Block <tutorials/getting_started:2.f. the machine block>`. The :ref:`Fake Machine <crappy_docs/blocks:fake machine>` Actuator that is used
+the example script given in the :ref:`actuator-control tutorial
+<tutorial-actuator-control>`. The :ref:`Fake Machine <crappy_docs/blocks:fake machine>` Actuator that is used
 takes its commands as a voltage, which is quite unsatisfying since the achieved
 speed will vary depending on the characteristics of the motor. Instead, it
 would be preferable to send speed commands, and to somehow have the motor adapt
@@ -120,7 +120,7 @@ crappy/tree/master/examples/modifiers>`_.
 3. Advanced Generator condition
 -------------------------------
 
-In :ref:`a previous section <tutorials/getting_started:2.a. the generator block and its paths>`, the
+In the :ref:`command-generation tutorial <tutorial-command-generation>`, the
 :ref:`Generator <crappy_docs/blocks:generator>` Block and its :ref:`Generator Paths <crappy_docs/blocks:generator paths>` were introduced. In that
 section, two possible syntaxes were given for the :py:`'condition'` key of a
 Path :obj:`dict`. The value :obj:`None` can be given, in which case the Path
@@ -180,7 +180,7 @@ always stops at the given condition.
 4. Dealing with streams
 -----------------------
 
-In :ref:`the tutorial section dedicated to IOBlocks <tutorials/getting_started:2.e. the ioblock block>`,
+In the :ref:`data-acquisition tutorial <tutorial-data-acquisition>`,
 only the regular usage mode of the :ref:`IOBlock <crappy_docs/blocks:ioblock>` was presented. In this mode,
 the data points are acquired from the :ref:`In / Out <crappy_docs/inouts:in / out>` object one by one, which
 acquires one sample per IOBlock loop. InOuts that support the *streamer* mode

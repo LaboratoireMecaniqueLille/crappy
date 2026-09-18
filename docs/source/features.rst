@@ -58,8 +58,8 @@ Data display
   blocks/dashboard.py>`_ specifically, but it is also used in most of the other
   examples.
 
-  :ref:`A tutorial section <tutorials/getting_started:2.c. the grapher block>` is also dedicated to the
-  Grapher Block.
+  The :ref:`live signal tutorial <tutorial-signal-display>` introduces the
+  Grapher Block with simulated data.
 
 - :ref:`Image Displayer <crappy_docs/blocks:image displayer>`
 
@@ -125,8 +125,8 @@ Data recording
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/recorder.py>`_.
 
-  :ref:`A tutorial section <tutorials/getting_started:2.d. the recorder block>` is also dedicated to the
-  Recorder Block.
+  The :ref:`data-recording tutorial <tutorial-data-recording>` introduces the
+  Recorder with simulated measurements.
 
 Data processing
 +++++++++++++++
@@ -334,8 +334,8 @@ Signal generation
   examples/blocks/generator>`_ specifically, but it is also used in many of the
   other examples.
 
-  :ref:`A tutorial section <tutorials/getting_started:2.a. the generator block and its paths>` is also
-  dedicated to the Generator Block, and :ref:`another one
+  The :ref:`command-generation tutorial <tutorial-command-generation>`
+  introduces the Generator Block, and :ref:`another tutorial
   <tutorials/complex_custom_objects:1. custom generator paths>` is dedicated to the creation of custom Generator
   Paths.
 
@@ -386,8 +386,8 @@ Hardware control
   are encouraged to use a :ref:`Camera Source <crappy_docs/blocks:camera source>` connected to the desired
   VisionBlocks when a more flexible image architecture is useful.
 
-  :ref:`A tutorial section <tutorials/getting_started:2.b. camera acquisition and visionblocks>` is also
-  dedicated to camera acquisition, and :ref:`another one <tutorials/custom_objects:4. custom cameras>`
+  The :ref:`first image-pipeline tutorial <tutorial-image-pipeline>` introduces
+  camera acquisition, and :ref:`another tutorial <tutorials/custom_objects:4. custom cameras>`
   is dedicated to the creation of custom Camera objects.
 
 - :ref:`IOBlock <crappy_docs/blocks:ioblock>`
@@ -402,8 +402,8 @@ Hardware control
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
   blocks/ioblock>`_.
 
-  :ref:`A tutorial section <tutorials/getting_started:2.e. the ioblock block>` is also dedicated to the
-  IOBlock Block, and :ref:`another one <tutorials/custom_objects:3. custom inouts>` is dedicated to the
+  The :ref:`data-acquisition tutorial <tutorial-data-acquisition>` introduces
+  the IOBlock, and :ref:`another tutorial <tutorials/custom_objects:3. custom inouts>` is dedicated to the
   creation of custom InOut objects.
 
 - :ref:`Machine <crappy_docs/blocks:machine>`
@@ -417,8 +417,8 @@ Hardware control
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
   blocks/machine>`_.
 
-  :ref:`A tutorial section <tutorials/getting_started:2.f. the machine block>` is also dedicated to the
-  Machine Block, and :ref:`another one <tutorials/custom_objects:2. custom actuators>` is dedicated to
+  The :ref:`actuator-control tutorial <tutorial-actuator-control>` introduces
+  the Machine Block, and :ref:`another tutorial <tutorials/custom_objects:2. custom actuators>` is dedicated to
   the creation of custom Actuator objects.
 
 - :ref:`UController <crappy_docs/blocks:ucontroller>`
@@ -455,9 +455,8 @@ Test management
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/stop_block.py>`_.
 
-  Refer to the :ref:`dedicated tutorial section
-  <tutorials/getting_started:3. properly stopping a script>` to learn more about how to properly stop a
-  script in Crappy.
+  See :ref:`Lifecycle and shutdown <concepts-lifecycle-shutdown>` for the
+  supported ways to stop a Crappy test.
 
 - :ref:`Stop Button <crappy_docs/blocks:stop button>`
 
@@ -468,9 +467,8 @@ Test management
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
   blocks/stop_button.py>`_.
 
-  Refer to the :ref:`dedicated tutorial section
-  <tutorials/getting_started:3. properly stopping a script>` to learn more about how to properly stop a
-  script in Crappy.
+  See :ref:`Lifecycle and shutdown <concepts-lifecycle-shutdown>` for the
+  supported ways to stop a Crappy test.
 
 Others
 ++++++

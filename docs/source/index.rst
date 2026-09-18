@@ -23,27 +23,28 @@ Run a first test
 ----------------
 
 :doc:`Install Crappy <installation>`, then follow the
-:doc:`first-test tutorial <tutorials/getting_started>`. Its first example uses
-simulated hardware and shows how to connect Blocks, display measurements, and
-record them from one script.
+:doc:`first-test tutorial <tutorials/quickstart>`. Its example uses simulated
+hardware, prints measurements in the terminal, and stops automatically after a
+few seconds.
 
 Control hardware
 ----------------
 
-Use an :ref:`IOBlock <tutorials/getting_started:2.e. the ioblock block>` to
-acquire measurements or send outputs through an InOut. Use a
-:ref:`Machine Block <tutorials/getting_started:2.f. the machine block>` to
-drive one or more Actuators. The :doc:`features` page lists the integrations
+Follow :doc:`the data-acquisition tutorial <tutorials/data_acquisition>` to
+read measurements through an IOBlock. The
+:doc:`data-recording tutorial <tutorials/data_recording>` saves selected
+measurements in a CSV file. Follow
+:doc:`the actuator tutorial <tutorials/actuator_control>` to drive an Actuator
+through a Machine Block. The :doc:`features` page lists the integrations
 distributed with Crappy.
 
 Build an image pipeline
 -----------------------
 
 Read :doc:`concepts/image_pipelines` to choose an architecture, then follow the
-:ref:`Camera acquisition and VisionBlocks tutorial
-<tutorials/getting_started:2.b. camera acquisition and visionblocks>`. Separate
-VisionBlocks are recommended for new image pipelines. The all-in-one Camera
-Blocks remain supported and are not planned for deprecation.
+:doc:`first image-pipeline tutorial <tutorials/image_pipeline>`. VisionBlocks
+are recommended for new image pipelines. The all-in-one Camera Blocks remain
+supported and are not planned for deprecation.
 
 Adapt Crappy to a specific need
 -------------------------------
