@@ -14,25 +14,15 @@ in the :ref:`API <api:api>`.
 Functionalities (Blocks)
 ------------------------
 
-The Blocks are the base bricks of Crappy, that fulfill various functions. In
-the tutorials, you can learn more about :ref:`how to use Blocks
-<tutorials/getting_started:1. understanding crappy's syntax>` and :ref:`how to create new Blocks
-<tutorials/custom_objects:5. custom blocks>`.
+Blocks are the components that perform tasks in a Crappy test. Read
+:doc:`concepts/blocks_links_labels` to learn how they fit together, or follow
+the :ref:`custom Block tutorial <tutorials/custom_objects:5. custom blocks>`
+to create one.
 
-Image-handling Blocks are available in two complementary styles. The
-:class:`~crappy.blocks.vision.VisionBlock` family separates image acquisition,
-processing, display, and recording into independent Blocks connected by
-:ref:`Image Links <crappy_docs/links:image link>`. This explicit architecture requires a few
-more Blocks and connections to reproduce a simple all-in-one Camera workflow,
-but it allows each image stream to be combined and fanned out much more freely.
-Each VisionBlock also has fewer responsibilities and arguments, which makes
-individual Blocks easier to use and custom image processing easier to add.
-Users are encouraged to choose VisionBlocks for new scripts.
-
-The existing :ref:`Camera Block <crappy_docs/blocks:camera block>` and its processing subclasses remain
-available and are not planned for deprecation. They continue to provide a
-convenient all-in-one interface when their fixed acquisition, processing,
-display, and recording architecture matches the intended workflow.
+Crappy provides composable VisionBlocks and all-in-one Camera Blocks for image
+work. :doc:`concepts/image_pipelines` compares the two architectures.
+VisionBlocks are recommended for new image pipelines. The all-in-one Camera
+Blocks remain supported and are not planned for deprecation.
 
 Data display
 ++++++++++++

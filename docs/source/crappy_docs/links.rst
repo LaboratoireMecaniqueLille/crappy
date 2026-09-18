@@ -4,6 +4,10 @@ Links
 
 Link
 ----
+
+Regular Links carry labeled dictionaries between Blocks. Their delivery and
+loss behavior is explained in :doc:`../concepts/regular_links_and_image_links`.
+
 .. autoclass:: crappy.links.Link
    :members: poll, send, recv, recv_last, recv_chunk, log
    :special-members: __init__
@@ -11,18 +15,9 @@ Link
 Image Link
 ----------
 
-ImageLinks connect :class:`~crappy.blocks.vision.VisionBlock` objects and
-carry image arrays together with their metadata. Application code normally
-creates one through :func:`crappy.img_link`, just as :func:`crappy.link`
-creates a regular Link.
-
-Unlike a regular Link, an ImageLink is not a queue. An image-producing
-VisionBlock owns a shared-memory buffer that is reused by all of its outgoing
-ImageLinks. Each consumer copies the newest coherent image and metadata when
-it is ready. A consumer that runs more slowly than the source can therefore
-skip intermediate frames without blocking the source. Commands, processing
-results, and overlays remain small dictionaries and should travel through
-regular Links.
+ImageLinks carry the newest image and its metadata between VisionBlocks. See
+:doc:`../concepts/regular_links_and_image_links` for the transport comparison
+and frame-skipping semantics.
 
 .. autoclass:: crappy.links.ImageLink
    :members: set_buffers, get_buffers, log
@@ -36,40 +31,12 @@ images through :meth:`~crappy.blocks.vision.VisionBlock.send_img` and
 Connection graph and validation
 -------------------------------
 
-Crappy builds a directed graph while Blocks, Links, and ImageLinks are
-instantiated. It uses this graph to reject inconsistent connection structures
-immediately, before the processes start. In particular:
-
-* Block names must be unique among Blocks, and Link names must be unique across
-  both regular Links and ImageLinks
-* a second regular Link in the same direction between the same two Blocks must
-  be created with ``allow_parallel=True``
-* parallel ImageLinks are rejected
-* the graph formed by ImageLinks must be acyclic. Regular Links may still form
-  feedback loops and self-loops.
-
-For example, two independent data channels between the same Blocks can be
-declared explicitly:
-
-.. code-block:: python
-
-   crappy.link(source, consumer, name="measurements")
-   crappy.link(source, consumer, name="status", allow_parallel=True)
-
-Changing :attr:`crappy.blocks.Block.name` before a Block starts updates the
-node and all its connections. Renaming a running Block is rejected. Calling
-:meth:`crappy.blocks.Block.reset` (also available as ``crappy.reset``) clears
-the graph together with the Block registry.
-
-The current graph can be rendered as a PDF and opened with the system viewer by
-calling :func:`crappy.display_graph`. Its ``links`` and ``image_links``
-arguments can be used to hide either kind of connection. This function is an
-alias for :meth:`crappy.links.LinkGraph.display`.
-
-The graph is maintained automatically by Crappy. Application code normally
-does not need to interact with it. The graph class, the node records returned
-by its :attr:`~crappy.links.LinkGraph.nodes` property, and its exception are
-documented below:
+Crappy maintains the connection graph automatically. The public validation
+rules, feedback behavior, and parallel-Link option are explained in
+:doc:`../concepts/blocks_links_labels`. Application code normally uses
+:func:`crappy.link`, :func:`crappy.img_link`, and :func:`crappy.display_graph`
+rather than interacting with the graph directly. The classes below provide the
+implementation reference for custom integrations and debugging.
 
 .. autoclass:: crappy.links.LinkGraph
    :members: nodes, add_node, add_edge, descendants, successors, ancestors,

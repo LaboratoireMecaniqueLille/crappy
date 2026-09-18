@@ -78,9 +78,10 @@ The principle of Modifiers is that each Modifier is attached to a given Link.
 Every time a Block sends data through the Link, the Modifier alters it first.
 The same Link can have several Modifiers attached, in
 which case they are called in the same order as they are given. Unlike the
-operations performed by Blocks, Modifiers run in the sending Block's process.
-Use them for short operations that should not block that process. The following
-example adds a Modifier to a Link.
+operations performed by Blocks, Modifiers run while the source sends its data.
+Use them for short operations that should not delay that source. The
+:doc:`../concepts/choosing_custom_object_type` guide explains when a separate
+Block is more appropriate. The following example adds a Modifier to a Link.
 
 Starting from the example of the previous section, we now want to know the
 current position of the motor. To calculate this value, we just have to
@@ -429,8 +430,9 @@ three consecutive calls to :meth:`~crappy.blocks.Block.prepare_all`,
 :meth:`~crappy.blocks.Block.launch_all`. These methods are aliased to
 :ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>`, :ref:`crappy.renice() <crappy_docs/aliases:crappy.renice()>` and :ref:`crappy.launch() <crappy_docs/aliases:crappy.launch()>` for
 being called by the user in a script. To get an exact description of what each
-of these methods do, refer to the :ref:`Developers information <developers:developers information>` section of
-the documentation. In short, the :ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` method initializes all
+of these methods does, refer to :doc:`../concepts/lifecycle_shutdown` and the
+:doc:`../architecture` guide. In short, the :ref:`crappy.prepare()
+<crappy_docs/aliases:crappy.prepare()>` method initializes all
 the Blocks, but does not start the test. For example, after calling this
 method, the actuators are powered on, the sensors are configured, and the files
 for recording data are created. The :ref:`crappy.renice() <crappy_docs/aliases:crappy.renice()>` method can be

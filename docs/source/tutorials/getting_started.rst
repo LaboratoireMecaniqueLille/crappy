@@ -12,51 +12,11 @@ require introductory Python knowledge.
 0. General concepts
 -------------------
 
-This first section of the tutorials introduces the very basic concepts of
-Crappy. No code is involved for now, it only describes the general way data can
-flow in Crappy.
-
-0.a. Blocks
-+++++++++++
-
-Crappy scripts describe a setup with Blocks and Links. Each Block performs a
-specific task, such as acquiring data, transforming it, or driving hardware.
-A test script usually contains several Blocks. A Block can receive data,
-produce data, or do both. This also applies to image
-workflows, in which independent VisionBlocks can acquire, process, display, or
-record images.
-
-0.b. Links
-++++++++++
-
-Blocks do not access each other directly. An oriented Link transfers data from
-one Block to another. Establishing a Link between Block 1 and Block 2 means that
-Block 2 will receive all of Block 1's outputs. Because the Link is oriented,
-Block 1 will however not be aware of Block 2's outputs.
-
-Crappy provides two types of Link. A regular :ref:`Link <crappy_docs/links:link>` carries small
-dictionaries containing commands, measurements, or other labeled values. It is
-created with :func:`crappy.link`. An :ref:`Image Link <crappy_docs/links:image link>` carries an image and its
-matching metadata between two :class:`~crappy.blocks.vision.VisionBlock`
-objects, and is created with :func:`crappy.img_link`.
-
-0.c. Labels
-+++++++++++
-
-Data flowing between Blocks through regular Links is labeled. Labels are names
-associated with a stream of data. Suppose that
-Block 1 outputs three data streams labeled
-:py:`'time', 'Force', 'Position'`, and is linked with Block 2 that only takes
-two inputs. As we said, Block 2 is aware of all of Block 1's outputs and thus
-needs a way to differentiate them. The user specifies in Block 2's arguments
-which labels to consider (for example only
-:py:`'time', 'Position'`). The data stream labeled :py:`'Force'` will be lost
-to Block 2. Block 1 can also send that value to another linked Block.
-
-An ImageLink instead carries one :mod:`numpy` image array together with a
-metadata dictionary. This metadata must identify the frame with the
-:py:`'ImageUniqueID'` key and give its timestamp under :py:`'t(s)'`.
-
+Before writing the first script, read :doc:`../concepts/blocks_links_labels`.
+It defines the Blocks that perform each task, the directed Links that connect
+them, and the labels used to identify values. For image data, the
+:doc:`../concepts/regular_links_and_image_links` page explains when to use an
+ImageLink instead of a regular Link.
 1. Understanding Crappy's syntax
 --------------------------------
 
@@ -541,12 +501,11 @@ LaboratoireMecaniqueLille/crappy/tree/master/examples/blocks>`__.
 
 The previous sections presented several ways to stop a Crappy script. A clean
 shutdown lets hardware integrations deinitialize their devices. For example, an
-Actuator can stop a motor regardless of why the test ended. It also prevents
-worker processes from remaining alive and consuming system resources.
+Actuator can stop a motor regardless of why the test ended. It also lets the
+framework release the resources used by the test.
 
-Do not abruptly close the terminal or terminate Crappy from a system process
-manager unless the application is unresponsive. These methods can prevent
-hardware and worker-process cleanup.
+Do not abruptly close the terminal or force the application to close unless it
+is unresponsive. These methods can prevent hardware and software cleanup.
 
 Starting from version 2.0.0, hitting :kbd:`Control-c` to stop Crappy (i.e.
 raising :exc:`KeyboardInterrupt`) is also considered as an invalid behavior.

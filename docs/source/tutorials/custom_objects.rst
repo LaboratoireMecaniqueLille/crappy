@@ -13,6 +13,10 @@ of the
 tutorials <tutorials/complex_custom_objects:more about custom objects in crappy>` covers the advanced aspects of
 custom object instantiation.
 
+Use :doc:`../concepts/choosing_custom_object_type` if you are unsure which base
+class fits a task. The :doc:`../concepts/lifecycle_shutdown` page defines the
+shared Block lifecycle referenced by the examples below.
+
 1. Custom Modifiers
 -------------------
 
@@ -510,10 +514,12 @@ inout>`_.
 
 Custom :class:`crappy.camera.Camera` objects integrate unsupported camera
 hardware with Crappy's acquisition pipelines. Acquisition, display, recording,
-and processing can run in separate processes. Built-in processing Blocks can
-consume images from a custom Camera object. See the
-:ref:`DIS Correl <crappy_docs/blocks:dis correl>`, :ref:`DIC VE <crappy_docs/blocks:dic ve>` or :ref:`Video Extenso <crappy_docs/blocks:video extenso>` Blocks for example).
-for examples.
+and processing can run independently. Built-in processing Blocks can consume
+images from a custom Camera object. See :doc:`../concepts/image_pipelines` for
+the two supported pipeline architectures, and see the
+:ref:`DIS Correl <crappy_docs/blocks:dis correl>`,
+:ref:`DIC VE <crappy_docs/blocks:dic ve>`, and
+:ref:`Video Extenso <crappy_docs/blocks:video extenso>` Blocks for examples.
 
 The first step for integrating a camera in Crappy is to check whether it can be
 read by one of the existing :ref:`Cameras <crappy_docs/cameras:cameras>`. The :ref:`Camera OpenCV <crappy_docs/cameras:camera opencv>` and
@@ -670,7 +676,7 @@ inout>`_ to see how they are implemented.
 5. Custom Blocks
 ----------------
 
-The :ref:`Block <crappy_docs/blocks:block>` is the most general extension point
+The :ref:`Block <crappy_docs/blocks:block>` is the most general base class
 covered on this page. A custom Block overrides a small set of lifecycle methods
 from :class:`crappy.blocks.Block`. Blocks are usually not
 meant to directly interact with hardware, the helper classes like the
@@ -849,7 +855,7 @@ access and their meaning:
   raises an error if it has more than one incoming Link).
 - :attr:`~crappy.blocks.Block.niceness` is an integer property from `-20` to
   `19`. It can be set during :meth:`~crappy.blocks.Block.__init__`, and the
-  corresponding niceness value will be set for the Process by
+  corresponding runtime priority will be requested by
   :meth:`~crappy.blocks.Block.renice_all`. It is only relevant on Linux, and
   barely used. Most users can ignore it.
 - :attr:`~crappy.blocks.Block.freq` sets the target looping frequency for the
@@ -887,7 +893,7 @@ access and their meaning:
   attributed to the Block by Crappy. It can be read at any time. It should only
   be modified in :meth:`~crappy.blocks.Block.__init__`. The name identifies the
   Block both in log messages and in Crappy's :class:`~crappy.links.LinkGraph`.
-  Renaming it before the processes start also updates all already-created Links
+  Renaming it before the test starts also updates all already-created Links
   connected to it. Renaming it while the Block is running raises
   :exc:`RuntimeError`.
 - :attr:`~crappy.blocks.Block.pausable` is a :obj:`bool` property indicating
@@ -914,7 +920,7 @@ attributes. They are highlighted here for convenience:
 
 Invalid assignments to these properties raise :exc:`TypeError` or
 :exc:`ValueError` immediately, which helps catch invalid custom Block
-definitions before the processes start.
+definitions before the test starts.
 
 5.c. Sending data to other Blocks
 +++++++++++++++++++++++++++++++++

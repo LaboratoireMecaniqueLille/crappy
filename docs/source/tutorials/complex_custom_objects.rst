@@ -6,9 +6,14 @@ More about custom objects in Crappy
   :language: python
   :class: highlight
 
-This page covers advanced extension points: Generator Paths, zeroing InOuts,
-position-controlled Actuators, Camera settings, VisionBlocks, all-in-one Camera
-Blocks, and distribution of custom objects.
+This page covers advanced ways to customize Crappy: Generator Paths, zeroing
+InOuts, position-controlled Actuators, Camera settings, VisionBlocks,
+all-in-one Camera Blocks, and distribution of custom objects.
+
+The :doc:`../concepts/choosing_custom_object_type` guide explains which custom
+object type matches a device or task. Review :doc:`../concepts/image_pipelines`
+before choosing between a custom VisionBlock and the all-in-one Camera
+customization path.
 
 1. Custom Generator Paths
 -------------------------
@@ -408,10 +413,10 @@ custom VisionBlock decides which combinations it supports and checks them in
 ImageLinks connected by the script and should only be inspected, not modified.
 The separate ``inputs`` and ``outputs`` lists contain regular Links.
 
-ImageLinks can only connect VisionBlocks. Parallel ImageLinks between the same
-two Blocks and loops made entirely of ImageLinks are rejected. One source can,
-however, feed any number of different consumers. Regular Links can be added in
-either direction for results, commands, triggers, and feedback.
+The :doc:`../concepts/regular_links_and_image_links` page defines ImageLink
+transport and graph constraints. One source can feed any number of different
+consumers. Regular Links can be added in either direction for results,
+commands, triggers, and feedback.
 
 5.b. The rules to follow
 ++++++++++++++++++++++++
@@ -545,10 +550,9 @@ source-and-analyzer structure.
 There are a few important limits to consider when designing a custom
 VisionBlock:
 
-- An ImageLink exposes the newest image rather than queuing every image. A slow
-  consumer can skip frames and must not assume that image identifiers are
-  consecutive. If every frame must be handled, an ImageLink alone is not the
-  appropriate transport.
+- Design consumers for the latest-frame behavior documented in
+  :doc:`../concepts/regular_links_and_image_links`. A consumer can skip frames
+  and must use the metadata it actually receives.
 - A Block has one output image format for the duration of a test. All images
   sent by it must have that shape and dtype, and all its outgoing ImageLinks
   expose the same published image. Use separate VisionBlocks when a workflow
@@ -577,8 +581,7 @@ can optionally record the acquired images. It performs these operations in
 separate processes, but embeds them in one Block rather than exposing them as
 independent graph nodes. More details about the implementation of
 the Camera Block can be found in the
-:ref:`Developers <developers:all-in-one camera blocks>` section of the
-documentation.
+:ref:`contributor architecture <architecture-all-in-one-camera>`.
 
 VisionBlocks are recommended for new image pipelines. The all-in-one Camera
 Blocks remain supported and are not planned for deprecation. For a new
