@@ -14,8 +14,10 @@ from basic acquisition to image processing and feedback control.
   what_is_crappy.rst
   installation.rst
   tutorials.rst
+  concepts.rst
   features.rst
   api.rst
+  architecture.rst
   developers.rst
   citing.rst
   troubleshooting.rst
