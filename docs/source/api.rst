@@ -2,12 +2,9 @@
 API
 ===
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
-This section contains the inline documentation of all the objects of the module
-Crappy. In particular, a description is given for each possible argument of the
-classes and methods. The only way to get an even finer understanding of an
-object in Crappy is to read its source code !
+This reference describes Crappy's public modules, classes, functions,
+arguments, and return values. Each entry links to its source code when the
+implementation provides useful additional detail.
 
 .. toctree::
    :maxdepth: 2

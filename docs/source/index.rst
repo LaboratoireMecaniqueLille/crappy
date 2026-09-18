@@ -2,14 +2,11 @@
 Crappy
 ======
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
-Crappy is a **Python module** that aims to provide easy-to-use and open-source
-tools for **command and data acquisition on complex experimental setups**. It
-is designed to let users drive most setups in **less than 100 lines of code**.
-Crappy comes with a collection of `directly runnable examples
+Crappy is an open-source Python framework for command and data acquisition on
+experimental setups. It coordinates hardware control, data processing, and
+recording within a single experiment. The project provides `runnable examples
 <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_,
-and an extensive documentation that you can explore here !
+from basic acquisition to image processing and feedback control.
 
 .. toctree::
   :maxdepth: 2

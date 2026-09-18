@@ -2,8 +2,6 @@
 Current functionalities
 =======================
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
 On this page are listed all the objects currently distributed with Crappy and
 exposed to the users. Information on how to use them can be found in the
 :ref:`Tutorials <tutorials:tutorials>`, as well as guidelines for creating your own objects. For most
@@ -15,8 +13,6 @@ in the :ref:`API <api:api>`.
 
 Functionalities (Blocks)
 ------------------------
-
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 The Blocks are the base bricks of Crappy, that fulfill various functions. In
 the tutorials, you can learn more about :ref:`how to use Blocks
@@ -65,7 +61,7 @@ Data display
   Plots real-time 2D graphs. It is possible to plot several datasets on a same
   graph. The *x* axis can be the time information, or any other label that the
   Grapher receives. Unlike the :ref:`Dashboard <crappy_docs/blocks:dashboard>` Block, the displayed data is
-  persistent and allows to visualize the history of a label.
+  persistent and displays the history of a label.
 
   The examples folder on GitHub contains `one example of the Grapher Block
   <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/examples/
@@ -158,7 +154,7 @@ Data processing
 
 - :ref:`Multiplexer <crappy_docs/blocks:multiplexer>`
 
-  Allows putting labels emitted at different frequencies on a same time basis.
+  Synchronizes labels emitted at different frequencies onto one time base.
   Useful for plotting curves out of two labels from different Blocks with a
   :ref:`Grapher <crappy_docs/blocks:grapher>`, as the timestamps of the data points would otherwise never
   match. Also used before saving data with a :ref:`Recorder <crappy_docs/blocks:recorder>` to simplify the
@@ -220,12 +216,11 @@ Real-time image correlation
   examples folder on GitHub.
 
   .. Important::
-     This Block hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected ! On the long-term, it should be replaced
-     by another Block.
+     This Block has not been maintained or tested recently. Its current
+     behavior is not verified. A maintained implementation should replace it.
 
   .. Warning::
-     This Block cannot run with CUDA versions greater than 11.3 ! This is due
+     This Block cannot run with CUDA versions greater than 11.3. This is due
      to a deprecation in pycuda, and is unlikely to be fixed anytime soon in
      Crappy or pycuda.
 
@@ -286,12 +281,11 @@ Video-extensometry
   examples folder on GitHub.
 
   .. Important::
-     This Block hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected ! On the long-term, it should be replaced
-     by another Block.
+     This Block has not been maintained or tested recently. Its current
+     behavior is not verified. A maintained implementation should replace it.
 
   .. Warning::
-     This Block cannot run with CUDA versions greater than 11.3 ! This is due
+     This Block cannot run with CUDA versions greater than 11.3. This is due
      to a deprecation in pycuda, and is unlikely to be fixed anytime soon in
      Crappy or pycuda.
 
@@ -524,8 +518,6 @@ Others
 Supported hardware (Cameras, InOuts, Actuators)
 -----------------------------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
 Each hardware category below separates the drivers maintained with Crappy from
 the community-driven :ref:`Driver collection <crappy_docs/collection:driver collection>`.
 
@@ -545,9 +537,8 @@ Supported Cameras
      repo.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected ! On the long-term, it should be totally
-     removed.
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified, and it is a candidate for removal.
 
 - :ref:`Camera GStreamer <crappy_docs/cameras:camera gstreamer>`
 
@@ -563,19 +554,16 @@ Supported Cameras
   work properly.
 
   .. Important::
-     This Camera object can only be used at its fullest on Linux, and only if
-     the *v4l-utils* package is installed on the system !
+     Full functionality requires Linux and the *v4l-utils* package.
 
 - :ref:`Camera OpenCV <crappy_docs/cameras:camera opencv>`
 
   This Camera object opens video streams using OpenCV. It allows tuning the
   device number, as well as the image format and the number of channels. It is
-  mostly compatible with USB cameras, and its dependencies are straightforward
-  to install.
+  compatible with many USB cameras.
 
   .. Important::
-     This Camera object can only be used at its fullest on Linux, and only if
-     the *v4l-utils* package is installed on the system !
+     Full functionality requires Linux and the *v4l-utils* package.
 
 - :ref:`Fake Camera <crappy_docs/cameras:fake camera>`
 
@@ -600,9 +588,8 @@ Supported Cameras
      repo.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected ! On the long-term, it should be totally
-     removed.
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified, and it is a candidate for removal.
 
 - :ref:`Raspberry Pi Camera 2 <crappy_docs/cameras:raspberry pi camera 2>`
 
@@ -660,7 +647,7 @@ The following drivers are not actively maintained and require an explicit
      be used instead. It is only kept for compatibility with older OS versions.
 
   .. Important::
-     Can only be run on a Raspberry Pi ! Also, it is for now only compatible
+     This object requires a Raspberry Pi and is currently compatible only
      with the *Buster* version of Raspberry Pi OS, or with *Bullseye* in legacy
      camera mode.
 
@@ -696,23 +683,23 @@ Supported Actuators
      usable as-is in the general case.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`Kollmorgen ServoStar 300 <crappy_docs/actuators:kollmorgen servostar 300>`
 
   Drives Kollmorgen's `Servostar 300 <https://www.kollmorgen.com/en-us/products
   /drives/servo/s300/>`_ servomotor conditioner in position or sets it to the
   analog driving mode. This is the same conditioner as for the :ref:`Biaxe <crappy_docs/lamcube:biaxe>`
-  Actuator, but this object was designed for an other application.
+  Actuator, but this object was designed for another application.
 
   .. Important::
      This Actuator was written for a specific application, so it may not be
      usable as-is in the general case.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`Phidget Stepper4A <crappy_docs/actuators:phidget stepper4a>`
 
@@ -750,8 +737,8 @@ The following drivers are not actively maintained and require an explicit
      usable as-is in the general case.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`Newport TRA6PPD <crappy_docs/actuators:newport tra6ppd>`
 
@@ -759,8 +746,8 @@ The following drivers are not actively maintained and require an explicit
   linear stepper motor actuator, in speed or in position.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`Oriental ARD-K <crappy_docs/actuators:oriental ard-k>`
 
@@ -775,8 +762,8 @@ The following drivers are not actively maintained and require an explicit
      usable as-is in the general case.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`Schneider MDrive 23 <crappy_docs/actuators:schneider mdrive 23>`
 
@@ -790,8 +777,8 @@ The following drivers are not actively maintained and require an explicit
      usable as-is in the general case.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 Supported Sensors and outputs
 +++++++++++++++++++++++++++++
@@ -835,12 +822,12 @@ Sensors
 
 - :ref:`NAU7802 <crappy_docs/inouts:nau7802>`
 
-  Reads voltages from Sparfun's `'Qwiic Scale' NAU7802 <https://www.sparkfun.
+  Reads voltages from SparkFun's `'Qwiic Scale' NAU7802 <https://www.sparkfun.
   com/products/15242>`_ load cell conditioner. Communicates over I2C.
 
 - :ref:`Phidget Wheatstone Bridge <crappy_docs/inouts:phidget wheatstone bridge>`
 
-  Reads volatges from Phidget's `Wheatstone Bridge <https://www.phidgets.com/
+  Reads voltages from Phidget's `Wheatstone Bridge <https://www.phidgets.com/
   ?prodid=957>`_ load cell conditioner, by using several Phidget libraries.
 
   .. Important::
@@ -857,8 +844,8 @@ Multi-device drivers
   differences between the two modules weren't further investigated.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`NI DAQmx <crappy_docs/inouts:ni daqmx>`
 
@@ -868,8 +855,8 @@ Multi-device drivers
   but this hasn't been tested. Communicates over USB.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 Outputs
 """""""
@@ -878,14 +865,14 @@ Outputs
 
   Controls a PWM output on a single GPIO of a Raspberry Pi.
 
-  .. Important:: Only works on a Raspberry Pi ! Tested on Raspberry Pi 3 and 4,
+  .. Important:: This object requires a Raspberry Pi. It was tested on Raspberry Pi 3 and 4,
      with the *Buster* and *Bullseye* Raspberry Pi Os for the latter.
 
 - :ref:`GPIO Switch <crappy_docs/inouts:gpio switch>`
 
   Drives a single GPIO on a Raspberry Pi, or any other board supporting Blinka.
 
-  .. Important:: Only works on a Raspberry Pi ! Tested on Raspberry Pi 3 and 4,
+  .. Important:: This object requires a Raspberry Pi. It was tested on Raspberry Pi 3 and 4,
      with the *Buster* and *Bullseye* Raspberry Pi Os for the latter.
 
 Collection InOut drivers
@@ -904,8 +891,8 @@ Collection acquisition boards
   input analog channels of the board.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`Waveshare AD/DA <crappy_docs/inouts:waveshare ad/da>`
 
@@ -915,8 +902,8 @@ Collection acquisition boards
   convenient to use from a Raspberry Pi. Communicates over SPI.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`Waveshare High Precision <crappy_docs/inouts:waveshare high precision>`
 
@@ -927,8 +914,8 @@ Collection acquisition boards
   Raspberry Pi.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 Collection sensors
 ^^^^^^^^^^^^^^^^^^
@@ -940,8 +927,8 @@ Collection sensors
   multimeter. Communicates over serial.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`Eurotherm EPC3008 <crappy_docs/inouts:eurotherm epc3008>`
 
@@ -982,8 +969,8 @@ Collection sensors
   Communicates over serial.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 - :ref:`PiJuice <crappy_docs/inouts:pijuice>`
 
@@ -1016,8 +1003,8 @@ Collection sensors
   communicating over PCIexpress.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 Collection multi-device drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1031,8 +1018,8 @@ Collection multi-device drivers
   tested. Communicates over serial.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 Collection outputs
 ^^^^^^^^^^^^^^^^^^
@@ -1063,8 +1050,8 @@ Collection enhanced actuators
      usable as-is in the general case.
 
   .. Important::
-     This object hasn't been maintained nor tested for a while, it is not sure
-     that it still works as expected !
+     This object has not been maintained or tested recently. Its current
+     behavior is not verified.
 
 LaMcube-specific hardware
 +++++++++++++++++++++++++
@@ -1094,9 +1081,6 @@ LaMcube-specific hardware
 
 On-the-fly data modification (Modifiers)
 ----------------------------------------
-
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-.. sectionauthor:: Pierre Margotin <pierremargotin@gmail.com>
 
 - :ref:`Demux <crappy_docs/modifiers:demux>`
 

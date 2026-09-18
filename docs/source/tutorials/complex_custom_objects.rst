@@ -2,35 +2,25 @@
 More about custom objects in Crappy
 ===================================
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
 .. role:: py(code)
   :language: python
   :class: highlight
 
-**This last page of the tutorials covers various advanced topics related to**
-**the creation of custom objects in Crappy**. Unlike for the three previous
-pages, the content of this fourth page will not be of interest for all users.
-It is still interesting to go over it for users wanting to have a deeper
-understanding of the module, or users with a specific need.
+This page covers advanced extension points: Generator Paths, zeroing InOuts,
+position-controlled Actuators, Camera settings, VisionBlocks, all-in-one Camera
+Blocks, and distribution of custom objects.
 
 1. Custom Generator Paths
 -------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
-Starting from version 2.0.0, **it is now possible for users to create their**
-**own** :ref:`Generator Paths <crappy_docs/blocks:generator paths>` ! There are
-two reasons why this possibility was added so late in the module. First, we're
-not certain that there is a need for it. But since only a few modifications
-were needed to allow the creation of custom Paths, it was decided to make it
-possible anyway. And second, the implementation is a bit messier than for other
-custom objects. It should still be accessible for most users though, don't
-worry !
+Since version 2.0.0, users can create custom
+:ref:`Generator Paths <crappy_docs/blocks:generator paths>`. A custom Path
+defines how the Generator produces commands and when it advances to the next
+Path.
 
 Just like for the other custom objects, there is a template for creating
 custom Paths and the Paths have to be children of
-:class:`crappy.blocks.generator_path.meta_path.Path` :
+:class:`crappy.blocks.generator_path.meta_path.Path`:
 
 .. code-block:: python
 
@@ -44,7 +34,7 @@ custom Paths and the Paths have to be children of
        def get_cmd(self, data):
            ...
 
-As you can see, there are only two methods to define ! Just like for the other
+The template defines two methods. As with the other
 custom objects, :meth:`~crappy.blocks.generator_path.meta_path.Path.__init__`
 should initialize the parent class. It can also accept arguments, that will
 correspond to the keys and values given in the :obj:`dict` passed to the
@@ -55,19 +45,17 @@ moment when it was sent are accessible through the :py:`self.t0` and
 
 The :meth:`~crappy.blocks.generator_path.meta_path.Path.get_cmd` method is for
 generating the next command for the Generator to send. It must return the next
-command as a :obj:`float` (:obj:`None` is also acceptable is there's no new
+command as a :obj:`float` (:obj:`None` is also acceptable if there is no new
 command to send). It accepts one argument, which is the :obj:`dict` returned by
 the :meth:`~crappy.blocks.Block.recv_all_data` method of the Generator, and
-that contains all the data recently received over incoming Links. It allows to
-handle the case when Generator Paths have stop conditions based on the value of
+that contains all data recently received over incoming Links. This supports
+Generator Paths with stop conditions based on the value of
 a label, described in :ref:`this tutorials section
 <tutorials/more_complexity:3. advanced generator condition>`.
 
-But how to handle the stop conditions ? And how to signal the Generator that a
-stop condition was met ? This is where things get a bit trickier ! To indicate
-that a stop condition is met, the
-:meth:`~crappy.blocks.generator_path.meta_path.Path.get_cmd` method simply has
-to raise a :exc:`StopIteration` exception. That can be done anytime, based on
+To signal that a stop condition is met, the
+:meth:`~crappy.blocks.generator_path.meta_path.Path.get_cmd` method raises a
+:exc:`StopIteration` exception. It can do so at any time, based on
 any arbitrary criterion. However, to make it so that conditions like
 :py:`'delay=10'` can be used, a
 :meth:`~crappy.blocks.generator_path.meta_path.Path.parse_condition` method is
@@ -92,11 +80,9 @@ call this variable with the :obj:`dict` from
 :obj:`True` the condition is met and you should raise :exc:`StopIteration`.
 Otherwise, you should return a value for the Generator to send.
 
-It is definitely not the most straightforward implementation, but it is very
-flexible and should fit most situations. Let's write a short example to make it
-clearer how to create a custom Generator Path and how to handle the
-conditions. This example generates a square wave, whose duty cycle can be
-either fixed or controlled by the value of an input label :
+The following example demonstrates a custom Generator Path and its stop
+condition. It generates a square wave whose duty cycle can be
+either fixed or controlled by the value of an input label:
 
 .. collapse:: (Expand to see the full code)
 
@@ -131,11 +117,11 @@ Generator Path.
 
 .. Note::
    If you want to have debug information displayed in the terminal from your
-   Path, do not use the :func:`print` function ! Instead, use the
+   Path, do not use the :func:`print` function. Instead, use the
    :meth:`~crappy.blocks.generator_path.meta_path.Path.log` method provided by
    the parent :class:`~crappy.blocks.generator_path.meta_path.Path` class. This
-   way, the log messages are included in the log file and handled in a nicer
-   way by Crappy.
+   way, the log messages are included in the log file and handled by
+   Crappy's centralized logging.
 
 There's one more very specific point that we'd like to outline about the use of
 Generator Paths in Crappy. Earlier, it was mentioned that the
@@ -144,24 +130,20 @@ the base Path object accepts :obj:`~collections.abc.Callable`. More precisely,
 it accepts Callables that take as only argument a :obj:`dict` whose keys are
 :obj:`str` and values are :obj:`list`, and that return a :obj:`bool` value.
 This means that it is actually possible to pass a Callable as the value for
-the :py:`condition` argument, not just a :obj:`str` or :obj:`None` ! This
-possibility is not often used, but at least you now know that it exists ! It
-could for instance come in use if you want to use an existing Path, but you
-have an unusual stop condition (e.g. one that depends on the values of two
-labels).
+the :py:`condition` argument, not just a :obj:`str` or :obj:`None`. This is
+useful with an existing Path and an unusual stop condition, such as one that
+depends on two labels.
 
 2. More about custom InOuts
 ---------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
 In addition to what was described in the tutorial section about :ref:`how to
 create custom InOut objects <tutorials/custom_objects:3. custom inouts>`, there
 is one more minor feature that the
-:ref:`In / Out <crappy_docs/inouts:in / out>` possess and that is worth
-describing in the tutorials. That is **the ability for an InOut to acquire**
-**data before a test starts, and to use this data to offset the channels to**
-**zero**. To do so, the script must match two conditions. First, the
+:ref:`In / Out <crappy_docs/inouts:in / out>` objects provide: an InOut can
+acquire data before a test starts and
+use this data to offset its channels to zero. To do so, the script must match
+two conditions. First, the
 :py:`make_zero_delay` argument of the
 :ref:`IOBlock <crappy_docs/blocks:ioblock>` must be set to a positive value.
 And second, the used InOut must have its :meth:`~crappy.inout.InOut.get_data`
@@ -174,22 +156,20 @@ beginning of the test. It also works for streams, provided that the number of
 channels acquired in *streamer* mode is the same as the number of channels
 acquired by :meth:`~crappy.inout.InOut.get_data`.
 
-**Things get a bit trickier when the hardware can handle and tune offsets for**
-**its channels** ! In such a case, it might be advantageous to set the zeroing
+When the hardware supports per-channel offsets, you can set the zeroing
 offsets directly on the device rather than relying on Crappy. To achieve that,
 the :meth:`~crappy.inout.InOut.make_zero` method of the base
-:class:`~crappy.inout.InOut` has to be overriden in the child InOut class, and
+:class:`~crappy.inout.InOut` has to be overridden in the child InOut class, and
 the way it is performed depends on the capabilities of the hardware. What is
 usually done is that the :meth:`~crappy.inout.InOut.make_zero` method of the
 base class calculates the offset values, and the one of the child class sets
 these values on the hardware and resets the offsets on Crappy's side. This
 kind of implementation can be found in the
 :ref:`Labjack T7 <crappy_docs/inouts:labjack t7>` or the
-:ref:`Comedi <crappy_docs/inouts:comedi>` InOuts. Check their code to see how
-it looks ! There is also a very basic example of offsetting in the `examples
+:ref:`Comedi <crappy_docs/inouts:comedi>` InOuts. There is also an offsetting example in the `examples
 on GitHub
 <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples/
-custom_objects>`_ where the method is overriden and the offsets are simply
+custom_objects>`_ where the method is overridden and the offsets are simply
 doubled.
 
 There is no need for a specific example in this sub-section, it is mostly
@@ -199,39 +179,35 @@ users to override it.
 3. More about custom Actuators
 ------------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
 In the tutorial section about :ref:`how to create custom Actuator objects
 <tutorials/custom_objects:2. custom actuators>`, then entire speed management
-aspect in :py:`position` mode was left out. **In this section, we're going to**
-**cover in more details the possibilities for driving the speed in**
-:py:`position` mode, **and how to write a**
-:meth:`~crappy.actuator.Actuator.set_position` **method accordingly**.
+aspect in :py:`position` mode was left out. This section explains target-speed
+inputs in :py:`position` mode and the corresponding
+:meth:`~crappy.actuator.Actuator.set_position` implementation.
 
 In the :obj:`dict` containing information about the
 :class:`~crappy.actuator.Actuator` to drive, there are two optional keys that
 allow tuning the target speed in :py:`position` mode. They can both be set, or
-only one, or none. These keys are :
+only one, or none. These keys are:
 
 - :py:`'speed'`, that sets a target speed value from the beginning of the test.
-  This value might be overriden if :py:`'speed_cmd_label'` is given. If it is
-  not overriden, it persists forever.
+  This value might be overridden if :py:`'speed_cmd_label'` is given. If it is
+  not overridden, it persists for the test duration.
 - :py:`'speed_cmd_label'`, that provides the name of a label carrying the
   target speed values. As soon as a value is received over this label, the
-  previous target value is overriden and the new one is set.
+  previous target value is overridden and the new one is set.
 
 If no target speed value is set, i.e. if none of the two possible keys is
 provided or if :py:`'speed'` is not set and no target speed has been received
 over the :py:`'speed_cmd_label'` so far, the target speed is set to
 :obj:`None`.
 
-Now, how is that reflected on your code when creating a custom Actuator ?
-First, note that it only influences the
+For a custom Actuator, target speed only affects the
 :meth:`~crappy.actuator.Actuator.set_position` method, all the other ones are
 unaffected. The target speed value is always passed to the Actuator as the
 second argument of the :meth:`~crappy.actuator.Actuator.set_position` method.
-It is passed no matter its value, so it might be equal to :obj:`None` ! It is
-your duty to handle the two situations when it has or hasn't an actual value.
+It is passed even when its value is :obj:`None`. Handle both a numerical speed
+and :obj:`None`.
 For hardware that doesn't support speed adjustment when operated in position
 mode, this argument can always be ignored. You can have a look at the
 `Actuators distributed with Crappy <https://github.com/
@@ -245,14 +221,11 @@ can be found in the `blocks examples folder on GitHub
 4. More about custom Cameras
 ----------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
 Because image acquisition is such a complex topic, the
-:class:`~crappy.camera.Camera` object is by far the richest of the classes
-interfacing with hardware in Crappy. For that reason, not all of its features
-could be presented in the previous tutorial sections. The missing ones are
-introduced here instead. Note that they are clearly secondary compared to the
-other features already presented !
+:class:`~crappy.camera.Camera` object exposes settings, image metadata, and
+region-of-interest helpers in addition to its hardware lifecycle. Not all features
+could be presented in the previous tutorial sections. The following sections
+cover the remaining specialized features.
 
 4.a. Pre-defined settings
 +++++++++++++++++++++++++
@@ -271,9 +244,8 @@ is itself issued by a device controlled from Crappy, then the camera cannot
 acquire images for display in the
 :class:`~crappy.tool.camera_config.CameraConfig` window, as the
 :class:`~crappy.inout.InOut` used for generating the signal will only do so
-once the configuration window closes ! To address this problem, **a new**
-**method was introduced specifically for instantiating a trigger setting :**
-**the** :meth:`~crappy.camera.Camera.add_trigger_setting` **method** !
+once the configuration window closes. Use
+:meth:`~crappy.camera.Camera.add_trigger_setting` for this case.
 
 When calling this method, a new
 :class:`~crappy.camera.meta_camera.camera_setting.CameraChoiceSetting` is
@@ -282,17 +254,15 @@ instantiated with the name :py:`'trigger'`. Its possible choices are
 default is :py:`'Free run'`. The only arguments left for the user to set are
 thus the getter and the setter methods. This trigger setting appears in the
 configuration window just like any other setting, and can be accessed and
-modified in the code as well. It is really just a normal setting, but with a
-pre-determined name and choices !
+modified in the code as well. It has a predefined name and set of choices.
 
 When set to :py:`'Free run'` mode, the camera should acquire images without
 needing an external trigger. When set to :py:`'Hardware'`, the camera should
 only acquire images when receiving a hardware trigger. What is more interesting
-is definitely the :py:`'Hdw after config'` mode : when set, the camera stays in
+The :py:`'Hdw after config'` mode keeps the camera in
 free run mode as long as the configuration window is opened, but switches to
-hardware trigger mode as soon as the window is closed ! **This way, you can**
-**adjust the various settings interactively in the configuration window, but**
-**still use the hardware trigger mode for the test** !
+hardware trigger mode as soon as the window closes. This permits interactive
+configuration followed by hardware-triggered acquisition during the test.
 
 As mentioned above, the user still has to define the getter and setter methods.
 For the setter, both the :py:`'Free run'` and :py:`'Hdw after config'` settings
@@ -300,19 +270,17 @@ should set the camera to free run mode, and the :py:`'Hardware'` setting should
 set the camera to hardware trigger mode. For the getter now, it should return
 :py:`'Hardware'` is the camera is in hardware trigger mode, and either
 :py:`'Free run'` or :py:`'Hdw after config'` otherwise, depending on the last
-value set by the setter. It is not the most straightforward getter to
-implement, we know ! This aspect might be improved in future releases, but for
-now you'll have to cope with it. You can get inspiration from the
+value set by the setter. See the
 :ref:`Xi API <crappy_docs/cameras:xi api>` Camera that implements it already.
 
 4.a.2. Software ROI setting
 """""""""""""""""""""""""""
 
 In addition to the trigger setting, another improvement was brought to make
-user's life easier : the :meth:`~crappy.camera.Camera.add_software_roi` method.
-**It allows to crop the acquired images to the desired dimension**, so that
+camera integration easier: the :meth:`~crappy.camera.Camera.add_software_roi`
+method. It crops acquired images to the desired dimensions so that
 they take less space when recorded, or can be processed faster. The remaining
-Region Of Interest should of course only contain the area relevant to your
+region of interest (ROI) should contain the area relevant to your
 test. Unlike the hardware ROI setting that some cameras might possess, this
 setting does not influence the image acquisition, and thus does not improve the
 acquisition rate.
@@ -338,9 +306,8 @@ blocks>`_.
 4.b. Reload slider and choice settings
 ++++++++++++++++++++++++++++++++++++++
 
-The software ROI setting described in the previous sub-section sure is nice,
-but what happens to it when the size of the acquired images change because of
-another setting that controls the image format ? After all, the limits of the
+The software ROI limits depend on the acquired image size. When another setting
+changes the image format, the limits of the
 sliders that it creates depend on the image size given by the user, and once
 the :meth:`~crappy.camera.Camera.open` method of :class:`~crappy.camera.Camera`
 returns, there's no way to re-instantiate the settings. To address this
@@ -352,9 +319,9 @@ possibility to "reload" the
 **changing the labels and/or the number of choices, depending on the type of**
 **setting**.
 
-In practice, each setting (except for the boolean ones) possess a
+In practice, each setting except a Boolean setting has a
 :meth:`~crappy.camera.meta_camera.camera_setting.CameraSetting.reload` method,
-that allows to reload it. The arguments to provide depend on the type of
+that reloads it. The required arguments depend on the type of
 setting. The calls to
 :meth:`~crappy.camera.meta_camera.camera_setting.CameraSetting.reload` should
 be placed in the relevant getter or setter methods, so that when the value of a
@@ -374,13 +341,8 @@ a class implementing a setting reload.
 4.c. Manage the metadata of the images
 ++++++++++++++++++++++++++++++++++++++
 
-For the last feature of the :class:`~crappy.camera.Camera` objects presented in
-the tutorials, let's introduce **the possibility to include metadata in the**
-**information returned by a Camera** ! So far, it was always mentioned that the
-first value that the :meth:`~crappy.camera.Camera.open` method of Cameras
-should return is the timestamp of the acquired image. That is actually
-incorrect, since it is also possible to return a :obj:`dict` containing
-metadata about the acquired image ! This option is only interesting if the
+The :meth:`~crappy.camera.Camera.get_image` method can return an image metadata
+dictionary instead of a bare timestamp. This option is useful when the
 used camera can return metadata, such as the frame number, the aperture, the
 exposure time, etc.
 
@@ -404,13 +366,11 @@ valid EXIF tag, the metadata will also be embedded in the recorded images if
 the :mod:`PIL` backend is used for recording. The :py:`'ImageUniqueID'` is
 already a valid EXIF tag, and the time information is split and recorded over
 the :py:`'DateTimeOriginal'` and :py:`'SubsecTimeOriginal'` tags. For now, only
-a fraction of the Cameras implemented in Crappy return metadata as a
-:obj:`dict`, but more should come in future releases !
+a fraction of the Camera objects implemented in Crappy return metadata as a
+:obj:`dict`.
 
 5. Custom VisionBlocks
 ----------------------
-
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
 
 The :class:`~crappy.blocks.vision.VisionBlock` class is the recommended base
 for a custom Block that produces, consumes, or transforms images. Typical
@@ -607,60 +567,47 @@ VisionBlock:
 6. Custom Camera Blocks (all-in-one architecture)
 -------------------------------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+This section describes how to subclass the all-in-one
+:class:`crappy.blocks.Camera` Block and add an internal processing stage.
 
-On the previous tutorial page,
-:ref:`a section <tutorials/custom_objects:5. custom blocks>` was dedicated to
-the instantiation of custom :ref:`Blocks <crappy_docs/blocks:blocks>`. Always
-moving one step further into customization, we're going to see in this section
-how you can create your own subclass of a particular subclass of Block, namely
-the :class:`~crappy.blocks.Camera` Block !
-
-Basically, the Camera Block provides three functionalities. First, it acquires
+The all-in-one Camera Block provides three functions. First, it acquires
 images by driving a :ref:`Camera <crappy_docs/cameras:camera>` object. Then, it
 can optionally display the acquired images in a dedicated window. And third, it
-can optionally record the acquired images. The great advantage of this Block is
-that it can perform these three operations in parallel, and therefore optimize
-the framerate for each functionality. The counterpart is that these three
-operations must be embedded into a single Block, rather than performed
-separately by three different Blocks. More details about the implementation of
+can optionally record the acquired images. It performs these operations in
+separate processes, but embeds them in one Block rather than exposing them as
+independent graph nodes. More details about the implementation of
 the Camera Block can be found in the
 :ref:`Developers <developers:all-in-one camera blocks>` section of the
 documentation.
 
-This architecture remains supported and is not planned for deprecation. For a
-new processing stage, a custom
+VisionBlocks are recommended for new image pipelines. The all-in-one Camera
+Blocks remain supported and are not planned for deprecation. For a new
+processing stage, a custom
 :ref:`VisionBlock <tutorials/complex_custom_objects:5. custom visionblocks>` is
-usually simpler and more flexible because it does not also have to own the
-Camera, displayer, and recorder. The all-in-one approach described below can
+has fewer responsibilities because it does not also own the Camera object,
+displayer, and recorder. The all-in-one approach described below can
 still be convenient when those components should deliberately be exposed as a
 single Block.
 
-In the Camera Block, some lines of code provide the possibility to perform a
-fourth operation in parallel : image processing on the acquired images. While
-the Camera Block itself does not make use of this possibility, children of
-Camera can use it very easily and implement parallelized image processing. For
+The Camera Block can perform a fourth operation in a separate process: image
+processing. Camera Block subclasses select a processing implementation. For
 instance, the :ref:`Video Extenso <crappy_docs/blocks:video extenso>` and the
 :ref:`DIC VE <crappy_docs/blocks:dic ve>` Blocks are children of Camera that
 implement real-time video-extensometry on the acquired images.
 
-Now, in practice, how to write your own subclass of Camera ? As mentioned
-above, the base Camera Block already handles the acquisition, the display, and
-the recording of the images. All that's left for you to define is how to
-correctly process the images, and what results to send to downstream Blocks.
-But remember that just like the other functionalities, the processing is also
-parallelized ! This means that it cannot be performed directly in the custom
-Camera Block, but rather in another object : a
+The base Camera Block handles image acquisition, display, and recording. A
+custom extension defines how to process images and which results to send to
+downstream Blocks. Processing runs in another process through a
 :class:`~crappy.blocks.camera_processes.CameraProcess`. Using this all-in-one
-architecture for custom image processing therefore requires two new classes :
+architecture for custom image processing requires two new classes:
 one child of :class:`~crappy.blocks.Camera`, and one child of
-:class:`~crappy.blocks.camera_processes.CameraProcess` !
+:class:`~crappy.blocks.camera_processes.CameraProcess`.
 
 6.a. The CameraProcess class
 ++++++++++++++++++++++++++++
 
 Just like the other custom objects that you can instantiate in Crappy, there is
-a template for the :class:`~crappy.blocks.camera_processes.CameraProcess` :
+a template for the :class:`~crappy.blocks.camera_processes.CameraProcess`:
 
 .. code-block:: python
 
@@ -680,10 +627,10 @@ a template for the :class:`~crappy.blocks.camera_processes.CameraProcess` :
        def finish(self):
            ...
 
-Let's review one by one the methods that you can define :
+The class can define these methods:
 
 - In :meth:`~crappy.blocks.camera_processes.CameraProcess.__init__` you should
-  only handle the arguments that your CameraProcess accepts, nothing more ! The
+  only handle the arguments that your CameraProcess accepts. The
   reason for that is that this method runs in a separate "context" than the
   following ones, so as little as possible should be performed there.
 - :meth:`~crappy.blocks.camera_processes.CameraProcess.init` is where you can
@@ -696,14 +643,14 @@ Let's review one by one the methods that you can define :
   are detailed below.
 - :meth:`~crappy.blocks.camera_processes.CameraProcess.finish` is the
   equivalent of the :meth:`~crappy.blocks.Block.finish` method of the Block. It
-  is called at the very end when Crappy finishes, and should de-initialize the
+  is called at the very end when Crappy finishes, and should deinitialize the
   objects used for the image processing. It is fine to leave this method
   undefined.
 
 The Base CameraProcess class handles the calls to these methods, as well as the
 exceptions that might be raised. All the user has to do is to define them. In
 addition to the methods that the user has to define, there are four other
-methods that can be called and provide extra functionalities :
+methods that can be called and provide extra functionalities:
 
 - :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` is an
   optional hook for processing state chosen in a custom CameraConfig window.
@@ -714,13 +661,13 @@ methods that can be called and provide extra functionalities :
   :meth:`~crappy.blocks.camera_processes.CameraProcess.init`.
 - :meth:`~crappy.blocks.camera_processes.CameraProcess.send` is the equivalent
   of the :meth:`~crappy.blocks.Block.send` method of the Block, of which it is
-  almost an exact copy. It allows to send data to downstream Block, and takes
+  almost an exact copy. It sends data to downstream Blocks and takes
   one argument either as a :obj:`dict` or as an
   :obj:`~collections.abc.Iterable` if the :py:`self._labels` attribute is
   defined (and not :py:`self.labels` like in the Block). Refer to the method of
   Block for more information.
-- :meth:`~crappy.blocks.camera_processes.CameraProcess.send_to_draw` allows to
-  send :class:`~crappy.tool.camera_config.config_tools.Overlay` objects for the
+- :meth:`~crappy.blocks.camera_processes.CameraProcess.send_to_draw` sends
+  :class:`~crappy.tool.camera_config.config_tools.Overlay` objects for the
   displayer to show as an overlay on top of the displayed images. It is
   discussed in more details in a :ref:`next subsection
   <tutorials/complex_custom_objects:6.c. sending an overlay to the displayer>`.
@@ -729,14 +676,14 @@ methods that can be called and provide extra functionalities :
   handling log messages without resorting to the :obj:`print` function.
 
 On top of that, two very useful attributes are defined by the CameraProcess
-class :
+class:
 
 - :py:`self.img` contains the latest image captured by the Camera Block, as a
   :mod:`numpy` array. It is updated automatically, so users just have to use it
   as is. Also note that the
   :meth:`~crappy.blocks.camera_processes.CameraProcess.loop` method is only
-  called again if a new image was received since the last call, so
-  :py:`self.img` should be a different image at every call !
+  called again after a new image is received, so :py:`self.img` corresponds to
+  the newly received frame.
 - :py:`self.metadata` contains the metadata associated with the image stored in
   :py:`self.img`. The metadata is in the format described in :ref:`the
   dedicated section <tutorials/complex_custom_objects:4.c. manage the metadata
@@ -745,7 +692,7 @@ class :
 
 Now that you have a general overview of the methods and attribute that the
 CameraProcess exposes, it is time to demonstrate how to use them in a demo
-CameraProcess :
+CameraProcess:
 
 .. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
    :language: python
@@ -755,7 +702,7 @@ In the example code, the defined class uses OpenCV to detect eyes on the
 received images. It returns the timestamp of the image, and an object
 containing the coordinates of the detected eyes. Here, the
 :meth:`~crappy.blocks.camera_processes.CameraProcess.finish` method is missing,
-because there is nothing to de-initialize. As described above, the
+because there is nothing to deinitialize. As described above, the
 :meth:`~crappy.blocks.camera_processes.CameraProcess.__init__` method only
 handles the given arguments,
 :meth:`~crappy.blocks.camera_processes.CameraProcess.init` makes the class
@@ -764,9 +711,8 @@ ready for looping, and
 detection task. The :py:`self.img` attribute is used as an argument to the eye
 detection function, and :py:`self.metadata` is used for returning the timestamp
 of the current image to downstream Blocks. This class alone is not enough for
-running the eye detection with Crappy, a corresponding custom
-:class:`~crappy.blocks.Camera` Block now has to be defined in the next
-subsection !
+running the eye detection with Crappy. The next subsection defines the
+corresponding custom :class:`~crappy.blocks.Camera` Block.
 
 .. Note::
    By default, the :meth:`~crappy.blocks.camera_processes.CameraProcess.loop`
@@ -790,11 +736,11 @@ subsection !
 6.b. Writing the custom Camera Block
 ++++++++++++++++++++++++++++++++++++
 
-To be able to use your freshly defined custom
-:class:`~crappy.blocks.camera_processes.CameraProcess`, you now have to create
+To use the custom
+:class:`~crappy.blocks.camera_processes.CameraProcess`, create
 a custom :class:`~crappy.blocks.Camera` Block that makes use of the
 CameraProcess. Since most of the complexity is handled in the base parent
-class, the template for a child of the Camera Block is pretty basic :
+class, the template for a child of the Camera Block is pretty basic:
 
 .. code-block:: python
 
@@ -847,13 +793,12 @@ class, the template for a child of the Camera Block is pretty basic :
            self.process_proc = CustomCameraProcess()
 
 Notice that since your new :meth:`~crappy.blocks.Camera.__init__` method
-overrides the one from the parent class, you have to handle all the parameters
-of the parent class in addition to the ones that you might add ! As usual,
+overrides the one from the parent class, handle all parent parameters in
+addition to any new ones. The
 :meth:`~crappy.blocks.Camera.__init__` should instantiate all the objects that
-will be used in your class and handle the arguments. In simple cases,
-:meth:`~crappy.blocks.Camera.prepare` is very basic and is only used for
-setting the CameraProcess to use. Except for that, there is nothing more to
-do on the Camera Block side !
+will be used in your class and handle the arguments. When no extra
+configuration is required, :meth:`~crappy.blocks.Camera.prepare` only selects
+the CameraProcess.
 
 .. Note::
    If you use the :class:`~crappy.blocks.VideoExtenso` Block for example, you
@@ -875,29 +820,30 @@ Because the :class:`~crappy.blocks.camera_processes.CameraProcess` deals with
 images, it can be interesting to have a real-time display of how the processing
 is performing. To do so, the base CameraProcess class provides the
 :meth:`~crappy.blocks.camera_processes.CameraProcess.send_to_draw` method that
-allows to send objects to the
+sends objects to the
 :class:`~crappy.blocks.camera_processes.Displayer` Process to draw overlays on
-top of the displayed images. Of course, it will only work if the
+top of the displayed images. This requires the
 :py:`display_images` argument of the Camera Block is set to :obj:`True`.
 
 The objects indicating what to draw should be children of the
 :class:`~crappy.tool.camera_config.config_tools.Overlay` class. They only need
 to define the :meth:`~crappy.tool.camera_config.config_tools.Overlay.draw`
 method, that takes the image to display as an argument and draws the overlay on
-top of it. Here is what it looks like for displaying a black ellipse :
+top of it. Here is what it looks like for displaying a black ellipse:
 
 .. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
    :language: python
    :lines: 1-29
 
-To transmit the overlay to the Displayer Process, the
-:meth:`~crappy.blocks.camera_processes.CameraProcess.send_to_draw` should send
-a collection of instances of Overlays. It is as simple as that ! Crappy only
-comes with one predefined Overlay object, the
-:class:`~crappy.tool.camera_config.config_tools.Box`, but it is easy enough to
-define your own ones. Here is what the custom CameraProcess defined in the
+To transmit the overlay to the Displayer Process, pass a collection of Overlay
+instances to
+:meth:`~crappy.blocks.camera_processes.CameraProcess.send_to_draw`. Crappy
+provides the predefined
+:class:`~crappy.tool.camera_config.config_tools.Box` Overlay. You can define
+another Overlay by implementing its ``draw`` method. Here is the custom
+CameraProcess from the
 previous sub-section looks like after integrating the code for sending
-overlays :
+overlays:
 
 .. literalinclude:: /downloads/complex_custom_objects/custom_camera_block.py
    :language: python
@@ -915,7 +861,7 @@ detection on the acquired images. This custom CameraProcess is itself
 instantiated by a custom child of the :class:`~crappy.blocks.Camera` Block,
 that is the final object called by the user in its script. Based on these
 development, here is a final runnable code performing eye detection and adding
-the detected eyes on the displayed images :
+the detected eyes on the displayed images:
 
 .. collapse:: (Expand to see the full code)
 
@@ -944,22 +890,15 @@ approach from the previous section.
 7. Sharing custom objects and Blocks
 ------------------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+Custom objects can be shared as source files, packaged in a private
+distribution, or contributed to Crappy.
 
-You have been through all the tutorials of Crappy and have now become a master
-at creating and using your own objects, and you now **want to share your**
-**works with other user** ? No problem ! There are several options for that,
-some very simple and some other much more demanding. Let's review them all in
-this last section of the tutorials !
-
-The first and **most simple option for sharing your custom objects is to put**
-**them in separate files**, along with their necessary imports, and to share
+For direct reuse, put custom objects in separate files with their required
+imports and share
 these files. Other people will be able to use them by importing your custom
 objects in their script, e.g. with :py:`from file_name import CustomObject`. It
-is the way to go in most situations, as it is very quicly done and only
-requires to send one or a few files. The persons who receive the file can also
-easily modify it and share it themselves. You got it, the main advantage of
-processing this way is that it is very flexible. The only drawback is that the
+requires only one or a few files. Recipients can modify and redistribute those
+files. The drawback is that the
 versions of Crappy for the sender and the receiver might not be the same, in
 which case the code might not run on the receiver's side. Also, for the
 receiver, two steps are involved : installing Crappy and copying the sent
@@ -967,35 +906,30 @@ files.
 
 Some users might want to distribute their work in a more rigid way, for example
 an engineer distributing the same immutable code to several users of a machine.
-It is possible to **create and share installation files**, a.k.a *wheels*,
-**that contain a modified version of Crappy** that can be installed using
+It is possible to create and share installation files, or *wheels*, that
+contain a modified version of Crappy and can be installed using
 :mod:`pip`. To do so, one has to clone Crappy, i.e. make a local copy of its
 source files, modify it to include the new custom objects, and build the wheel
 to share. This way, everyone runs the same code, and also cannot have an
 incompatible version since the version is fixed by the creator of the wheel.
 How to properly modify a Python module to include new files is not described
-here, neither is how to build and install a new wheel. This paragraph simply
-indicates the possibility to do so. You should however find plenty of help on
-internet if you want to give it a try !
+here, neither is how to build and install a new wheel. This paragraph notes the
+option. See the Python Packaging User Guide for build and
+installation instructions.
 
-There is one last possible way to share your work, it is to **integrate it to**
-**the collection of classes and Blocks distributed with the official version**
-**of Crappy** ! To do so, you should first *fork* Crappy, i.e. create a copy of
-it on your own GitHub account. After modifying this copy to include your own
+To contribute an integration to Crappy, first *fork* the repository to your
+GitHub account. After modifying this copy to include your own
 files, you can submit a *pull request* to the maintainers to request
 integration of your work on the official repository of Crappy. Again, this
 paragraph is not a *git* or GitHub tutorial, and we're not going to give more
-details about this whole process. If you wish to contribute to Crappy, you
-should anyway get in touch with the developers on GitHub at some point ! For
-contributors, the
+details about this process. The
 :ref:`Developers information <developers:developers information>` page of the
 documentation provides a few guidelines, as well as more insights on the
 content of the module than the tutorials. If there's a feature you would like
 to see in Crappy, but that you don't feel capable of implementing yourself, you
 can also request improvements directly on GitHub.
 
-That concludes the tutorials of Crappy ! We hope they have been helpful for
-getting started with the module, and that you were able to find an answer to
-all your questions here. If not, do not hesitate to request halp on our GitHub
-page ! Also, **if you publish any academic work conducted with the help of**
-**Crappy, please do not forget to** :ref:`cite us <citing:citing crappy>` !
+For questions not covered by the tutorials, use the support channels listed on
+the :ref:`Troubleshooting <troubleshooting:troubleshooting>` page. If you use
+Crappy in an academic publication, follow the :ref:`citation guidance
+<citing:citing crappy>`.

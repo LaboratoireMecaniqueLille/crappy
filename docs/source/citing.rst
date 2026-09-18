@@ -2,15 +2,13 @@
 Citing Crappy
 ==============
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
-If Crappy has been of help in your research, please reference it in your 
-academic publications by citing one or both of the following articles :
+If you use Crappy in academic research, cite one or both of the following
+articles:
 
 - Couty V., Witz J-F., Martel C. et al., *Command and Real-Time Acquisition in Parallelized Python, a Python module for experimental setups*, SoftwareX 16, 2021, DOI: 10.1016/j.softx.2021.100848. (`link to Couty et al. <https://www.sciencedirect.com/science/article/pii/S2352711021001278>`_)
 - Weisrock A., Couty V., Witz J-F. et al., *CRAPPY goes embedded: Including low-cost hardware in experimental setups*, SoftwareX 22, 2023, DOI: 10.1016/j.softx.2023.101348. (`link to Weisrock et al. <https://www.sciencedirect.com/science/article/pii/S2352711023000444>`_)
 
-Here are the BibTex codes for referencing the articles :
+Use these BibTeX entries to reference the articles:
 
 .. code-block:: shell-session
 

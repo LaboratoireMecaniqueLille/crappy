@@ -9,16 +9,12 @@ Developers information
 Contributing to Crappy
 ----------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+This page explains how to contribute to Crappy, build its documentation, and
+understand its runtime architecture.
 
-If you want to help developing Crappy with us, we'll be more than happy to
-welcome you in the community ! Here you'll find some practical information on
-**how Crappy works under the hood, and a few guidelines for contributors**.
-
-If you brought an improvement to your own version of Crappy, and you think it's
-worth sharing with the community, don't hesitate to `create a pull request
-<https://github.com/LaboratoireMecaniqueLille/crappy/compare>`_ on GitHub ! If
-you do so, please enforce the following rules :
+Submit improvements through a `GitHub pull request
+<https://github.com/LaboratoireMecaniqueLille/crappy/compare>`_. Follow these
+project conventions:
 
 - Follow `PEP8 <https://peps.python.org/pep-0008/>`_ as much as possible,
   except for the indents that we chose to lower from 4 to 2 spaces for
@@ -26,7 +22,7 @@ you do so, please enforce the following rules :
 
 - Use the `Google style <https://google.github.io/styleguide/pyguide.html>`_
   for docstrings. Please comment and document your code extensively, and
-  update the source of the documentation if needed.
+  update the documentation when behavior changes.
 
 - Use relevant and meaningful titles and descriptions for your commits.
   Starting from v2.0.0, the rules `described here
@@ -38,6 +34,63 @@ The development branch of Crappy is called `develop
 the one on which you should commit. Starting from v2.0.0, the `master branch
 <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master>`_ is never
 directly committed to.
+
+Documentation style
+-------------------
+
+Write documentation in American English with a calm, technical, and direct
+voice. Lead with what an object or procedure does, when to use it, and any
+constraints that affect the reader.
+
+Apply these rules to all documentation changes:
+
+- Use second person for instructions and neutral language for behavior and
+  architecture.
+- Prefer observable behavior over claims such as “easy”, “powerful”, or
+  “optimal”. Qualify performance and timing statements with a benchmark or an
+  implementation guarantee.
+- Do not use semicolons, rhetorical questions, congratulatory endings, or
+  exclamation marks in prose.
+- Use bold text for warnings and defined terms, not for ordinary emphasis.
+- Expand an abbreviation on its first use on each page.
+- Keep sentences concise and put lifecycle, timing, multiprocessing, safety,
+  and cleanup constraints next to the first relevant step.
+- End tutorials with links to specific next tasks or API entries instead of a
+  generic summary.
+- Do not add ``sectionauthor`` directives. Git history records authorship.
+- Add technical names that a spell checker does not recognize to
+  ``docs/spelling_wordlist.txt``. Do not add ordinary misspellings.
+
+Use qualified Camera terminology when a name could be ambiguous:
+
+- :class:`crappy.camera.Camera` is the base class for camera hardware
+  integrations. After the first mention, call it a “Camera object”.
+- :class:`crappy.blocks.Camera` is the supported all-in-one Camera Block.
+- :class:`crappy.blocks.vision.CameraSource` acquires images in a composable
+  image pipeline.
+- :class:`crappy.blocks.vision.VisionBlock` is the base class for composable
+  image stages.
+- :class:`crappy.links.Link` carries dictionaries between Blocks.
+- :class:`crappy.links.ImageLink` shares the newest coherent image between
+  VisionBlocks.
+
+VisionBlocks are recommended for new image pipelines. The all-in-one Camera
+Blocks remain supported and are not planned for deprecation. Do not describe
+the all-in-one architecture as obsolete, superseded, or deprecated.
+
+A tutorial or how-to guide should begin with its outcome, prerequisites,
+required hardware, and runtime side effects such as opening a graphical user
+interface (GUI) or writing files. State version requirements when behavior is
+version-sensitive. Provide complete examples as plain text, even when the same
+content is also available as a download.
+
+After installing ``codespell``, run the editorial spelling check from the
+repository root:
+
+.. code-block:: console
+
+   $ codespell docs/source docs/README.md --skip='*.py,*.cu' \
+       --ignore-words=docs/spelling_wordlist.txt
 
 Building the documentation
 --------------------------
@@ -66,12 +119,9 @@ when updating the documentation toolchain.
 Technical description of Crappy
 -------------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
 .. note::
-  This is a very simplified overview of how the module actually works. Only the
-  main ideas are presented, and many technical aspects are omitted. Reading the
-  code remains the only way to truly understand it !
+  This overview covers the main runtime components and omits implementation
+  details. Follow the linked API entries and source links for those details.
 
 Crappy is written as a pure-Python module, and is divided in a number of
 submodules. The breakout of the submodules follow the logical organization of
@@ -93,18 +143,16 @@ the ``allow_parallel`` option.
 
 Under the hood, every Block is a child of the base
 :class:`~crappy.blocks.Block`, which is itself a child of
-:obj:`multiprocessing.Process`. Each Block thus runs in its own separate
-process, which is the solution we chose for achieving an optimal performance of
-the module. The main downsides of this architecture are a high complexity, and
-potential difficulties to ensure a smooth termination of all the processes. A
-detailed description of the objects and strategies used to achieve a clean
-parallelization can be found in the
-:ref:`next section <developers:detailed runtime sequence of crappy>`.
+:obj:`multiprocessing.Process`. Each Block therefore runs in a separate
+process. This isolates Block loops and permits concurrent execution. It also
+adds process-management and shutdown complexity. A detailed description of the
+objects and strategies used to achieve a clean parallelization can be found in
+the :ref:`next section <developers:detailed runtime sequence of crappy>`.
 
-As Blocks live each in a separate process, sharing data between each other is
-not straightforward. In Crappy, data can be sent from one Block to another only
-if they have first been linked by a :class:`~crappy.links.Link`. Behind each
-Link is a :obj:`multiprocessing.Pipe`, a low-level object that carries the
+Because Blocks run in separate processes, they exchange data through explicit
+communication objects. In Crappy, data can be sent from one Block to another
+only if they have first been linked by a :class:`~crappy.links.Link`. Behind
+each Link is a :obj:`multiprocessing.Pipe`, a low-level object that carries the
 data. In addition to instantiating the Pipe, the Link object also provides
 methods for the :class:`~crappy.blocks.Block` to use when sending data.
 
@@ -167,23 +215,23 @@ display, recording, and processing are parallelized, but their topology is
 encapsulated inside the owning Camera Block rather than exposed in the script's
 Block graph.
 
-This all-in-one architecture remains supported and is not planned for
-deprecation. VisionBlocks are recommended for new scripts and custom image
-processing because they give each Block fewer responsibilities and allow the
-image workflow to be rearranged. The Camera Block remains convenient when its
-fixed internal architecture already matches the application.
+VisionBlocks are recommended for new image pipelines. The all-in-one Camera
+Blocks remain supported and are not planned for deprecation. VisionBlocks give
+each Block fewer responsibilities and allow the image workflow to be
+rearranged. The Camera Block remains convenient when its fixed internal
+architecture already matches the application.
 
 Shared buffers are not used for ordinary labeled data because they add
 complexity that is unnecessary for small dictionaries and require the data
-shape and dtype to be known in advance. This is normally straightforward for
-images, either from constructor arguments or after Camera configuration, but
-not for arbitrary numerical messages.
+shape and dtype to be known in advance. Images provide this information through
+constructor arguments or Camera configuration, whereas arbitrary numerical
+messages may not.
 
 Actuators, Cameras, InOuts
 ++++++++++++++++++++++++++
 
 Some of the Blocks rely on specific types of helper object, that they can
-drive. It is the case for :
+drive. It is the case for:
 
 - The :class:`~crappy.blocks.vision.CameraSource` and
   :class:`~crappy.blocks.Camera` Blocks that each drive one
@@ -195,11 +243,10 @@ drive. It is the case for :
   :class:`~crappy.actuator.Actuator` objects for controlling motors and other
   actuators.
 
-The Actuators, Cameras and InOuts are simple classes that do not derive from a
-parent class like the Blocks do. They were introduced to implement standardized
-ways for the Camera, IOBlock and Machine Blocks to interface with hardware. If
-written correctly. all the children of one of these classes implement the same
-methods and are seamlessly interchangeable.
+Actuators, Camera objects, and InOuts implement standardized ways for the
+Camera, IOBlock and Machine Blocks to interface with hardware. If implemented
+against the corresponding base-class contract, their subclasses provide the
+same lifecycle methods to the owning Block.
 
 In addition to providing a standardized way to integrate hardware in Crappy,
 these classes also provide helper methods to their children. For example, the
@@ -221,13 +268,10 @@ their call is not parallelized.
 C++ extension modules
 +++++++++++++++++++++
 
-In the `src` folder of Crappy, you can find next to the module `crappy` another
-directory called `ext`. It contains the C++ extensions that were historically
-used by some objects in the module. It is very unsure whether these extensions
-still work, but they were kept around as a legacy waiting for pure-Python
-replacement solution to be added to Crappy. To enable extension module(s), one
-has to locally clone Crappy and install it manually with the correct drivers
-installed on the machine.
+The ``ext`` directory next to the ``crappy`` package contains C++ extensions
+historically used by some objects. Their current compatibility is not verified.
+Building an extension requires a local source installation and the appropriate
+system drivers.
 
 Other objects
 +++++++++++++
@@ -244,9 +288,8 @@ The :class:`~crappy.blocks.generator_path.meta_path.Path` objects are used by
 the :class:`~crappy.blocks.Generator` Block to create waveforms to send to
 downstream Blocks. Just like the InOuts for example, they standardize the
 methods of the Paths to make them interchangeable and implement convenient
-helper methods. The Paths are a bit less straightforward to use than the
-Actuators, Cameras and InOuts, and the possibility for users to create their
-own Paths was only recently added.
+helper methods. A Path accepts a dictionary of parameters and implements the
+Generator's command and stop-condition behavior.
 
 CameraConfig window
 """""""""""""""""""
@@ -352,8 +395,6 @@ these low-level helpers directly.
 Detailed runtime sequence of Crappy
 -----------------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
 Crappy's main strength lies in the use of massive parallelization to maximize
 the performance of the module. Unfortunately, this means we had to cope with
 Python's notoriously complex :mod:`multiprocessing` architecture, and come up
@@ -368,7 +409,8 @@ In the main Process
 The __init__ phase
 """"""""""""""""""
 
-Before calling :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` or :ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>`, only one
+Before calling :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` or
+:ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>`, only one
 Process is running (the ``__main__`` Process). All the instantiated Blocks will
 be children Processes of the ``__main__`` Process, as soon as the next phase
 starts. The ``__main__`` Process will normally live until the test is over and
@@ -389,7 +431,7 @@ remember that every :obj:`classmethod` is meant to be called directly from the
 The first thing that happens in the Block when calling :py:`import crappy` is
 that the class attributes of Block are initialized (mostly to :obj:`None`).
 These class attributes are :mod:`multiprocessing` synchronization objects used
-for managing the execution of all the Processes. They include :
+for managing the execution of all the Processes. They include:
 
 - Two flags (:obj:`bool`) indicating whether all the Blocks have prepared and
   launched.
@@ -420,7 +462,7 @@ Then, when a :class:`~crappy.blocks.Block` is instantiated, its instance
 attributes are initialized (mostly to :obj:`None`). Most of these instance
 attributes will later be set equal to the synchronization and logging class
 attributes. In addition to the synchronization and logging attributes, each
-instance of Block also has :
+instance of Block also has:
 
 - A few validated public properties managing its execution (target looping
   frequency, niceness, flag for displaying the achieved looping frequency,
@@ -440,25 +482,27 @@ module-level :class:`~crappy.links.LinkGraph`. Creating regular Links and
 ImageLinks adds the corresponding edges during this phase, so the complete
 connection topology is available before Crappy starts any Process.
 
-Each instance of Block might of course also perform extra tasks, depending how
+Each Block instance may also perform extra tasks, depending on how
 the ``__init__`` method of the child class is implemented. The ``__init__``
-phase ends when either :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` or :ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` is
-called (the first thing *start* does is to call *prepare*).
+phase ends when either
+:ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` or
+:ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` is called (the
+first thing *start* does is to call *prepare*).
 
 The prepare phase
 """""""""""""""""
 
 When the :meth:`crappy.blocks.Block.prepare_all` :obj:`classmethod` (aliased to
-:ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` for conciseness) is called, it first sets the
-:obj:`logging.Logger` of the ``__main__`` Process. Note that
-:meth:`~crappy.blocks.Block.prepare_all` accepts one argument indicating the
-minimum level for logging. Then, all the synchronization class attributes
-listed above are instantiated to their target type (most of them were
-previously initialized to :obj:`None`). At that point, the number of Blocks is
-known, so the :obj:`~multiprocessing.Barrier` is set to this number +1 for the
-``__main__`` Process. The :obj:`~multiprocessing.Value` storing the initial
-timestamp is initialized to a negative value, to make it clear that it is not
-set yet.
+:ref:`crappy.prepare() <crappy_docs/aliases:crappy.prepare()>` for conciseness)
+is called, it first sets the :obj:`logging.Logger` of the ``__main__`` Process.
+Note that :meth:`~crappy.blocks.Block.prepare_all` accepts one argument
+indicating the minimum level for logging. Then, all the synchronization class
+attributes listed above are instantiated to their target type (most of them
+were previously initialized to :obj:`None`). At that point, the number of
+Blocks is known, so the :obj:`~multiprocessing.Barrier` is set to this number
++1 for the ``__main__`` Process. The :obj:`~multiprocessing.Value` storing the
+initial timestamp is initialized to a negative value, to make it clear that it
+is not set yet.
 
 Then, for each Block, its synchronization instance attributes are set to the
 corresponding class attributes of Block. Basically, the class attributes are
@@ -553,7 +597,7 @@ stopped. Shortly before returning, Crappy is reset by
 :meth:`~crappy.blocks.Block.reset`. This clears the Block registry and
 :class:`~crappy.links.LinkGraph`, drops the shared Manager reference, and
 re-initializes the synchronization state because it is no longer needed.
-Finally, an exception might be raised in three cases :
+Finally, an exception might be raised in three cases:
 
 - If all the Blocks are not done running at the end of this phase.
 - If an :exc:`Exception` was caught during Crappy's execution.

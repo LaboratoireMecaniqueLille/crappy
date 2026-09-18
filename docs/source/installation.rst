@@ -9,76 +9,65 @@ Installation
 Requirements
 ------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
-Crappy was successfully installed and tested on **Linux** (Ubuntu 18.04 and
-higher), **Windows** (8 and higher) and **MacOS** (Sierra and higher). It was
-also successfully installed on **Raspberry Pi** 3B+, 4B, and 5. As a Python
-module, Crappy can probably be installed on other systems able to run Python,
-but that was not tested.
+Crappy has been installed and tested on Linux, Windows, macOS, and Raspberry Pi
+computers. Other systems that support a compatible Python version may work but
+are not covered by project testing.
 
 .. note::
   We develop Crappy on recent OS versions, and no particular effort is made to
   ensure compatibility with older OS versions.
 
-Crappy requires **Python 3.10 or later**, as well as the following module :
+Crappy requires Python 3.10 or later and the following package:
 
 - `numpy <https://numpy.org/>`_ (2.0.0 or higher)
 
-The following modules are not mandatory but will provide additional
-functionalities (this list is not exhaustive) :
+The following optional packages enable additional features:
 
-- `matplotlib <https://matplotlib.org/>`_ (1.5.3 or higher, for plotting graphs
+- `matplotlib <https://matplotlib.org/>`_ (3.3.0 or higher, for plotting graphs
   and displaying images)
-- `opencv <https://opencv.org/>`_ (3.0 or higher, to perform image acquisition
+- `opencv <https://opencv.org/>`_ (4.0 or higher, for image acquisition
   and processing)
-- `pyserial <https://pypi.org/project/pyserial/>`_ (To interface with serial
+- `pyserial <https://pypi.org/project/pyserial/>`_ (3.4 or higher, to interface with serial
   sensors and actuators)
-- `Tk <https://docs.python.org/3/library/tkinter.html>`_ (For the configuration
+- `Tk <https://docs.python.org/3/library/tkinter.html>`_ (for the configuration
   interface of cameras)
-- `scikit-image <https://scikit-image.org/>`_ (0.11 or higher)
-- `Simple-ITK <https://simpleitk.org/>`_ (for faster image recording)
+- `scikit-image <https://scikit-image.org/>`_ (0.18.0 or higher)
+- `SimpleITK <https://simpleitk.org/>`_ (2.0.0 or higher, for image recording)
 - `PyCUDA <https://documen.tician.de/pycuda/>`_ (for GPU accelerated features)
 
 .. note::
-  Knowing which modules are needed for a given setup is easy. Just write the
-  script and start it, if a module is missing Crappy will simply tell you !
+  Optional dependencies are imported only by the features that need them.
+  Crappy reports a missing dependency when the corresponding feature starts.
 
 1. Check your Python version
 ----------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
-Before installing Crappy, first check that you have **a compatible version of**
-**Python** installed. You can get the current version of Python by running
-:shell:`python --version` in a console. The version should then be displayed,
-e.g. :shell:`Python 3.10.1`.
+Before installing Crappy, check that you have a compatible version of Python.
+You can get the current version by running :shell:`python --version` in a
+console. The version should then be displayed, e.g. :shell:`Python 3.10.1`.
 
 .. note::
-  On Windows, Python is not natively installed and might not be present at
-  all ! In this case, the given command will display an error message.
+  Windows does not include Python by default. If it is unavailable, the command
+  displays an error message.
 
 If the current version of Python is not compatible with Crappy (requires Python
->=3.10), or if Python is not installed, you will first need to **install a**
-**compatible version of Python**. The precise installation steps for each OS
-are beyond the scope of this documentation.
+>=3.10), or if Python is not installed, first install a compatible version of
+Python. The precise installation steps for each OS are beyond the scope of this
+documentation.
 
 .. note::
-  On Linux and MacOS, you will likely need to install the new version of Python
-  alongside the original version. Never uninstall the original version, or your
-  system will break !
+  On Linux and macOS, install a new Python version alongside the system Python.
+  Removing the system Python can damage operating-system tools.
 
 2. Deploy a virtual environment (optional)
 ------------------------------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+Install Crappy in a `virtual environment
+<https://docs.python.org/3/library/venv.html>`_ to avoid conflicts with Python
+packages installed at the user or system level. A user-level installation is
+also supported.
 
-It is **recommended** to install Crappy in a `virtual environment
-<https://docs.python.org/3/library/venv.html>`_, to avoid conflicts with other
-Python packages installed at the user or system level. This step is however not
-mandatory,and it is possible to install and run Crappy at the user level.
-
-To create an virtual environment called `venv_crappy`, run the following
+To create a virtual environment called ``venv_crappy``, run the following
 command at the location of your choice.
 
 .. code-block:: shell-session
@@ -91,11 +80,8 @@ console, containing an independent install of Python.
 3. Install Crappy
 -----------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
-Once you have a compatible version of Python installed, and after optionally
-setting up a virtual environment, you're **ready to install Crappy**. A single
-line of code is necessary to install Crappy :
+After installing a compatible Python version and optionally creating a virtual
+environment, install Crappy with ``pip``.
 
 **Without a virtual environment**
 
@@ -119,34 +105,17 @@ environment:
 
    venv_crappy\Scripts\python.exe -m pip install crappy
 
-Following th same pattern, you can also **install any additional module** that
-you would need to use along with Crappy. For example :
+Use the same interpreter to install any optional package required by your
+script. For example:
 
 .. code-block:: shell-session
 
    python -m pip install matplotlib
 
-.. note::
-  You can install at once most of the modules necessary for a specific use of
-  Crappy by using the so-called extras. To do so, simply run :
-
-  .. code-block:: shell-session
-
-     python -m pip install crappy[<extra>]
-
-  The available extras are ``SBC``, ``image``, ``hardware`` and ``main``. They
-  contain respectively modules for interfacing with single board computers, for
-  recording and displaying images and videos, for interfacing with hardware
-  over serial or USB, and ``main`` contains the three most used modules in
-  Crappy after the mandatory Numpy.
-
 4. Check your install
 ---------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
-Once you have installed Crappy, you can **run a few checks** to make sure it
-works fine on your system. First, try to simply import it :
+After installing Crappy, import it and print its version:
 
 **Without a virtual environment**
 
@@ -171,15 +140,16 @@ environment:
    venv_crappy\Scripts\python.exe -c "import crappy;print(crappy.__version__)"
 
 This command should return without an error and print the installed version of
-Crappy. If that is not the case, please refer to the :ref:`Troubleshooting <troubleshooting:troubleshooting>`
-page of the documentation.
+Crappy. If that is not the case, please refer to the
+:ref:`Troubleshooting <troubleshooting:troubleshooting>` page of the
+documentation.
 
 If you can successfully import Crappy, you can then try to run a few examples
 to confirm that Crappy operates as expected. The `examples folder
 <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_ of
 the GitHub repository contains a wide collection of readily-runnable examples.
 To execute a test script called :file:`example.py`, run the following lines in
-a console :
+a console:
 
 **Without a virtual environment**
 
@@ -204,5 +174,5 @@ and that :file:`example.py` is at the same level as the virtual environment:
 
    venv_crappy\Scripts\python.exe example.py
 
-If you're successful with all these steps, congratulations ! You just installed
-Crappy on your machine ! We wish you success in your work.
+The installation is ready when the import check and a suitable example both
+complete without errors.
