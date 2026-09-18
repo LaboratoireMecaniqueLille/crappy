@@ -25,6 +25,7 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.autosectionlabel",
               "sphinx.ext.napoleon",
               "sphinx.ext.mathjax",
+              "sphinx.ext.graphviz",
               "sphinx_copybutton",
               "sphinx_rtd_theme",
               # DOC-06 will replace the remaining collapse directives.
