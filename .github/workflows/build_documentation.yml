@@ -31,5 +31,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r docs/source/requirements.txt
           python -m pip install .
+      - name: Check getting-started downloads
+        env:
+          MPLBACKEND: Agg
+        run: python -m unittest -v tests.documentation
       - name: Build documentation
         run: make -C docs clean html
