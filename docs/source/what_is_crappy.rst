@@ -15,11 +15,15 @@ CRAPPY is an acronym and stands for **C**\ommand and **R**\eal-time
 
 Crappy provides a software environment for controlling tests and driving
 hardware. It is intended for experimental researchers and research and
-development (R&D) engineers. The framework manages the operation,
-parallelization, and synchronization of test equipment. A device can be
-integrated in Crappy if it can be controlled with Python, regardless of its
-manufacturer. Crappy also provides ready-to-use signal-processing and
-image-processing features that can be combined for complex experimental setups.
+development (R&D) engineers. A single test can acquire measurements, send
+commands, process data, display results, and save files. Crappy provides
+ready-to-use components for these tasks, and users can add custom components
+for their own equipment or procedures.
+
+A device can be integrated with Crappy if it can be controlled from Python,
+regardless of its manufacturer. Ready-to-use signal-processing and
+image-processing features can be combined with hardware control when an
+experiment requires them.
 
 Crappy is developed at the `LaMCube <https://lamcube.univ-lille.fr/>`_, a
 mechanical research laboratory based in Lille, France. It was originally
@@ -41,8 +45,8 @@ Key features of Crappy
   using ready-to-use components for acquisition, control, and data handling.
 
 - **Performance-oriented:**
-  Crappy is designed to make effective use of the computer so that all the
-  tasks can run smoothly together, including advanced real-time processing.
+  Crappy aims to use the computer efficiently when acquisition, commands,
+  display, processing, and recording all run during the same test.
 
 - **Built for complete experiments:**
   A single script can coordinate hardware, process measurements, display
@@ -53,7 +57,8 @@ When to use Crappy
 
 Consider Crappy when:
 
-- You want to drive sensors and actuators in an simple and efficient way.
+- You want to acquire measurements from sensors and drive actuators from one
+  test script.
 
 - You want to add your own hardware integrations, processing functions, or test
   protocols to a modular framework.
@@ -69,7 +74,7 @@ Choose a different tool when:
   not provide them.
 
 - Your devices cannot be driven from Python, e.g. if they can only be driven
-  from a proprietary software.
+  by proprietary software.
 
 - You need a graphical application for configuring and running tests without
   writing code.

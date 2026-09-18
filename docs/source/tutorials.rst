@@ -5,7 +5,7 @@ Tutorials
 .. toctree::
    :maxdepth: 2
 
-   tutorials/getting_started.rst
-   tutorials/more_complexity.rst
-   tutorials/custom_objects.rst
-   tutorials/complex_custom_objects.rst
+   Write your first Crappy scripts <tutorials/getting_started>
+   Combine Blocks for advanced tasks <tutorials/more_complexity>
+   Create custom objects <tutorials/custom_objects>
+   Create advanced custom objects <tutorials/complex_custom_objects>
