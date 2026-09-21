@@ -71,4 +71,5 @@ Next step
 ---------
 
 Continue with :doc:`signal_display` to plot acquired or simulated values in a
-live graph.
+live graph. If the selected InOut supports chunked acquisition, continue with
+:doc:`streaming_acquisition`.

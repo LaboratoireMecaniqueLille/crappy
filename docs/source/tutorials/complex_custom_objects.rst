@@ -55,8 +55,8 @@ command to send). It accepts one argument, which is the :obj:`dict` returned by
 the :meth:`~crappy.blocks.Block.recv_all_data` method of the Generator, and
 that contains all data recently received over incoming Links. This supports
 Generator Paths with stop conditions based on the value of
-a label, described in :ref:`this tutorials section
-<tutorials/more_complexity:3. advanced generator condition>`.
+a label, described in the :ref:`conditional Generator tutorial
+<tutorial-generator-conditions>`.
 
 To signal that a stop condition is met, the
 :meth:`~crappy.blocks.generator_path.meta_path.Path.get_cmd` method raises a

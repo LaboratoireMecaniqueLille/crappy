@@ -402,8 +402,9 @@ custom_objects>`_ to find more examples of custom InOut objects.
 If you want to be able to use your custom InOut object in *streamer* mode, the
 methods described above are not sufficient. Follow the streaming lifecycle
 described in this subsection. For
-more details on how to use the *streamer* mode, refer to the :ref:`Dealing with
-streams section <tutorials/more_complexity:4. dealing with streams>` of the tutorials. Getting straight
+more details on how to use the *streamer* mode, refer to the
+:ref:`streaming-acquisition tutorial <tutorial-streaming-acquisition>`.
+Getting straight
 to the point, here's how the template for an InOut supporting the *streamer*
 mode looks like:
 

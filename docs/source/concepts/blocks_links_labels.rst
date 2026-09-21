@@ -63,7 +63,8 @@ For example, if ``scale_force`` is a callable Modifier:
 
 Modifiers are suitable for small transformations such as renaming, scaling,
 filtering, or selecting values. A calculation that is slow or has its own
-lifecycle is clearer as a dedicated Block.
+lifecycle is clearer as a dedicated Block. The :doc:`../tutorials/modifiers`
+tutorial demonstrates a Modifier that adds a calculated label.
 
 Receiving rates and missing data
 --------------------------------

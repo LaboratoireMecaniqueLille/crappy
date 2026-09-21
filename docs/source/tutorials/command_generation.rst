@@ -61,4 +61,5 @@ or either delay to adjust a step's duration. The
 other available signal shapes and their arguments.
 
 Continue with :doc:`actuator_control` to send a generated command to a
-simulated motor.
+simulated motor. For measurement-dependent transitions, continue with
+:doc:`generator_conditions` after learning about feedback loops.
