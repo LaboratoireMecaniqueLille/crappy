@@ -68,8 +68,8 @@ timing, or has setup and cleanup steps. See
 :doc:`../concepts/choosing_custom_object_type` for that choice.
 
 The :doc:`../crappy_docs/modifiers` reference lists the built-in Modifiers. If
-none matches the required calculation, see :ref:`the custom Modifier tutorial
-<tutorials/custom_objects:1. custom modifiers>`.
+none matches the required calculation, see
+:doc:`custom_modifier`.
 
 Continue with :doc:`generator_conditions` to make a command change when a
 measured label reaches a limit.

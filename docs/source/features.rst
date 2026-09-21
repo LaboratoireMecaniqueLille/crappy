@@ -16,7 +16,7 @@ Functionalities (Blocks)
 
 Blocks are the components that perform tasks in a Crappy test. Read
 :doc:`concepts/blocks_links_labels` to learn how they fit together, or follow
-the :ref:`custom Block tutorial <tutorials/custom_objects:5. custom blocks>`
+the :ref:`custom Block tutorial <tutorial-custom-block>`
 to create one.
 
 Crappy provides composable VisionBlocks and all-in-one Camera Blocks for image
@@ -336,7 +336,7 @@ Signal generation
 
   The :ref:`command-generation tutorial <tutorial-command-generation>`
   introduces the Generator Block, and :ref:`another tutorial
-  <tutorials/complex_custom_objects:1. custom generator paths>` is dedicated to the creation of custom Generator
+  <tutorial-custom-generator-path>` is dedicated to creating custom Generator
   Paths.
 
 - :ref:`PID <crappy_docs/blocks:pid>`
@@ -387,8 +387,8 @@ Hardware control
   VisionBlocks when a more flexible image architecture is useful.
 
   The :ref:`first image-pipeline tutorial <tutorial-image-pipeline>` introduces
-  camera acquisition, and :ref:`another tutorial <tutorials/custom_objects:4. custom cameras>`
-  is dedicated to the creation of custom Camera objects.
+  camera acquisition, and :ref:`another tutorial <tutorial-custom-camera>` is
+  dedicated to the creation of custom Camera objects.
 
 - :ref:`IOBlock <crappy_docs/blocks:ioblock>`
 
@@ -403,8 +403,8 @@ Hardware control
   blocks/ioblock>`_.
 
   The :ref:`data-acquisition tutorial <tutorial-data-acquisition>` introduces
-  the IOBlock, and :ref:`another tutorial <tutorials/custom_objects:3. custom inouts>` is dedicated to the
-  creation of custom InOut objects.
+  the IOBlock, and :ref:`another tutorial <tutorial-custom-inout>` is dedicated
+  to the creation of custom InOut objects.
 
 - :ref:`Machine <crappy_docs/blocks:machine>`
 
@@ -418,8 +418,8 @@ Hardware control
   blocks/machine>`_.
 
   The :ref:`actuator-control tutorial <tutorial-actuator-control>` introduces
-  the Machine Block, and :ref:`another tutorial <tutorials/custom_objects:2. custom actuators>` is dedicated to
-  the creation of custom Actuator objects.
+  the Machine Block, and :ref:`another tutorial <tutorial-custom-actuator>` is
+  dedicated to the creation of custom Actuator objects.
 
 - :ref:`UController <crappy_docs/blocks:ucontroller>`
 

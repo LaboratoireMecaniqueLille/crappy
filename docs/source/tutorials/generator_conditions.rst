@@ -96,7 +96,6 @@ To adapt this pattern:
 Use a :class:`~crappy.blocks.StopBlock` or another independent stop mechanism
 when the entire test must also have a maximum duration. For conditions that
 cannot be written with ``<``, ``>``, or ``delay``, see the
-:ref:`custom Generator Path guide
-<tutorials/complex_custom_objects:1. custom generator paths>`.
+:doc:`custom_generator_path` guide.
 
 Continue with :doc:`streaming_acquisition` to acquire data in chunks.

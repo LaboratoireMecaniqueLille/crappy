@@ -142,8 +142,8 @@ depends on two labels.
 2. More about custom InOuts
 ---------------------------
 
-In addition to what was described in the tutorial section about :ref:`how to
-create custom InOut objects <tutorials/custom_objects:3. custom inouts>`, there
+In addition to what was described in the tutorial about :ref:`how to create
+custom InOut objects <tutorial-custom-inout>`, there
 is one more minor feature that the
 :ref:`In / Out <crappy_docs/inouts:in / out>` objects provide: an InOut can
 acquire data before a test starts and
@@ -185,7 +185,7 @@ users to override it.
 ------------------------------
 
 In the tutorial section about :ref:`how to create custom Actuator objects
-<tutorials/custom_objects:2. custom actuators>`, then entire speed management
+<tutorial-custom-actuator>`, the entire speed management
 aspect in :py:`position` mode was left out. This section explains target-speed
 inputs in :py:`position` mode and the corresponding
 :meth:`~crappy.actuator.Actuator.set_position` implementation.
@@ -238,7 +238,7 @@ cover the remaining specialized features.
 4.a.1. Trigger setting
 """"""""""""""""""""""
 
-:ref:`On the previous page <tutorials/custom_objects:4. custom cameras>`, the
+:ref:`In the custom Camera tutorial <tutorial-custom-camera>`, the
 three methods allowing to instantiate a
 :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` were
 presented. While these methods cover a wide range of situations, we found that
