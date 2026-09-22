@@ -73,6 +73,7 @@ Find explanations and reference material
   Tutorials by task <tutorials>
   Core concepts <concepts>
   Features and integrations <features>
+  Hardware compatibility <hardware>
   API reference <api>
   Runtime architecture <architecture>
   Contributing <developers>

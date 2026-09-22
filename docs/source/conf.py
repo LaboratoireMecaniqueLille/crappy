@@ -3,6 +3,11 @@
 from datetime import date
 from importlib.metadata import version as distribution_version
 from os import environ
+from pathlib import Path
+from sys import path as python_path
+
+
+python_path.insert(0, str(Path(__file__).resolve().parent))
 
 
 # Project metadata
@@ -29,7 +34,8 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.mathjax",
               "sphinx.ext.graphviz",
               "sphinx_copybutton",
-              "sphinx_rtd_theme"]
+              "sphinx_rtd_theme",
+              "_ext.hardware_matrix"]
 
 source_suffix = {".rst": "restructuredtext"}
 language = "en"
