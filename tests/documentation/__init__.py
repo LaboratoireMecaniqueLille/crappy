@@ -5,3 +5,4 @@ from .test_api_reference import TestPublicApiReference
 from .test_custom_object_tutorials import TestCustomObjectTutorialDownloads
 from .test_getting_started import TestGettingStartedDownloads
 from .test_hardware_metadata import TestHardwareMetadata
+from .test_installation import TestInstallationMetadata
