@@ -20,6 +20,7 @@ version = ".".join(release.split(".")[:2])
 
 needs_sphinx = "8.1"
 extensions = ["sphinx.ext.autodoc",
+              "sphinx.ext.autosummary",
               "sphinx.ext.intersphinx",
               "sphinx.ext.viewcode",
               "sphinx.ext.autosectionlabel",
