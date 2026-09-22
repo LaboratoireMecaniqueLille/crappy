@@ -30,9 +30,9 @@ Define the Block
    :start-after: # [custom-block-class-start]
    :end-before: # [custom-block-class-end]
 
-Every custom Block inherits from :class:`~crappy.blocks.Block` and calls
-``super().__init__()``. This Block stores its input and output labels, then
-sets its target work rate through ``self.freq``.
+Every custom Block inherits from :class:`~crappy.blocks.meta_block.block.Block`
+and calls ``super().__init__()``. This Block stores its input and output
+labels, then sets its target work rate through ``self.freq``.
 
 Crappy calls ``loop()`` repeatedly. ``recv_all_data()`` returns every unread
 value grouped by label. The method may return no force values, so the Block
@@ -101,5 +101,5 @@ dictionary on one Link. Use a VisionBlock when receiving or publishing images.
 The :doc:`../concepts/choosing_custom_object_type` guide covers this choice,
 and :doc:`../concepts/lifecycle_shutdown` describes the full lifecycle.
 
-See :class:`~crappy.blocks.Block` for the complete custom interface, including
-the available Link methods and validated Block settings.
+See :class:`~crappy.blocks.meta_block.block.Block` for the complete custom
+interface, including the available Link methods and validated Block settings.

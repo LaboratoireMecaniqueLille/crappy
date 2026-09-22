@@ -74,21 +74,24 @@ Add specialized settings
 Some cameras need settings beyond an ordinary boolean, choice, or numeric
 control:
 
-- :meth:`~crappy.camera.Camera.add_trigger_setting` adds the standard
-  ``Free run``, ``Hdw after config``, and ``Hardware`` choices. Implement its
-  getter and setter using the camera manufacturer's trigger controls.
-  ``Hdw after config`` keeps acquisition free-running while the configuration
-  window is open, then selects hardware triggering when the window closes.
-- :meth:`~crappy.camera.Camera.add_software_roi` adds controls for a software
-  region of interest (ROI). Call it once the full image dimensions are known,
-  then call :meth:`~crappy.camera.Camera.apply_soft_roi` on every acquired
-  image before returning it.
+- :meth:`~crappy.camera.meta_camera.camera.Camera.add_trigger_setting` adds the
+  standard ``Free run``, ``Hdw after config``, and ``Hardware`` choices.
+  Implement its getter and setter using the camera manufacturer's trigger
+  controls. ``Hdw after config`` keeps acquisition free-running while the
+  configuration window is open, then selects hardware triggering when the
+  window closes.
+- :meth:`~crappy.camera.meta_camera.camera.Camera.add_software_roi` adds
+  controls for a software region of interest (ROI). Call it once the full image
+  dimensions are known, then call
+  :meth:`~crappy.camera.meta_camera.camera.Camera.apply_soft_roi` on every
+  acquired image before returning it.
 
 A software ROI reduces the image passed to later stages but does not make the
 camera acquire faster. If another setting changes the full image dimensions,
-call :meth:`~crappy.camera.Camera.reload_software_roi` with the new dimensions.
-Scale and choice settings also provide a ``reload()`` method for the unusual
-case where one setting changes another setting's limits or available choices.
+call :meth:`~crappy.camera.meta_camera.camera.Camera.reload_software_roi` with
+the new dimensions. Scale and choice settings also provide a ``reload()``
+method for the unusual case where one setting changes another setting's limits
+or available choices.
 
 Return camera metadata
 ----------------------
@@ -142,7 +145,7 @@ driver is required:
    before enabling the interactive configuration window.
 
 The :doc:`test_hardware_object` tutorial shows how to check the Camera object
-directly. See :class:`~crappy.camera.Camera` for the full custom interface and
-:class:`~crappy.blocks.vision.CameraSource` for acquisition options. The
-:doc:`../concepts/image_pipelines` guide explains the recommended VisionBlock
-architecture and the supported all-in-one alternative.
+directly. See :class:`~crappy.camera.meta_camera.camera.Camera` for the full
+custom interface and :class:`~crappy.blocks.vision.CameraSource` for
+acquisition options. The :doc:`../concepts/image_pipelines` guide explains the
+recommended VisionBlock architecture and the supported all-in-one alternative.

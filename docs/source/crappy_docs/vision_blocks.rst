@@ -8,7 +8,7 @@ for measurements, commands, and metadata.
 .. autosummary::
    :nosignatures:
 
-   crappy.blocks.vision.VisionBlock
+   crappy.blocks.vision.block.VisionBlock
    crappy.blocks.vision.CameraSource
    crappy.blocks.vision.DICVEProcessor
    crappy.blocks.vision.DISCorrelProcessor

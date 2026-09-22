@@ -22,8 +22,9 @@ class HDFRecorder(Block):
   saves this data in a HDF5 file using the :mod:`tables` module.
   
   This Block is intended for high-speed data recording from 
-  :class:`~crappy.inout.InOut` in `streamer` mode. For regular data recording,
-  the :class:`~crappy.blocks.Recorder` Block should be used instead.
+  :class:`~crappy.inout.meta_inout.inout.InOut` in `streamer` mode. For regular
+  data recording, the :class:`~crappy.blocks.Recorder` Block should be used
+  instead.
   
   Warning:
     Corrupted HDF5 files are not readable at all ! If anything goes wrong 

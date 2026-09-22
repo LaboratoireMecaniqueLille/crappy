@@ -69,12 +69,12 @@ Consult the selected Camera object's API before opening physical hardware.
 Direct calls bypass CameraSource's configuration window and lifecycle
 management, so the script is responsible for valid settings and cleanup.
 
-The same principle applies to :class:`~crappy.inout.InOut` and
-:class:`~crappy.actuator.Actuator` objects: instantiate the specific class,
-call its public ``open()`` and acquisition or command methods, and always call
-``close()`` in a ``finally`` block. For an Actuator, also call ``stop()``
-before ``close()``. Follow the selected object's API because supported methods
-and arguments vary by device.
+The same principle applies to :class:`~crappy.inout.meta_inout.inout.InOut` and
+:class:`~crappy.actuator.meta_actuator.actuator.Actuator` objects: instantiate
+the specific class, call its public ``open()`` and acquisition or command
+methods, and always call ``close()`` in a ``finally`` block. For an Actuator,
+also call ``stop()`` before ``close()``. Follow the selected object's API
+because supported methods and arguments vary by device.
 
 .. warning::
 

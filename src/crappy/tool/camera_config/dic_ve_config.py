@@ -41,8 +41,8 @@ class DICVEConfig(CameraConfigBoxes):
     """Sets the patches and initializes the parent class.
 
     Args:
-      camera: The :class:`~crappy.camera.Camera` object in charge of acquiring 
-        the images.
+      camera: The :class:`~crappy.camera.meta_camera.camera.Camera` object in
+        charge of acquiring the images.
       log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
         the main :obj:`~logging.Logger`, only used in Windows.
 

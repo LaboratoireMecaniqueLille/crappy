@@ -87,5 +87,5 @@ For a new profile:
 
 A Generator Path defines one command segment; it does not replace the
 Generator Block that runs the sequence. See
-:class:`~crappy.blocks.generator_path.meta_path.Path` for the complete custom
-interface.
+:class:`~crappy.blocks.generator_path.meta_path.path.Path` for the complete
+custom interface.

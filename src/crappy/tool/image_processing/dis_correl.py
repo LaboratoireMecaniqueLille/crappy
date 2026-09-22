@@ -17,10 +17,11 @@ except (ModuleNotFoundError, ImportError):
 class DISCorrelTool:
   """This class is the core of the :class:`~crappy.blocks.DISCorrel` Block.
 
-  It receives images from a :class:`~crappy.camera.Camera` object, and performs 
-  Dense Inverse Search correlation on each new image to get fields of interest. 
-  It relies on DISFlow for the image correlation, handles the projection of the 
-  image on the chosen fields, and calculates the residuals.
+  It receives images from a :class:`~crappy.camera.meta_camera.camera.Camera`
+  object, and performs Dense Inverse Search correlation on each new image to
+  get fields of interest. It relies on DISFlow for the image correlation,
+  handles the projection of the image on the chosen fields, and calculates the
+  residuals.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *DISCorrel* to *DISCorrelTool*

@@ -11,15 +11,15 @@ from .camera import Camera
 
 class GPUVE(Camera):
   """This Block can perform GPU-accelerated video-extensometry on images
-  acquired by a :class:`~crappy.camera.Camera` object, by tracking patches and
-  computing the strain based on their displacement.
+  acquired by a :class:`~crappy.camera.meta_camera.camera.Camera` object, by
+  tracking patches and computing the strain based on their displacement.
 
-  It takes no input :class:`~crappy.links.Link` in a majority of situations,
-  and outputs the results of the video-extensometry. It is a subclass of the
-  :class:`~crappy.blocks.Camera` Block, and inherits of all its features. That
-  includes the possibility to record and to display images in real-time,
-  simultaneously to the image acquisition and processing. Refer to the
-  documentation of the Camera Block for more information on these features.
+  It takes no input :class:`~crappy.links.link.Link` in a majority of
+  situations, and outputs the results of the video-extensometry. It is a
+  subclass of the :class:`~crappy.blocks.Camera` Block, and inherits of all its
+  features. That includes the possibility to record and to display images in
+  real-time, simultaneously to the image acquisition and processing. Refer to
+  the documentation of the Camera Block for more information on these features.
 
   This Block is quite similar to the :class:`~crappy.blocks.DICVE` Block,
   except this latter is not GPU-accelerated and uses OpenCV's DISFlow. The
@@ -68,9 +68,9 @@ class GPUVE(Camera):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      camera: The name of the :class:`~crappy.camera.Camera` object to use for
-        acquiring the images. Arguments can be passed to this Camera as
-        ``kwargs`` of this Block. This argument is ignored if the
+      camera: The name of the :class:`~crappy.camera.meta_camera.camera.Camera`
+        object to use for acquiring the images. Arguments can be passed to this
+        Camera as ``kwargs`` of this Block. This argument is ignored if the
         ``image_generator`` argument is provided.
       patches: The coordinates of the several patches to track, as an iterable
         (like a :obj:`list` or a :obj:`tuple`) containing one or several
@@ -79,11 +79,13 @@ class GPUVE(Camera):
         of the top-left corner of the patch, the height of the patch, and the
         width of the patch. Up to 4 patches can be given and tracked.
       img_shape: The shape of the images returned by the
-        :class:`~crappy.camera.Camera` object as a :obj:`tuple` of :obj:`int`.
-        It should correspond to the value returned by :obj:`numpy.shape`.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object as a
+        :obj:`tuple` of :obj:`int`. It should correspond to the value returned
+        by :obj:`numpy.shape`.
       img_dtype: The `dtype` of the images returned by the
-        :class:`~crappy.camera.Camera` object, as a :obj:`str`. It should
-        correspond to a valid data type in :mod:`numpy`, e.g. ``'uint8'``.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, as a
+        :obj:`str`. It should correspond to a valid data type in :mod:`numpy`,
+        e.g. ``'uint8'``.
       transform: A callable taking an image as an argument, and returning a
         transformed image as an output. Allows applying a post-processing
         operation to the acquired images. This is done right after the
@@ -120,12 +122,12 @@ class GPUVE(Camera):
 
         .. versionadded:: 1.5.10
       software_trig_label: The name of a label used as a software trigger for
-        the :class:`~crappy.camera.Camera`. If given, images will only be
-        acquired when receiving data over this label. The received value does
-        not matter. This software trigger is not meant to be very precise, it
-        is recommended not to rely on it for a trigger frequency greater than
-        10Hz, in which case a hardware trigger should be preferred if available
-        on the camera.
+        the :class:`~crappy.camera.meta_camera.camera.Camera`. If given, images
+        will only be acquired when receiving data over this label. The received
+        value does not matter. This software trigger is not meant to be very
+        precise, it is recommended not to rely on it for a trigger frequency
+        greater than 10Hz, in which case a hardware trigger should be preferred
+        if available on the camera.
 
         .. versionadded:: 2.0.0
       verbose: The verbose level as an integer, between `0` and `3`. At level
@@ -150,12 +152,13 @@ class GPUVE(Camera):
         the name : ``<frame_nr>_<timestamp>.<extension>``, and can thus easily
         be identified. Along with the images, a ``metadata.csv`` file records
         the metadata of all the saved images. This metadata is either the one
-        returned by the :meth:`~crappy.camera.Camera.get_image` method of the
-        :class:`~crappy.camera.Camera` object, or the default one generated in
-        the :meth:`~crappy.blocks.Camera.loop` method of the
-        :class:`~crappy.blocks.Camera` Block. Depending on the framerate of the
-        camera and the performance of the computer, it is not guaranteed that
-        all the acquired images will be recorded.
+        returned by the
+        :meth:`~crappy.camera.meta_camera.camera.Camera.get_image` method of
+        the :class:`~crappy.camera.meta_camera.camera.Camera` object, or the
+        default one generated in the :meth:`~crappy.blocks.Camera.loop` method
+        of this Block. Depending on the framerate of the camera and the
+        performance of the computer, it is not guaranteed that all the acquired
+        images will be recorded.
 
         .. versionadded:: 1.5.10
       img_extension: The file extension for the recorded images, as a
@@ -244,8 +247,9 @@ class GPUVE(Camera):
 
         .. versionadded:: 1.5.10
       **kwargs: Any additional argument will be passed to the
-        :class:`~crappy.camera.Camera` object, and used as a kwarg to its
-        :meth:`~crappy.camera.Camera.open` method.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, and used as a
+        kwarg to its :meth:`~crappy.camera.meta_camera.camera.Camera.open`
+        method.
 
     .. versionremoved:: 1.5.10
        *fps_label*, *ext*, *input_label*, *config* and *cam_kwargs* arguments

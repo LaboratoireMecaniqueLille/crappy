@@ -169,8 +169,8 @@ class SensorMode:
     
 
 class RaspberryPiCamera2(Camera):
-  """:class:`~crappy.camera.Camera` object reading images from Raspberry Pi
-  camera hardware, using the :mod:`picamera2` module.
+  """:class:`~crappy.camera.meta_camera.camera.Camera` object reading images
+  from Raspberry Pi camera hardware, using the :mod:`picamera2` module.
 
   It is designed to interface seamlessly with any official Raspberry Pi camera
   module, and the other unofficial camera modules supported by

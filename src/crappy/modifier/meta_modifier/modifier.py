@@ -15,14 +15,17 @@ class Modifier(ABC):
   """The base class for all Modifier classes, simply allowing to keep track of
   them.
 
-  The Modifiers allow altering data from an input :class:`~crappy.blocks.Block`
-  before it gets sent to an output Block. Each Modifier is associated to a
-  :class:`~crappy.links.Link` linking the two Blocks. It is passed as an
+  The Modifiers allow altering data from an input
+  :class:`~crappy.blocks.meta_block.block.Block` before it gets sent to an
+  output Block. Each Modifier is associated to a
+  :class:`~crappy.links.link.Link` linking the two Blocks. It is passed as an
   argument of the :meth:`~crappy.link` method instantiating the Link.
 
   It is preferable for every Modifier to be a child of this class, although
   that is not mandatory. A Modifier only needs to be a callable, i.e. a class
-  defining the :meth:`~crappy.modifier.Modifier.__call__` method or a function.
+  defining the
+  :meth:`~crappy.modifier.meta_modifier.modifier.Modifier.__call__` method or a
+  function.
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.8 remove metaclass and perform checks in
@@ -63,16 +66,17 @@ class Modifier(ABC):
     It should take a :obj:`dict` as its only argument, and return another
     :obj:`dict`. Both dicts should have their keys as :obj:`str`, representing
     the labels. Their values constitute the data flowing through the
-    :class:`~crappy.links.Link`.
+    :class:`~crappy.links.link.Link`.
 
     Args:
-      data: The data from the input :class:`~crappy.blocks.Block`, as a
-        :obj:`dict`.
+      data: The data from the input
+        :class:`~crappy.blocks.meta_block.block.Block`, as a :obj:`dict`.
 
     Returns:
-      Data to send to the output :class:`~crappy.blocks.Block`, as a
-      :obj:`dict`. It is also fine for this method to return :obj:`None`, in
-      which case no message is transmitted to the output Block.
+      Data to send to the output
+      :class:`~crappy.blocks.meta_block.block.Block`, as a :obj:`dict`. It is
+      also fine for this method to return :obj:`None`, in which case no message
+      is transmitted to the output Block.
 
     .. versionadded:: 2.0.0
     """

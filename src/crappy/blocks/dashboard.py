@@ -115,8 +115,8 @@ class Dashboard(Block):
     self._nb_digits = nb_digits
 
   def prepare(self) -> None:
-    """Checks that there's at least one incoming :class:`~crappy.links.Link`,
-    and starts the GUI.
+    """Checks that there's at least one incoming
+    :class:`~crappy.links.link.Link`, and starts the GUI.
     
     .. versionadded:: 1.5.7
     """
@@ -129,7 +129,7 @@ class Dashboard(Block):
     self._dashboard.update()
 
   def loop(self) -> None:
-    """Receives the data from the incoming :class:`~crappy.links.Link` and
+    """Receives the data from the incoming :class:`~crappy.links.link.Link` and
     displays it.
     
     .. versionadded:: 1.5.7

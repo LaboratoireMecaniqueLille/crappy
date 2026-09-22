@@ -11,19 +11,20 @@ from ..inout import inout_dict, InOut, deprecated_inouts, moved_to_collection
 
 
 class IOBlock(Block):
-  """This Block is meant to drive :class:`~crappy.inout.InOut` objects. It can
-  acquire data, and/or set commands. One IOBlock can only drive a single InOut.
+  """This Block is meant to drive :class:`~crappy.inout.meta_inout.inout.InOut`
+  objects. It can acquire data, and/or set commands. One IOBlock can only drive
+  a single InOut.
 
-  If it has incoming :class:`~crappy.links.Link`, it will set the commands 
+  If it has incoming :class:`~crappy.links.link.Link`, it will set the commands
   received over the labels given in ``cmd_labels`` by calling the 
-  :meth:`~crappy.inout.InOut.set_cmd` method of the InOut. Additional commands 
-  to set at the very beginning or the very end of the test can also be 
-  specified.
+  :meth:`~crappy.inout.meta_inout.inout.InOut.set_cmd` method of the InOut.
+  Additional commands to set at the very beginning or the very end of the test
+  can also be specified.
 
-  If it has outgoing :class:`~crappy.links.Link`, it will acquire data using 
-  the :meth:`~crappy.inout.InOut.get_data` method of the InOut and send it
-  downstream over the labels given in ``labels``. It is possible to trigger the
-  acquisition using a predefined label.
+  If it has outgoing :class:`~crappy.links.link.Link`, it will acquire data
+  using the :meth:`~crappy.inout.meta_inout.inout.InOut.get_data` method of the
+  InOut and send it downstream over the labels given in ``labels``. It is
+  possible to trigger the acquisition using a predefined label.
 
   The ``streamer`` argument allows using the "streamer" mode of InOuts
   supporting it, instead of the regular acquisition mode. Finally, the
@@ -53,30 +54,33 @@ class IOBlock(Block):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      name: The name of the :class:`~crappy.inout.InOut` class to instantiate.
+      name: The name of the :class:`~crappy.inout.meta_inout.inout.InOut` class
+        to instantiate.
       labels: An iterable (e.g. a :obj:`list` or a :obj:`tuple`) containing the
         output labels for InOuts that acquire data. They correspond to the
-        values returned by the InOut's :meth:`~crappy.inout.InOut.get_data`
-        method, so there should be as many labels as returned values, and given
-        in the appropriate order. The first label must always be the time
-        label, preferably called ``'t(s)'``. This argument can be omitted if
-        :meth:`~crappy.inout.InOut.get_data` returns a :obj:`dict`. Ignored if
-        the Block has no output Link.
+        values returned by the InOut's
+        :meth:`~crappy.inout.meta_inout.inout.InOut.get_data` method, so there
+        should be as many labels as returned values, and given in the
+        appropriate order. The first label must always be the time label,
+        preferably called ``'t(s)'``. This argument can be omitted if
+        :meth:`~crappy.inout.meta_inout.inout.InOut.get_data` returns a
+        :obj:`dict`. Ignored if the Block has no output Link.
       cmd_labels: An iterable (e.g. a :obj:`list` or a :obj:`tuple`) containing
         the labels considered as inputs of this Block, for InOuts that set
         commands. The values received from these labels will be passed to the
-        InOut's :meth:`~crappy.inout.InOut.set_cmd` method, in the same order
-        as the labels are given. Usually, time is not part of the
-        ``cmd_labels``. Ignored if the Block has no input Link.
+        InOut's :meth:`~crappy.inout.meta_inout.inout.InOut.set_cmd` method, in
+        the same order as the labels are given. Usually, time is not part of
+        the ``cmd_labels``. Ignored if the Block has no input Link.
       trigger_label: If given, the Block will only read data whenever a value
         is received on this label (can be any value). Ignored if the Block has
         no output Link. A trigger label can also be a cmd label.
 
         .. versionchanged:: 1.5.10 renamed from *trigger* to *trigger_label*
-      streamer: If :obj:`False`, the :meth:`~crappy.inout.InOut.get_data`
-        method of the InOut is called for acquiring data, else it is the
-        :meth:`~crappy.inout.InOut.get_stream` method. Refer to the
-        documentation of these methods for more information.
+      streamer: If :obj:`False`, the
+        :meth:`~crappy.inout.meta_inout.inout.InOut.get_data` method of the
+        InOut is called for acquiring data, else it is the
+        :meth:`~crappy.inout.meta_inout.inout.InOut.get_stream` method. Refer
+        to the documentation of these methods for more information.
       initial_cmd: An initial command for the InOut, set during
         :meth:`prepare`. If given, there must be as many values as in
         ``cmd_labels``. Must be given as an iterable (e.g. a :obj:`list` or a
@@ -94,9 +98,9 @@ class IOBlock(Block):
         
         .. versionadded:: 1.5.10
       spam: If :obj:`False`, the Block will call
-        :meth:`~crappy.inout.InOut.set_cmd` on the InOut object only if the
-        current command is different from the previous. Otherwise, it will call
-        the method each time a command is received.
+        :meth:`~crappy.inout.meta_inout.inout.InOut.set_cmd` on the InOut
+        object only if the current command is different from the previous.
+        Otherwise, it will call the method each time a command is received.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -109,7 +113,8 @@ class IOBlock(Block):
         disables logging for this Block.
         
         .. versionadded:: 2.0.0
-      **kwargs: The arguments to be passed to the :class:`~crappy.inout.InOut`.
+      **kwargs: The arguments to be passed to the
+        :class:`~crappy.inout.meta_inout.inout.InOut`.
 
     .. versionremoved:: 2.1.0 *ft232h_ser_num* argument
     """
@@ -223,8 +228,9 @@ class IOBlock(Block):
     """Checks the consistency of the Link layout, opens the InOut and sets the
     initial command if required.
 
-    This method mainly calls the :meth:`~crappy.inout.InOut.open` method of the
-    driven InOut.
+    This method mainly calls the
+    :meth:`~crappy.inout.meta_inout.inout.InOut.open` method of the driven
+    InOut.
     """
 
     # Under the spawn multiprocessing start method, it is necessary to re-load
@@ -279,10 +285,11 @@ class IOBlock(Block):
     previous one.
 
     The data is read from the InOut either by calling its
-    :meth:`~crappy.inout.InOut.return_data` or its
-    :meth:`~crappy.inout.InOut.return_stream` method, depending if the
-    ``streamer`` argument is :obj:`True` of :obj:`False`. The commands are
-    always set by calling the :meth:`~crappy.inout.InOut.set_cmd` method.
+    :meth:`~crappy.inout.meta_inout.inout.InOut.return_data` or its
+    :meth:`~crappy.inout.meta_inout.inout.InOut.return_stream` method,
+    depending if the ``streamer`` argument is :obj:`True` of :obj:`False`. The
+    commands are always set by calling the
+    :meth:`~crappy.inout.meta_inout.inout.InOut.set_cmd` method.
     """
 
     # Receiving all the latest data waiting in the links
@@ -331,8 +338,9 @@ class IOBlock(Block):
     """Stops the stream, sets the exit command if necessary, and closes the
     InOut.
 
-    This method mainly calls the :meth:`~crappy.inout.InOut.close` method of
-    the driven InOut.
+    This method mainly calls the
+    :meth:`~crappy.inout.meta_inout.inout.InOut.close` method of the driven
+    InOut.
     """
 
     try:

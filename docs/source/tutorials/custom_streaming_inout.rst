@@ -108,5 +108,6 @@ streaming starts, so it cannot zero a pure streaming InOut. A class that
 supports both modes can use it when the regular measurement channels match
 the stream columns.
 
-See :class:`~crappy.inout.InOut` for the complete streaming interface and
-:class:`~crappy.blocks.IOBlock` for streamer, command, and zeroing options.
+See :class:`~crappy.inout.meta_inout.inout.InOut` for the complete streaming
+interface and :class:`~crappy.blocks.IOBlock` for streamer, command, and
+zeroing options.

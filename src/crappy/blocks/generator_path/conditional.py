@@ -27,10 +27,10 @@ class Conditional(Path):
 
     Args:
       condition1: The first condition checked by the Path. Refer to
-        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path` for more
         information.
       condition2: The second condition checked by the path. Refer to
-        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path` for more
         information.
       value1: Value to send when ``condition1`` is met.
       value2: Value to send when ``condition2`` is met and ``condition1`` is

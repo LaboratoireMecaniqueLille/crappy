@@ -496,9 +496,9 @@ class GPUCorrelTool:
   """This class is the core of the :class:`~crappy.blocks.GPUCorrel` and 
   :class:`~crappy.blocks.GPUVE` Blocks.
 
-  It receives images from a :class:`~crappy.camera.Camera`, and performs 
-  GPU-accelerated image correlation on each received image. From this 
-  correlation, rigid body displacements or other fields are identified.
+  It receives images from a :class:`~crappy.camera.meta_camera.camera.Camera`,
+  and performs GPU-accelerated image correlation on each received image. From
+  this correlation, rigid body displacements or other fields are identified.
 
   This class  is meant to be efficient enough to run in real-time. It relies on
   the :class:`~crappy.tool.image_processing.gpu_correl.CorrelStage` class (not

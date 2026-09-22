@@ -63,16 +63,16 @@ Apply these rules to all documentation changes:
 
 Use qualified Camera terminology when a name could be ambiguous:
 
-- :class:`crappy.camera.Camera` is the base class for camera hardware
-  integrations. After the first mention, call it a “Camera object”.
+- :class:`crappy.camera.meta_camera.camera.Camera` is the base class for camera
+  hardware integrations. After the first mention, call it a “Camera object”.
 - :class:`crappy.blocks.Camera` is the supported all-in-one Camera Block.
 - :class:`crappy.blocks.vision.CameraSource` acquires images in a composable
   image pipeline.
-- :class:`crappy.blocks.vision.VisionBlock` is the base class for composable
-  image stages.
-- :class:`crappy.links.Link` carries dictionaries between Blocks.
-- :class:`crappy.links.ImageLink` shares the newest coherent image between
-  VisionBlocks.
+- :class:`crappy.blocks.vision.block.VisionBlock` is the base class for
+  composable image stages.
+- :class:`crappy.links.link.Link` carries dictionaries between Blocks.
+- :class:`crappy.links.img_link.ImageLink` shares the newest coherent image
+  between VisionBlocks.
 
 VisionBlocks are recommended for new image pipelines. The all-in-one Camera
 Blocks remain supported and are not planned for deprecation. Do not describe

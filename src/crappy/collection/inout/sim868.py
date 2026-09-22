@@ -15,8 +15,9 @@ class Sim868(InOut):
   given phone numbers.
 
   Important:
-    This InOut should be associated with a :class:`~crappy.modifier.Modifier`
-    to manage the messages to send.
+    This InOut should be associated with a
+    :class:`~crappy.modifier.meta_modifier.modifier.Modifier` to manage the
+    messages to send.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Gsm* to *Sim868*

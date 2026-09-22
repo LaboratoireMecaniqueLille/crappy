@@ -33,8 +33,8 @@ and frame-skipping semantics.
 
 The buffer methods above are called by Crappy while preparing the Blocks. Most
 user scripts only need :func:`crappy.img_link`. Custom VisionBlocks exchange
-images through :meth:`~crappy.blocks.vision.VisionBlock.send_img` and
-:meth:`~crappy.blocks.vision.VisionBlock.receive_imgs`.
+images through :meth:`~crappy.blocks.vision.block.VisionBlock.send_img` and
+:meth:`~crappy.blocks.vision.block.VisionBlock.receive_imgs`.
 
 Connection graph and validation
 -------------------------------

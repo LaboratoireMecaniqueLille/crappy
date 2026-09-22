@@ -22,38 +22,39 @@ Follow the first matching branch to choose the type of custom object to create:
 1. **Are you integrating a physical device?**
 
    - For a camera that acquires images, write a
-     :class:`~crappy.camera.Camera` object.
+     :class:`~crappy.camera.meta_camera.camera.Camera` object.
    - For a sensor, data-acquisition board, or general input/output device,
-     write an :class:`~crappy.inout.InOut` object.
+     write an :class:`~crappy.inout.meta_inout.inout.InOut` object.
    - For a motor, positioner, or other actuator that receives motion commands,
-     write an :class:`~crappy.actuator.Actuator` object.
+     write an :class:`~crappy.actuator.meta_actuator.actuator.Actuator` object.
 
 2. **Are you adding an image-acquisition or image-processing stage?**
 
    - For a new composable stage, write a
-     :class:`~crappy.blocks.vision.VisionBlock`.
+     :class:`~crappy.blocks.vision.block.VisionBlock`.
    - Only when customizing the supported all-in-one Camera Block architecture,
      write a :class:`~crappy.blocks.camera_processes.CameraProcess`. This is an
      advanced customization path.
 
 3. **Are you defining one command segment for a Generator?**
 
-   Write a :class:`~crappy.blocks.generator_path.meta_path.Path`. A Path
+   Write a :class:`~crappy.blocks.generator_path.meta_path.path.Path`. A Path
    calculates command values and decides when its segment is complete. It does
    not replace the Generator Block that runs the sequence.
 
 4. **Are you making a short transformation to each dictionary on one Link?**
 
-   Write a :class:`~crappy.modifier.Modifier`, or use a plain callable for a
-   small script-specific transformation. A Modifier can rename, scale, filter,
-   combine, or discard values without adding another Block.
+   Write a :class:`~crappy.modifier.meta_modifier.modifier.Modifier`, or use a
+   plain callable for a small script-specific transformation. A Modifier can
+   rename, scale, filter, combine, or discard values without adding another
+   Block.
 
 5. **Does the task need independent repeated work or its own setup and
    cleanup?**
 
-   Write a :class:`~crappy.blocks.Block`. This is the general base class for a
-   new acquisition, control, communication, calculation, display, or recording
-   task that does not fit a more specific type above.
+   Write a :class:`~crappy.blocks.meta_block.block.Block`. This is the general
+   base class for a new acquisition, control, communication, calculation,
+   display, or recording task that does not fit a more specific type above.
 
 If a single proposed class appears to match several branches, separate its
 responsibilities where practical. For example, put a hardware protocol in an

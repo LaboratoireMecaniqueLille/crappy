@@ -115,5 +115,5 @@ work reliably, move those operations into the matching Actuator methods:
 
 The :doc:`test_hardware_object` tutorial shows how to check the resulting
 Actuator directly before placing it in a complete test. See
-:class:`~crappy.actuator.Actuator` for the full custom interface and
-:class:`~crappy.blocks.Machine` for every Actuator setting.
+:class:`~crappy.actuator.meta_actuator.actuator.Actuator` for the full custom
+interface and :class:`~crappy.blocks.Machine` for every Actuator setting.

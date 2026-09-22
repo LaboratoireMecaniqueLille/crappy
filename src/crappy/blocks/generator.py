@@ -19,7 +19,7 @@ class GeneratorNoStop(Exception):
 
 class Generator(Block):
   """This Block generates a signal following a user-defined assembly of
-  :class:`~crappy.blocks.generator_path.meta_path.Path`.
+  :class:`~crappy.blocks.generator_path.meta_path.path.Path`.
   
   The generated signal is just a waveform that can serve any purpose. It can
   for example be used for driving a :class:`~crappy.blocks.Machine` Block, or 
@@ -30,9 +30,9 @@ class Generator(Block):
   is to stop the entire script when it reaches the end of all the Paths.
 
   This Block can also accept inputs from other Blocks, as these inputs may be
-  used by a :class:`~crappy.blocks.generator_path.meta_path.Path`. The most
-  common use of this feature is to have the stop condition of a Path depend on
-  the received values of a label.
+  used by a :class:`~crappy.blocks.generator_path.meta_path.path.Path`. The
+  most common use of this feature is to have the stop condition of a Path
+  depend on the received values of a label.
   
   .. versionadded:: 1.4.0
   """
@@ -53,19 +53,19 @@ class Generator(Block):
     Args:
       path: An iterable (like a :obj:`list` or a :obj:`tuple`) of :obj:`dict`,
         each dict providing the parameters to generate a 
-        :class:`~crappy.blocks.generator_path.meta_path.Path`. The Paths are
-        generated in the order in which they are given, and the stop condition
-        of each Path is used for determining when to switch to the next one.
-        The ``'type'`` key of each :obj:`dict` gives the name of the Path to
-        use, and all the other keys correspond to the arguments to give to
-        this Path. Refer to the documentation of the chosen Paths to know which
-        keys to provide.
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path`. The Paths
+        are generated in the order in which they are given, and the stop
+        condition of each Path is used for determining when to switch to the
+        next one. The ``'type'`` key of each :obj:`dict` gives the name of the
+        Path to use, and all the other keys correspond to the arguments to give
+        to this Path. Refer to the documentation of the chosen Paths to know
+        which keys to provide.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       cmd_label: The label of the signal sent to the downstream Blocks.
       path_index_label: In addition to the ``cmd_label``, this label holds the
         index of the current
-        :class:`~crappy.blocks.generator_path.meta_path.Path`. Useful to
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path`. Useful to
         trigger a Block when the current Path changes, as the output value
         might not necessarily change.
       repeat: If :obj:`True`, the ``path`` will loop forever instead of
@@ -134,7 +134,7 @@ class Generator(Block):
 
   def begin(self) -> None:
     """Initializes the first
-    :class:`~crappy.blocks.generator_path.meta_path.Path`."""
+    :class:`~crappy.blocks.generator_path.meta_path.path.Path`."""
 
     self._update_path()
 
@@ -143,7 +143,7 @@ class Generator(Block):
     send, and finally sends it to downstream Blocks.
 
     It also manages the transitions between the
-    :class:`~crappy.blocks.generator_path.meta_path.Path`.
+    :class:`~crappy.blocks.generator_path.meta_path.path.Path`.
     """
 
     # Case when the Generator shouldn't raise CrappyStop after it ended

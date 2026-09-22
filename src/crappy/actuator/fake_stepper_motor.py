@@ -9,8 +9,8 @@ from .meta_actuator import Actuator
 
 
 class FakeStepperMotor(Actuator):
-  """This :class:`~crappy.actuator.Actuator` can emulate the
-  behavior of a stepper motor used as a linear actuator.
+  """This :class:`~crappy.actuator.meta_actuator.actuator.Actuator` can emulate
+  the behavior of a stepper motor used as a linear actuator.
 
   It can drive the motor either in speed or in position, unlike the other fake
   Actuator :class:`~crappy.actuator.FakeDCMotor` that can only be driven in

@@ -29,7 +29,8 @@ Write the conversion
    :start-after: # [custom-modifier-class-start]
    :end-before: # [custom-modifier-class-end]
 
-A custom Modifier inherits from :class:`~crappy.modifier.Modifier` and defines
+A custom Modifier inherits from
+:class:`~crappy.modifier.meta_modifier.modifier.Modifier` and defines
 ``__call__()``. Each call receives a dictionary whose keys are labels. Here,
 the Modifier reads ``voltage(V)``, calculates the force, adds it as
 ``force(N)``, and returns the dictionary.
@@ -83,5 +84,6 @@ Keep a Modifier limited to a quick transformation of one dictionary. Returning
 timing, create a custom Block instead; the
 :doc:`../concepts/choosing_custom_object_type` guide explains the choice.
 
-See :class:`~crappy.modifier.Modifier` for the complete custom interface and
-:doc:`../crappy_docs/modifiers` for the built-in alternatives.
+See :class:`~crappy.modifier.meta_modifier.modifier.Modifier` for the complete
+custom interface and :doc:`../crappy_docs/modifiers` for the built-in
+alternatives.

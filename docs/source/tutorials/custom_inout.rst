@@ -100,7 +100,7 @@ InOut methods:
 5. Make ``close()`` safe after both a normal test and a partial setup failure.
 
 The :doc:`test_hardware_object` tutorial shows how to check the resulting
-InOut directly. See :class:`~crappy.inout.InOut` for the full custom interface
-and :class:`~crappy.blocks.IOBlock` for every acquisition and command setting.
-Chunked acquisition uses additional methods and is covered separately by the
-:doc:`streaming_acquisition` tutorial.
+InOut directly. See :class:`~crappy.inout.meta_inout.inout.InOut` for the full
+custom interface and :class:`~crappy.blocks.IOBlock` for every acquisition and
+command setting. Chunked acquisition uses additional methods and is covered
+separately by the :doc:`streaming_acquisition` tutorial.

@@ -32,8 +32,8 @@ file named ``custom_vision_block.py``. Its custom VisionBlock is:
    :end-before: # [custom-vision-block-class-end]
 
 Every custom image stage inherits from
-:class:`~crappy.blocks.vision.VisionBlock`. This one only receives images, so
-it does not declare an output image shape or data type.
+:class:`~crappy.blocks.vision.block.VisionBlock`. This one only receives
+images, so it does not declare an output image shape or data type.
 
 ``prepare()`` checks that exactly one incoming ImageLink is connected and that
 there is no outgoing ImageLink. The parent method is called last to complete
@@ -99,7 +99,7 @@ A custom VisionBlock can also produce or transform images:
 
 - An image source declares its output shape and data type, creates image
   metadata, and calls
-  :meth:`~crappy.blocks.vision.VisionBlock.send_img` for every image.
+  :meth:`~crappy.blocks.vision.block.VisionBlock.send_img` for every image.
 - An image filter has both an incoming and an outgoing ImageLink. It receives
   an image, transforms it without changing its declared output format during
   the test, and publishes the result with ``send_img()``.
@@ -112,6 +112,6 @@ For a real experiment, replace ``FakeCamera`` and its simulated settings with
 the appropriate Camera object in ``CameraSource``. The custom
 ``BrightestRow`` class does not otherwise depend on the image source.
 
-See :class:`~crappy.blocks.vision.VisionBlock` for the complete custom
+See :class:`~crappy.blocks.vision.block.VisionBlock` for the complete custom
 interface and :doc:`../concepts/image_pipelines` for the available image
 architectures.

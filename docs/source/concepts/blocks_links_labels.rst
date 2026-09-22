@@ -11,11 +11,12 @@ design that connection graph.
 Blocks perform the work
 -----------------------
 
-Each :class:`~crappy.blocks.Block` has one responsibility, such as acquiring
-measurements, generating commands, controlling an actuator, displaying values,
-or recording data. A script creates the Blocks, connects them, and calls
-:ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`. Crappy then runs
-each Block independently and coordinates the start and end of the test.
+Each :class:`~crappy.blocks.meta_block.block.Block` has one responsibility,
+such as acquiring measurements, generating commands, controlling an actuator,
+displaying values, or recording data. A script creates the Blocks, connects
+them, and calls :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`.
+Crappy then runs each Block independently and coordinates the start and end of
+the test.
 
 Keeping responsibilities separate lets a script combine existing Blocks in a
 new way. For example, the same acquisition Block can send measurements to a
@@ -24,9 +25,9 @@ recorder, a live display, and a feedback controller.
 Links carry labeled dictionaries
 --------------------------------
 
-A regular :class:`~crappy.links.Link` is a one-way connection. Its source Block
-sends dictionaries and its destination Block receives them. Each dictionary
-maps a **label** to a value:
+A regular :class:`~crappy.links.link.Link` is a one-way connection. Its source
+Block sends dictionaries and its destination Block receives them. Each
+dictionary maps a **label** to a value:
 
 .. code-block:: python
 
@@ -50,10 +51,10 @@ connection requires another Link.
 Modifiers transform data in transit
 -----------------------------------
 
-A :class:`~crappy.modifier.Modifier` attached to a regular Link receives each
-dictionary before it enters that Link. It can change the dictionary or return
-``None`` to discard it. When several Modifiers are attached, they run in the
-order in which they were provided.
+A :class:`~crappy.modifier.meta_modifier.modifier.Modifier` attached to a
+regular Link receives each dictionary before it enters that Link. It can change
+the dictionary or return ``None`` to discard it. When several Modifiers are
+attached, they run in the order in which they were provided.
 
 For example, if ``scale_force`` is a callable Modifier:
 
@@ -122,6 +123,7 @@ API reference
 -------------
 
 - :func:`crappy.link` creates a regular Link.
-- :class:`crappy.links.Link` documents its receive methods.
-- :class:`crappy.modifier.Modifier` is the base class for reusable Modifiers.
+- :class:`crappy.links.link.Link` documents its receive methods.
+- :class:`crappy.modifier.meta_modifier.modifier.Modifier` is the base class
+  for reusable Modifiers.
 - :func:`crappy.display_graph` renders the graph created by a script.

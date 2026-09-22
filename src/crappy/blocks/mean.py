@@ -22,7 +22,7 @@ class MeanBlock(Block):
   average of a label over a fixed number of data points, the MeanBlock 
   calculates the average of the values received over a given delay. This 
   behavior could, however, also be achieved using a 
-  :class:`~crappy.modifier.Modifier`.
+  :class:`~crappy.modifier.meta_modifier.modifier.Modifier`.
 
   Warning:
     If the delay for averaging is too short compared with the looping frequency
@@ -94,7 +94,7 @@ class MeanBlock(Block):
 
   def prepare(self) -> None:
     """Checks that there's at least one incoming and one output
-    :class:`~crappy.links.Link`.
+    :class:`~crappy.links.link.Link`.
 
     .. versionadded:: 2.0.9
     """

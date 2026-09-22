@@ -5,10 +5,10 @@ Regular Links and ImageLinks
 =============================
 
 Crappy provides two kinds of one-way connection. A regular
-:class:`~crappy.links.Link` carries labeled values, while an
-:class:`~crappy.links.ImageLink` carries images and their metadata. They have
-different delivery behavior because a stream of small dictionaries and a
-stream of large image arrays have different requirements.
+:class:`~crappy.links.link.Link` carries labeled values, while an
+:class:`~crappy.links.img_link.ImageLink` carries images and their metadata.
+They have different delivery behavior because a stream of small dictionaries
+and a stream of large image arrays have different requirements.
 
 Choosing the Link type
 ----------------------
@@ -26,7 +26,7 @@ Choosing the Link type
      - One NumPy image array and its matching metadata dictionary.
    * - What can it connect?
      - Any two Blocks.
-     - Two :class:`~crappy.blocks.vision.VisionBlock` objects.
+     - Two :class:`~crappy.blocks.vision.block.VisionBlock` objects.
    * - How are updates retained?
      - Accepted dictionaries remain ordered in a buffered pipe until read.
      - Only the newest published image remains in the shared buffer.
@@ -67,11 +67,11 @@ Regular Link delivery
 A regular Link passes complete dictionaries in sending order. Its receiving
 methods make different choices about unread data:
 
-- :meth:`~crappy.links.Link.recv` returns the oldest available dictionary.
-- :meth:`~crappy.links.Link.recv_last` returns the newest available dictionary
-  and discards the other unread dictionaries.
-- :meth:`~crappy.links.Link.recv_chunk` returns all currently available values,
-  grouped by label and ordered from oldest to newest.
+- :meth:`~crappy.links.link.Link.recv` returns the oldest available dictionary.
+- :meth:`~crappy.links.link.Link.recv_last` returns the newest available
+  dictionary and discards the other unread dictionaries.
+- :meth:`~crappy.links.link.Link.recv_chunk` returns all currently available
+  values, grouped by label and ordered from oldest to newest.
 
 If no data is available, these methods return an empty dictionary instead of
 waiting. A Block should therefore treat an empty result as “no new data” and
@@ -137,8 +137,8 @@ those objects directly.
 API reference
 -------------
 
-- :class:`crappy.links.Link` documents regular Link operations.
-- :class:`crappy.links.ImageLink` documents image connection setup.
-- :meth:`crappy.blocks.vision.VisionBlock.send_img` publishes an image.
-- :meth:`crappy.blocks.vision.VisionBlock.receive_imgs` copies available new
-  images into ``last_received``.
+- :class:`crappy.links.link.Link` documents regular Link operations.
+- :class:`crappy.links.img_link.ImageLink` documents image connection setup.
+- :meth:`crappy.blocks.vision.block.VisionBlock.send_img` publishes an image.
+- :meth:`crappy.blocks.vision.block.VisionBlock.receive_imgs` copies available
+  new images into ``last_received``.

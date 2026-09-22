@@ -32,12 +32,13 @@ class ImageRecorder(VisionBlock):
   """Records an image stream and its metadata to disk.
 
   This Block receives images from exactly one upstream
-  :class:`~crappy.blocks.vision.VisionBlock` through an input
-  :class:`~crappy.links.ImageLink`. It accepts no regular input Link and has no
-  output ImageLink. The latest eligible frame is saved on each handling cycle,
-  so a slow recorder may skip intermediate frames that were overwritten in the
-  source's shared buffer. ``save_period`` can deliberately reduce the recording
-  rate further by retaining at most one out of a given number of source images.
+  :class:`~crappy.blocks.vision.block.VisionBlock` through an input
+  :class:`~crappy.links.img_link.ImageLink`. It accepts no regular input Link
+  and has no output ImageLink. The latest eligible frame is saved on each
+  handling cycle, so a slow recorder may skip intermediate frames that were
+  overwritten in the source's shared buffer. ``save_period`` can deliberately
+  reduce the recording rate further by retaining at most one out of a given
+  number of source images.
 
   SimpleITK, Pillow, OpenCV, and raw NumPy output are supported. When no
   backend is requested, the first available backend is selected in that order,
@@ -52,9 +53,10 @@ class ImageRecorder(VisionBlock):
   existing recordings are not overwritten.
 
   Whenever a saved-frame notification is emitted through regular output
-  :class:`~crappy.links.Link` objects, it contains the image timestamp, unique
-  ID, and complete metadata under ``'t(s)'``, ``'img_index'``, and ``'meta'``.
-  This allows downstream actions to depend on images selected for recording.
+  :class:`~crappy.links.link.Link` objects, it contains the image timestamp,
+  unique ID, and complete metadata under ``'t(s)'``, ``'img_index'``, and
+  ``'meta'``. This allows downstream actions to depend on images selected for
+  recording.
 
   Unlike :class:`~crappy.blocks.camera_processes.ImageSaver`, which is managed
   internally by the older :class:`~crappy.blocks.Camera`, this class is an

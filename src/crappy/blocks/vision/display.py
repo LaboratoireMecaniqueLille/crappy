@@ -24,21 +24,21 @@ class ImageDisplayer(VisionBlock):
   """Displays an image stream and optional overlays in a control window.
 
   This Block receives images from exactly one upstream VisionBlock through an
-  input :class:`~crappy.links.ImageLink` and supports no output ImageLink. It
-  is intended for live monitoring rather than high-rate or full-resolution
-  image inspection: displayed images are limited to 640x480 pixels and updates
-  are capped by ``framerate``. When the consumer falls behind, it displays the
-  newest available image and skips intermediate frames.
+  input :class:`~crappy.links.img_link.ImageLink` and supports no output
+  ImageLink. It is intended for live monitoring rather than high-rate or
+  full-resolution image inspection: displayed images are limited to 640x480
+  pixels and updates are capped by ``framerate``. When the consumer falls
+  behind, it displays the newest available image and skips intermediate frames.
 
   OpenCV and Matplotlib display backends are supported. If no backend is
   selected, OpenCV is preferred when available and Matplotlib is used as a
   fallback. Images whose dtype is not ``uint8`` are converted before display
   and large positive integer ranges are reduced by a power-of-two scale factor.
 
-  Regular input :class:`~crappy.links.Link` objects can provide overlays under
-  the reserved ``'overlay'`` label. Each value must be an iterable containing
-  :class:`~crappy.tool.camera_config.config_tools.Overlay` objects or
-  :obj:`None` placeholders. The latest valid iterable from each Link is
+  Regular input :class:`~crappy.links.link.Link` objects can provide overlays
+  under the reserved ``'overlay'`` label. Each value must be an iterable
+  containing :class:`~crappy.tool.camera_config.config_tools.Overlay` objects
+  or :obj:`None` placeholders. The latest valid iterable from each Link is
   retained and drawn on subsequent images. Sending an empty iterable clears
   that Link's overlays, and malformed overlay values are ignored with a
   warning.
@@ -145,7 +145,7 @@ class ImageDisplayer(VisionBlock):
     """Validates the ImageLink topology and opens the display window.
 
     The selected backend is initialized before the input shared image buffer is
-    attached by :class:`~crappy.blocks.vision.VisionBlock`.
+    attached by :class:`~crappy.blocks.vision.block.VisionBlock`.
 
     Raises:
       IOError: If the Block does not have exactly one input ImageLink or has an

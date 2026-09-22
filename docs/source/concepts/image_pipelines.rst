@@ -20,15 +20,15 @@ Names used on this page
 Several public objects contain “Camera” in their name but have different
 roles:
 
-- A :class:`crappy.camera.Camera` is a hardware integration. It knows how to
-  open a camera, expose its settings, acquire images, and close the device. It
-  is called a **Camera object** on this page.
+- A :class:`crappy.camera.meta_camera.camera.Camera` is a hardware integration.
+  It knows how to open a camera, expose its settings, acquire images, and close
+  the device. It is called a **Camera object** on this page.
 - A :class:`~crappy.blocks.vision.CameraSource` is a VisionBlock that owns one
   Camera object and publishes acquired images.
-- A :class:`~crappy.blocks.vision.VisionBlock` is an independent image stage
-  that can acquire, process, display, or record images.
-- An :class:`~crappy.links.ImageLink` connects two VisionBlocks and exposes the
-  newest image and matching metadata.
+- A :class:`~crappy.blocks.vision.block.VisionBlock` is an independent image
+  stage that can acquire, process, display, or record images.
+- An :class:`~crappy.links.img_link.ImageLink` connects two VisionBlocks and
+  exposes the newest image and matching metadata.
 - A :class:`crappy.blocks.Camera` is the **all-in-one Camera Block**. It owns a
   Camera object and manages its image operations behind one Block in the
   script.
@@ -138,9 +138,10 @@ API reference
 
 - :class:`crappy.blocks.vision.CameraSource` acquires images in a composable
   pipeline.
-- :class:`crappy.blocks.vision.VisionBlock` is the base for composable image
-  stages.
+- :class:`crappy.blocks.vision.block.VisionBlock` is the base for composable
+  image stages.
 - :class:`crappy.blocks.Camera` provides the all-in-one architecture.
-- :class:`crappy.camera.Camera` is the base for camera hardware integrations.
+- :class:`crappy.camera.meta_camera.camera.Camera` is the base for camera
+  hardware integrations.
 - :class:`crappy.blocks.camera_processes.CameraProcess` is the advanced base
   for all-in-one processing workers.

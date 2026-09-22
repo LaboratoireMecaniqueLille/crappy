@@ -9,15 +9,15 @@ from .link_graph import link_graph
 
 class ImageLink:
   """This class is used for transferring images between two instances of
-  :class:`~crappy.blocks.Block`.
+  :class:`~crappy.blocks.meta_block.block.Block`.
 
   The created ImageLink is unidirectional, from the input Block to the output
   Block. Under the hood, an ImageLink mostly manages the exchange of
   information like synchronization objects and image buffers between the input
   and the output Blocks.
 
-  This class should not be mistaken with :class:`~crappy.links.Link`, that can
-  only transfer dictionaries between Blocks, not images.
+  This class should not be mistaken with :class:`~crappy.links.link.Link`, that
+  can only transfer dictionaries between Blocks, not images.
 
   ImageLinks are registered in Crappy's :class:`~crappy.links.LinkGraph` when
   they are created. Parallel ImageLinks between the same pair of Blocks, as
@@ -172,9 +172,9 @@ def img_link(input_block,
   """Function linking two Blocks, allowing to send images from one to the
   other.
 
-  It instantiates a :class:`~crappy.links.ImageLink` between two children of
-  :class:`~crappy.blocks.Block`. The created Link is unidirectional, from the
-  input Block to the output Block.
+  It instantiates a :class:`~crappy.links.img_link.ImageLink` between two
+  children of :class:`~crappy.blocks.meta_block.block.Block`. The created Link
+  is unidirectional, from the input Block to the output Block.
 
   Args:
     input_block: The Block sending images through the ImageLink.

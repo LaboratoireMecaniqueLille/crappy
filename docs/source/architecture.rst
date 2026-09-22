@@ -24,7 +24,7 @@ Runtime ownership
 
 The Python interpreter that runs the user's script is the **main process**.
 It constructs the graph and coordinates its execution. Every
-:class:`~crappy.blocks.Block` is also a
+:class:`~crappy.blocks.meta_block.block.Block` is also a
 :class:`multiprocessing.Process` and runs as a child process after preparation
 begins.
 
@@ -103,8 +103,9 @@ Blocks.
 
 The graph rejects name collisions and invalid ImageLink topology immediately.
 Renaming a Block before startup updates its node and incident edges. The
-:meth:`~crappy.blocks.Block.reset` class method clears the Block registry and
-graph together so that their state cannot diverge between tests.
+:meth:`~crappy.blocks.meta_block.block.Block.reset` class method clears the
+Block registry and graph together so that their state cannot diverge between
+tests.
 
 A regular Link creates its pipe during construction. An ImageLink initially
 stores only its graph relationship and placeholders for shared image state.
@@ -114,13 +115,13 @@ entire graph.
 Startup coordination
 --------------------
 
-:meth:`~crappy.blocks.Block.start_all`, exposed as
+:meth:`~crappy.blocks.meta_block.block.Block.start_all`, exposed as
 :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`, calls these class
 methods in order:
 
-1. :meth:`~crappy.blocks.Block.prepare_all`
-2. :meth:`~crappy.blocks.Block.renice_all`
-3. :meth:`~crappy.blocks.Block.launch_all`
+1. :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`
+2. :meth:`~crappy.blocks.meta_block.block.Block.renice_all`
+3. :meth:`~crappy.blocks.meta_block.block.Block.launch_all`
 
 The three aliases :ref:`crappy.prepare()
 <crappy_docs/aliases:crappy.prepare()>`, :ref:`crappy.renice()
@@ -177,19 +178,20 @@ of any Block begins the coordinated shutdown of the remaining graph.
 Block process sequence
 ----------------------
 
-:meth:`~crappy.blocks.Block.run` implements the process-side lifecycle. It
-performs these steps:
+:meth:`~crappy.blocks.meta_block.block.Block.run` implements the process-side
+lifecycle. It performs these steps:
 
 1. Configure the Block logger and close unrelated inherited configuration
    endpoints where required.
-2. Call :meth:`~crappy.blocks.Block.prepare`.
+2. Call :meth:`~crappy.blocks.meta_block.block.Block.prepare`.
 3. Wait at the shared readiness barrier.
 4. Wait for the main process to set ``t0`` and the start event.
-5. Call :meth:`~crappy.blocks.Block.begin` once.
-6. Enter :meth:`~crappy.blocks.Block.main`, which calls
-   :meth:`~crappy.blocks.Block.loop` repeatedly until the stop event is set.
-7. Set the shared stop event and call :meth:`~crappy.blocks.Block.finish` in a
-   ``finally`` block.
+5. Call :meth:`~crappy.blocks.meta_block.block.Block.begin` once.
+6. Enter :meth:`~crappy.blocks.meta_block.block.Block.main`, which calls
+   :meth:`~crappy.blocks.meta_block.block.Block.loop` repeatedly until the stop
+   event is set.
+7. Set the shared stop event and call
+   :meth:`~crappy.blocks.meta_block.block.Block.finish` in a ``finally`` block.
 
 ``main`` also applies the Block's target frequency and pause behavior. A
 paused Block continues frequency regulation but does not call ``loop`` while
@@ -218,8 +220,8 @@ this path, which is why hardware safety cannot depend only on ``finish``.
 The main cleanup routine sets the stop event and gives the Blocks a limited
 time to exit. The current timeout is three seconds. It terminates processes
 that remain alive, then shuts down the optional image manager and logging
-thread. Finally, :meth:`~crappy.blocks.Block.reset` clears the registries,
-graph, shared-object references, and lifecycle flags.
+thread. Finally, :meth:`~crappy.blocks.meta_block.block.Block.reset` clears the
+registries, graph, shared-object references, and lifecycle flags.
 
 Unless ``no_raise`` was selected, the main process raises after cleanup when a
 runtime exception, keyboard interruption, or incomplete shutdown was recorded.
@@ -227,11 +229,11 @@ runtime exception, keyboard interruption, or incomplete shutdown was recorded.
 Regular Link internals
 ----------------------
 
-A :class:`~crappy.links.Link` wraps a :func:`multiprocessing.Pipe` and treats
-it as a one-way dictionary channel. Before sending, it applies its Modifiers in
-order. Each Modifier receives a deep copy of the current dictionary. Returning
-``None`` stops that send, while returning a non-dictionary raises a Link data
-error.
+A :class:`~crappy.links.link.Link` wraps a :func:`multiprocessing.Pipe` and
+treats it as a one-way dictionary channel. Before sending, it applies its
+Modifiers in order. Each Modifier receives a deep copy of the current
+dictionary. Returning ``None`` stops that send, while returning a
+non-dictionary raises a Link data error.
 
 On Linux, the Link checks whether the pipe is writable without blocking. If
 the pipe is full, the new dictionary is discarded and warning messages are

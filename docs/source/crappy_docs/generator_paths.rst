@@ -16,7 +16,7 @@ A Generator Path defines one segment of a command sequence run by the
    crappy.blocks.generator_path.Integrator
    crappy.blocks.generator_path.Ramp
    crappy.blocks.generator_path.Sine
-   crappy.blocks.generator_path.meta_path.Path
+   crappy.blocks.generator_path.meta_path.path.Path
 
 .. _crappy_docs/blocks:generator paths:
 

@@ -2,17 +2,18 @@
 Block base class
 ================
 
-Subclass :class:`crappy.blocks.Block` when an experiment needs a custom task
-with its own inputs, outputs, timing, setup, or cleanup.
+Subclass :class:`~crappy.blocks.meta_block.block.Block` when an experiment
+needs a custom task with its own inputs, outputs, timing, setup, or cleanup.
 
-Use :meth:`~crappy.blocks.Block.log` for messages from an individual Block.
-The class-level :meth:`~crappy.blocks.Block.cls_log` method is available to
+Use :meth:`~crappy.blocks.meta_block.block.Block.log` for messages from an
+individual Block. The class-level
+:meth:`~crappy.blocks.meta_block.block.Block.cls_log` method is available to
 code coordinating all Blocks after the main Crappy logger has been configured.
 
 .. autosummary::
    :nosignatures:
 
-   crappy.blocks.Block
+   crappy.blocks.meta_block.block.Block
 
 .. _crappy_docs/blocks:block:
 

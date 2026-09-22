@@ -142,7 +142,7 @@ class resources:
 
 class LinkDataError(ValueError):
   """Exception raised when trying to send a wrong data type through a
-  :class:`~crappy.links.Link`."""
+  :class:`~crappy.links.link.Link`."""
 
 
 class StartTimeout(TimeoutError):
@@ -150,8 +150,8 @@ class StartTimeout(TimeoutError):
 
 
 class PrepareError(IOError):
-  """Error raised in a :class:`~crappy.blocks.Block` when waiting for all
-  Blocks to be ready but another Block fails to prepare."""
+  """Error raised in a :class:`~crappy.blocks.meta_block.block.Block` when
+  waiting for all Blocks to be ready but another Block fails to prepare."""
 
 
 class CameraConfigError(RuntimeError):
@@ -193,7 +193,7 @@ class DefinitionError(NameError):
 
 class GeneratorStop(Exception):
   """Exception raised when a :class:`~crappy.blocks.Generator` Block reaches
-  the end of its :class:`~crappy.blocks.generator_path.meta_path.Path`."""
+  the end of its :class:`~crappy.blocks.generator_path.meta_path.path.Path`."""
 
 
 class ReaderStop(Exception):

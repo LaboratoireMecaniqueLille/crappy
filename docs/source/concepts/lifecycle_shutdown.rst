@@ -6,7 +6,8 @@ Lifecycle and shutdown
 
 Every Block follows the same lifecycle. Understanding where initialization,
 repeated work, and cleanup belong is especially useful when writing a custom
-:class:`~crappy.blocks.Block` or diagnosing why a test did not start.
+:class:`~crappy.blocks.meta_block.block.Block` or diagnosing why a test did not
+start.
 
 Lifecycle at a glance
 ---------------------
@@ -61,8 +62,8 @@ Construction happens before the test starts
 The script first constructs every Block and Link. A custom Block's
 ``__init__`` method should validate arguments and store configuration. Opening
 hardware, network connections, or output files normally belongs in
-:meth:`~crappy.blocks.Block.prepare`, after the Block has started in its own
-runtime context.
+:meth:`~crappy.blocks.meta_block.block.Block.prepare`, after the Block has
+started in its own runtime context.
 
 Constructing the objects also builds the connection graph. Invalid names and
 connection structures are therefore reported before the test starts. See
@@ -72,10 +73,11 @@ Preparation and the common start
 --------------------------------
 
 Calling :ref:`crappy.start() <crappy_docs/aliases:crappy.start()>` first runs
-:meth:`~crappy.blocks.Block.prepare_all`. Crappy creates the state shared by
-the Blocks, starts them, and calls each Block's
-:meth:`~crappy.blocks.Block.prepare` method. Typical preparation work includes
-opening a device, establishing a connection, or creating an output file.
+:meth:`~crappy.blocks.meta_block.block.Block.prepare_all`. Crappy creates the
+state shared by the Blocks, starts them, and calls each Block's
+:meth:`~crappy.blocks.meta_block.block.Block.prepare` method. Typical
+preparation work includes opening a device, establishing a connection, or
+creating an output file.
 
 After preparing, every Block waits at a synchronization barrier. If one Block
 fails during preparation, the barrier is released as an error so that the
@@ -83,21 +85,23 @@ others do not wait indefinitely. The test proceeds only after every Block and
 the coordinator are ready.
 
 Crappy then records a common start timestamp, available through
-:attr:`~crappy.blocks.Block.t0`, and releases the Blocks. This timestamp gives
-all Blocks the same reference for elapsed time. It does not promise that every
-Block executes its next instruction at exactly the same instant.
+:attr:`~crappy.blocks.meta_block.block.Block.t0`, and releases the Blocks. This
+timestamp gives all Blocks the same reference for elapsed time. It does not
+promise that every Block executes its next instruction at exactly the same
+instant.
 
 Running the test
 ----------------
 
-Once released, each Block calls :meth:`~crappy.blocks.Block.begin` once. This
-hook is for work that needs the shared start time or must happen immediately
-before repeated operation.
+Once released, each Block calls
+:meth:`~crappy.blocks.meta_block.block.Block.begin` once. This hook is for work
+that needs the shared start time or must happen immediately before repeated
+operation.
 
-The Block then calls :meth:`~crappy.blocks.Block.loop` repeatedly. A target
-frequency can limit how often the loop runs, but it is not a real-time
-guarantee. The work performed by the Block, the operating system, hardware,
-and other load on the computer all affect the achieved frequency.
+The Block then calls :meth:`~crappy.blocks.meta_block.block.Block.loop`
+repeatedly. A target frequency can limit how often the loop runs, but it is not
+a real-time guarantee. The work performed by the Block, the operating system,
+hardware, and other load on the computer all affect the achieved frequency.
 
 Stopping and exception handling
 -------------------------------
@@ -117,10 +121,10 @@ handles the failure state explicitly.
 Cleanup belongs in ``finish``
 -----------------------------
 
-Each Block normally calls :meth:`~crappy.blocks.Block.finish` whether it stops
-normally or because an error occurred. A custom Block should use this hook to
-return hardware to a safe state, close devices and network connections, flush
-and close files, and release graphical resources.
+Each Block normally calls :meth:`~crappy.blocks.meta_block.block.Block.finish`
+whether it stops normally or because an error occurred. A custom Block should
+use this hook to return hardware to a safe state, close devices and network
+connections, flush and close files, and release graphical resources.
 
 ``finish`` should tolerate partially completed preparation. For example, check
 that a device was opened before trying to close it. Crappy may forcibly
@@ -144,8 +148,9 @@ without altering the lifecycle above.
 API reference
 -------------
 
-- :class:`crappy.blocks.Block` defines the lifecycle hooks.
-- :meth:`crappy.blocks.Block.prepare_all` prepares and starts all Blocks.
-- :meth:`crappy.blocks.Block.launch_all` releases prepared Blocks and waits for
-  the test to finish.
+- :class:`crappy.blocks.meta_block.block.Block` defines the lifecycle hooks.
+- :meth:`crappy.blocks.meta_block.block.Block.prepare_all` prepares and starts
+  all Blocks.
+- :meth:`crappy.blocks.meta_block.block.Block.launch_all` releases prepared
+  Blocks and waits for the test to finish.
 - ``Block.stop`` requests a normal shutdown.

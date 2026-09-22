@@ -29,8 +29,8 @@ except (ModuleNotFoundError, ImportError):
 
 class CameraConfig(tk.Tk):
   """This class is a GUI allowing the user to visualize the images from a
-  :class:`~crappy.camera.Camera` before a Crappy test starts, and to tune the
-  settings of the Camera.
+  :class:`~crappy.camera.meta_camera.camera.Camera` before a Crappy test
+  starts, and to tune the settings of the Camera.
 
   It is meant to be user-friendly and interactive. It is possible to zoom on
   the image using the mousewheel, and to move on the zoomed image by
@@ -68,8 +68,8 @@ class CameraConfig(tk.Tk):
     """Initializes the interface and displays it.
 
     Args:
-      camera: The :class:`~crappy.camera.Camera` object in charge of acquiring
-        the images.
+      camera: The :class:`~crappy.camera.meta_camera.camera.Camera` object in
+        charge of acquiring the images.
       log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to
         the main :obj:`~logging.Logger`, only used in Windows.
 

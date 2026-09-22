@@ -14,8 +14,8 @@ class CameraSetting:
   It is meant to be subclassed and should not be used as is.
 
   The Camera setting classes hold all the information needed to read and set a
-  setting of a :class:`~crappy.camera.Camera` object. Several types of settings
-  are defined, as children of this class :
+  setting of a :class:`~crappy.camera.meta_camera.camera.Camera` object.
+  Several types of settings are defined, as children of this class :
   :class:`~crappy.camera.meta_camera.camera_setting.CameraBoolSetting`,
   :class:`~crappy.camera.meta_camera.camera_setting.CameraChoiceSetting`,
   and :class:`~crappy.camera.meta_camera.camera_setting.CameraScaleSetting`.
