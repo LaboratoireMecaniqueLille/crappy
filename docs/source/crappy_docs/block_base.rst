@@ -19,7 +19,11 @@ code coordinating all Blocks after the main Crappy logger has been configured.
 Block
 -----
 
-.. autoclass:: crappy.blocks.Block
+.. automodule:: crappy.blocks.meta_block.block
+
+.. currentmodule:: crappy.blocks.meta_block.block
+
+.. autoclass:: Block
    :members: get_name, start_all, prepare_all, renice_all, launch_all,
              stop_all, reset, run, main, prepare, begin, loop, finish, debug,
              t0, niceness, labels, freq, display_freq, name, pausable,

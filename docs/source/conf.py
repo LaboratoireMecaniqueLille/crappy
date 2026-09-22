@@ -21,6 +21,7 @@ version = ".".join(release.split(".")[:2])
 needs_sphinx = "8.1"
 extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.autosummary",
+              "sphinx.ext.coverage",
               "sphinx.ext.intersphinx",
               "sphinx.ext.viewcode",
               "sphinx.ext.autosectionlabel",
@@ -124,6 +125,12 @@ autodoc_mock_imports = ["PIL",
 napoleon_numpy_docstring = False
 napoleon_use_admonition_for_examples = True
 napoleon_use_rtype = False
+
+# The coverage builder measures the reviewed core API modules registered by
+# automodule on their reference pages
+coverage_ignore_modules = [r"crappy\.tool\.bindings\.(comedi_bind|pyspcm)"]
+# Don't count objects with no docstring in coverage
+coverage_skip_undoc_in_source = True
 
 
 # HTML output

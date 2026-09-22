@@ -121,7 +121,11 @@ Image Processing Tools
 Synthetic Strain Image
 ++++++++++++++++++++++
 
-.. autoclass:: crappy.tool.ApplyStrainToImage
+.. automodule:: crappy.tool.apply_strain_image
+
+.. currentmodule:: crappy.tool.apply_strain_image
+
+.. autoclass:: ApplyStrainToImage
    :special-members: __init__, __call__
 
 This public helper deforms a reference image according to horizontal and

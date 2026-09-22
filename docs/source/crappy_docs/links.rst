@@ -8,7 +8,11 @@ Link
 Regular Links carry labeled dictionaries between Blocks. Their delivery and
 loss behavior is explained in :doc:`../concepts/regular_links_and_image_links`.
 
-.. autoclass:: crappy.links.Link
+.. automodule:: crappy.links.link
+
+.. currentmodule:: crappy.links.link
+
+.. autoclass:: Link
    :members: poll, send, recv, recv_last, recv_chunk, log
    :special-members: __init__
 
@@ -19,7 +23,11 @@ ImageLinks carry the newest image and its metadata between VisionBlocks. See
 :doc:`../concepts/regular_links_and_image_links` for the transport comparison
 and frame-skipping semantics.
 
-.. autoclass:: crappy.links.ImageLink
+.. automodule:: crappy.links.img_link
+
+.. currentmodule:: crappy.links.img_link
+
+.. autoclass:: ImageLink
    :members: set_buffers, get_buffers, log
    :special-members: __init__
 

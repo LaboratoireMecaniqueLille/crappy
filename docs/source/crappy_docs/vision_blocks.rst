@@ -23,7 +23,11 @@ for measurements, commands, and metadata.
 VisionBlock
 -----------
 
-.. autoclass:: crappy.blocks.vision.VisionBlock
+.. automodule:: crappy.blocks.vision.block
+
+.. currentmodule:: crappy.blocks.vision.block
+
+.. autoclass:: VisionBlock
    :members: prepare, begin, finish, add_img_output, add_img_input, send_img,
              receive_imgs, request_config, add_config_request_in,
              config_requests_in, send_config, add_config_request_out,

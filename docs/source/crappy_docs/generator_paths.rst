@@ -84,6 +84,10 @@ Sine
 Path base class
 ---------------
 
-.. autoclass:: crappy.blocks.generator_path.meta_path.Path
+.. automodule:: crappy.blocks.generator_path.meta_path.path
+
+.. currentmodule:: crappy.blocks.generator_path.meta_path.path
+
+.. autoclass:: Path
    :members: get_cmd, parse_condition, log
    :special-members: __init__
