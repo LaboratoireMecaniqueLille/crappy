@@ -115,9 +115,10 @@ class CameraProcess(Process, ABC):
         necessary as the frames are shared as a one-dimensional array.
       dtype: The expected dtype of the image. It is necessary for 
         reconstructing the image from the one-dimensional shared array.
-      to_draw_conn: A :obj:`~multiprocessing.Connection` for sending or
-        receiving :class:`~crappy.tool.camera_config.config_tools.Overlay`
-        objects to draw on top of the displayed image.
+      to_draw_conn: A :obj:`~multiprocessing.connection.Connection` for
+        sending or receiving
+        :class:`~crappy.tool.camera_config.config_tools.Overlay` objects to
+        draw on top of the displayed image.
       outputs: The :class:`~crappy.links.link.Link` objects for sending data to
         downstream Blocks. They are the same as those owned by the Camera 
         Block.

@@ -113,11 +113,10 @@ class ADS1115(InOut):
           'Pi4', 'blinka'
 
         The `'Pi4'` backend is optimized but only works on boards supporting
-        the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing
-        :mod:`Adafruit-Blinka` and :mod:`adafruit-circuitpython-ads1x15`, but
-        these modules are compatible with and maintained on a wide variety of
-        boards.
+        the :external+smbus2:mod:`smbus2` module, like the Raspberry Pis. The
+        `'blinka'` backend may be less performant and requires installing the
+        ``Adafruit-Blinka`` and ``adafruit-circuitpython-ads1x15`` packages,
+        which are compatible with and maintained on a wide variety of boards.
       device_address: The I2C address of the ADS1115. The default address is
         `0x48`, but it is possible to change this setting using the `ADDR` pin.
       i2c_port: The I2C port over which the ADS1115 should communicate. On most

@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-from typing import Literal
 import logging
 import serial
 
@@ -21,15 +20,15 @@ class Agilent34420a(InOut):
   """
 
   def __init__(self,
-               mode: Literal[b'VOLT', b'RES'] = b"VOLT",
+               mode: bytes = b"VOLT",
                device: str = '/dev/ttyUSB0',
                baudrate: int = 9600,
                timeout: float = 1) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
-      mode: Measurement mode, as :obj:`bytes`. Should be either `b'VOLT'` or
-        `b'RES'`.
+      mode: Measurement mode, as :obj:`bytes`. Should be either ``b'VOLT'`` or
+        ``b'RES'``.
       device: Path to the serial port to open, as a :obj:`str`.
       baudrate: Desired baudrate for serial communication.
       timeout: Timeout for the serial connection, as a :obj:`float`.

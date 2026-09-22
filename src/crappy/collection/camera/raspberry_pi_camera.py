@@ -16,11 +16,11 @@ picamera_iso = [0, 100, 200, 320, 400, 500, 640, 800]
 
 class RaspberryPiCamera(Camera):
   """Class for reading images from a Raspberry Pi Camera, using the legacy
-  :mod:`picamera2` module.
+  :external+picamera:mod:`picamera` module.
 
   The RaspberryPiCamera Camera is meant for reading images from a Raspberry Pi
-  Camera. It uses the :mod:`picamera` module for capturing images, and
-  :mod:`cv2` for converting BGR images to black and white.
+  Camera. It uses the :external+picamera:mod:`picamera` module for capturing
+  images, and ``cv2`` for converting BGR images to black and white.
 
   It can read images from the PiCamera V1, V2 and HQ models.
 
@@ -116,7 +116,7 @@ class RaspberryPiCamera(Camera):
 
   def close(self) -> None:
     """Joins the image acquisition thread, and closes the stream and the
-    :class:`picamera.PiCamera` object."""
+    :external+picamera:class:`picamera.PiCamera` object."""
 
     self._stop = True
     if self._frame_grabber is not None:

@@ -170,11 +170,12 @@ class SensorMode:
 
 class RaspberryPiCamera2(Camera):
   """:class:`~crappy.camera.meta_camera.camera.Camera` object reading images
-  from Raspberry Pi camera hardware, using the :mod:`picamera2` module.
+  from Raspberry Pi camera hardware, using the `Picamera2 library
+  <https://www.raspberrypi.com/documentation/computers/camera_software.html>`_.
 
   It is designed to interface seamlessly with any official Raspberry Pi camera
-  module, and the other unofficial camera modules supported by
-  :mod:`picamera2`. It can read images in color or grey level, in any of the
+  module, and the other unofficial camera modules supported by ``picamera2``.
+  It can read images in color or grey level, in any of the
   video modes supported by the camera. Only the main camera settings are
   exposed, the more specific ones have been left out.
 

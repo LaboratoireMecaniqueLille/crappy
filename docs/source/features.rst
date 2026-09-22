@@ -185,7 +185,7 @@ Real-time image correlation
 
   Child of the :ref:`Camera <crappy_docs/cameras:camera>` Block that can acquire, record and display images.
   In addition, it performs real-time Dense Inverse Search (DIS) image
-  correlation on the acquired images using :mod:`cv2`'s `DISOpticalFlow`, and
+  correlation on the acquired images using ``cv2.DISOpticalFlow``, and
   projects the displacement field on a predefined basis. The result is then
   sent to downstream Blocks.
 
@@ -521,7 +521,7 @@ Supported Cameras
 
   .. Important::
      This Camera object relies on C++ libraries, which are not distributed with
-     :mod:`pip`. They can only be used after a local install, after cloning the
+     ``pip``. They can only be used after a local install, after cloning the
      repo.
 
   .. Important::
@@ -572,7 +572,7 @@ Supported Cameras
 
   .. Important::
      This Camera object relies on C++ libraries, which are not distributed with
-     :mod:`pip`. They can only be used after a local install, after cloning the
+     ``pip``. They can only be used after a local install, after cloning the
      repo.
 
   .. Important::
@@ -716,9 +716,9 @@ The following drivers are not actively maintained and require an explicit
 
   Drives up to 4 DC motors using Adafruit's `DC & Stepper Motor HAT for
   Raspberry Pi <https://www.adafruit.com/product/2348>`_, using either
-  Adafruit's Blinka library or :mod:`smbus2` if driven from a Raspberry Pi.
-  Although this component can also drive stepper motors, this feature was not
-  implemented.
+  Adafruit's Blinka library or :external+smbus2:mod:`smbus2` if driven from a
+  Raspberry Pi. Although this component can also drive stepper motors, this
+  feature was not implemented.
 
   .. Important::
      This Actuator was written for a specific application, so it may not be
@@ -828,8 +828,9 @@ Multi-device drivers
 
 - :ref:`DAQmx <crappy_docs/inouts:daqmx>`
 
-  Same as :ref:`NI DAQmx <crappy_docs/inouts:ni daqmx>`, except it relies on the :mod:`PyDAQmx` module. The
-  differences between the two modules weren't further investigated.
+  Same as :ref:`NI DAQmx <crappy_docs/inouts:ni daqmx>`, except it relies on
+  the ``PyDAQmx`` package. The differences between the two modules weren't
+  further investigated.
 
   .. Important::
      This object has not been maintained or tested recently. Its current

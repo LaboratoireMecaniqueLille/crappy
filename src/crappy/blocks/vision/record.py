@@ -92,7 +92,7 @@ class ImageRecorder(VisionBlock):
 
           'sitk', 'pil', 'cv2', 'npy'
 
-        These correspond to :mod:`SimpleITK`, :mod:`PIL`, :mod:`cv2`, and
+        These correspond to ``SimpleITK``, :mod:`PIL`, ``cv2``, and
         :mod:`numpy`. If omitted, they are tried in that order and the first
         installed backend is selected. Requesting an unavailable optional
         backend raises :exc:`ModuleNotFoundError`.

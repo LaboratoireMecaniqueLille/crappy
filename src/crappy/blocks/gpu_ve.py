@@ -108,7 +108,7 @@ class GPUVE(Camera):
         .. versionchanged:: 1.5.10
            renamed from *show_image* to *display_images*
       displayer_backend: The backend to use for displaying the images. Can be
-        either ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` (OpenCV)
+        either ``'cv2'`` or ``'mpl'``, to use respectively ``cv2`` (OpenCV)
         or :mod:`matplotlib`. ``'cv2'`` usually allows achieving a higher
         display frequency. Ignored if ``display_images`` is :obj:`False`. If
         not given and ``display_images`` is :obj:`True`, ``'cv2'`` is tried
@@ -193,8 +193,8 @@ class GPUVE(Camera):
 
           'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
-        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
+        They correspond to the modules ``SimpleITK``, :mod:`PIL` (Pillow
+        Fork), ``cv2`` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
         backend saves the images as raw :obj:`numpy.array`, and thus ignores
         the ``img_extension`` argument. Depending on the machine, some backends
         may be faster or slower. For using each backend, the corresponding

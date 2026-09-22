@@ -35,6 +35,8 @@ Py Spectrum
 Camera Configurators
 --------------------
 
+.. automodule:: crappy.tool.camera_config
+
 Camera Configurator
 +++++++++++++++++++
 .. autoclass:: crappy.tool.camera_config.CameraConfig
@@ -118,6 +120,8 @@ use of the :class:`~crappy.blocks.Canvas` Block.
 Image Processing Tools
 ----------------------
 
+.. automodule:: crappy.tool.image_processing
+
 Synthetic Strain Image
 ++++++++++++++++++++++
 
@@ -162,7 +166,7 @@ GPU Correl Tool
 GPU Kernels
 +++++++++++
 The `src/crappy/tool/image_processing/kernels.cu` file contains the default
-kernels to use with :mod:`pycuda`. They're used by the
+kernels to use with :external+pycuda:mod:`pycuda`. They're used by the
 :class:`~crappy.tool.image_processing.GPUCorrelTool` if no other kernel file is
 provided.
 

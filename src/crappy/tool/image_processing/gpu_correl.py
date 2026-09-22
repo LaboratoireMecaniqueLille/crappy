@@ -74,7 +74,8 @@ class CorrelStage:
                mul: float = 3,
                n_fields: int | None = None,
                kernel_file: str | Path | None = None) -> None:
-    """Sets the args and instantiates the :mod:`pycuda` objects.
+    """Sets the args and instantiates the :external+pycuda:mod:`pycuda`
+    objects.
 
     Args:
       img_size: The shape of the images to process. It is given beforehand so
@@ -500,10 +501,10 @@ class GPUCorrelTool:
   and performs GPU-accelerated image correlation on each received image. From
   this correlation, rigid body displacements or other fields are identified.
 
-  This class  is meant to be efficient enough to run in real-time. It relies on
-  the :class:`~crappy.tool.image_processing.gpu_correl.CorrelStage` class (not
-  documented) to perform correlation on different scales. It mainly takes a
-  list of base fields and a reference image as inputs, and project the
+  This class is meant to be efficient enough to run in real-time. It relies on
+  the internal ``CorrelStage`` class to perform correlation on different
+  scales. It mainly takes a list of base fields and a reference image as
+  inputs, and project the
   displacement between the current image and the reference one on the base of
   fields. The optimal fit is achieved by lowering the residuals with a
   least-squares method.
@@ -533,15 +534,15 @@ class GPUCorrelTool:
                ref_img: np.ndarray | None = None,
                mask: np.ndarray | None = None,
                mul: float = 3) -> None:
-    """Sets the args and a few parameters of :mod:`pycuda`.
+    """Sets the args and a few parameters of :external+pycuda:mod:`pycuda`.
 
     Args:
       logger_name: The name of the parent :obj:`~logging.Logger`, to be used
         for setting the Logger of the class.
 
         .. versionadded:: 2.0.0
-      context: Optionally, the :mod:`pycuda` context to use. If not specified,
-        a new context is instantiated.
+      context: Optionally, the :external+pycuda:mod:`pycuda` context to use. If
+        not specified, a new context is instantiated.
 
         .. versionadded:: 1.5.10
       verbose: The verbose level as an integer, between `0` and `3`. At level
@@ -793,8 +794,8 @@ class GPUCorrelTool:
 
   @staticmethod
   def clean():
-    """Needs to be called at the end, to destroy the :mod:`pycuda` context
-    properly."""
+    """Needs to be called at the end, to destroy the
+    :external+pycuda:mod:`pycuda` context properly."""
 
     if GPUCorrelTool.context is not None:
       GPUCorrelTool.context.pop()
