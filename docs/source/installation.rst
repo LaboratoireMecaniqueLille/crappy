@@ -2,177 +2,138 @@
 Installation
 ============
 
-.. role:: shell(code)
-  :language: shell-session
-  :class: highlight
+Install a published release
+---------------------------
 
-Requirements
-------------
+Crappy requires Python ``>=3.10``. Its only base package dependency is:
 
-Crappy has been installed and tested on Linux, Windows, macOS, and Raspberry Pi
-computers. Other systems that support a compatible Python version may work but
-are not covered by project testing.
+- ``numpy>=2.0.0``
 
 .. note::
-  We develop Crappy on recent OS versions, and no particular effort is made to
-  ensure compatibility with older OS versions.
-
-Crappy requires Python 3.10 or later and the following package:
-
-- `numpy <https://numpy.org/>`_ (2.0.0 or higher)
-
-The following optional packages enable additional features:
-
-- `matplotlib <https://matplotlib.org/>`_ (3.3.0 or higher, for plotting graphs
-  and displaying images)
-- `opencv <https://opencv.org/>`_ (4.0 or higher, for image acquisition
-  and processing)
-- `pyserial <https://pypi.org/project/pyserial/>`_ (3.4 or higher, to interface with serial
-  sensors and actuators)
-- `Tk <https://docs.python.org/3/library/tkinter.html>`_ (for the configuration
-  interface of cameras)
-- `scikit-image <https://scikit-image.org/>`_ (0.18.0 or higher)
-- `SimpleITK <https://simpleitk.org/>`_ (2.0.0 or higher, for image recording)
-- `PyCUDA <https://documen.tician.de/pycuda/>`_ (for GPU accelerated features)
+   Individual hardware drivers, image-processing features, or Blocks can have
+   additional requirements. They are imported only when the corresponding
+   feature starts, so a basic installation does not need packages for unused
+   hardware. Check the :doc:`hardware matrix <hardware>` for the dependencies
+   of the included hardware drivers.
 
 .. note::
-  Optional dependencies are imported only by the features that need them.
-  Crappy reports a missing dependency when the corresponding feature starts.
+   The Python package is designed to run on Linux, Windows, macOS, and
+   RaspberryPi OS. Compatibility with particular hardware can still depend on
+   an operating-system driver or vendor library. The hardware matrix records
+   these constraints separately from package installation.
 
-1. Check your Python version
-----------------------------
+1. Check Python
+~~~~~~~~~~~~~~~
 
-Before installing Crappy, check that you have a compatible version of Python.
-You can get the current version by running :shell:`python --version` in a
-console. The version should then be displayed, e.g. :shell:`Python 3.10.1`.
+Run this command in a terminal:
 
-.. note::
-  Windows does not include Python by default. If it is unavailable, the command
-  displays an error message.
+.. code-block:: shell-session
 
-If the current version of Python is not compatible with Crappy (requires Python
->=3.10), or if Python is not installed, first install a compatible version of
-Python. The precise installation steps for each OS are beyond the scope of this
-documentation.
+   python --version
 
-.. note::
-  On Linux and macOS, install a new Python version alongside the system Python.
-  Removing the system Python can damage operating-system tools.
+If the reported version does not satisfy ``>=3.10``, install a newer Python
+before continuing. On Windows, Python may need to be installed first. On Linux
+and macOS, install another Python version alongside the system Python instead
+of removing the system interpreter.
 
-2. Deploy a virtual environment (optional)
-------------------------------------------
+2. Create a virtual environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install Crappy in a `virtual environment
-<https://docs.python.org/3/library/venv.html>`_ to avoid conflicts with Python
-packages installed at the user or system level. A user-level installation is
-also supported.
-
-To create a virtual environment called ``venv_crappy``, run the following
-command at the location of your choice.
+A virtual environment keeps Crappy and its dependencies separate from other
+Python projects. Creating one is recommended but not required.
 
 .. code-block:: shell-session
 
    python -m venv venv_crappy
 
-This should create a new folder called `venv_crappy` at the location of your
-console, containing an independent install of Python.
+The following commands use the environment's interpreter directly, so no
+activation step is required.
 
-3. Install Crappy
------------------
+3. Install Crappy from PyPI
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After installing a compatible Python version and optionally creating a virtual
-environment, install Crappy with ``pip``.
-
-**Without a virtual environment**
+On Linux and macOS, run:
 
 .. code-block:: shell-session
 
-   python -m pip install crappy
-
-**In a virtual environment**
-
-On Linux and macOS, assuming your console is at the location of the virtual
-environment:
-
-.. code-block:: shell-session
-
+   venv_crappy/bin/python -m pip install --upgrade pip
    venv_crappy/bin/python -m pip install crappy
 
-On Windows, assuming your console is at the location of the virtual
-environment:
+On Windows, run:
 
 .. code-block:: shell-session
 
+   venv_crappy\Scripts\python.exe -m pip install --upgrade pip
    venv_crappy\Scripts\python.exe -m pip install crappy
 
-Use the same interpreter to install any optional package required by your
-script. For example:
+Without a virtual environment, replace the interpreter path with ``python``:
 
 .. code-block:: shell-session
 
-   python -m pip install matplotlib
+   python -m pip install --upgrade pip
+   python -m pip install crappy
 
-4. Check your install
----------------------
+Install optional packages only for the tasks that need them. Common examples
+include:
 
-After installing Crappy, import it and print its version:
+- ``matplotlib`` for live plots and Matplotlib image display
+- ``opencv-python`` and ``Pillow`` for many image-acquisition and display tasks
+- ``scikit-image`` for video extensometry
+- ``SimpleITK`` for an additional image-reading and writing backend
+- ``tables`` for HDF5 streaming-data recording
+- ``pyserial`` for serial devices
+- ``pyusb`` for drivers that communicate directly over USB
+- ``PyCUDA`` and a compatible CUDA installation for GPU image processing
 
-**Without a virtual environment**
-
-.. code-block:: shell-session
-
-   python -c "import crappy;print(crappy.__version__)"
-
-**In a virtual environment**
-
-On Linux and macOS, assuming your console is at the location of the virtual
-environment:
-
-.. code-block:: shell-session
-
-   venv_crappy/bin/python -c "import crappy;print(crappy.__version__)"
-
-On Windows, assuming your console is at the location of the virtual
-environment:
+For example, install Matplotlib with the same interpreter used for Crappy:
 
 .. code-block:: shell-session
 
-   venv_crappy\Scripts\python.exe -c "import crappy;print(crappy.__version__)"
+   venv_crappy/bin/python -m pip install matplotlib
 
-This command should return without an error and print the installed version of
-Crappy. If that is not the case, please refer to the
-:ref:`Troubleshooting <troubleshooting:troubleshooting>` page of the
-documentation.
+Use the plain ``python`` interpreter instead when appropriate. Driver-specific
+dependencies and backend choices are listed in :doc:`hardware` and in each
+driver's :doc:`API entry <api>`.
 
-If you can successfully import Crappy, you can then try to run a few examples
-to confirm that Crappy operates as expected. The `examples folder
-<https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_ of
-the GitHub repository contains a wide collection of readily-runnable examples.
-To execute a test script called :file:`example.py`, run the following lines in
-a console:
+4. Check the installation
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Without a virtual environment**
+Import Crappy and print the installed version:
 
 .. code-block:: shell-session
 
-   python example.py
+   venv_crappy/bin/python -c "import crappy; print(crappy.__version__)"
 
-**In a virtual environment**
+On Windows, use ``venv_crappy\Scripts\python.exe``. Without a virtual
+environment, use ``python``. A successful check prints the version without a
+traceback.
 
-On Linux and macOS, assuming your console is at the location of the virtual
-environment and that :file:`example.py` is at the same level as the virtual
-environment:
+If the import fails, copy the complete error message and continue with
+:doc:`troubleshooting`.
+
+5. Run a hardware-free test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:download:`Download the quickstart script
+</downloads/getting_started/quickstart.py>` and save it as ``quickstart.py``.
+From the directory containing the file, run:
 
 .. code-block:: shell-session
 
-   venv_crappy/bin/python example.py
+   venv_crappy/bin/python quickstart.py
 
-On Windows, assuming your console is at the location of the virtual environment
-and that :file:`example.py` is at the same level as the virtual environment:
+The script requires no physical hardware, graphical interface, or optional
+package. It prints simulated measurements and stops automatically after three
+seconds. A final ``Generator Path exhausted`` warning marks its planned end.
 
-.. code-block:: shell-session
+The :doc:`quickstart tutorial <tutorials/quickstart>` explains the script.
+Continue with :doc:`tutorials` for guided tasks or :doc:`examples` for the
+complete examples index.
 
-   venv_crappy\Scripts\python.exe example.py
+Development installation
+------------------------
 
-The installation is ready when the import check and a suitable example both
-complete without errors.
+The commands above install a published release for normal use. A source
+checkout is intended for contributing code or documentation and uses a
+different setup. Follow :ref:`the development setup
+<developers:building the documentation>` when working on the repository.
