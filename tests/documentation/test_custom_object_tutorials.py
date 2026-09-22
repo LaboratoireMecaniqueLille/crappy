@@ -15,11 +15,14 @@ class TestCustomObjectTutorialDownloads(unittest.TestCase):
                    'downloads' / 'custom_objects')
   _examples = {
     'custom_actuator_simulated.py': 'custom-actuator',
+    'custom_all_in_one_camera.py': 'custom-all-in-one-camera',
     'custom_block_average.py': 'custom-block',
     'custom_camera_source.py': 'custom-camera',
     'custom_generator_path.py': 'custom-generator-path',
     'custom_inout_regular.py': 'custom-inout',
+    'custom_inout_streamer.py': 'custom-streaming-inout',
     'custom_modifier_calibration.py': 'custom-modifier',
+    'custom_vision_block_brightness.py': 'custom-vision-block',
   }
 
   def test_examples_are_import_safe(self) -> None:
