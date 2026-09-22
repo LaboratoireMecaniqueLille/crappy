@@ -981,10 +981,15 @@ class Block(Process, ABC):
   
   @classmethod
   def cls_log(cls, level: int, msg: str) -> None:
-    """Wrapper for logging messages in the main Process.
+    """Logs a class-level message through Crappy's main logger.
     
-    Ensures the Logger exists before trying to log, thus avoiding potential 
-    errors.
+    This method is the class-level counterpart of :meth:`log` for code
+    coordinating all Blocks. It silently returns before the main logger is
+    configured.
+
+    Args:
+      level: Logging level for the message.
+      msg: Message to record.
     
     .. versionadded:: 2.0.0
     """

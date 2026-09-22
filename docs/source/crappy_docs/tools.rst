@@ -118,6 +118,17 @@ use of the :class:`~crappy.blocks.Canvas` Block.
 Image Processing Tools
 ----------------------
 
+Synthetic Strain Image
+++++++++++++++++++++++
+
+.. autoclass:: crappy.tool.ApplyStrainToImage
+   :special-members: __init__, __call__
+
+This public helper deforms a reference image according to horizontal and
+vertical strain values. It is primarily used as the ``image_generator`` of a
+:class:`~crappy.blocks.vision.CameraSource` or all-in-one Camera Block in
+hardware-free examples. It requires OpenCV.
+
 DIS Correl Tool
 +++++++++++++++
 .. autoclass:: crappy.tool.image_processing.DISCorrelTool
