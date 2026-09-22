@@ -48,6 +48,21 @@ For position control, define ``set_position(self, position, speed)``. The
 ``speed`` argument is always present but can be ``None`` when no target speed
 was configured.
 
+Control position-mode speed
+---------------------------
+
+In position mode, a Machine can provide that second argument in two ways:
+
+- The ``speed`` entry in the Actuator configuration sets a fixed initial
+  target speed.
+- The ``speed_cmd_label`` entry names a label carrying updated target speeds.
+  Each received value replaces the previous target.
+
+If neither source has provided a value, Machine calls
+``set_position(position, None)``. A controller that cannot adjust speed during
+a position move may ignore the second argument, but its method must still
+accept it.
+
 Use it with Machine
 -------------------
 

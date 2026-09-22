@@ -141,8 +141,9 @@ customization path.
 API and customization guides
 ----------------------------
 
-- :doc:`../tutorials/custom_objects` covers Modifiers, Actuators, InOuts,
-  Camera objects, and Blocks.
-- :doc:`../tutorials/complex_custom_objects` covers Generator Paths,
-  VisionBlocks, and advanced all-in-one Camera Blocks.
+- :doc:`../tutorials/custom_objects` links every custom-object guide.
+- :doc:`../tutorials/custom_generator_path` covers Generator Paths.
+- :doc:`../tutorials/custom_vision_block` covers reusable image stages.
+- :doc:`../tutorials/custom_all_in_one_camera` covers advanced processing
+  inside the supported all-in-one Camera Block.
 - :doc:`../api` lists the public API for each custom object type.

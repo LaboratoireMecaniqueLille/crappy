@@ -44,10 +44,29 @@ the full supported interface.
 Advanced customization
 ----------------------
 
-The :doc:`complex_custom_objects` guide currently covers streaming InOuts,
-specialized Camera settings, VisionBlocks, and the supported all-in-one Camera
-customization path. Read :doc:`../concepts/image_pipelines` before choosing an
-image architecture.
+:doc:`custom_streaming_inout`
+  Retrieve high-rate measurements from a device in chunks.
+
+:doc:`custom_vision_block`
+  Add a reusable image source, analysis, or transformation stage.
+
+:doc:`custom_all_in_one_camera`
+  Add image processing inside the supported all-in-one Camera Block.
+
+Read :doc:`../concepts/image_pipelines` before choosing an image architecture.
+
+Reuse or contribute a custom object
+-----------------------------------
+
+Keep a reusable class in its own Python file. Another experiment can import it
+with a statement such as ``from laboratory_devices import LoadCell`` before
+creating the associated Block. For reuse across several computers, package the
+classes as a normal Python distribution and declare the supported Crappy
+version.
+
+To propose an integration for Crappy itself, follow the contribution guidance
+in :doc:`../developers`. Keep device-specific dependencies optional and include
+tests that do not require access to the physical device.
 
 .. toctree::
    :hidden:
@@ -58,3 +77,6 @@ image architecture.
    custom_camera
    custom_block
    custom_generator_path
+   custom_streaming_inout
+   custom_vision_block
+   custom_all_in_one_camera

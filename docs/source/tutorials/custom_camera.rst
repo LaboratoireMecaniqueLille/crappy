@@ -68,6 +68,43 @@ exact image shape and data type expected from ``get_image()``. The remaining
 Blocks temporarily record selected images, print saved-frame notifications,
 and stop the test.
 
+Add specialized settings
+------------------------
+
+Some cameras need settings beyond an ordinary boolean, choice, or numeric
+control:
+
+- :meth:`~crappy.camera.Camera.add_trigger_setting` adds the standard
+  ``Free run``, ``Hdw after config``, and ``Hardware`` choices. Implement its
+  getter and setter using the camera manufacturer's trigger controls.
+  ``Hdw after config`` keeps acquisition free-running while the configuration
+  window is open, then selects hardware triggering when the window closes.
+- :meth:`~crappy.camera.Camera.add_software_roi` adds controls for a software
+  region of interest (ROI). Call it once the full image dimensions are known,
+  then call :meth:`~crappy.camera.Camera.apply_soft_roi` on every acquired
+  image before returning it.
+
+A software ROI reduces the image passed to later stages but does not make the
+camera acquire faster. If another setting changes the full image dimensions,
+call :meth:`~crappy.camera.Camera.reload_software_roi` with the new dimensions.
+Scale and choice settings also provide a ``reload()`` method for the unusual
+case where one setting changes another setting's limits or available choices.
+
+Return camera metadata
+----------------------
+
+``get_image()`` may return a metadata dictionary instead of a bare timestamp.
+The dictionary must contain:
+
+- ``t(s)`` with the acquisition timestamp
+- ``ImageUniqueID`` with an integer identifying the acquired image
+
+Add any measurements supplied by the camera, such as exposure time or the
+device's capture timestamp. ImageRecorder writes these fields to
+``metadata.csv``. With the Pillow backend, fields whose names are valid
+Exchangeable Image File Format (EXIF) tags can also be embedded in the saved
+image.
+
 Run the example
 ---------------
 
