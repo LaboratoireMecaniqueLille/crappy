@@ -28,7 +28,7 @@ less than a hundred lines of code. CRAPPY is:
 - Written in pure Python, to make it easily understandable and editable by a 
 large audience
 - Highly modular and versatile, and can adapt to almost any setup
-- Distributed with a wide collection of ready-to-run [examples](https://github.com/LaboratoireMecaniqueLille/crappy/examples)
+- Distributed with a wide collection of ready-to-run [examples](https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples)
 - Heavily optimized, to make the most of your computer's resources
 - Distributed with a collection of powerful tools for performing real-time data
 and image processing

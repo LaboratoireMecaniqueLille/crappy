@@ -27,6 +27,7 @@ needs_sphinx = "8.1"
 extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.autosummary",
               "sphinx.ext.coverage",
+              "sphinx.ext.extlinks",
               "sphinx.ext.intersphinx",
               "sphinx.ext.viewcode",
               "sphinx.ext.autosectionlabel",
@@ -72,6 +73,13 @@ intersphinx_mapping = {
 
 # Prefix generated labels so headings in different documents cannot collide
 autosectionlabel_prefix_document = True
+
+extlinks = {
+    "example": (
+        "https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/"
+        "examples/%s",
+        "%s"),
+}
 
 
 # API documentation

@@ -58,12 +58,13 @@ Find explanations and reference material
 ----------------------------------------
 
 - :doc:`concepts` explains behavior shared by different tasks.
+- :doc:`examples` indexes every distributed example by task.
 - :doc:`api` documents public classes, functions, and arguments.
 - :doc:`troubleshooting` lists support channels and the information to include
   when reporting a problem.
 - The `examples directory
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_
-  contains runnable scripts for acquisition, control, and image processing.
+  contains a collection of ready-to-use examples for Crappy.
 
 .. toctree::
   :maxdepth: 2
@@ -71,6 +72,7 @@ Find explanations and reference material
   Is Crappy right for you? <what_is_crappy>
   Install Crappy <installation>
   Tutorials by task <tutorials>
+  Examples by task <examples>
   Core concepts <concepts>
   Features and integrations <features>
   Hardware compatibility <hardware>
