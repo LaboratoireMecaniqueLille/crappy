@@ -16,8 +16,8 @@ do.
 
    This documentation describes Crappy |release|. See the `release notes on
    GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/releases>`_ for
-   changes in published versions, or visit :doc:`troubleshooting` for usage
-   questions and bug reports.
+   changes in published versions, or visit :doc:`support` for usage questions
+   and bug reports.
 
 Run a first test
 ----------------
@@ -60,8 +60,9 @@ Find explanations and reference material
 - :doc:`concepts` explains behavior shared by different tasks.
 - :doc:`examples` indexes every distributed example by task.
 - :doc:`api` documents public classes, functions, and arguments.
-- :doc:`troubleshooting` lists support channels and the information to include
-  when reporting a problem.
+- :doc:`troubleshooting` explains common failures and recovery steps.
+- :doc:`support` lists support channels and the information to include when
+  reporting a problem.
 - The `examples directory
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_
   contains a collection of ready-to-use examples for Crappy.
@@ -80,4 +81,5 @@ Find explanations and reference material
   Runtime architecture <architecture>
   Contributing <developers>
   Citing Crappy <citing>
-  Troubleshooting and support <troubleshooting>
+  Troubleshooting <troubleshooting>
+  Support and reporting <support>
