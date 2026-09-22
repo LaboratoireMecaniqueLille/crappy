@@ -27,9 +27,7 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.mathjax",
               "sphinx.ext.graphviz",
               "sphinx_copybutton",
-              "sphinx_rtd_theme",
-              # DOC-06 will replace the remaining collapse directives.
-              "sphinx_toolbox.collapse"]
+              "sphinx_rtd_theme"]
 
 source_suffix = {".rst": "restructuredtext"}
 language = "en"
