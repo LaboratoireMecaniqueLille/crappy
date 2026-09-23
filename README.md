@@ -127,4 +127,5 @@ for structured metadata.
 
 Crappy is distributed under the
 [GNU General Public License v2.0 or later](https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/LICENSE).
+
 Copyright &copy; 2015–present, Laboratoire Mécanique de Lille and contributors.
