@@ -23,7 +23,7 @@ LINKCHECKDIR  = build/linkcheck
 
 .PHONY: checklinks
 checklinks:
-	$(SPHINXBUILD) -b linkcheck $(SOURCEDIR) $(LINKCHECKDIR) -v
+	$(SPHINXBUILD) --fresh-env --write-all --fail-on-warning --keep-going --nitpicky --builder linkcheck "$(SOURCEDIR)" "$(LINKCHECKDIR)" $(SPHINXOPTS)
 	@echo
 	@echo "Check finished. Report is in $(LINKCHECKDIR)."
 
