@@ -14,10 +14,9 @@ do.
 
 .. note::
 
-   This documentation describes Crappy |release|. See the `release notes on
-   GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/releases>`_ for
-   changes in published versions, or visit :doc:`support` for usage questions
-   and bug reports.
+   This documentation describes Crappy |release|. See :doc:`release_notes` for
+   the release history, or visit :doc:`support` for usage questions and bug
+   reports.
 
 Run a first test
 ----------------
@@ -79,6 +78,7 @@ Find explanations and reference material
   Hardware compatibility <hardware>
   API reference <api>
   Runtime architecture <architecture>
+  Release notes <release_notes>
   Contributing <developers>
   Citing Crappy <citing>
   Troubleshooting <troubleshooting>
