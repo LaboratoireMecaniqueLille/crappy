@@ -66,6 +66,11 @@ Find explanations and reference material
   <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_
   contains a collection of ready-to-use examples for Crappy.
 
+Complete documentation index
+----------------------------
+
+The list below details the entire content of Crappy's documentation.
+
 .. toctree::
   :maxdepth: 2
 
