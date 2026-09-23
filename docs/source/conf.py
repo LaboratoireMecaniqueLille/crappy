@@ -35,7 +35,6 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.mathjax",
               "sphinx.ext.graphviz",
               "sphinx_copybutton",
-              "sphinx_rtd_theme",
               "_ext.hardware_matrix"]
 
 source_suffix = {".rst": "restructuredtext"}
@@ -110,19 +109,18 @@ coverage_skip_undoc_in_source = True
 
 # HTML output
 
-html_theme = "sphinx_rtd_theme"
-html_theme_options = {"prev_next_buttons_location": "both",
-                      "collapse_navigation": False,
-                      "sticky_navigation": False,
-                      "includehidden": False}
+html_theme = "furo"
+html_theme_options = {
+    "source_repository":
+        "https://github.com/LaboratoireMecaniqueLille/crappy/",
+    "source_branch": "master",
+    "source_directory": "docs/source/",
+    "top_of_page_buttons": ["view", "edit"],
+}
 html_title = f"{project} {release} documentation"
 html_baseurl = environ.get(
     "READTHEDOCS_CANONICAL_URL",
     "https://crappy.readthedocs.io/en/latest").rstrip("/")
-html_context = {"display_github": True,
-                "github_user": "LaboratoireMecaniqueLille",
-                "github_repo": "crappy",
-                "github_version": "master/docs/source/"}
 
 # Hand-reviewed files copied to the root of the generated documentation
 html_extra_path = ["llms.txt"]
