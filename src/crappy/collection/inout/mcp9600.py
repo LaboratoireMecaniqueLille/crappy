@@ -126,11 +126,11 @@ class MCP9600(InOut):
           'Pi4', 'blinka'
 
         The `'Pi4'` backend is optimized but only works on boards supporting
-        the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing
-        :mod:`Adafruit-Blinka`, :mod:`adafruit-circuitpython-busdevice` and
-        :mod:`adafruit-circuitpython-mcp9600`, but these modules are compatible
-        with and maintained on a wide variety of boards.
+        the :external+smbus2:mod:`smbus2` module, like the Raspberry Pis. The
+        `'blinka'` backend may be less performant and requires installing the
+        ``Adafruit-Blinka``, ``adafruit-circuitpython-busdevice``, and
+        ``adafruit-circuitpython-mcp9600`` packages, which are compatible with
+        and maintained on a wide variety of boards.
       thermocouple_type: The type of thermocouple connected to the MCP9600. The
         possible types are:
         ::

@@ -8,9 +8,9 @@ from .meta_block import Block
 class LinkReader(Block):
   """This Block reads and displays the data it receives.
   
-  It can display data received from any number of :class:`~crappy.links.Link`.
-  For each new received data point, a message is displayed in the console with
-  the received values.
+  It can display data received from any number of
+  :class:`~crappy.links.link.Link`. For each new received data point, a message
+  is displayed in the console with the received values.
   
   This Block is the most basic way of displaying data in Crappy. The 
   :class:`~crappy.blocks.Dashboard` Block can be used for a nicer layout, and 
@@ -75,7 +75,8 @@ class LinkReader(Block):
     return cls._index
 
   def prepare(self) -> None:
-    """Checks that there's at least one incoming :class:`~crappy.links.Link`.
+    """Checks that there's at least one incoming
+    :class:`~crappy.links.link.Link`.
 
     .. versionadded:: 2.0.9
     """
@@ -84,7 +85,7 @@ class LinkReader(Block):
       raise IOError("No Link pointing towards the LinkReader Block !")
 
   def loop(self) -> None:
-    """Flushes the incoming :class:`~crappy.links.Link` and displays their
+    """Flushes the incoming :class:`~crappy.links.link.Link` and displays their
     data.
 
     .. versionchanged:: 2.0.9 Now displaying individual received messages

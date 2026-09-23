@@ -1,5 +1,6 @@
 ﻿*.pyd
 *.pyc
+__pycache__/
 *.mcf
 *.egg-info
 *.kate-swp

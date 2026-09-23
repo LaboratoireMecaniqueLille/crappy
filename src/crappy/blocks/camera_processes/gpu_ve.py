@@ -54,9 +54,10 @@ class GPUVEProcess(CameraProcess):
         in this class.
       kernel_file: The path to the file containing the kernels to use for the
         correlation. Can be a :obj:`pathlib.Path` object or a :obj:`str`. If
-        not provided, the default :ref:`GPU Kernels` are used. This argument is
-        passed to the :class:`~crappy.tool.image_processing.GPUCorrelTool` and
-        not used in this class.
+        not provided, the default :ref:`GPU Kernels <gpu-kernels>` are used.
+        This argument is passed to the
+        :class:`~crappy.tool.image_processing.GPUCorrelTool` and not used in
+        this class.
       iterations: The maximum number of iterations to run before returning the
         results. The results may be returned before if the residuals start
         increasing. This argument is passed to the

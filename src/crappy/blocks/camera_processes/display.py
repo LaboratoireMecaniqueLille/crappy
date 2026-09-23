@@ -34,7 +34,7 @@ class Displayer(CameraProcess):
   :class:`~crappy.blocks.VideoExtenso` Block in real time.
 
   The images can be displayed using two different backends : either using
-  :mod:`cv2` (OpenCV), or using :mod:`matplotlib`. OpenCV is by far the fastest
+  ``cv2`` (OpenCV), or using :mod:`matplotlib`. OpenCV is by far the fastest
   and most convenient.
 
   .. versionadded:: 2.0.0
@@ -52,7 +52,7 @@ class Displayer(CameraProcess):
       framerate: The target framerate for the display. The actual achieved
         framerate might be lower, but never greater than this value.
       backend: The module to use for displaying the images. Can be either
-        ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` or
+        ``'cv2'`` or ``'mpl'``, to use respectively ``cv2`` or
         :mod:`matplotlib`.
     """
 
@@ -221,8 +221,9 @@ class Displayer(CameraProcess):
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay` to
     draw on top of the displayed image.
     
-    It repeatedly polls the :obj:`~multiprocessing.Connection` through which
-    the Overlays are received, and stores the last received Overlays.
+    It repeatedly polls the :obj:`~multiprocessing.connection.Connection`
+    through which the Overlays are received, and stores the last received
+    Overlays.
     """
 
     # Looping until the entire CameraProcess is told to stop, or the 
@@ -246,7 +247,7 @@ class Displayer(CameraProcess):
     self.log(logging.INFO, "Thread for receiving the Overlays ended")
 
   def _prepare_cv2(self) -> None:
-    """Instantiates the display window of :mod:`cv2`."""
+    """Instantiates the display window of ``cv2``."""
 
     try:
       flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
@@ -262,7 +263,7 @@ class Displayer(CameraProcess):
 
   def _update_cv2(self, img: np.ndarray) -> None:
     """Reshapes the image to a maximum shape of 640x480 and displays it in 
-    :mod:`cv2`."""
+    ``cv2``."""
 
     if img.shape[0] > 480 or img.shape[1] > 640:
       factor = min(480 / img.shape[0], 640 / img.shape[1])
@@ -294,7 +295,7 @@ class Displayer(CameraProcess):
     plt.show()
 
   def _finish_cv2(self) -> None:
-    """Destroys the opened :mod:`cv2` window."""
+    """Destroys the opened ``cv2`` window."""
 
     if self._title is not None:
       cv2.destroyWindow(self._title)

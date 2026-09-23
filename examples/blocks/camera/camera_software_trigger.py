@@ -1,25 +1,23 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the Camera Block, for the use case of
-triggering the image acquisition using a software trigger. The acquired images
-are then displayed. It does not require any hardware to run, but necessitates
-the opencv-python and Pillow modules to be installed.
+This example demonstrates how to trigger Camera Block image acquisition using
+a software trigger. The acquired images are then displayed. It does not require
+any hardware to run, but necessitates the opencv-python and Pillow modules to
+be installed.
 
-It acquires images on a fake camera, and displays them in a small visualization
-window. Before the test starts, it also lets the user adjust some settings on
-the camera in a configuration window. The difference with the basic display
-example is that here a Button Block lets the user decide when to acquire the
-images. The trigger is only active once the test starts, so the configuration
-window runs normally. Note that in addition, A StopButton Block allows stopping
-the script properly without using CTRL+C by clicking on a button.
+It acquires images from a fake camera and displays them in a small
+visualization window. Before the test starts, it also lets the user adjust some
+settings on the camera in a configuration window. The difference with the basic
+display example is that here a Button Block lets the user decide when to
+acquire the images. The trigger is only active once the test starts, so the
+configuration window runs normally.
 
 After starting this script, you can play with the parameters in the
 configuration window. Once you're done, close the configuration window. Then,
 click on the button to trigger an image acquisition and watch the acquired
 images be broadcast in the displayer window. To end this demo, click on the
-stop button that appears. You can also hit CTRL+C, but it is not a clean way to
-stop Crappy.
+stop button that appears.
 """
 
 import crappy
@@ -42,7 +40,7 @@ if __name__ == '__main__':
   # The Block in charge of acquiring the images and displaying them
   # It will only trigger an acquisition when receiving a signal over the
   # specified label
-  # It also displays a configuration windows before the test starts, in which
+  # It also displays a configuration window before the test starts, in which
   # the user can tune a few parameters of the Camera
   # Here, a fake camera is used so that no hardware is required
   cam = crappy.blocks.Camera(

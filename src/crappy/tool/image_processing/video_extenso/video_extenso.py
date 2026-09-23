@@ -18,8 +18,9 @@ class VideoExtensoTool:
   """This class is the core of the :class:`~crappy.blocks.VideoExtenso` Block.
 
   It performs spot tracking on up to `4` spots on the images acquired by the
-  :class:`~crappy.camera.Camera`, and computes the strain values at each new 
-  image. For each spot, the tracking is performed by an independent
+  :class:`~crappy.camera.meta_camera.camera.Camera`, and computes the strain
+  values at each new image. For each spot, the tracking is performed by an
+  independent
   :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` Process.
 
   This tool is created by

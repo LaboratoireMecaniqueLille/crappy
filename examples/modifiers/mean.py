@@ -21,8 +21,7 @@ Mean Modifier is always close to 0.
 After starting this script, just watch how the raw signal is transformed by the
 Mean Modifier and averaged to 0. Also notice how the initial data rate of the
 signal is divided when passing through the Mean Modifier. This demo ends after
-22s. You can also hit CTRL+C to stop it earlier, but it is not a clean way to
-stop Crappy.
+22 seconds. Click the stop button to end the demo early.
 """
 
 import crappy
@@ -42,13 +41,14 @@ if __name__ == '__main__':
   )
 
   # This Grapher Block displays the raw sine wave it receives from the
-  # Generator. As the Generator runs at 30Hz, 30 data points are received each
+  # Generator. As the Generator runs at 30 Hz, 30 data points are received each
   # second for display
   graph = crappy.blocks.Grapher(
       ('t(s)', 'sine'),  # The names of the labels to plot on the graph
       interp=False,  # Not linking the displayed spots, to better see the
       # frequency of the input
-      length=150,  # Only displaying the data for the last 150 points (~5s)
+      length=150,  # Only displaying the data for the last 150 points (~5
+      # seconds)
 
       # Sticking to default for the other arguments
   )
@@ -62,7 +62,7 @@ if __name__ == '__main__':
       ('t(s)', 'sine'),  # The names of the labels to plot on the graph
       interp=False,  # Not linking the displayed spots, to better see the
       # frequency of the input
-      length=5,  # Only displaying the data for the last 5 points (~5s)
+      length=5,  # Only displaying the data for the last 5 points (~5 seconds)
 
       # Sticking to default for the other arguments
   )
@@ -74,6 +74,9 @@ if __name__ == '__main__':
               # wave before sending to the Grapher. A data point is sent for
               # display once every 30 received points
               modifier=crappy.modifier.Mean(30))
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

@@ -30,10 +30,10 @@ class Cyclic(Path):
 
     Args:
       condition1: The condition for switching to ``value2``. Refer to
-        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path` for more
         information.
       condition2: The condition for switching to ``value1``. Refer to
-        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path` for more
         information.
       value1: First value to send.
       value2: Second value to send.

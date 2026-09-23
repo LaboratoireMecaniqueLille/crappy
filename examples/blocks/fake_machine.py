@@ -6,17 +6,17 @@ any specific hardware to run, but necessitates the matplotlib Python module to
 be installed.
 
 This Block simulates the behavior of a tensile test machine. It takes a speed
-or position command as an input, and outputs the position, force and strain on
-the simulated sample. The parameters of the samples can be adjusted.
+or position command as input and outputs the position, force, and strain of the
+simulated sample. The sample parameters can be adjusted.
 
-In this example, a monotonic cyclic stretching with relaxation to 0 force is
-applied to the FakeMachine bu a Generator Block. The force-strain curve of
-the test is displayed by a Grapher Block.
+In this example, a Generator Block applies cyclic, monotonically increasing
+stretching with relaxation to zero force to the FakeMachine. A Grapher Block
+displays the test's force-strain curve.
 
 After starting this script, watch the force-strain curve being displayed. After
 a few cycles, the plastic behavior of the sample should be clearly visible.
-This demo ends after a few minutes. You can also hit CTRL+C to stop it earlier,
-but it is not a clean way to stop Crappy.
+This demo ends after a few minutes. Click the stop button to end the demo
+early.
 """
 
 import crappy
@@ -28,8 +28,8 @@ if __name__ == '__main__':
   # and relaxation until 0 force is reached
   gen = crappy.blocks.Generator(
       # To build the path, using list addition and f-string formatting
-      # The first path drives the FakeMachine to the desired strain ,the second
-      # releases it to a 0 effort state
+      # The first path drives the FakeMachine to the desired strain, the second
+      # releases it to a zero-force state
       sum([[{'type': 'Constant',
              'value': 5 / 60,
              'condition': f'Exx(%)>{i / 3}'},
@@ -55,17 +55,20 @@ if __name__ == '__main__':
       # Sticking to default for the other arguments
       )
 
-  # This Grapher plots the stress-strain (actually force-strain) curve of the
-  # sample emulated by the FakeMachine
+  # This Grapher plots the force-strain curve of the sample emulated by the
+  # FakeMachine
   graph = crappy.blocks.Grapher(('Exx(%)', 'F(N)'))
 
-  # Linking the Blocks together so that each one sends and received the correct
+  # Linking the Blocks together so that each one sends and receives the correct
   # information
-  # The Generator drives the FakeMachine, but also takes decision based on its
+  # The Generator drives the FakeMachine but also makes decisions based on its
   # feedback
   crappy.link(gen, machine)
   crappy.link(machine, gen)
   crappy.link(machine, graph)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

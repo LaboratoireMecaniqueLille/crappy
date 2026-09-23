@@ -19,8 +19,9 @@ class LostPatchError(Exception):
 class DICVETool:
   """This class is the core of the :class:`~crappy.blocks.DICVE` Block.
 
-  It tracks patches on images received from a :class:`~crappy.camera.Camera` 
-  object, and computes a strain value at each new image.
+  It tracks patches on images received from a
+  :class:`~crappy.camera.meta_camera.camera.Camera` object, and computes a
+  strain value at each new image.
 
   It relies on cross-correlation algorithms to calculate the displacement.
   Different algorithms are available depending on the needs. This tool is

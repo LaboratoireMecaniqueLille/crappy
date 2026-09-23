@@ -9,17 +9,14 @@ The Generator Block outputs a signal following a provided path. Several paths
 are available, each with a different behavior and different options. They can
 be combined to form a custom global path.
 
-Here, the Generator is used to output a very complex path, creating using list
-comprehension and f-strings. The overall shape of this path could have been
+Here, the Generator is used to output a very complex path, created using list
+comprehensions and f-strings. The overall shape of this path could have been
 generated more smoothly by other means, but the goal here is to show the
-potential complexity of the Generator paths. Note that in addition, A
-StopButton Block allows stopping the script properly without using CTRL+C by
-clicking on a button.
+potential complexity of the Generator paths.
 
 After starting this script, you can visualize the shape of the generated signal
 in the Grapher window. Take a moment to contemplate how twisted the path
-instantiation is. To end this demo, click on the stop button that appears. You
-can also hit CTRL+C, but it is not a clean way to stop Crappy.
+instantiation is. To end this demo, click on the stop button that appears.
 """
 
 import crappy
@@ -33,11 +30,11 @@ if __name__ == '__main__':
   # The idea is to show how complex and customized the Generator paths can get
   # in Crappy
   path = sum(([{'type': 'Constant',
-                'condition': f"""delay={2 * (acos(1 - 2 * (i + 1) / 20) - 
+                'condition': f"""delay={2 * (acos(1 - 2 * (i + 1) / 20) -
                                              acos(1 - 2 * i / 20))}""",
                 'value': 1 - 2 * i / 20} for i in range(20)],
              [{'type': 'Constant',
-               'condition': f"""delay={2 * (acos(-1 + 2 * i / 20) - 
+               'condition': f"""delay={2 * (acos(-1 + 2 * i / 20) -
                                             acos(-1 + 2 * (i + 1) / 20))}""",
                'value': -1 + 2 * i / 20} for i in range(20)]), list())
 

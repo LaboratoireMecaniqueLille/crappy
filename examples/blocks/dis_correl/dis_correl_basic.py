@@ -10,15 +10,16 @@ inverse search on a given patch. It outputs the averages of the computed
 fields over the entire patch.
 
 In this example, a fake strain is generated on a static image of a sample with
-a speckle. The level of strain is controlled by a Generator Block, and applied
-to the images by the DISCorrel Block. This same DISCorrel Block then calculates
-the strain on the images, and outputs it to a Grapher Block for display.
+a speckle pattern. The level of strain is controlled by a Generator Block and
+applied to the images by the DISCorrel Block. The same DISCorrel Block then
+calculates the strain in the images and outputs it to a Grapher Block for
+display.
 
 After starting this script, you have to select the patch in the configuration
 window. Draw the patch by left-clicking and dragging. Then, close the
 configuration window and watch the strain be calculated in real time. This demo
-normally ends automatically after 2 minutes. You can also hit CTRL+C to stop it
-earlier, but it is not a clean way to stop Crappy.
+normally ends automatically after 2 minutes. Click the stop button to end the
+demo early.
 """
 
 import crappy
@@ -39,7 +40,7 @@ if __name__ == '__main__':
         'condition1': 'Exx(%)>20',  # Stretching until 20% strain
         'condition2': 'Exx(%)<0',  # Relaxing until 0% strain
         'cycles': 3,  # The test stops after 3 cycles
-        'init_value': 0},),  # Mandatory to give as it's the first Path
+        'init_value': 0},),  # Required because this is the first Path
       freq=50,  # Lowering the default frequency because it's just a demo
       cmd_label='Exx(%)',  # The generated signal corresponds to a strain
 
@@ -54,10 +55,10 @@ if __name__ == '__main__':
   disco = crappy.blocks.DISCorrel(
       '',  # The name of Camera to open is ignored because image_generator is
       # given
-      config=True,  # Displaying the configuration window before starting,
-      # mandatory if the patches to track ar not given as arguments
-      display_images=True,  # The displayer window will allow to follow the
-      # patches on the speckle image
+      config=True,  # Displaying the configuration window before starting
+      # Mandatory if the patch to track is not given as an argument
+      display_images=True,  # The displayer window follows the patch on the
+      # speckle image
       freq=50,  # Lowering the default frequency because it's just a demo
       save_images=False,  # We don't want images to be recorded in this demo
       image_generator=crappy.tool.ApplyStrainToImage(img),  # This argument
@@ -75,16 +76,19 @@ if __name__ == '__main__':
       # Sticking to default for the other arguments
   )
 
-  # This Grapher displays the extension as computed by the DISCorrel Block
+  # This Grapher displays the strain computed by the DISCorrel Block
   graph = crappy.blocks.Grapher(('t(s)', 'Exx(%)'))
 
-  # Linking the Blocks together so that each one sends and received the correct
+  # Linking the Blocks together so that each one sends and receives the correct
   # information
-  # The Generator drives the DISCorrel, but also takes decision based on its
+  # The Generator drives the DISCorrel but also makes decisions based on its
   # feedback
   crappy.link(gen, disco)
   crappy.link(disco, gen)
   crappy.link(disco, graph)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

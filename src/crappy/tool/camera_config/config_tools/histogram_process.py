@@ -38,10 +38,10 @@ class HistogramProcess(Process):
       processing_event: An :obj:`multiprocessing.Event` set by the
         :obj:`multiprocessing.Process` to indicate that it's currently
         processing an image. Avoids having images to process piling up.
-      img_in: The :class:`~multiprocessing.queues.Queue` through which
-        the images to process are received.
-      img_out: The :class:`~multiprocessing.queues.Queue` through which
-        the calculated histograms are sent back.
+      img_in: The :obj:`~multiprocessing.Queue` through which the images to
+        process are received.
+      img_out: The :obj:`~multiprocessing.Queue` through which the calculated
+        histograms are sent back.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
       log_queue: A :class:`multiprocessing.Queue` for sending the log messages
@@ -147,7 +147,7 @@ class HistogramProcess(Process):
 
   @staticmethod
   def _flush_queue(queue: Queue) -> None:
-    """Helper for flushing a :class:`~multiprocessing.queues.Queue` before
+    """Helper for flushing a :obj:`~multiprocessing.Queue` before
     exiting.
 
     On Windows, not empty queues can prevent the HistogramProcess from

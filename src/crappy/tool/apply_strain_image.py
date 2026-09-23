@@ -11,18 +11,23 @@ except (ModuleNotFoundError, ImportError):
 
 
 class ApplyStrainToImage:
-  """This class reshapes an image depending on input strain values. It is meant
-  to simulate the stretching of a sample during a tensile test.
+  """Deforms an image according to horizontal and vertical strain values.
 
-  Its main use case is for generating example scripts that do not require any
-  hardware to run.
+  Instances are callable and can be passed as the ``image_generator`` of a
+  :class:`~crappy.blocks.vision.CameraSource` or
+  :class:`~crappy.blocks.Camera`. This supports image-processing examples and
+  tests without a physical camera.
   
   .. versionadded:: 2.0.0
   """
 
   def __init__(self,
                image: np.ndarray) -> None:
-    """Sets the base image and initializes the necessary objects to use."""
+    """Prepares the lookup arrays used to deform the reference image.
+
+    Args:
+      image: Two- or three-dimensional reference image.
+    """
 
     self._img = image
 
@@ -39,7 +44,15 @@ class ApplyStrainToImage:
     self._y_strain = self._orig_y * height / (height - 1) - height / 2
 
   def __call__(self, exx: float, eyy: float) -> np.ndarray:
-    """Returns the reshaped image, based on the given strain values."""
+    """Returns the reference image deformed by the requested strains.
+
+    Args:
+      exx: Horizontal strain in percent.
+      eyy: Vertical strain in percent.
+
+    Returns:
+      Deformed image with the same shape and data type as the reference.
+    """
 
     exx /= 100
     eyy /= 100

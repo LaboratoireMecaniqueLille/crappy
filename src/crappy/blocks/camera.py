@@ -34,19 +34,19 @@ class DummyCam(BaseCam):
 
 
 class Camera(Block):
-  """This Block can drive a :class:`~crappy.camera.Camera` object. It can 
-  acquire images, display them and record them. It can only drive one Camera at
-  once.
+  """This Block can drive a :class:`~crappy.camera.meta_camera.camera.Camera`
+  object. It can acquire images, display them and record them. It can only
+  drive one Camera at once.
   
-  It takes no input :class:`~crappy.links.Link` in a majority of situations,
-  and usually doesn't have output Links neither. The only situations when it
-  can accept input Links is when an ``image_generator`` is defined, or when
-  defining a ``software_trig_label``. If ``save_images`` is set to :obj:`True`,
-  and if an output Link is present, a message is sent to downstream Blocks at
-  each saved image, containing the timestamp, the index, and the metadata of
-  the image. They are respectively carried by the `'t(s)'`, `'img_index'` and
-  `'meta'` labels. This is useful for performing an action conditionally at
-  each new saved image.
+  It takes no input :class:`~crappy.links.link.Link` in a majority of
+  situations, and usually doesn't have output Links neither. The only
+  situations when it can accept input Links is when an ``image_generator`` is
+  defined, or when defining a ``software_trig_label``. If ``save_images`` is
+  set to :obj:`True`, and if an output Link is present, a message is sent to
+  downstream Blocks at each saved image, containing the timestamp, the index,
+  and the metadata of the image. They are respectively carried by the `'t(s)'`,
+  `'img_index'` and `'meta'` labels. This is useful for performing an action
+  conditionally at each new saved image.
 
   Most of the time, this Block is used for recording to the desired location
   the images it acquires. Optionally, the images can also be displayed in a
@@ -58,7 +58,7 @@ class Camera(Block):
   :class:`~crappy.tool.camera_config.CameraConfig` window in which the user can
   visualize the acquired images, and interactively tune all the 
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` available
-  for the instantiated :class:`~crappy.camera.Camera`. 
+  for the instantiated :class:`~crappy.camera.meta_camera.camera.Camera`.
   
   Internally, this Block is only in charge of the image acquisition, and the 
   other tasks are parallelized and delegated to 
@@ -98,9 +98,9 @@ class Camera(Block):
     """Sets the arguments and initializes the parent class.
     
     Args:
-      camera: The name of the :class:`~crappy.camera.Camera` object to use for
-        acquiring the images. Arguments can be passed to this Camera as 
-        ``kwargs`` of this Block. This argument is ignored if the 
+      camera: The name of the :class:`~crappy.camera.meta_camera.camera.Camera`
+        object to use for acquiring the images. Arguments can be passed to this
+        Camera as ``kwargs`` of this Block. This argument is ignored if the
         ``image_generator`` argument is provided.
       transform: A callable taking an image as an argument, and returning a
         transformed image as an output. Allows applying a post-processing
@@ -116,10 +116,11 @@ class Camera(Block):
         before the test starts. There, the user can interactively adjust the 
         different 
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` 
-        available for the selected :class:`~crappy.camera.Camera`, and 
-        visualize the acquired images. The test starts when closing the 
-        configuration window. If not enabled, the ``img_dtype`` and 
-        ``img_shape`` arguments must be provided.
+        available for the selected
+        :class:`~crappy.camera.meta_camera.camera.Camera`, and visualize the
+        acquired images. The test starts when closing the configuration window.
+        If not enabled, the ``img_dtype`` and ``img_shape`` arguments must be
+        provided.
 
         .. versionadded:: 1.5.10
       display_images: If :obj:`True`, displays the acquired images in a
@@ -133,7 +134,7 @@ class Camera(Block):
         .. versionchanged:: 1.5.10
            renamed from *show_image* to *display_images*
       displayer_backend: The backend to use for displaying the images. Can be
-        either ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` (OpenCV)
+        either ``'cv2'`` or ``'mpl'``, to use respectively ``cv2`` (OpenCV)
         or :mod:`matplotlib`. ``'cv2'`` usually allows achieving a higher
         display frequency. Ignored if ``display_images`` is :obj:`False`. If
         not given and ``display_images`` is :obj:`True`, ``'cv2'`` is tried
@@ -147,12 +148,12 @@ class Camera(Block):
 
         .. versionadded:: 1.5.10
       software_trig_label: The name of a label used as a software trigger for 
-        the :class:`~crappy.camera.Camera`. If given, images will only be 
-        acquired when receiving data over this label. The received value does
-        not matter. This software trigger is not meant to be very precise, it
-        is recommended not to rely on it for a trigger frequency greater than
-        10Hz, in which case a hardware trigger should be preferred if available
-        on the camera.
+        the :class:`~crappy.camera.meta_camera.camera.Camera`. If given, images
+        will only be acquired when receiving data over this label. The received
+        value does not matter. This software trigger is not meant to be very
+        precise, it is recommended not to rely on it for a trigger frequency
+        greater than 10Hz, in which case a hardware trigger should be preferred
+        if available on the camera.
 
         .. versionadded:: 2.0.0
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -176,11 +177,13 @@ class Camera(Block):
         the name : ``<frame_nr>_<timestamp>.<extension>``, and can thus easily
         be identified. Along with the images, a ``metadata.csv`` file records 
         the metadata of all the saved images. This metadata is either the one 
-        returned by the :meth:`~crappy.camera.Camera.get_image` method of the
-        :class:`~crappy.camera.Camera` object, or the default one generated in
-        the :meth:`loop` method of this Block. Depending on the framerate of
-        the camera and the performance of the computer, it is not guaranteed 
-        that all the acquired images will be recorded.
+        returned by the
+        :meth:`~crappy.camera.meta_camera.camera.Camera.get_image` method of
+        the :class:`~crappy.camera.meta_camera.camera.Camera` object, or the
+        default one generated in the :meth:`loop` method of this Block.
+        Depending on the framerate of the camera and the performance of the
+        computer, it is not guaranteed that all the acquired images will be
+        recorded.
 
         .. versionadded:: 1.5.10
       img_extension: The file extension for the recorded images, as a
@@ -215,8 +218,8 @@ class Camera(Block):
 
           'sitk', 'pil', 'cv2', 'npy'
         
-        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
-        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
+        They correspond to the modules ``SimpleITK``, :mod:`PIL` (Pillow
+        Fork), ``cv2`` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
         backend saves the images as raw :obj:`numpy.array`, and thus ignores
         the ``img_extension`` argument. Depending on the machine, some backends
         may be faster or slower. For using each backend, the corresponding 
@@ -236,22 +239,23 @@ class Camera(Block):
 
         .. versionadded:: 1.5.10
       img_shape: The shape of the images returned by the 
-        :class:`~crappy.camera.Camera` object as a :obj:`tuple` of :obj:`int`.
-        It should correspond to the value returned by :obj:`numpy.shape`. 
-        **This argument is mandatory in case** ``config`` **is** :obj:`False`.
-        It is otherwise ignored.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object as a
+        :obj:`tuple` of :obj:`int`. It should correspond to the value returned
+        by :obj:`numpy.shape`. **This argument is mandatory in case**
+        ``config`` **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       img_dtype: The `dtype` of the images returned by the
-        :class:`~crappy.camera.Camera` object, as a :obj:`str`. It should
-        correspond to a valid data type in :mod:`numpy`, e.g. ``'uint8'``.
-        **This argument is mandatory in case** ``config`` **is** :obj:`False`.
-        It is otherwise ignored.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, as a
+        :obj:`str`. It should correspond to a valid data type in :mod:`numpy`,
+        e.g. ``'uint8'``. **This argument is mandatory in case** ``config``
+        **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       **kwargs: Any additional argument will be passed to the 
-        :class:`~crappy.camera.Camera` object, and used as a kwarg to its
-        :meth:`~crappy.camera.Camera.open` method.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, and used as a
+        kwarg to its :meth:`~crappy.camera.meta_camera.camera.Camera.open`
+        method.
     
     .. versionadded:: 1.5.2 *no_loop* argument
     .. versionremoved:: 1.5.10
@@ -440,8 +444,8 @@ class Camera(Block):
     """Preparing the save folder, opening the camera and displaying the
     configuration GUI.
     
-    This method calls the :meth:`crappy.camera.Camera.open` method of the
-    :class:`~crappy.camera.Camera` object.
+    This method calls the :meth:`crappy.camera.meta_camera.camera.Camera.open`
+    method of the :class:`~crappy.camera.meta_camera.camera.Camera` object.
     """
 
     # Instantiating the synchronization objects
@@ -694,14 +698,14 @@ class Camera(Block):
 
   def loop(self) -> None:
     """This method receives data from upstream Blocks, acquires a frame from 
-    the :class:`~crappy.camera.Camera` object, and transmits it to all the 
-    :class:`~crappy.blocks.camera_processes.CameraProcess`.
+    the :class:`~crappy.camera.meta_camera.camera.Camera` object, and transmits
+    it to all the :class:`~crappy.blocks.camera_processes.CameraProcess`.
 
     The image is acquired by calling the 
-    :meth:`~crappy.camera.Camera.get_image` method of the Camera object. If
-    only a timestamp is returned by this method, and not a complete :obj:`dict`
-    of metadata, some basic metadata is generated here and transmitted to the
-    CameraProcesses.
+    :meth:`~crappy.camera.meta_camera.camera.Camera.get_image` method of the
+    Camera object. If only a timestamp is returned by this method, and not a
+    complete :obj:`dict` of metadata, some basic metadata is generated here and
+    transmitted to the CameraProcesses.
     
     This method also manages the software trigger if this option was set, 
     applies the image transformation function if one was given, and displays
@@ -796,14 +800,14 @@ class Camera(Block):
 
   def finish(self) -> None:
     """This method stops the image acquisition on the 
-    :class:`~crappy.camera.Camera`, as well as all the 
+    :class:`~crappy.camera.meta_camera.camera.Camera`, as well as all the
     :class:`~crappy.blocks.camera_processes.CameraProcess` that were started.
     
     If the CameraProcesses do not gently stop, they are terminated. Also stops
     the :obj:`~multiprocessing.Manager` in charge of handling the metadata.
     
-    For stopping the image acquisition, the :meth:`~crappy.camera.Camera.close`
-    method is called.
+    For stopping the image acquisition, the
+    :meth:`~crappy.camera.meta_camera.camera.Camera.close` method is called.
     """
 
     # Closing the Camera object

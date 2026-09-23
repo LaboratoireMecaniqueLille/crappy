@@ -13,10 +13,9 @@ data, the Block also renames one label for a better integration on the client
 side.
 
 Before starting this script, make sure that the client.py example was started.
-Once it is started and a graph is displayed, you can start this one. Not much
-changes once this script starts, except a second curve should start being
-drawn on the graph. This script must be stopped by hitting CTRL+C, and it
-should be stopped before stopping the client.py one.
+Once it is running and a graph is displayed, start this script. A second curve
+should begin to appear on the graph. When you are finished, click this script's
+stop button before clicking the client.py stop button.
 """
 
 import crappy
@@ -39,10 +38,10 @@ if __name__ == '__main__':
 
   # This Generator generates the data to send to the client
   # This data is a CyclicRamp, starting from 0 and oscillating between 10 and
-  # -10 with a period of approximately 10s
+  # -10 with a period of approximately 10 seconds
   gen = crappy.blocks.Generator(
-      # The CyclicRamp to send to the server. A feedback loop allows to switch
-      # to the next slope of the ramp
+      # The CyclicRamp to send to the server. A feedback loop controls the
+      # switch to the next slope of the ramp
       ({'type': 'CyclicRamp', 'condition1': 'value>10',
         'condition2': 'value<-10', 'speed1': 2, 'speed2': -2, 'cycles': 0,
         'init_value': 0},),
@@ -77,6 +76,8 @@ if __name__ == '__main__':
   # the 'flag' label
   crappy.link(gen, server, modifier=is_positive)
 
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
+
   # Mandatory line for starting the test, this call is blocking
-  # Setting no_raise because CTRL+C is the most natural way to stop this demo
-  crappy.start(no_raise=True)
+  crappy.start()

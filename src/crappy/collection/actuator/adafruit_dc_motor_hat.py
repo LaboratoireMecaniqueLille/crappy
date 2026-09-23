@@ -50,14 +50,15 @@ class DCMotorHat(Actuator):
 
   It can drive up to four DC motors in speed only. The acquisition of the speed
   has not been implemented so far. It can either rely on Adafruit's Blinka
-  library, or on :mod:`smbus2` if used from a Raspberry Pi.
+  library, or on :external+smbus2:mod:`smbus2` if used from a Raspberry Pi.
 
   Important:
     As this Actuator can drive up to 4 motors simultaneously, it takes a
     :obj:`tuple` as a command, see :meth:`set_speed`. Regular Actuators receive
-    their commands as :obj:`float`. A :class:`~crappy.modifier.Modifier` can be
-    used for converting a :obj:`float` command from a
-    :class:`~crappy.blocks.Generator` to a :obj:`tuple`.
+    their commands as :obj:`float`. A
+    :class:`~crappy.modifier.meta_modifier.modifier.Modifier` can be used for
+    converting a :obj:`float` command from a :class:`~crappy.blocks.Generator`
+    to a :obj:`tuple`.
 
   Note:
     The DC Motor Hat can also drive stepper motors, but this feature isn't
@@ -79,11 +80,10 @@ class DCMotorHat(Actuator):
           'Pi4', 'blinka'
 
         The `'Pi4'` backend is optimized but only works on boards supporting
-        the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing
-        :mod:`adafruit-circuitpython-motorkit` and :mod:`Adafruit-Blinka`, but
-        these modules are compatible with and maintained on a wide variety of
-        boards.
+        the :external+smbus2:mod:`smbus2` module, like the Raspberry Pis. The
+        `'blinka'` backend may be less performant and requires installing the
+        ``adafruit-circuitpython-motorkit`` and ``Adafruit-Blinka`` packages,
+        which are compatible with and maintained on a wide variety of boards.
       device_address: The I2C address of the HAT. The default address is
         `0x60`, but it is possible to change this setting by cutting traces on
         the board.

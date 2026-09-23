@@ -66,8 +66,9 @@ class PiJuice(InOut):
 
           'Pi4', 'pijuice'
 
-        The `'Pi4'` backend is based on the :mod:`smbus2` module, while the
-        `'pijuice'` backend is based on the :mod:`pijuice` module.
+        The `'Pi4'` backend is based on the :external+smbus2:mod:`smbus2`
+        module, while the `'pijuice'` backend is based on the ``pijuice``
+        module.
         
         .. versionadded:: 1.5.10
       i2c_port: The I2C port over which the PiJuice should communicate.

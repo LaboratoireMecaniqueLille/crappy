@@ -423,7 +423,7 @@ class LinkGraph:
     """Removes every node and edge, returning the graph to its initial state.
 
     This operation is idempotent. The module-level graph is reset together
-    with :meth:`crappy.blocks.Block.reset`.
+    with :meth:`~crappy.blocks.meta_block.block.Block.reset`.
     """
 
     self._nodes.clear()

@@ -1,0 +1,191 @@
+digraph link_and_image_link_transport {
+  graph [
+    rankdir=TB,
+    bgcolor="#FFFFFF",
+    pad="0.10",
+    nodesep="0.30",
+    ranksep="0.42",
+    splines=ortho,
+    newrank=true,
+    outputorder=edgesfirst,
+    fontname="Helvetica",
+    fontcolor="#24313F",
+    compound=true
+  ];
+
+  node [
+    shape=box,
+    style=filled,
+    fillcolor="#F5F8FC",
+    color="#557896",
+    penwidth=1.25,
+    fontname="Helvetica",
+    fontsize=11,
+    fontcolor="#1F2B37",
+    margin="0.17,0.10"
+  ];
+
+  edge [
+    fontname="Helvetica",
+    fontsize=8.6,
+    color="#000000",
+    fontcolor="#64717E",
+    penwidth=1.10,
+    arrowsize=0.66
+  ];
+
+
+  /* ============================================================
+     LEFT: REGULAR LINK
+     ============================================================ */
+
+  subgraph cluster_regular {
+    label="Regular Link: ordered dictionaries in a finite pipe";
+    labelloc=t;
+    labeljust=l;
+    fontsize=10.8;
+    fontname="Helvetica";
+    fontcolor="#24313F";
+    color="#222222";
+    penwidth=1.0;
+    style="rounded,filled";
+    fillcolor="#FBFCFE";
+    margin=10;
+
+    regular_top [
+      label="",
+      shape=point,
+      width=0,
+      height=0,
+      style=invis
+    ];
+
+    regular_source [
+      label="Source Block",
+      shape=box,
+      style="rounded,filled",
+      fillcolor="#FBFCFE",
+      color="#000000",
+      penwidth=1.25
+    ];
+
+    pipe [
+      label="Pipe buffer\noldest  {t: 1, force: 8}\n             {t: 2, force: 9}\nnewest   {t: 3, force: 11}",
+      shape=box,
+      style=filled,
+      fillcolor="#F5F8FC",
+      color="#557896",
+      penwidth=1.25
+    ];
+
+    regular_consumer [
+      label="Destination Block\nchooses oldest, newest, or a chunk",
+      shape=box,
+      style="rounded,filled",
+      fillcolor="#FBFCFE",
+      color="#000000",
+      penwidth=1.25
+    ];
+
+    regular_top -> regular_source [
+      style=invis,
+      weight=100
+    ];
+
+    regular_source -> pipe [
+      label="    send\l   dictionaries"
+    ];
+
+    pipe -> regular_consumer [
+      label="    receive\l   in order"
+    ];
+  }
+
+
+  /* ============================================================
+     RIGHT: IMAGE LINK
+     ============================================================ */
+
+  subgraph cluster_image {
+    label="ImageLink: one reusable latest-frame buffer";
+    labelloc=t;
+    labeljust=l;
+    fontsize=10.8;
+    fontname="Helvetica";
+    fontcolor="#24313F";
+    color="#8a6d1d";
+    penwidth=1.0;
+    style="rounded,filled";
+    fillcolor="#FBFCFE";
+    margin=10;
+
+    image_top [
+      label="",
+      shape=point,
+      width=0,
+      height=0,
+      style=invis
+    ];
+
+    image_source [
+      label="Producing VisionBlock",
+      shape=box,
+      style="rounded,filled",
+      fillcolor="#FBFCFE",
+      color="#000000",
+      penwidth=1.25
+    ];
+
+    latest [
+      label="Latest coherent state\nframe 42 image + metadata\n(replaces frame 41)",
+      shape=box,
+      style=filled,
+      fillcolor="#F5F8FC",
+      color="#557896",
+      penwidth=1.25
+    ];
+
+    consumer_a [
+      label="Consumer A\nmay see 40, 41, 42",
+      shape=box,
+      style="rounded,filled",
+      fillcolor="#FBFCFE",
+      color="#000000",
+      penwidth=1.25
+    ];
+
+    consumer_b [
+      label="Consumer B\nmay see 40, 42",
+      shape=box,
+      style="rounded,filled",
+      fillcolor="#FBFCFE",
+      color="#000000",
+      penwidth=1.25
+    ];
+
+    image_top -> image_source [
+      style=invis,
+      weight=100
+    ];
+
+    image_source -> latest [
+      label="    overwrite\l   with newest frame"
+    ];
+
+    latest -> consumer_a [
+      label="  copy\n   independently"
+    ];
+
+    latest -> consumer_b [
+
+    ];
+  }
+
+
+  /* Align the TOP of the two outer clusters */
+  {
+    rank=same;
+    regular_top;
+    image_top;
+  }
+}

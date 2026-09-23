@@ -3,9 +3,10 @@
 """
 Program used to control the solidification furnace.
 
-It uses a Labjack T7 to send PWN signals to the transistors controlling the
+It uses a Labjack T7 to send PWM signals to the transistors controlling the
 heating element of each section of the furnace. The temperature of each section
-is measured using a thermocouple.
+is measured using a thermocouple. Click the stop button to end the test
+cleanly.
 """
 
 import crappy
@@ -23,7 +24,7 @@ MEAN = 50
 
 # The pins to drive
 PINS = [0, 2, 3, 4, 5]
-# For which pin the PID value breakout should be displayed, or False
+# The pin for which the PID value breakdown should be displayed, or None
 SHOW_PID = 3
 
 # The target temperature for the different pins
@@ -103,7 +104,7 @@ if __name__ == '__main__':
     pid_list.append(crappy.blocks.PID(P, I if i != 5 else 0, D,
                                       input_label=f'T{i}',
                                       out_max=1, out_min=0,
-                                      i_limit=(0.5, -0.5),
+                                      i_limit=(-0.5, 0.5),
                                       send_terms=(SHOW_PID is not None
                                                   and i == SHOW_PID),
                                       labels=('t(s)', f'pwm{i}')))
@@ -124,6 +125,9 @@ if __name__ == '__main__':
                                       ('t(s)', 'd_term'),
                                       ('t(s)', f'pwm{SHOW_PID}'))
     crappy.link(pid_list[PINS.index(SHOW_PID)], graph_pid)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Starting the test
   crappy.start()

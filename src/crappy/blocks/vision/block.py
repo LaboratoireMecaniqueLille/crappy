@@ -24,9 +24,9 @@ class ConfigRequest:
   """Description of a configuration requested from an image source.
 
   The request is created by a downstream
-  :class:`~crappy.blocks.vision.VisionBlock` in
-  :meth:`~crappy.blocks.vision.VisionBlock.request_config`. Before the Blocks
-  start, Crappy duplicates it and assigns one end of a one-way
+  :class:`~crappy.blocks.vision.block.VisionBlock` in
+  :meth:`~crappy.blocks.vision.block.VisionBlock.request_config`. Before the
+  Blocks start, Crappy duplicates it and assigns one end of a one-way
   :obj:`multiprocessing.Pipe` to the source and the other end to the requester.
 
   Args:
@@ -37,8 +37,8 @@ class ConfigRequest:
       instantiate on the image source.
     img_source: Name of the upstream image source handling the request.
     connection: Pipe endpoint assigned by
-      :meth:`~crappy.blocks.Block.prepare_all`. Requesters receive a readable
-      endpoint and sources receive a writable one.
+      :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`. Requesters
+      receive a readable endpoint and sources receive a writable one.
     completed: Whether the source successfully sent a response.
     required: Whether the requester can start without configuration data. A
       required request must receive a non-:obj:`None` response.
@@ -115,30 +115,32 @@ class ImgData:
 class VisionBlock(Block, ABC):
   """Base class for Blocks that exchange images through shared memory.
 
-  :class:`~crappy.blocks.vision.VisionBlock` extends
-  :class:`~crappy.blocks.Block` with input and output
-  :class:`~crappy.links.ImageLink` support. Regular Links remain
+  :class:`~crappy.blocks.vision.block.VisionBlock` extends
+  :class:`~crappy.blocks.meta_block.block.Block` with input and output
+  :class:`~crappy.links.img_link.ImageLink` support. Regular Links remain
   available for commands, measurements, metadata, and overlays, while
   ImageLinks carry image arrays and their metadata without serializing the
   image through a Pipe.
 
   Each image source owns one shared-memory buffer for all of its downstream
-  ImageLinks. :meth:`~crappy.blocks.vision.VisionBlock.send_img` updates that
-  buffer atomically under a shared lock, and
-  :meth:`~crappy.blocks.vision.VisionBlock.receive_imgs` copies its newest
-  contents into a local buffer in each consumer. ImageLinks therefore expose
-  the latest frame rather than a queue: a slow consumer can skip intermediate
-  images, but never reads a partially updated image or mismatched metadata.
+  ImageLinks. :meth:`~crappy.blocks.vision.block.VisionBlock.send_img` updates
+  that buffer atomically under a shared lock, and
+  :meth:`~crappy.blocks.vision.block.VisionBlock.receive_imgs` copies its
+  newest contents into a local buffer in each consumer. ImageLinks therefore
+  expose the latest frame rather than a queue: a slow consumer can skip
+  intermediate images, but never reads a partially updated image or mismatched
+  metadata.
 
   This class also implements source-side configuration requests. Before Block
   processes start, a downstream VisionBlock can return a
   :class:`~crappy.blocks.vision.block.ConfigRequest` from
-  :meth:`~crappy.blocks.vision.VisionBlock.request_config`. Crappy routes that
-  request to the relevant upstream image source and creates a one-way Pipe for
-  the response. Sources answer with
-  :meth:`~crappy.blocks.vision.VisionBlock.send_config`, while requesters
+  :meth:`~crappy.blocks.vision.block.VisionBlock.request_config`. Crappy routes
+  that request to the relevant upstream image source and creates a one-way Pipe
+  for the response. Sources answer with
+  :meth:`~crappy.blocks.vision.block.VisionBlock.send_config`, while requesters
   collect responses with
-  :meth:`~crappy.blocks.vision.VisionBlock.recv_configs` during preparation.
+  :meth:`~crappy.blocks.vision.block.VisionBlock.recv_configs` during
+  preparation.
 
   Subclasses define their supported ImageLink topology and implement the
   actual acquisition, processing, display, or recording behavior. This class
@@ -146,8 +148,9 @@ class VisionBlock(Block, ABC):
 
   Unlike :class:`~crappy.blocks.camera_processes.CameraProcess`, which is a
   helper Process owned by the older :class:`~crappy.blocks.Camera`, a
-  VisionBlock is a complete :class:`~crappy.blocks.Block` with its own graph
-  node, regular Links, lifecycle, logging, and loop-frequency control.
+  VisionBlock is a complete :class:`~crappy.blocks.meta_block.block.Block` with
+  its own graph node, regular Links, lifecycle, logging, and loop-frequency
+  control.
 
   .. versionadded:: 2.1.0
   """
@@ -352,7 +355,8 @@ class VisionBlock(Block, ABC):
     """Registers an ImageLink through which this Block sends images.
 
     Args:
-      img_link: Output :class:`~crappy.links.ImageLink` being connected.
+      img_link: Output :class:`~crappy.links.img_link.ImageLink` being
+        connected.
     """
 
     self.img_outputs.append(img_link)
@@ -365,7 +369,8 @@ class VisionBlock(Block, ABC):
     :meth:`prepare`.
 
     Args:
-      img_link: Input :class:`~crappy.links.ImageLink` being connected.
+      img_link: Input :class:`~crappy.links.img_link.ImageLink` being
+        connected.
     """
 
     self.img_inputs.append(img_link)
@@ -453,9 +458,9 @@ class VisionBlock(Block, ABC):
     Each source is checked under its shared lock. If its transport-level image
     identifier differs from the last handled identifier, both metadata and
     image data are copied into
-    :attr:`~crappy.blocks.vision.VisionBlock.last_received`. Sources without a
-    new frame are ignored. Since an ImageLink owns only one shared buffer,
-    intermediate frames may have been overwritten by the newest one.
+    :attr:`~crappy.blocks.vision.block.VisionBlock.last_received`. Sources
+    without a new frame are ignored. Since an ImageLink owns only one shared
+    buffer, intermediate frames may have been overwritten by the newest one.
 
     Returns:
       Names of the ImageLinks from which a new image was copied.

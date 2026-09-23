@@ -142,8 +142,8 @@ class Canvas(Block):
   """This Block allows displaying a real-time visual representation of data.
 
   It displays the data on top of a background image and updates it according to
-  the values received through the incoming :class:`~crappy.links.Link`. The
-  background image and the data overlay are displayed in a new window.
+  the values received through the incoming :class:`~crappy.links.link.Link`.
+  The background image and the data overlay are displayed in a new window.
 
   It is possible to display a simple text, a time counter, or text associated
   with a color dot evolving depending on a predefined color bar and the

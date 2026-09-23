@@ -1,0 +1,21 @@
+# Crappy documentation
+
+> Crappy is an open-source Python framework for command and data acquisition on experimental setups.
+
+The [latest stable release](https://github.com/LaboratoireMecaniqueLille/crappy/releases/latest) provides the current release notes and artifacts. The documentation links below track the current documentation version.
+
+VisionBlocks connected by ImageLinks are recommended for new image pipelines. The all-in-one Camera Blocks remain supported and are not planned for deprecation.
+
+## Start here
+
+- [Install Crappy](https://crappy.readthedocs.io/en/latest/installation.html): Requirements, installation choices, an import check, and a hardware-free example.
+- [Run the quickstart](https://crappy.readthedocs.io/en/latest/tutorials/quickstart.html): A complete hardware-free first test that stops automatically.
+
+## Understand and use Crappy
+
+- [Core concepts](https://crappy.readthedocs.io/en/latest/concepts.html): Blocks, Links, labels, lifecycle, data transport, image pipelines, and custom object choices.
+- [Choose an image-pipeline architecture](https://crappy.readthedocs.io/en/latest/concepts/image_pipelines.html): Comparison of composable VisionBlocks and the supported all-in-one Camera Blocks.
+- [API reference](https://crappy.readthedocs.io/en/latest/api.html): Public classes, functions, arguments, and fully qualified import paths.
+- [Hardware compatibility](https://crappy.readthedocs.io/en/latest/hardware.html): Maintained and collection drivers, platforms, dependencies, backends, and verification status.
+- [Troubleshooting](https://crappy.readthedocs.io/en/latest/troubleshooting.html): Searchable errors, hardware access, cleanup, logging, and bug-report guidance.
+- [Release notes](https://github.com/LaboratoireMecaniqueLille/crappy/releases): Authoritative notes and artifacts for published versions.

@@ -1,0 +1,61 @@
+# Build the documentation with the oldest Python version supported by Crappy
+name: Build Documentation
+
+permissions:
+  contents: read
+
+on:
+  # Runs on pull requests targeting the default branches
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+    branches: ["master", "develop"]
+  # May also be started manually
+  workflow_dispatch:
+
+jobs:
+  build-documentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: docs/source/requirements.txt
+      - name: Install Graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes graphviz
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r docs/source/requirements.txt
+          python -m pip install .
+      - name: Check documentation spelling
+        run: >-
+          codespell docs/source docs/README.md
+          --skip='*.py,*.cu'
+          --ignore-words=docs/spelling_wordlist.txt
+      - name: Run documentation tests
+        env:
+          MPLBACKEND: Agg
+        run: python -m unittest -v tests.documentation
+      - name: Report API coverage
+        run: |
+          make -C docs api-coverage
+          cat docs/build/coverage/python.txt
+      - name: Build documentation
+        run: make -C docs clean html
+      - name: Report external link status
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          status=0
+          make -C docs checklinks || status=$?
+          cat docs/build/linkcheck/output.txt
+          exit "$status"

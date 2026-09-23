@@ -15,9 +15,10 @@ class VideoExtensoProcessor(VisionBlock):
   Unlike :class:`~crappy.blocks.VideoExtenso`, this Block does not acquire,
   display, or record images itself. It only implements the image-processing
   stage and must receive images from exactly one upstream
-  :class:`~crappy.links.ImageLink`. Image acquisition is normally handled by a
-  :class:`~crappy.blocks.vision.CameraSource`. Displaying or recording the same
-  images can be achieved by connecting additional VisionBlocks to that source.
+  :class:`~crappy.links.img_link.ImageLink`. Image acquisition is normally
+  handled by a :class:`~crappy.blocks.vision.CameraSource`. Displaying or
+  recording the same images can be achieved by connecting additional
+  VisionBlocks to that source.
 
   Before the test starts, the VideoExtensoProcessor asks its upstream image
   source to run a :class:`~crappy.tool.camera_config.VideoExtensoConfig`
@@ -39,7 +40,7 @@ class VideoExtensoProcessor(VisionBlock):
 
   For each processed image, the Block sends the image timestamp and metadata,
   the spot-center coordinates, and the vertical and horizontal strains through
-  its regular output :class:`~crappy.links.Link` objects. The current spot
+  its regular output :class:`~crappy.links.link.Link` objects. The current spot
   boxes are additionally published under the reserved ``'overlay'`` label.
   They can be drawn by an :class:`~crappy.blocks.vision.ImageDisplayer` that
   receives both this regular Link and the images from the same source.

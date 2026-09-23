@@ -52,8 +52,9 @@ DOWNSAMPLING_MODES_INV = {num: dict(zip(dic.values(), dic.keys()))
 class XiAPI(Camera):
   """This class can read images from any of the Ximea cameras.
 
-  It heavily relies on the :mod:`ximea` module, distributed by Ximea, which is
-  itself a wrapper around the XiAPI low-level library.
+  It heavily relies on the `XIMEA Python package
+  <https://www.ximea.com/support/wiki/apis/Python>`_, which wraps the XiAPI
+  low-level library.
 
   Note:
     Both the Python module and the camera drivers have to be installed from

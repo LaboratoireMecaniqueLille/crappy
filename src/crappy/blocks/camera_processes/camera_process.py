@@ -115,10 +115,11 @@ class CameraProcess(Process, ABC):
         necessary as the frames are shared as a one-dimensional array.
       dtype: The expected dtype of the image. It is necessary for 
         reconstructing the image from the one-dimensional shared array.
-      to_draw_conn: A :obj:`~multiprocessing.Connection` for sending or
-        receiving :class:`~crappy.tool.camera_config.config_tools.Overlay`
-        objects to draw on top of the displayed image.
-      outputs: The :class:`~crappy.links.Link` objects for sending data to
+      to_draw_conn: A :obj:`~multiprocessing.connection.Connection` for
+        sending or receiving
+        :class:`~crappy.tool.camera_config.config_tools.Overlay` objects to
+        draw on top of the displayed image.
+      outputs: The :class:`~crappy.links.link.Link` objects for sending data to
         downstream Blocks. They are the same as those owned by the Camera 
         Block.
       labels: The labels to use when sending data to downstream Blocks.
@@ -157,8 +158,10 @@ class CameraProcess(Process, ABC):
     to stop or an exception is raised. And finally, it performs any action
     required for properly exiting.
 
-    This method is quite similar to the :meth:`~crappy.blocks.Block.run` method
-    of the :class:`~crappy.blocks.Block`, although it is much simpler.
+    This method is quite similar to the
+    :meth:`~crappy.blocks.meta_block.block.Block.run` method of the
+    :class:`~crappy.blocks.meta_block.block.Block`, although it is much
+    simpler.
     """
 
     try:
@@ -313,9 +316,9 @@ class CameraProcess(Process, ABC):
   def send(self, data: dict[str, Any] | Iterable[Any] | None) -> None:
     """This method allows sending data to downstream Blocks.
 
-    It is similar to the :meth:`~crappy.blocks.Block.send` method of the
-    :class:`~crappy.blocks.Block`. It accepts data either as a :obj:`dict`, or
-    as an iterable of values.
+    It is similar to the :meth:`~crappy.blocks.meta_block.block.Block.send`
+    method of the :class:`~crappy.blocks.meta_block.block.Block`. It accepts
+    data either as a :obj:`dict`, or as an iterable of values.
     """
 
     # Just in case, not handling non-existing data

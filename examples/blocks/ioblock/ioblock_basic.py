@@ -6,25 +6,21 @@ does not require any hardware to run, but necessitates the Python modules
 psutil and matplotlib to be installed.
 
 The IOBlock can interact with hardware connected to the computer. It can read
-acquired values, and/or set commands on the device. It interfaces with the
+acquired values and/or set commands on the device. It interfaces with the
 InOut objects of Crappy.
 
-Here, the IOBlock drives the FakeInOut InOut that can read and/or adjust the
+Here, the IOBlock drives the FakeInOut object, which can read and/or adjust the
 memory usage of the system. A Generator generates a sinusoidal memory usage
 target, and the IOBlock drives the FakeInOut so that the actual memory usage
 stays as close as possible to that target. A Grapher Block displays the target
-and actual values. Note that in addition, A StopButton Block allows stopping
-the script properly without using CTRL+C by clicking on a button.
+and actual values.
 
 After starting this script, just watch how the actual memory usage is being
 driven to match the target. You can monitor the memory usage of the computer
-independently using the Task Manager (Windows) or htop (Linux), it should match
-with the one displayed in Crappy. Depending on your memory level at the moment
-when you start this script, you might need to adjust the offset of the target
-to be able to see the effects of this script. To end this demo, click on the
-stop button that appears. You can also hit CTRL+C, but it is not a clean way to
-stop Crappy.
-"""
+independently using Task Manager (Windows) or htop (Linux), it should match the
+value displayed in Crappy. Depending on your memory usage when you start this
+script, you might need to adjust the target offset to see the effects. To end
+this demo, click the stop button that appears."""
 
 import crappy
 
@@ -63,7 +59,7 @@ if __name__ == '__main__':
       # Sticking to default for the other arguments
   )
 
-  # This Grapher displays the target and the actual memory values on a same
+  # This Grapher displays the target and actual memory values on the same
   # graph
   graph = crappy.blocks.Grapher(
       # Providing the labels to display

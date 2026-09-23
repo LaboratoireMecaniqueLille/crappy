@@ -103,6 +103,7 @@ if __name__ == '__main__':
       fields=('x', 'y', exx, eyy),
       labels=('t(s)', 'meta', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)'),
       request_configuration=False,  # The supplied patch is already complete
+      follow=True,  # Keep the patch centered during the large deformation
       residual=True,  # Also report the mean absolute correlation residual
       freq=50,
 

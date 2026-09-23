@@ -104,6 +104,7 @@ if __name__ == '__main__':
       fields=('exx', 'eyy'),
       labels=('t(s)', 'meta', 'DIS Exx(%)', 'DIS Eyy(%)'),
       request_configuration=False,
+      follow=True,  # Keep the patch centered during the large deformation
       freq=50,
 
       # Sticking to defaults for the other arguments

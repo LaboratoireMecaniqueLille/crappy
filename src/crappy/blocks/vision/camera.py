@@ -20,19 +20,19 @@ from ..._global import CameraConfigError, PrepareError
 
 class CameraSource(VisionBlock):
   """Acquires images from one Camera and publishes them to
-  :class:`~crappy.blocks.vision.VisionBlock`.
+  :class:`~crappy.blocks.vision.block.VisionBlock`.
 
-  This Block drives one :class:`~crappy.camera.Camera` and sends each acquired
-  frame and its metadata through one or more output
-  :class:`~crappy.links.ImageLink` objects. It accepts no input ImageLink and
-  requires at least one output ImageLink. Acquisition is intentionally
-  separated from processing, display, and recording. Connect processors,
-  :class:`~crappy.blocks.vision.ImageDisplayer`, or
+  This Block drives one :class:`~crappy.camera.meta_camera.camera.Camera` and
+  sends each acquired frame and its metadata through one or more output
+  :class:`~crappy.links.img_link.ImageLink` objects. It accepts no input
+  ImageLink and requires at least one output ImageLink. Acquisition is
+  intentionally separated from processing, display, and recording. Connect
+  processors, :class:`~crappy.blocks.vision.ImageDisplayer`, or
   :class:`~crappy.blocks.vision.ImageRecorder` to build the desired pipeline.
 
   For every published image, the Block also sends a dictionary through its
-  regular output :class:`~crappy.links.Link` objects. The ``'t(s)'`` entry is
-  the acquisition time relative to the beginning of the test,
+  regular output :class:`~crappy.links.link.Link` objects. The ``'t(s)'`` entry
+  is the acquisition time relative to the beginning of the test,
   ``'img_index'`` is the Camera-provided ``'ImageUniqueID'``, and ``'meta'`` is
   the complete metadata dictionary. Regular input Links can provide a software
   trigger. When ``image_generator`` is used, they can additionally update its
@@ -77,10 +77,10 @@ class CameraSource(VisionBlock):
     """Sets the Camera, configuration, and acquisition options.
 
     Args:
-      camera: Name of the :class:`~crappy.camera.Camera` to use. Additional
-        Camera-specific arguments can be supplied through ``kwargs``. This
-        argument is ignored when ``image_generator`` is provided, and may then
-        be an empty string.
+      camera: Name of the :class:`~crappy.camera.meta_camera.camera.Camera` to
+        use. Additional Camera-specific arguments can be supplied through
+        ``kwargs``. This argument is ignored when ``image_generator`` is
+        provided, and may then be an empty string.
       transform: Callable receiving each acquired image and returning the image
         to publish. It runs synchronously immediately after acquisition, so a
         costly transform can reduce acquisition frequency. Only the transformed
@@ -124,7 +124,7 @@ class CameraSource(VisionBlock):
       freq: Target acquisition-loop frequency. If :obj:`None`, loops as fast as
         possible. The Camera and processing time may limit the actual rate.
       **kwargs: Additional arguments forwarded to the selected Camera's
-        :meth:`~crappy.camera.Camera.open` method.
+        :meth:`~crappy.camera.meta_camera.camera.Camera.open` method.
     """
 
     super().__init__(img_shape=img_shape,
@@ -221,7 +221,7 @@ class CameraSource(VisionBlock):
 
     The method also resolves ``'Hdw after config'`` trigger mode, verifies that
     the final output image shape and dtype are known, and delegates shared
-    buffer creation to :class:`~crappy.blocks.vision.VisionBlock`.
+    buffer creation to :class:`~crappy.blocks.vision.block.VisionBlock`.
 
     Raises:
       IOError: If the Block has an input ImageLink or no output ImageLink.
@@ -375,8 +375,8 @@ class CameraSource(VisionBlock):
 
     Incoming regular-Link data first gates the optional software trigger and,
     in image-generator mode, updates the synthetic strain settings. The method
-    then calls :meth:`~crappy.camera.Camera.get_image`. If the Camera supplies
-    only a timestamp, standard ``'DateTimeOriginal'``,
+    then calls :meth:`~crappy.camera.meta_camera.camera.Camera.get_image`. If
+    the Camera supplies only a timestamp, standard ``'DateTimeOriginal'``,
     ``'SubsecTimeOriginal'``, and ``'ImageUniqueID'`` metadata are generated.
     The ``'t(s)'`` timestamp is made relative to the test start before the
     optional image transform runs.
@@ -459,9 +459,9 @@ class CameraSource(VisionBlock):
   def finish(self) -> None:
     """Closes the physical Camera and releases shared image resources.
 
-    The Camera's :meth:`~crappy.camera.Camera.close` method is skipped in
-    image-generator mode. Shared-memory cleanup is then delegated to
-    :class:`~crappy.blocks.vision.VisionBlock`.
+    The Camera's :meth:`~crappy.camera.meta_camera.camera.Camera.close` method
+    is skipped in image-generator mode. Shared-memory cleanup is then delegated
+    to :class:`~crappy.blocks.vision.block.VisionBlock`.
     """
 
     # Closing the Camera object

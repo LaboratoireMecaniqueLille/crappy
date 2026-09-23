@@ -167,7 +167,11 @@ Parent In/Out
 
 InOut
 +++++
-.. autoclass:: crappy.inout.InOut
+.. automodule:: crappy.inout.meta_inout.inout
+
+.. currentmodule:: crappy.inout.meta_inout.inout
+
+.. autoclass:: InOut
    :members: open, set_cmd, get_data, start_stream, get_stream, stop_stream,
              close, log, make_zero, return_data, return_stream
    :special-members: __init__

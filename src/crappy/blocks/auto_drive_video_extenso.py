@@ -9,9 +9,10 @@ from ..actuator import actuator_dict, Actuator
 
 
 class AutoDriveVideoExtenso(Block):
-  """This Block is meant to drive an :class:`~crappy.actuator.Actuator` on 
-  which a :class:`~crappy.camera.Camera` performing video-extensometry is 
-  mounted, so that the spots stay centered on the image.
+  """This Block is meant to drive an
+  :class:`~crappy.actuator.meta_actuator.actuator.Actuator` on which a
+  :class:`~crappy.camera.meta_camera.camera.Camera` performing
+  video-extensometry is mounted, so that the spots stay centered on the image.
 
   It takes the output of a :class:`~crappy.blocks.VideoExtenso` Block and uses 
   the coordinates of the spots to drive the Actuator. The Actuator can only be 
@@ -41,10 +42,10 @@ class AutoDriveVideoExtenso(Block):
 
     Args:
       actuator: A :obj:`dict` for initializing the 
-        :class:`~crappy.actuator.Actuator` to drive. Unlike for the
-        :class:`~crappy.blocks.Machine` Block, only the ``'type'`` key is
-        mandatory here. All the other keys will be considered as kwargs to
-        pass to the Actuator.
+        :class:`~crappy.actuator.meta_actuator.actuator.Actuator` to drive.
+        Unlike for the :class:`~crappy.blocks.Machine` Block, only the
+        ``'type'`` key is mandatory here. All the other keys will be considered
+        as kwargs to pass to the Actuator.
       gain: The gain for driving the Actuator in speed. The speed command is
         simply the difference in pixels between the center of the image and the
         center of the spots, multiplied by this gain.
@@ -110,7 +111,7 @@ class AutoDriveVideoExtenso(Block):
 
   def prepare(self) -> None:
     """Checks the consistency of the linking and initializes the 
-    :class:`~crappy.actuator.Actuator` to drive."""
+    :class:`~crappy.actuator.meta_actuator.actuator.Actuator` to drive."""
 
     # Checking that there's exactly one input link
     if not self.inputs:
@@ -131,7 +132,8 @@ class AutoDriveVideoExtenso(Block):
   def loop(self) -> None:
     """Receives the latest data from the :class:`~crappy.blocks.VideoExtenso` 
     Block, calculates the center coordinate in the chosen direction, and sets 
-    the :class:`~crappy.actuator.Actuator` speed accordingly."""
+    the :class:`~crappy.actuator.meta_actuator.actuator.Actuator` speed
+    accordingly."""
 
     # Receiving the latest data
     if not (data := self.recv_last_data(fill_missing=False)):
@@ -159,7 +161,8 @@ class AutoDriveVideoExtenso(Block):
     self.send([t - self.t0, diff])
 
   def finish(self) -> None:
-    """Stops the :class:`~crappy.actuator.Actuator` and closes it."""
+    """Stops the :class:`~crappy.actuator.meta_actuator.actuator.Actuator` and
+    closes it."""
 
     if self._device is not None:
       self.log(logging.INFO, f"Stopping the {type(self._device).__name__} "

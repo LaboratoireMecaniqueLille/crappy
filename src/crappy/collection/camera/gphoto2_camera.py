@@ -17,8 +17,9 @@ class CameraGPhoto2(Camera):
   Such cameras include for example most of the Nikon and Canon models. This
   class is designed for low-frequency acquisition of high-resolution images.
 
-  The class is based on the :mod:`gphoto2` Python module, that is necessary for
-  using it. It can acquire images continuously, or following external triggers.
+  The class requires the `gphoto2 Python package
+  <https://pypi.org/project/gphoto2/>`_. It can acquire images continuously,
+  or following external triggers.
 
   Warning:
     This class was only tested on Linux, it is not certain that it works on

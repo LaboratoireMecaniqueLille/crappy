@@ -1,42 +1,35 @@
 # coding: utf-8
 
 """
-This example demonstrates the instantiation of a custom Camera object in
-Crappy, with the integration of a trigger setting. This example is based
-on the custom_camera_basic.py, that should first be read for a better
-understanding. It does not require any hardware to run, but necessitates the
-Pillow and opencv-python Python modules to be installed.
+This example demonstrates how to add a trigger setting to a custom Camera
+object in Crappy. It builds on custom_camera_basic.py, which should be read
+first. It does not require any hardware, but requires the Pillow and
+opencv-python Python modules.
 
-In Camera objects, Crappy offers the possibility to easily implement a trigger
-setting. Using this setting, the user can choose in the configuration window
-between the free run mode, the hardware trigger mode, or to set the hardware
-trigger mode after closing the configuration window. With this latter option,
-the camera can be tuned in free run mode and be ready for the test in hardware
-trigger mode. The addition of a trigger setting only requires calling one
-method, as demonstrated in this example.
+Crappy makes it easy to implement a trigger setting in Camera objects. In the
+configuration window, the user can choose free-run mode, hardware-trigger
+mode, or hardware-trigger mode after configuration. The last option lets the
+user configure the camera in free-run mode and switch to hardware-trigger mode
+for the test. Adding a trigger setting requires only one method call, as
+demonstrated in this example.
 
-Here, a very simple Camera object is instantiated, and driven by a Camera Block
+Here, a very simple Camera object is instantiated and driven by a Camera Block
 that displays the acquired images. The Camera object features a trigger
-setting, that lets the user select the trigger mode in the configuration
+setting that lets the user select the trigger mode in the configuration
 window. Because there's no actual hardware involved, the hardware trigger mode
-is emulated by only allowing one image acquisition per second. The goal here is
-to show how to implement a trigger setting in Camera objects. Note that in
-addition, A StopButton Block allows stopping the script properly without using
-CTRL+C by clicking on a button.
+is emulated by only allowing one image acquisition per second. The goal is
+to show how to implement a trigger setting in Camera objects.
 
 After starting this script, a configuration window appears in which you can see
 the generated images. You can only tune the trigger mode setting. Select one
-and close the configuration window to start the test and see what its effect
-is. In Free run mode, the image rate should be close to 30 FPS both in the
-configuration window and in the displayer windows, no trigger is applied. In
-Hardware trigger mode, the configuration window should be unresponsive and only
-update once every second, same with the displayer window : the hardware trigger
-mode is always applied. And in Hdw after config trigger mode, the configuration
-window should run normally at ~30 FPS, but the displayer window should only
-update at ~1 Hz. The Free run mode remains active until the configuration
-window is closed, and the Camera is then switched to Hardware trigger mode.
-To end this demo, click on the stop button that appears. You can also hit
-CTRL+C, but it is not a clean way to stop Crappy.
+and close the configuration window to start the test and observe its effect.
+In Free run mode, the image rate should be close to 30 FPS in both the
+configuration and displayer windows because no trigger is applied. In Hardware
+trigger mode, both windows update only once per second. In Hdw after config
+mode, the configuration window runs normally at about 30 FPS, but the displayer
+updates at about 1 Hz. Free run remains active until the configuration window
+closes, after which the Camera switches to Hardware trigger mode. To end this
+demo, click the stop button.
 """
 
 import crappy
@@ -47,23 +40,23 @@ from time import time, sleep
 
 class CustomCam(crappy.camera.Camera):
   """This class demonstrates the instantiation of a custom Camera object in
-  Crappy, with the instantiation of a trigger setting.
+  Crappy with a trigger setting.
 
-  In the open method, the add_trigger_setting method is called for adding a
-  trigger setting to the Camera object. By tuning this setting in the
-  configuration window, the user can choose to let the camera run in free run
-  mode, to switch it to hardware trigger mode after closing the configuration
-  window, or to directly switch it to hardware trigger mode.
+  In the open method, add_trigger_setting adds a trigger setting to the Camera
+  object. By tuning this setting in the configuration window, the user can
+  choose to let the camera run in free run mode, to switch it to hardware
+  trigger mode after closing the configuration window, or to directly switch it
+  to hardware trigger mode.
 
-  This class is based on the one defined in custom_camera_basic.py, please
-  refer to that example for more information.
+  This class is based on the one defined in custom_camera_basic.py. Refer to
+  that example for more information.
   """
 
   def __init__(self) -> None:
     """Almost the same as in custom_camera_basic.py.
 
-    Here, we define a buffer and a flag that serve later for emulating the
-    trigger hardware setting being set on a camera.
+    Here, a buffer and a flag are defined to emulate a hardware trigger
+    setting.
     """
 
     # Mandatory line usually at the very beginning of the __init__ method
@@ -79,35 +72,34 @@ class CustomCam(crappy.camera.Camera):
     Unlike the settings defined in the custom_camera_settings.py example, the
     trigger setting is handled internally and in a standardized way.
 
-    It is possible to either choose to let the camera run in free run mode, or
-    to have it run in the hardware trigger mode, or to only switch to the
-    hardware trigger mode after the configuration window is closed. With this
-    latter option, it is easier for the user to adjust the settings even if the
-    trigger frequency is low. Or if the trigger signal is generated by Crappy,
-    in which case it only starts after the configuration window is closed !
+    The camera can run in free-run mode, hardware-trigger mode, or switch to
+    hardware-trigger mode after the configuration window closes. The last
+    option makes it easier to adjust settings when the trigger frequency is low
+    or when Crappy generates the trigger only after configuration.
 
     Since this example is designed to run without hardware, the hardware
-    trigger is just replaced by a delay of 1s to simulate a hardware trigger
-    signal running at 1Hz.
+    trigger is replaced by a delay of 1 s to simulate a hardware-trigger signal
+    running at 1 Hz.
     """
 
-    # Adding a trigger setting, handled differently by Crappy than the other
+    # Adding a trigger setting, which Crappy handles differently from other
     # types of settings
     self.add_trigger_setting(getter=self._get_trigger_mode,
                              setter=self._set_trigger_mode)
 
-    # This line is mandatory here for first applying the trigger setting
+    # This line is mandatory to apply the initial trigger setting
     self.set_all(**kwargs)
 
   def get_image(self) -> tuple[float, np.ndarray]:
-    """Compared to the one in custom_camera_basic.py, this method returns the
+    """Compared with custom_camera_basic.py, this method returns the
     same images but with a delay if in Hardware trigger mode.
 
     Since this example runs without any hardware, it emulates the hardware
     trigger by only allowing one image per second in Hardware trigger mode.
     """
 
-    # If not in a free run mode, assuming a hardware trig is issued each ~1s
+    # Outside free-run mode, assume a hardware trigger is issued about once per
+    # second
     if not self._run:
       sleep(1)
 
@@ -151,9 +143,9 @@ if __name__ == '__main__':
   # user can choose in which trigger mode the Camera runs.
   cam = crappy.blocks.Camera(
       'CustomCam',  # The name of the custom Camera that was just written
-      config=True,  # easier to set it to True when possible
+      config=True,  # Easier to set to True when possible
       display_images=True,  # Displaying the images to show how they look
-      displayer_framerate=30,  # Setting same framerate as acquisition
+      displayer_framerate=30,  # Matching the acquisition frame rate
       freq=30,  # Lowering the frequency because it's just a demo
       save_images=False,  # No need to record images in this example
 

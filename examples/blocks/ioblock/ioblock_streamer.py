@@ -6,30 +6,26 @@ streamer mode. It does not require any hardware to run, but necessitates the
 Python modules psutil and matplotlib to be installed.
 
 The IOBlock can interact with hardware connected to the computer. It can read
-acquired values, and/or set commands on the device. It interfaces with the
+acquired values and/or set commands on the device. It interfaces with the
 InOut objects of Crappy.
 
 Here, the IOBlock acquires data from a FakeInOut InOut in streamer mode and
-sends it to a Grapher Block for display. It is only possible to set the
-streamer mode to True because this specific InOut supports it. Stream data is
-mostly meant to be saved in Crappy, but that is already demonstrated in the
+sends it to a Grapher Block for display. Streamer mode can be enabled because
+this specific InOut supports it. Stream data is mostly meant to be saved in
+Crappy, but that is already demonstrated in the
 hdf5_recorder example. Instead, this example demonstrates how to make stream
-data readable by any Block using the Demux Modifier. Note that in addition, A
-StopButton Block allows stopping the script properly without using CTRL+C by
-clicking on a button.
+data readable by any Block using the Demux Modifier.
 
-After starting the script, just watch the memory consumption being displayed
-in the Grapher. You can open and close heavy applications (like videos in a web
+After starting the script, just watch the memory consumption being displayed in
+the Grapher. You can open and close heavy applications (like videos in a web
 browser) and watch how the memory usage evolves accordingly. To end this demo,
-click on the stop button that appears. You can also hit CTRL+C, but it is not a
-clean way to stop Crappy.
-"""
+click on the stop button that appears."""
 
 import crappy
 
 if __name__ == '__main__':
 
-  # This IOBlock drives the FakeInOut InOut, that can read and set the memory
+  # This IOBlock drives the FakeInOut object, which can read and set the memory
   # usage of the system. Here, it is used in streamer mode and thus returns
   # numpy arrays instead of single data points
   io = crappy.blocks.IOBlock(
@@ -60,7 +56,8 @@ if __name__ == '__main__':
   # Blocks, but most of the data is lost in the process
   crappy.link(io, graph,
               modifier=crappy.modifier.Demux(
-                  labels='memory',  # The label to associate to the demux data
+                  labels='memory',  # The label to associate with the demux
+                  # data
                   stream_label='stream',  # The label carrying the stream data
                   mean=True,  # Keep only the average of each received chunk
 

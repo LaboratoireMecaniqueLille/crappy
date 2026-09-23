@@ -78,7 +78,11 @@ Parent Actuator
 
 Actuator
 ++++++++
-.. autoclass:: crappy.actuator.Actuator
+.. automodule:: crappy.actuator.meta_actuator.actuator
+
+.. currentmodule:: crappy.actuator.meta_actuator.actuator
+
+.. autoclass:: Actuator
    :members: open, get_speed, get_position, set_speed, set_position, stop,
              close, log
    :special-members: __init__

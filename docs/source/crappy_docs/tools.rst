@@ -35,6 +35,8 @@ Py Spectrum
 Camera Configurators
 --------------------
 
+.. automodule:: crappy.tool.camera_config
+
 Camera Configurator
 +++++++++++++++++++
 .. autoclass:: crappy.tool.camera_config.CameraConfig
@@ -118,6 +120,23 @@ use of the :class:`~crappy.blocks.Canvas` Block.
 Image Processing Tools
 ----------------------
 
+.. automodule:: crappy.tool.image_processing
+
+Synthetic Strain Image
+++++++++++++++++++++++
+
+.. automodule:: crappy.tool.apply_strain_image
+
+.. currentmodule:: crappy.tool.apply_strain_image
+
+.. autoclass:: ApplyStrainToImage
+   :special-members: __init__, __call__
+
+This public helper deforms a reference image according to horizontal and
+vertical strain values. It is primarily used as the ``image_generator`` of a
+:class:`~crappy.blocks.vision.CameraSource` or all-in-one Camera Block in
+hardware-free examples. It requires OpenCV.
+
 DIS Correl Tool
 +++++++++++++++
 .. autoclass:: crappy.tool.image_processing.DISCorrelTool
@@ -142,10 +161,12 @@ GPU Correl Tool
              get_res, clean
    :special-members: __init__
 
+.. _gpu-kernels:
+
 GPU Kernels
 +++++++++++
 The `src/crappy/tool/image_processing/kernels.cu` file contains the default
-kernels to use with :mod:`pycuda`. They're used by the
+kernels to use with :external+pycuda:mod:`pycuda`. They're used by the
 :class:`~crappy.tool.image_processing.GPUCorrelTool` if no other kernel file is
 provided.
 

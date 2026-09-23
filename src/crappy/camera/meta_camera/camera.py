@@ -525,8 +525,9 @@ class Camera(ABC):
     """Method for getting the value of a setting directly by calling
     ``self.<setting name>``.
 
-    It is called in case :meth:`~crappy.camera.Camera.__getattribute__` doesn't
-    work properly, and tries to return the corresponding setting value."""
+    It is called when normal lookup through :meth:`object.__getattribute__`
+    cannot find the requested name, and tries to return the corresponding
+    setting value."""
 
     settings = self.__dict__.get("settings")
 

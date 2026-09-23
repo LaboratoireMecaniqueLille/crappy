@@ -21,9 +21,10 @@ except (ImportError, ModuleNotFoundError):
 class PhidgetWheatstoneBridge(InOut):
   """This class can read voltage ratio values from a Phidget Wheatstone Bridge.
 
-  It relies on the :mod:`Phidget22` module to communicate with the load cell
-  conditioner. It can acquire values up to `50Hz` with possible gain values
-  from `1` to `128`.
+  It relies on the `Phidget22 Python package
+  <https://www.phidgets.com/docs/Language_-_Python>`_ to communicate with the
+  load cell conditioner. It can acquire values up to `50Hz` with possible
+  gain values from `1` to `128`.
 
   .. versionadded:: 2.0.4
   """

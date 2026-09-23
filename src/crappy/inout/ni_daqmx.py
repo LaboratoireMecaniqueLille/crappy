@@ -117,16 +117,21 @@ class NIDAQmx(InOut):
         - type: The type of data to read, for analog input channels. This field
           can take many different values, refer to the documentation of the
           :mod:`nidaqmx` for more details. This field is internally used for
-          calling the method : :meth:`nidaqmx.task.add_ai_[type]_chan`. The
-          default for this field is `'voltage'`, possible values include
-          `'thrmcpl'`, `'bridge'`, `'current'` and `'resistance'`.
+          calling the matching ``add_ai_<type>_chan`` method from
+          :class:`~nidaqmx.task.collections.AIChannelCollection`. The default
+          for this field is `'voltage'`, possible values include `'thrmcpl'`,
+          `'bridge'`, `'current'` and `'resistance'`.
 
         - All the other keys will be given as kwargs to the
-          :meth:`nidaqmx.task.add_ai_[type]_chan` method for analog input
-          channels, to the :meth:`nidaqmx.task.add_ao_voltage_chan` for analog
-          output channels, to :meth:`nidaqmx.task.add_do_chan` for digital
-          output channels, and to :meth:`nidaqmx.task.add_di_chan` for digital
-          input channels. Refer to :mod:`nidaqmx` documentation for the
+          matching method of
+          :class:`~nidaqmx.task.collections.AIChannelCollection` for analog
+          input channels, to
+          :meth:`~nidaqmx.task.collections.AOChannelCollection.add_ao_voltage_chan`
+          for analog output channels, to
+          :meth:`~nidaqmx.task.collections.DOChannelCollection.add_do_chan` for
+          digital output channels, and to
+          :meth:`~nidaqmx.task.collections.DIChannelCollection.add_di_chan` for
+          digital input channels. Refer to :mod:`nidaqmx` documentation for the
           possible arguments and values. Note that for the `'thrmcpl'` analog
           input channel type, the `'thermocouple_type'` argument must be given
           as a letter, same for the `'units'` argument. They will be parsed

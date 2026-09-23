@@ -42,13 +42,16 @@ class Block(Process, ABC):
   Crappy. They are always called in the `__main__` Process, and drive the
   execution of all the children Blocks.
 
-  The public execution settings :attr:`~crappy.blocks.Block.niceness`,
-  :attr:`~crappy.blocks.Block.labels`, :attr:`~crappy.blocks.Block.freq`,
-  :attr:`~crappy.blocks.Block.display_freq`,
-  :attr:`~crappy.blocks.Block.name`, :attr:`~crappy.blocks.Block.pausable`, and
-  :attr:`~crappy.blocks.Block.is_vision_block` are validated properties. Child
-  classes should set these public properties rather than their private backing
-  attributes.
+  The public execution settings
+  :attr:`~crappy.blocks.meta_block.block.Block.niceness`,
+  :attr:`~crappy.blocks.meta_block.block.Block.labels`,
+  :attr:`~crappy.blocks.meta_block.block.Block.freq`,
+  :attr:`~crappy.blocks.meta_block.block.Block.display_freq`,
+  :attr:`~crappy.blocks.meta_block.block.Block.name`,
+  :attr:`~crappy.blocks.meta_block.block.Block.pausable`, and
+  :attr:`~crappy.blocks.meta_block.block.Block.is_vision_block` are validated
+  properties. Child classes should set these public properties rather than
+  their private backing attributes.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.8 remove metaclass and perform checks in
@@ -181,9 +184,10 @@ class Block(Process, ABC):
 
     Note:
       It is possible to have a finer grained control of the start of a Crappy
-      script with the methods :meth:`~crappy.blocks.Block.prepare_all`,
-      :meth:`~crappy.blocks.Block.renice_all` and
-      :meth:`~crappy.blocks.Block.launch_all`.
+      script with the methods
+      :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`,
+      :meth:`~crappy.blocks.meta_block.block.Block.renice_all` and
+      :meth:`~crappy.blocks.meta_block.block.Block.launch_all`.
 
     Args:
       allow_root: If set to :obj:`True`, tries to renice the Processes with
@@ -226,8 +230,8 @@ class Block(Process, ABC):
     through one-way Pipes before the child Processes start.
 
     Once started with this method, the Blocks will call their
-    :meth:`~crappy.blocks.Block.prepare` method and then be blocked by a
-    :obj:`multiprocessing.Barrier`.
+    :meth:`~crappy.blocks.meta_block.block.Block.prepare` method and then be
+    blocked by a :obj:`multiprocessing.Barrier`.
 
     If an error is caught at a moment when the Blocks might already be running,
     performs an extensive cleanup to ensure everything stops as expected.
@@ -950,8 +954,9 @@ class Block(Process, ABC):
     objects.
 
     This method is called at the very end of the
-    :meth:`~crappy.blocks.Block._cleanup` method, but can also be called to
-    "revert" the instantiation of Blocks while Crappy isn't started yet.
+    :meth:`~crappy.blocks.meta_block.block.Block._cleanup` method, but can also
+    be called to "revert" the instantiation of Blocks while Crappy isn't
+    started yet.
     """
 
     cls.instances = WeakSet()
@@ -981,10 +986,15 @@ class Block(Process, ABC):
   
   @classmethod
   def cls_log(cls, level: int, msg: str) -> None:
-    """Wrapper for logging messages in the main Process.
+    """Logs a class-level message through Crappy's main logger.
     
-    Ensures the Logger exists before trying to log, thus avoiding potential 
-    errors.
+    This method is the class-level counterpart of :meth:`log` for code
+    coordinating all Blocks. It silently returns before the main logger is
+    configured.
+
+    Args:
+      level: Logging level for the message.
+      msg: Message to record.
     
     .. versionadded:: 2.0.0
     """
@@ -1024,10 +1034,11 @@ class Block(Process, ABC):
     """The method run by the Blocks when their :obj:`~multiprocessing.Process` 
     is started.
 
-    It first calls :meth:`~crappy.blocks.Block.prepare`, then waits at the
-    :obj:`~multiprocessing.Barrier` for all Blocks to be ready, then calls
-    :meth:`~crappy.blocks.Block.begin`, then :meth:`~crappy.blocks.Block.main`,
-    and finally :meth:`~crappy.blocks.Block.finish`.
+    It first calls :meth:`~crappy.blocks.meta_block.block.Block.prepare`, then
+    waits at the :obj:`~multiprocessing.Barrier` for all Blocks to be ready,
+    then calls :meth:`~crappy.blocks.meta_block.block.Block.begin`, then
+    :meth:`~crappy.blocks.meta_block.block.Block.main`, and finally
+    :meth:`~crappy.blocks.meta_block.block.Block.finish`.
     
     If an exception is raised, sets the shared stop 
     :obj:`~multiprocessing.Event` to warn all the other Blocks.
@@ -1248,9 +1259,10 @@ class Block(Process, ABC):
                                     'unexpected Exception while finishing')
 
   def main(self) -> None:
-    """The main loop of the :meth:`~crappy.blocks.Block.run` method. Repeatedly
-    calls the :meth:`~crappy.blocks.Block.loop` method and manages the looping
-    frequency."""
+    """The main loop of the :meth:`~crappy.blocks.meta_block.block.Block.run`
+    method. Repeatedly calls the
+    :meth:`~crappy.blocks.meta_block.block.Block.loop` method and manages the
+    looping frequency."""
 
     if self._stop_event is None:
       raise RuntimeError("The stop Event doesn't exist, it should")
@@ -1285,10 +1297,11 @@ class Block(Process, ABC):
 
   def begin(self) -> None:
     """This method can be considered as the first loop of the test, and is
-    called before the :meth:`~crappy.blocks.Block.loop` method.
+    called before the :meth:`~crappy.blocks.meta_block.block.Block.loop`
+    method.
 
     It allows to perform initialization actions that cannot be achieved in the
-    :meth:`~crappy.blocks.Block.prepare` method.
+    :meth:`~crappy.blocks.meta_block.block.Block.prepare` method.
     """
 
     ...
@@ -1326,18 +1339,20 @@ class Block(Process, ABC):
   def stop(self) -> None:
     """This method stops all the running Blocks.
 
-    It should be called from the :meth:`~crappy.blocks.Block.loop` method of a
-    Block. It allows to stop the execution of the script in a clean way,
-    without raising an exception. It is mostly intended for users writing their
-    own Blocks.
+    It should be called from the
+    :meth:`~crappy.blocks.meta_block.block.Block.loop` method of a Block. It
+    allows to stop the execution of the script in a clean way, without raising
+    an exception. It is mostly intended for users writing their own Blocks.
 
     Note:
-      Calling this method in :meth:`~crappy.blocks.Block.__init__`,
-      :meth:`~crappy.blocks.Block.prepare` or
-      :meth:`~crappy.blocks.Block.begin` is not recommended, as the Block will
-      only stop when reaching the :meth:`~crappy.blocks.Block.loop` method.
-      Calling this method during :meth:`~crappy.blocks.Block.finish` will have
-      no effect.
+      Calling this method in
+      :meth:`~crappy.blocks.meta_block.block.Block.__init__`,
+      :meth:`~crappy.blocks.meta_block.block.Block.prepare` or
+      :meth:`~crappy.blocks.meta_block.block.Block.begin` is not recommended,
+      as the Block will only stop when reaching the
+      :meth:`~crappy.blocks.meta_block.block.Block.loop` method. Calling this
+      method during :meth:`~crappy.blocks.meta_block.block.Block.finish` will
+      have no effect.
     """
 
     if self._stop_event is not None:
@@ -1586,7 +1601,7 @@ class Block(Process, ABC):
   @property
   def is_vision_block(self) -> bool:
     """Whether the Block can be connected through a
-    :class:`~crappy.links.ImageLink`.
+    :class:`~crappy.links.img_link.ImageLink`.
 
     This property is normally set by image-oriented Block base classes rather
     than by users.
@@ -1603,14 +1618,14 @@ class Block(Process, ABC):
     self._is_vision_block = val
 
   def add_output(self, link: Link) -> None:
-    """Adds an output :class:`~crappy.links.Link` to the list of output Links
-    of the Block."""
+    """Adds an output :class:`~crappy.links.link.Link` to the list of output
+    Links of the Block."""
 
     self.outputs.append(link)
 
   def add_input(self, link: Link) -> None:
-    """Adds an input :class:`~crappy.links.Link` to the list of input Links of
-    the Block."""
+    """Adds an input :class:`~crappy.links.link.Link` to the list of input
+    Links of the Block."""
 
     self.inputs.append(link)
 
@@ -1678,7 +1693,7 @@ class Block(Process, ABC):
 
   def data_available(self) -> bool:
     """Returns :obj:`True` if there's data available for reading in at least
-    one of the input :class:`~crappy.links.Link`.
+    one of the input :class:`~crappy.links.link.Link`.
     
     .. versionchanged:: 2.0.0 renamed from *poll* to *data_available*
     """
@@ -1688,14 +1703,14 @@ class Block(Process, ABC):
 
   def recv_data(self) -> dict[str, Any]:
     """Reads the first available values from each incoming
-    :class:`~crappy.links.Link` and returns them all in a single dict.
+    :class:`~crappy.links.link.Link` and returns them all in a single dict.
 
     The returned :obj:`dict` might not always have a fixed number of keys,
     depending on the availability of incoming data.
 
     Also, the returned values are the oldest available in the Links. See
-    :meth:`~crappy.blocks.Block.recv_last_data` for getting the newest
-    available values.
+    :meth:`~crappy.blocks.meta_block.block.Block.recv_last_data` for getting
+    the newest available values.
 
     Important:
       If data is received over a same label from different Links, part of it
@@ -1718,7 +1733,8 @@ class Block(Process, ABC):
 
   def recv_last_data(self, fill_missing: bool = True) -> dict[str, Any]:
     """Reads all the available values from each incoming
-    :class:`~crappy.links.Link`, and returns the newest ones in a single dict.
+    :class:`~crappy.links.link.Link`, and returns the newest ones in a single
+    dict.
 
     The returned :obj:`dict` might not always have a fixed number of keys,
     depending on the availability of incoming data.
@@ -1767,7 +1783,7 @@ class Block(Process, ABC):
                     delay: float | None = None,
                     poll_delay: float | None = None) -> dict[str, list[Any]]:
     """Reads all the available values from each incoming
-    :class:`~crappy.links.Link`, and returns them all in a single dict.
+    :class:`~crappy.links.link.Link`, and returns them all in a single dict.
 
     The returned :obj:`dict` might not always have a fixed number of keys,
     depending on the availability of incoming data.
@@ -1775,8 +1791,8 @@ class Block(Process, ABC):
     Important:
       If data is received over a same label from different Links, part of it
       will be lost ! Always avoid using a same label twice in a Crappy script.
-      See the :meth:`~crappy.blocks.Block.recv_all_data_raw` method for
-      receiving data with no loss.
+      See the :meth:`~crappy.blocks.meta_block.block.Block.recv_all_data_raw`
+      method for receiving data with no loss.
 
     Warning:
       As the time label is (normally) shared between all Blocks, the values
@@ -1855,12 +1871,12 @@ class Block(Process, ABC):
                         poll_delay: float | None = None
                         ) -> list[dict[str, list[Any]]]:
     """Reads all the available values from each incoming
-    :class:`~crappy.links.Link`, and returns them separately in a list of
+    :class:`~crappy.links.link.Link`, and returns them separately in a list of
     dicts.
 
-    Unlike :meth:`~crappy.blocks.Block.recv_all_data` this method does not fuse
-    the received data into a single :obj:`dict`, so it is guaranteed to return
-    all the available data with no loss.
+    Unlike :meth:`~crappy.blocks.meta_block.block.Block.recv_all_data` this
+    method does not fuse the received data into a single :obj:`dict`, so it is
+    guaranteed to return all the available data with no loss.
 
     Args:
       delay: If given specifies a delay, as a :obj:`float`, during which the

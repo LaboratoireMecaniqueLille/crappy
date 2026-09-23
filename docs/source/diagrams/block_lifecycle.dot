@@ -1,0 +1,99 @@
+digraph block_lifecycle {
+  graph [
+    rankdir=TB,
+    bgcolor="#ffffff",
+    pad="0.2",
+    nodesep="0.3",
+    ranksep="0.45",
+    fontname="sans-serif",
+    fontcolor="#111111"
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="sans-serif",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="sans-serif",
+    fontsize=11,
+    color="#555555",
+    fontcolor="#222222",
+    penwidth=1.4
+  ];
+
+  construct [
+    label="Main script\nConstruct Blocks and Links",
+    fillcolor="#f4f4f4",
+    color="#666666"
+  ];
+  prepare_all [
+    label="Crappy coordinator\nprepare_all(): create runtime state and start Blocks",
+    fillcolor="#f8efd8",
+    color="#8a6d1d"
+  ];
+  prepare [
+    label="Each Block\nprepare(): open devices, connections, or files",
+    fillcolor="#e8f1f8",
+    color="#315d7a"
+  ];
+  barrier [
+    label="Readiness barrier\nEvery Block waits until all Blocks have prepared",
+    fillcolor="#ffffff",
+    color="#555555",
+    penwidth=2
+  ];
+  start [
+    label="All Blocks ready\nCoordinator records shared t0 and releases the Blocks",
+    fillcolor="#f8efd8",
+    color="#8a6d1d"
+  ];
+  begin [
+    label="Each Block\nbegin(): run once after the common start",
+    fillcolor="#e8f1f8",
+    color="#315d7a"
+  ];
+  loop [
+    label="Each Block\nloop(): perform one iteration",
+    fillcolor="#e8f1f8",
+    color="#315d7a"
+  ];
+  continue_check [
+    label="After the iteration\nContinue running?",
+    fillcolor="#ffffff",
+    color="#555555",
+    penwidth=2
+  ];
+  stop [
+    label="Stop requested or failure detected\nCoordinator propagates the stop to all Blocks",
+    fillcolor="#f8efd8",
+    color="#8a6d1d"
+  ];
+  finish [
+    label="Each Block\nfinish(): release Block-owned resources",
+    fillcolor="#e8f1f8",
+    color="#315d7a"
+  ];
+  cleanup [
+    label="Crappy coordinator\nWait, release shared resources, and reset",
+    fillcolor="#f8efd8",
+    color="#8a6d1d"
+  ];
+
+  construct:s -> prepare_all:n;
+  prepare_all:s -> prepare:n;
+  prepare:s -> barrier:n;
+  barrier:s -> start:n;
+  start:s -> begin:n;
+  begin:s -> loop:n;
+  loop:s -> continue_check:n;
+  continue_check:e -> loop:se [
+    label="  CONTINUE - \nREPEAT",
+    penwidth=2,
+    constraint=false,
+    minlen=1
+  ];
+  continue_check:s -> stop:n [label="  STOP"];
+  stop:s -> finish:n;
+  finish:s -> cleanup:n;
+}

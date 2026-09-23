@@ -2,27 +2,24 @@
 
 """
 This example demonstrates the instantiation of a custom Modifier object in
-Crappy. It does not require any hardware nor specific Python module to run.
+Crappy. It requires neither hardware nor any specific Python modules to run.
 
-In Crappy, users can define their own Modifier objects and add them on Links
-between Blocks. This way, users can finely customize their test scripts
-without having to integrate new Modifiers in the distributed version of Crappy.
-Any callable can be used as a Modifier, including functions, but using a class
-as shown in this example is the cleanest possible way to add a custom Modifier.
+In Crappy, users can define their own Modifier objects and add them to Links
+between Blocks. This lets users customize their test scripts precisely without
+integrating new Modifiers into the distributed version of Crappy. Any callable,
+including a function, can be used as a Modifier; this example uses a class.
 
 Here, a Generator Block outputs a basic sine wave and sends it to a Dashboard
 Block for display. On the Link between these two Blocks, a custom Modifier
 object is added to modify the data on the fly. This Modifier calculates and
-adds the RMS value to the transmitted data, and also removes given labels from
-it. The goal here is to show the methods to use for creating a custom Modifier
-object.
+adds the RMS value to the transmitted data and removes specified labels from
+it. The goal is to show the methods for creating a custom Modifier object.
 
 After starting this script, watch how the data is modified by the custom
 Modifier on its way to the Dashboard. The RMS value is successfully calculated
-and added, while the 'index' label is removed. The RMs value stabilizes little
-by little to sqrt(2)/2, which is expected for a sine wave with no offset. This
-demo ends after 22s. You can also hit CTRL+C to stop it earlier, but it is not
-a clean way to stop Crappy.
+and added, while the 'index' label is removed. The RMS value gradually
+stabilizes at sqrt(2)/2, as expected for a sine wave with no offset. This
+demo ends after 22 seconds. Click the stop button to end the demo early.
 """
 
 import crappy
@@ -37,10 +34,9 @@ class CustomModifier(crappy.modifier.Modifier):
   """This class demonstrates the instantiation of a custom Modifier object in
   Crappy.
 
-  Each Modifier should preferably be a child of crappy.modifier.Modifier, but
-  it is not mandatory. Any callable object that takes a dictionary as input and
-  returns a dictionary can be used as a modifier, which includes simple
-  functions.
+  A Modifier should preferably inherit from crappy.modifier.Modifier, but this
+  is not mandatory. Any callable that takes and returns a dictionary can be
+  used as a Modifier, including a simple function.
 
   Here, this custom Modifier calculates the RMS value of a given received label
   and adds it to the data. It also removes given labels from the transmitted
@@ -109,8 +105,8 @@ if __name__ == '__main__':
   # Block for display. On its way to the Dashboard, the sent data is caught
   # and modified by the CustomModifier Modifier defined above
   gen = crappy.blocks.Generator(
-      # Generating a sine wave of period 6s and amplitude 2
-      ({'type': 'Sine', 'amplitude': 2, 'freq': 1/6, 
+      # Generating a sine wave of period 6 seconds and amplitude 2
+      ({'type': 'Sine', 'amplitude': 2, 'freq': 1 / 6,
         'condition': 'delay=20'},),
       cmd_label='signal',  # The label carrying the generated signal
       path_index_label='index',  # The label carrying the current Path index
@@ -140,6 +136,9 @@ if __name__ == '__main__':
               modifier=CustomModifier(rms_label='rms',
                                       input_label='signal',
                                       to_delete=('index',)))
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

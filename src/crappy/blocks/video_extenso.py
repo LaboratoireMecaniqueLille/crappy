@@ -12,14 +12,15 @@ from ..tool.camera_config import VideoExtensoConfig
 
 class VideoExtenso(Camera):
   """This Block can perform video-extensometry on images acquired by a
-  :class:`~crappy.camera.Camera` object, by tracking spots on the images.
+  :class:`~crappy.camera.meta_camera.camera.Camera` object, by tracking spots
+  on the images.
 
-  It takes no input :class:`~crappy.links.Link` in a majority of situations,
-  and outputs the results of the video-extensometry. It is a subclass of the
-  :class:`~crappy.blocks.Camera` Block, and inherits of all its features. That
-  includes the possibility to record and to display images in real-time,
-  simultaneously to the image acquisition and processing. Refer to the
-  documentation of the Camera Block for more information on these features.
+  It takes no input :class:`~crappy.links.link.Link` in a majority of
+  situations, and outputs the results of the video-extensometry. It is a
+  subclass of the :class:`~crappy.blocks.Camera` Block, and inherits of all its
+  features. That includes the possibility to record and to display images in
+  real-time, simultaneously to the image acquisition and processing. Refer to
+  the documentation of the Camera Block for more information on these features.
 
   This Block is quite similar to the :class:`~crappy.blocks.DICVE` Block,
   except this latter tracks patches with a texture instead of spots. Both
@@ -88,9 +89,9 @@ class VideoExtenso(Camera):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      camera: The name of the :class:`~crappy.camera.Camera` object to use for
-        acquiring the images. Arguments can be passed to this Camera as
-        ``kwargs`` of this Block. This argument is ignored if the
+      camera: The name of the :class:`~crappy.camera.meta_camera.camera.Camera`
+        object to use for acquiring the images. Arguments can be passed to this
+        Camera as ``kwargs`` of this Block. This argument is ignored if the
         ``image_generator`` argument is provided.
       transform: A callable taking an image as an argument, and returning a
         transformed image as an output. Allows applying a post-processing
@@ -106,8 +107,9 @@ class VideoExtenso(Camera):
         displayed before the test starts. There, the user can interactively
         adjust the different
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
-        available for the selected :class:`~crappy.camera.Camera`, visualize
-        the acquired images, and detect and select the spots to track. The test
+        available for the selected
+        :class:`~crappy.camera.meta_camera.camera.Camera`, visualize the
+        acquired images, and detect and select the spots to track. The test
         starts when closing the configuration window. **It is currently not
         possible to set this argument to** :obj:`False` **!** This might change
         in the future.
@@ -126,7 +128,7 @@ class VideoExtenso(Camera):
         .. versionchanged:: 1.5.10
            renamed from *show_image* to *display_images*
       displayer_backend: The backend to use for displaying the images. Can be
-        either ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` (OpenCV)
+        either ``'cv2'`` or ``'mpl'``, to use respectively ``cv2`` (OpenCV)
         or :mod:`matplotlib`. ``'cv2'`` usually allows achieving a higher
         display frequency. Ignored if ``display_images`` is :obj:`False`. If
         not given and ``display_images`` is :obj:`True`, ``'cv2'`` is tried
@@ -140,12 +142,12 @@ class VideoExtenso(Camera):
 
         .. versionadded:: 1.5.10
       software_trig_label: The name of a label used as a software trigger for
-        the :class:`~crappy.camera.Camera`. If given, images will only be
-        acquired when receiving data over this label. The received value does
-        not matter. This software trigger is not meant to be very precise, it
-        is recommended not to rely on it for a trigger frequency greater than
-        10Hz, in which case a hardware trigger should be preferred if available
-        on the camera.
+        the :class:`~crappy.camera.meta_camera.camera.Camera`. If given, images
+        will only be acquired when receiving data over this label. The received
+        value does not matter. This software trigger is not meant to be very
+        precise, it is recommended not to rely on it for a trigger frequency
+        greater than 10Hz, in which case a hardware trigger should be preferred
+        if available on the camera.
 
         .. versionadded:: 2.0.0
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -169,12 +171,13 @@ class VideoExtenso(Camera):
         the name : ``<frame_nr>_<timestamp>.<extension>``, and can thus easily
         be identified. Along with the images, a ``metadata.csv`` file records
         the metadata of all the saved images. This metadata is either the one
-        returned by the :meth:`~crappy.camera.Camera.get_image` method of the
-        :class:`~crappy.camera.Camera` object, or the default one generated in
-        the :meth:`~crappy.blocks.Camera.loop` method of the
-        :class:`~crappy.blocks.Camera` Block. Depending on the framerate of the
-        camera and the performance of the computer, it is not guaranteed that
-        all the acquired images will be recorded.
+        returned by the
+        :meth:`~crappy.camera.meta_camera.camera.Camera.get_image` method of
+        the :class:`~crappy.camera.meta_camera.camera.Camera` object, or the
+        default one generated in the :meth:`~crappy.blocks.Camera.loop` method
+        of this Block. Depending on the framerate of the camera and the
+        performance of the computer, it is not guaranteed that all the acquired
+        images will be recorded.
 
         .. versionadded:: 1.5.10
       img_extension: The file extension for the recorded images, as a
@@ -209,8 +212,8 @@ class VideoExtenso(Camera):
 
           'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
-        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
+        They correspond to the modules ``SimpleITK``, :mod:`PIL` (Pillow
+        Fork), ``cv2`` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
         backend saves the images as raw :obj:`numpy.array`, and thus ignores
         the ``img_extension`` argument. Depending on the machine, some backends
         may be faster or slower. For using each backend, the corresponding
@@ -230,17 +233,17 @@ class VideoExtenso(Camera):
 
         .. versionadded:: 1.5.10
       img_shape: The shape of the images returned by the
-        :class:`~crappy.camera.Camera` object as a :obj:`tuple` of :obj:`int`.
-        It should correspond to the value returned by :obj:`numpy.shape`.
-        **This argument is always ignored as** ``config`` **cannot be set to**
-        :obj:`False`. This might change in the future.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object as a
+        :obj:`tuple` of :obj:`int`. It should correspond to the value returned
+        by :obj:`numpy.shape`. **This argument is mandatory in case**
+        ``config`` **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       img_dtype: The `dtype` of the images returned by the
-        :class:`~crappy.camera.Camera` object, as a :obj:`str`. It should
-        correspond to a valid data type in :mod:`numpy`, e.g. ``'uint8'``.
-        **This argument is always ignored as** ``config`` **cannot be set to**
-        :obj:`False`. This might change in the future.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, as a
+        :obj:`str`. It should correspond to a valid data type in :mod:`numpy`,
+        e.g. ``'uint8'``. **This argument is mandatory in case** ``config``
+        **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       labels: The labels to use for sending data to downstream Blocks. If not
@@ -291,8 +294,9 @@ class VideoExtenso(Camera):
         blur improves the spot detection by smoothening the noise, but also
         takes a bit more time compared to no blurring.
       **kwargs: Any additional argument will be passed to the
-        :class:`~crappy.camera.Camera` object, and used as a kwarg to its
-        :meth:`~crappy.camera.Camera.open` method.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, and used as a
+        kwarg to its :meth:`~crappy.camera.meta_camera.camera.Camera.open`
+        method.
 
     .. versionremoved:: 1.5.10 
        *ext*, *fps_label*, *wait_l0* and *input_label* arguments
@@ -401,8 +405,8 @@ class VideoExtenso(Camera):
   def _configure(self) -> VideoExtensoConfig:
     """Instantiates the
     :class:`~crappy.tool.camera_config.VideoExtensoConfig` window for
-    configuring the :class:`~crappy.camera.Camera` object and selecting the
-    spots.
+    configuring the :class:`~crappy.camera.meta_camera.camera.Camera` object
+    and selecting the spots.
 
     The window creates and owns its spot detector. Once it closes,
     :meth:`crappy.tool.camera_config.VideoExtensoConfig.get_config` exports

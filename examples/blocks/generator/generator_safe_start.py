@@ -17,8 +17,8 @@ starts generating data.
 After starting this script, the Grapher remains empty as long as the user does
 not click on the Button to generate a first value of 'control'. Then, the
 signal starts to be generated and is displayed on the Grapher. This demo ends
-when the 'control' label reaches the value of 11. You can also hit CTRL+C to
-stop it earlier, but it is not a clean way to stop Crappy.
+when the 'control' label reaches the value of 11. Click the stop button to end
+the demo early.
 """
 
 import crappy
@@ -28,9 +28,9 @@ if __name__ == '__main__':
   # This Generator outputs a ramp signal
   # It is used here to demonstrate the use of the safe_start argument
   gen = crappy.blocks.Generator(
-      # Generating a simple ramp, that never ends because 'control' never drops
-      # below zero. Because 'safe_start' is True, no signal is output before
-      # a value is received for 'control'
+      # Generating a simple ramp that ends when 'control' becomes greater than
+      # 10. Because 'safe_start' is True, no signal is output before a value is
+      # received for 'control'
       ({'type': 'Ramp',
         'speed': 1,
         'condition': 'control>10',  # The 'control' label is the condition here
@@ -67,6 +67,9 @@ if __name__ == '__main__':
   # Linking the Block so that the information is correctly sent and received
   crappy.link(gen, graph)
   crappy.link(button, gen)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

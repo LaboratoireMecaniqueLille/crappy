@@ -16,5 +16,5 @@ Exceptions & missing Python modules
 .. autoexception:: crappy._global.StartTimeout
 .. autoexception:: crappy._global.T0NotSetError
 
-.. autoclass:: crappy._global.OptionalModule
+.. autoclass:: crappy.OptionalModule
    :special-members: __init__, __getattr__, __call__

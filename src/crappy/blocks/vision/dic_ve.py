@@ -16,9 +16,9 @@ class DICVEProcessor(VisionBlock):
   Unlike :class:`~crappy.blocks.DICVE`, this Block does not acquire, display,
   or record images itself. It only implements the image-processing stage and
   must receive images from exactly one upstream
-  :class:`~crappy.links.ImageLink`. Image acquisition is normally handled by a
-  :class:`~crappy.blocks.vision.CameraSource`. The received images must be
-  single-channel, 8-bit :mod:`numpy` arrays.
+  :class:`~crappy.links.img_link.ImageLink`. Image acquisition is normally
+  handled by a :class:`~crappy.blocks.vision.CameraSource`. The received images
+  must be single-channel, 8-bit :mod:`numpy` arrays.
 
   Between one and four rectangular patches can be tracked. Their coordinates
   can be supplied directly with ``patches`` or selected interactively in a
@@ -43,7 +43,7 @@ class DICVEProcessor(VisionBlock):
   x)`` pairs. The current patch boxes are additionally published under the
   reserved ``'overlay'`` label. They can be drawn by an
   :class:`~crappy.blocks.vision.ImageDisplayer` receiving both this regular
-  :class:`~crappy.links.Link` and images from the same source.
+  :class:`~crappy.links.link.Link` and images from the same source.
 
   If a patch can no longer be tracked, the Block either raises a
   :class:`~crappy.tool.image_processing.LostPatchError` or remains idle,

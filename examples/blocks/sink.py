@@ -1,13 +1,13 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the Sink Block. It does not require any
-hardware nor specific Python module to run.
+This example demonstrates the use of the Sink Block. It requires neither
+hardware nor any specific Python modules to run.
 
-The Sink Block discards any data it receives, and does nothing more. It is
-mainly intended for debugging, or for use as a replacement for a Block still to
-be added when prototyping a script. It is indeed not the most useful Block, but
-come on it took 5 minutes to write.
+The Sink Block discards any data it receives and does nothing more. It is
+mainly intended for debugging or as a placeholder for a Block that has not yet
+been added while prototyping a script. Admittedly, it is not the most useful
+Block, but come on, it took five minutes to write.
 
 Here, the Sink Block discards the data it receives from a Generator Block. And
 that's it.
@@ -15,8 +15,7 @@ that's it.
 After starting this script, watch how really nothing happens as the generated
 data is immediately discarded. In the console, you can still see that the Sink
 Block is alive as it displays its looping frequency. This script ends after
-17s. You can also hit CTRL+C to stop it earlier, but it is not a clean way to
-stop Crappy.
+17 seconds. Click the stop button to end the demo early.
 """
 
 import crappy
@@ -25,7 +24,7 @@ if __name__ == '__main__':
 
   # This Generator Block outputs a Constant signal for the Sink to ignore.
   gen = crappy.blocks.Generator(
-      # Generating a constant value of 0 during 15s
+      # Generating a constant value of 0 during 15 seconds
       ({'type': 'Constant', 'condition': 'delay=15', 'value': 0},),
       cmd_label='cmd',  # The label carrying the generated value
       freq=50,  # Lowering the default frequency because it's just a demo
@@ -46,6 +45,9 @@ if __name__ == '__main__':
 
   # Linking the Block so that the information is correctly sent and received
   crappy.link(gen, sink)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

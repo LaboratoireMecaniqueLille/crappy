@@ -19,11 +19,13 @@ class HDFRecorder(Block):
   
   It expects data as :obj:`numpy.array` from exactly one upstream Block, that
   should be an :class:`~crappy.blocks.IOBlock` in `streamer` mode. It then 
-  saves this data in a HDF5 file using the :mod:`tables` module.
+  saves this data in a HDF5 file using the
+  :external+pytables:doc:`PyTables package <index>`.
   
   This Block is intended for high-speed data recording from 
-  :class:`~crappy.inout.InOut` in `streamer` mode. For regular data recording,
-  the :class:`~crappy.blocks.Recorder` Block should be used instead.
+  :class:`~crappy.inout.meta_inout.inout.InOut` in `streamer` mode. For regular
+  data recording, the :class:`~crappy.blocks.Recorder` Block should be used
+  instead.
   
   Warning:
     Corrupted HDF5 files are not readable at all ! If anything goes wrong 

@@ -3,18 +3,18 @@
 """
 This example demonstrates the instantiation of a custom Block object in Crappy.
 The example presented here shows most of the attributes and methods to use when
-building a Block. It does not require any hardware nor specific Python module
+building a Block. It requires neither hardware nor any specific Python modules
 to run.
 
-In Crappy, users can define their own Block object and use them in their
-scripts. This way, users can finely customize their test scripts without having
-to integrate new Blocks in the distributed version of Crappy.
+In Crappy, users can define their own Block objects and use them in their
+scripts. This lets users customize their test scripts precisely without
+integrating new Blocks into the distributed version of Crappy.
 
 Here, a new Block object is instantiated that simply displays in the console
-the data it receives from a Generator Block. It also sends data for a Dashboard
-Block to display. Several arguments of the custom Block can be tuned, including
-one allowing to choose which method to use for receiving data. The goal here is
-to show the methods and attributes to use for creating a custom Block object.
+the data it receives from a Generator Block. It also sends data to a Dashboard
+Block for display. Several arguments of the custom Block can be tuned,
+including one that selects the method used to receive data. The goal is to show
+the methods and attributes to use for creating a custom Block object.
 
 After starting this script, watch in the console how the data from the
 Generator is received by the CustomBlock. In the Dashboard window you can also
@@ -22,8 +22,7 @@ see how the data is successfully sent by the CustomBlock. You can adjust the
 various settings of the Block, especially the method to use for receiving data.
 Also play with the looping frequency of the custom and Generator Blocks to see
 what happens when several chunks are waiting in the Links. This demo ends after
-t_limit seconds. You can also hit CTRL+C to stop it earlier, but it is not a
-clean way to stop Crappy.
+t_limit seconds. Click the stop button to end the demo early.
 """
 
 import crappy
@@ -44,12 +43,12 @@ class CustomBlock(crappy.blocks.Block):
   def __init__(self,
                recv_meth: str,
                labels: Sequence[str],
-               t_limit: float = float('inf'),
+               t_limit: float | None = None,
                freq: float | None = 100,
                display_freq: bool | None = False) -> None:
     """This method performs several critical actions.
 
-    First, it initializes the parent class. Then, it allows to set several
+    First, it initializes the parent class. Then, it sets several
     special attributes that control the way the Block runs. And finally, it
     is where the arguments are passed to the Block and where they should be
     handled.
@@ -58,7 +57,7 @@ class CustomBlock(crappy.blocks.Block):
       recv_meth: The method to use for receiving data from upstream Blocks.
         Should be one of 'data', 'last_data', 'all_data', 'all_data_raw'.
       labels: The labels to use for sending data to downstream Blocks.
-      t_limit: The Block will stop itself and the entire Crappy test after that
+      t_limit: The Block stops itself and the entire Crappy test after this
         many seconds. Set to None to keep the Block running forever.
       freq: The target looping frequency for the Block.
       display_freq: Set to True to display the achieved looping frequency as a
@@ -83,7 +82,7 @@ class CustomBlock(crappy.blocks.Block):
     self.freq = freq
 
     # When the display_freq attribute is set to True, the achieved looping
-    # frequency of the Block is displayed every 2s
+    # frequency of the Block is displayed every 2 seconds
     self.display_freq = display_freq
 
     # When the debug attribute is set to True, the logging level for this Block
@@ -93,7 +92,7 @@ class CustomBlock(crappy.blocks.Block):
     # Setting these attributes to reuse them later
     self._recv_meth = recv_meth
     self._count = 0
-    self._t_limit = t_limit
+    self._t_limit = float('inf') if t_limit is None else t_limit
 
   def prepare(self) -> None:
     """This method is called before the Block starts looping.
@@ -135,7 +134,7 @@ class CustomBlock(crappy.blocks.Block):
     """The loop method is the core of the Block, that is called repeatedly
     during the test.
 
-    In this method, you can receive incoming data from upstream Block and/or
+    In this method, you can receive incoming data from upstream Blocks and/or
     send data to downstream Blocks. You can also perform any other calculation,
     operation on files, interaction with a GUI, etc.
 
@@ -152,7 +151,7 @@ class CustomBlock(crappy.blocks.Block):
                               f"data to read")
 
     # There are four possible ways to read data in Crappy. Each of the four
-    # methods has its specificities, refer to the documentation for an
+    # methods has distinct behavior, refer to the documentation for an
     # extensive description
 
     if self._recv_meth == 'data':
@@ -163,7 +162,7 @@ class CustomBlock(crappy.blocks.Block):
 
     elif self._recv_meth == 'last_data':
       # This method reads all the available data from each incoming Link, but
-      # returns only the latest values of each labels in a single dictionary.
+      # returns only the latest value of each label in a single dictionary.
       # This call flushes all the Links
       data = self.recv_last_data()
 
@@ -181,16 +180,16 @@ class CustomBlock(crappy.blocks.Block):
       data = self.recv_all_data_raw()
 
     else:
-      raise ValueError(f"Unknown receive method given : {self._recv_meth}")
+      raise ValueError(f"Unknown receive method given: {self._recv_meth}")
 
     # Displaying the received data to show what the receive methods do
-    self.log(logging.WARNING, f"Received the following data : {data}")
+    self.log(logging.WARNING, f"Received the following data: {data}")
 
     # Stopping the Block if the timeout is exceeded
     if time() - self.t0 > self._t_limit:
       self.log(logging.WARNING, "Calling the stop method because the timeout "
                                 "is exceeded")
-      # The self.stop method allows to stop the execution of the Block without
+      # The self.stop method stops the execution of the Block without
       # raising an exception. As a consequence, it also stops all the running
       # Blocks and then the entire Crappy script
       self.stop()
@@ -220,12 +219,12 @@ if __name__ == '__main__':
 
   # This Generator Block generates a sine wave and sends it to the CustomBlock
   gen = crappy.blocks.Generator(
-      # generating a sine wave of amplitude 2 and period 10s
+      # Generating a sine wave of amplitude 2 and period 10 s
       ({'type': 'Sine', 'freq': 0.1, 'amplitude': 2, 'condition': None},),
       cmd_label='signal',  # The label carrying the generated signal
       freq=0.25,  # Setting a very low frequency to show how the CustomBlock
       # might sometimes not receive any data. Set to higher frequencies and
-      # combine with varius receive methods to explore different behaviors
+      # combine with various receive methods to explore different behaviors
 
       # Sticking to default for the other arguments
   )
@@ -235,7 +234,7 @@ if __name__ == '__main__':
   # output to the Dashboard Block
   custom = CustomBlock(
       recv_meth='data',  # Change to another valid method to see what changes
-      labels=('t(s)', 'msg'),  # the labels carrying the data to send to the
+      labels=('t(s)', 'msg'),  # The labels carrying the data to send to the
       # downstream Block
       t_limit=30,  # The Block will stop after that many seconds, remove to let
       # the test run forever
@@ -255,6 +254,9 @@ if __name__ == '__main__':
   # Linking the Block so that the information is correctly sent and received
   crappy.link(gen, custom)
   crappy.link(custom, dash)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   # Restraining the log level to WARNING so that only the messages from the

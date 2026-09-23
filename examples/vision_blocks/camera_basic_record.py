@@ -25,8 +25,7 @@ the configuration window. Let the test run for a few seconds, then click the
 stop button. The images and metadata are written to the
 demo_vision_record_images folder. If that folder already contains a Crappy
 recording, ImageRecorder selects a new folder with a numeric suffix instead of
-overwriting it. CTRL+C also stops the demo, but is not the cleanest way to stop
-Crappy.
+overwriting it. Click the stop button to end the demo.
 """
 
 import crappy

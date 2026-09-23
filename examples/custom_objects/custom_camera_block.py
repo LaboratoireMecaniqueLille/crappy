@@ -1,34 +1,31 @@
 # coding: utf-8
 
 """
-This example demonstrates the instantiation of a custom child of the Camera
-Block in Crappy. The example presented here also shows the instantiation of a
-CameraProcess object, necessary for implementing a custom Camera Block, as well
-as an Overlay object, optional to use with the CameraProcess. This example
-necessitates a camera compatible with OpenCV torun, and requires the Pillow and
-opencv-python Python modules to be installed.
+This example demonstrates the instantiation of a custom Camera Block subclass
+in Crappy. It also shows how to instantiate a CameraProcess, which is required
+for implementing a custom Camera Block, and an optional Overlay object. This
+example requires a camera compatible with OpenCV and the Pillow and
+opencv-python Python modules.
 
-For advanced users of Crappy, it is possible to define their own children of
-the Camera Block for performing custom image processing. This way, users can
-adapt the good performance of Crappy for image management to their own needs.
-Compared to the other custom objects of Crappy, this one is however among the
-most complex to create.
+Advanced Crappy users can define Camera Block subclasses that perform custom
+image processing. This lets users adapt Crappy's image-management features to
+their own needs. Of Crappy's custom objects, this is among the most complex to
+create.
 
 Here, a new Camera Block is instantiated that performs eye detection on images
 acquired from the Webcam Camera. The eye detection is performed by a separate
 CameraProcess object, also defined in the script. During the test, the acquired
 images are displayed in a dedicated Displayer window. In this window, a third
-custom-defined Overlay class allows to draw ellipses outlining the detected
-eyes, for a real-time follow-up of the processing. The coordinates of the
-detected eyes are sent to a LinkReader Block, for display in the terminal. The
+custom-defined Overlay class draws ellipses outlining the detected eyes,
+providing real-time feedback on the processing. The coordinates of the
+detected eyes are sent to a LinkReader Block for display in the terminal. The
 goal of this script is to demonstrate the steps for creating a custom Camera
 Block object.
 
 After starting this script and closing the configuration window, you should
 film a face with the camera and see in the Displayer window how the eyes are
-detected. A StopButton Block allows to stop this script when you're done using
-it. It might appear under the Displayer window. Alternatively, you can also hit
-CTRL+C to stop Crappy, but it is not a clean way to do it.
+detected. A StopButton Block stops this script cleanly when you're done using
+it. It might appear under the Displayer window.
 """
 
 import crappy
@@ -36,17 +33,18 @@ import cv2
 import numpy as np
 from collections.abc import Callable
 from pathlib import Path
+from typing import Literal
 
 
 class Ellipse(crappy.tool.camera_config.Overlay):
   """This class demonstrates the instantiation of a custom Overlay object in
   Crappy.
 
-  It allows to draw an ellipse as an overlay of the images displayed by a
+  It draws an ellipse as an overlay of the images displayed by a
   Camera Block whose display_images argument is set to True.
 
-  It is given as an argument of the send_to_draw method of a CameraProcess, to
-  be sent to the Displayer Process in charge of displaying the acquired images.
+  It is passed to the send_to_draw method of a CameraProcess and then sent to
+  the Displayer Process that displays the acquired images.
   """
 
   def __init__(self,
@@ -99,13 +97,12 @@ class CustomCameraProcess(crappy.blocks.camera_processes.CameraProcess):
   """This class demonstrates the instantiation of a custom CameraProcess object
   in Crappy.
 
-  It is used by a child of the Camera block for performing image processing on
-  the acquired images in a parallelized way. It is mandatory to define a
-  CameraProcess object for users wishing to implement their own image
-  processing in Crappy.
+  A Camera Block subclass uses it to process acquired images in parallel.
+  Users implementing their own image processing in Crappy must define a
+  CameraProcess object.
 
-  The CameraProcess objects can send Overlay objects via the send_to_draw
-  method, to draw overlays on top of the displayed images if the display_images
+  CameraProcess objects can send Overlay objects via the send_to_draw method to
+  draw overlays on top of the displayed images if the display_images
   argument of the Camera Block is set to True.
 
   Here, this class performs human eye detection on the images it receives. It
@@ -120,9 +117,8 @@ class CustomCameraProcess(crappy.blocks.camera_processes.CameraProcess):
     """This method should initialize the Python objects used in this class and
     handle the provided arguments.
 
-    It is strongly recommended to perform as little as possible in this method,
-    because objects instantiated already here might get buggy when used in
-    later methods.
+    Perform as little work as possible in this method, because objects created
+    here may not behave correctly when used in later methods.
 
     Args:
       scale_factor: Parameter specifying how much the image size is reduced at
@@ -155,12 +151,12 @@ class CustomCameraProcess(crappy.blocks.camera_processes.CameraProcess):
         cv2.data.haarcascades + 'haarcascade_eye.xml')
 
   def loop(self) -> None:
-    """This method should perform the main image processing task, and send the
-     result to downstream Blocks.
+    """This method should perform the main image-processing task and send the
+    result to downstream Blocks.
 
-     Here, Overlay objects can also be sent to the Displayer Process for adding
-     overlays on top of the displayed images.
-     """
+    Here, Overlay objects can also be sent to the Displayer Process to add
+    overlays to the displayed images.
+    """
 
     # This line performs the eye detection. The self.img attribute contains the
     # latest received image, and the loop method is only called if self.img is
@@ -198,11 +194,11 @@ class CustomCameraProcess(crappy.blocks.camera_processes.CameraProcess):
 
 
 class CustomCameraBlock(crappy.blocks.Camera):
-  """This class demonstrates the instantiation of a custom child of the Camera
-  Block in Crappy.
+  """Demonstrate the instantiation of a custom Camera Block subclass.
 
   It mainly indicates which CameraProcess object to use for image processing.
-  It is also the object that the user ultimately uses in its Crappy script.
+  It is also the object that users ultimately instantiate in their Crappy
+  scripts.
 
   Here, the CustomCameraProcess defined above is given as the Process to use
   for image processing.
@@ -213,7 +209,7 @@ class CustomCameraBlock(crappy.blocks.Camera):
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
                display_images: bool = False,
-               displayer_backend: str | None = None,
+               displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
                software_trig_label: str | None = None,
                display_freq: bool = False,
@@ -223,22 +219,22 @@ class CustomCameraBlock(crappy.blocks.Camera):
                img_extension: str = "tiff",
                save_folder: str | Path | None = None,
                save_period: int = 1,
-               save_backend: str | None = None,
+               save_backend: Literal['sitk', 'pil',
+                                     'cv2', 'npy'] | None = None,
                image_generator: Callable[[float, float],
-                                         np.ndarray]  |None = None,
-               img_shape: tuple[int, int] | None = None,
+                                         np.ndarray] | None = None,
+               img_shape: tuple[int, int] | tuple[int, int, int] | None = None,
                img_dtype: str | None = None,
                scale_factor: float = 1.2,
                min_neighbors: int = 3,
                **kwargs) -> None:
     """This method should initialize the Python objects used in this class and
     handle the provided arguments.
-    
+
     It also initializes the parent Camera Block, and provides it with all its
     possible arguments. Note that only camera is a mandatory argument, so all
     the other ones could be left to default. It was chosen to include them here
-    to remind users that is it better if children of the Camera Block still 
-    have them accessible.
+    so that subclasses of the Camera Block continue to expose them.
     """
 
     # Mandatory line usually at the very beginning of the __init__ method
@@ -278,8 +274,7 @@ class CustomCameraBlock(crappy.blocks.Camera):
     although it can perform any other action that would be required for your
     specific needs.
 
-    Here, it just sets the CustomCameraProcess defined above as the one to use
-    for performing the image processing.
+    Here, it sets the CustomCameraProcess defined above as the image processor.
     """
 
     # Setting the CameraProcess to use
@@ -304,7 +299,7 @@ if __name__ == '__main__':
       # dedicated window
       save_images=False,  # The acquired images will not be recorded
       freq=20,  # The maximum allowed acquisition frequency of the camera
-      displayer_framerate=20,  # The displayer window is allowed to display up
+      displayer_framerate=20,  # The displayer window can display up
       # to 20 images per second
       scale_factor=1.2,  # Argument passed to the CustomCameraProcess object
       min_neighbors=6,  # Argument passed to the CustomCameraProcess object
@@ -312,8 +307,7 @@ if __name__ == '__main__':
       # Sticking to default for the other arguments
   )
 
-  # This StopBlock checks if the data from the Button Block satisfies any of
-  # its stop criteria, in which case it stops the test
+  # This Block provides a clean way to stop the test
   stop = crappy.blocks.StopButton()
 
   # This LinkReader Block displays all the data it receives from the

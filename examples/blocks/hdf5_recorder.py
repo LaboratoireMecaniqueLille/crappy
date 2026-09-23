@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the HDF5Recorder Block. IT does not
+This example demonstrates the use of the HDF5Recorder Block. It does not
 require any hardware to run, but necessitates the tables and psutil Python
 modules to be installed.
 
@@ -9,16 +9,13 @@ This Block takes a stream input from an IOBlock and records it in a .hdf5 file.
 It can only save data from streams, not from InOut objects in normal operating
 mode.
 
-Here, the HDF5Recorder records data sent by an IOBlock driving a FakeInOut. By
-default, it records it to the newly created demo_hdf5_recorder folder in the
-data.hdf5 file. Note that in addition, A StopButton Block allows stopping the
-script properly without using CTRL+C by clicking on a button.
+Here, the HDF5Recorder records data sent by an IOBlock driving a FakeInOut. It
+records the data in demo_hdf5_recorder/data.hdf5, creating the destination
+folder if needed.
 
-After starting this script, nothing more happens but data is being recorded to
-the destination file. To end this demo, click on the stop button that appears.
-You can also hit CTRL+C, but it is not a clean way to stop Crappy. Then, notice
-how the data has been written to the destination file. For reading it, you'll
-need to load the data, for example using the h5py Python module.
+After starting this script, data is recorded without any visual output. Click
+the stop button to end the demo, then inspect the destination file. You can
+load it with a library such as h5py.
 """
 
 import crappy
@@ -56,7 +53,7 @@ if __name__ == '__main__':
       # No specific argument to give for this Block
   )
 
-  # Linking the Blocks together so that each one sends and received the correct
+  # Linking the Blocks together so that each one sends and receives the correct
   # information
   crappy.link(streamer, recorder)
 

@@ -1,21 +1,19 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the StopBlock. It does not require any
-hardware nor specific Python module to run.
+This example demonstrates the use of the StopBlock. It requires neither
+hardware nor any specific Python modules.
 
 This Block checks if given criteria are met in the data it receives. If so, it
 triggers an event that stops the entire Crappy script. It is one of the clean
 ways to stop a Crappy script.
 
-Here, a Button Block is linked to a StopBlock. If the click count of the Button
-Block reaches 6, or if 10 seconds are elapsed, the StopBlock stops the script.
+Here, a Button Block is linked to a StopBlock. The StopBlock stops the script
+when the Button's click count reaches 6 or 10 seconds have elapsed.
 
 After starting this script, you can either click 6 times on the button that
 appears, or wait for 10 seconds. In both cases, the script should then stop by
-itself. You can also stop this script earlier than 10s by hitting CTRL+C (not
-a proper way to end a script in Crappy).
-"""
+itself."""
 
 import crappy
 
