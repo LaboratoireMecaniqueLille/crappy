@@ -130,7 +130,19 @@ html_extra_path = ["llms.txt"]
 
 # Link checking
 
-# Unexpected redirects remain reportable. Timeouts do not fail an audit because
-# several hardware-vendor sites throttle automated checks
-linkcheck_allowed_redirects = {}
+# Allow redirects for DOIs since these are by nature redirected
+linkcheck_allowed_redirects = {
+    r"https://doi\.org/10\.1016/j\.softx\.2021\.100848":
+        r"https://linkinghub\.elsevier\.com/retrieve/pii/S2352711021001278",
+    r"https://doi\.org/10\.1016/j\.softx\.2023\.101348":
+        r"https://linkinghub\.elsevier\.com/retrieve/pii/S2352711023000444",
+}
+# Use the GitHub token in GitHub Actions to avoid GitHub rate limit
+_github_token = environ.get("GITHUB_TOKEN")
+linkcheck_request_headers = (
+    {"https://github.com": {"Authorization": f"Bearer {_github_token}"}}
+    if _github_token else {})
+# Several hardware-vendor sites throttle automated checks
+linkcheck_retries = 2
+linkcheck_timeout = 30
 linkcheck_report_timeouts_as_broken = False
