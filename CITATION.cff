@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: >-
+  If you use Crappy in academic research, please cite the preferred article.
+title: Crappy
+type: software
+authors:
+  - name: LaMcube
+abstract: >-
+  A Python framework for command and data acquisition on experimental setups.
+license: GPL-2.0-or-later
+repository-code: "https://github.com/LaboratoireMecaniqueLille/crappy"
+url: "https://crappy.readthedocs.io/"
+keywords:
+  - data acquisition
+  - experimental control
+  - Python
+preferred-citation:
+  type: article
+  title: >-
+    CRAPPY: Command and Real-Time Acquisition in Parallelized Python, a Python
+    module for experimental setups
+  authors:
+    - family-names: Couty
+      given-names: Victor
+      orcid: "https://orcid.org/0000-0002-8756-4671"
+    - family-names: Witz
+      given-names: Jean-François
+    - family-names: Martel
+      given-names: Corentin
+    - family-names: Bari
+      given-names: François
+    - family-names: Weisrock
+      given-names: Antoine
+      orcid: "https://orcid.org/0000-0002-1808-6645"
+  doi: "10.1016/j.softx.2021.100848"
+  journal: SoftwareX
+  month: 12
+  volume: 16
+  year: 2021
+  url: "https://doi.org/10.1016/j.softx.2021.100848"

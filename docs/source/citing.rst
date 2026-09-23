@@ -8,6 +8,9 @@ articles:
 - Couty V., Witz J-F., Martel C. et al., *Command and Real-Time Acquisition in Parallelized Python, a Python module for experimental setups*, SoftwareX 16, 2021, DOI: 10.1016/j.softx.2021.100848. (`link to Couty et al. <https://www.sciencedirect.com/science/article/pii/S2352711021001278>`_)
 - Weisrock A., Couty V., Witz J-F. et al., *CRAPPY goes embedded: Including low-cost hardware in experimental setups*, SoftwareX 22, 2023, DOI: 10.1016/j.softx.2023.101348. (`link to Weisrock et al. <https://www.sciencedirect.com/science/article/pii/S2352711023000444>`_)
 
+The repository's :download:`CITATION.cff <../../CITATION.cff>` provides
+machine-readable citation metadata for Couty *et al*.
+
 Use these BibTeX entries to reference the articles:
 
 .. code-block:: shell-session
