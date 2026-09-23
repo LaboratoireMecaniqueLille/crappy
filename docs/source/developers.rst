@@ -107,6 +107,14 @@ repository root:
 Building the documentation
 --------------------------
 
+Sphinx uses the `Graphviz <https://graphviz.org/download/>`_ system package to
+render the documentation diagrams. Install it with your operating system's
+package manager and check that the ``dot`` executable is available:
+
+.. code-block:: console
+
+   $ dot -V
+
 Build the documentation in a clean virtual environment with a supported
 Python version. From the repository root, run:
 
