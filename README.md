@@ -1,7 +1,7 @@
 Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)
 =================================================================
 
-![Crappy](https://raw.githubusercontent.com/LaboratoireMecaniqueLille/crappy/master/docs/banner.svg)
+![Crappy](https://raw.githubusercontent.com/LaboratoireMecaniqueLille/crappy/master/docs/source/_static/branding/banner_1024.svg)
 
 [![Downloads](https://static.pepy.tech/badge/crappy)](https://www.pepy.tech/projects/crappy)
 [![Documentation Status](https://readthedocs.org/projects/crappy/badge/?version=latest)](https://crappy.readthedocs.io/en/latest/)

@@ -115,9 +115,12 @@ html_theme_options = {
         "https://github.com/LaboratoireMecaniqueLille/crappy/",
     "source_branch": "master",
     "source_directory": "docs/source/",
+    "sidebar_hide_name": True,
     "top_of_page_buttons": ["view", "edit"],
 }
 html_title = f"{project} {release} documentation"
+html_logo = "_static/branding/banner_1024.svg"
+html_favicon = "_static/branding/logo_32.svg"
 html_baseurl = environ.get(
     "READTHEDOCS_CANONICAL_URL",
     "https://crappy.readthedocs.io/en/latest").rstrip("/")
