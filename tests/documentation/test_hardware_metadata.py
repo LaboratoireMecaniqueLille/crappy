@@ -13,6 +13,7 @@ class TestHardwareMetadata(unittest.TestCase):
   _repository = Path(__file__).resolve().parents[2]
   _metadata_path = (_repository / 'docs' / 'source' / '_data' /
                     'hardware.py')
+  _hardware_page_path = (_repository / 'docs' / 'source' / 'hardware.rst')
   _camera_api_path = (_repository / 'docs' / 'source' / 'crappy_docs' /
                       'cameras.rst')
   _inout_api_path = (_repository / 'docs' / 'source' / 'crappy_docs' /
@@ -125,3 +126,11 @@ class TestHardwareMetadata(unittest.TestCase):
       with self.subTest(driver=entry['name']):
         self.assertTrue(entry['example'].startswith('examples/'))
         self.assertTrue((self._repository / entry['example']).is_file())
+
+  def test_all_hardware_matrices_are_rendered(self) -> None:
+    """Checks the compatibility page renders every hardware category once."""
+
+    source = self._hardware_page_path.read_text(encoding='utf-8')
+    for kind in ('Camera', 'InOut', 'Actuator'):
+      with self.subTest(kind=kind):
+        self.assertEqual(source.count(f'.. hardware-matrix:: {kind}'), 1)

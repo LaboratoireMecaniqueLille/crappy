@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from .test_advanced_tutorials import TestAdvancedTutorialDownloads
+from .test_ai_discovery import TestAiDiscovery
 from .test_api_reference import TestPublicApiReference
 from .test_custom_object_tutorials import TestCustomObjectTutorialDownloads
 from .test_downloads import TestDownloadablePythonFiles
