@@ -82,7 +82,7 @@ Choose a different tool when:
 .. |Downloads| image:: https://static.pepy.tech/badge/crappy
    :target: https://static.pepy.tech/badge/crappy
 
-.. |Documentation status| image:: https://readthedocs.org/projects/crappy/badge/?version=latest
+.. |Documentation status| image:: https://app.readthedocs.org/projects/crappy/badge/?version=latest
    :target: https://crappy.readthedocs.io/en/latest/?badge=latest
 
 .. |PyPi version| image:: https://badgen.net/pypi/v/crappy/
