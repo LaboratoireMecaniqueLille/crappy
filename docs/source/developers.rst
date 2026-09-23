@@ -122,6 +122,10 @@ Python version. From the repository root, run:
 The final command performs a fresh, nitpicky Sphinx build and treats warnings
 as errors. The generated site is available in ``docs/build/html``.
 
+You can run an external hypertext link audit locally with
+``make -C docs checklinks``. Its categorized report is written to
+``docs/build/linkcheck/output.txt``.
+
 Runtime concepts and architecture
 ---------------------------------
 
