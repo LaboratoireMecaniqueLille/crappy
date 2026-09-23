@@ -1,9 +1,9 @@
 """Sphinx configuration for the documentation of Crappy"""
 
 from datetime import date
-from importlib.metadata import version as distribution_version
 from os import environ
 from pathlib import Path
+from runpy import run_path
 from sys import path as python_path
 
 
@@ -16,8 +16,9 @@ project = "Crappy"
 author = "LaMcube and contributors"
 copyright = f"{date.today().year}, {author}"
 
-# Documentation builds install Crappy before loading this configuration.
-release = distribution_version("crappy")
+# Read the checked-out source to get the current release
+release = run_path(str(Path(__file__).resolve().parents[2] /
+                       "src" / "crappy" / "__version__.py"))["__version__"]
 version = ".".join(release.split(".")[:2])
 
 
