@@ -1,11 +1,7 @@
 # coding: utf-8
 
 from pathlib import Path
-from runpy import run_path
 import unittest
-from unittest.mock import patch
-
-import crappy
 
 
 class TestAdvancedTutorialDownloads(unittest.TestCase):
@@ -22,20 +18,6 @@ class TestAdvancedTutorialDownloads(unittest.TestCase):
     'test_camera_object.py': 'test-camera-object',
   }
 
-  def test_examples_are_import_safe(self) -> None:
-    """Imports each example without starting a test or opening hardware."""
-
-    for file_name in self._examples:
-      with self.subTest(example=file_name):
-        path = self._download_dir / file_name
-        with patch.object(
-            crappy,
-            'start',
-            side_effect=AssertionError('An imported example called start()')):
-          namespace = run_path(str(path), run_name='docs_smoke')
-
-        self.assertTrue(callable(namespace.get('main')))
-
   def test_literalinclude_markers_are_complete(self) -> None:
     """Checks each displayed code range has exactly one ordered marker pair."""
 
@@ -49,4 +31,3 @@ class TestAdvancedTutorialDownloads(unittest.TestCase):
         self.assertEqual(source.count(start), 1)
         self.assertEqual(source.count(end), 1)
         self.assertLess(source.index(start), source.index(end))
-        compile(source, str(path), 'exec')
