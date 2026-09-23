@@ -40,5 +40,9 @@ jobs:
         env:
           MPLBACKEND: Agg
         run: python -m unittest -v tests.documentation
+      - name: Report API coverage
+        run: |
+          make -C docs api-coverage
+          cat docs/build/coverage/python.txt
       - name: Build documentation
         run: make -C docs clean html
