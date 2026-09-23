@@ -1,91 +1,130 @@
 Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)
 =================================================================
 
+![Crappy](https://raw.githubusercontent.com/LaboratoireMecaniqueLille/crappy/master/docs/banner.svg)
+
 [![Downloads](https://static.pepy.tech/badge/crappy)](https://www.pepy.tech/projects/crappy)
 [![Documentation Status](https://readthedocs.org/projects/crappy/badge/?version=latest)](https://crappy.readthedocs.io/en/latest/)
-[![PyPi version](https://badgen.net/pypi/v/crappy/)](https://pypi.org/project/crappy/)
-[![Python version](https://img.shields.io/pypi/pyversions/crappy.svg)](https://pypi.org/project/crappy/)
-[![Test Python package](https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml/badge.svg)](https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml)
+[![PyPI version](https://badgen.net/pypi/v/crappy/)](https://pypi.org/project/crappy/)
+[![Python versions](https://img.shields.io/pypi/pyversions/crappy.svg)](https://pypi.org/project/crappy/)
+[![Test Python Package](https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml/badge.svg)](https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml)
 
-CRAPPY aims to provide a free and open-source software canvas for driving 
-experimental setups in a versatile and accessible way.
+Crappy is an open-source Python framework for command and data acquisition on
+experimental setups. A Crappy test is a Python script assembled from **Blocks**
+that acquire measurements, drive actuators, process data, display signals, or
+save results. **Links** carry labeled data between these Blocks.
 
-Presentation
-------------
+Crappy is developed at [LaMCube](https://lamcube.univ-lille.fr/), a mechanical
+research laboratory in Lille, France, where it is used mainly for materials
+testing.
 
-Setups in experimental research tend to get increasingly complex, and require 
-to drive a variety of actuators, sensors, and cameras from various suppliers. 
-However, as researchers are one step ahead of industrials, the commercially 
-available testing solutions are not always well-suited to their objectives. 
-Developing a custom software interface is also not always an option, as the 
-synchronization of the devices and the optimization of the computer resources
-can prove challenging even to experienced developers.
+## Why use Crappy?
 
-The purpose of CRAPPY is to provide a framework for driving experimental 
-setups, in which even the most complex designs can be controlled in usually 
-less than a hundred lines of code. CRAPPY is:
+As experimental setups grow, coordinating instruments from different vendors,
+organizing acquisition and commands, and reproducing the same test procedure
+can become increasingly difficult. Commercial packages may tie a setup to a
+specific ecosystem, while writing a complete control application from scratch
+requires time and software expertise.
 
-- A free and open source Python module
-- Written in pure Python, to make it easily understandable and editable by a 
-large audience
-- Highly modular and versatile, and can adapt to almost any setup
-- Distributed with a wide collection of ready-to-run [examples](https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples)
-- Heavily optimized, to make the most of your computer's resources
-- Distributed with a collection of powerful tools for performing real-time data
-and image processing
+Crappy provides a common, modular framework for these tasks. Ready-to-use
+Blocks can be combined and replaced as an experiment evolves, and users can use
+included hardware drivers or integrate custom devices. Because each test is an 
+ordinary Python script, its complete workflow can be saved, shared, and 
+repeated. Crappy is also designed to use computer resources efficiently, 
+helping beginners and experts build responsive experiments without having to
+write the underlying software.
 
-Crappy is developed at the [LaMCube](https://lamcube.univ-lille.fr/), a
-mechanical research laboratory based in Lille, France, where it is used mainly 
-for materials testing.
+## What can Crappy do?
 
-Requirements
-------------
+- Acquire measurements from sensors and laboratory instruments
+- Drive actuators and build feedback loops
+- Capture, process, display, and record images
+- Display and save experimental data as it is acquired
+- Integrate custom hardware and processing code for user-specific needs
+- Run on Linux, Windows, macOS, and Raspberry Pi
 
-CRAPPY can run with Python 3.10 to 3.14, and has been tested on Windows, Linux, 
-Raspberry Pi and macOS. It can probably run on other operating systems 
-supporting the required Python versions. 
+## Installation
 
-CRAPPY has only one requirement: [Numpy](https://numpy.org/) (2.0.0 or higher).
-In addition, other modules can be necessary depending on which features you 
-want to use. The main ones are [Matplotlib](https://matplotlib.org/),
-[openCV](https://opencv.org/), [pyserial](https://pypi.org/project/pyserial/)
-and [Pillow](https://python-pillow.org/).
+Crappy requires Python 3.10 or newer and NumPy 2.0 or newer. Install it from
+PyPI with:
 
-Installation
-------------
+```shell
+python -m pip install crappy
+```
 
-CRAPPY is distributed on PyPI, and can be installed on the supported operating 
-systems simply by running the following command in a terminal:
+See the [installation guide](https://crappy.readthedocs.io/en/latest/installation.html)
+for platform-specific instructions and optional dependencies.
 
-    python -m pip install crappy
+## Example script
 
-You'll find more details in the dedicated [installation section](https://crappy.readthedocs.io/en/latest/installation.html) 
-of the documentation, as well as alternative installation methods.
+This example reads the computer's memory usage, displays it live, records it in
+`data.csv`, and stops automatically after ten seconds. It requires no  physical 
+hardware, but uses Matplotlib for the graph and psutil for the simulated input:
 
-Citing Crappy
--------------
+```shell
+python -m pip install matplotlib psutil
+```
 
-If Crappy has been of help in your research, please reference it in your 
-academic publications by citing one or both of the following articles:
+```python
+import crappy
 
-- Couty V., Witz J-F., Martel C. et al., *Command and Real-Time Acquisition in 
-Parallelized Python, a Python module for experimental setups*, SoftwareX 16, 
-2021, DOI: 10.1016/j.softx.2021.100848. 
-([link to Couty et al.](https://www.sciencedirect.com/science/article/pii/S2352711021001278))
-- Weisrock A., Couty V., Witz J-F. et al., *CRAPPY goes embedded: Including 
-low-cost hardware in experimental setups*, SoftwareX 22, 2023, DOI: 
-10.1016/j.softx.2023.101348. 
-([link to Weisrock et al.](https://www.sciencedirect.com/science/article/pii/S2352711023000444))
+if __name__ == '__main__':
+  acquisition = crappy.blocks.IOBlock('FakeInOut', labels=('t(s)', 'ram(%)'))
+  graph = crappy.blocks.Grapher(('t(s)', 'ram(%)'))
+  recorder = crappy.blocks.Recorder('data.csv', labels=('t(s)', 'ram(%)'))
+  stop = crappy.blocks.StopBlock('t(s) > 10')
 
-Documentation
--------------
+  crappy.link(acquisition, graph)
+  crappy.link(acquisition, recorder)
+  crappy.link(acquisition, stop)
 
-The latest versions of the documentation can be accessed on our
-[ReadTheDocs](https://crappy.readthedocs.io/) page. It contains a description 
-of Crappy's features, tutorials, and other useful information.
+  crappy.start()
+```
 
-License
--------
+Refer to the documentation for a detailed explanation of each Block's purpose
+and capability.
 
-[GNU GPLv2](https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/LICENSE) 
-&copy; 2015, Laboratoire Mécanique de Lille & contributors
+## Documentation and support
+
+Start with [Is Crappy right for you?](https://crappy.readthedocs.io/en/latest/what_is_crappy.html)
+for a broader overview of the framework, its intended uses, and its limits.
+
+- The [tutorials](https://crappy.readthedocs.io/en/latest/tutorials.html) provide
+  guided introductions to common tasks and custom objects
+- The [examples](https://crappy.readthedocs.io/en/latest/examples.html) provide
+  complete scripts organized by task, with and without physical hardware
+- The [core concepts](https://crappy.readthedocs.io/en/latest/concepts.html)
+  explain how Blocks, Links, labels, and test lifecycles fit together
+- The [hardware matrix](https://crappy.readthedocs.io/en/latest/hardware.html)
+  lists the available drivers and their known platform and backend support
+- The [API reference](https://crappy.readthedocs.io/en/latest/api.html) documents
+  the arguments and methods of Crappy's public objects
+
+If something does not work as expected, consult the
+[troubleshooting guide](https://crappy.readthedocs.io/en/latest/troubleshooting.html)
+first. The [support and reporting guide](https://crappy.readthedocs.io/en/latest/support.html)
+then explains where and how to ask a question, report a bug, or share hardware
+compatibility results.
+
+Usage questions are welcome in
+[GitHub Discussions](https://github.com/LaboratoireMecaniqueLille/crappy/discussions).
+Use the [issue tracker](https://github.com/LaboratoireMecaniqueLille/crappy/issues)
+for reproducible bugs and hardware compatibility reports.
+
+## Citing Crappy
+
+If Crappy contributes to published research, please cite:
+
+> Couty V., Witz J.-F., Martel C. et al. *Command and Real-Time Acquisition in
+> Parallelized Python, a Python module for experimental setups*. SoftwareX 16,
+> 2021. [doi:10.1016/j.softx.2021.100848](https://doi.org/10.1016/j.softx.2021.100848)
+
+See the [citation guidance](https://crappy.readthedocs.io/en/latest/citing.html)
+and [`CITATION.cff`](https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/CITATION.cff)
+for structured metadata.
+
+## License
+
+Crappy is distributed under the
+[GNU General Public License v2.0 or later](https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/LICENSE).
+Copyright &copy; 2015–present, Laboratoire Mécanique de Lille and contributors.
