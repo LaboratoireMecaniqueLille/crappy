@@ -124,9 +124,8 @@ html_context = {"display_github": True,
                 "github_repo": "crappy",
                 "github_version": "master/docs/source/"}
 
-# Add only reviewed root-level files, such as llms.txt, in a later work
-# package
-html_extra_path = []
+# Hand-reviewed files copied to the root of the generated documentation
+html_extra_path = ["llms.txt"]
 
 
 # Link checking
