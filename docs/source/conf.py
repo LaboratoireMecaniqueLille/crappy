@@ -121,6 +121,8 @@ html_title = f"{project} {release} documentation"
 html_baseurl = environ.get(
     "READTHEDOCS_CANONICAL_URL",
     "https://crappy.readthedocs.io/en/latest").rstrip("/")
+html_static_path = ["_static"]
+html_css_files = ["accessibility.css"]
 
 # Hand-reviewed files copied to the root of the generated documentation
 html_extra_path = ["llms.txt"]
