@@ -5,6 +5,7 @@ Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)
 [![Documentation Status](https://readthedocs.org/projects/crappy/badge/?version=latest)](https://crappy.readthedocs.io/en/latest/)
 [![PyPi version](https://badgen.net/pypi/v/crappy/)](https://pypi.org/project/crappy/)
 [![Python version](https://img.shields.io/pypi/pyversions/crappy.svg)](https://pypi.org/project/crappy/)
+[![Test Python package](https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml/badge.svg)](https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml)
 
 CRAPPY aims to provide a free and open-source software canvas for driving 
 experimental setups in a versatile and accessible way.

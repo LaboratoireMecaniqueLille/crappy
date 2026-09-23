@@ -6,6 +6,7 @@ What is Crappy?
 |Documentation status|
 |PyPi version|
 |PyPI pyversions|
+|Test Python package|
 
 Overview
 --------
@@ -90,3 +91,6 @@ Choose a different tool when:
 
 .. |PyPI pyversions| image:: https://img.shields.io/pypi/pyversions/crappy.svg
    :target: https://pypi.org/project/crappy/
+
+.. |Test Python package| image:: https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml/badge.svg
+   :target: https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml
