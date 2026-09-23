@@ -31,7 +31,12 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r docs/source/requirements.txt
           python -m pip install .
-      - name: Check getting-started downloads
+      - name: Check documentation spelling
+        run: >-
+          codespell docs/source docs/README.md
+          --skip='*.py,*.cu'
+          --ignore-words=docs/spelling_wordlist.txt
+      - name: Run documentation tests
         env:
           MPLBACKEND: Agg
         run: python -m unittest -v tests.documentation
