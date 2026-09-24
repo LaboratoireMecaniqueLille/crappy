@@ -265,4 +265,11 @@ class Grapher(Block):
       self._factor = [1 for _ in self._graph_labels]
       self._counter = [0 for _ in self._graph_labels]
 
+      # Request a new rendering of the Figure
+      if self._canvas is not None:
+        try:
+          self._canvas.draw_idle()
+        except TclError:
+          pass
+
       self.log(logging.INFO, "Cleared the matplotlib window")
