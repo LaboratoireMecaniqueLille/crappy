@@ -51,6 +51,7 @@ if __name__ == '__main__':
       interp=False,  # Not linking the displayed spots, to better see the
       # frequency of the input
       length=100,  # Only displaying the data for the last 100 points
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )

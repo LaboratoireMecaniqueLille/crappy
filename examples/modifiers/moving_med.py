@@ -49,6 +49,7 @@ if __name__ == '__main__':
       # frequency of the input
       length=150,  # Only displaying the data for the last 150 points (~5
       # seconds)
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )
@@ -64,6 +65,7 @@ if __name__ == '__main__':
       # frequency of the input
       length=150,  # Only displaying the data for the last 150 points (~5
       # seconds)
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )

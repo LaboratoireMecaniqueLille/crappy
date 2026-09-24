@@ -118,7 +118,8 @@ if __name__ == '__main__':
       # distinguish them
       length=40,  # Only displaying the last 40 received values, so that the
       # data points remain always clearly visible
-      freq=2,  # Updating the graph twice every second
+      max_pt=None,  # Disabling resampling, as length already limits the data
+      upd_freq=2,  # Updating the graph twice every second
 
       # Sticking to default for the other arguments
   )

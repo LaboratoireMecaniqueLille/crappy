@@ -54,7 +54,8 @@ if __name__ == '__main__':
   graph_1 = crappy.blocks.Grapher(
       # Listing all the labels to display
       ('t(s)', 'cmd'), ('t(s)', 'x(mm)'),
-      length=150,  # Limiting the display to the last 150 chunks of data
+      length=150,  # Limiting the display to the last 150 data points
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )

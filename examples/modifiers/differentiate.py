@@ -49,6 +49,7 @@ if __name__ == '__main__':
       # The names of the labels to plot on the graph
       ('t(s)', 'sine'), ('t(s)', 'd_sine'),
       length=500,  # Limiting the extent of the graph to better see the signals
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )
