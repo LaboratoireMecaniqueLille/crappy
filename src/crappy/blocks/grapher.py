@@ -247,10 +247,11 @@ class Grapher(Block):
         pass
 
   def finish(self) -> None:
-    """Closes all the opened :mod:`matplotlib` windows."""
+    """Closes the :mod:`matplotlib` window owned by this Block."""
 
-    self.log(logging.INFO, "Closing all matplotlib windows")
-    plt.close(self._figure)
+    if self._figure is not None:
+      self.log(logging.INFO, "Closing the matplotlib window")
+      plt.close(self._figure)
 
   def _on_press(self, event) -> None:
     """Callback catching the keyboard press events.
