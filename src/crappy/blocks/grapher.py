@@ -360,8 +360,7 @@ class Grapher(Block):
       for upd, line, data, (lx, ly) in zip(update, self._lines, self._data,
                                            self._graph_labels):
         if upd:
-          self.log(logging.DEBUG, f"Update graph data for labels "
-                                  f"{lx}, {ly}: {data[0]}, {data[1]}")
+          self.log(logging.DEBUG, f"Update graph data for labels {lx}, {ly}")
           line.set_data(data[0], data[1])
 
     # Update the graph when necessary
