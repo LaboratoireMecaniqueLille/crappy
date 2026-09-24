@@ -153,22 +153,22 @@ class TestGrapher(BlockTestBase):
                                        upd_freq=2)
     calls = list()
 
-    def recv_all_data_raw(delay=None, poll_delay=None):
-      calls.append((delay, poll_delay))
+    def recv_all_data_raw():
+      calls.append(None)
       return []
 
     grapher.recv_all_data_raw = recv_all_data_raw
 
     grapher.loop()
 
-    self.assertEqual(calls, [(None, None)])
+    self.assertEqual(calls, [None])
 
   def test_loop_updates_matching_curves_only(self) -> None:
     """Checks that only payloads with both requested labels update a curve."""
 
     grapher, _ = self._prepare_grapher(('x', 'y'), ('x', 'z'), freq=10)
 
-    def recv_all_data_raw(delay=None, poll_delay=None):
+    def recv_all_data_raw():
       return [
         {'x': [1, 2], 'y': [3, 4]},
         {'x': [5], 'unused': [6]},
@@ -232,7 +232,7 @@ class TestGrapher(BlockTestBase):
     grapher, _ = self._prepare_grapher(('x', 'y'), length=3, max_pt=None,
                                        freq=10)
 
-    def recv_all_data_raw(delay=None, poll_delay=None):
+    def recv_all_data_raw():
       return [{'x': [1, 2, 3, 4], 'y': [5, 6, 7, 8]}]
 
     grapher.recv_all_data_raw = recv_all_data_raw
@@ -247,7 +247,7 @@ class TestGrapher(BlockTestBase):
 
     grapher, _ = self._prepare_grapher(('x', 'y'), max_pt=3, freq=10)
 
-    def recv_all_data_raw(delay=None, poll_delay=None):
+    def recv_all_data_raw():
       return [{'x': [1, 2, 3, 4, 5], 'y': [6, 7, 8, 9, 10]}]
 
     grapher.recv_all_data_raw = recv_all_data_raw
@@ -283,7 +283,7 @@ class TestGrapher(BlockTestBase):
 
     grapher, _ = self._prepare_grapher(('x', 'y'), freq=10)
 
-    def recv_all_data_raw(delay=None, poll_delay=None):
+    def recv_all_data_raw():
       return [{'x': [1], 'y': [2]}]
 
     grapher.recv_all_data_raw = recv_all_data_raw

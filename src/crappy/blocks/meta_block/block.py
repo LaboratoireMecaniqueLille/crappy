@@ -1873,10 +1873,7 @@ class Block(Process, ABC):
     self.log(logging.DEBUG, f"Called recv_all_data, got {dict(ret)}")
     return dict(ret)
 
-  def recv_all_data_raw(self,
-                        delay: float | None = None,
-                        poll_delay: float | None = None
-                        ) -> list[dict[str, list[Any]]]:
+  def recv_all_data_raw(self) -> list[dict[str, list[Any]]]:
     """Reads all the available values from each incoming
     :class:`~crappy.links.link.Link`, and returns them separately in a list of
     dicts.
@@ -1885,64 +1882,20 @@ class Block(Process, ABC):
     method does not fuse the received data into a single :obj:`dict`, so it is
     guaranteed to return all the available data with no loss.
 
-    Args:
-      delay: If given specifies a delay, as a :obj:`float`, during which the
-        method acquired data before returning. All the data received during
-        this delay is saved and returned. Otherwise, just reads all the
-        available data and returns as soon as it is exhausted.
-      poll_delay: If the ``delay`` argument is given, the Links will be polled
-        once every this value seconds. It ensures that the method doesn't spam
-        the CPU in vain.
-
-        .. versionchanged:: 2.0.9 now defaults to :obj:`None` as an argument,
-          and to ``delay / 10`` in practice if unset. Also, must be inferior to
-          ``delay``.
-
     Returns:
       A :obj:`list` containing :obj:`dict`, whose keys are the received labels
-      and with a :obj:`list` of received value for each key.
+      and with a :obj:`list` of received values for each key.
     
     .. versionadded:: 2.0.0
     .. versionchanged:: 2.0.9 add new mechanism to avoid oversleeping
+    .. versionremoved:: 2.1.0 *delay* and *poll_delay* arguments
     """
 
-    if (delay is not None
-        and poll_delay is not None
-        and poll_delay >= 0.9 * delay):
-      raise ValueError("The poll_delay value must be lower than the delay")
-
-    if poll_delay is not None and poll_delay <= 0:
-      raise ValueError("poll_delay should be positive")
-
     ret = [defaultdict(list) for _ in self.inputs]
-    t0 = time()
 
-    # If simple recv_all, just receiving from all input links
-    if delay is None:
-      for dic, link in zip(ret, self.inputs):
-        dic |= link.recv_chunk()
-
-    # Otherwise, receiving during the given period
-    else:
-      # If the poll delay is not specified, setting it much lower than delay
-      if poll_delay is None:
-        poll_delay = delay / 10
-
-      deadline = t0 + delay
-      while time() < deadline:
-        # Updating the list of received values
-        for dic, link in zip(ret, self.inputs):
-          data = link.recv_chunk()
-          for label, values in data.items():
-            dic[label].extend(values)
-        # Sleeping to avoid useless CPU usage
-        sleep(max(0., min(poll_delay, deadline - time())))
-
-      # Draining once more catches data that arrived during the last sleep
-      for dic, link in zip(ret, self.inputs):
-        data = link.recv_chunk()
-        for label, values in data.items():
-          dic[label].extend(values)
+    # Receiving from all input links
+    for dic, link in zip(ret, self.inputs):
+      dic |= link.recv_chunk()
 
     self.log(logging.DEBUG, f"Called recv_all_data_raw, got "
                             f"{[dict(dic) for dic in ret]}")
