@@ -229,6 +229,8 @@ class Grapher(Block):
     self._factor: list[int] = list()
     self._counter: list[int] = list()
     self._last_upd: float = float('-inf')
+    self._refresh_count: int = 0
+    self._last_refresh_rate: float = monotonic()
 
   def prepare(self) -> None:
     """Configures the figure for displaying data."""
@@ -323,6 +325,9 @@ class Grapher(Block):
     # Case when it's too early to refresh the graph
     if (self._upd_freq is not None and
         monotonic() - self._last_upd < 1 / self._upd_freq):
+      # Display the refresh frequency if requested
+      if self.display_freq:
+        self._print_freq(refreshed=False)
       return
 
     # Should the graph be updated for each curve
@@ -373,6 +378,10 @@ class Grapher(Block):
     # Update the last update time
     self._last_upd = monotonic()
 
+    # Display the refresh frequency if requested
+    if self.display_freq:
+      self._print_freq(refreshed=True)
+
   def finish(self) -> None:
     """Closes the :mod:`matplotlib` window owned by this Block."""
 
@@ -403,3 +412,22 @@ class Grapher(Block):
           pass
 
       self.log(logging.INFO, "Cleared the matplotlib window")
+
+  def _print_freq(self, refreshed: bool) -> None:
+    """Periodically logs the achieved refresh frequency.
+
+    The count can differ from the Block's loop frequency because loops that do
+    not refresh the display are excluded.
+
+    Args:
+      refreshed: Whether an image was handled during the current loop.
+    """
+
+    self._refresh_count += int(refreshed)
+    t = monotonic()
+    if t - self._last_refresh_rate > 2:
+      self.log(logging.INFO,
+               f"Grapher refresh per second: "
+               f"{self._refresh_count / (t - self._last_refresh_rate)}")
+      self._last_refresh_rate = t
+      self._refresh_count = 0
