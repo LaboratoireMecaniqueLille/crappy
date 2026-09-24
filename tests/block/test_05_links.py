@@ -191,8 +191,9 @@ class TestLinks(BlockTestBase):
     link(block_1, block_3)
 
     block_1.send(None)
+    block_1.send({})
 
-    # Sending None should simply do nothing
+    # Sending None or an empty dictionary should simply do nothing
     for link_ in block_1.outputs:
       with self.subTest(link=link_):
         self.assertFalse(link_.polled.is_set())
@@ -218,6 +219,11 @@ class TestLinks(BlockTestBase):
       link_.sent.clear()
 
     block_1.labels = ['a', 'b']
+    block_1.send(())
+    for link_ in block_1.outputs:
+      with self.subTest(link=link_):
+        self.assertFalse(link_.sent.is_set())
+
     block_1.send((0, 1))
     for link_ in block_1.outputs:
       with self.subTest(link=link_):

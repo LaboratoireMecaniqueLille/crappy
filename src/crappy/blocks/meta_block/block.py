@@ -1659,7 +1659,8 @@ class Block(Process, ABC):
     It is up to the user to match the order of the values in the iterable with
     the order of the labels in ``self.labels``. If the number of labels and the
     number of values to send do not match, no error is raised but some data
-    might not get sent.
+    might not get sent. If ``data`` is :obj:`None` or resolves to an empty
+    :obj:`dict`, nothing is sent.
     """
 
     # Just in case, not handling non-existing data
@@ -1685,6 +1686,12 @@ class Block(Process, ABC):
                                 f"the data is given as an iterable, as well as"
                                 f" self.labels.")
         raise
+
+    # Not sending an empty data dictionary
+    if not data:
+      self.log(logging.WARNING, "The data dictionary to send is empty, not "
+                                "sending")
+      return
 
     # Sending the data to the downstream Blocks
     for link in self.outputs:
