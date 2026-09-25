@@ -1735,7 +1735,8 @@ class Block(Process, ABC):
     for link in self.inputs:
       ret |= link.recv()
 
-    self.log(logging.DEBUG, f"Called recv_data, got {ret}")
+    self.log(logging.DEBUG, f"Called recv_data, got data for labels "
+                            f"{', '.join(ret.keys())}")
     return ret
 
   def recv_last_data(self, fill_missing: bool = True) -> dict[str, Any]:
@@ -1783,7 +1784,8 @@ class Block(Process, ABC):
       for buffer in self._last_values:
         ret |= buffer
 
-    self.log(logging.DEBUG, f"Called recv_last_data, got {ret}")
+    self.log(logging.DEBUG, f"Called recv_last_data, got data for labels "
+                            f"{', '.join(ret.keys())}")
     return ret
 
   def recv_all_data(self,
@@ -1870,7 +1872,8 @@ class Block(Process, ABC):
           ret[label].extend(values)
 
     # Returning a dict, not a defaultdict
-    self.log(logging.DEBUG, f"Called recv_all_data, got {dict(ret)}")
+    self.log(logging.DEBUG, f"Called recv_all_data, got data for labels "
+                            f"{', '.join(ret.keys())}")
     return dict(ret)
 
   def recv_all_data_raw(self) -> list[dict[str, list[Any]]]:
@@ -1897,6 +1900,7 @@ class Block(Process, ABC):
     for dic, link in zip(ret, self.inputs):
       dic |= link.recv_chunk()
 
-    self.log(logging.DEBUG, f"Called recv_all_data_raw, got "
-                            f"{[dict(dic) for dic in ret]}")
+    self.log(logging.DEBUG, f"Called recv_all_data_raw, got data for the "
+                            f"following labels in the successive Links: "
+                            f"{[', '.join(dic.keys()) for dic in ret]}")
     return [dict(dic) for dic in ret]

@@ -778,7 +778,8 @@ class Camera(Block):
     with self._save_lock, self._disp_lock, self._proc_lock:
       if self._metadata is None:
         raise RuntimeError("The shared metadata dictionary isn't initialized")
-      self.log(logging.DEBUG, f"Writing metadata to shared dict: {metadata}")
+      self.log(logging.DEBUG, f"Writing metadata to shared dict with keys "
+                              f"{', '.join(metadata.keys())}")
       self._metadata.clear()
       self._metadata.update(metadata)
       if self._img is None:
