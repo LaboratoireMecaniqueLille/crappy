@@ -108,7 +108,7 @@ jobs:
       run: |
         python -X faulthandler -m unittest -v tests.blocks_gui.test_grapher
         python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
-        python -m unittest -v tests.blocks_gui.test_button tests.blocks_gui.test_canvas tests.blocks_gui.test_dashboard tests.blocks_gui.test_stop_button
+        python -m unittest -v tests.blocks_gui
         python -m unittest -v tests.camera_configuration
         python -m unittest -v tests.camera_processes_gui
         python -m unittest -v tests.vision_gui
