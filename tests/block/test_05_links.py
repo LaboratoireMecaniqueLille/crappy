@@ -2,7 +2,6 @@
 
 from crappy import Block
 from crappy._global import LinkDataError
-from crappy.blocks.meta_block import block as block_module
 from crappy.links import GraphStructureError, ImageLink, link_graph
 from itertools import chain
 from multiprocessing import Barrier, Event, Value, Queue
@@ -428,8 +427,12 @@ class TestLinks(BlockTestBase):
         self.assertFalse(link_.received_last.is_set())
         self.assertFalse(link_.received_chunk.is_set())
 
-    self.assertEqual(block_3.recv_all_data(None), dict())
-    self.assertEqual(block_3.recv_all_data(1.0), dict())
+    self.assertEqual(block_3.recv_all_data(), dict())
+
+    with self.assertRaises(TypeError):
+      block_3.recv_all_data(None)
+    with self.assertRaises(TypeError):
+      block_3.recv_all_data(delay=1.0)
 
     for link_ in block_3.inputs:
       with self.subTest(link=link_):
@@ -442,18 +445,18 @@ class TestLinks(BlockTestBase):
     block_1.send({'a': 0})
     block_2.send({'b': 1})
 
-    self.assertEqual(block_3.recv_all_data(None), {'a': [0], 'b': [1]})
+    self.assertEqual(block_3.recv_all_data(), {'a': [0], 'b': [1]})
 
     block_1.send({'a': 0})
     block_2.send({'b': 1})
     block_2.send({'b': 2})
 
-    self.assertEqual(block_3.recv_all_data(None), {'a': [0], 'b': [1, 2]})
+    self.assertEqual(block_3.recv_all_data(), {'a': [0], 'b': [1, 2]})
 
     block_2.send({'b': 1})
     block_2.send({'b': 2})
 
-    self.assertEqual(block_3.recv_all_data(None), {'b': [1, 2]})
+    self.assertEqual(block_3.recv_all_data(), {'b': [1, 2]})
 
     # When identical labels come from distinct Links, the values are merged in
     # the output dict and their provenance is lost.
@@ -462,7 +465,7 @@ class TestLinks(BlockTestBase):
     block_2.send({'a': 1})
     block_2.send({'b': 1})
 
-    self.assertEqual(block_3.recv_all_data(None), {'a': [0, 1], 'b': [2, 1]})
+    self.assertEqual(block_3.recv_all_data(), {'a': [0, 1], 'b': [2, 1]})
 
     Block.reset()
 
@@ -522,139 +525,6 @@ class TestLinks(BlockTestBase):
 
     self.assertEqual(block_3.recv_all_data_raw(),
                      [{'a': [0], 'b': [2]}, {'a': [1], 'b': [1, 2]}])
-
-    Block.reset()
-
-  def test_recv_all_data_default_poll_delay(self) -> None:
-    """Tests the default poll delay of recv_all_data."""
-
-    delay = 10.0
-    expected_sleep = delay / 10
-
-    block = TestBlock()
-    sleep_delays = list()
-    current_t = [0.0]
-
-    def fake_time() -> float:
-      """Returns the fake current time."""
-
-      return current_t[0]
-
-    def fake_sleep(sleep_delay: float) -> None:
-      """Records the sleep delay and advances the fake time."""
-
-      sleep_delays.append(sleep_delay)
-      current_t[0] += sleep_delay
-
-    time_orig = block_module.time
-    sleep_orig = block_module.sleep
-
-    try:
-      block_module.time = fake_time
-      block_module.sleep = fake_sleep
-      self.assertEqual(block.recv_all_data(delay=delay), dict())
-    finally:
-      block_module.time = time_orig
-      block_module.sleep = sleep_orig
-
-    self.assertEqual(len(sleep_delays), 10)
-    for sleep_delay in sleep_delays:
-      with self.subTest(sleep_delay=sleep_delay):
-        self.assertEqual(sleep_delay, expected_sleep)
-
-    Block.reset()
-
-  def test_recv_all_data_poll_delay_cap(self) -> None:
-    """Tests that the sleep delays are capped to the remaining delay."""
-
-    delay = 1.0
-    poll_delay = 0.4
-
-    block = TestBlock()
-    sleep_delays = list()
-    current_t = [0.0]
-
-    def fake_time() -> float:
-      """Returns the fake current time."""
-
-      return current_t[0]
-
-    def fake_sleep(sleep_delay: float) -> None:
-      """Records the sleep delay and advances the fake time."""
-
-      sleep_delays.append(sleep_delay)
-      current_t[0] += sleep_delay
-
-    time_orig = block_module.time
-    sleep_orig = block_module.sleep
-
-    try:
-      block_module.time = fake_time
-      block_module.sleep = fake_sleep
-      self.assertEqual(block.recv_all_data(delay, poll_delay), dict())
-    finally:
-      block_module.time = time_orig
-      block_module.sleep = sleep_orig
-
-    self.assertEqual(len(sleep_delays), 3)
-    for sleep_delay, expected_sleep in zip(sleep_delays, (0.4, 0.4, 0.2)):
-      with self.subTest(sleep_delay=sleep_delay):
-        self.assertAlmostEqual(sleep_delay, expected_sleep)
-
-    Block.reset()
-
-  def test_recv_all_data_final_drain(self) -> None:
-    """Tests that data arriving during the last sleep is returned."""
-
-    delay = 1.0
-    poll_delay = 0.6
-
-    block_1 = TestBlock()
-    block_2 = TestBlock()
-    link(block_1, block_2)
-
-    current_t = [0.0]
-
-    def fake_time() -> float:
-      """Returns the fake current time."""
-
-      return current_t[0]
-
-    def fake_sleep(sleep_delay: float) -> None:
-      """Sends data at the end of the acquisition window."""
-
-      if current_t[0] < delay <= current_t[0] + sleep_delay:
-        block_1.send({'a': 0})
-      current_t[0] += sleep_delay
-
-    time_orig = block_module.time
-    sleep_orig = block_module.sleep
-
-    try:
-      block_module.time = fake_time
-      block_module.sleep = fake_sleep
-      self.assertEqual(block_2.recv_all_data(delay, poll_delay), {'a': [0]})
-    finally:
-      block_module.time = time_orig
-      block_module.sleep = sleep_orig
-      Block.reset()
-
-  def test_recv_all_data_invalid_poll_delay(self) -> None:
-    """Tests the validation of poll_delay for recv_all_data."""
-
-    block = TestBlock()
-
-    with self.assertRaises(ValueError):
-      block.recv_all_data(delay=1.0, poll_delay=0.9)
-
-    with self.assertRaises(ValueError):
-      block.recv_all_data(delay=1.0, poll_delay=1.0)
-
-    with self.assertRaises(ValueError):
-      block.recv_all_data(delay=1.0, poll_delay=0)
-
-    with self.assertRaises(ValueError):
-      block.recv_all_data(delay=1.0, poll_delay=-0.1)
 
     Block.reset()
 
