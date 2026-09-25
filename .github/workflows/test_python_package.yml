@@ -99,16 +99,3 @@ jobs:
         python -m unittest -v tests.camera_configuration
         python -m unittest -v tests.camera_processes_gui
         python -m unittest -v tests.vision_gui
-    # Keep Qt and Tk lifecycles in separate interpreters on macOS
-    - name: Test Crappy (graphical, macOS)
-      if: runner.os == 'macOS'
-      env:
-        MPLBACKEND: TkAgg
-        PYTHONFAULTHANDLER: "1"
-      run: |
-        python -X faulthandler -m unittest -v tests.blocks_gui.test_grapher
-        python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
-        python -m unittest -v tests.blocks_gui
-        python -m unittest -v tests.camera_configuration
-        python -m unittest -v tests.camera_processes_gui
-        python -m unittest -v tests.vision_gui
