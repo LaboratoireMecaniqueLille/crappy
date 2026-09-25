@@ -56,8 +56,8 @@ hardware-driver tests should remain runnable on an ordinary development
 machine and in continuous integration.
 
 The ``blocks_gui``, ``camera_configuration``, ``camera_processes_gui``, and
-``vision_gui`` suites open graphical windows and require Tk and a display. On
-a headless Linux system, run a graphical suite through Xvfb:
+``vision_gui`` suites open graphical windows and require Tk, Qt, and a display.
+On a headless Linux system, run a graphical suite through Xvfb:
 
 .. code-block:: console
 
