@@ -90,7 +90,7 @@ jobs:
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.vision_gui
     # GitHub-hosted Windows and macOS runners provide a native GUI session
     - name: Test Crappy (graphical, native)
-      if: runner.os == 'Windows' # || runner.os == 'macOS'
+      if: runner.os == 'Windows' || runner.os == 'macOS'
       env:
         MPLBACKEND: TkAgg
       run: |
