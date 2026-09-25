@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Grapher Block. It does not require any
-specific hardware to run, but necessitates the matplotlib Python module to be
-installed.
+specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Grapher Block displays the data it receives from one or more Blocks in a
 scatter plot. It can display the values of a label against time or another

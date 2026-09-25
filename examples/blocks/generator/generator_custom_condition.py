@@ -3,8 +3,7 @@
 """
 This example demonstrates the use of a Generator Block using a user-defined
 condition to determine whether to switch to the next Path. It does not require
-any specific hardware to run, but necessitates the matplotlib Python module to
-be installed.
+any specific hardware or optional Python package to run.
 
 The Generator Block outputs a signal following a provided path. Several paths
 are available, each with a different behavior and different options. They can

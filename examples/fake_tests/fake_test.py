@@ -6,7 +6,7 @@ tensile test. It is very similar to the blocks/fake_machine.py example. It does
 not make use of video-processing Blocks, unlike the other examples in the same
 folder.
 
-It requires matplotlib to run.
+It requires pyqtgraph and PyQt6 to run.
 
 The test ends automatically after the loading path completes. Click the stop
 button to end it earlier.

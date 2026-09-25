@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Mean Block. It does not require any
-specific hardware to run, but necessitates the matplotlib Python module to be
-installed.
+specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Mean Block averages the data it receives over a given period of time, and
 sends the averaged data to the downstream Blocks. Its behavior is similar to

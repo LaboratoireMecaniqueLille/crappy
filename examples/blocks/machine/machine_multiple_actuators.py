@@ -2,8 +2,8 @@
 
 """
 This example demonstrates how a Machine Block drives multiple Actuators at
-once. It does not require any specific hardware, but requires the matplotlib
-Python module.
+once. It does not require any specific hardware, but requires pyqtgraph and
+PyQt6.
 
 The Machine Block can drive one or more Actuators in speed or position mode,
 based on the setpoints it receives from upstream Blocks. It can also retrieve

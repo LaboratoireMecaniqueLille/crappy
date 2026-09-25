@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Mean Modifier. It does not require any
-specific hardware to run, but necessitates the matplotlib Python module to be
-installed.
+specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Mean Modifier averages all the data it receives from its upstream Block.
 Once it has averaged enough data points, it sends the calculated average values

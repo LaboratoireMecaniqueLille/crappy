@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Median Modifier. It does not require
-any specific hardware to run, but necessitates the matplotlib Python module to
-be installed.
+any specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Median Modifier applies a median filter to all the data it receives from
 its upstream Block. Once it has gathered enough data points, it sends the

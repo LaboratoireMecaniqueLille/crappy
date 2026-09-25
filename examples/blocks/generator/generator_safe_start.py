@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the safe_start argument of the Generator
 Block. It does not require any specific hardware to run, but necessitates the
-matplotlib Python module to be installed.
+pyqtgraph and PyQt6 Python modules to be installed.
 
 The Generator Block outputs a signal following a provided path. Several paths
 are available, each with a different behavior and different options. They can

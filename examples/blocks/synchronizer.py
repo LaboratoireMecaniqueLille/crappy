@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Synchronizer Block. It does not
-require any specific hardware to run, but necessitates the matplotlib Python
-module to be installed.
+require any specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Synchronizer Block takes inputs from several Blocks and interpolates the
 target labels on the timestamps of another label taken as a reference. This

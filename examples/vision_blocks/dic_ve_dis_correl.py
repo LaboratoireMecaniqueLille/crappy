@@ -3,7 +3,7 @@
 """
 This example demonstrates a complex VisionBlock graph in which DICVE and DIS
 correlation analyze the same images at the same time. It does not require any
-hardware, but necessitates the opencv-python and matplotlib modules to be
+hardware, but necessitates the opencv-python, pyqtgraph, and PyQt6 modules to be
 installed.
 
 One CameraSource applies synthetic horizontal strain to Crappy's bundled

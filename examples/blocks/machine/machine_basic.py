@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of a Machine Block in the simplest possible
 use case: driving a fake motor in speed mode. It does not require any specific
-hardware to run, but necessitates the matplotlib Python module to be installed.
+hardware to run, but requires pyqtgraph and PyQt6.
 
 The Machine Block can drive one or more Actuators in speed or position mode,
 based on the setpoints it receives from upstream Blocks. It can also retrieve

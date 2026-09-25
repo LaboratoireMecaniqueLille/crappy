@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the IOBlock Block when the
 make_zero_delay argument is provided. It does not require any hardware to run,
-but necessitates the Python modules psutil and matplotlib to be installed.
+but requires psutil, pyqtgraph, and PyQt6.
 
 The IOBlock can interact with hardware connected to the computer. It can read
 acquired values and/or set commands on the device. It interfaces with the

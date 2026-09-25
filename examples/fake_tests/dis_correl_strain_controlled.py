@@ -6,7 +6,7 @@ not imposed by a Generator but driven by a PID to match a target value. It
 corresponds to a real-life situation where the sample strain cannot be driven
 directly and a controller is needed.
 
-It requires matplotlib, opencv-python, scikit-image and Pillow to run.
+It requires opencv-python, scikit-image, Pillow, pyqtgraph, and PyQt6 to run.
 
 The test ends automatically after the loading path completes. Click the stop
 button to end it earlier.

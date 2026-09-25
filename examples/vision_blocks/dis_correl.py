@@ -3,7 +3,7 @@
 """
 This example demonstrates a non-interactive image-correlation pipeline using
 the DISCorrelProcessor VisionBlock. It does not require any hardware, but
-necessitates the opencv-python and matplotlib modules to be installed.
+necessitates the opencv-python, pyqtgraph, and PyQt6 modules to be installed.
 
 DISCorrelProcessor calculates dense optical flow over one rectangular image
 patch, then projects that flow onto one or more displacement or deformation

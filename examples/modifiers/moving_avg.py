@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the MovingAvg Modifier. It does not
-require any specific hardware to run, but necessitates the matplotlib Python
-module to be installed.
+require any specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The MovingAvg Modifier averages all the data it receives from its upstream
 Block. Each time a new value is received, it calculates the moving average over

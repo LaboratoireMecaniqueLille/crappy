@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the AutoDriveVideoExtenso Block. It does
 not require any hardware to run, but necessitates the opencv-python,
-scikit-image and Pillow modules to be installed.
+scikit-image, Pillow, pyqtgraph, and PyQt6 modules to be installed.
 
 This Block can drive an Actuator on which a camera performing
 video-extensometry is mounted. As the studied sample is stretched, the center

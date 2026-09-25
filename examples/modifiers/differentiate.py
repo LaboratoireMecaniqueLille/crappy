@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Diff Modifier. It does not require any
-specific hardware to run, but necessitates the matplotlib Python module to be
-installed.
+specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Diff Modifier calculates the time derivative of a given label and adds it
 to the message being sent. It is useful for driving Blocks whose decisions

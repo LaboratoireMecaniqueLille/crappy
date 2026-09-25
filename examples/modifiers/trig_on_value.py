@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the TrigOnValue Modifier. It does not
-require any specific hardware to run, but necessitates the matplotlib Python
-module to be installed.
+require any specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The TrigOnValue Modifier only lets data pass if the value of a given label is
 contained in a given set of allowed values. This Modifier is useful for letting

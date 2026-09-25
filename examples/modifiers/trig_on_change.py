@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the TrigOnChange Modifier. It does not
-require any specific hardware to run, but necessitates the matplotlib Python
-module to be installed.
+require any specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The TrigOnChange Modifier only lets data pass if the value of a given label is
 different from the last received value for this label. This Modifier is useful
