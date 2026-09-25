@@ -162,10 +162,11 @@ class Grapher(Block):
 
     warn("The new 'plotter' and 'upd_freq' arguments were added to the "
          "Grapher Block without prior notice, and the defaults for 'freq' and "
-         "'backend' were also changed.\nSet plotter='mpl' and backend='TkAgg' "
-         "to use the previous display settings.\nThese changes we implemented "
-         "nevertheless because they significantly increase performance",
-         UserWarning, stacklevel=2)
+         "'backend' were also changed.\nThese changes we implemented "
+         "nevertheless because they significantly increase performance\nSet "
+         "plotter='mpl' and backend='TkAgg' to use the previous display "
+         "settings.\nInstall pyqtgraph and PyQt6 to use the new, lighter and "
+         "faster default Grapher mode.\n", UserWarning, stacklevel=2)
 
     super().__init__()
     self.niceness = 10
