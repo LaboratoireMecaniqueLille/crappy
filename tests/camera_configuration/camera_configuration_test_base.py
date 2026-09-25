@@ -217,7 +217,7 @@ class ConfigurationWindowTestBase(unittest.TestCase):
       process.join(1.0)
       if process.is_alive():
         process.kill()
-        process.join(1.0)
+        process.join()
 
     self.assertFalse(process.is_alive())
 
