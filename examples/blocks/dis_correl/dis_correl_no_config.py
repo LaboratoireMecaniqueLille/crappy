@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the DISCorrel Block when the user provides
 the patch manually. It does not require any hardware to run, but necessitates
-the opencv-python and matplotlib modules to be installed.
+the opencv-python, pyqtgraph, and PyQt6 modules to be installed.
 
 It is the same script as dis_correl_basic.py, except that the patch is provided
 manually and the configuration window is disabled. Refer to the other script

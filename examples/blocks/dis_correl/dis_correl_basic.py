@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the DISCorrel Block in the simplest
 possible use case. It does not require any hardware to run, but necessitates
-the opencv-python, matplotlib and Pillow modules to be installed.
+the opencv-python, pyqtgraph, PyQt6, and Pillow modules to be installed.
 
 This Block computes several fields on acquired images by performing dense
 inverse search on a given patch. It outputs the averages of the computed

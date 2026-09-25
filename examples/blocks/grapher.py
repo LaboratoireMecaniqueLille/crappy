@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Grapher Block. It does not require any
-specific hardware to run, but necessitates the matplotlib Python module to be
-installed.
+specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Grapher Block displays the data it receives from one or more Blocks in a
 scatter plot. It can display the values of a label against time or another
@@ -54,7 +53,8 @@ if __name__ == '__main__':
   graph_1 = crappy.blocks.Grapher(
       # Listing all the labels to display
       ('t(s)', 'cmd'), ('t(s)', 'x(mm)'),
-      length=150,  # Limiting the display to the last 150 chunks of data
+      length=150,  # Limiting the display to the last 150 data points
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )

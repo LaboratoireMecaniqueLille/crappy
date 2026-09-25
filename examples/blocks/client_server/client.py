@@ -4,7 +4,8 @@
 This example demonstrates the use of the ClientServer Block for receiving data
 from an MQTT broker. It requires the Mosquitto MQTT broker to be installed on
 the computer to run. It also requires to start the server.py script once this
-one is running. See https://mosquitto.org/ for installing Mosquitto.
+one is running. The Grapher requires pyqtgraph and PyQt6. See
+https://mosquitto.org/ for installing Mosquitto.
 
 In this example, the ClientServer Block receives data from the MQTT broker, and
 sends it to the Grapher and Dashboard Blocks for display. The Grapher displays

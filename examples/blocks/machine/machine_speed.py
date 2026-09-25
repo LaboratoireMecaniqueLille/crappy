@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of a Machine Block with a speed value
 specified while driving in position mode. It does not require any specific
-hardware, but requires the matplotlib Python module.
+hardware, but requires the pyqtgraph and PyQt6 Python modules.
 
 The Machine Block can drive one or more Actuators in speed or position mode,
 based on the setpoints it receives from upstream Blocks. It can also retrieve

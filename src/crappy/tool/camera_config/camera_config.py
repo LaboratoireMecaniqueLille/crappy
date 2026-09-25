@@ -237,11 +237,20 @@ class CameraConfig(tk.Tk):
     self._stop_event.set()
     self._histogram_process.join(1)
 
-    # Killing the histogram process if it's still alive
+    # Terminating the histogram process if it failed to stop gracefully
     if self._histogram_process.is_alive():
       self.log(logging.WARNING, "The histogram process failed to stop, "
-                                "killing it !")
+                                "terminating it !")
       self._histogram_process.terminate()
+      self._histogram_process.join(1)
+
+    # A terminated process might still need to be killed. Do so only if it did
+    # not terminate within the timeout.
+    if self._histogram_process.is_alive():
+      self.log(logging.WARNING, "The histogram process failed to terminate, "
+                                "killing it !")
+      self._histogram_process.kill()
+      self._histogram_process.join()
 
     # Close the queues to properly end all multiprocessing objects
     self.log(logging.DEBUG, "Closing the queues communicating with the "
@@ -1070,7 +1079,6 @@ class CameraConfig(tk.Tk):
     if self._processing_event.is_set():
       self.log(logging.DEBUG, "A calculation is running for the histogram, "
                               "not sending image for calculation")
-      return
 
     # If no calculation is running, sending a new image for calculation
     else:
@@ -1090,7 +1098,8 @@ class CameraConfig(tk.Tk):
       self._img_in.put_nowait((hist_img, self._auto_range.get(),
                                self._low_thresh, self._high_thresh))
 
-    # Checking if a histogram is available for display
+    # Always check for completed output, including while the process is already
+    # calculating the next histogram
     try:
       while True:
         self._hist = self._img_out.get_nowait()

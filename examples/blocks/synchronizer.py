@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Synchronizer Block. It does not
-require any specific hardware to run, but necessitates the matplotlib Python
-module to be installed.
+require any specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Synchronizer Block takes inputs from several Blocks and interpolates the
 target labels on the timestamps of another label taken as a reference. This
@@ -118,7 +117,8 @@ if __name__ == '__main__':
       # distinguish them
       length=40,  # Only displaying the last 40 received values, so that the
       # data points remain always clearly visible
-      freq=2,  # Updating the graph twice every second
+      max_pt=None,  # Disabling resampling, as length already limits the data
+      upd_freq=2,  # Updating the graph twice every second
 
       # Sticking to default for the other arguments
   )

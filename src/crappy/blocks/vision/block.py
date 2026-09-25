@@ -441,7 +441,8 @@ class VisionBlock(Block, ABC):
 
     with self._out_link_data.img_lock:
       # Sending the metadata dictionary
-      self.log(logging.DEBUG, f"Writing metadata to shared dict: {metadata}")
+      self.log(logging.DEBUG, f"Writing metadata to shared dict with keys "
+                              f"{', '.join(metadata.keys())}")
       self._out_link_data.metadata_dict.clear()
       self._out_link_data.metadata_dict.update(metadata)
       # Sending the actual image

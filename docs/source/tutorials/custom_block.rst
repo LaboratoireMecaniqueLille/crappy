@@ -37,8 +37,8 @@ labels, then sets its target work rate through ``self.freq``.
 Crappy calls ``loop()`` repeatedly. ``recv_all_data()`` returns every unread
 value grouped by label. The method may return no force values, so the Block
 checks the list before calculating its mean. ``send()`` publishes a dictionary
-to every outgoing Link. The timestamp uses the common test start time
-``self.t0``.
+to every outgoing Link. :obj:`None` and empty dictionaries are ignored. The
+timestamp uses the common test start time ``self.t0``.
 
 Connect it to other Blocks
 --------------------------

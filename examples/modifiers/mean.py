@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Mean Modifier. It does not require any
-specific hardware to run, but necessitates the matplotlib Python module to be
-installed.
+specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Mean Modifier averages all the data it receives from its upstream Block.
 Once it has averaged enough data points, it sends the calculated average values
@@ -49,6 +48,7 @@ if __name__ == '__main__':
       # frequency of the input
       length=150,  # Only displaying the data for the last 150 points (~5
       # seconds)
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )
@@ -63,6 +63,7 @@ if __name__ == '__main__':
       interp=False,  # Not linking the displayed spots, to better see the
       # frequency of the input
       length=5,  # Only displaying the data for the last 5 points (~5 seconds)
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )

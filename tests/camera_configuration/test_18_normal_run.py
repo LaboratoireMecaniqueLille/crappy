@@ -49,5 +49,4 @@ class TestNormalRun(ConfigurationWindowTestBase):
     # Delete the configuration window
     self._config.finish()
 
-    self._config._histogram_process.join(1.0)
     self.assertFalse(self._config._histogram_process.is_alive())

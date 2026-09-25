@@ -1,8 +1,6 @@
 # coding: utf-8
 
 # [feedback-loop-start]
-from os import environ
-
 import crappy
 
 
@@ -43,8 +41,7 @@ def main() -> None:
 
   graph = crappy.blocks.Grapher(
       ('t(s)', 'target_speed'),
-      ('t(s)', 'actual_speed'),
-      backend=environ.get('MPLBACKEND', 'TkAgg'))
+      ('t(s)', 'actual_speed'))
 
   crappy.link(target, controller)
   crappy.link(motor, controller)

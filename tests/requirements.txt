@@ -5,3 +5,5 @@ tables
 pyserial
 psutil
 matplotlib
+pyqtgraph
+PyQt6

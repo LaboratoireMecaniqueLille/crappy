@@ -67,6 +67,7 @@ intersphinx_mapping = {
     "picamera": ("https://picamera.readthedocs.io/en/release-1.13/", None),
     "psutil": ("https://psutil.readthedocs.io/stable/", None),
     "pycuda": ("https://documen.tician.de/pycuda/", None),
+    "pyqtgraph": ("https://pyqtgraph.readthedocs.io/en/latest/", None),
     "pytables": ("https://pytables.readthedocs.io/en/stable/", None),
     "smbus2": ("https://smbus2.readthedocs.io/en/latest/", None),
 }

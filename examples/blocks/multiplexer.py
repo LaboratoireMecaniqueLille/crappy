@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Multiplexer Block. It does not require
-any specific hardware to run, but necessitates the matplotlib Python module to
-be installed.
+any specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Multiplexer Block takes inputs from several Blocks and interpolates the
 target labels so that their data is output on a common time basis. This is
@@ -72,11 +71,12 @@ if __name__ == '__main__':
   graph = crappy.blocks.Grapher(
       # The names of the labels to plot on the graph
       ('t(s)', 'cmd_slow'), ('t(s)', 'cmd_fast'),
-      freq=2,  # Updating the graph twice per second
+      upd_freq=2,  # Updating the graph twice per second
       interp=False,  # Displaying the data points only, no lines, to clearly
       # distinguish them
       length=100,  # Only displaying the last 100 received values, so that the
       # data points remain always clearly visible
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )

@@ -3,8 +3,7 @@
 """
 This example demonstrates how to instantiate a custom Actuator object in Crappy
 that is driven in position. It shows the basic steps for creating an Actuator
-object. It does not require any hardware, but requires the matplotlib Python
-module.
+object. It does not require any hardware, but requires pyqtgraph and PyQt6.
 
 In Crappy, users can define their own Actuator objects and use them with
 the Machine Block. This lets users interface with their own hardware without

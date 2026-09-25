@@ -6,7 +6,7 @@ high rates in streamer mode. It is presented here because we want to promote
 the Labjack equipment that we use and appreciate in our laboratory. We
 recommend reading and using the blocks/ioblock/ioblock_streamer.py and
 blocks/hdf5_recorder.py examples before starting this one. This example
-requires the tables, labjack, and matplotlib Python modules, as well as a
+requires the tables, labjack, pyqtgraph, and PyQt6 Python modules, as well as a
 working Labjack T7.
 
 Click the stop button to end the test cleanly.

@@ -76,7 +76,9 @@ Without a virtual environment, replace the interpreter path with ``python``:
 Install optional packages only for the tasks that need them. Common examples
 include:
 
-- ``matplotlib`` for live plots and Matplotlib image display
+- ``pyqtgraph`` and a Qt binding such as ``PyQt6`` for the default Grapher
+- ``matplotlib`` for the Grapher's Matplotlib plotter and Matplotlib image
+  display
 - ``opencv-python`` and ``Pillow`` for many image-acquisition and display tasks
 - ``scikit-image`` for video extensometry
 - ``SimpleITK`` for an additional image-reading and writing backend
@@ -85,11 +87,12 @@ include:
 - ``pyusb`` for drivers that communicate directly over USB
 - ``PyCUDA`` and a compatible CUDA installation for GPU image processing
 
-For example, install Matplotlib with the same interpreter used for Crappy:
+For example, install the default Grapher dependencies with the same interpreter
+used for Crappy:
 
 .. code-block:: shell-session
 
-   venv_crappy/bin/python -m pip install matplotlib
+   venv_crappy/bin/python -m pip install pyqtgraph PyQt6
 
 Use the plain ``python`` interpreter instead when appropriate. Driver-specific
 dependencies and backend choices are listed in :doc:`hardware` and in each

@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Diff Modifier. It does not require any
-specific hardware to run, but necessitates the matplotlib Python module to be
-installed.
+specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Diff Modifier calculates the time derivative of a given label and adds it
 to the message being sent. It is useful for driving Blocks whose decisions
@@ -49,6 +48,7 @@ if __name__ == '__main__':
       # The names of the labels to plot on the graph
       ('t(s)', 'sine'), ('t(s)', 'd_sine'),
       length=500,  # Limiting the extent of the graph to better see the signals
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )

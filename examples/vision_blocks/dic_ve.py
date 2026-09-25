@@ -3,7 +3,7 @@
 """
 This example demonstrates how to build a video-extensometry pipeline with the
 DICVEProcessor VisionBlock. It does not require any hardware, but necessitates
-the opencv-python, matplotlib, and Pillow modules to be installed.
+the opencv-python, pyqtgraph, PyQt6, and Pillow modules to be installed.
 
 DICVEProcessor tracks between one and four textured patches and calculates
 their displacement using digital image correlation. With at least two patches,

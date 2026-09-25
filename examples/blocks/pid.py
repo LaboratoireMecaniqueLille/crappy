@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the PID Block. It does not require any
-specific hardware to run, but necessitates the matplotlib Python module to be
-installed.
+specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The PID Block implements a PID controller. It takes a target value and a
 measured value as inputs, then outputs the command to set on an actuator so

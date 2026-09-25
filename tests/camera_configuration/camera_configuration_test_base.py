@@ -2,6 +2,7 @@
 
 import logging
 from multiprocessing import Queue, current_process, queues
+from queue import Empty
 from time import monotonic, sleep, time
 from typing import Any, Callable
 import unittest
@@ -217,7 +218,7 @@ class ConfigurationWindowTestBase(unittest.TestCase):
       process.join(1.0)
       if process.is_alive():
         process.kill()
-        process.join(1.0)
+        process.join()
 
     self.assertFalse(process.is_alive())
 
@@ -254,11 +255,15 @@ class ConfigurationWindowTestBase(unittest.TestCase):
   def wait_for_histogram(self, timeout: float = 3.0) -> bool:
     """Wait for CameraConfig to receive a histogram from its child process."""
 
-    def received_histogram() -> bool:
-      self._config._calc_hist()
-      return self._config._hist is not None
+    if self._config._hist is not None:
+      return True
 
-    return self.wait_until(received_histogram, timeout)
+    try:
+      self._config._hist = self._config._img_out.get(timeout=timeout)
+    except Empty:
+      return False
+
+    return True
 
   def customTearDown(self) -> None:
     """Meant to be overwritten in subclasses for custom behavior."""

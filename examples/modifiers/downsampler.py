@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the DownSampler Modifier. It does not
-require any specific hardware to run, but necessitates the matplotlib Python
-module to be installed.
+require any specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The DownSampler Modifier transmits only one data point for every n points
 received from its upstream Block. It is therefore useful for reducing the data
@@ -51,6 +50,7 @@ if __name__ == '__main__':
       interp=False,  # Not linking the displayed spots, to better see the
       # frequency of the input
       length=100,  # Only displaying the data for the last 100 points
+      max_pt=None,  # Disabling resampling, as length already limits the data
 
       # Sticking to default for the other arguments
   )

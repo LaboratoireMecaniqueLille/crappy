@@ -5,7 +5,7 @@ This example extends the fake_test.py script with digital image correlation to
 emulate strain measurements on the fake sample. Its goal is to emulate a
 tensile test driven with Crappy and featuring digital image correlation.
 
-It requires matplotlib, opencv-python, scikit-image and Pillow to run.
+It requires opencv-python, scikit-image, Pillow, pyqtgraph, and PyQt6 to run.
 
 The test ends automatically after the loading path completes. Click the stop
 button to end it earlier.

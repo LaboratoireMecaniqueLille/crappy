@@ -1659,7 +1659,8 @@ class Block(Process, ABC):
     It is up to the user to match the order of the values in the iterable with
     the order of the labels in ``self.labels``. If the number of labels and the
     number of values to send do not match, no error is raised but some data
-    might not get sent.
+    might not get sent. If ``data`` is :obj:`None` or resolves to an empty
+    :obj:`dict`, nothing is sent.
     """
 
     # Just in case, not handling non-existing data
@@ -1685,6 +1686,12 @@ class Block(Process, ABC):
                                 f"the data is given as an iterable, as well as"
                                 f" self.labels.")
         raise
+
+    # Not sending an empty data dictionary
+    if not data:
+      self.log(logging.WARNING, "The data dictionary to send is empty, not "
+                                "sending")
+      return
 
     # Sending the data to the downstream Blocks
     for link in self.outputs:
@@ -1728,7 +1735,8 @@ class Block(Process, ABC):
     for link in self.inputs:
       ret |= link.recv()
 
-    self.log(logging.DEBUG, f"Called recv_data, got {ret}")
+    self.log(logging.DEBUG, f"Called recv_data, got data for labels "
+                            f"{', '.join(ret.keys())}")
     return ret
 
   def recv_last_data(self, fill_missing: bool = True) -> dict[str, Any]:
@@ -1776,167 +1784,79 @@ class Block(Process, ABC):
       for buffer in self._last_values:
         ret |= buffer
 
-    self.log(logging.DEBUG, f"Called recv_last_data, got {ret}")
+    self.log(logging.DEBUG, f"Called recv_last_data, got data for labels "
+                            f"{', '.join(ret.keys())}")
     return ret
 
-  def recv_all_data(self,
-                    delay: float | None = None,
-                    poll_delay: float | None = None) -> dict[str, list[Any]]:
-    """Reads all the available values from each incoming
-    :class:`~crappy.links.link.Link`, and returns them all in a single dict.
+  def recv_all_data(self) -> dict[str, list[Any]]:
+    """Reads all values currently available on each incoming
+    :class:`~crappy.links.link.Link` and merges them into a single dict.
 
-    The returned :obj:`dict` might not always have a fixed number of keys,
-    depending on the availability of incoming data.
+    This method drains the values already queued on the Links and returns
+    immediately. The returned :obj:`dict` might not always have a fixed number
+    of keys, depending on the available data.
 
     Important:
-      If data is received over a same label from different Links, part of it
-      will be lost ! Always avoid using a same label twice in a Crappy script.
-      See the :meth:`~crappy.blocks.meta_block.block.Block.recv_all_data_raw`
-      method for receiving data with no loss.
+      Values carrying the same label on different Links are concatenated in
+      input-Link order. Their originating Link and chronological ordering
+      across Links cannot be recovered from the result. Use
+      :meth:`~crappy.blocks.meta_block.block.Block.recv_all_data_raw` when the
+      Links must remain separate.
 
     Warning:
-      As the time label is (normally) shared between all Blocks, the values
-      returned for this label will be inconsistent and shouldn't be used !
-
-    Args:
-      delay: If given specifies a delay, as a :obj:`float`, during which the
-        method acquired data before returning. All the data received during
-        this delay is saved and returned. Otherwise, just reads all the
-        available data and returns as soon as it is exhausted.
-      poll_delay: If the ``delay`` argument is given, the Links will be polled
-        once every this value seconds. It ensures that the method doesn't spam
-        the CPU in vain.
-
-        .. versionchanged:: 2.0.9 now defaults to :obj:`None` as an argument,
-          and to ``delay / 10`` in practice if unset. Also, must be inferior to
-          ``delay``.
+      A time label shared by several incoming Links is concatenated in the same
+      way, so its values cannot reliably be associated with the other labels.
 
     Returns:
       A :obj:`dict` whose keys are the received labels and with a :obj:`list`
-      of received values for each key. The first item in the list is the oldest
-      one available in the Link, the last item is the newest available.
+      of received values for each key. Values from a single Link remain ordered
+      from oldest to newest. Values merged from several Links are grouped in
+      input-Link order as described above.
 
     .. versionremoved:: 1.5.10 *num* argument
     .. versionadded:: 1.5.10 *blocking* argument
     .. versionremoved:: 2.0.0 *blocking* argument
     .. versionchanged:: 2.0.0 renamed from *get_all_last* to *recv_all_data*
     .. versionchanged:: 2.0.9 add new mechanism to avoid oversleeping
+    .. versionremoved:: 2.1.0 *delay* and *poll_delay* arguments
     """
 
-    if (delay is not None
-        and poll_delay is not None
-        and poll_delay >= 0.9 * delay):
-      raise ValueError("The poll_delay value must be lower than the delay")
-
-    if poll_delay is not None and poll_delay <= 0:
-      raise ValueError("poll_delay should be positive")
-
     ret = defaultdict(list)
-    t0 = time()
 
-    # If simple recv_all, just receiving from all input links
-    if delay is None:
-      for link in self.inputs:
-        for label, values in link.recv_chunk().items():
-          ret[label].extend(values)
-
-    # Otherwise, receiving during the given period
-    else:
-      # If the poll delay is not specified, setting it much lower than delay
-      if poll_delay is None:
-        poll_delay = delay / 10
-
-      deadline = t0 + delay
-      while time() < deadline:
-        # Updating the list of received values
-        for link in self.inputs:
-          data = link.recv_chunk()
-          for label, values in data.items():
-            ret[label].extend(values)
-        # Sleeping to avoid useless CPU usage
-        sleep(max(0., min(poll_delay, deadline - time())))
-
-      # Draining once more catches data that arrived during the last sleep
-      for link in self.inputs:
-        data = link.recv_chunk()
-        for label, values in data.items():
-          ret[label].extend(values)
+    # Receiving from all input links
+    for link in self.inputs:
+      for label, values in link.recv_chunk().items():
+        ret[label].extend(values)
 
     # Returning a dict, not a defaultdict
-    self.log(logging.DEBUG, f"Called recv_all_data, got {dict(ret)}")
+    self.log(logging.DEBUG, f"Called recv_all_data, got data for labels "
+                            f"{', '.join(ret.keys())}")
     return dict(ret)
 
-  def recv_all_data_raw(self,
-                        delay: float | None = None,
-                        poll_delay: float | None = None
-                        ) -> list[dict[str, list[Any]]]:
-    """Reads all the available values from each incoming
-    :class:`~crappy.links.link.Link`, and returns them separately in a list of
-    dicts.
+  def recv_all_data_raw(self) -> list[dict[str, list[Any]]]:
+    """Reads all values currently available on each incoming
+    :class:`~crappy.links.link.Link` and returns them separately.
 
-    Unlike :meth:`~crappy.blocks.meta_block.block.Block.recv_all_data` this
-    method does not fuse the received data into a single :obj:`dict`, so it is
-    guaranteed to return all the available data with no loss.
-
-    Args:
-      delay: If given specifies a delay, as a :obj:`float`, during which the
-        method acquired data before returning. All the data received during
-        this delay is saved and returned. Otherwise, just reads all the
-        available data and returns as soon as it is exhausted.
-      poll_delay: If the ``delay`` argument is given, the Links will be polled
-        once every this value seconds. It ensures that the method doesn't spam
-        the CPU in vain.
-
-        .. versionchanged:: 2.0.9 now defaults to :obj:`None` as an argument,
-          and to ``delay / 10`` in practice if unset. Also, must be inferior to
-          ``delay``.
+    Unlike :meth:`~crappy.blocks.meta_block.block.Block.recv_all_data`, this
+    method preserves one :obj:`dict` per Link, so the originating Link and its
+    per-Link value ordering remain available.
 
     Returns:
       A :obj:`list` containing :obj:`dict`, whose keys are the received labels
-      and with a :obj:`list` of received value for each key.
+      and with a :obj:`list` of received values for each key.
     
     .. versionadded:: 2.0.0
     .. versionchanged:: 2.0.9 add new mechanism to avoid oversleeping
+    .. versionremoved:: 2.1.0 *delay* and *poll_delay* arguments
     """
 
-    if (delay is not None
-        and poll_delay is not None
-        and poll_delay >= 0.9 * delay):
-      raise ValueError("The poll_delay value must be lower than the delay")
-
-    if poll_delay is not None and poll_delay <= 0:
-      raise ValueError("poll_delay should be positive")
-
     ret = [defaultdict(list) for _ in self.inputs]
-    t0 = time()
 
-    # If simple recv_all, just receiving from all input links
-    if delay is None:
-      for dic, link in zip(ret, self.inputs):
-        dic |= link.recv_chunk()
+    # Receiving from all input links
+    for dic, link in zip(ret, self.inputs):
+      dic |= link.recv_chunk()
 
-    # Otherwise, receiving during the given period
-    else:
-      # If the poll delay is not specified, setting it much lower than delay
-      if poll_delay is None:
-        poll_delay = delay / 10
-
-      deadline = t0 + delay
-      while time() < deadline:
-        # Updating the list of received values
-        for dic, link in zip(ret, self.inputs):
-          data = link.recv_chunk()
-          for label, values in data.items():
-            dic[label].extend(values)
-        # Sleeping to avoid useless CPU usage
-        sleep(max(0., min(poll_delay, deadline - time())))
-
-      # Draining once more catches data that arrived during the last sleep
-      for dic, link in zip(ret, self.inputs):
-        data = link.recv_chunk()
-        for label, values in data.items():
-          dic[label].extend(values)
-
-    self.log(logging.DEBUG, f"Called recv_all_data_raw, got "
-                            f"{[dict(dic) for dic in ret]}")
+    self.log(logging.DEBUG, f"Called recv_all_data_raw, got data for the "
+                            f"following labels in the successive Links: "
+                            f"{[', '.join(dic.keys()) for dic in ret]}")
     return [dict(dic) for dic in ret]

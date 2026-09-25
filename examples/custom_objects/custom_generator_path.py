@@ -3,7 +3,7 @@
 """
 This example demonstrates how to instantiate a custom Generator Path object in
 Crappy. It shows most of the features of a Path object. It does not require any
-hardware, but requires the matplotlib Python module.
+hardware, but requires the pyqtgraph and PyQt6 Python modules.
 
 In Crappy, users can define their own Path objects and use them with the
 Generator Block. This lets users customize their test scripts precisely without

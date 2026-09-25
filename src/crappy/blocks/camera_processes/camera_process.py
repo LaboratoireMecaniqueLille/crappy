@@ -335,7 +335,7 @@ class CameraProcess(Process, ABC):
 
       # Trying to convert iterable data to dict using the given labels
       try:
-        self.log(logging.DEBUG, f"Converting {data} to dict before sending")
+        self.log(logging.DEBUG, f"Converting data to dict before sending")
         data = dict(zip(self._labels, data))
       except TypeError:
         self.log(logging.ERROR, f"Cannot convert data to send (of type"
@@ -346,7 +346,8 @@ class CameraProcess(Process, ABC):
 
     # Sending the data to the downstream Blocks
     for link in self._outputs:
-      self.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
+      self.log(logging.DEBUG, f"Sending data with keys "
+                              f"{', '.join(data.keys())} to Link {link.name}")
       link.send(data)
 
   def send_to_draw(self, to_draw: Iterable[Overlay | None]) -> None:

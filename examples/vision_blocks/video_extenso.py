@@ -3,8 +3,8 @@
 """
 This example demonstrates a video-extensometry pipeline using the
 VideoExtensoProcessor VisionBlock. It does not require any hardware, but
-necessitates the opencv-python, scikit-image, Pillow, and matplotlib modules to
-be installed.
+necessitates the opencv-python, scikit-image, Pillow, pyqtgraph, and PyQt6
+modules to be installed.
 
 VideoExtensoProcessor tracks up to four contrasted spots and calculates strain
 from the evolution of their center coordinates. It creates an independent

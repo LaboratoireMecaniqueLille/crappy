@@ -2,8 +2,7 @@
 
 """
 This example demonstrates the use of the Offset Modifier. It does not require
-any specific hardware to run, but necessitates the matplotlib Python module to
-be installed.
+any specific hardware to run, but requires pyqtgraph and PyQt6.
 
 The Offset Modifier simply shifts the data of given labels by adding a
 constant compensation value to them. For each label, the compensation value is

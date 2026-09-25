@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the VideoExtenso Block. It does not
 require any hardware to run, but necessitates the opencv-python, scikit-image,
-Pillow and matplotlib modules to be installed.
+Pillow, pyqtgraph, and PyQt6 modules to be installed.
 
 This Block computes the strain on acquired images by tracking the displacement
 of several spots. It outputs the computed strain as well as the position and

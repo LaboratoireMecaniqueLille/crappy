@@ -22,7 +22,6 @@ class TestFinish(ConfigurationWindowTestBase):
 
     # Destroying the main window
     self._config.finish()
-    self._config._histogram_process.join(1.0)
 
     # The stop event should be set
     self.assertTrue(self._config._stop_event.is_set())

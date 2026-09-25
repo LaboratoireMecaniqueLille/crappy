@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from queue import Empty
+from unittest.mock import Mock, patch
 import numpy as np
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
@@ -99,3 +100,22 @@ class TestHistogram(ConfigurationWindowTestBase):
       if self._config._histogram_process.is_alive():
         self._config._histogram_process.kill()
         self._config._histogram_process.join(1.0)
+
+  def test_calc_hist_receives_output_while_process_is_busy(self) -> None:
+    """Checks completed output is read while another calculation is active."""
+
+    histogram = np.ones((80, 512), dtype=np.uint8)
+    processing_event = Mock()
+    processing_event.is_set.return_value = True
+    img_in = Mock()
+    img_out = Mock()
+    img_out.get_nowait.side_effect = (histogram, Empty)
+    self._config._original_img = np.zeros((240, 320), dtype=np.uint8)
+
+    with (patch.object(self._config, '_processing_event', processing_event),
+          patch.object(self._config, '_img_in', img_in),
+          patch.object(self._config, '_img_out', img_out)):
+      self._config._calc_hist()
+
+    img_in.put_nowait.assert_not_called()
+    np.testing.assert_array_equal(self._config._hist, histogram)

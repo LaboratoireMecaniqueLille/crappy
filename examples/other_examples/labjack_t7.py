@@ -5,8 +5,8 @@ This example demonstrates the use of a Labjack in Crappy for acquiring data
 from digital inputs and driving the digital outputs. It is presented here
 because we want to promote the Labjack equipment that we use and appreciate in
 our laboratory. We recommend reading and using the blocks/ioblock/*.py examples
-before starting this one. This example requires the labjack and matplotlib
-Python modules, as well as a working Labjack T7.
+before starting this one. This example requires the labjack, pyqtgraph, and
+PyQt6 Python modules, as well as a working Labjack T7.
 
 Click the stop button to end the test cleanly.
 """

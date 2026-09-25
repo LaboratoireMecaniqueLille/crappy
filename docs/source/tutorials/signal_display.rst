@@ -11,11 +11,11 @@ Prerequisites
 -------------
 
 - Complete :doc:`quickstart` or be familiar with creating Blocks and Links.
-- Install Matplotlib:
+- Install PyQtGraph and a supported Qt binding:
 
   .. code-block:: shell-session
 
-     python -m pip install matplotlib
+     python -m pip install pyqtgraph PyQt6
 
 - Run the example from a graphical desktop where Python can open a window.
 
