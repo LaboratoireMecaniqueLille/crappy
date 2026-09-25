@@ -52,6 +52,8 @@ hardware = ["pyusb>=1.1.0",
             "pyyaml>=5.3"]
 main = ["matplotlib>=3.3.0",
         "opencv-python>=4.0",
+        "pyqtgraph>=0.13.0",
+        "PyQt6>=6.2",
         "pyserial>=3.4"]
 
 [tool.setuptools]
