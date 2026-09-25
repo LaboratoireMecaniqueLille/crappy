@@ -194,6 +194,41 @@ class TestGrapher(BlockTestBase):
     self.assertEqual(grapher._factor, [1, 1])
     self.assertEqual(grapher._counter, [0, 0])
 
+  def test_pyqtgraph_ignores_opencv_qt_plugin_path(self) -> None:
+    """Checks OpenCV's Qt plugins are hidden while creating the Qt app."""
+
+    variable = "QT_QPA_PLATFORM_PLUGIN_PATH"
+    opencv_path = grapher_module.os.path.join(
+        'somewhere', 'cv2', 'qt', 'plugins')
+    unrelated_path = grapher_module.os.path.join(
+        'somewhere', 'other', 'plugins')
+
+    cases = (
+      (opencv_path, None),
+      (grapher_module.os.pathsep.join((unrelated_path, opencv_path)),
+       unrelated_path),
+    )
+
+    for original_path, expected_path in cases:
+      with self.subTest(original_path=original_path):
+        observed_paths = list()
+        qt_app = object()
+
+        def make_qt_app(*_) -> object:
+          observed_paths.append(grapher_module.os.environ.get(variable))
+          return qt_app
+
+        grapher = Grapher(('x', 'y'))
+        with (patch.dict(grapher_module.os.environ,
+                         {variable: original_path}),
+              patch.object(grapher_module, 'pg') as pyqtgraph):
+          pyqtgraph.mkQApp.side_effect = make_qt_app
+          grapher._handle_qt_backend_conflict()
+
+          self.assertEqual(observed_paths, [expected_path])
+          self.assertEqual(grapher_module.os.environ[variable], original_path)
+          self.assertIs(grapher._qt_app, qt_app)
+
   def test_pyqtgraph_loop_updates_curve_data(self) -> None:
     """Checks that received values are forwarded to PyQtGraph curves."""
 
