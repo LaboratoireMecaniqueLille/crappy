@@ -190,7 +190,7 @@ class Recorder(Block):
     """Buffers available input and writes it when the delay has elapsed.
 
     Only complete, rectangular rows are written. If no new input is available,
-    this method leaves any buffered values for a later call or :meth:`finish`.
+    this method leaves any buffered values for a later call or ``finish()``.
     """
 
     # Receiving data from each incoming link
