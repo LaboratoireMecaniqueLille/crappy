@@ -49,11 +49,6 @@ jobs:
           libxcb-render0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 \
           libxcb-xfixes0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 \
           libxrender1
-    - name: Diagnose Qt xcb dependencies
-      if: runner.os == 'Linux'
-      run: |
-        QT_PLUGIN_DIR="$(python -c 'from PyQt6.QtCore import QLibraryInfo; print(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath))')"
-        ldd "${QT_PLUGIN_DIR}/platforms/libqxcb.so"
     # Install the build and test dependencies
     - name: Install build dependencies
       run: python -m pip install --upgrade pip wheel build setuptools
@@ -63,6 +58,11 @@ jobs:
     # Install dependencies
     - name: Install test dependencies
       run: python -m pip install -r tests/requirements.txt
+    - name: Diagnose Qt xcb dependencies
+      if: runner.os == 'Linux'
+      run: |
+        QT_PLUGIN_DIR="$(python -c 'from PyQt6.QtCore import QLibraryInfo; print(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath))')"
+        ldd "${QT_PLUGIN_DIR}/platforms/libqxcb.so"
     - name: Diagnose PyQtGraph on macOS
       if: runner.os == 'macOS'
       env:
