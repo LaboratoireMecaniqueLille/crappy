@@ -489,8 +489,9 @@ class Grapher(Block):
       self.log(logging.INFO, f"Setting pyqtgraph backend to {self._backend}")
       os.environ["PYQTGRAPH_QT_LIB"] = self._backend
 
-    # Configure the global PyQt app
-    self._qt_app = pg.mkQApp("Crappy Grapher")
+    # Solve potential backend incompatibility with openCV on Linux
+    # Also configures the global PyQt app
+    self._handle_qt_backend_conflict()
 
     # Manage color palette across light and dark themes
     palette = self._qt_app.palette()
@@ -547,6 +548,40 @@ class Grapher(Block):
     self.log(logging.INFO, "Configured the pyqtgraph window, displaying it")
     self._qt_plot.show()
     self._qt_app.processEvents()
+
+  def _handle_qt_backend_conflict(self) -> None:
+    """OpenCV's Linux wheels point Qt to their bundled plugins. Those plugins
+    are incompatible with the Qt binding selected by PyQtGraph"""
+
+    qt_plugin_path = os.environ.get("QT_QPA_PLATFORM_PLUGIN_PATH")
+    saved_qt_plugin_path: str | None = None
+
+    if qt_plugin_path is not None:
+      # Preserve any user-provided plugin directories while identifying the
+      # path injected by OpenCV's wheels
+      plugin_paths = qt_plugin_path.split(os.pathsep)
+      filtered_paths = [path for path in plugin_paths if
+                        tuple(os.path.normpath(path).split(os.sep)[-3:])
+                        != ('cv2', 'qt', 'plugins')]
+
+      if filtered_paths != plugin_paths:
+        # Keep the complete original value so OpenCV can use it again after
+        # PyQtGraph has initialized its own Qt binding
+        saved_qt_plugin_path = qt_plugin_path
+
+        if filtered_paths:
+          os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = (
+            os.pathsep.join(filtered_paths))
+        else:
+          os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
+
+    try:
+      # Qt selects and loads its platform plugin while creating the app
+      self._qt_app = pg.mkQApp("Crappy Grapher")
+    finally:
+      # Restore the process environment even if Qt initialization fails
+      if saved_qt_plugin_path is not None:
+        os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = saved_qt_plugin_path
 
   def _on_press_mpl(self, event) -> None:
     """Callback catching the keyboard press events.
