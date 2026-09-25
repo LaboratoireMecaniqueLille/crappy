@@ -1079,7 +1079,6 @@ class CameraConfig(tk.Tk):
     if self._processing_event.is_set():
       self.log(logging.DEBUG, "A calculation is running for the histogram, "
                               "not sending image for calculation")
-      return
 
     # If no calculation is running, sending a new image for calculation
     else:
@@ -1099,7 +1098,8 @@ class CameraConfig(tk.Tk):
       self._img_in.put_nowait((hist_img, self._auto_range.get(),
                                self._low_thresh, self._high_thresh))
 
-    # Checking if a histogram is available for display
+    # Always check for completed output, including while the process is already
+    # calculating the next histogram
     try:
       while True:
         self._hist = self._img_out.get_nowait()
