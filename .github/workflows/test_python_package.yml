@@ -53,6 +53,13 @@ jobs:
     # Install dependencies
     - name: Install test dependencies
       run: python -m pip install -r tests/requirements.txt
+    - name: Diagnose PyQtGraph on macOS/Python 3.11
+      if: runner.os == 'macOS' && matrix.python-version == '3.11'
+      env:
+        PYTHONFAULTHANDLER: "1"
+      run: |
+        python -X faulthandler -m unittest -v \
+          tests.blocks_gui.test_grapher.TestGrapher.test_clear_resets_pyqtgraph_curves_and_resampling_state
     # Keep the non-GUI suites independent of the runner's display state
     - name: Test Crappy (headless)
       env:
