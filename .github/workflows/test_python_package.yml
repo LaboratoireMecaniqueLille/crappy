@@ -38,6 +38,12 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
+    # Install packages required by Qt
+    - name: Install Qt runtime dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libegl1 libgl1 libxkbcommon-x11-0 libxcb-cursor0
     # Install the build and test dependencies
     - name: Install build dependencies
       run: python -m pip install --upgrade pip wheel build setuptools
