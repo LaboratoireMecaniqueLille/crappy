@@ -160,7 +160,7 @@ class Grapher(Block):
       will plot a dynamic graph displaying the last 30 data points.
     """
 
-    warn("The new 'plotter' and 'upd_freq' arguments were added to the "
+    warn("\nThe new 'plotter' and 'upd_freq' arguments were added to the "
          "Grapher Block without prior notice, and the defaults for 'freq' and "
          "'backend' were also changed.\nThese changes we implemented "
          "nevertheless because they significantly increase performance\nSet "
