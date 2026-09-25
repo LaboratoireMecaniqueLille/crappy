@@ -49,27 +49,15 @@ jobs:
           libxcb-render0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 \
           libxcb-xfixes0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 \
           libxrender1
-    # Install the build and test dependencies
+    # Install the build dependencies
     - name: Install build dependencies
       run: python -m pip install --upgrade pip wheel build setuptools
     # Install Crappy
     - name: Install Crappy
       run: python -m pip install .
-    # Install dependencies
+    # Install the test dependencies
     - name: Install test dependencies
       run: python -m pip install -r tests/requirements.txt
-    - name: Diagnose Qt xcb dependencies
-      if: runner.os == 'Linux'
-      run: |
-        QT_PLUGIN_DIR="$(python -c 'from PyQt6.QtCore import QLibraryInfo; print(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath))')"
-        ldd "${QT_PLUGIN_DIR}/platforms/libqxcb.so"
-    - name: Diagnose PyQtGraph on macOS
-      if: runner.os == 'macOS'
-      env:
-        PYTHONFAULTHANDLER: "1"
-      run: |
-        python -X faulthandler -m unittest -v \
-          tests.blocks_gui.test_grapher.TestGrapher.test_clear_resets_pyqtgraph_curves_and_resampling_state
     # Keep the non-GUI suites independent of the runner's display state
     - name: Test Crappy (headless)
       env:
@@ -102,12 +90,25 @@ jobs:
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.vision_gui
     # GitHub-hosted Windows and macOS runners provide a native GUI session
     - name: Test Crappy (graphical, native)
-      if: runner.os == 'Windows' || runner.os == 'macOS'
+      if: runner.os == 'Windows' # || runner.os == 'macOS'
       env:
         MPLBACKEND: TkAgg
       run: |
         python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
         python -m unittest -v tests.blocks_gui
+        python -m unittest -v tests.camera_configuration
+        python -m unittest -v tests.camera_processes_gui
+        python -m unittest -v tests.vision_gui
+    # Keep Qt and Tk lifecycles in separate interpreters on macOS
+    - name: Test Crappy (graphical, macOS)
+      if: runner.os == 'macOS'
+      env:
+        MPLBACKEND: TkAgg
+        PYTHONFAULTHANDLER: "1"
+      run: |
+        python -X faulthandler -m unittest -v tests.blocks_gui.test_grapher
+        python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
+        python -m unittest -v tests.blocks_gui.test_button tests.blocks_gui.test_canvas tests.blocks_gui.test_dashboard tests.blocks_gui.test_stop_button
         python -m unittest -v tests.camera_configuration
         python -m unittest -v tests.camera_processes_gui
         python -m unittest -v tests.vision_gui
