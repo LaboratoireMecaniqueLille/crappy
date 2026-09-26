@@ -299,20 +299,29 @@ class TestGenerator(BlockTestBase):
     self.assertEqual(sent, [[2.0, 2, 1]])
 
   def test_exhaustion_with_end_delay_raises_generator_stop(self) -> None:
-    """Checks default terminal behavior when all Paths are exhausted."""
+    """Checks the terminal delay is split into short sleeps."""
 
-    generator = self._make_generator([
-      {'type': 'GeneratorUnitPath', 'commands': ['stop']},
-    ], end_delay=0)
-    generator.begin()
-    self._set_received_batches(generator, [{}])
+    for end_delay, expected_sleeps in ((0, 0),
+                                       (0.05, 1),
+                                       (0.1, 1),
+                                       (0.2, 2),
+                                       (0.25, 3)):
+      with self.subTest(end_delay=end_delay):
+        generator = self._make_generator([
+          {'type': 'GeneratorUnitPath', 'commands': ['stop']},
+        ], end_delay=end_delay)
+        generator.begin()
+        self._set_received_batches(generator, [{}])
 
-    with (patch.object(generator_module, 'time', return_value=11),
-          patch.object(generator_module, 'sleep') as sleep_mock):
-      with self.assertRaises(GeneratorStop):
-        generator.loop()
+        with (patch.object(generator_module, 'time', return_value=11),
+              patch.object(generator_module, 'sleep') as sleep_mock):
+          with self.assertRaises(GeneratorStop):
+            generator.loop()
 
-    sleep_mock.assert_called_once_with(0)
+        sleeps = [call.args[0] for call in sleep_mock.call_args_list]
+        self.assertEqual(len(sleeps), expected_sleeps)
+        self.assertTrue(all(0 < delay <= 0.1 for delay in sleeps))
+        self.assertAlmostEqual(sum(sleeps), end_delay)
 
   def test_exhaustion_without_end_delay_stays_idle(self) -> None:
     """Checks non-stopping terminal behavior when end_delay is None."""

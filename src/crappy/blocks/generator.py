@@ -211,7 +211,11 @@ class Generator(Block):
     except StopIteration:
       # First option, stopping the program after a delay
       if self._end_delay is not None:
-        sleep(self._end_delay)
+        remaining = self._end_delay
+        while remaining > 0:
+          delay = min(remaining, 0.1)
+          sleep(delay)
+          remaining -= delay
         raise GeneratorStop
       # Second option, not stopping the program and looping forever
       else:
