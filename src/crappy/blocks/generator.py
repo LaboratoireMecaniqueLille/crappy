@@ -125,7 +125,7 @@ class Generator(Block):
     self._ended_no_raise = False
     self._last_cmd = None
     self._last_id = None
-    self._last_t = None
+    self._last_t_gen = None
     self._current_path = None
     self._path_id = None
 
@@ -164,7 +164,7 @@ class Generator(Block):
     data = self.recv_all_data()
     try:
       # Getting the next command to send
-      self._last_t = time()
+      self._last_t_gen = time()
       cmd = self._current_path.get_cmd(data)
       self.log(logging.DEBUG, f"Returned command: {cmd}")
     except StopIteration:
@@ -190,7 +190,7 @@ class Generator(Block):
       self._last_cmd = cmd
       self._last_id = self._path_id
       # Actually sending the command
-      self.send([self._last_t - self.t0, cmd, self._path_id])
+      self.send([self._last_t_gen - self.t0, cmd, self._path_id])
 
   def _update_path(self) -> None:
     """Gets the next Path from the list of Paths and instantiates it.
@@ -224,7 +224,7 @@ class Generator(Block):
     path_name = next_path_dict.pop('type')
     self._check_path_exists(path_name)
     path_type = paths_dict[path_name]
-    Path.t0 = self._last_t if self._last_t is not None else self.t0
+    Path.t0 = self._last_t_gen if self._last_t_gen is not None else self.t0
     Path.last_cmd = self._last_cmd
     self._current_path = path_type(**next_path_dict)
 
