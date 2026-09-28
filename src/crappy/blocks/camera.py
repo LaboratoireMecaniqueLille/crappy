@@ -15,8 +15,7 @@ import logging
 
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
-from ..camera import (camera_dict, Camera as BaseCam, deprecated_cameras,
-                      moved_to_collection)
+from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
 from ..tool.camera_config import CameraConfig
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
@@ -281,13 +280,6 @@ class Camera(Block):
       raise TypeError("camera must be a string")
     if not camera and image_generator is None:
       raise ValueError("camera must be a non-empty string")
-
-    # Checking for deprecated names
-    if camera in deprecated_cameras:
-      raise NotImplementedError(
-          f"The {camera} Camera was deprecated in version 2.0.0, and renamed "
-          f"to {deprecated_cameras[camera]} ! Please update your code "
-          f"accordingly and check the documentation for more information")
 
     # None means that this is an ordinary core or user-defined Camera
     self._collection_entry: CollectionEntry | None = None

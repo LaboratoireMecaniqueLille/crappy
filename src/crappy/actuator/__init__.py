@@ -9,6 +9,5 @@ from .pololu_tic import PololuTic
 
 from .meta_actuator import Actuator
 
-from ._deprecated import deprecated_actuators
 from ._collection import moved_to_collection
 actuator_dict: dict[str, type[Actuator]] = Actuator.classes

@@ -9,8 +9,7 @@ from types import MethodType
 from typing import Any
 
 from .block import VisionBlock
-from ..camera import (deprecated_cameras, camera_dict, DummyCam,
-                      moved_to_collection)
+from ..camera import camera_dict, DummyCam, moved_to_collection
 from ...tool.camera_config import CameraConfig
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,
@@ -139,13 +138,6 @@ class CameraSource(VisionBlock):
       raise TypeError("camera must be a string")
     if not camera and image_generator is None:
       raise ValueError("camera must be a non-empty string")
-
-    # Checking for deprecated names
-    if camera in deprecated_cameras:
-      raise NotImplementedError(
-          f"The {camera} Camera was deprecated in version 2.0.0, and renamed "
-          f"to {deprecated_cameras[camera]} ! Please update your code "
-          f"accordingly and check the documentation for more information")
 
     # None means that this is an ordinary core or user-defined Camera
     self._collection_entry: CollectionEntry | None = None

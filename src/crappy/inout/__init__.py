@@ -15,6 +15,5 @@ from .phidgets_wheatstone_bridge import PhidgetWheatstoneBridge
 from .meta_inout import InOut
 
 # All the inout objects
-from ._deprecated import deprecated_inouts
 from ._collection import moved_to_collection
 inout_dict: dict[str, type[InOut]] = InOut.classes
