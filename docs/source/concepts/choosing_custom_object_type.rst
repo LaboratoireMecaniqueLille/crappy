@@ -36,11 +36,15 @@ Follow the first matching branch to choose the type of custom object to create:
      write a :class:`~crappy.blocks.camera_processes.CameraProcess`. This is an
      advanced customization path.
 
-3. **Are you defining one command segment for a Generator?**
+3. **Are you defining a command profile or an experiment procedure?**
 
-   Write a :class:`~crappy.blocks.generator_path.meta_path.path.Path`. A Path
-   calculates command values and decides when its segment is complete. It does
-   not replace the Generator Block that runs the sequence.
+   For a reusable segment in a linear Generator sequence, write a
+   :class:`~crappy.blocks.generator_path.meta_path.path.Path`. A Path
+   calculates command values and decides when its segment is complete. For a
+   branching or looping procedure, configure a
+   :class:`~crappy.blocks.Scheduler` with States. Its custom output and
+   transition functions can be ordinary Python callables, a new Block subclass
+   is not required.
 
 4. **Are you making a short transformation to each dictionary on one Link?**
 
@@ -88,6 +92,9 @@ Custom object types compared
    * - Generator Path
      - One reusable command profile or segment with a stop condition.
      - A :class:`~crappy.blocks.Generator` Block.
+   * - Scheduler callable
+     - A script-specific output or transition rule in a state graph.
+     - A :class:`~crappy.blocks.schedulers.State` run by a Scheduler.
    * - Block
      - A complete non-image task with its own lifecycle and repeated work.
      - Regular Links to other Blocks.
@@ -144,6 +151,7 @@ API and customization guides
 
 - :doc:`../tutorials/custom_objects` links every custom-object guide.
 - :doc:`../tutorials/custom_generator_path` covers Generator Paths.
+- :doc:`../tutorials/scheduler` covers States and Scheduler callables.
 - :doc:`../tutorials/custom_vision_block` covers reusable image stages.
 - :doc:`../tutorials/custom_all_in_one_camera` covers advanced processing
   inside the supported all-in-one Camera Block.

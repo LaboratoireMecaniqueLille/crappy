@@ -196,6 +196,11 @@ class GeneratorStop(Exception):
   the end of its :class:`~crappy.blocks.generator_path.meta_path.path.Path`."""
 
 
+class SchedulerStop(Exception):
+  """Exception raised when a :class:`~crappy.blocks.Scheduler` Block reaches
+  its end State."""
+
+
 class ReaderStop(Exception):
   """Exception raised when a :class:`~crappy.camera.FileReader` Camera has
   exhausted all the images to read."""

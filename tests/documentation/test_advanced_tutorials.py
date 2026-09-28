@@ -14,6 +14,7 @@ class TestAdvancedTutorialDownloads(unittest.TestCase):
     'generator_conditions.py': 'generator-conditions',
     'modifier.py': 'modifier',
     'organized_script.py': 'organized-script',
+    'scheduler.py': 'scheduler',
     'streaming_acquisition.py': 'streaming-acquisition',
     'test_camera_object.py': 'test-camera-object',
   }
