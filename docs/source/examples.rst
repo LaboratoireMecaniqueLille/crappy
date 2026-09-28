@@ -103,6 +103,9 @@ Control and command generation
 Command paths
 ~~~~~~~~~~~~~
 
+Generator Paths run in a fixed order. For branching, looping, or multiple
+coordinated command labels, see the Scheduler examples below.
+
 - :example:`Basic Generator <blocks/generator/generator_basic.py>` - generate
   a simple command path.
 - :example:`Complex path <blocks/generator/generator_complex_path.py>` -
@@ -117,6 +120,22 @@ Command paths
   measured label.
 - :example:`Safe start <blocks/generator/generator_safe_start.py>` - wait for
   the first feedback value before generating commands.
+
+Scheduler state graphs
+~~~~~~~~~~~~~~~~~~~~~~
+
+- :example:`Basic Scheduler <blocks/scheduler/scheduler_basic.py>` - run a
+  linear Load, Hold, Unload sequence with States and Delays.
+- :example:`Branching <blocks/scheduler/scheduler_branching.py>` - choose Hold
+  or Abort according to force feedback and a timeout.
+- :example:`Loop <blocks/scheduler/scheduler_loop.py>` - repeatedly load and
+  unload between displacement thresholds.
+- :example:`Multiple outputs <blocks/scheduler/scheduler_multiple_outputs.py>`
+  - coordinate two simulated motors while retaining unchanged commands.
+- :example:`Custom callables <blocks/scheduler/scheduler_custom.py>` - adapt a
+  command and stop condition with ordinary Python functions.
+- :example:`Safe start <blocks/scheduler/scheduler_safe_start.py>` - wait for
+  both an operator click and a machine measurement before generating output.
 
 Actuator control and feedback
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

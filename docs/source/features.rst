@@ -57,7 +57,11 @@ Generate commands and close feedback loops
 - :ref:`Generator <crappy_docs/blocks:generator>` builds commands from
   reusable :doc:`Generator Paths <crappy_docs/generator_paths>`, including
   constants, ramps, cyclic paths, sine waves, and conditions based on measured
-  values.
+  values. It is a convenient choice for a linear sequence of signal segments.
+- :ref:`Scheduler <crappy_docs/blocks:scheduler>` runs a state graph whose
+  transitions can branch or loop. Its States can generate several command
+  labels, use feedback, and call user-defined Python functions. Choose it for
+  procedures that may grow beyond a fixed Path sequence.
 - :ref:`Button <crappy_docs/blocks:button>` lets an operator emit a value at a
   chosen moment.
 - :ref:`PID <crappy_docs/blocks:pid>` calculates a command from a target and a
@@ -65,8 +69,15 @@ Generate commands and close feedback loops
 - :ref:`Auto Drive <crappy_docs/blocks:auto drive>` is specialized for moving
   a camera during video-extensometry tests.
 
-See the :doc:`command-generation tutorial <tutorials/command_generation>`,
-the :doc:`feedback-loop tutorial <tutorials/feedback_loops>`, and the
+For new scripts, Generator is suitable for linear signal generation, and
+Scheduler is the recommended choice for other command procedures. Scheduler
+asks for more development experience, but its State graph is easier to extend
+when a test gains branches or additional outputs.
+
+Start with the :doc:`Generator tutorial <tutorials/command_generation>` for
+linear signals or the :doc:`Scheduler tutorial <tutorials/scheduler>` for
+branching procedures. See also the :doc:`feedback-loop tutorial
+<tutorials/feedback_loops>` and the
 :ref:`command and control examples <examples:control and command generation>`.
 
 Transform and coordinate measurements
@@ -168,6 +179,8 @@ Crappy can be customized when the distributed objects do not match a setup:
 - Write a Block for an independent task with its own timing or state.
 - Write a VisionBlock for reusable image acquisition or processing.
 - Write a Generator Path for reusable command-generation logic.
+- Supply a callable to a Scheduler State for script-specific command or
+  transition logic.
 
 :doc:`concepts/choosing_custom_object_type` helps select the appropriate
 object. Continue with the :doc:`custom-object tutorials
@@ -188,6 +201,7 @@ configuration for every object:
 - :doc:`Ordinary Blocks <crappy_docs/ordinary_blocks>`
 - :doc:`VisionBlocks <crappy_docs/vision_blocks>`
 - :doc:`Generator Paths <crappy_docs/generator_paths>`
+- :doc:`Scheduler helpers <crappy_docs/schedulers>`
 - :doc:`Modifiers <crappy_docs/modifiers>`
 - :doc:`Camera drivers <crappy_docs/cameras>`
 - :doc:`InOut drivers <crappy_docs/inouts>`

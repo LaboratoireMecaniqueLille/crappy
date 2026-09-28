@@ -5,6 +5,11 @@ Generator Paths
 A Generator Path defines one segment of a command sequence run by the
 :class:`~crappy.blocks.Generator` Block.
 
+Generator Paths advance in a fixed sequence. For a procedure that branches,
+loops, or coordinates several output labels, see the
+:class:`~crappy.blocks.Scheduler` Block and its :doc:`Scheduler helpers
+<schedulers>`.
+
 .. autosummary::
    :nosignatures:
 

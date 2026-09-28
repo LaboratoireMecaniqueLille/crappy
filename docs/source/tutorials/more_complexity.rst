@@ -19,6 +19,9 @@ Choose a task
 :doc:`generator_conditions`
   Change a command when a measurement crosses a threshold.
 
+:doc:`scheduler`
+  Branch between test phases with feedback and a timeout.
+
 :doc:`streaming_acquisition`
   Acquire and record measurements in chunks.
 
@@ -47,6 +50,7 @@ are available in the :ref:`crappy_docs/aliases:aliases` API reference.
    feedback_loops
    modifiers
    generator_conditions
+   scheduler
    streaming_acquisition
    organize_scripts
    test_hardware_object

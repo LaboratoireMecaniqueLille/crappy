@@ -32,6 +32,7 @@ in the experiment graph. For composable image stages, see
    crappy.blocks.Pause
    crappy.blocks.PID
    crappy.blocks.Recorder
+   crappy.blocks.Scheduler
    crappy.blocks.Sink
    crappy.blocks.StopBlock
    crappy.blocks.StopButton
@@ -236,6 +237,15 @@ Recorder
 
 .. autoclass:: crappy.blocks.Recorder
    :members: prepare, loop
+   :special-members: __init__
+
+.. _crappy_docs/blocks:scheduler:
+
+Scheduler
+---------
+
+.. autoclass:: crappy.blocks.Scheduler
+   :members: begin, loop, finish
    :special-members: __init__
 
 .. _crappy_docs/blocks:sink:

@@ -60,6 +60,13 @@ or either delay to adjust a step's duration. The
 :ref:`Generator Paths reference <crappy_docs/blocks:generator paths>` lists the
 other available signal shapes and their arguments.
 
+The fixed Path order of the Generator is especially convenient for a linear
+signal. If a procedure needs branches, returns to earlier phases, or several
+coordinated outputs, use the more advanced :class:`~crappy.blocks.Scheduler`
+instead. Even for a simple procedure, Scheduler may be easier to extend later
+if you are comfortable with its extra complexity. The :doc:`scheduler` tutorial
+shows that design.
+
 Continue with :doc:`actuator_control` to send a generated command to a
 simulated motor. For measurement-dependent transitions, continue with
 :doc:`generator_conditions` after learning about feedback loops.

@@ -85,7 +85,9 @@ For a new profile:
 5. For a measurement condition, connect the measurement source to the
    Generator and inspect the lists in ``data`` or use ``parse_condition()``.
 
-A Generator Path defines one command segment; it does not replace the
+A Generator Path defines one command segment, it does not replace the
 Generator Block that runs the sequence. See
 :class:`~crappy.blocks.generator_path.meta_path.path.Path` for the complete
-custom interface.
+custom interface. If the procedure needs different next phases or a loop,
+use :doc:`scheduler` instead. Its custom State outputs and conditions can be
+ordinary module-level functions without defining a Path class.

@@ -15,6 +15,9 @@ summary and then documents the supported methods for each object.
 :doc:`generator_paths`
   Command segments used by the Generator Block.
 
+:doc:`schedulers`
+  States, outputs, and transition conditions used by the Scheduler Block.
+
 :doc:`camera_processes`
   Advanced processing helpers managed by all-in-one Camera Blocks.
 
@@ -27,5 +30,6 @@ summary and then documents the supported methods for each object.
    ordinary_blocks
    vision_blocks
    generator_paths
+   schedulers
    camera_processes
    block_base
