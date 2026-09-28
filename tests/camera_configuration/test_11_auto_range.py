@@ -22,7 +22,7 @@ class TestAutoRange(ConfigurationWindowTestBase):
     feature is enabled or disabled."""
 
     # The auto range feature should be disabled by default
-    self.assertFalse(self._config._auto_range.get())
+    self.assertFalse(self._config._display_state.auto_range)
 
     self.run_config_cycle()
 
@@ -36,7 +36,7 @@ class TestAutoRange(ConfigurationWindowTestBase):
     self._config._auto_range_button.invoke()
 
     # The auto range feature should be enabled
-    self.assertTrue(self._config._auto_range.get())
+    self.assertTrue(self._config._display_state.auto_range)
 
     self.run_config_cycle()
 
@@ -51,7 +51,7 @@ class TestAutoRange(ConfigurationWindowTestBase):
     self._config._auto_range_button.invoke()
 
     # The auto range feature should be disabled
-    self.assertFalse(self._config._auto_range.get())
+    self.assertFalse(self._config._display_state.auto_range)
 
     self.run_config_cycle()
 

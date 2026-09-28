@@ -27,13 +27,13 @@ class TestIndicators(ConfigurationWindowTestBase):
     displayed in the interface."""
 
     # Monitoring variables should be initialized to their default values
-    self.assertEqual(self._config._nb_bits.get(), 0)
-    self.assertEqual(self._config._max_pixel.get(), 0)
-    self.assertEqual(self._config._min_pixel.get(), 0)
-    self.assertEqual(self._config._reticle_val.get(), 0)
-    self.assertEqual(self._config._x_pos.get(), 0)
-    self.assertEqual(self._config._y_pos.get(), 0)
-    self.assertEqual(self._config._zoom_level.get(), 100.0)
+    self.assertEqual(self._config._display_state.detected_bits, 0)
+    self.assertEqual(self._config._display_state.max_pixel, 0)
+    self.assertEqual(self._config._display_state.min_pixel, 0)
+    self.assertEqual(self._config._display_state.reticle_value, 0)
+    self.assertEqual(self._config._display_state.reticle_x, 0)
+    self.assertEqual(self._config._display_state.reticle_y, 0)
+    self.assertEqual(self._config._display_state.zoom_percent, 100.0)
 
     # Displayed texts should be initialized to their default values
     self.assertEqual(self._config._bits_txt.get(), 'Detected bits: 0')
@@ -44,13 +44,13 @@ class TestIndicators(ConfigurationWindowTestBase):
     self.run_config_cycle()
 
     # The monitoring variables should change because of the acquired image
-    self.assertEqual(self._config._nb_bits.get(), 8)
-    self.assertEqual(self._config._min_pixel.get(), 0)
-    self.assertEqual(self._config._max_pixel.get(), 255)
-    self.assertEqual(self._config._reticle_val.get(), 0)
-    self.assertEqual(self._config._x_pos.get(), 0)
-    self.assertEqual(self._config._y_pos.get(), 0)
-    self.assertEqual(self._config._zoom_level.get(), 100.0)
+    self.assertEqual(self._config._display_state.detected_bits, 8)
+    self.assertEqual(self._config._display_state.min_pixel, 0)
+    self.assertEqual(self._config._display_state.max_pixel, 255)
+    self.assertEqual(self._config._display_state.reticle_value, 0)
+    self.assertEqual(self._config._display_state.reticle_x, 0)
+    self.assertEqual(self._config._display_state.reticle_y, 0)
+    self.assertEqual(self._config._display_state.zoom_percent, 100.0)
 
     # These displayed texts should change because of the acquired image
     self.assertEqual(self._config._bits_txt.get(), 'Detected bits: 8')
@@ -70,10 +70,11 @@ class TestIndicators(ConfigurationWindowTestBase):
         self.run_config_cycle()
 
         # Checking that the indicators have the right values
-        self.assertEqual(self._config._nb_bits.get(), ceil(log2(max_ + 1)))
-        self.assertEqual(self._config._min_pixel.get(), min_)
-        self.assertEqual(self._config._max_pixel.get(), max_)
-        self.assertEqual(self._config._reticle_val.get(), min_)
+        self.assertEqual(self._config._display_state.detected_bits,
+                         ceil(log2(max_ + 1)))
+        self.assertEqual(self._config._display_state.min_pixel, min_)
+        self.assertEqual(self._config._display_state.max_pixel, max_)
+        self.assertEqual(self._config._display_state.reticle_value, min_)
 
         # Checking that the correct text is displayed
         self.assertEqual(self._config._bits_txt.get(),
@@ -102,11 +103,12 @@ class TestIndicators(ConfigurationWindowTestBase):
               x=self._config._img_canvas.winfo_width() // 2,
               y=self._config._img_canvas.winfo_height() // 2, delta=1)
 
-        self.assertEqual(self._config._zoom_level.get(),
+        self.assertEqual(self._config._display_state.zoom_percent,
                          100 * (1 / self._config._zoom_ratio) **
                          self._config._zoom_step)
-        self.assertEqual(self._config._zoom_txt.get(),
-                         f'Zoom: {self._config._zoom_level.get():.1f}%')
+        self.assertEqual(
+          self._config._zoom_txt.get(),
+          f'Zoom: {self._config._display_state.zoom_percent:.1f}%')
 
     # Checking if the zoom level is updated correctly when zooming out at the
     # center of the image
@@ -123,11 +125,12 @@ class TestIndicators(ConfigurationWindowTestBase):
               x=self._config._img_canvas.winfo_width() // 2,
               y=self._config._img_canvas.winfo_height() // 2, delta=-1)
 
-        self.assertEqual(self._config._zoom_level.get(),
+        self.assertEqual(self._config._display_state.zoom_percent,
                          100 * (1 / self._config._zoom_ratio) **
                          self._config._zoom_step)
-        self.assertEqual(self._config._zoom_txt.get(),
-                         f'Zoom: {self._config._zoom_level.get():.1f}%')
+        self.assertEqual(
+          self._config._zoom_txt.get(),
+          f'Zoom: {self._config._display_state.zoom_percent:.1f}%')
 
     # Get the width of the canvas
     width = self._config._img_canvas.winfo_width()
@@ -168,11 +171,13 @@ class TestIndicators(ConfigurationWindowTestBase):
         reticle = int(((x - x0) + (y - y0)) / (width_eff + height_eff) * 255)
         x_pos = int((x - x0) / width_eff * 320)
         y_pos = int((y - y0) / height_eff * 240)
-        self.assertAlmostEqual(self._config._reticle_val.get(), reticle,
-                               delta=2)
-        self.assertAlmostEqual(self._config._x_pos.get(), x_pos, delta=1)
-        self.assertAlmostEqual(self._config._y_pos.get(), y_pos, delta=1)
+        self.assertAlmostEqual(self._config._display_state.reticle_value,
+                               reticle, delta=2)
+        self.assertAlmostEqual(self._config._display_state.reticle_x,
+                               x_pos, delta=1)
+        self.assertAlmostEqual(self._config._display_state.reticle_y,
+                               y_pos, delta=1)
         self.assertEqual(self._config._reticle_txt.get(),
-                         f'X: {self._config._x_pos.get()}, '
-                         f'Y: {self._config._y_pos.get()}, '
-                         f'V: {self._config._reticle_val.get()}')
+                         f'X: {self._config._display_state.reticle_x}, '
+                         f'Y: {self._config._display_state.reticle_y}, '
+                         f'V: {self._config._display_state.reticle_value}')

@@ -41,6 +41,12 @@ class TestResize(ConfigurationWindowTestBase):
                                     self._config.winfo_geometry()).groups())
     self._config.geometry(f"{int(2.5 * w)}x{int(1.5 * h)}+{x}+{y}")
     self._config.update_idletasks()
+    self._config.update()
+
+    # Both canvas callbacks must resize their existing image immediately,
+    # without waiting for another camera acquisition.
+    self.assertGreater(self._config._pil_img.size[0], img_size_w)
+    self.assertGreater(self._config._pil_hist.size[0], hist_size_w)
 
     # Call new loops to apply the changes
     for _ in range(2):

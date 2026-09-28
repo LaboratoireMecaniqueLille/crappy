@@ -46,7 +46,7 @@ class TestAutoApply(ConfigurationWindowTestBase):
 
     # By default, the auto apply button should be disabled and the apply
     # settings button should be enabled
-    self.assertFalse(self._config._auto_apply.get())
+    self.assertFalse(self._config._display_state.auto_apply)
     self.assertEqual(self._config._update_button.cget('state'), 'normal')
 
     # Checking the auto apply button
@@ -54,7 +54,7 @@ class TestAutoApply(ConfigurationWindowTestBase):
 
     # Now the auto apply variable should be enabled, and the apply button
     # disabled
-    self.assertTrue(self._config._auto_apply.get())
+    self.assertTrue(self._config._display_state.auto_apply)
     self.assertEqual(self._config._update_button.cget('state'), 'disabled')
 
     # Changing the values of all the parameters in the interface should be
@@ -97,7 +97,7 @@ class TestAutoApply(ConfigurationWindowTestBase):
     self._config._auto_apply_button.invoke()
 
     # The interface should be back to default
-    self.assertFalse(self._config._auto_apply.get())
+    self.assertFalse(self._config._display_state.auto_apply)
     self.assertEqual(self._config._update_button.cget('state'), 'normal')
 
     # Updating the values of the parameters in the interface again

@@ -25,7 +25,7 @@ class TestFPS(ConfigurationWindowTestBase):
     maximum FPs value is enforced."""
 
     # FPS-related variables should be initialized to their default values
-    self.assertEqual(self._config._fps_var.get(), 0.)
+    self.assertEqual(self._config._display_state.fps, 0.)
     self.assertEqual(self._config._fps_txt.get(),
                      f'fps = 0.00\n(might be lower in this GUI than actual)')
 
@@ -51,10 +51,10 @@ class TestFPS(ConfigurationWindowTestBase):
             self._config._img_acq_sched()
           self._config._upd_var_sched()
 
-          self.assertAlmostEqual(self._config._fps_var.get(), fps)
+          self.assertAlmostEqual(self._config._display_state.fps, fps)
           self.assertEqual(
               self._config._fps_txt.get(),
-              f'fps = {self._config._fps_var.get():.2f}\n(might be lower in '
+              f'fps = {self._config._display_state.fps:.2f}\n(might be lower in '
               f'this GUI than actual)')
 
       # Free-looping should not impose the configured 20 FPS ceiling.
@@ -64,4 +64,4 @@ class TestFPS(ConfigurationWindowTestBase):
         self._config._img_acq_sched()
       self._config._upd_var_sched()
 
-    self.assertAlmostEqual(self._config._fps_var.get(), 25.0)
+    self.assertAlmostEqual(self._config._display_state.fps, 25.0)

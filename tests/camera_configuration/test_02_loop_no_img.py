@@ -14,16 +14,16 @@ class TestLoopNoImg(ConfigurationWindowTestBase):
     are updated as expected when looping without an image."""
 
     # Monitoring variables should be initialized to their default values
-    self.assertEqual(self._config._fps_var.get(), 0.)
-    self.assertEqual(self._config._nb_bits.get(), 0)
-    self.assertEqual(self._config._max_pixel.get(), 0)
-    self.assertEqual(self._config._min_pixel.get(), 0)
-    self.assertEqual(self._config._reticle_val.get(), 0)
-    self.assertEqual(self._config._x_pos.get(), 0)
-    self.assertEqual(self._config._y_pos.get(), 0)
-    self.assertFalse(self._config._auto_range.get())
-    self.assertFalse(self._config._auto_apply.get())
-    self.assertEqual(self._config._zoom_level.get(), 100.0)
+    self.assertEqual(self._config._display_state.fps, 0.)
+    self.assertEqual(self._config._display_state.detected_bits, 0)
+    self.assertEqual(self._config._display_state.max_pixel, 0)
+    self.assertEqual(self._config._display_state.min_pixel, 0)
+    self.assertEqual(self._config._display_state.reticle_value, 0)
+    self.assertEqual(self._config._display_state.reticle_x, 0)
+    self.assertEqual(self._config._display_state.reticle_y, 0)
+    self.assertFalse(self._config._display_state.auto_range)
+    self.assertFalse(self._config._display_state.auto_apply)
+    self.assertEqual(self._config._display_state.zoom_percent, 100.0)
 
     # Displayed texts should be initialized to their default values
     self.assertEqual(self._config._fps_txt.get(),
@@ -51,17 +51,17 @@ class TestLoopNoImg(ConfigurationWindowTestBase):
     self.run_config_cycle(elapsed=0.5)
 
     # These monitoring variables should change because of the error image
-    self.assertGreater(self._config._fps_var.get(), 0.)
-    self.assertEqual(self._config._nb_bits.get(), 8)
-    self.assertEqual(self._config._max_pixel.get(), 254)
+    self.assertGreater(self._config._display_state.fps, 0.)
+    self.assertEqual(self._config._display_state.detected_bits, 8)
+    self.assertEqual(self._config._display_state.max_pixel, 254)
     # All other monitoring variables should be unchanged
-    self.assertEqual(self._config._min_pixel.get(), 0)
-    self.assertEqual(self._config._reticle_val.get(), 0)
-    self.assertEqual(self._config._x_pos.get(), 0)
-    self.assertEqual(self._config._y_pos.get(), 0)
-    self.assertFalse(self._config._auto_range.get())
-    self.assertFalse(self._config._auto_apply.get())
-    self.assertEqual(self._config._zoom_level.get(), 100.0)
+    self.assertEqual(self._config._display_state.min_pixel, 0)
+    self.assertEqual(self._config._display_state.reticle_value, 0)
+    self.assertEqual(self._config._display_state.reticle_x, 0)
+    self.assertEqual(self._config._display_state.reticle_y, 0)
+    self.assertFalse(self._config._display_state.auto_range)
+    self.assertFalse(self._config._display_state.auto_apply)
+    self.assertEqual(self._config._display_state.zoom_percent, 100.0)
 
     # These displayed texts should change because of the error image loaded
     self.assertNotEqual(self._config._fps_txt.get(),
@@ -94,16 +94,16 @@ class TestLoopNoImg(ConfigurationWindowTestBase):
     self.run_config_cycle()
 
     # Monitoring variables should be unchanged compared to previous loop
-    self.assertEqual(self._config._fps_var.get(), 0.)
-    self.assertEqual(self._config._nb_bits.get(), 8)
-    self.assertEqual(self._config._max_pixel.get(), 254)
-    self.assertEqual(self._config._min_pixel.get(), 0)
-    self.assertEqual(self._config._reticle_val.get(), 0)
-    self.assertEqual(self._config._x_pos.get(), 0)
-    self.assertEqual(self._config._y_pos.get(), 0)
-    self.assertFalse(self._config._auto_range.get())
-    self.assertFalse(self._config._auto_apply.get())
-    self.assertEqual(self._config._zoom_level.get(), 100.0)
+    self.assertEqual(self._config._display_state.fps, 0.)
+    self.assertEqual(self._config._display_state.detected_bits, 8)
+    self.assertEqual(self._config._display_state.max_pixel, 254)
+    self.assertEqual(self._config._display_state.min_pixel, 0)
+    self.assertEqual(self._config._display_state.reticle_value, 0)
+    self.assertEqual(self._config._display_state.reticle_x, 0)
+    self.assertEqual(self._config._display_state.reticle_y, 0)
+    self.assertFalse(self._config._display_state.auto_range)
+    self.assertFalse(self._config._display_state.auto_apply)
+    self.assertEqual(self._config._display_state.zoom_percent, 100.0)
 
     # Displayed texts should be unchanged compared to previous loop
     self.assertEqual(self._config._fps_txt.get(),
