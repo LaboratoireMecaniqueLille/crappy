@@ -16,6 +16,7 @@ from typing import Any
 from collections.abc import Callable, Iterable
 
 from .config_tools import Zoom, HistogramProcess
+from .display_state import DisplayGeometry, DisplayState
 from .setting_manager import SettingManager
 from ...camera.meta_camera.camera_setting import (
   CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
@@ -116,6 +117,10 @@ class CameraConfig(tk.Tk):
 
     super().__init__()
     self._camera = camera
+    self._display_state = DisplayState()
+    self._display_geometry = DisplayGeometry()
+    self._hist_width = 0
+    self._hist_height = 0
     self._setting_controls: dict[CameraSetting, _TkSettingControl] = dict()
     self._setting_manager = SettingManager(camera.settings,
                                            self._create_local_settings())
@@ -168,7 +173,6 @@ class CameraConfig(tk.Tk):
 
     # Initializing the interface
     self._set_variables()
-    self._set_traces()
     self._set_layout()
     self._set_bindings()
     self._add_settings()
@@ -350,9 +354,11 @@ class CameraConfig(tk.Tk):
       self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
     # Updating the indicators in the GUI
-    self._fps_var.set(self._n_loops / (time() - self._last_upd_t))
+    elapsed = time() - self._last_upd_t
+    self._display_state.fps = self._n_loops / elapsed if elapsed > 0 else 0.0
     self._n_loops = 0
     self._last_upd_t = time()
+    self._sync_indicator_labels()
 
   def _set_layout(self) -> None:
     """Creates and places the different elements of the display on the GUI."""
@@ -407,15 +413,15 @@ class CameraConfig(tk.Tk):
     self._fps_label = tk.Label(self._info_frame, textvariable=self._fps_txt)
     self._fps_label.pack(expand=False, fill='none', anchor='n', side='top')
 
-    self._auto_range_button = tk.Checkbutton(self._info_frame,
-                                             text='Auto range',
-                                             variable=self._auto_range)
+    self._auto_range_button = tk.Checkbutton(
+        self._info_frame, text='Auto range', variable=self._auto_range_var,
+        command=self._on_auto_range_toggle)
     self._auto_range_button.pack(expand=False, fill='none', anchor='n',
                                  side='top')
 
-    self._auto_apply_button = tk.Checkbutton(self._info_frame,
-                                             text='Auto apply',
-                                             variable=self._auto_apply)
+    self._auto_apply_button = tk.Checkbutton(
+        self._info_frame, text='Auto apply', variable=self._auto_apply_var,
+        command=self._on_auto_apply_toggle)
     self._auto_apply_button.pack(expand=False, fill='none', anchor='n',
                                  side='top')
 
@@ -511,9 +517,9 @@ class CameraConfig(tk.Tk):
     self._img_canvas.bind('<ButtonPress-3>', self._start_move)
     self._img_canvas.bind('<B3-Motion>', self._move)
 
-    # It's more efficient to bind the resizing to the graphical frame
-    self._graphical_frame.bind("<Configure>", self._on_img_resize)
-    self._graphical_frame.bind("<Configure>", self._on_hist_resize)
+    # Each canvas reports its own final size
+    self._img_canvas.bind("<Configure>", self._on_img_resize)
+    self._hist_canvas.bind("<Configure>", self._on_hist_resize)
 
   def _bind_mouse(self, _: tk.Event) -> None:
     """Binds the mousewheel to the settings canvas scrollbar when the user
@@ -564,201 +570,161 @@ class CameraConfig(tk.Tk):
     if system() == "Linux":
       delta = 1 if event.num == 4 else -1
     else:
-      delta = int(event.delta / abs(event.delta))
+      delta = (event.delta > 0) - (event.delta < 0)
+
+    if not delta:
+      return
 
     self._settings_canvas.yview_scroll(-delta, "units")
 
   def _on_wheel_img(self, event: tk.Event) -> None:
-    """Zooms in or out on the image upon mousewheel motion.
+    """Translate a Tk wheel event into an image-coordinate zoom request."""
 
-    Handles the specific cases when the mouse is not on the image, or the
-    maximum or minimum zoom levels are reached.
-    """
-
-    # If the mouse is on the canvas but not on the image, do nothing
-    if not self._check_event_pos(event):
-      return
-
-    self.log(logging.DEBUG, "Zooming on the canvas")
-
-    pil_width = self._pil_img.width
-    pil_height = self._pil_img.height
-    zoom_x_low, zoom_x_high = self._zoom_values.x_low, self._zoom_values.x_high
-    zoom_y_low, zoom_y_high = self._zoom_values.y_low, self._zoom_values.y_high
-
-    # Different wheel management in Windows and Linux
     if system() == "Linux":
-      delta = 1 if event.num == 4 else -1
+      direction = 1 if event.num == 4 else -1
     else:
-      delta = int(event.delta / abs(event.delta))
+      direction = (event.delta > 0) - (event.delta < 0)
 
-    # Handling the cases when the minimum or maximum zoom levels are reached
-    self._zoom_step += delta
-    if self._zoom_step < 0:
-      self._zoom_step = 0
-      self._zoom_level.set(100)
-      return
-    elif self._zoom_step == 0:
-      self._zoom_values.reset()
-      self._zoom_level.set(100)
+    if self._zoom_at(event.x, event.y, direction):
       self._on_img_resize()
-      return
-    elif self._zoom_step > self._max_zoom_step:
-      self._zoom_step = self._max_zoom_step
-      self._zoom_level.set(100 * (1 / self._zoom_ratio) ** self._max_zoom_step)
-      return
+      self._sync_indicator_labels()
 
-    # Correcting the event position to make it relative to the image and not
-    # the canvas
-    zero_x = (self._img_canvas.winfo_width() - pil_width) / 2
-    zero_y = (self._img_canvas.winfo_height() - pil_height) / 2
-    corr_x = event.x - zero_x
-    corr_y = event.y - zero_y
+  def _zoom_at(self, x: int, y: int, direction: int) -> bool:
+    """Zoom at a display position using a signed, toolkit-free direction."""
 
-    # The position of the mouse on the image as a ratio between 0 and 1
-    x_ratio = corr_x * (zoom_x_high - zoom_x_low) / pil_width
-    y_ratio = corr_y * (zoom_y_high - zoom_y_low) / pil_height
+    if not direction or not self._is_on_image(x, y):
+      return False
 
-    # Updating the upper and lower limits of the image on the display
-    ratio = self._zoom_ratio if delta < 0 else 1 / self._zoom_ratio
+    self.log(logging.DEBUG, "Zooming on the image")
+    next_step = min(max(self._zoom_step + direction, 0), self._max_zoom_step)
+    if next_step == self._zoom_step:
+      return False
+    self._zoom_step = next_step
+    self._display_state.zoom_percent = (100 * (1 / self._zoom_ratio) **
+                                        self._zoom_step)
+
+    if self._zoom_step == 0:
+      self._zoom_values.reset()
+      return True
+
+    relative_x, relative_y = self._display_geometry.relative(x, y)
+    geometry = self._display_geometry
+    x_ratio = (relative_x * (self._zoom_values.x_high -
+                             self._zoom_values.x_low) / geometry.image_width)
+    y_ratio = (relative_y * (self._zoom_values.y_high -
+                             self._zoom_values.y_low) / geometry.image_height)
+    ratio = self._zoom_ratio if direction < 0 else 1 / self._zoom_ratio
     self._zoom_values.update_zoom(x_ratio, y_ratio, ratio)
-
-    # Redrawing the image and updating the information
-    self._on_img_resize()
-    self._zoom_level.set(100 * (1 / self._zoom_ratio) ** self._zoom_step)
+    return True
 
   def _update_coord(self, event: tk.Event) -> None:
-    """Updates the coordinates of the pixel pointed by the mouse on the
-    image."""
+    """Translate Tk motion into a display-coordinate reticle update."""
+
+    if self._point_at(event.x, event.y):
+      self._sync_indicator_labels()
+
+  def _point_at(self, x: int, y: int) -> bool:
+    """Update the reticle from plain display coordinates."""
+
+    if not self._is_on_image(x, y):
+      return False
 
     self.log(logging.DEBUG, "Updating the coordinates of the current pixel")
-
-    # If the mouse is on the canvas but not on the image, do nothing
-    if not self._check_event_pos(event):
-      return
-
-    x_coord, y_coord = self._coord_to_pix(event.x, event.y)
-
-    self._x_pos.set(x_coord)
-    self._y_pos.set(y_coord)
-
+    (self._display_state.reticle_x,
+     self._display_state.reticle_y) = self._coord_to_pix(x, y)
     self._update_pixel_value()
+    return True
 
   def _update_pixel_value(self) -> None:
-    """Updates the display of the gray level value of the pixel currently being
-    pointed by the mouse."""
+    """Read the original-image value at the current reticle position."""
 
     self.log(logging.DEBUG, "Updating the value of the current pixel")
 
+    if self._original_img is None or not self._original_img.size:
+      return
+
     try:
-      self._reticle_val.set(int(np.average(
-          self._original_img[self._y_pos.get(), self._x_pos.get()])))
+      self._display_state.reticle_value = int(np.average(
+        self._original_img[self._display_state.reticle_y,
+                           self._display_state.reticle_x]))
     except IndexError:
-      self._x_pos.set(0)
-      self._y_pos.set(0)
-      self._reticle_val.set(int(np.average(
-          self._original_img[self._y_pos.get(), self._x_pos.get()])))
+      self._display_state.reticle_x = 0
+      self._display_state.reticle_y = 0
+      self._display_state.reticle_value = int(np.average(
+        self._original_img[0, 0]))
 
   def _coord_to_pix(self, x: int, y: int) -> tuple[int, int]:
-    """Converts the coordinates of the mouse in the GUI referential to
-    coordinates on the original image."""
+    """Convert display coordinates to full-image pixel coordinates."""
 
-    pil_width = self._pil_img.width
-    pil_height = self._pil_img.height
-    zoom_x_low, zoom_x_high = self._zoom_values.x_low, self._zoom_values.x_high
-    zoom_y_low, zoom_y_high = self._zoom_values.y_low, self._zoom_values.y_high
+    if self._img is None:
+      return 0, 0
+
     img_height, img_width, *_ = self._img.shape
-
-    # Correcting the event position to make it relative to the image and not
-    # the canvas
-    zero_x = (self._img_canvas.winfo_width() - pil_width) / 2
-    zero_y = (self._img_canvas.winfo_height() - pil_height) / 2
-    corr_x = x - zero_x
-    corr_y = y - zero_y
-
-    # Convert the relative coordinate of the mouse on the display to coordinate
-    # of the mouse on the original image
-    x_disp = corr_x / pil_width * (zoom_x_high - zoom_x_low) * img_width
-    y_disp = corr_y / pil_height * (zoom_y_high - zoom_y_low) * img_height
-
-    # The coordinate of the upper left corner of the displayed image
-    # (potentially zoomed) on the original image
-    x_trim = zoom_x_low * img_width
-    y_trim = zoom_y_low * img_height
-
-    return min(int(x_disp + x_trim),
-               img_width - 1), min(int(y_disp + y_trim), img_height - 1)
+    return self._display_geometry.to_pixel(x, y, img_width, img_height,
+                                           self._zoom_values)
 
   def _start_move(self, event: tk.Event) -> None:
-    """Stores the position of the mouse upon right-clicking on the image."""
+    """Translate a Tk right-button press into a pan start."""
+
+    self._begin_pan(event.x, event.y)
+
+  def _begin_pan(self, x: int, y: int) -> None:
+    """Start panning from a display coordinate on the image."""
 
     # Invalidate previous drag before checking new start position
     self._move_x = None
     self._move_y = None
-
-    # If the mouse is on the canvas but not on the image, do nothing
-    if not self._check_event_pos(event):
+    if not self._is_on_image(x, y):
       return
 
     self.log(logging.DEBUG, "Drag started")
-
-    # Stores the position of the mouse relative to the top left corner of the
-    # image
-    zero_x = (self._img_canvas.winfo_width() - self._pil_img.width) / 2
-    zero_y = (self._img_canvas.winfo_height() - self._pil_img.height) / 2
-    self._move_x = event.x - zero_x
-    self._move_y = event.y - zero_y
+    self._move_x, self._move_y = self._display_geometry.relative(x, y)
 
   def _move(self, event: tk.Event) -> None:
-    """Drags the image upon prolonged right-clik and drag from the user."""
+    """Translate a Tk right-button drag into a pan update."""
+
+    self._pan_to(event.x, event.y)
+
+  def _pan_to(self, x: int, y: int) -> None:
+    """Pan the image to a display coordinate after a valid press."""
 
     # Do nothing if the drag did not start on the image, or if the mouse is no
     # longer on the image.
     if (self._move_x is None or self._move_y is None or
-        not self._check_event_pos(event)):
+        not self._is_on_image(x, y)):
       return
 
     self.log(logging.DEBUG, "Dragging the image")
 
-    pil_width = self._pil_img.width
-    pil_height = self._pil_img.height
+    geometry = self._display_geometry
     zoom_x_low, zoom_x_high = self._zoom_values.x_low, self._zoom_values.x_high
     zoom_y_low, zoom_y_high = self._zoom_values.y_low, self._zoom_values.y_high
 
     # Getting the position delta, in the coordinates of the display
-    zero_x = (self._img_canvas.winfo_width() - pil_width) / 2
-    zero_y = (self._img_canvas.winfo_height() - pil_height) / 2
-    delta_x_disp = self._move_x - (event.x - zero_x)
-    delta_y_disp = self._move_y - (event.y - zero_y)
+    relative_x, relative_y = geometry.relative(x, y)
+    delta_x_disp = self._move_x - relative_x
+    delta_y_disp = self._move_y - relative_y
 
     # Converting the position delta to a ratio between 0 and 1 relative to the
     # size of the original image
-    delta_x = delta_x_disp * (zoom_x_high - zoom_x_low) / pil_width
-    delta_y = delta_y_disp * (zoom_y_high - zoom_y_low) / pil_height
+    delta_x = delta_x_disp * (zoom_x_high - zoom_x_low) / geometry.image_width
+    delta_y = delta_y_disp * (zoom_y_high - zoom_y_low) / geometry.image_height
 
     # Actually updating the display
     self._zoom_values.update_move(delta_x, delta_y)
 
     # Resetting the original position, otherwise the drag never ends
-    self._move_x = event.x - zero_x
-    self._move_y = event.y - zero_y
+    self._move_x, self._move_y = relative_x, relative_y
 
   def _check_event_pos(self, event: tk.Event) -> bool:
-    """Checks whether the mouse is on the image, and not between the image and
-    the border of the canvas. Returns :obj:`True` if it is on the image,
-    :obj:`False` otherwise."""
+    """Tk compatibility adapter for subclass event handlers."""
 
-    if self._pil_img is None:
-      return False
+    return self._is_on_image(event.x, event.y)
 
-    if abs(event.x -
-           self._img_canvas.winfo_width() / 2) > self._pil_img.width / 2:
-      return False
-    if abs(event.y -
-           self._img_canvas.winfo_height() / 2) > self._pil_img.height / 2:
-      return False
+  def _is_on_image(self, x: int, y: int) -> bool:
+    """Check image hit-testing from plain display coordinates."""
 
-    return True
+    return self._display_geometry.contains(x, y)
 
   def _create_local_settings(self) -> tuple[CameraSetting, ...]:
     """Create configurator-specific settings before building backend controls.
@@ -924,105 +890,44 @@ class CameraConfig(tk.Tk):
       control.revision = setting.revision
 
   def _set_variables(self) -> None:
-    """Sets the text and numeric variables holding information about the
-    display."""
+    """Create Tk-only variables for rendering the plain display state."""
 
     self.log(logging.DEBUG, "Setting the interface variables")
 
-    # The FPS counter
-    self._fps_var = tk.DoubleVar(value=0.)
-    self._fps_txt = tk.StringVar(
-        value=f'fps = {self._fps_var.get():.2f}\n(might be lower in this GUI '
-              f'than actual)')
+    self._auto_range_var = tk.BooleanVar(value=self._display_state.auto_range)
+    self._auto_apply_var = tk.BooleanVar(value=self._display_state.auto_apply)
+    self._fps_txt = tk.StringVar()
+    self._min_max_pix_txt = tk.StringVar()
+    self._bits_txt = tk.StringVar()
+    self._zoom_txt = tk.StringVar()
+    self._reticle_txt = tk.StringVar()
+    self._sync_indicator_labels()
 
-    # The variable for enabling or disabling the auto range
-    self._auto_range = tk.BooleanVar(value=False)
+  def _sync_indicator_labels(self) -> None:
+    """Render the current ordinary state in Tk label variables."""
 
-    # The variable for enabling or disabling the auto apply
-    self._auto_apply = tk.BooleanVar(value=False)
-
-    # The minimum and maximum pixel value counters
-    self._min_pixel = tk.IntVar(value=0)
-    self._max_pixel = tk.IntVar(value=0)
-    self._min_max_pix_txt = tk.StringVar(
-      value=f'min: {self._min_pixel.get():d}, '
-            f'max: {self._max_pixel.get():d}')
-
-    # The number of detected bits counter
-    self._nb_bits = tk.IntVar(value=0)
-    self._bits_txt = tk.StringVar(
-      value=f'Detected bits: {self._nb_bits.get():d}')
-
-    # The display of the current zoom level
-    self._zoom_level = tk.DoubleVar(value=100.0)
-    self._zoom_txt = tk.StringVar(
-      value=f'Zoom: {self._zoom_level.get():.1f}%')
-
-    # The display of the current pixel position and value
-    self._x_pos = tk.IntVar(value=0)
-    self._y_pos = tk.IntVar(value=0)
-    self._reticle_val = tk.IntVar(value=0)
-    self._reticle_txt = tk.StringVar(value=f'X: {self._x_pos.get():d}, '
-                                           f'Y: {self._y_pos.get():d}, '
-                                           f'V: {self._reticle_val.get():d}')
-
-  def _set_traces(self) -> None:
-    """Sets the traces for automatically updating the display when a variable
-    is modified."""
-
-    self.log(logging.DEBUG, "Setting the interface traces")
-
-    self._fps_var.trace_add('write', self._update_fps)
-
-    self._min_pixel.trace_add('write', self._update_min_max)
-    self._max_pixel.trace_add('write', self._update_min_max)
-
-    self._nb_bits.trace_add('write', self._update_bits)
-
-    self._zoom_level.trace_add('write', self._update_zoom)
-
-    self._x_pos.trace_add('write', self._update_reticle)
-    self._y_pos.trace_add('write', self._update_reticle)
-    self._reticle_val.trace_add('write', self._update_reticle)
-
-    self._auto_apply.trace_add('write', self._update_apply_settings)
-
-  def _update_fps(self, _, __, ___) -> None:
-    """Auto-update of the FPS display."""
-
-    self._fps_txt.set(f'fps = {self._fps_var.get():.2f}\n'
+    state = self._display_state
+    self._fps_txt.set(f'fps = {state.fps:.2f}\n'
                       f'(might be lower in this GUI than actual)')
+    self._min_max_pix_txt.set(f'min: {state.min_pixel:d}, '
+                              f'max: {state.max_pixel:d}')
+    self._bits_txt.set(f'Detected bits: {state.detected_bits:d}')
+    self._zoom_txt.set(f'Zoom: {state.zoom_percent:.1f}%')
+    self._reticle_txt.set(f'X: {state.reticle_x:d}, '
+                          f'Y: {state.reticle_y:d}, '
+                          f'V: {state.reticle_value:d}')
 
-  def _update_min_max(self, _, __, ___) -> None:
-    """Auto-update of the minimum and maximum pixel values display."""
+  def _on_auto_range_toggle(self) -> None:
+    """Translate the Tk checkbutton state into an ordinary option value."""
 
-    self._min_max_pix_txt.set(f'min: {self._min_pixel.get():d}, '
-                              f'max: {self._max_pixel.get():d}')
+    self._display_state.auto_range = bool(self._auto_range_var.get())
 
-  def _update_bits(self, _, __, ___) -> None:
-    """Auto-update of the number of detected bits display."""
+  def _on_auto_apply_toggle(self) -> None:
+    """Translate the Tk checkbutton state and update the Apply button."""
 
-    self._bits_txt.set(f'Detected bits: {self._nb_bits.get():d}')
-
-  def _update_zoom(self, _, __, ___) -> None:
-    """Auto-update of the current zoom level display."""
-
-    self._zoom_txt.set(f'Zoom: {self._zoom_level.get():.1f}%')
-
-  def _update_reticle(self, _, __, ___) -> None:
-    """Auto-update of the current pixel position and value display."""
-
-    self._reticle_txt.set(f'X: {self._x_pos.get():d}, '
-                          f'Y: {self._y_pos.get():d}, '
-                          f'V: {self._reticle_val.get():d}')
-
-  def _update_apply_settings(self, _, __, ___) -> None:
-    """Disable the Apply Settings button when Auto apply button is checked."""
-
-    if self._auto_apply.get():
-      self._update_button['state'] = 'disabled'
-    else:
-      self._update_button['state'] = 'normal'
+    self._display_state.auto_apply = bool(self._auto_apply_var.get())
+    self._update_button['state'] = (
+      'disabled' if self._display_state.auto_apply else 'normal')
 
   def _update_settings(self) -> None:
     """Apply local settings, then camera settings, through the shared manager.
@@ -1059,7 +964,7 @@ class CameraConfig(tk.Tk):
      settings will be applied when the choice button is checked.
      """
 
-    if self._auto_apply.get():
+    if self._display_state.auto_apply:
       self._update_settings()
 
   def _cast_img(self, img: np.ndarray) -> None:
@@ -1096,7 +1001,7 @@ class CameraConfig(tk.Tk):
       img = img[:, :, ::-1]
 
     # If the auto_range is set, adjusting the values to the range
-    if self._auto_range.get():
+    if self._display_state.auto_range:
       self.log(logging.DEBUG, "Applying auto range to the image")
       self._low_thresh, self._high_thresh = map(float,
                                                 np.percentile(img, (3, 97)))
@@ -1121,12 +1026,25 @@ class CameraConfig(tk.Tk):
       self._original_img = np.copy(img)
 
     # Updating the information
-    self._nb_bits.set(int(np.ceil(np.log2(int(np.max(img)) + 1))))
-    self._max_pixel.set(int(np.max(img)))
-    self._min_pixel.set(int(np.min(img)))
+    self._display_state.detected_bits = int(np.ceil(np.log2(int(np.max(img))
+                                                            + 1)))
+    self._display_state.max_pixel = int(np.max(img))
+    self._display_state.min_pixel = int(np.min(img))
+
+  def _read_image_geometry(self) -> None:
+    """Translate the Tk image-canvas size into ordinary display geometry."""
+
+    self._display_geometry.width = self._img_canvas.winfo_width()
+    self._display_geometry.height = self._img_canvas.winfo_height()
+
+  def _read_histogram_geometry(self) -> None:
+    """Copy the Tk histogram-canvas size before resizing its image."""
+
+    self._hist_width = self._hist_canvas.winfo_width()
+    self._hist_height = self._hist_canvas.winfo_height()
 
   def _resize_img(self) -> None:
-    """Resizes the received image so that it fits in the image canvas and
+    """Resizes the received image so that it fits in the display area and
     complies with the chosen zoom level."""
 
     if self._img is None:
@@ -1143,24 +1061,26 @@ class CameraConfig(tk.Tk):
     x_max_pix = int(img_width * self._zoom_values.x_high)
     zoomed_img = self._img[y_min_pix: y_max_pix, x_min_pix: x_max_pix]
 
+    if not zoomed_img.size:
+      self._pil_img = None
+      self._display_geometry.image_width = 0
+      self._display_geometry.image_height = 0
+      return
+
     # Creating the pillow image from the zoomed numpy array
     pil_img = Image.fromarray(zoomed_img)
 
-    # Resizing the image to make it fit in the image canvas
-    img_canvas_width = self._img_canvas.winfo_width()
-    img_canvas_height = self._img_canvas.winfo_height()
-
-    zoomed_img_ratio = pil_img.width / pil_img.height
-    img_label_ratio = img_canvas_width / img_canvas_height
-
-    if zoomed_img_ratio >= img_label_ratio:
-      new_width = img_canvas_width
-      new_height = max(int(img_canvas_width / zoomed_img_ratio), 1)
-    else:
-      new_width = max(int(img_canvas_height * zoomed_img_ratio), 1)
-      new_height = img_canvas_height
+    new_width, new_height = self._display_geometry.fit(pil_img.width,
+                                                       pil_img.height)
+    if not new_width or not new_height:
+      self._pil_img = None
+      self._display_geometry.image_width = 0
+      self._display_geometry.image_height = 0
+      return
 
     self._pil_img = pil_img.resize((new_width, new_height))
+    self._display_geometry.image_width = new_width
+    self._display_geometry.image_height = new_height
 
   def _display_img(self) -> None:
     """Displays the image in the center of the image canvas."""
@@ -1171,8 +1091,8 @@ class CameraConfig(tk.Tk):
     self.log(logging.DEBUG, "Displaying the image")
 
     self._image_tk = ImageTk.PhotoImage(self._pil_img)
-    self._img_canvas.create_image(int(self._img_canvas.winfo_width() / 2),
-                                  int(self._img_canvas.winfo_height() / 2),
+    self._img_canvas.create_image(int(self._display_geometry.width / 2),
+                                  int(self._display_geometry.height / 2),
                                   anchor='center', image=self._image_tk)
 
   def _on_img_resize(self, _: tk.Event | None = None) -> None:
@@ -1181,6 +1101,7 @@ class CameraConfig(tk.Tk):
 
     self.log(logging.DEBUG, "The image canvas was resized")
 
+    self._read_image_geometry()
     self._draw_overlay()
 
     self._resize_img()
@@ -1213,7 +1134,7 @@ class CameraConfig(tk.Tk):
 
       # Sending the image to the histogram process
       self.log(logging.DEBUG, "Sending image for histogram calculation")
-      self._img_in.put_nowait((hist_img, self._auto_range.get(),
+      self._img_in.put_nowait((hist_img, self._display_state.auto_range,
                                self._low_thresh, self._high_thresh))
 
     # Always check for completed output, including while the process is already
@@ -1234,10 +1155,11 @@ class CameraConfig(tk.Tk):
     self.log(logging.DEBUG, "Resizing the histogram to fit in the window")
 
     pil_hist = Image.fromarray(self._hist)
-    hist_canvas_width = self._hist_canvas.winfo_width()
-    hist_canvas_height = self._hist_canvas.winfo_height()
+    if self._hist_width <= 0 or self._hist_height <= 0:
+      self._pil_hist = None
+      return
 
-    self._pil_hist = pil_hist.resize((hist_canvas_width, hist_canvas_height))
+    self._pil_hist = pil_hist.resize((self._hist_width, self._hist_height))
 
   def _display_hist(self) -> None:
     """Displays the histogram image in the GUI."""
@@ -1248,14 +1170,15 @@ class CameraConfig(tk.Tk):
     self.log(logging.DEBUG, "Displaying the histogram")
 
     self._hist_tk = ImageTk.PhotoImage(self._pil_hist)
-    self._hist_canvas.create_image(int(self._hist_canvas.winfo_width() / 2),
-                                   int(self._hist_canvas.winfo_height() / 2),
+    self._hist_canvas.create_image(int(self._hist_width / 2),
+                                   int(self._hist_height / 2),
                                    anchor='center', image=self._hist_tk)
 
-  def _on_hist_resize(self, _: tk.Event) -> None:
+  def _on_hist_resize(self, _: tk.Event | None = None) -> None:
     """Resizes the histogram and updates the display when the GUI has been
     resized."""
 
+    self._read_histogram_geometry()
     self._resize_hist()
     self._display_hist()
     self.update()
@@ -1305,6 +1228,8 @@ class CameraConfig(tk.Tk):
       self.shape = img.shape
 
     self._cast_img(img)
+    self._read_image_geometry()
+    self._read_histogram_geometry()
     self._draw_overlay()
     self._resize_img()
 
@@ -1315,6 +1240,7 @@ class CameraConfig(tk.Tk):
     self._display_hist()
 
     self._update_pixel_value()
+    self._sync_indicator_labels()
 
     self.update()
 

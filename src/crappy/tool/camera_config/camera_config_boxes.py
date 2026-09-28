@@ -72,10 +72,10 @@ class CameraConfigBoxes(CameraConfig):
 
     # Determining the number of lines to draw
     x_top, x_bottom, y_left, y_right = box.sorted()
-    canvas_width = self._img_canvas.winfo_width()
-    canvas_height = self._img_canvas.winfo_height()
-    max_fact = max(self._img.shape[0] // canvas_height,
-                   self._img.shape[1] // canvas_width, 1)
+    display_width = max(self._display_geometry.width, 1)
+    display_height = max(self._display_geometry.height, 1)
+    max_fact = max(self._img.shape[0] // display_height,
+                   self._img.shape[1] // display_width, 1)
 
     try:
       for line in (line for i in range(max_fact) for line in
