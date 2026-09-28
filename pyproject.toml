@@ -12,7 +12,7 @@ license-files = ["LICENSE"]
 keywords = ["control", "command", "acquisition", "multiprocessing"]
 dependencies = ["numpy>=2.0.0"]
 requires-python = ">=3.10"
-authors = [{name = "LaMcube", email = "antoine.weisrock1@centralelille.fr"}]
+authors = [{name = "LaMcube", email = "antoine.weisrock@gmail.com"}]
 maintainers = [{name = "Antoine Weisrock", email = "antoine.weisrock@gmail.com"}]
 classifiers = ["Development Status :: 4 - Beta",
                "Intended Audience :: Science/Research",
