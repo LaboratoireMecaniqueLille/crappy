@@ -90,7 +90,7 @@ Camera Settings
 Camera Setting
 """"""""""""""
 .. autoclass:: crappy.camera.meta_camera.camera_setting.CameraSetting
-   :members: value, log, reload
+   :members: value, revision, allow_reload_override, log, reload
    :special-members: __init__
 
 Camera Bool Setting
