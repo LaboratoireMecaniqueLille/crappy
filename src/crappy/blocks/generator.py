@@ -33,6 +33,13 @@ class Generator(Block):
   used by a :class:`~crappy.blocks.generator_path.meta_path.path.Path`. The
   most common use of this feature is to have the stop condition of a Path
   depend on the received values of a label.
+
+  Choose the Generator when one waveform or setpoint can be described as a
+  sequence of Paths that always run in the given order. For a procedure that
+  needs several coordinated output labels or can branch between phases and
+  return to earlier ones, use the :class:`~crappy.blocks.Scheduler` Block
+  instead. Its States define both the output values and the possible
+  destinations of each transition.
   
   .. versionadded:: 1.4.0
   """
