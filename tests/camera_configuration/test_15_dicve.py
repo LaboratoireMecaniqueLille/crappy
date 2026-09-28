@@ -29,6 +29,7 @@ class TestDICVE(ConfigurationWindowTestBase):
 
     self._config._testing = True
     self._config._patch_size.value = 20
+    self._config._sync_setting_controls()
     self.start_configuration()
 
   def customTearDown(self) -> None:
@@ -36,6 +37,25 @@ class TestDICVE(ConfigurationWindowTestBase):
     can exit even in case of a bug."""
 
     self._config._spots.spot_1 = Box(0, 100, 0, 100)
+
+  def test_patch_size_uses_common_apply_path(self) -> None:
+    """A local setting is applied before camera settings by the manager."""
+
+    patch_size = self._config._patch_size
+    self.assertIs(self._config._setting_manager.settings[0], patch_size)
+    observed_patch_sizes = []
+    self._camera.add_bool_setting(
+      'capture_patch_size', setter=lambda _: observed_patch_sizes.append(
+        patch_size.value))
+    camera_setting = self._camera.settings['capture_patch_size']
+    self._config._add_bool_setting(camera_setting)
+    self._config._setting_controls[patch_size].widget.set(30)
+    self._config._setting_controls[camera_setting].widget.invoke()
+
+    self._config._update_button.invoke()
+
+    self.assertEqual(patch_size.value, 30)
+    self.assertEqual(observed_patch_sizes, [30])
 
   def test_dicve(self) -> None:
     """Tests whether the patches are correctly defined in several scenarios."""

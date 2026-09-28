@@ -2,6 +2,7 @@
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraParams)
+from crappy.camera.meta_camera.camera_setting import CameraScaleSetting
 
 
 class TestSetParams(ConfigurationWindowTestBase):
@@ -245,3 +246,42 @@ class TestSetParams(ConfigurationWindowTestBase):
     self.assertEqual(choice_control.variable.get(), 'choice_4')
     self.assertEqual(scale_control.variable.get(), 0.5)
     self.assertAlmostEqual(scale_control.widget.cget('resolution'), 0.001)
+
+  def test_unrelated_pending_edit_survives_one_setting_apply(self) -> None:
+    """Applying one control does not replace a pending edit in another."""
+
+    choice = self._camera.settings['choice_setting']
+    self.setting_control('choice_setting').widget[2].invoke()
+    self.setting_control('scale_int_setting').widget.set(4)
+
+    self._config._apply_setting(self._camera.settings['scale_int_setting'])
+
+    self.assertEqual(choice.value, 'choice_1')
+    self.assertEqual(self.setting_control('choice_setting').variable.get(),
+                     'choice_3')
+
+  def test_control_shows_effective_setter_readback(self) -> None:
+    """A camera that rejects a request leaves its actual value in the UI."""
+
+    setting = self._camera.settings['scale_int_setting']
+    setting._setter = lambda value: setattr(
+      setting, '_value_no_getter', min(value, 2))
+    control = self.setting_control('scale_int_setting')
+    control.widget.set(4)
+
+    self._config._update_button.invoke()
+
+    self.assertEqual(setting.value, 2)
+    self.assertEqual(control.variable.get(), 2)
+
+  def test_manually_added_local_setting_is_applied(self) -> None:
+    """Existing subclasses can still add a local setting's Tk control."""
+
+    local = CameraScaleSetting('extra local', 0, 10, default=1)
+    self._config._add_slider_setting(local)
+    self.assertIn(local, self._config._setting_manager.local_settings)
+
+    self._config._setting_controls[local].widget.set(5)
+    self._config._update_button.invoke()
+
+    self.assertEqual(local.value, 5)
