@@ -23,7 +23,7 @@ from dataclasses import replace
 from ...links import Link, link_graph, GraphStructureError
 from ..._global import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
-                        CameraPrepareError, CameraRuntimeError,
+                        CameraPrepareError, CameraRuntimeError, SchedulerStop,
                         CameraConfigError, CrappyFail, DefinitionError)
 
 
@@ -1191,6 +1191,10 @@ class Block(Process, ABC):
     # A Generator Block finished its Path
     except GeneratorStop:
       self.log(logging.WARNING, f"Generator Path exhausted, stopping the "
+                                f"Block")
+    # A Scheduler Block reached its end State
+    except SchedulerStop:
+      self.log(logging.WARNING, f"Scheduler reached end State, stopping the "
                                 f"Block")
     # A FileReader Camera object has no more file to read from
     except ReaderStop:
