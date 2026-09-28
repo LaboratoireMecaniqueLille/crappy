@@ -8,6 +8,7 @@ from time import time, sleep
 import importlib.resources
 from io import BytesIO
 import logging
+from dataclasses import dataclass
 from multiprocessing import current_process, Event, Queue
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
@@ -15,8 +16,8 @@ from typing import Any
 from collections.abc import Callable
 
 from .config_tools import Zoom, HistogramProcess
-from ...camera.meta_camera.camera_setting import CameraBoolSetting, \
-  CameraChoiceSetting, CameraScaleSetting
+from ...camera.meta_camera.camera_setting import (
+  CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
 from ...camera.meta_camera import Camera
 from ..._global import OptionalModule
 
@@ -25,6 +26,27 @@ try:
 except (ModuleNotFoundError, ImportError):
   ImageTk = OptionalModule("pillow")
   Image = OptionalModule("pillow")
+
+
+@dataclass
+class _TkSettingControl:
+  """Tk editor state for one setting, owned by the configuration window.
+
+  Attributes:
+    variable: The value currently requested by the user in the Tk control.
+      It may differ from the effective ``setting.value`` until Apply.
+    widget: The checkbutton or scale, or the radio buttons for a choice.
+    revision: The setting revision last copied into this control. This is not
+      a count of user edits, comparing it with ``setting.revision`` lets the
+      view avoid overwriting an unrelated pending edit.
+    frame: The parent frame for choice radio buttons, needed when ``reload()``
+      changes the number of choices. ``None`` for other setting types.
+  """
+
+  variable: tk.Variable
+  widget: tk.Widget | list[tk.Radiobutton]
+  revision: int
+  frame: tk.Frame | None = None
 
 
 class CameraConfig(tk.Tk):
@@ -93,6 +115,11 @@ class CameraConfig(tk.Tk):
 
     super().__init__()
     self._camera = camera
+    self._setting_controls: dict[CameraSetting, _TkSettingControl] = dict()
+    # Now that the configuration window is started, allow overriding setting
+    # values dynamically through reload()
+    for setting in camera.settings.values():
+      setting.allow_reload_override()
     self.shape: tuple[int, int] | tuple[int, int, int] | None = None
     self.dtype = None
     self._logger: logging.Logger | None = None
@@ -294,6 +321,9 @@ class CameraConfig(tk.Tk):
     if not self._testing:
       # Aiming for max 30 FPS, no need for more updating
       self._upd_sched_obj = self.after(33, self._upd_sched)
+
+    # Camera drivers may have reloaded settings during acquisition.
+    self._sync_setting_controls()
 
     # Updating the interface
     self.update()
@@ -753,14 +783,16 @@ class CameraConfig(tk.Tk):
 
     self.log(logging.DEBUG, f"Adding the boolean setting {cam_set.name}")
 
-    cam_set.tk_var = tk.BooleanVar(value=cam_set.value)
-    cam_set.tk_obj = tk.Checkbutton(self._canvas_frame,
-                                    text=cam_set.name,
-                                    variable=cam_set.tk_var,
-                                    command=self._auto_apply_settings)
+    variable = tk.BooleanVar(value=cam_set.value)
+    widget = tk.Checkbutton(self._canvas_frame,
+                            text=cam_set.name,
+                            variable=variable,
+                            command=self._auto_apply_settings)
 
-    cam_set.tk_obj.pack(anchor='w', side='top', expand=False, fill='none',
-                        padx=5, pady=2)
+    widget.pack(anchor='w', side='top', expand=False, fill='none',
+                padx=5, pady=2)
+    self._setting_controls[cam_set] = _TkSettingControl(
+      variable, widget, cam_set.revision)
 
   def _add_slider_setting(self, cam_set: CameraScaleSetting) -> None:
     """Adds a setting represented by a scale bar."""
@@ -769,55 +801,96 @@ class CameraConfig(tk.Tk):
 
     # The scale bar is slightly different if the setting type is int or float
     if cam_set.type == int:
-      cam_set.tk_var = tk.IntVar(value=int(cam_set.value))
+      variable = tk.IntVar(value=int(cam_set.value))
     else:
-      cam_set.tk_var = tk.DoubleVar(value=cam_set.value)
+      variable = tk.DoubleVar(value=cam_set.value)
 
-    # Shouldn't use None in the Scale widget, defining default step instead
-    if cam_set.step is None:
-      if cam_set.type == int:
-        cam_set.step = 1
-        self.log(logging.WARNING, f"Set undefined step value of slider "
-                                  f"setting {cam_set.name} to 1")
-      else:
-        cam_set.step = float((cam_set.highest - cam_set.lowest) / 1000)
-        self.log(logging.WARNING, f"Set undefined step value of slider "
-                                  f"setting {cam_set.name} to {cam_set.step}")
+    widget = tk.Scale(self._canvas_frame,
+                      label=f'{cam_set.name} :',
+                      variable=variable,
+                      resolution=cam_set.step,
+                      orient='horizontal',
+                      from_=cam_set.lowest,
+                      to=cam_set.highest)
 
-    cam_set.tk_obj = tk.Scale(self._canvas_frame,
-                              label=f'{cam_set.name} :',
-                              variable=cam_set.tk_var,
-                              resolution=cam_set.step,
-                              orient='horizontal',
-                              from_=cam_set.lowest,
-                              to=cam_set.highest)
+    widget.bind("<ButtonRelease-1>", self._auto_apply_settings)
 
-    cam_set.tk_obj.bind("<ButtonRelease-1>", self._auto_apply_settings)
-
-    cam_set.tk_obj.pack(anchor='center', side='top', expand=False,
-                        fill='x', padx=5, pady=2)
+    widget.pack(anchor='center', side='top', expand=False,
+                fill='x', padx=5, pady=2)
+    self._setting_controls[cam_set] = _TkSettingControl(
+      variable, widget, cam_set.revision)
 
   def _add_choice_setting(self, cam_set: CameraChoiceSetting) -> None:
     """Adds a setting represented by a list of radio buttons."""
 
     self.log(logging.DEBUG, f"Adding the choice setting {cam_set.name}")
 
-    cam_set.tk_var = tk.StringVar(value=cam_set.value)
-    label = tk.Label(self._canvas_frame, text=f'{cam_set.name} :')
+    variable = tk.StringVar(value=cam_set.value)
+    frame = tk.Frame(self._canvas_frame)
+    frame.pack(anchor='w', side='top', expand=False, fill='x')
+    label = tk.Label(frame, text=f'{cam_set.name} :')
     label.pack(anchor='w', side='top', expand=False, fill='none',
                padx=12, pady=2)
 
+    buttons = []
     for value in cam_set.choices:
-      tk_obj = tk.Radiobutton(self._canvas_frame,
+      widget = tk.Radiobutton(frame,
                               text=value,
-                              variable=cam_set.tk_var,
+                              variable=variable,
                               value=value,
                               command=self._auto_apply_settings)
 
-      tk_obj.pack(anchor='w', side='top', expand=False,
+      widget.pack(anchor='w', side='top', expand=False,
                   fill='none', padx=5, pady=2)
+      buttons.append(widget)
 
-      cam_set.tk_obj.append(tk_obj)
+    self._setting_controls[cam_set] = _TkSettingControl(
+      variable, buttons, cam_set.revision, frame)
+
+  def _sync_setting_controls(self) -> None:
+    """Copy changed setting values and metadata into their Tk controls.
+
+    This is model-to-view synchronization, not the path that applies edits.
+    It runs after each setting write and during the update loop so a setter
+    or camera acquisition can reload another setting. An unchanged revision
+    leaves that control alone, preserving a pending user edit before Apply.
+    """
+
+    for setting, control in self._setting_controls.items():
+      if control.revision == setting.revision:
+        continue
+
+      if isinstance(setting, CameraScaleSetting):
+        widget = control.widget
+        if not isinstance(widget, tk.Scale):
+          raise RuntimeError("Scale setting has no scale control")
+        if setting.type is int and not isinstance(control.variable, tk.IntVar):
+          control.variable = tk.IntVar()
+          widget.configure(variable=control.variable)
+        elif (setting.type is float and
+              not isinstance(control.variable, tk.DoubleVar)):
+          control.variable = tk.DoubleVar()
+          widget.configure(variable=control.variable)
+        widget.configure(from_=setting.lowest, to=setting.highest,
+                         resolution=setting.step)
+
+      elif isinstance(setting, CameraChoiceSetting):
+        buttons = control.widget
+        if not isinstance(buttons, list) or control.frame is None:
+          raise RuntimeError("Choice setting has no radio controls")
+        for i, choice in enumerate(setting.choices):
+          if i >= len(buttons):
+            button = tk.Radiobutton(control.frame, variable=control.variable,
+                                    command=self._auto_apply_settings)
+            button.pack(anchor='w', side='top', expand=False,
+                        fill='none', padx=5, pady=2)
+            buttons.append(button)
+          buttons[i].configure(value=choice, text=choice, state='normal')
+        for button in buttons[len(setting.choices):]:
+          button.configure(value='', text='', state='disabled')
+
+      control.variable.set(setting.value)
+      control.revision = setting.revision
 
   def _set_variables(self) -> None:
     """Sets the text and numeric variables holding information about the
@@ -925,12 +998,24 @@ class CameraConfig(tk.Tk):
     button, and checks that the settings have been correctly set."""
 
     for setting in self._camera.settings.values():
-      # Applying all the settings that differ from the read value
-      if setting.value != setting.tk_var.get():
-        setting.value = setting.tk_var.get()
+      self._apply_setting(setting)
 
       # Update graphics to reflect changes that could have happened
       self.update()
+
+  def _apply_setting(self, setting: CameraSetting) -> None:
+    """Write one requested value to a setting, then show effective values."""
+
+    self._sync_setting_controls()
+    control = self._setting_controls.get(setting)
+    if control is None:
+      return
+
+    requested = control.variable.get()
+    if setting.value != requested:
+      # CameraSetting.value calls the camera setter when one is provided
+      setting.value = requested
+    self._sync_setting_controls()
 
   def _auto_apply_settings(self, *_: tk.Event):
     """Applies the settings without clicking on the Apply Settings

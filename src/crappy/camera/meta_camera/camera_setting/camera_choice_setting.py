@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from collections.abc import Callable
-from itertools import zip_longest
 import logging
 
 from .camera_setting import CameraSetting
@@ -53,20 +52,11 @@ class CameraChoiceSetting(CameraSetting):
 
     super().__init__(name, getter, setter, default)
 
-    self.tk_obj = list()
-
   def reload(self,
              choices: tuple[str, ...],
              value: str | None = None,
              default: str | None = None) -> None:
-    """Allows modifying the choices of the radio buttons once they have been
-    instantiated.
-
-    Note:
-      As the layout of the GUI is already fixed, the number of displayed
-      options cannot vary. It is thus not possible to propose more choices than
-      those initially proposed. Reversely, if fewer new options ar proposed
-      then some radio buttons will be disabled.
+    """Allows modifying the available choices after instantiation.
 
     Args:
       choices: The new possible choices for the setting.
@@ -113,29 +103,10 @@ class CameraChoiceSetting(CameraSetting):
       value = self.default
 
     self.choices = choices
-
-    # Updating the radio buttons and the setting value
-    if self.tk_obj:
-      for button, choice in zip_longest(self.tk_obj, choices):
-        # If there are more choices than buttons, ignoring the extra choices
-        if button is None:
-          self.log(logging.WARNING,
-                   f"Too many choices given when reloading the {self.name} "
-                   f"setting, ignoring the extra ones")
-          break
-        # If there are more buttons than choices, disabling the extra buttons
-        if choice is None:
-          self.log(logging.WARNING,
-                   f"Too few choices given when reloading the {self.name} "
-                   f"setting, disabling the extra buttons")
-          button.configure(state='disabled', value='', text='')
-          continue
-
-        # Updating the text and value of the button, and enabling it
-        button.configure(value=choice, text=choice, state='normal')
+    self._mark_changed()
 
     if value is not None:
-      if self.tk_var is None:
+      if not self._reload_override_allowed:
         # If the setting was never set, not setting it yet but tweaking its
         # default so that it will only be set to the right value when expected
         if not self.was_set:
@@ -152,7 +123,7 @@ class CameraChoiceSetting(CameraSetting):
         # default
         else:
           self.value = value
-      # Once in the graphical interface it is assumed that the user does not
-      # want strict control over settings, always setting
+      # During interactive configuration, dependent reloads may replace
+      # values originally supplied as camera kwargs
       else:
         self.value = value

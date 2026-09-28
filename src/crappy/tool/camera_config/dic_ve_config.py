@@ -129,9 +129,7 @@ class DICVEConfig(CameraConfigBoxes):
 
     if self._patch_size is None:
       raise RuntimeError("The patch size parameter was never instantiated")
-    if self._patch_size.value != self._patch_size.tk_var.get():
-      self._patch_size.value = self._patch_size.tk_var.get()
-    self._patch_size.tk_var.set(self._patch_size.value)
+    self._apply_setting(self._patch_size)
 
     super()._update_settings()
 
