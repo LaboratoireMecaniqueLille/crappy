@@ -10,7 +10,8 @@ import numpy as np
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box, SpotsBoxes
 from ...camera.meta_camera import Camera
-from ...camera.meta_camera.camera_setting import CameraScaleSetting
+from ...camera.meta_camera.camera_setting import (CameraSetting,
+                                                  CameraScaleSetting)
 from ..._global import OptionalModule
 
 try:
@@ -111,27 +112,12 @@ class DICVEConfig(CameraConfigBoxes):
 
     return self._spots,
 
-  def _add_settings(self) -> None:
-    """Same as in the parent class except it also adds a Path size setting to
-    the list of possible settings."""
+  def _create_local_settings(self) -> tuple[CameraSetting, ...]:
+    """Provide the patch-size setting before the camera settings."""
 
     self._patch_size = CameraScaleSetting("Patch size (px)", 2, 1024,
                                           default=128)
-    if self._patch_size is None:
-      raise RuntimeError("The patch size parameter was never instantiated")
-    self._add_slider_setting(self._patch_size)
-
-    super()._add_settings()
-
-  def _update_settings(self) -> None:
-    """Same as in the parent class except it also updates the Path size setting
-    in addition to all the other settings."""
-
-    if self._patch_size is None:
-      raise RuntimeError("The patch size parameter was never instantiated")
-    self._apply_setting(self._patch_size)
-
-    super()._update_settings()
+    return self._patch_size,
 
   def _set_bindings(self) -> None:
     """Binds the left mouse button click to drawing the patches on which to

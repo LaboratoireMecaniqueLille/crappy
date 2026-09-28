@@ -13,9 +13,10 @@ from multiprocessing import current_process, Event, Queue
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
 from typing import Any
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 
 from .config_tools import Zoom, HistogramProcess
+from .setting_manager import SettingManager
 from ...camera.meta_camera.camera_setting import (
   CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
 from ...camera.meta_camera import Camera
@@ -116,10 +117,8 @@ class CameraConfig(tk.Tk):
     super().__init__()
     self._camera = camera
     self._setting_controls: dict[CameraSetting, _TkSettingControl] = dict()
-    # Now that the configuration window is started, allow overriding setting
-    # values dynamically through reload()
-    for setting in camera.settings.values():
-      setting.allow_reload_override()
+    self._setting_manager = SettingManager(camera.settings,
+                                           self._create_local_settings())
     self.shape: tuple[int, int] | tuple[int, int, int] | None = None
     self.dtype = None
     self._logger: logging.Logger | None = None
@@ -761,22 +760,48 @@ class CameraConfig(tk.Tk):
 
     return True
 
+  def _create_local_settings(self) -> tuple[CameraSetting, ...]:
+    """Create configurator-specific settings before building backend controls.
+
+    Subclasses can return local settings here. They are applied before camera
+    settings and are displayed before the sorted camera controls.
+    """
+
+    return tuple()
+
   def _add_settings(self) -> None:
     """Adds the settings of the camera to the GUI."""
 
     self.log(logging.DEBUG, "Adding the camera settings to the interface")
+
+    for setting in self._setting_manager.local_settings:
+      self._add_setting_control(setting)
 
     # First, sort the settings by type for a nicer display
     sort_sets = sorted(self._camera.settings.values(),
                        key=lambda setting: setting.type.__name__)
 
     for cam_set in sort_sets:
-      if isinstance(cam_set, CameraBoolSetting):
-        self._add_bool_setting(cam_set)
-      elif isinstance(cam_set, CameraScaleSetting):
-        self._add_slider_setting(cam_set)
-      elif isinstance(cam_set, CameraChoiceSetting):
-        self._add_choice_setting(cam_set)
+      self._add_setting_control(cam_set)
+
+  def _add_setting_control(self, setting: CameraSetting) -> None:
+    """Create a Tk control for a supported camera or local setting."""
+
+    if isinstance(setting, CameraBoolSetting):
+      self._add_bool_setting(setting)
+    elif isinstance(setting, CameraScaleSetting):
+      self._add_slider_setting(setting)
+    elif isinstance(setting, CameraChoiceSetting):
+      self._add_choice_setting(setting)
+
+  def _register_setting_control(self,
+                                setting: CameraSetting,
+                                control: _TkSettingControl) -> None:
+    """Own a Tk control, retaining support for manually added local
+    settings."""
+
+    self._setting_manager.register_local(setting)
+    self._setting_controls[setting] = control
 
   def _add_bool_setting(self, cam_set: CameraBoolSetting) -> None:
     """Adds a setting represented by a checkbutton."""
@@ -791,8 +816,8 @@ class CameraConfig(tk.Tk):
 
     widget.pack(anchor='w', side='top', expand=False, fill='none',
                 padx=5, pady=2)
-    self._setting_controls[cam_set] = _TkSettingControl(
-      variable, widget, cam_set.revision)
+    self._register_setting_control(cam_set, _TkSettingControl(
+      variable, widget, cam_set.revision))
 
   def _add_slider_setting(self, cam_set: CameraScaleSetting) -> None:
     """Adds a setting represented by a scale bar."""
@@ -817,8 +842,8 @@ class CameraConfig(tk.Tk):
 
     widget.pack(anchor='center', side='top', expand=False,
                 fill='x', padx=5, pady=2)
-    self._setting_controls[cam_set] = _TkSettingControl(
-      variable, widget, cam_set.revision)
+    self._register_setting_control(cam_set, _TkSettingControl(
+      variable, widget, cam_set.revision))
 
   def _add_choice_setting(self, cam_set: CameraChoiceSetting) -> None:
     """Adds a setting represented by a list of radio buttons."""
@@ -844,19 +869,25 @@ class CameraConfig(tk.Tk):
                   fill='none', padx=5, pady=2)
       buttons.append(widget)
 
-    self._setting_controls[cam_set] = _TkSettingControl(
-      variable, buttons, cam_set.revision, frame)
+    self._register_setting_control(cam_set, _TkSettingControl(
+      variable, buttons, cam_set.revision, frame))
 
-  def _sync_setting_controls(self) -> None:
+  def _sync_setting_controls(self,
+                             settings: Iterable[CameraSetting] | None = None
+                             ) -> None:
     """Copy changed setting values and metadata into their Tk controls.
 
     This is model-to-view synchronization, not the path that applies edits.
     It runs after each setting write and during the update loop so a setter
     or camera acquisition can reload another setting. An unchanged revision
     leaves that control alone, preserving a pending user edit before Apply.
+    If ``settings`` is given, only those settings are checked.
     """
 
-    for setting, control in self._setting_controls.items():
+    for setting in (self._setting_controls if settings is None else settings):
+      control = self._setting_controls.get(setting)
+      if control is None:
+        continue
       if control.revision == setting.revision:
         continue
 
@@ -994,28 +1025,30 @@ class CameraConfig(tk.Tk):
       self._update_button['state'] = 'normal'
 
   def _update_settings(self) -> None:
-    """Tries to update the settings values upon clicking on the Apply Settings
-    button, and checks that the settings have been correctly set."""
+    """Apply local settings, then camera settings, through the shared manager.
 
-    for setting in self._camera.settings.values():
+    The Apply Settings button and auto-apply both enter here. The Tk backend
+    supplies one requested value at a time so a dependent reload can refresh
+    a later control before its value is read.
+    """
+
+    for setting in self._setting_manager.settings:
       self._apply_setting(setting)
 
       # Update graphics to reflect changes that could have happened
       self.update()
 
   def _apply_setting(self, setting: CameraSetting) -> None:
-    """Write one requested value to a setting, then show effective values."""
+    """Read one Tk control, delegate its write, then refresh changed
+    controls."""
 
     self._sync_setting_controls()
     control = self._setting_controls.get(setting)
     if control is None:
       return
 
-    requested = control.variable.get()
-    if setting.value != requested:
-      # CameraSetting.value calls the camera setter when one is provided
-      setting.value = requested
-    self._sync_setting_controls()
+    result = self._setting_manager.apply(setting, control.variable.get())
+    self._sync_setting_controls(result.changed)
 
   def _auto_apply_settings(self, *_: tk.Event):
     """Applies the settings without clicking on the Apply Settings
