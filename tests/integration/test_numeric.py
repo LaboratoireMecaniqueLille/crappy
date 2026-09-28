@@ -58,6 +58,35 @@ class TestNumericIntegration(IntegrationTestBase):
         with self.subTest(time=time_value, signal=signal):
           self.assertAlmostEqual(signal, 1 + 2 * time_value, delta=0.02)
 
+  def test_scheduler_recorder_pipeline(self) -> None:
+    """Checks State changes, multiple labels and the final output."""
+
+    with self.run_scenario('scheduler_recorder') as output_dir:
+      rows = self._read_csv(output_dir,
+                            'scheduled.csv',
+                            ['state', 'signal', 'enabled'])
+
+      phases = [row['state'] for row in rows]
+      self.assertEqual(phases[0], 'idle')
+      self.assertEqual(phases[-1], 'End')
+      self.assertIn('drive', phases)
+      phase_order = {'idle': 0, 'drive': 1, 'End': 2}
+      self.assertEqual(phases, sorted(phases, key=phase_order.__getitem__))
+
+      idle = [row for row in rows if row['state'] == 'idle']
+      drive = [row for row in rows if row['state'] == 'drive']
+      end = [row for row in rows if row['state'] == 'End']
+      self.assertTrue(all(row['signal'] == '0' and
+                          row['enabled'] == 'False' for row in idle))
+      self.assertGreaterEqual(len(drive), 2)
+      self.assertTrue(all(row['enabled'] == 'True' for row in drive))
+      self.assertTrue(all(isfinite(float(row['signal'])) for row in drive))
+      self.assertTrue(all(float(a['signal']) < float(b['signal'])
+                          for a, b in zip(drive, drive[1:])))
+      self.assertEqual(len(end), 1)
+      self.assertEqual((end[0]['signal'], end[0]['enabled']),
+                       ('0', 'False'))
+
   def test_multiplexer_recorder_pipeline(self) -> None:
     """Checks two asynchronous signals are multiplexed and recorded."""
 
