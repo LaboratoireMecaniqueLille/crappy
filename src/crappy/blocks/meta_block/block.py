@@ -1699,7 +1699,8 @@ class Block(Process, ABC):
 
     # Sending the data to the downstream Blocks
     for link in self.outputs:
-      self.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
+      self.log(logging.DEBUG, f"Sending data for labels "
+                              f"{', '.join(data.keys())} to Link {link.name}")
       link.send(data)
 
   def data_available(self) -> bool:
