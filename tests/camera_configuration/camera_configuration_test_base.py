@@ -240,6 +240,11 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     self._config._upd_var_sched()
     self._config._upd_sched()
 
+  def setting_control(self, name: str):
+    """Return the Tk control owned by this configuration window."""
+
+    return self._config._setting_controls[self._camera.settings[name]]
+
   def wait_until(self,
                  predicate: Callable[[], bool],
                  timeout: float = 3.0) -> bool:

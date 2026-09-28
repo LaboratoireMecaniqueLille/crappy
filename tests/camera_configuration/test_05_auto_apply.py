@@ -22,21 +22,21 @@ class TestAutoApply(ConfigurationWindowTestBase):
     the auto-apply feature."""
 
     # Necessary here as the callbacks are normally bound to mouse release
-    self._camera.settings['scale_int_setting'].tk_obj.configure(
+    self.setting_control('scale_int_setting').widget.configure(
         command=self._config._auto_apply_settings)
-    self._camera.settings['scale_float_setting'].tk_obj.configure(
+    self.setting_control('scale_float_setting').widget.configure(
         command=self._config._auto_apply_settings)
     self._config.update()
 
     # Checking that the default values were correctly passed to tkinter objects
     self.assertTrue(
-        self._camera.settings['bool_setting'].tk_var.get())
+        self.setting_control('bool_setting').variable.get())
     self.assertEqual(
-        self._camera.settings['scale_int_setting'].tk_var.get(), 0)
+        self.setting_control('scale_int_setting').variable.get(), 0)
     self.assertEqual(
-        self._camera.settings['scale_float_setting'].tk_var.get(), 0.)
+        self.setting_control('scale_float_setting').variable.get(), 0.)
     self.assertEqual(
-        self._camera.settings['choice_setting'].tk_var.get(), 'choice_1')
+        self.setting_control('choice_setting').variable.get(), 'choice_1')
 
     # The camera settings should have the same values
     self.assertTrue(self._camera.settings['bool_setting'].value)
@@ -59,39 +59,39 @@ class TestAutoApply(ConfigurationWindowTestBase):
 
     # Changing the values of all the parameters in the interface should be
     # automatically reflected on both the tkinter object and the camera setting
-    self._camera.settings['bool_setting'].tk_obj.invoke()
+    self.setting_control('bool_setting').widget.invoke()
     self.assertFalse(self._camera.settings['bool_setting'].value)
-    self.assertFalse(self._camera.settings['bool_setting'].tk_var.get())
+    self.assertFalse(self.setting_control('bool_setting').variable.get())
 
     # Int scale setting
-    self._camera.settings['scale_int_setting'].tk_obj.set(4)
+    self.setting_control('scale_int_setting').widget.set(4)
     self.assertEqual(self._camera.settings['scale_int_setting'].value, 0)
     self.assertEqual(
-        self._camera.settings['scale_int_setting'].tk_var.get(), 4)
+        self.setting_control('scale_int_setting').variable.get(), 4)
     # For sliders, an update is necessary for the settings to be applied
     self._config.update()
     self.assertEqual(self._camera.settings['scale_int_setting'].value, 4)
 
     # Float scale setting
-    self._camera.settings['scale_float_setting'].tk_obj.set(4.1)
+    self.setting_control('scale_float_setting').widget.set(4.1)
     self.assertEqual(self._camera.settings['scale_float_setting'].value, 0.0)
     self.assertEqual(
-        self._camera.settings['scale_float_setting'].tk_var.get(), 4.1)
+        self.setting_control('scale_float_setting').variable.get(), 4.1)
     # For sliders, an update is necessary for the settings to be applied
     self._config.update()
     self.assertEqual(self._camera.settings['scale_float_setting'].value, 4.1)
 
     # Choice setting
-    self._camera.settings['choice_setting'].tk_obj[2].invoke()
+    self.setting_control('choice_setting').widget[2].invoke()
     self.assertEqual(self._camera.settings['choice_setting'].value, 'choice_3')
     self.assertEqual(
-        self._camera.settings['choice_setting'].tk_var.get(), 'choice_3')
+        self.setting_control('choice_setting').variable.get(), 'choice_3')
 
     # The values displayed in the interface should also have been updated
     self.assertEqual(
-        self._camera.settings['scale_int_setting'].tk_obj.get(), 4)
+        self.setting_control('scale_int_setting').widget.get(), 4)
     self.assertEqual(
-        self._camera.settings['scale_float_setting'].tk_obj.get(), 4.1)
+        self.setting_control('scale_float_setting').widget.get(), 4.1)
 
     # Unchecking the auto apply button
     self._config._auto_apply_button.invoke()
@@ -101,16 +101,16 @@ class TestAutoApply(ConfigurationWindowTestBase):
     self.assertEqual(self._config._update_button.cget('state'), 'normal')
 
     # Updating the values of the parameters in the interface again
-    self._camera.settings['bool_setting'].tk_obj.invoke()
-    self._camera.settings['scale_int_setting'].tk_obj.set(6)
-    self._camera.settings['scale_float_setting'].tk_obj.set(3.5)
-    self._camera.settings['choice_setting'].tk_obj[1].invoke()
+    self.setting_control('bool_setting').widget.invoke()
+    self.setting_control('scale_int_setting').widget.set(6)
+    self.setting_control('scale_float_setting').widget.set(3.5)
+    self.setting_control('choice_setting').widget[1].invoke()
 
     # The values displayed in the interface should have been updated
     self.assertEqual(
-        self._camera.settings['scale_int_setting'].tk_obj.get(), 6)
+        self.setting_control('scale_int_setting').widget.get(), 6)
     self.assertEqual(
-        self._camera.settings['scale_float_setting'].tk_obj.get(), 3.5)
+        self.setting_control('scale_float_setting').widget.get(), 3.5)
 
     # But not the values of the settings
     self.assertFalse(self._camera.settings['bool_setting'].value)
