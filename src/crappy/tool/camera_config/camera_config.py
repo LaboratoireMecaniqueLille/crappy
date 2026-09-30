@@ -4,8 +4,9 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter.messagebox import showerror
 from platform import system
+from math import ceil
 import numpy as np
-from time import time, sleep
+from time import monotonic, time
 import importlib.resources
 from io import BytesIO
 import logging
@@ -198,11 +199,11 @@ class CameraConfig(tk.Tk):
     self._move_y: float | None = None
     self._n_loops: int = 0
     self._last_upd_t: float | None = None
+    self._next_acq_t: float = -float('inf')
     self._max_freq: float | None = max_freq
     self._got_first_img: bool = False
 
     # Keeping track of the scheduled objects to be able to cancel them later
-    self._upd_sched_obj: str | None = None
     self._img_acq_sched_obj: str | None = None
     self._upd_var_sched_obj: str | None = None
 
@@ -253,15 +254,12 @@ class CameraConfig(tk.Tk):
 
     self._n_loops = 0
     self._last_upd_t = time()
+    self._next_acq_t = -float('inf')
 
-    # Sleeping to avoid zero division error on Windows in edge cases
-    sleep(0.05)
-
-    # Starting the endless loops of automatic updates
+    # Let Tk's event loop handle the first frame and the first FPS update
     if not self._testing:
-      self._upd_sched()
-      self._img_acq_sched()
-      self._upd_var_sched()
+      self._img_acq_sched_obj = self.after(0, self._img_acq_sched)
+      self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
   def run(self) -> None:
     """Run the Tk configuration and expose callback failures to the caller.
@@ -326,8 +324,8 @@ class CameraConfig(tk.Tk):
       showerror("Error!", message=f"{exc.__name__}\n{val}")
     except Exception as dialog_error:
       if self._logger is not None:
-            self._logger.exception("Could not display configuration error",
-                                   exc_info=dialog_error)
+        self._logger.exception("Could not display configuration error",
+                               exc_info=dialog_error)
     finally:
       self._lifecycle.request_close(self.stop)
 
@@ -386,11 +384,6 @@ class CameraConfig(tk.Tk):
 
     self._window_closed = True
     try:
-      if self._upd_sched_obj is not None:
-        try:
-          self.after_cancel(self._upd_sched_obj)
-        except tk.TclError:
-          pass
       if self._img_acq_sched_obj is not None:
         try:
           self.after_cancel(self._img_acq_sched_obj)
@@ -431,34 +424,24 @@ class CameraConfig(tk.Tk):
 
     ...
 
-  def _upd_sched(self) -> None:
-    """Updates the GUI and plans the next GUI update."""
-
-    # Planning the next update
-    if not self._testing:
-      # Aiming for max 30 FPS, no need for more updating
-      self._upd_sched_obj = self.after(33, self._upd_sched)
-
-    # Camera drivers may have reloaded settings during acquisition.
-    self._sync_setting_controls()
-
-    # Updating the interface
-    self.update()
-
   def _img_acq_sched(self) -> None:
-    """Acquires an image if it is time to, and plans the next image
-    acquisition."""
+    """Acquire a frame when due, then schedule the next acquisition."""
 
-    # Limiting the acquisition frequency to the given maximum if any
-    if (self._max_freq is None or
-        self._n_loops < self._max_freq * (time() - self._last_upd_t)):
-      # Trying to acquire a new image
+    now = monotonic()
+    if self._max_freq is None or now >= self._next_acq_t:
+      if self._max_freq is not None:
+        self._next_acq_t = now + 1 / self._max_freq
       self._update_img()
+      # Camera drivers may have reloaded settings while acquiring the frame
+      self._sync_setting_controls()
 
-    # Planning the next image acquisition
-    if not self._testing:
-      # Acquiring up to 1000 FPS theoretically, but most calls are aborted
-      self._img_acq_sched_obj = self.after(1, self._img_acq_sched)
+    if not self._testing and not self._window_closed:
+      # Sleep until the next frame is due, or poll as fast as possible
+      if self._max_freq is None:
+        delay = 1
+      else:
+        delay = max(1, ceil(1000 * (self._next_acq_t - monotonic())))
+      self._img_acq_sched_obj = self.after(delay, self._img_acq_sched)
 
   def _upd_var_sched(self) -> None:
     """Updates the GUI indicators, and plans the next indicators update."""
@@ -977,8 +960,8 @@ class CameraConfig(tk.Tk):
     """Copy changed setting values and metadata into their Tk controls.
 
     This is model-to-view synchronization, not the path that applies edits.
-    It runs after each setting write and during the update loop so a setter
-    or camera acquisition can reload another setting. An unchanged revision
+    It runs after each setting write and image acquisition so a setter or
+    camera driver can reload another setting. An unchanged revision
     leaves that control alone, preserving a pending user edit before Apply.
     If ``settings`` is given, only those settings are checked.
     """
