@@ -40,7 +40,7 @@ Camera Configurators
 Camera Configurator
 +++++++++++++++++++
 .. autoclass:: crappy.tool.camera_config.CameraConfig
-   :members: start, get_config, log
+   :members: run, start, get_config, log
    :special-members: __init__
 
 Camera Configurator with Boxes
