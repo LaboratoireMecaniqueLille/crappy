@@ -52,8 +52,8 @@ class RecordingVisionCamera(BaseCamera):
     self.close_calls += 1
 
 
-class RecordingConfig(CameraConfig):
-  """Non-GUI CameraConfig double used by CameraSource.configure tests."""
+class RecordingConfig:
+  """Non-Tk configurator implementing the neutral lifecycle contract."""
 
   instances: list['RecordingConfig'] = list()
   shape_value = (4, 5)
@@ -69,24 +69,18 @@ class RecordingConfig(CameraConfig):
                              transform, args, kwargs)
     self.shape = type(self).shape_value
     self.dtype = type(self).dtype_value
-    self.start_calls = 0
-    self.wait_calls = list()
+    self.run_calls = 0
     self.stop_calls = 0
     type(self).instances.append(self)
 
-  def start(self) -> None:
-    """Records startup and optionally raises."""
+  def run(self) -> None:
+    """Record the interactive lifecycle and optionally raise."""
 
-    self.start_calls += 1
+    self.run_calls += 1
     if type(self).raise_in == 'start':
       raise ValueError('configuration failed')
     if type(self).raise_in == 'keyboard':
       raise KeyboardInterrupt
-
-  def wait_window(self, window) -> None:
-    """Records the object passed to Tk's wait helper."""
-
-    self.wait_calls.append(window)
 
   def stop(self) -> None:
     """Records error cleanup."""
@@ -96,6 +90,8 @@ class RecordingConfig(CameraConfig):
   def get_config(self):
     """Returns deterministic configuration data."""
 
+    if type(self).raise_in == 'result':
+      raise ValueError('cannot export configuration')
     return type(self).result
 
 
@@ -201,7 +197,7 @@ class TestCameraSource(VisionTestBase):
         with self.assertRaises((TypeError, ValueError)):
           CameraSource(**defaults)
 
-    deprecated_name = next(iter(camera_module.deprecated_cameras))
+    deprecated_name = next(iter(camera_module.moved_to_collection))
     with self.assertRaises(NotImplementedError):
       CameraSource(camera=deprecated_name,
                    config=False,
@@ -528,8 +524,7 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(config.constructor_args,
                      (camera, sentinel.log_queue, logging.WARNING, 123,
                       transform, ('argument',), {'option': sentinel.option}))
-    self.assertEqual(config.start_calls, 1)
-    self.assertEqual(config.wait_calls, [config])
+    self.assertEqual(config.run_calls, 1)
     self.assertEqual(config.stop_calls, 0)
     self.assertEqual(result, ('configured',))
     self.assertEqual(source._img_shape, (4, 5))
@@ -555,13 +550,20 @@ class TestCameraSource(VisionTestBase):
     camera = RecordingVisionCamera()
 
     RecordingConfig.raise_in = 'start'
-    with self.assertRaises(CameraConfigError):
+    with self.assertRaises(CameraConfigError) as raised:
       source.configure(camera, RecordingConfig)
+    self.assertIsInstance(raised.exception.__cause__, ValueError)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
     RecordingConfig.raise_in = 'keyboard'
     with self.assertRaises(KeyboardInterrupt):
       source.configure(camera, RecordingConfig)
+    self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
+
+    RecordingConfig.raise_in = 'result'
+    with self.assertRaises(CameraConfigError) as raised:
+      source.configure(camera, RecordingConfig)
+    self.assertIsInstance(raised.exception.__cause__, ValueError)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
   def test_configure_reports_missing_log_queue_as_runtime_error(self) -> None:

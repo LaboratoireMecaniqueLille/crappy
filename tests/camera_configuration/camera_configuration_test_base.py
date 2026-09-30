@@ -173,10 +173,6 @@ class ConfigurationWindowTestBase(unittest.TestCase):
                                      return_value=None)
     histogram_patcher.start()
     self.addCleanup(histogram_patcher.stop)
-    join_patcher = patch.object(self._config._histogram_process, 'join',
-                                return_value=None)
-    join_patcher.start()
-    self.addCleanup(join_patcher.stop)
     self._config._n_loops = 0
     self._config._last_upd_t = time()
 
@@ -192,29 +188,7 @@ class ConfigurationWindowTestBase(unittest.TestCase):
       return
 
     process = self._config._histogram_process
-    try:
-      window_exists = bool(self._config.winfo_exists())
-    except tk.TclError:
-      window_exists = False
-
-    if window_exists:
-      if process.pid is None:
-        # CameraConfig.stop cannot join a process that never started.
-        for queue in (self._config._img_in, self._config._img_out):
-          queue.cancel_join_thread()
-          queue.close()
-        try:
-          self._config.destroy()
-        except tk.TclError:
-          pass
-      else:
-        self._config.finish()
-
-    if process.pid is not None:
-      process.join(1.0)
-      if process.is_alive():
-        process.kill()
-        process.join()
+    self._config.stop()
 
     self.assertFalse(process.is_alive())
 

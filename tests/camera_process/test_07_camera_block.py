@@ -7,7 +7,8 @@ import logging
 import numpy as np
 from unittest.mock import MagicMock, patch, sentinel
 from crappy import Block
-from crappy._global import CameraPrepareError, CameraRuntimeError, PrepareError
+from crappy._global import (CameraConfigError, CameraPrepareError,
+                            CameraRuntimeError, PrepareError)
 from crappy.blocks.camera import Camera
 import crappy.blocks.camera as camera_module
 
@@ -285,8 +286,7 @@ class TestCameraBlock(CameraBlockTestBase):
     with patch.object(camera, '_configure', return_value=config):
       camera.configure()
 
-    config.start.assert_called_once_with()
-    config.wait_window.assert_called_once_with(config)
+    config.run.assert_called_once_with()
     self.assertEqual(camera._img_shape, (6, 7))
     self.assertEqual(camera._img_dtype, np.dtype('uint16'))
     process.set_config.assert_called_once_with(sentinel.processing_config)
@@ -333,12 +333,59 @@ class TestCameraBlock(CameraBlockTestBase):
 
     camera = self.make_camera()
     config = MagicMock()
-    config.start.side_effect = KeyboardInterrupt
+    config.run.side_effect = KeyboardInterrupt
 
     with (patch.object(camera, '_configure', return_value=config),
           self.assertRaises(KeyboardInterrupt)):
       camera.configure()
 
+    config.stop.assert_called_once_with()
+
+  def test_configure_wraps_run_failure_after_cleanup(self) -> None:
+    """A callback or startup failure reaches the Block with its cause."""
+
+    camera = self.make_camera()
+    config = MagicMock()
+    failure = ValueError('configuration callback failed')
+    config.run.side_effect = failure
+
+    with (patch.object(camera, '_configure', return_value=config),
+          self.assertRaises(CameraConfigError) as raised):
+      camera.configure()
+
+    self.assertIs(raised.exception.__cause__, failure)
+    config.stop.assert_called_once_with()
+
+  def test_configure_preserves_failure_when_cleanup_also_fails(self) -> None:
+    """Cleanup failure does not hide the original configuration error."""
+
+    camera = self.make_camera()
+    config = MagicMock()
+    failure = ValueError('configuration failed')
+    config.run.side_effect = failure
+    config.stop.side_effect = RuntimeError('cleanup failed')
+
+    with (patch.object(camera, '_configure', return_value=config),
+          self.assertRaises(CameraConfigError) as raised):
+      camera.configure()
+
+    self.assertIs(raised.exception.__cause__, failure)
+    config.stop.assert_called_once_with()
+
+  def test_configure_wraps_export_failure(self) -> None:
+    """A failed get_config is still treated as configuration failure."""
+
+    camera = self.make_camera()
+    camera.process_proc = MagicMock()
+    config = MagicMock()
+    failure = ValueError('cannot export ROI')
+    config.get_config.side_effect = failure
+
+    with (patch.object(camera, '_configure', return_value=config),
+          self.assertRaises(CameraConfigError) as raised):
+      camera.configure()
+
+    self.assertIs(raised.exception.__cause__, failure)
     config.stop.assert_called_once_with()
 
   def test_prepare_aborts_before_configuration_after_external_failure(
