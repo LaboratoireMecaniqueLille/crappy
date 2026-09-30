@@ -3,10 +3,12 @@
 """Headless checks for the configurator's process and error lifecycle."""
 
 import unittest
+import logging
 from multiprocessing import Event
+from unittest.mock import patch
 
 from crappy.tool.camera_config.config_core.configuration_lifecycle import (
-  ConfigurationLifecycle, is_configurator_class)
+  ConfigurationLifecycle, ExceptionInfo, is_configurator_class)
 
 
 class _Queue:
@@ -48,10 +50,17 @@ class TestConfigurationLifecycle(unittest.TestCase):
 
     stop_event = Event()
     queues = (_Queue(), _Queue())
-    messages = []
-    lifecycle = ConfigurationLifecycle(
-      stop_event, process, queues,
-      lambda level, message: messages.append((level, message)))
+    messages: list[tuple[int, str, ExceptionInfo | None]] = []
+
+    def record(level: int,
+               msg: str,
+               *,
+               exc_info: ExceptionInfo | None = None) -> None:
+      """Keep ordinary and exception records for assertions."""
+
+      messages.append((level, msg, exc_info))
+
+    lifecycle = ConfigurationLifecycle(stop_event, process, queues, record)
     return lifecycle, stop_event, queues, messages
 
   def test_unstarted_process_cleanup_is_idempotent(self) -> None:
@@ -88,7 +97,8 @@ class TestConfigurationLifecycle(unittest.TestCase):
       raise ValueError('bad callback')
     except ValueError as error:
       original = error
-      lifecycle.record_callback_failure(error, error.__traceback__)
+      original_traceback = error.__traceback__
+      lifecycle.record_callback_failure(error, original_traceback)
 
     close_calls = []
     lifecycle.request_close(lambda: close_calls.append(True))
@@ -97,7 +107,49 @@ class TestConfigurationLifecycle(unittest.TestCase):
 
     self.assertIs(raised.exception, original)
     self.assertEqual(close_calls, [True])
-    self.assertTrue(any('bad callback' in message for _, message in messages))
+    self.assertEqual(messages[-1][0:2],
+                     (logging.ERROR, 'Configuration callback failed'))
+    info = messages[-1][2]
+    assert info is not None
+    self.assertIs(info[1], original)
+    self.assertIs(info[2], original_traceback)
+
+  def test_close_failure_keeps_exception_details(self) -> None:
+    """A backend close failure is logged with its original traceback."""
+
+    lifecycle, _, _, messages = self.make_lifecycle(_Process())
+
+    def fail_close() -> None:
+      """Simulate a GUI backend rejecting closure."""
+
+      raise RuntimeError('close failed')
+
+    lifecycle.request_close(fail_close)
+
+    self.assertEqual(messages[-1][0:2],
+                     (logging.ERROR, 'Could not close configuration UI'))
+    info = messages[-1][2]
+    assert info is not None
+    self.assertIsInstance(info[1], RuntimeError)
+    self.assertIsNotNone(info[2])
+
+  def test_queue_cleanup_failures_keep_exception_details(self) -> None:
+    """Resource cleanup reports caught failures as exception records."""
+
+    lifecycle, _, queues, messages = self.make_lifecycle(_Process())
+    with (patch.object(queues[0], 'cancel_join_thread',
+                       side_effect=RuntimeError('join failed')),
+          patch.object(queues[0], 'close',
+                       side_effect=OSError('close failed'))):
+      lifecycle.close_resources()
+
+    self.assertEqual([message for _, message, _ in messages],
+                     ['Could not join thread of histogram queue',
+                      'Could not close histogram queue'])
+    for level, _, info in messages:
+      self.assertEqual(level, logging.ERROR)
+      assert info is not None
+      self.assertIsNotNone(info[2])
 
   def test_neutral_class_check_accepts_non_tk_configurator(self) -> None:
     """The Vision caller can select a class unrelated to CameraConfig."""

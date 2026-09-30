@@ -86,13 +86,21 @@ class TestConfigurationLifecycle(ConfigurationWindowTestBase):
     self.assertFalse(self._config._histogram_process.is_alive())
 
   def test_callback_error_before_run_is_preserved(self) -> None:
-    """An error swallowed by an early Tk update is raised by run()."""
+    """An early Tk error is logged with its traceback and raised by run()."""
 
     try:
       raise ValueError('early callback failed')
     except ValueError as error:
-      self._config.report_callback_exception(type(error), error,
-                                             error.__traceback__)
+      logger = self._config._logger
+      assert logger is not None
+      with patch.object(logger, 'exception') as exception_log:
+        self._config.report_callback_exception(type(error), error,
+                                               error.__traceback__)
+
+      exception_log.assert_called_once()
+      self.assertEqual(exception_log.call_args.args[0],
+                       'Configuration callback failed')
+      self.assertIs(exception_log.call_args.kwargs['exc_info'][1], error)
 
     with self.assertRaisesRegex(ValueError, 'early callback failed'):
       self._config.run()
@@ -110,6 +118,33 @@ class TestConfigurationLifecycle(ConfigurationWindowTestBase):
     self.assertTrue(self._config._img_out._closed)
     with self.assertRaises(tk.TclError):
       self._config.wm_state()
+
+  def test_destroy_failure_uses_exception_logging(self) -> None:
+    """A Tk destruction error is recorded without skipping resource cleanup."""
+
+    logger = self._config._logger
+    assert logger is not None
+    destroy = self._config.destroy
+
+    def destroy_then_fail() -> None:
+      """Destroy the real window, then simulate a reported Tk failure."""
+
+      destroy()
+      raise tk.TclError('destroy failed')
+
+    with (patch.object(self._config, 'destroy',
+                       side_effect=destroy_then_fail),
+          patch.object(logger, 'exception') as exception_log):
+      self._config.stop()
+
+    exception_log.assert_called_once()
+    self.assertEqual(exception_log.call_args.args[0],
+                     'Cannot destroy the configuration window')
+    self.assertIsInstance(exception_log.call_args.kwargs['exc_info'][1],
+                          tk.TclError)
+    self.assertTrue(self._config._stop_event.is_set())
+    self.assertTrue(self._config._img_in._closed)
+    self.assertTrue(self._config._img_out._closed)
 
   def test_constructor_failure_cleans_resources(self) -> None:
     """Failure during layout creation releases process resources."""
