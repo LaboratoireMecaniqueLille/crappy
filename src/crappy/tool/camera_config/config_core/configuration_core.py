@@ -13,6 +13,7 @@ from ..config_tools.zoom import Zoom
 from .display_state import DisplayGeometry, DisplayState
 from .selection_behavior import ConfigAction
 from .setting_manager import SettingManager
+from .configuration_lifecycle import ExceptionInfo
 from ....camera.meta_camera import Camera
 from ....camera.meta_camera.camera_setting import CameraSetting
 from ...._global import OptionalModule
@@ -67,8 +68,18 @@ class CameraConfigCore:
     self._zoom_step: int = 0
     self._max_zoom_step: int = 15
 
-  def log(self, level: int, msg: str) -> None:
-    """Send a message through the backend's logger."""
+  def log(self,
+          level: int,
+          msg: str,
+          *,
+          exc_info: ExceptionInfo | None = None) -> None:
+    """Send a message or explicit exception through the backend's logger.
+
+    Args:
+      level: Severity of an ordinary message.
+      msg: Message to record.
+      exc_info: Original exception tuple, if this is an exception record.
+    """
 
     raise NotImplementedError
 

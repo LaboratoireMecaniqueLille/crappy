@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 from collections.abc import Callable, Iterable
 
 from .config_core import CameraConfigCore, ConfigurationLifecycle
+from .config_core.configuration_lifecycle import ExceptionInfo
 from .config_tools import HistogramProcess
 from ...camera.meta_camera.camera_setting import (
   CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
@@ -297,7 +298,11 @@ class CameraConfig(CameraConfigCore, tk.Tk):
     else:
       self._shutdown_sched_obj = self.after(25, self._check_shutdown)
 
-  def log(self, level: int, msg: str) -> None:
+  def log(self,
+          level: int,
+          msg: str,
+          *,
+          exc_info: ExceptionInfo | None = None) -> None:
     """Record log messages for the CameraConfig window.
 
     Also instantiates the :obj:`~logging.Logger` when logging the first
@@ -306,6 +311,9 @@ class CameraConfig(CameraConfigCore, tk.Tk):
     Args:
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
+      exc_info: An explicit exception tuple to log through
+        :meth:`logging.Logger.exception` at error level. This preserves the
+        traceback even when called outside the original ``except`` block.
     
     .. versionadded:: 2.0.0
     """
@@ -316,7 +324,10 @@ class CameraConfig(CameraConfigCore, tk.Tk):
 
     if self._logger is None:
       raise RuntimeError("The logger was never instantiated!")
-    self._logger.log(level, msg)
+    if exc_info is None:
+      self._logger.log(level, msg)
+    else:
+      self._logger.exception(msg, exc_info=exc_info)
 
   def report_callback_exception(self,
                                 exc: type[BaseException],
@@ -396,9 +407,9 @@ class CameraConfig(CameraConfigCore, tk.Tk):
     finally:
       try:
         self.destroy()
-      except tk.TclError:
-        self.log(logging.WARNING, "Cannot destroy the configuration window, "
-                                  "ignoring")
+      except tk.TclError as error:
+        self.log(logging.ERROR, "Cannot destroy the configuration window",
+                 exc_info=(type(error), error, error.__traceback__))
       finally:
         self._lifecycle.close_resources()
 

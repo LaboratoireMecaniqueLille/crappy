@@ -10,12 +10,24 @@ import logging
 from multiprocessing import synchronize
 from multiprocessing.process import BaseProcess
 from multiprocessing.queues import Queue
-from traceback import format_exception
 from types import TracebackType
 from typing import Any, Protocol
 import numpy as np
 
 from ....camera.meta_camera import Camera
+
+ExceptionInfo = tuple[type[BaseException], BaseException, TracebackType | None]
+
+
+class ConfigurationLog(Protocol):
+  """Logging callback that preserves an explicitly supplied exception."""
+
+  def __call__(self,
+               level: int,
+               msg: str,
+               *,
+               exc_info: ExceptionInfo | None = None) -> None:
+    """Record a message or an exception with its original traceback."""
 
 
 class CameraConfigurator(Protocol):
@@ -83,19 +95,19 @@ class ConfigurationLifecycle:
     stop_event: Event shared with the histogram process.
     histogram_process: Process computing preview histograms.
     queues: Queues communicating with that process.
-    log: Configurator logging callback.
+    log: Configurator logging callback, including exception information.
   """
 
   def __init__(self,
                stop_event: synchronize.Event,
                histogram_process: BaseProcess,
                queues: Iterable[Queue],
-               log: Callable[[int, str], None]) -> None:
+               log: ConfigurationLog) -> None:
 
     self._stop_event: synchronize.Event = stop_event
     self._histogram_process: BaseProcess = histogram_process
     self._queues: tuple[Queue] = tuple(queues)
-    self._log: Callable[[int, str], None] = log
+    self._log: ConfigurationLog = log
     self._histogram_started: bool = False
     self._closed: bool = False
     self._failure: BaseException | None = None
@@ -121,8 +133,8 @@ class ConfigurationLifecycle:
       self._failure = error
       self._failure_traceback = traceback
 
-    self._log(logging.ERROR, "Configuration callback failed:\n" +
-              "".join(format_exception(type(error), error, traceback)))
+    self._log(logging.ERROR, "Configuration callback failed",
+              exc_info=(type(error), error, traceback))
 
   def raise_if_failed(self) -> None:
     """Expose a callback failure hidden by the GUI toolkit's event loop."""
@@ -136,7 +148,8 @@ class ConfigurationLifecycle:
     try:
       close()
     except Exception as exc:
-      self._log(logging.ERROR, f"Could not close configuration UI: {exc}")
+      self._log(logging.ERROR, "Could not close configuration UI",
+                exc_info=(type(exc), exc, exc.__traceback__))
 
   def close_resources(self) -> None:
     """Stop the histogram process and queues once, including before start."""
@@ -168,9 +181,10 @@ class ConfigurationLifecycle:
         try:
           queue.cancel_join_thread()
         except Exception as exc:
-          self._log(logging.WARNING, f"Could not join thread of histogram "
-                                     f"queue: {exc}")
+          self._log(logging.ERROR, "Could not join thread of histogram queue",
+                    exc_info=(type(exc), exc, exc.__traceback__))
         try:
           queue.close()
         except Exception as exc:
-          self._log(logging.WARNING, f"Could not close histogram queue: {exc}")
+          self._log(logging.ERROR, "Could not close histogram queue",
+                    exc_info=(type(exc), exc, exc.__traceback__))
