@@ -224,7 +224,7 @@ class CameraConfig(tk.Tk):
       self._set_layout()
       self._set_bindings()
       self._add_settings()
-      self.update()
+      self.update_idletasks()
     except BaseException:
       try:
         self.stop()
@@ -1056,9 +1056,6 @@ class CameraConfig(tk.Tk):
     for setting in self._setting_manager.settings:
       self._apply_setting(setting)
 
-      # Update graphics to reflect changes that could have happened
-      self.update()
-
   def _apply_setting(self, setting: CameraSetting) -> None:
     """Read one Tk control, delegate its write, then refresh changed
     controls."""
@@ -1222,7 +1219,6 @@ class CameraConfig(tk.Tk):
 
     self._resize_img()
     self._display_img()
-    self.update()
 
   def _calc_hist(self) -> None:
     """Calculates the histogram of the current image."""
@@ -1297,7 +1293,6 @@ class CameraConfig(tk.Tk):
     self._read_histogram_geometry()
     self._resize_hist()
     self._display_hist()
-    self.update()
 
   def _update_img(self) -> None:
     """Acquires and transforms an image, then updates the GUI information."""
@@ -1321,8 +1316,6 @@ class CameraConfig(tk.Tk):
       # Otherwise, just pass
       else:
         self.log(logging.DEBUG, "No image returned by the camera")
-        self.update()
-        sleep(0.001)
         return
 
     if ret is None:
@@ -1357,8 +1350,6 @@ class CameraConfig(tk.Tk):
 
     self._update_pixel_value()
     self._sync_indicator_labels()
-
-    self.update()
 
   def _draw_overlay(self) -> None:
     """Method meant to be used by subclasses for drawing an overlay on top of
