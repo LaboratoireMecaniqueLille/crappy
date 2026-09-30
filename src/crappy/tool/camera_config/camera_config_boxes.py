@@ -17,7 +17,8 @@ class CameraConfigBoxes(BoxSelectionBehavior, CameraConfig):
 
   It extends :class:`~crappy.tool.camera_config.CameraConfig` with transient
   box selection and image-array overlays. The selection rules live in
-  :class:`BoxSelectionBehavior`. This class binds Tk events and forwards their
+  :class:`~crappy.tool.camera_config.config_core.selection_behavior.\
+BoxSelectionBehavior`. This class binds Tk events and forwards their
   coordinates. A different backend can reuse the same behavior. This class is
   not used directly by a Block.
 

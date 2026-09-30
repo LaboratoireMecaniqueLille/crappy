@@ -20,7 +20,8 @@ class VideoExtensoConfig(VideoExtensoBehavior, CameraConfigBoxes):
   and exposes a Save L0 action for their initial separation. On close,
   :meth:`get_config` exports the spot boxes and threshold, not the detector.
   Detection, validation, and Save L0 behavior live in
-  :class:`VideoExtensoBehavior`.
+  :class:`~crappy.tool.camera_config.config_core.selection_behavior.\
+VideoExtensoBehavior`.
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *VE_config* to *VideoExtensoConfig*

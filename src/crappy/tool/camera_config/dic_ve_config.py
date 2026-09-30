@@ -20,7 +20,8 @@ class DICVEConfig(DICVEBehavior, CameraConfigBoxes):
   edges. Their size comes from the local Patch size setting. The supplied
   :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` is updated in
   place, and its initial separation is saved after valid close. Patch layout
-  and validation live in :class:`DICVEBehavior`.
+  and validation live in :class:`~crappy.tool.camera_config.config_core.\
+selection_behavior.DICVEBehavior`.
 
   .. versionadded:: 1.5.10
   .. versionchanged:: 2.0.0 renamed from *DISVE_config* to *DICVEConfig*

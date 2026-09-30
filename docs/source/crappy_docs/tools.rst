@@ -40,7 +40,7 @@ Camera Configurators
 Camera Configurator
 +++++++++++++++++++
 .. autoclass:: crappy.tool.camera_config.CameraConfig
-   :members: run, start, get_config, log
+   :members: run, start, watch_shutdown, get_config, log
    :special-members: __init__
 
 Camera Configurator with Boxes
@@ -66,8 +66,29 @@ Video Extenso Configurator
    :members: get_config
    :special-members: __init__
 
+Configuration core and backend boundary
++++++++++++++++++++++++++++++++++++++++
+
+.. automodule:: crappy.tool.camera_config.config_core
+
+.. autoclass:: crappy.tool.camera_config.config_core.configuration_lifecycle.CameraConfigurator
+   :members: run, stop, watch_shutdown, get_config
+
+.. autoclass:: crappy.tool.camera_config.config_core.configuration_core.CameraConfigCore
+   :members: get_config
+
+.. autoclass:: crappy.tool.camera_config.config_core.selection_behavior.BoxSelectionBehavior
+
+.. autoclass:: crappy.tool.camera_config.config_core.selection_behavior.DISCorrelBehavior
+
+.. autoclass:: crappy.tool.camera_config.config_core.selection_behavior.DICVEBehavior
+
+.. autoclass:: crappy.tool.camera_config.config_core.selection_behavior.VideoExtensoBehavior
+
 Configurator Tools
 ++++++++++++++++++
+
+.. automodule:: crappy.tool.camera_config.config_tools
 
 Box
 """

@@ -81,8 +81,9 @@ class CameraConfig(CameraConfigCore, tk.Tk):
   also interacts with instances of the
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
   Toolkit-independent state and image interactions are inherited from
-  :class:`~crappy.tool.camera_config.config_core.CameraConfigCore`,
-  this class owns Tk controls, event scheduling, and rendering.
+  :class:`~crappy.tool.camera_config.config_core.configuration_core.\
+CameraConfigCore`, this class owns Tk controls, event scheduling, and
+  rendering.
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Camera_config* to *CameraConfig*
