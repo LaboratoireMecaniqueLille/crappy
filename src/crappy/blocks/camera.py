@@ -852,6 +852,9 @@ class Camera(Block):
     Exceptions raised by the configuration window are converted to
     :exc:`~crappy._global.CameraConfigError` after the window is stopped. A
     :exc:`KeyboardInterrupt` is instead propagated unchanged after cleanup.
+    If another Block fails during preparation or a stop is requested, the
+    window closes without validating or exporting an incomplete selection and
+    :exc:`~crappy._global.PrepareError` is propagated.
 
     It is common to all camera-related Blocks, except for those that don't have
     a configuration window. Child Blocks should normally customize
@@ -864,17 +867,37 @@ class Camera(Block):
     config: CameraConfigurator | None = None
     processing_config: tuple[Any, ...] | None = None
 
+    def shutdown_requested() -> bool:
+      """Check whether this Block should abandon its preparation."""
+
+      return ((self._ready_barrier is not None and
+               self._ready_barrier.broken) or
+              (self._stop_event is not None and self._stop_event.is_set()))
+
     # Instantiating and starting the configuration window
     try:
       config = self._configure()
       assert config is not None
+      config.watch_shutdown(shutdown_requested)
       config.run()
+      if shutdown_requested():
+        raise PrepareError("Camera configuration stopped during preparation")
       configured_shape = config.shape
       configured_dtype = config.dtype
-      # Get the configuration output if there's a processing process
+      # Get the configuration output if there's a processing Process
       if self.process_proc is not None:
         processing_config = config.get_config()
 
+    # A peer failed during preparation, or the test was asked to stop
+    except PrepareError:
+      if config is not None:
+        try:
+          config.stop()
+        except (Exception,) as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not stop the configuration window",
+                                   exc_info=cleanup_error)
+      raise
     # If an exception is raised in the config window, closing it before raising
     except (Exception,) as exc:
       # Not much we can do if there's no logger set to report Exception
@@ -914,8 +937,8 @@ class Camera(Block):
     """Creates the Block-specific camera configuration window.
 
     It is meant to be overridden by children of the Camera Block. The
-    returned configurator implements the neutral ``run()``, ``stop()``, and
-    ``get_config()`` contract. The configurator's
+    returned configurator implements the neutral ``run()``, ``stop()``,
+    ``watch_shutdown()``, and ``get_config()`` contract. The configurator's
     :meth:`~crappy.tool.camera_config.CameraConfig.get_config` output must
     match the processing CameraProcess's
     :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` signature.

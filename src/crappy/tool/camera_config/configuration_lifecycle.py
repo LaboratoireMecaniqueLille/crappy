@@ -21,6 +21,10 @@ class CameraConfigurator(Protocol):
   GUI implementations may use any widget toolkit. ``run()`` owns the complete
   interactive lifetime and raises a retained callback failure after closing.
   ``stop()`` is safe to call again when a caller handles an exception.
+
+  Every backend implements ``watch_shutdown(predicate)`` to close its UI when
+  the owning Block stops or the preparation Barrier breaks. Block callers check
+  the predicate again after ``run()`` before reading any configuration output.
   """
 
   shape: tuple[int, int] | tuple[int, int, int] | None
@@ -31,6 +35,9 @@ class CameraConfigurator(Protocol):
 
   def stop(self) -> None:
     """Release resources and close the UI, including after a partial start."""
+
+  def watch_shutdown(self, requested: Callable[[], bool]) -> None:
+    """Close without validation when Block preparation must stop."""
 
   def get_config(self) -> tuple[Any, ...] | None:
     """Return values consumed by the paired camera processing Block."""
@@ -44,7 +51,7 @@ def is_configurator_class(value: object) -> bool:
 
   return (isinstance(value, type) and
           all(callable(getattr(value, name, None))
-              for name in ("run", "stop", "get_config")))
+              for name in ("run", "stop", "watch_shutdown", "get_config")))
 
 
 def create_configurator(configurator: ConfiguratorFactory,

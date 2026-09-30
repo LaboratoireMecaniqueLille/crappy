@@ -206,6 +206,8 @@ class CameraConfig(tk.Tk):
     # Keeping track of the scheduled objects to be able to cancel them later
     self._img_acq_sched_obj: str | None = None
     self._upd_var_sched_obj: str | None = None
+    self._shutdown_sched_obj: str | None = None
+    self._shutdown_requested: Callable[[], bool] | None = None
 
     # Settings for adjusting the behavior of the zoom
     self._zoom_ratio: float = 0.9
@@ -262,18 +264,23 @@ class CameraConfig(tk.Tk):
       self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
   def run(self) -> None:
-    """Run the Tk configuration and expose callback failures to the caller.
+    """Run the Tk configuration until user close, failure, or Block shutdown.
 
     Block callers should use this neutral entry point. ``start()`` remains
     available for subclasses and existing integrations that manage Tk's
-    ``wait_window()`` themselves.
+    ``wait_window()`` themselves. A shutdown registered with
+    :meth:`watch_shutdown` bypasses normal closing validation.
     """
 
     try:
       # Catch failures at constructor-time
       self._lifecycle.raise_if_failed()
-      self.start()
-      self.wait_window(self)
+      if self._window_closed:
+        raise RuntimeError("Cannot run a closed configuration window")
+      self._check_shutdown()
+      if not self._window_closed:
+        self.start()
+        self.wait_window(self)
     except BaseException as error:
       try:
         self.stop()
@@ -288,6 +295,32 @@ class CameraConfig(tk.Tk):
     # Normal termination path
     self.stop()
     self._lifecycle.raise_if_failed()
+
+  def watch_shutdown(self, requested: Callable[[], bool]) -> None:
+    """Close without validation when the owning Block must stop preparing.
+
+    The predicate is checked by Tk on its own thread while ``run()`` waits
+    for the window. Block synchronization objects remain owned by the Block.
+
+    Args:
+      requested: Returns :obj:`True` if the Block's stop Event is set or its
+        preparation Barrier has broken.
+    """
+
+    self._shutdown_requested = requested
+
+  def _check_shutdown(self) -> None:
+    """Poll the Block's shutdown condition from Tk's event loop."""
+
+    self._shutdown_sched_obj = None
+
+    if self._window_closed or self._shutdown_requested is None:
+      return
+
+    if self._shutdown_requested():
+      self.stop()
+    else:
+      self._shutdown_sched_obj = self.after(25, self._check_shutdown)
 
   def log(self, level: int, msg: str) -> None:
     """Record log messages for the CameraConfig window.
@@ -338,6 +371,11 @@ class CameraConfig(tk.Tk):
     .. versionadded:: 2.0.0
     """
 
+    # Finish earlier in case the windows is forcibly closed by parent Block
+    if self._shutdown_requested is not None and self._shutdown_requested():
+      self.stop()
+      return
+
     # Prevent closing in case something isn't configured yet
     if (reason := self._validate_close()) is not None:
       self.log(logging.WARNING, reason)
@@ -372,7 +410,8 @@ class CameraConfig(tk.Tk):
   def stop(self) -> None:
     """Method called for gracefully stopping the GUI.
 
-    Stops the process calculating the histogram, and destroys the GUI.
+    Destroys the window promptly, then stops the histogram process and closes
+    its queues. This path does not validate the current selection.
 
     .. versionadded:: 2.0.0
     """
@@ -394,16 +433,20 @@ class CameraConfig(tk.Tk):
           self.after_cancel(self._upd_var_sched_obj)
         except tk.TclError:
           pass
+      if self._shutdown_sched_obj is not None:
+        try:
+          self.after_cancel(self._shutdown_sched_obj)
+        except tk.TclError:
+          pass
 
     finally:
       try:
-        self._lifecycle.close_resources()
+        self.destroy()
+      except tk.TclError:
+        self.log(logging.WARNING, "Cannot destroy the configuration window, "
+                                  "ignoring")
       finally:
-        try:
-          self.destroy()
-        except tk.TclError:
-          self.log(logging.WARNING, "Cannot destroy the configuration window, "
-                                    "ignoring")
+        self._lifecycle.close_resources()
 
   def get_config(self) -> tuple[Any, ...] | None:
     """Exports the state needed by the image-processing

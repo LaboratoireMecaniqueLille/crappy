@@ -482,21 +482,23 @@ class CameraSource(VisionBlock):
 
     Args:
       camera: Open Camera instance to configure.
-      config_class: Configurator class implementing ``run()``, ``stop()``, and
-        ``get_config()``. It need not inherit the ``CameraConfig`` class.
+      config_class: Configurator class implementing ``run()``, ``stop()``,
+        ``watch_shutdown()``, and ``get_config()``. It need not inherit the
+        ``CameraConfig`` class.
       *args: Positional arguments forwarded to *config_class*.
       **kwargs: Keyword arguments forwarded to *config_class*.
 
     Returns:
       The configuration data returned by
       :meth:`~crappy.tool.camera_config.CameraConfig.get_config`, or
-      :obj:`None` if configuration is canceled.
+      :obj:`None` if the configurator has no data to export.
 
     Raises:
       TypeError: If *camera* is not a Camera or *config_class* does not
         implement the configurator lifecycle methods.
       RuntimeError: If the logging queue has not been initialized.
       CameraConfigError: If the configuration window fails.
+      PrepareError: If the Block must stop while configuration is running.
       KeyboardInterrupt: If configuration is interrupted by the user.
     """
 
@@ -504,11 +506,18 @@ class CameraSource(VisionBlock):
     if not isinstance(camera, BaseCam):
       raise TypeError("camera must be an instance of Camera")
     if not is_configurator_class(config_class):
-      raise TypeError("config_class must implement run(), stop(), and "
-                      "get_config()")
+      raise TypeError("config_class must implement run(), stop(), "
+                      "watch_shutdown(), and get_config()")
     class_name = config_class.__name__
 
     config: CameraConfigurator | None = None
+
+    def shutdown_requested() -> bool:
+      """Check whether this Block should abandon its preparation."""
+
+      return ((self._ready_barrier is not None and
+               self._ready_barrier.broken) or
+              (self._stop_event is not None and self._stop_event.is_set()))
 
     # Instantiating and starting the configuration window
     try:
@@ -523,11 +532,24 @@ class CameraSource(VisionBlock):
                                    self._log_level, self.freq,
                                    self._transform, *args, **kwargs)
       assert config is not None
+      config.watch_shutdown(shutdown_requested)
       config.run()
+      if shutdown_requested():
+        raise PrepareError("Camera configuration stopped during preparation")
       configured_shape = config.shape
       configured_dtype = config.dtype
       result = config.get_config()
 
+    # A peer failed during preparation, or the test was asked to stop.
+    except PrepareError:
+      if config is not None:
+        try:
+          config.stop()
+        except (Exception,) as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not stop the configuration window",
+                                   exc_info=cleanup_error)
+      raise
     # If an exception is raised in the config window, closing it before raising
     except (Exception,) as exc:
       # Not much we can do if there's no logger set to report Exception

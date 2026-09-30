@@ -34,7 +34,8 @@ class ConfigRequest:
     args: Positional arguments forwarded to the requested configurator.
     kwargs: Keyword arguments forwarded to the requested configurator.
     configurator: Class implementing the neutral camera configurator lifecycle
-      (``run()``, ``stop()``, and ``get_config()``) on the image source.
+      (``run()``, ``stop()``, ``watch_shutdown()``, and ``get_config()``) on the
+      image source.
     img_source: Name of the upstream image source handling the request.
     connection: Pipe endpoint assigned by
       :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`. Requesters
