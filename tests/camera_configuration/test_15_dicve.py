@@ -68,7 +68,7 @@ class TestDICVE(ConfigurationWindowTestBase):
     # Start drawing a box outside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now", x=-20, y=-20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The patch should be empty
     self.assertTrue(self._config._spots.empty())
@@ -76,7 +76,7 @@ class TestDICVE(ConfigurationWindowTestBase):
     # Start drawing a box inside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now", x=20, y=20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The patch should still be empty
     self.assertTrue(self._config._spots.empty())
@@ -84,7 +84,7 @@ class TestDICVE(ConfigurationWindowTestBase):
     # Move the mouse with the button pressed to make a small selection box
     self._config._img_canvas.event_generate(
         '<B1-Motion>', when="now", x=40, y=40)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The patch should still be empty
     self.assertTrue(self._config._spots.empty())
@@ -93,12 +93,12 @@ class TestDICVE(ConfigurationWindowTestBase):
     for i in range(40, 200, 20):
       self._config._img_canvas.event_generate(
           '<B1-Motion>', when="now", x=i, y=i)
-      self._config._upd_sched()
+      self._config.update_idletasks()
 
     # Move the mouse with the button pressed to make a large selection box
     self._config._img_canvas.event_generate(
         '<B1-Motion>', when="now", x=200, y=200)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The spots should have been populated now
     self.assertFalse(self._config._spots.empty())
@@ -115,7 +115,7 @@ class TestDICVE(ConfigurationWindowTestBase):
 
     # Reset the box
     self._config._spots.reset()
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should now have been reset
     self.assertTrue(self._config._spots.empty())

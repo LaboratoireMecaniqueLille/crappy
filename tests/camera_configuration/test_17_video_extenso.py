@@ -100,7 +100,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now",
         x=int(x0 - 0.02 * width_eff), y=int(y0 - 0.02 * height_eff))
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
@@ -109,7 +109,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now",
         x=int(x0 + 0.08 * width_eff), y=int(y0 + 0.08 * height_eff))
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
@@ -118,7 +118,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     self._config._img_canvas.event_generate(
         '<B1-Motion>', when="now",
         x=int(x0 + 0.1 * width_eff), y=int(x0 + 0.1 * height_eff))
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should not be set for now
     self.assertTrue(self._config._detector.spots.empty())
@@ -128,13 +128,13 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
       self._config._img_canvas.event_generate(
           '<B1-Motion>', when="now",
           x=int(x0 + i * width_eff / 100), y=int(y0 + i * height_eff / 100))
-      self._config._upd_sched()
+      self._config.update_idletasks()
 
     # Release the mouse button to complete the box
     self._config._img_canvas.event_generate(
         '<ButtonRelease-1>', when="now",
         x=int(x0 + 0.9 * height_eff), y=int(y0 + 0.9 * height_eff))
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The spots should have been populated now
     self.assertFalse(self._config._spots.empty())
@@ -158,7 +158,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
 
     # Reset the box
     self._config._detector.spots.reset()
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should now have been reset
     self.assertTrue(self._config._detector.spots.empty())

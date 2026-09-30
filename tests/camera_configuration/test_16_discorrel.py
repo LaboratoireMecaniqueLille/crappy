@@ -46,7 +46,7 @@ class TestDISCorrel(ConfigurationWindowTestBase):
     # Start drawing a box outside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now", x=-20, y=-20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should not be set for now
     self.assertTrue(self._config.box.no_points())
@@ -54,7 +54,7 @@ class TestDISCorrel(ConfigurationWindowTestBase):
     # Start drawing the selection box inside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now", x=20, y=20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should not be set for now
     self.assertTrue(self._config.box.no_points())
@@ -62,7 +62,7 @@ class TestDISCorrel(ConfigurationWindowTestBase):
     # Move the mouse with the button pressed to complete the selection box
     self._config._img_canvas.event_generate(
         '<B1-Motion>', when="now", x=50, y=50)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should not be set for now
     self.assertTrue(self._config.box.no_points())
@@ -70,7 +70,7 @@ class TestDISCorrel(ConfigurationWindowTestBase):
     # Release the mouse button to complete the box
     self._config._img_canvas.event_generate(
         '<ButtonRelease-1>', when="now", x=50, y=50)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The end point should now be defined and the box is complete
     self.assertFalse(self._config.box.no_points())
@@ -83,7 +83,7 @@ class TestDISCorrel(ConfigurationWindowTestBase):
 
     # Reset the box
     self._config.box.reset()
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should now have been reset
     self.assertTrue(self._config.box.no_points())
@@ -91,15 +91,15 @@ class TestDISCorrel(ConfigurationWindowTestBase):
     # Start drawing the selection box inside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now", x=20, y=20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # Release the mouse button at the same location
     self._config._img_canvas.event_generate(
         '<B1-Motion>', when="now", x=20, y=20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
     self._config._img_canvas.event_generate(
         '<ButtonRelease-1>', when="now", x=20, y=20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should be empty
     self.assertTrue(self._config.box.no_points())
@@ -107,15 +107,15 @@ class TestDISCorrel(ConfigurationWindowTestBase):
     # Start drawing the selection box inside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now", x=20, y=20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # Draw a box with no pixels inside
     self._config._img_canvas.event_generate(
         '<B1-Motion>', when="now", x=20, y=50)
-    self._config._upd_sched()
+    self._config.update_idletasks()
     self._config._img_canvas.event_generate(
         '<ButtonRelease-1>', when="now", x=20, y=50)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should be empty
     self.assertTrue(self._config.box.no_points())

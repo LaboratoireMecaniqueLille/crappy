@@ -214,6 +214,6 @@ class TestDISCorrel(CameraWrapperTestBase):
     config.assert_called_once_with(sentinel.camera,
                                    sentinel.log_queue,
                                    30,
-                                   123,
+                                   123.0,
                                    transform,
-                                   sentinel.box)
+                                   patch=sentinel.box)

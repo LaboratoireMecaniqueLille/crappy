@@ -39,12 +39,15 @@ class TestFPS(ConfigurationWindowTestBase):
       self._config._n_loops += 1
 
     with patch.object(camera_config_module, 'time', side_effect=fake_time), \
+         patch.object(camera_config_module, 'monotonic',
+                      side_effect=fake_time), \
          patch.object(self._config, '_update_img', side_effect=acquire_image):
       # Ten evenly-spaced frames are enough to verify each frequency exactly;
       # there is no need to wait through the equivalent wall-clock duration.
       for fps in (1, 2, 3, 4, 5, 10, 15, 20):
         with self.subTest(fps=fps):
           self._config._max_freq = fps
+          self._config._next_acq_t = None
 
           for _ in range(10):
             current_time[0] += 1 / fps
@@ -65,3 +68,23 @@ class TestFPS(ConfigurationWindowTestBase):
       self._config._upd_var_sched()
 
     self.assertAlmostEqual(self._config._display_state.fps, 25.0)
+
+  def test_acquisition_schedules_deadline_instead_of_polling(self) -> None:
+    """The frame timer sleeps until the next limited acquisition is due."""
+
+    self._config._max_freq = 20
+    self._config._testing = False
+
+    with (patch.object(camera_config_module, 'monotonic', return_value=100.0),
+          patch.object(self._config, '_update_img') as acquire,
+          patch.object(self._config, '_sync_setting_controls') as sync,
+          patch.object(self._config, 'after', return_value='scheduled') as after):
+      self._config._img_acq_sched()
+      self._config._img_acq_sched()
+
+    acquire.assert_called_once_with()
+    sync.assert_called_once_with()
+    self.assertEqual(self._config._next_acq_t, 100.05)
+    self.assertEqual(after.call_count, 2)
+    self.assertEqual([call.args[0] for call in after.call_args_list], [50, 50])
+    self._config._testing = True

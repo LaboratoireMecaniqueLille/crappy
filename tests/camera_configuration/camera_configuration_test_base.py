@@ -129,12 +129,6 @@ class ConfigurationWindowTestBase(unittest.TestCase):
       logger.disabled = True
       self.addCleanup(setattr, logger, 'disabled', previous_disabled)
 
-    # CameraConfig.start contains a defensive fixed sleep for user sessions.
-    # Test methods explicitly control elapsed time, so it is unnecessary here.
-    sleep_patcher = patch.object(camera_config_module, 'sleep', return_value=None)
-    sleep_patcher.start()
-    self.addCleanup(sleep_patcher.stop)
-
     if self._log_queue is None:
       self._log_queue = Queue()
     self.addCleanup(self._close_log_queue)
@@ -206,9 +200,9 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     """Run one deterministic acquisition/update cycle."""
 
     self._config._last_upd_t -= elapsed
+    self._config._next_acq_t = None
     self._config._img_acq_sched()
     self._config._upd_var_sched()
-    self._config._upd_sched()
 
   def setting_control(self, name: str):
     """Return the Tk control owned by this configuration window."""

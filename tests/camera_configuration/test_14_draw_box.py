@@ -42,7 +42,7 @@ class TestDrawBox(ConfigurationWindowTestBase):
     # Start drawing a box outside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now", x=-20, y=-20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The start point should not have been counted
     self.assertTrue(self._config._select_box.no_points())
@@ -50,7 +50,7 @@ class TestDrawBox(ConfigurationWindowTestBase):
     # Start drawing a box inside the image
     self._config._img_canvas.event_generate(
         '<ButtonPress-1>', when="now", x=20, y=20)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The start point should have been counted but not the end point
     # The box should still be considered as not complete
@@ -63,7 +63,7 @@ class TestDrawBox(ConfigurationWindowTestBase):
     # Move the mouse with the button pressed to complete the selection box
     self._config._img_canvas.event_generate(
         '<B1-Motion>', when="now", x=50, y=50)
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The end point should now be defined and the box is complete
     self.assertFalse(self._config._select_box.no_points())
@@ -74,7 +74,7 @@ class TestDrawBox(ConfigurationWindowTestBase):
 
     # Reset the box
     self._config._select_box.reset()
-    self._config._upd_sched()
+    self._config.update_idletasks()
 
     # The box should now have been reset
     self.assertTrue(self._config._select_box.no_points())
