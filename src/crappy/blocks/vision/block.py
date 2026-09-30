@@ -16,7 +16,7 @@ from time import time
 from ..meta_block import Block
 from ...links import ImageLink
 from ..._global import LinkDataError, PrepareError
-from ...tool.camera_config import CameraConfig
+from ...tool.camera_config import ConfiguratorFactory
 
 
 @dataclass
@@ -33,8 +33,8 @@ class ConfigRequest:
     requester: Name of the downstream Block requesting configuration.
     args: Positional arguments forwarded to the requested configurator.
     kwargs: Keyword arguments forwarded to the requested configurator.
-    configurator: :class:`~crappy.tool.camera_config.CameraConfig` subclass to
-      instantiate on the image source.
+    configurator: Class implementing the neutral camera configurator lifecycle
+      (``run()``, ``stop()``, and ``get_config()``) on the image source.
     img_source: Name of the upstream image source handling the request.
     connection: Pipe endpoint assigned by
       :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`. Requesters
@@ -49,7 +49,7 @@ class ConfigRequest:
   requester: str
   args: tuple[Any, ...]
   kwargs: dict[str, Any]
-  configurator: type[CameraConfig]
+  configurator: ConfiguratorFactory
   img_source: str
   connection: mp_connection.Connection | None = None
   completed: bool = False
@@ -431,7 +431,7 @@ class VisionBlock(Block, ABC):
 
     # Double-check image type and dtype consistency
     if img.dtype != self._out_link_data.npy_buffer.dtype:
-      raise ValueError(f"The dtype of the image to send ({img.dtype}) "
+      raise ValueError(f"The dtype of the image to send ({img.dtype.name}) "
                        f"doesn't match the one of the image buffer "
                        f"({self._out_link_data.npy_buffer.dtype})")
     if img.shape != self._out_link_data.npy_buffer.shape:

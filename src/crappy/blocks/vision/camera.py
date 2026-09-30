@@ -10,7 +10,10 @@ from typing import Any
 
 from .block import VisionBlock
 from ..camera import camera_dict, DummyCam, moved_to_collection
-from ...tool.camera_config import CameraConfig
+from ...tool.camera_config import (CameraConfig, ConfiguratorFactory,
+                                   create_configurator)
+from ...tool.camera_config.configuration_lifecycle import (
+  CameraConfigurator, is_configurator_class)
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,
                             load_collection_class)
@@ -467,7 +470,7 @@ class CameraSource(VisionBlock):
 
   def configure(self,
                 camera: BaseCam,
-                config_class: type[CameraConfig],
+                config_class: ConfiguratorFactory,
                 *args,
                 **kwargs) -> tuple[Any, ...] | None:
     """Runs one interactive configuration window for a Camera.
@@ -479,8 +482,8 @@ class CameraSource(VisionBlock):
 
     Args:
       camera: Open Camera instance to configure.
-      config_class: :class:`~crappy.tool.camera_config.CameraConfig` subclass
-        implementing the requested configuration window.
+      config_class: Configurator class implementing ``run()``, ``stop()``, and
+        ``get_config()``. It need not inherit the ``CameraConfig`` class.
       *args: Positional arguments forwarded to *config_class*.
       **kwargs: Keyword arguments forwarded to *config_class*.
 
@@ -490,8 +493,8 @@ class CameraSource(VisionBlock):
       :obj:`None` if configuration is canceled.
 
     Raises:
-      TypeError: If *camera* is not a Camera or *config_class* is not a
-        :class:`~crappy.tool.camera_config.CameraConfig` subclass.
+      TypeError: If *camera* is not a Camera or *config_class* does not
+        implement the configurator lifecycle methods.
       RuntimeError: If the logging queue has not been initialized.
       CameraConfigError: If the configuration window fails.
       KeyboardInterrupt: If configuration is interrupted by the user.
@@ -500,10 +503,12 @@ class CameraSource(VisionBlock):
     # Preliminary general checks
     if not isinstance(camera, BaseCam):
       raise TypeError("camera must be an instance of Camera")
-    if not issubclass(config_class, CameraConfig):
-      raise TypeError("config_class must be a subclass of CameraConfig")
+    if not is_configurator_class(config_class):
+      raise TypeError("config_class must implement run(), stop(), and "
+                      "get_config()")
+    class_name = config_class.__name__
 
-    config = None
+    config: CameraConfigurator | None = None
 
     # Instantiating and starting the configuration window
     try:
@@ -511,47 +516,63 @@ class CameraSource(VisionBlock):
         raise RuntimeError("Cannot start the configuration window because the "
                            "log_queue wasn't defined")
       self.log(logging.DEBUG, f"Starting configuration window of class "
-                              f"{config_class} with camera {camera}, args "
-                              f"{args}, kwargs {kwargs}")
-      config = config_class(camera, self._log_queue, self._log_level,
-                            self.freq, self._transform, *args, **kwargs)
-      config.start()
-      config.wait_window(config)
+                              f"{class_name} with camera "
+                              f"{type(camera).__name__}, args {args}, "
+                              f"kwargs {kwargs}")
+      config = create_configurator(config_class, camera, self._log_queue,
+                                   self._log_level, self.freq,
+                                   self._transform, *args, **kwargs)
+      assert config is not None
+      config.run()
+      configured_shape = config.shape
+      configured_dtype = config.dtype
+      result = config.get_config()
 
     # If an exception is raised in the config window, closing it before raising
     except (Exception,) as exc:
       # Not much we can do if there's no logger set to report Exception
       if self._logger is not None:
         self._logger.exception("Caught exception in the configuration "
-                               "window !", exc_info=exc)
+                               "window!", exc_info=exc)
       if config is not None:
-        config.stop()
-      raise CameraConfigError
+        try:
+          config.stop()
+        except (Exception,) as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not stop the configuration window",
+                                   exc_info=cleanup_error)
+      raise CameraConfigError("Camera configuration failed") from exc
     # Special case of KeyboardInterrupt because it's a non-local exception
     except KeyboardInterrupt:
       if config is not None:
-        config.stop()
+        try:
+          config.stop()
+        except (Exception,) as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not stop the configuration window",
+                                   exc_info=cleanup_error)
       raise
 
     # Getting the image dtype and shape for setting the shared Array
-    if config.shape is not None:
-      if self._img_shape is not None and self._img_shape != config.shape:
+    if configured_shape is not None:
+      if self._img_shape is not None and self._img_shape != configured_shape:
         self.log(logging.WARNING, f"The img_shape from the configuration "
-                                  f"window {config_class.__name__} "
-                                  f"({config.shape}) is different from the "
-                                  f"existing one ({self._img_shape}), setting "
-                                  f"it anyway to the new value")
-      self._img_shape = config.shape
-    if config.dtype is not None:
-      if self._img_dtype is not None and self._img_dtype != str(config.dtype):
+                                  f"window {class_name} ({configured_shape}) "
+                                  f"differs from the existing one "
+                                  f"({self._img_shape}), setting it anyway to "
+                                  f"the new value")
+      self._img_shape = configured_shape
+    if configured_dtype is not None:
+      if (self._img_dtype is not None and
+          self._img_dtype != str(configured_dtype)):
         self.log(logging.WARNING, f"The img_dtype from the configuration "
-                                  f"window {config_class.__name__} "
-                                  f"({config.dtype}) is different from the "
-                                  f"existing one ({self._img_dtype}), setting "
-                                  f"it anyway to the new value")
-      self._img_dtype = str(config.dtype)
+                                  f"window {class_name} ({configured_dtype}) "
+                                  f"differs from the existing one "
+                                  f"({self._img_dtype}), setting it anyway to "
+                                  f"the new value")
+      self._img_dtype = configured_dtype
 
-    return config.get_config()
+    return result
 
   def default_configuration(self) -> None:
     """Runs the generic Camera configuration window.

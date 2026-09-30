@@ -16,7 +16,8 @@ import logging
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
-from ..tool.camera_config import CameraConfig
+from ..tool.camera_config import (CameraConfig, CameraConfigurator,
+                                  create_configurator)
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
 from .._global import (CameraPrepareError, CameraRuntimeError,
@@ -553,8 +554,9 @@ class Camera(Block):
 
     # Instantiating the Array for sharing the frames with the CameraProcesses
     self.log(logging.DEBUG, "Instantiating the shared objects")
-    self._img_array = Array(np.ctypeslib.as_ctypes_type(self._img_dtype),
-                            int(np.prod(self._img_shape)))
+    self._img_array = Array(
+        np.ctypeslib.as_ctypes_type(np.dtype(self._img_dtype)),
+        int(np.prod(self._img_shape)))
     if self._img_array is None:
       raise RuntimeError("Couldn't initialized the shared image array")
     self._img = np.frombuffer(self._img_array.get_obj(),
@@ -859,46 +861,61 @@ class Camera(Block):
        the configuration window to the image-processing CameraProcess
     """
 
-    config = None
+    config: CameraConfigurator | None = None
+    processing_config: tuple[Any, ...] | None = None
 
     # Instantiating and starting the configuration window
     try:
       config = self._configure()
-      config.start()
-      config.wait_window(config)
+      assert config is not None
+      config.run()
+      configured_shape = config.shape
+      configured_dtype = config.dtype
+      # Get the configuration output if there's a processing process
+      if self.process_proc is not None:
+        processing_config = config.get_config()
 
     # If an exception is raised in the config window, closing it before raising
     except (Exception,) as exc:
       # Not much we can do if there's no logger set to report Exception
       if self._logger is not None:
         self._logger.exception("Caught exception in the configuration "
-                               "window !", exc_info=exc)
+                               "window!", exc_info=exc)
       if config is not None:
-        config.stop()
-      raise CameraConfigError
+        try:
+          config.stop()
+        except (Exception,) as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not stop the configuration window",
+                                   exc_info=cleanup_error)
+      raise CameraConfigError("Camera configuration failed") from exc
     # Special case of KeyboardInterrupt because it's a non-local exception
     except KeyboardInterrupt:
       if config is not None:
-        config.stop()
+        try:
+          config.stop()
+        except (Exception,) as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not stop the configuration window",
+                                   exc_info=cleanup_error)
       raise
 
     # Getting the image dtype and shape for setting the shared Array
-    if config.shape is not None:
-      self._img_shape = config.shape
-    if config.dtype is not None:
-      self._img_dtype = config.dtype
+    if configured_shape is not None:
+      self._img_shape = configured_shape
+    if configured_dtype is not None:
+      self._img_dtype = configured_dtype
 
     # Apply the result of the configuration to the processing Process
-    if self.process_proc is not None:
-      if (conf := config.get_config()) is not None:
-        self.process_proc.set_config(*conf)
+    if self.process_proc is not None and processing_config is not None:
+      self.process_proc.set_config(*processing_config)
 
-  def _configure(self) -> CameraConfig:
+  def _configure(self) -> CameraConfigurator:
     """Creates the Block-specific camera configuration window.
 
-    It is meant to be overridden by children of the Camera Block, as other
-    image processing Blocks rely on subclasses of
-    :class:`~crappy.tool.camera_config.CameraConfig`. The returned window's
+    It is meant to be overridden by children of the Camera Block. The
+    returned configurator implements the neutral ``run()``, ``stop()``, and
+    ``get_config()`` contract. The configurator's
     :meth:`~crappy.tool.camera_config.CameraConfig.get_config` output must
     match the processing CameraProcess's
     :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` signature.
@@ -909,5 +926,9 @@ class Camera(Block):
     if self._log_queue is None:
       raise RuntimeError("The logging Queue was never initialized")
 
-    return CameraConfig(self._camera, self._log_queue,
-                        self._log_level, self.freq, self._transform)
+    return create_configurator(CameraConfig,
+                               self._camera,
+                               self._log_queue,
+                               self._log_level,
+                               self.freq,
+                               self._transform)

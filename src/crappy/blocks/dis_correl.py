@@ -7,7 +7,8 @@ from pathlib import Path
 
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
-from ..tool.camera_config import DISCorrelConfig, Box
+from ..tool.camera_config import (DISCorrelConfig, CameraConfigurator, Box,
+                                  create_configurator)
 from ..tool.image_processing.fields import allowed_fields
 
 field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
@@ -508,7 +509,7 @@ class DISCorrel(Camera):
 
     super().prepare()
 
-  def _configure(self) -> DISCorrelConfig:
+  def _configure(self) -> CameraConfigurator:
     """This method should instantiate the
     :class:`~crappy.tool.camera_config.DISCorrelConfig` window for configuring
     the :class:`~crappy.camera.meta_camera.camera.Camera` object.
@@ -523,5 +524,10 @@ class DISCorrel(Camera):
       raise RuntimeError("At that point the patch to track should be set but "
                          "it is not")
 
-    return DISCorrelConfig(self._camera, self._log_queue, self._log_level,
-                           self.freq, self._transform, self._patch)
+    return create_configurator(DISCorrelConfig,
+                               self._camera,
+                               self._log_queue,
+                               self._log_level,
+                               self.freq,
+                               self._transform,
+                               patch=self._patch)

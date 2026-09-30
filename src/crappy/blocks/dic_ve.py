@@ -7,7 +7,8 @@ from pathlib import Path
 
 from .camera_processes import DICVEProcess
 from .camera import Camera
-from ..tool.camera_config import DICVEConfig, SpotsBoxes
+from ..tool.camera_config import (DICVEConfig, CameraConfigurator, SpotsBoxes,
+                                  create_configurator)
 
 
 class DICVE(Camera):
@@ -500,7 +501,7 @@ class DICVE(Camera):
 
     super().prepare()
 
-  def _configure(self) -> DICVEConfig:
+  def _configure(self) -> CameraConfigurator:
     """This method should instantiate the
     :class:`~crappy.tool.camera_config.DICVEConfig` window for configuring the
     :class:`~crappy.camera.meta_camera.camera.Camera` object.
@@ -515,5 +516,10 @@ class DICVE(Camera):
       raise RuntimeError("At that point the patches to track should be set "
                          "but they are not")
 
-    return DICVEConfig(self._camera, self._log_queue, self._log_level,
-                       self.freq, self._transform, self._patches)
+    return create_configurator(DICVEConfig,
+                               self._camera,
+                               self._log_queue,
+                               self._log_level,
+                               self.freq,
+                               self._transform,
+                               patches=self._patches)

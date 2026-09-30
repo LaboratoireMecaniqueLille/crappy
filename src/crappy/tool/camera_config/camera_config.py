@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from multiprocessing import current_process, Event, Queue, synchronize
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
+from types import TracebackType
 from typing import Any, TYPE_CHECKING
 from collections.abc import Callable, Iterable
 
@@ -20,6 +21,7 @@ from .config_tools import Zoom, HistogramProcess
 from .display_state import DisplayGeometry, DisplayState
 from .setting_manager import SettingManager
 from .selection_behavior import ConfigAction
+from .configuration_lifecycle import ConfigurationLifecycle
 from ...camera.meta_camera.camera_setting import (
   CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
 from ...camera.meta_camera import Camera
@@ -127,22 +129,58 @@ class CameraConfig(tk.Tk):
     self._hist_width: int = 0
     self._hist_height: int = 0
     self._setting_controls: dict[CameraSetting, _TkSettingControl] = dict()
-    self._setting_manager: SettingManager = SettingManager(
-        camera.settings, self._create_local_settings())
+    # Abort early in case an exception is caught while instantiating settings
+    try:
+      self._setting_manager: SettingManager = SettingManager(
+          camera.settings, self._create_local_settings())
+    except BaseException:
+      self.destroy()
+      raise
+
     self.shape: tuple[int, int] | tuple[int, int, int] | None = None
-    self.dtype: np.dtype | None = None
+    self.dtype: str | None = None
     self._logger: logging.Logger | None = None
     self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
 
-    # Instantiating objects for the process managing the histogram calculation
+    self._window_closed: bool = False
     self._stop_event: synchronize.Event = Event()
     self._processing_event: synchronize.Event = Event()
-    self._img_in: MPQueue = Queue(maxsize=0)
-    self._img_out: MPQueue = Queue(maxsize=0)
-    self._histogram_process: HistogramProcess = HistogramProcess(
-        stop_event=self._stop_event, processing_event=self._processing_event,
-        img_in=self._img_in, img_out=self._img_out, log_level=log_level,
-        log_queue=log_queue)
+    # A constructor failure must close queues
+    created_queues: list[MPQueue] = list()
+    try:
+      self._img_in: MPQueue = Queue(maxsize=0)
+      created_queues.append(self._img_in)
+      self._img_out: MPQueue = Queue(maxsize=0)
+      created_queues.append(self._img_out)
+      self._histogram_process: HistogramProcess = HistogramProcess(
+          stop_event=self._stop_event,
+          processing_event=self._processing_event,
+          img_in=self._img_in,
+          img_out=self._img_out,
+          log_level=log_level,
+          log_queue=log_queue)
+      self._lifecycle: ConfigurationLifecycle = ConfigurationLifecycle(
+          self._stop_event, self._histogram_process,
+          (self._img_in, self._img_out), self.log)
+    except BaseException:
+      for queue in created_queues:
+        try:
+          queue.cancel_join_thread()
+        except Exception as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not join thread of histogram queue",
+                                   exc_info=cleanup_error)
+        try:
+          queue.close()
+        except Exception as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not close histogram queue",
+                                   exc_info=cleanup_error)
+      try:
+        self.destroy()
+      except tk.TclError:
+        pass
+      raise
 
     # Attributes containing the several images and histograms
     self._img: np.ndarray | None = None
@@ -174,16 +212,26 @@ class CameraConfig(tk.Tk):
     self._max_zoom_step: int = 15
 
     # Settings of the root window
-    self.title(f'Configuration window for the camera: {type(camera).__name__}')
-    self.protocol("WM_DELETE_WINDOW", self.finish)
-    self._zoom_values = Zoom()
+    try:
+      self.title(f'Configuration window for the camera: '
+                 f'{type(camera).__name__}')
+      self.protocol("WM_DELETE_WINDOW", self.finish)
+      self._zoom_values = Zoom()
 
-    # Initializing the interface
-    self._set_variables()
-    self._set_layout()
-    self._set_bindings()
-    self._add_settings()
-    self.update()
+      # Initializing the interface
+      self._set_variables()
+      self._set_layout()
+      self._set_bindings()
+      self._add_settings()
+      self.update()
+    except BaseException:
+      try:
+        self.stop()
+      except Exception as cleanup_error:
+        if self._logger is not None:
+            self._logger.exception("Could not clean up partial configuration",
+                                   exc_info=cleanup_error)
+      raise
 
     # Attribute used only for unit testing, do not use otherwise
     self._testing: bool = False
@@ -196,8 +244,12 @@ class CameraConfig(tk.Tk):
     .. versionchanged:: 2.0.7 Renamed from *main()* to *start()*
     """
 
+    if self._lifecycle.closed:
+      raise RuntimeError("Cannot start a closed configuration window")
+
     # Starting the histogram calculation process
     self._histogram_process.start()
+    self._lifecycle.mark_histogram_started()
 
     self._n_loops = 0
     self._last_upd_t = time()
@@ -210,6 +262,34 @@ class CameraConfig(tk.Tk):
       self._upd_sched()
       self._img_acq_sched()
       self._upd_var_sched()
+
+  def run(self) -> None:
+    """Run the Tk configuration and expose callback failures to the caller.
+
+    Block callers should use this neutral entry point. ``start()`` remains
+    available for subclasses and existing integrations that manage Tk's
+    ``wait_window()`` themselves.
+    """
+
+    try:
+      # Catch failures at constructor-time
+      self._lifecycle.raise_if_failed()
+      self.start()
+      self.wait_window(self)
+    except BaseException as error:
+      try:
+        self.stop()
+      except Exception as cleanup_error:
+        if self._logger is not None:
+            self._logger.exception("Could not clean up configuration window",
+                                   exc_info=cleanup_error)
+      if not isinstance(error, KeyboardInterrupt):
+        self._lifecycle.raise_if_failed()
+      raise
+
+    # Normal termination path
+    self.stop()
+    self._lifecycle.raise_if_failed()
 
   def log(self, level: int, msg: str) -> None:
     """Record log messages for the CameraConfig window.
@@ -232,17 +312,24 @@ class CameraConfig(tk.Tk):
       raise RuntimeError("The logger was never instantiated!")
     self._logger.log(level, msg)
 
-  def report_callback_exception(self, exc: Exception, val: str, tb) -> None:
-    """Method displaying an error message in case an exception is raised in a
-    :mod:`tkinter` callback.
+  def report_callback_exception(self,
+                                exc: type[BaseException],
+                                val: BaseException,
+                                tb: TracebackType | None) -> None:
+    """Retain a Tk callback failure, show it, and close the window safely.
 
     .. versionadded:: 2.0.0
     """
 
-    if self._logger is not None:
-      self._logger.exception(f"Caught exception in {type(self).__name__}: "
-                             f"{exc.__name__}({val})", exc_info=tb)
-    showerror("Error !", message=f"{exc.__name__}\n{val}")
+    self._lifecycle.record_callback_failure(val, tb)
+    try:
+      showerror("Error!", message=f"{exc.__name__}\n{val}")
+    except Exception as dialog_error:
+      if self._logger is not None:
+            self._logger.exception("Could not display configuration error",
+                                   exc_info=dialog_error)
+    finally:
+      self._lifecycle.request_close(self.stop)
 
   def finish(self) -> None:
     """Method called when the user tries to close the configuration window.
@@ -292,48 +379,38 @@ class CameraConfig(tk.Tk):
     .. versionadded:: 2.0.0
     """
 
-    # Canceling the scheduled tasks
-    if self._upd_sched_obj is not None:
-      self.after_cancel(self._upd_sched_obj)
-    if self._img_acq_sched_obj is not None:
-      self.after_cancel(self._img_acq_sched_obj)
-    if self._upd_var_sched_obj is not None:
-      self.after_cancel(self._upd_var_sched_obj)
+    # If the window is already closed, making sure the resources are released
+    if self._window_closed:
+      self._lifecycle.close_resources()
+      return
 
-    # Stopping the event loop and wait for the histogram process to finish
-    self._stop_event.set()
-    self._histogram_process.join(1)
-
-    # Terminating the histogram process if it failed to stop gracefully
-    if self._histogram_process.is_alive():
-      self.log(logging.WARNING, "The histogram process failed to stop, "
-                                "terminating it !")
-      self._histogram_process.terminate()
-      self._histogram_process.join(1)
-
-    # A terminated process might still need to be killed. Do so only if it did
-    # not terminate within the timeout.
-    if self._histogram_process.is_alive():
-      self.log(logging.WARNING, "The histogram process failed to terminate, "
-                                "killing it !")
-      self._histogram_process.kill()
-      self._histogram_process.join()
-
-    # Close the queues to properly end all multiprocessing objects
-    self.log(logging.DEBUG, "Closing the queues communicating with the "
-                            "histogram process")
-    self._img_in.cancel_join_thread()
-    self._img_out.cancel_join_thread()
-    self._img_in.close()
-    self._img_out.close()
-
-    self.log(logging.DEBUG, "Destroying the configuration window")
-
+    self._window_closed = True
     try:
-      self.destroy()
-    except tk.TclError:
-      self.log(logging.WARNING, "Cannot destroy the configuration window, "
-                                "ignoring")
+      if self._upd_sched_obj is not None:
+        try:
+          self.after_cancel(self._upd_sched_obj)
+        except tk.TclError:
+          pass
+      if self._img_acq_sched_obj is not None:
+        try:
+          self.after_cancel(self._img_acq_sched_obj)
+        except tk.TclError:
+          pass
+      if self._upd_var_sched_obj is not None:
+        try:
+          self.after_cancel(self._upd_var_sched_obj)
+        except tk.TclError:
+          pass
+
+    finally:
+      try:
+        self._lifecycle.close_resources()
+      finally:
+        try:
+          self.destroy()
+        except tk.TclError:
+          self.log(logging.WARNING, "Cannot destroy the configuration window, "
+                                    "ignoring")
 
   def get_config(self) -> tuple[Any, ...] | None:
     """Exports the state needed by the image-processing
@@ -1278,8 +1355,8 @@ class CameraConfig(tk.Tk):
     if not no_img and self._transform is not None:
       img = self._transform(img)
 
-    if not no_img and img.dtype != self.dtype:
-      self.dtype = img.dtype
+    if not no_img and img.dtype.name != self.dtype:
+      self.dtype = img.dtype.name
     if not no_img and img.shape != self.shape:
       self.shape = img.shape
 

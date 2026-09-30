@@ -7,7 +7,8 @@ from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
-from ..tool.camera_config import VideoExtensoConfig
+from ..tool.camera_config import (VideoExtensoConfig, CameraConfigurator,
+                                  create_configurator)
 
 
 class VideoExtenso(Camera):
@@ -402,7 +403,7 @@ class VideoExtenso(Camera):
 
     super().prepare()
 
-  def _configure(self) -> VideoExtensoConfig:
+  def _configure(self) -> CameraConfigurator:
     """Instantiates the
     :class:`~crappy.tool.camera_config.VideoExtensoConfig` window for
     configuring the :class:`~crappy.camera.meta_camera.camera.Camera` object
@@ -419,15 +420,16 @@ class VideoExtenso(Camera):
       raise RuntimeError("At that point the log_queue should be set but it "
                          "isn't")
 
-    return VideoExtensoConfig(self._camera,
-                              self._log_queue,
-                              self._log_level,
-                              self.freq,
-                              self._transform,
-                              white_spots=self._white_spots,
-                              num_spots=self._num_spots,
-                              min_area=self._min_area,
-                              blur=self._blur,
-                              update_thresh=self._update_thresh,
-                              safe_mode=self._safe_mode,
-                              border=self._border)
+    return create_configurator(VideoExtensoConfig,
+                               self._camera,
+                               self._log_queue,
+                               self._log_level,
+                               self.freq,
+                               self._transform,
+                               white_spots=self._white_spots,
+                               num_spots=self._num_spots,
+                               min_area=self._min_area,
+                               blur=self._blur,
+                               update_thresh=self._update_thresh,
+                               safe_mode=self._safe_mode,
+                               border=self._border)
