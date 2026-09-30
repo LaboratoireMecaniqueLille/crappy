@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from __future__ import annotations
 import tkinter as tk
 from tkinter.messagebox import showerror
 from platform import system
@@ -9,15 +10,16 @@ import importlib.resources
 from io import BytesIO
 import logging
 from dataclasses import dataclass
-from multiprocessing import current_process, Event, Queue
+from multiprocessing import current_process, Event, Queue, synchronize
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from collections.abc import Callable, Iterable
 
 from .config_tools import Zoom, HistogramProcess
 from .display_state import DisplayGeometry, DisplayState
 from .setting_manager import SettingManager
+from .selection_behavior import ConfigAction
 from ...camera.meta_camera.camera_setting import (
   CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
 from ...camera.meta_camera import Camera
@@ -28,6 +30,9 @@ try:
 except (ModuleNotFoundError, ImportError):
   ImageTk = OptionalModule("pillow")
   Image = OptionalModule("pillow")
+
+if TYPE_CHECKING:
+  from PIL import Image, ImageTk
 
 
 @dataclass
@@ -116,44 +121,46 @@ class CameraConfig(tk.Tk):
     """
 
     super().__init__()
-    self._camera = camera
-    self._display_state = DisplayState()
-    self._display_geometry = DisplayGeometry()
-    self._hist_width = 0
-    self._hist_height = 0
+    self._camera: Camera = camera
+    self._display_state: DisplayState = DisplayState()
+    self._display_geometry: DisplayGeometry = DisplayGeometry()
+    self._hist_width: int = 0
+    self._hist_height: int = 0
     self._setting_controls: dict[CameraSetting, _TkSettingControl] = dict()
-    self._setting_manager = SettingManager(camera.settings,
-                                           self._create_local_settings())
+    self._setting_manager: SettingManager = SettingManager(
+        camera.settings, self._create_local_settings())
     self.shape: tuple[int, int] | tuple[int, int, int] | None = None
-    self.dtype = None
+    self.dtype: np.dtype | None = None
     self._logger: logging.Logger | None = None
     self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
 
     # Instantiating objects for the process managing the histogram calculation
-    self._stop_event = Event()
-    self._processing_event = Event()
-    self._img_in = Queue(maxsize=0)
-    self._img_out = Queue(maxsize=0)
-    self._histogram_process = HistogramProcess(
+    self._stop_event: synchronize.Event = Event()
+    self._processing_event: synchronize.Event = Event()
+    self._img_in: MPQueue = Queue(maxsize=0)
+    self._img_out: MPQueue = Queue(maxsize=0)
+    self._histogram_process: HistogramProcess = HistogramProcess(
         stop_event=self._stop_event, processing_event=self._processing_event,
         img_in=self._img_in, img_out=self._img_out, log_level=log_level,
         log_queue=log_queue)
 
     # Attributes containing the several images and histograms
-    self._img = None
-    self._pil_img = None
-    self._original_img = None
-    self._hist = None
-    self._pil_hist = None
+    self._img: np.ndarray | None = None
+    self._pil_img: Image.Image | None = None
+    self._original_img: np.ndarray | None = None
+    self._hist: np.ndarray | None = None
+    self._pil_hist: Image.Image | None = None
+    self._image_tk: ImageTk.PhotoImage | None = None
+    self._hist_tk: ImageTk.PhotoImage | None = None
 
     # Other attributes used in this class
-    self._low_thresh = None
-    self._high_thresh = None
-    self._move_x = None
-    self._move_y = None
-    self._n_loops = 0
+    self._low_thresh: float | None = None
+    self._high_thresh: float | None = None
+    self._move_x: float | None = None
+    self._move_y: float | None = None
+    self._n_loops: int = 0
     self._last_upd_t: float | None = None
-    self._max_freq = max_freq
+    self._max_freq: float | None = max_freq
     self._got_first_img: bool = False
 
     # Keeping track of the scheduled objects to be able to cancel them later
@@ -162,9 +169,9 @@ class CameraConfig(tk.Tk):
     self._upd_var_sched_obj: str | None = None
 
     # Settings for adjusting the behavior of the zoom
-    self._zoom_ratio = 0.9
-    self._zoom_step = 0
-    self._max_zoom_step = 15
+    self._zoom_ratio: float = 0.9
+    self._zoom_step: int = 0
+    self._max_zoom_step: int = 15
 
     # Settings of the root window
     self.title(f'Configuration window for the camera: {type(camera).__name__}')
@@ -240,12 +247,42 @@ class CameraConfig(tk.Tk):
   def finish(self) -> None:
     """Method called when the user tries to close the configuration window.
 
-    Mostly intended for being overwritten.
+    Shared behavior validates and finalizes the configuration, the Tk backend
+    presents any reason that prevents closing.
     
     .. versionadded:: 2.0.0
     """
 
+    # Prevent closing in case something isn't configured yet
+    if (reason := self._validate_close()) is not None:
+      self.log(logging.WARNING, reason)
+      showerror("Error !", message=reason)
+      return
+
+    # Otherwise perform closing action and stop
+    self._on_valid_close()
     self.stop()
+
+  def _validate_close(self) -> str | None:
+    """Return a reason to keep the window open, or :obj:``None`` when valid.
+
+    Meant to be overridden in children classes.
+
+    ..versionadded:: 2.1.0
+    """
+
+    ...
+
+  def _on_valid_close(self) -> None:
+    """Perform finalization after closing validation and before actually
+    closing.
+
+    Meant to be overridden in children classes.
+
+    ..versionadded:: 2.1.0
+    """
+
+    ...
 
   def stop(self) -> None:
     """Method called for gracefully stopping the GUI.
@@ -479,13 +516,32 @@ class CameraConfig(tk.Tk):
     self._settings_canvas.config(yscrollcommand=self._vbar.set)
 
   def _create_buttons(self) -> None:
-    """This method is meant to simplify the addition of extra buttons in
-    subclasses."""
+    """Create the Apply button and any backend-independent extra actions."""
 
-    self._update_button = tk.Button(self._sets_frame, text="Apply Settings",
-                                    command=self._update_settings)
-    self._update_button.pack(expand=False, fill='none', ipadx=5, ipady=5,
-                             padx=5, pady=5, anchor='n', side='top')
+    self._apply_button = tk.Button(self._sets_frame, text="Apply Settings",
+                                   command=self._update_settings)
+    self._update_button = self._apply_button  # For historical compatibility
+    self._apply_button.pack(expand=False, fill='none', ipadx=5, ipady=5,
+                            padx=5, pady=5, anchor='n', side='top')
+
+    # Add any extra button requested by children classes
+    self._action_buttons: dict[str, tk.Button] = dict()
+    for action in self._extra_actions():
+      if action.id in self._action_buttons:
+        raise ValueError(f"Duplicate configuration action: {action.id}")
+      button = tk.Button(self._sets_frame, text=action.label,
+                         command=action.callback)
+      button.pack(expand=False, fill='none', ipadx=5, ipady=5,
+                  padx=5, pady=5, anchor='n', side='top')
+      self._action_buttons[action.id] = button
+
+  def _extra_actions(self) -> tuple[ConfigAction, ...]:
+    """Return additional buttons for the backend to integrate on the GUI.
+
+    ..versionadded:: 2.1.0
+    """
+
+    return tuple()
 
   def _custom_yview(self, *args) -> None:
     """Custom handling of the settings canvas scrollbar, that does nothing
@@ -926,8 +982,8 @@ class CameraConfig(tk.Tk):
     """Translate the Tk checkbutton state and update the Apply button."""
 
     self._display_state.auto_apply = bool(self._auto_apply_var.get())
-    self._update_button['state'] = (
-      'disabled' if self._display_state.auto_apply else 'normal')
+    self._apply_button['state'] = ('disabled' if self._display_state.auto_apply
+                                   else 'normal')
 
   def _update_settings(self) -> None:
     """Apply local settings, then camera settings, through the shared manager.

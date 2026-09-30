@@ -1,27 +1,26 @@
 # coding: utf-8
 
-import numpy as np
+"""Tk adapter for reusable box-selection behavior."""
+
 import tkinter as tk
-import logging
-from multiprocessing.queues import Queue
 from collections.abc import Callable
+from multiprocessing.queues import Queue
+import numpy as np
 
 from .camera_config import CameraConfig
-from .config_tools import Box, SpotsBoxes
+from .selection_behavior import BoxSelectionBehavior
 from ...camera.meta_camera import Camera
 
 
-class CameraConfigBoxes(CameraConfig):
-  """This class is a basis for the configuration GUIs featuring boxes to
-  display or to draw.
-  
-  It is a child of the base :class:`~crappy.tool.camera_config.CameraConfig`,
-  and relies on the :class:`~crappy.tool.camera_config.config_tools.Box` and
-  :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` tools. It
-  implements useful methods for drawing one or several Boxes. If instantiated,
-  this class behaves the exact same way as its parent class. It is not used as
-  is by any Block in Crappy.
-  
+class CameraConfigBoxes(BoxSelectionBehavior, CameraConfig):
+  """Base Tk configurator for displaying and selecting image-coordinate boxes.
+
+  It extends :class:`~crappy.tool.camera_config.CameraConfig` with transient
+  box selection and image-array overlays. The selection rules live in
+  :class:`BoxSelectionBehavior`. This class binds Tk events and forwards their
+  coordinates. A different backend can reuse the same behavior. This class is
+  not used directly by a Block.
+
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0
      renamed from *Camera_config_with_boxes* to *CameraConfigBoxes*
@@ -33,7 +32,7 @@ class CameraConfigBoxes(CameraConfig):
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None) -> None:
-    """Initializes the parent class and sets the spots container.
+    """Initialize box-selection state and the parent camera configurator.
 
     Args:
       camera: The :class:`~crappy.camera.meta_camera.camera.Camera` object in
@@ -57,79 +56,27 @@ class CameraConfigBoxes(CameraConfig):
         .. versionadded:: 2.1.0
     """
 
-    self._spots = SpotsBoxes()
-    self._select_box = Box()
     super().__init__(camera, log_queue, log_level, max_freq, transform)
 
-  def _draw_box(self, box: Box) -> None:
-    """Draws one line of the box after the other, making sure they fit in the
-    image."""
+  def _set_bindings(self) -> None:
+    """Bind Tk left-button events to the shared selection lifecycle."""
 
-    if self._img is None or box.no_points():
-      return
-
-    self.log(logging.DEBUG, f"Drawing the box: {box}")
-
-    # Determining the number of lines to draw
-    x_top, x_bottom, y_left, y_right = box.sorted()
-    display_width = max(self._display_geometry.width, 1)
-    display_height = max(self._display_geometry.height, 1)
-    max_fact = max(self._img.shape[0] // display_height,
-                   self._img.shape[1] // display_width, 1)
-
-    try:
-      for line in (line for i in range(max_fact) for line in
-                   ((box.y_start + i, slice(x_top, x_bottom)),
-                    (box.y_end - i, slice(x_top, x_bottom)),
-                    (slice(y_left, y_right), x_top + i),
-                    (slice(y_left, y_right), x_bottom - i))):
-        if np.size(self._original_img[line]) > 0:
-          self._img[line] = 255 * int(np.mean(self._img[line]) < 128)
-    except IndexError:
-      self._handle_box_outside_img(box)
-      return
-
-  def _handle_box_outside_img(self, box: Box) -> None:
-    """This method is meant to simplify the customization of the action to
-    perform when a patch is outside the image in subclasses."""
-
-    ...
-
-  def _draw_spots(self) -> None:
-    """Simply draws every spot on top of the image."""
-
-    if self._img is None:
-      return
-
-    for spot in self._spots:
-      if spot is not None:
-        self._draw_box(spot)
+    super()._set_bindings()
+    self._img_canvas.bind('<ButtonPress-1>', self._start_box)
+    self._img_canvas.bind('<B1-Motion>', self._extend_box)
+    self._img_canvas.bind('<ButtonRelease-1>', self._stop_box)
 
   def _start_box(self, event: tk.Event) -> None:
-    """Simply saves the position of the user click."""
+    """Translate a Tk button press into display coordinates."""
 
-    self.log(logging.DEBUG, "Starting the selection box")
-
-    # If the mouse is on the canvas but not on the image, do nothing
-    if not self._check_event_pos(event):
-      return
-
-    (self._select_box.x_start,
-     self._select_box.y_start) = self._coord_to_pix(event.x, event.y)
+    self._start_box_at(event.x, event.y)
 
   def _extend_box(self, event: tk.Event) -> None:
-    """Draws a box as the user drags the mouse while maintaining the left
-    button clicked."""
+    """Translate a Tk button drag into display coordinates."""
 
-    if self._select_box.x_start is None or self._select_box.y_start is None:
-      self.log(logging.DEBUG, "Not extending selection box as start was empty")
-      return
+    self._extend_box_to(event.x, event.y)
 
-    self.log(logging.DEBUG, "Extending the selection box")
+  def _stop_box(self, _: tk.Event) -> None:
+    """Complete the current selection after a Tk button release."""
 
-    # If the mouse is on the canvas but not on the image, do nothing
-    if not self._check_event_pos(event):
-      return
-
-    (self._select_box.x_end,
-     self._select_box.y_end) = self._coord_to_pix(event.x, event.y)
+    self._complete_box_selection()

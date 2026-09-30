@@ -1,37 +1,27 @@
 # coding: utf-8
 
-import tkinter as tk
-from tkinter.messagebox import showerror
-import logging
-from multiprocessing.queues import Queue
+"""Tk-backed VideoExtenso configuration."""
+
 from collections.abc import Callable
+from multiprocessing.queues import Queue
 import numpy as np
 
 from .camera_config_boxes import CameraConfigBoxes
-from .config_tools import Box, SpotsDetector, SpotsBoxes
+from .config_tools import SpotsDetector, SpotsBoxes
+from .selection_behavior import VideoExtensoBehavior
 from ...camera.meta_camera import Camera
-from ..._global import OptionalModule
-
-try:
-  from PIL import Image
-except (ModuleNotFoundError, ImportError):
-  Image = OptionalModule("pillow")
 
 
-class VideoExtensoConfig(CameraConfigBoxes):
-  """Class similar to :class:`~crappy.tool.camera_config.CameraConfig` but also
-  displaying the bounding boxes of the detected spots, and allowing to select
-  the area where to detect the spots by drawing a box with the left mouse
-  button.
+class VideoExtensoConfig(VideoExtensoBehavior, CameraConfigBoxes):
+  """Configure initial spot detection for a VideoExtenso Block.
 
-  It relies on the :class:`~crappy.tool.camera_config.config_tools.Box` and
-  :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` tools. It is
-  meant to be used for configuring the :class:`~crappy.blocks.VideoExtenso`
-  Block. This window creates and owns the SpotsDetector used for initial spot
-  selection. When the window closes, :meth:`get_config` exports the resulting
-  spot boxes and threshold; it does not expose the detector itself to the
-  public Block or the processing process.
-  
+  Drag a box over the source image to detect spots within that crop. The
+  window owns a :class:`~crappy.tool.camera_config.config_tools.SpotsDetector`
+  and exposes a Save L0 action for their initial separation. On close,
+  :meth:`get_config` exports the spot boxes and threshold, not the detector.
+  Detection, validation, and Save L0 behavior live in
+  :class:`VideoExtensoBehavior`.
+
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *VE_config* to *VideoExtensoConfig*
   .. versionchanged:: 2.1.0 creates and owns its SpotsDetector, and exports
@@ -51,7 +41,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
                update_thresh: bool,
                safe_mode: bool,
                border: int) -> None:
-    """Sets the args and initializes the parent class.
+    """Initialize the preview and detector with the requested spot policy.
 
     Args:
       camera: The :class:`~crappy.camera.meta_camera.camera.Camera` object in
@@ -123,120 +113,4 @@ class VideoExtensoConfig(CameraConfigBoxes):
                                                   update_thresh=update_thresh,
                                                   safe_mode=safe_mode,
                                                   border=border)
-    self._spots = self._detector.spots
-
-  def finish(self) -> None:
-    """Method called when the user tries to close the configuration window.
-
-    Checks that spots were detected on the image. If not, warns the user and
-    prevents him from exiting except with CTRL+C. Also, saves the initial
-    length if not already done by the user.
-    
-    .. versionadded:: 2.0.0
-    """
-
-    if self._detector.spots.empty():
-      self.log(logging.WARNING, "No spots were selected ! Not exiting the "
-                                "configuration window")
-      showerror("Error !",
-                message="Please select spots before exiting the config "
-                        "window !\nOr hit CTRL+C to exit Crappy")
-      return
-
-    if self._detector.spots.x_l0 is None or self._detector.spots.y_l0 is None:
-      self._detector.spots.save_length()
-      self.log(logging.INFO,
-               f"Successfully saved L0 ! L0 x : {self._detector.spots.x_l0}, "
-               f"L0 y : {self._detector.spots.y_l0}")
-
-    super().stop()
-
-  def get_config(self) -> tuple[SpotsBoxes, int]:
-    """Exports the result of initial spot detection.
-
-    Returns:
-      The configured spot boxes and gray-level threshold, ready to be unpacked
-      into
-      :meth:`~crappy.blocks.camera_processes.VideoExtensoProcess.set_config`.
-
-    .. versionadded:: 2.1.0
-    """
-
-    return self._detector.spots, self._detector.thresh
-
-  def _set_bindings(self) -> None:
-    """Binds the left mouse button click for drawing the box in which the spots
-    will be searched."""
-
-    super()._set_bindings()
-
-    self._img_canvas.bind('<ButtonPress-1>', self._start_box)
-    self._img_canvas.bind('<B1-Motion>', self._extend_box)
-    self._img_canvas.bind('<ButtonRelease-1>', self._stop_box)
-
-  def _create_buttons(self) -> None:
-    """Compared with the parent class, creates an extra button for saving the
-    original position of the spots."""
-
-    super()._create_buttons()
-
-    self._update_button = tk.Button(self._sets_frame, text="Save L0",
-                                    command=self._save_l0)
-    self._update_button.pack(expand=False, fill='none', ipadx=5, ipady=5,
-                             padx=5, pady=5, anchor='n', side='top')
-
-  def _stop_box(self, _: tk.Event) -> None:
-    """When the user releases the mouse, searches for spots in the selected
-    area and displays them if any were found."""
-
-    # If it's just a regular click with no dragging, do nothing
-    if self._img is None or self._select_box.no_points():
-      self._select_box.reset()
-      return
-
-    # The sides need to be sorted before slicing numpy array
-    y_left, y_right, x_top, x_bottom = self._select_box.sorted()
-
-    # If the box is flat, resetting it
-    if y_left == y_right or x_top == x_bottom:
-      self._select_box.reset()
-      return
-
-    # Now actually trying to detect the spots
-    try:
-      self._detector.detect_spots(self._original_img[x_top: x_bottom,
-                                                     y_left: y_right],
-                                  x_top, y_left)
-    except IndexError:
-      # Highly unlikely but always better to be careful
-      self._detector.spots.reset()
-      return
-
-    # This box is not needed anymore
-    self._select_box.reset()
-
-  def _save_l0(self) -> None:
-    """Saves the original positions of the spots on the image."""
-
-    if self._detector.spots.empty():
-      self.log(logging.WARNING, "Cannot save L0, there are no spots !")
-    else:
-      self._detector.spots.save_length()
-      self.log(logging.INFO,
-               f"Successfully saved L0 ! L0 x : {self._detector.spots.x_l0}, "
-               f"L0 y : {self._detector.spots.y_l0}")
-
-  def _draw_overlay(self) -> None:
-    """Draws the detected spots to track on top of the last acquired image.
-
-    Also draws the selection box if the user is currently drawing one.
-    """
-
-    self._draw_box(self._select_box)
-    self._draw_spots()
-
-  def _handle_box_outside_img(self, box: Box) -> None:
-    """If a patch is outside the image, it means that the image size has been
-    modified. Simply resetting the spots then."""
-
-    self._spots.reset()
+    self._spots: SpotsBoxes = self._detector.spots
