@@ -55,6 +55,23 @@ class TestSettingManager(unittest.TestCase):
     self.assertEqual(result.changed, ())
     self.assertEqual(calls, [])
 
+  def test_unrelated_pending_edit_is_not_reported_for_sync(self) -> None:
+    """Applying one setting leaves an unrelated editor request untouched."""
+
+    enabled = CameraBoolSetting('enabled', default=False)
+    gain = CameraScaleSetting('gain', 0, 10, default=0)
+    manager = SettingManager({'enabled': enabled, 'gain': gain})
+    pending = {enabled: False, gain: 8}
+    gain_revision = gain.revision
+
+    result = manager.apply(enabled, True)
+    for setting in result.changed:
+      pending[setting] = setting.value
+
+    self.assertEqual(result.changed, (enabled,))
+    self.assertEqual(gain.revision, gain_revision)
+    self.assertEqual(pending, {enabled: True, gain: 8})
+
   def test_local_settings_precede_camera_settings(self) -> None:
     first = CameraBoolSetting('first')
     second = CameraBoolSetting('second')

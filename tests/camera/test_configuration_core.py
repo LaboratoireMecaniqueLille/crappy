@@ -92,3 +92,23 @@ class TestConfigurationCore(unittest.TestCase):
     camera.frame = None
     self.assertFalse(core._acquire_image())
     self.assertEqual(core._n_loops, 1)
+
+  def test_pan_uses_plain_display_coordinates(self) -> None:
+    """Drag movement changes zoom bounds without a GUI event object."""
+
+    core = RecordingCore(CoreTestCamera(), None, None)
+    core._display_geometry.width = 40
+    core._display_geometry.height = 40
+    core._display_geometry.image_width = 40
+    core._display_geometry.image_height = 40
+    self.assertTrue(core._zoom_at(20, 20, 1))
+
+    start = core._zoom_values.x_low
+    core._begin_pan(20, 20)
+    core._pan_to(25, 20)
+    self.assertLess(core._zoom_values.x_low, start)
+
+    core._begin_pan(-1, -1)
+    stopped = core._zoom_values.x_low
+    core._pan_to(30, 20)
+    self.assertEqual(core._zoom_values.x_low, stopped)

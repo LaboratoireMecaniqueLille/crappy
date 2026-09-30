@@ -599,6 +599,33 @@ class TestCameraSource(VisionTestBase):
     self.assertIsInstance(raised.exception.__cause__, ValueError)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
+  def test_configure_preserves_failure_when_cleanup_fails(self) -> None:
+    """A failing stop cannot replace the original configurator error."""
+
+    source = self.make_source()
+    source._log_queue = sentinel.log_queue
+    failure = ValueError('configuration failed')
+
+    class FailingStopConfig(RecordingConfig):
+      """Configurator whose cleanup also fails after a run error."""
+
+      def run(self) -> None:
+        """Fail as a configuration callback would."""
+
+        raise failure
+
+      def stop(self) -> None:
+        """Record cleanup, then raise a second error."""
+
+        self.stop_calls += 1
+        raise RuntimeError('cleanup failed')
+
+    with self.assertRaises(CameraConfigError) as raised:
+      source.configure(RecordingVisionCamera(), FailingStopConfig)
+
+    self.assertIs(raised.exception.__cause__, failure)
+    self.assertEqual(FailingStopConfig.instances[-1].stop_calls, 1)
+
   def test_configure_reports_missing_log_queue_as_runtime_error(self) -> None:
     """Checks the documented error for unavailable logging infrastructure."""
 

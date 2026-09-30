@@ -377,6 +377,18 @@ class TestCameraBlock(CameraBlockTestBase):
     self.assertIs(raised.exception.__cause__, failure)
     config.stop.assert_called_once_with()
 
+  def test_configure_wraps_constructor_failure(self) -> None:
+    """A failed configurator constructor reaches the Block with its cause."""
+
+    camera = self.make_camera()
+    failure = ValueError('cannot construct configuration window')
+
+    with (patch.object(camera, '_configure', side_effect=failure),
+          self.assertRaises(CameraConfigError) as raised):
+      camera.configure()
+
+    self.assertIs(raised.exception.__cause__, failure)
+
   def test_configure_preserves_failure_when_cleanup_also_fails(self) -> None:
     """Cleanup failure does not hide the original configuration error."""
 
