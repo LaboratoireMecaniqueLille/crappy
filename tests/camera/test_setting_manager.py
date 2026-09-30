@@ -4,7 +4,7 @@ import unittest
 
 from crappy.camera.meta_camera.camera_setting import (
   CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
-from crappy.tool.camera_config.setting_manager import SettingManager
+from crappy.tool.camera_config.config_core import SettingManager
 
 
 class TestSettingManager(unittest.TestCase):

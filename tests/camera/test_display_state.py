@@ -3,7 +3,7 @@
 import unittest
 
 from crappy.tool.camera_config.config_tools.zoom import Zoom
-from crappy.tool.camera_config.display_state import DisplayGeometry, DisplayState
+from crappy.tool.camera_config.config_core import DisplayGeometry, DisplayState
 
 
 class TestDisplayState(unittest.TestCase):

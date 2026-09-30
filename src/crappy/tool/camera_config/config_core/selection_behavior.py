@@ -12,10 +12,13 @@ from dataclasses import dataclass
 from typing import Any
 import numpy as np
 
-from .config_tools import Box, SpotsBoxes, SpotsDetector, Zoom
+from ..config_tools.box import Box
+from ..config_tools.spots_boxes import SpotsBoxes
+from ..config_tools.spots_detector import SpotsDetector
+from ..config_tools.zoom import Zoom
 from .display_state import DisplayGeometry
-from ...camera.meta_camera.camera_setting import (CameraSetting,
-                                                  CameraScaleSetting)
+from ....camera.meta_camera.camera_setting import (CameraSetting,
+                                                   CameraScaleSetting)
 
 
 @dataclass(frozen=True)

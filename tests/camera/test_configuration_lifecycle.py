@@ -5,7 +5,7 @@
 import unittest
 from multiprocessing import Event
 
-from crappy.tool.camera_config.configuration_lifecycle import (
+from crappy.tool.camera_config.config_core.configuration_lifecycle import (
   ConfigurationLifecycle, is_configurator_class)
 
 

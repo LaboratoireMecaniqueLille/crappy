@@ -12,7 +12,7 @@ from .block import VisionBlock
 from ..camera import camera_dict, DummyCam, moved_to_collection
 from ...tool.camera_config import (CameraConfig, ConfiguratorFactory,
                                    create_configurator)
-from ...tool.camera_config.configuration_lifecycle import (
+from ...tool.camera_config.config_core.configuration_lifecycle import (
   CameraConfigurator, is_configurator_class)
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,

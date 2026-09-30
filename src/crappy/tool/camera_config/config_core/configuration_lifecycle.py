@@ -1,6 +1,9 @@
 # coding: utf-8
 
-"""Backend-independent camera configurator contract and resource lifetime."""
+"""Backend-independent configurator contract and resource lifetime.
+
+The owning Block uses this contract regardless of the GUI backend.
+"""
 
 from collections.abc import Callable, Iterable
 import logging
@@ -12,7 +15,7 @@ from types import TracebackType
 from typing import Any, Protocol
 import numpy as np
 
-from ...camera.meta_camera import Camera
+from ....camera.meta_camera import Camera
 
 
 class CameraConfigurator(Protocol):

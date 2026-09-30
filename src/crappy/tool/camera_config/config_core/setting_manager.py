@@ -1,12 +1,15 @@
 # coding: utf-8
 
-"""Toolkit-independent application of camera configuration settings."""
+"""Toolkit-independent application of camera configuration settings.
+
+Backends provide requested values and render the effective results.
+"""
 
 from dataclasses import dataclass
 from typing import Any
 from collections.abc import Mapping
 
-from ...camera.meta_camera.camera_setting import CameraSetting
+from ....camera.meta_camera.camera_setting import CameraSetting
 
 
 @dataclass(frozen=True)

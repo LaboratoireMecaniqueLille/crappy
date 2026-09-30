@@ -7,8 +7,8 @@ from multiprocessing.queues import Queue
 import numpy as np
 
 from .camera_config_boxes import CameraConfigBoxes
+from .config_core import VideoExtensoBehavior
 from .config_tools import SpotsDetector, SpotsBoxes
-from .selection_behavior import VideoExtensoBehavior
 from ...camera.meta_camera import Camera
 
 

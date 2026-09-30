@@ -16,9 +16,8 @@ from types import TracebackType
 from typing import TYPE_CHECKING
 from collections.abc import Callable, Iterable
 
+from .config_core import CameraConfigCore, ConfigurationLifecycle
 from .config_tools import HistogramProcess
-from .configuration_lifecycle import ConfigurationLifecycle
-from .configuration_core import CameraConfigCore
 from ...camera.meta_camera.camera_setting import (
   CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
 from ...camera.meta_camera import Camera
@@ -81,7 +80,7 @@ class CameraConfig(CameraConfigCore, tk.Tk):
   also interacts with instances of the
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
   Toolkit-independent state and image interactions are inherited from
-  :class:`~crappy.tool.camera_config.configuration_core.CameraConfigCore`,
+  :class:`~crappy.tool.camera_config.config_core.CameraConfigCore`,
   this class owns Tk controls, event scheduling, and rendering.
 
   .. versionadded:: 1.4.0

@@ -8,7 +8,7 @@ from multiprocessing.queues import Queue
 import numpy as np
 
 from .camera_config import CameraConfig
-from .selection_behavior import BoxSelectionBehavior
+from .config_core import BoxSelectionBehavior
 from ...camera.meta_camera import Camera
 
 

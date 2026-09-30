@@ -9,7 +9,7 @@ import numpy as np
 
 from crappy.camera.meta_camera import Camera
 from crappy.camera.meta_camera.camera_setting import CameraBoolSetting
-from crappy.tool.camera_config.configuration_core import CameraConfigCore
+from crappy.tool.camera_config.config_core import CameraConfigCore
 
 
 class CoreTestCamera(Camera):

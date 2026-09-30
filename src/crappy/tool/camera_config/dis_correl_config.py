@@ -7,8 +7,8 @@ from multiprocessing.queues import Queue
 import numpy as np
 
 from .camera_config_boxes import CameraConfigBoxes
+from .config_core import DISCorrelBehavior
 from .config_tools import Box
-from .selection_behavior import DISCorrelBehavior
 from ...camera.meta_camera import Camera
 
 

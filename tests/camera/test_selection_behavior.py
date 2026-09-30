@@ -7,8 +7,8 @@ import unittest
 import numpy as np
 
 from crappy.tool.camera_config.config_tools import Box, SpotsBoxes, Zoom
-from crappy.tool.camera_config.display_state import DisplayGeometry
-from crappy.tool.camera_config.selection_behavior import (
+from crappy.tool.camera_config.config_core import DisplayGeometry
+from crappy.tool.camera_config.config_core.selection_behavior import (
   BoxSelectionBehavior, DISCorrelBehavior, DICVEBehavior, VideoExtensoBehavior)
 
 

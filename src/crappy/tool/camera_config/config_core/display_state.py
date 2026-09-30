@@ -4,7 +4,7 @@
 
 from dataclasses import dataclass
 
-from .config_tools.zoom import Zoom
+from ..config_tools.zoom import Zoom
 
 
 @dataclass

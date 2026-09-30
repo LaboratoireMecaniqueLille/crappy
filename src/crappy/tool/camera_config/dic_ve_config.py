@@ -7,8 +7,8 @@ from multiprocessing.queues import Queue
 import numpy as np
 
 from .camera_config_boxes import CameraConfigBoxes
+from .config_core import DICVEBehavior
 from .config_tools import SpotsBoxes
-from .selection_behavior import DICVEBehavior
 from ...camera.meta_camera import Camera
 from ...camera.meta_camera.camera_setting import CameraScaleSetting
 

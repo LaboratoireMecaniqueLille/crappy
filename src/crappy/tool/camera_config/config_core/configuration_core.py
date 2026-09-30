@@ -9,13 +9,13 @@ from io import BytesIO
 from typing import Any
 import numpy as np
 
-from .config_tools import Zoom
+from ..config_tools.zoom import Zoom
 from .display_state import DisplayGeometry, DisplayState
 from .selection_behavior import ConfigAction
 from .setting_manager import SettingManager
-from ...camera.meta_camera import Camera
-from ...camera.meta_camera.camera_setting import CameraSetting
-from ..._global import OptionalModule
+from ....camera.meta_camera import Camera
+from ....camera.meta_camera.camera_setting import CameraSetting
+from ...._global import OptionalModule
 
 try:
   from PIL import Image
