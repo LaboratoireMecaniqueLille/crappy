@@ -3,6 +3,7 @@
 from copy import deepcopy
 from importlib.util import find_spec
 import unittest
+from unittest.mock import patch
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSpots)
@@ -47,6 +48,24 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     can exit even in case of a bug."""
 
     self._config._detector.spots.spot_1 = Box(0, 100, 0, 100)
+
+  def test_actions_and_invalid_close(self) -> None:
+    """Save L0 stays available when auto-apply disables only Apply."""
+
+    self.assertIs(self._config._update_button, self._config._apply_button)
+    save_button = self._config._action_buttons['save_l0']
+    self.assertIsNot(save_button, self._config._apply_button)
+    self._config._auto_apply_var.set(True)
+    self._config._on_auto_apply_toggle()
+    self.assertEqual(self._config._apply_button['state'], 'disabled')
+    self.assertEqual(save_button['state'], 'normal')
+
+    with patch('crappy.tool.camera_config.camera_config.showerror') as dialog:
+      self._config.finish()
+    dialog.assert_called_once()
+    self.assertTrue(self._config.winfo_exists())
+    self.assertFalse(self._config._stop_event.is_set())
+    self.assertIsNone(self._config._detector.spots.x_l0)
 
   def test_video_extenso(self) -> None:
     """Tests whether the spots are correctly detected in different
@@ -129,7 +148,7 @@ class TestVideoExtenso(ConfigurationWindowTestBase):
     self.assertIsNone(self._config._spots.y_l0)
 
     # Click on the save L0 button
-    self._config._update_button.invoke()
+    self._config._action_buttons['save_l0'].invoke()
 
     # Check that the initial lengths have been set
     self.assertIsNotNone(self._config._spots.x_l0)

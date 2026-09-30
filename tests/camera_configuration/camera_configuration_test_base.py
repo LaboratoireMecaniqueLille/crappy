@@ -48,9 +48,6 @@ from crappy.tool.camera_config.dis_correl_config import DISCorrelConfig
 from crappy.tool.camera_config.video_extenso_config import VideoExtensoConfig
 from crappy.camera.meta_camera.camera import Camera
 import crappy.tool.camera_config.camera_config as camera_config_module
-import crappy.tool.camera_config.dic_ve_config as dic_ve_config_module
-import crappy.tool.camera_config.dis_correl_config as dis_correl_config_module
-import crappy.tool.camera_config.video_extenso_config as video_extenso_config_module
 
 
 class DummyCamera(Camera):
@@ -114,11 +111,10 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     # Patch the references imported directly by the implementation. This keeps
     # expected validation dialogs from blocking a test without replacing a
     # stdlib module globally in sys.modules.
-    for module in (camera_config_module, dic_ve_config_module,
-                   dis_correl_config_module, video_extenso_config_module):
-      patcher = patch.object(module, 'showerror', return_value=None)
-      patcher.start()
-      self.addCleanup(patcher.stop)
+    patcher = patch.object(camera_config_module, 'showerror',
+                           return_value=None)
+    patcher.start()
+    self.addCleanup(patcher.stop)
 
     # Negative-path GUI tests deliberately emit warnings. Silence only the
     # loggers owned by these fixtures and restore their previous state later.
