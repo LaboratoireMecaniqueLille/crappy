@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from collections.abc import Callable
 from multiprocessing import Value
 from unittest.mock import Mock, call, patch, sentinel
 import logging
@@ -71,6 +72,7 @@ class RecordingConfig:
     self.dtype = type(self).dtype_value
     self.run_calls = 0
     self.stop_calls = 0
+    self.shutdown_requested: Callable[[], bool] = lambda: False
     type(self).instances.append(self)
 
   def run(self) -> None:
@@ -86,6 +88,11 @@ class RecordingConfig:
     """Records error cleanup."""
 
     self.stop_calls += 1
+
+  def watch_shutdown(self, requested: Callable[[], bool]) -> None:
+    """Store the Block's shutdown predicate for inspection."""
+
+    self.shutdown_requested = requested
 
   def get_config(self):
     """Returns deterministic configuration data."""
@@ -530,6 +537,31 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(source._img_shape, (4, 5))
     self.assertEqual(source._img_dtype, 'uint16')
     self.assertIsInstance(source._img_dtype, str)
+
+  def test_configure_aborts_if_preparation_barrier_breaks(self) -> None:
+    """A canceled source request cannot publish partial configuration."""
+
+    source = self.make_source()
+    self.set_prepare_sync(source)
+    source._log_queue = sentinel.log_queue
+    camera = RecordingVisionCamera()
+
+    class WatchedConfig(RecordingConfig):
+      """Configurator that observes a peer failure during its run."""
+
+      def run(self) -> None:
+        """Simulate a peer crashing while this window is open."""
+
+        source._ready_barrier.abort()
+
+    with self.assertRaises(PrepareError):
+      source.configure(camera, WatchedConfig)
+
+    config = WatchedConfig.instances[-1]
+    self.assertTrue(config.shutdown_requested())
+    self.assertEqual(config.stop_calls, 1)
+    self.assertEqual(source._img_shape, (2, 3))
+    self.assertEqual(source._img_dtype, 'uint8')
 
   def test_configure_validates_camera_and_configurator_types(self) -> None:
     """Checks direct type validation before opening a GUI."""

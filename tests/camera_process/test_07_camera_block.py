@@ -309,6 +309,26 @@ class TestCameraBlock(CameraBlockTestBase):
     config.get_config.assert_called_once_with()
     process.set_config.assert_not_called()
 
+  def test_configure_aborts_if_preparation_barrier_breaks(self) -> None:
+    """Forced closure must not export an incomplete selection."""
+
+    camera = self.make_camera()
+    process = MagicMock()
+    camera.process_proc = process
+    config = MagicMock()
+    config.run.side_effect = camera._ready_barrier.abort
+
+    with (patch.object(camera, '_configure', return_value=config),
+          self.assertRaises(PrepareError)):
+      camera.configure()
+
+    config.watch_shutdown.assert_called_once()
+    self.assertTrue(config.watch_shutdown.call_args.args[0]())
+    config.stop.assert_called_once_with()
+    config.get_config.assert_not_called()
+    process.set_config.assert_not_called()
+    self.assertEqual(camera._img_dtype, 'uint8')
+
   def test_configure_factory_forwards_transform(self) -> None:
     """Tests that CameraConfig previews the transformed camera image."""
 

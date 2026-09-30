@@ -109,11 +109,26 @@ class TestConfigurationLifecycle(unittest.TestCase):
       def stop(self):
         pass
 
+      def watch_shutdown(self, requested):
+        pass
+
       def get_config(self):
         return None
 
     self.assertTrue(is_configurator_class(Config))
     self.assertFalse(is_configurator_class(object))
+
+    class MissingShutdown:
+      def run(self):
+        pass
+
+      def stop(self):
+        pass
+
+      def get_config(self):
+        return None
+
+    self.assertFalse(is_configurator_class(MissingShutdown))
 
 
 if __name__ == '__main__':

@@ -47,7 +47,7 @@ class TestFPS(ConfigurationWindowTestBase):
       for fps in (1, 2, 3, 4, 5, 10, 15, 20):
         with self.subTest(fps=fps):
           self._config._max_freq = fps
-          self._config._next_acq_t = None
+          self._config._next_acq_t = -float('inf')
 
           for _ in range(10):
             current_time[0] += 1 / fps

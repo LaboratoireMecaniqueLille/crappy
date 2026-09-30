@@ -2,7 +2,7 @@
 
 """Tk integration checks for the neutral configuration lifecycle."""
 
-from multiprocessing import Queue
+from multiprocessing import Event, Queue
 from unittest.mock import patch
 
 from .camera_configuration_test_base import ConfigurationWindowTestBase, tk
@@ -20,6 +20,55 @@ class TestConfigurationLifecycle(ConfigurationWindowTestBase):
     self.assertTrue(self._config._stop_event.is_set())
     self.assertFalse(self._config._histogram_process.is_alive())
     self._config.stop()
+
+  def test_shutdown_closes_without_validating_selection(self) -> None:
+    """A Block stop destroys the window and releases its resources."""
+
+    stop_event = Event()
+    self._config.watch_shutdown(stop_event.is_set)
+    self._config.after(0, stop_event.set)
+
+    with (patch.object(self._config, '_validate_close') as validate,
+          patch.object(self._config, '_on_valid_close') as finalize):
+      self._config.run()
+
+    validate.assert_not_called()
+    finalize.assert_not_called()
+    self.assertTrue(self._config._stop_event.is_set())
+    self.assertFalse(self._config._histogram_process.is_alive())
+    self.assertTrue(self._config._img_in._closed)
+    self.assertTrue(self._config._img_out._closed)
+    with self.assertRaises(tk.TclError):
+      self._config.wm_state()
+
+  def test_shutdown_before_run_does_not_start_histogram(self) -> None:
+    """An already stopped Block never starts configuration resources."""
+
+    stop_event = Event()
+    stop_event.set()
+    self._config.watch_shutdown(stop_event.is_set)
+
+    with patch.object(self._config._histogram_process, 'start') as start:
+      self._config.run()
+
+    start.assert_not_called()
+    self.assertTrue(self._config._stop_event.is_set())
+    self.assertTrue(self._config._img_in._closed)
+    self.assertTrue(self._config._img_out._closed)
+
+  def test_user_close_after_shutdown_skips_selection_validation(self) -> None:
+    """A pending shutdown takes precedence over the normal close checks."""
+
+    stop_event = Event()
+    stop_event.set()
+    self._config.watch_shutdown(stop_event.is_set)
+
+    with patch.object(self._config, '_validate_close') as validate:
+      self._config.finish()
+
+    validate.assert_not_called()
+    self.assertTrue(self._config._img_in._closed)
+    self.assertTrue(self._config._img_out._closed)
 
   def test_callback_error_reaches_run(self) -> None:
     """Tk's callback handler retains its error for the Block caller."""

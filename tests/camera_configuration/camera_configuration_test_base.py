@@ -200,7 +200,7 @@ class ConfigurationWindowTestBase(unittest.TestCase):
     """Run one deterministic acquisition/update cycle."""
 
     self._config._last_upd_t -= elapsed
-    self._config._next_acq_t = None
+    self._config._next_acq_t = -float('inf')
     self._config._img_acq_sched()
     self._config._upd_var_sched()
 
