@@ -7,22 +7,18 @@ from platform import system
 from math import ceil
 import numpy as np
 from time import monotonic, time
-import importlib.resources
-from io import BytesIO
 import logging
 from dataclasses import dataclass
 from multiprocessing import current_process, Event, Queue, synchronize
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
 from types import TracebackType
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from collections.abc import Callable, Iterable
 
-from .config_tools import Zoom, HistogramProcess
-from .display_state import DisplayGeometry, DisplayState
-from .setting_manager import SettingManager
-from .selection_behavior import ConfigAction
+from .config_tools import HistogramProcess
 from .configuration_lifecycle import ConfigurationLifecycle
+from .configuration_core import CameraConfigCore
 from ...camera.meta_camera.camera_setting import (
   CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
 from ...camera.meta_camera import Camera
@@ -59,7 +55,7 @@ class _TkSettingControl:
   frame: tk.Frame | None = None
 
 
-class CameraConfig(tk.Tk):
+class CameraConfig(CameraConfigCore, tk.Tk):
   """This class is a GUI allowing the user to visualize the images from a
   :class:`~crappy.camera.meta_camera.camera.Camera` before a Crappy test
   starts, and to tune the settings of the Camera.
@@ -84,6 +80,9 @@ class CameraConfig(tk.Tk):
   :class:`~crappy.tool.camera_config.config_tools.HistogramProcess` tools. It
   also interacts with instances of the
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
+  Toolkit-independent state and image interactions are inherited from
+  :class:`~crappy.tool.camera_config.configuration_core.CameraConfigCore`,
+  this class owns Tk controls, event scheduling, and rendering.
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Camera_config* to *CameraConfig*
@@ -123,25 +122,18 @@ class CameraConfig(tk.Tk):
         .. versionadded:: 2.1.0
     """
 
-    super().__init__()
-    self._camera: Camera = camera
-    self._display_state: DisplayState = DisplayState()
-    self._display_geometry: DisplayGeometry = DisplayGeometry()
+    tk.Tk.__init__(self)
     self._hist_width: int = 0
     self._hist_height: int = 0
     self._setting_controls: dict[CameraSetting, _TkSettingControl] = dict()
     # Abort early in case an exception is caught while instantiating settings
     try:
-      self._setting_manager: SettingManager = SettingManager(
-          camera.settings, self._create_local_settings())
+      CameraConfigCore.__init__(self, camera, max_freq, transform)
     except BaseException:
       self.destroy()
       raise
 
-    self.shape: tuple[int, int] | tuple[int, int, int] | None = None
-    self.dtype: str | None = None
     self._logger: logging.Logger | None = None
-    self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
 
     self._window_closed: bool = False
     self._stop_event: synchronize.Event = Event()
@@ -184,24 +176,15 @@ class CameraConfig(tk.Tk):
       raise
 
     # Attributes containing the several images and histograms
-    self._img: np.ndarray | None = None
     self._pil_img: Image.Image | None = None
-    self._original_img: np.ndarray | None = None
     self._hist: np.ndarray | None = None
     self._pil_hist: Image.Image | None = None
     self._image_tk: ImageTk.PhotoImage | None = None
     self._hist_tk: ImageTk.PhotoImage | None = None
 
     # Other attributes used in this class
-    self._low_thresh: float | None = None
-    self._high_thresh: float | None = None
-    self._move_x: float | None = None
-    self._move_y: float | None = None
-    self._n_loops: int = 0
     self._last_upd_t: float | None = None
     self._next_acq_t: float = -float('inf')
-    self._max_freq: float | None = max_freq
-    self._got_first_img: bool = False
 
     # Keeping track of the scheduled objects to be able to cancel them later
     self._img_acq_sched_obj: str | None = None
@@ -209,18 +192,11 @@ class CameraConfig(tk.Tk):
     self._shutdown_sched_obj: str | None = None
     self._shutdown_requested: Callable[[], bool] | None = None
 
-    # Settings for adjusting the behavior of the zoom
-    self._zoom_ratio: float = 0.9
-    self._zoom_step: int = 0
-    self._max_zoom_step: int = 15
-
     # Settings of the root window
     try:
       self.title(f'Configuration window for the camera: '
                  f'{type(camera).__name__}')
       self.protocol("WM_DELETE_WINDOW", self.finish)
-      self._zoom_values = Zoom()
-
       # Initializing the interface
       self._set_variables()
       self._set_layout()
@@ -386,27 +362,6 @@ class CameraConfig(tk.Tk):
     self._on_valid_close()
     self.stop()
 
-  def _validate_close(self) -> str | None:
-    """Return a reason to keep the window open, or :obj:``None`` when valid.
-
-    Meant to be overridden in children classes.
-
-    ..versionadded:: 2.1.0
-    """
-
-    ...
-
-  def _on_valid_close(self) -> None:
-    """Perform finalization after closing validation and before actually
-    closing.
-
-    Meant to be overridden in children classes.
-
-    ..versionadded:: 2.1.0
-    """
-
-    ...
-
   def stop(self) -> None:
     """Method called for gracefully stopping the GUI.
 
@@ -447,25 +402,6 @@ class CameraConfig(tk.Tk):
                                   "ignoring")
       finally:
         self._lifecycle.close_resources()
-
-  def get_config(self) -> tuple[Any, ...] | None:
-    """Exports the state needed by the image-processing
-    :class:`~crappy.blocks.camera_processes.CameraProcess`.
-
-    :class:`~crappy.blocks.Camera` calls this method after the configuration
-    window closes and before it starts the
-    :class:`~crappy.blocks.camera_processes.CameraProcess`. Subclasses should
-    return a tuple whose items match the positional parameters of the paired
-    :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` method.
-
-    Returns:
-      The positional arguments to pass to ``set_config()``, or :obj:`None` if
-      no processing configuration is required.
-
-    .. versionadded:: 2.1.0
-    """
-
-    ...
 
   def _img_acq_sched(self) -> None:
     """Acquire a frame when due, then schedule the next acquisition."""
@@ -638,14 +574,6 @@ class CameraConfig(tk.Tk):
                   padx=5, pady=5, anchor='n', side='top')
       self._action_buttons[action.id] = button
 
-  def _extra_actions(self) -> tuple[ConfigAction, ...]:
-    """Return additional buttons for the backend to integrate on the GUI.
-
-    ..versionadded:: 2.1.0
-    """
-
-    return tuple()
-
   def _custom_yview(self, *args) -> None:
     """Custom handling of the settings canvas scrollbar, that does nothing
     if the entire canvas is already visible."""
@@ -748,151 +676,26 @@ class CameraConfig(tk.Tk):
       self._on_img_resize()
       self._sync_indicator_labels()
 
-  def _zoom_at(self, x: int, y: int, direction: int) -> bool:
-    """Zoom at a display position using a signed, toolkit-free direction."""
-
-    if not direction or not self._is_on_image(x, y):
-      return False
-
-    self.log(logging.DEBUG, "Zooming on the image")
-    next_step = min(max(self._zoom_step + direction, 0), self._max_zoom_step)
-    if next_step == self._zoom_step:
-      return False
-    self._zoom_step = next_step
-    self._display_state.zoom_percent = (100 * (1 / self._zoom_ratio) **
-                                        self._zoom_step)
-
-    if self._zoom_step == 0:
-      self._zoom_values.reset()
-      return True
-
-    relative_x, relative_y = self._display_geometry.relative(x, y)
-    geometry = self._display_geometry
-    x_ratio = (relative_x * (self._zoom_values.x_high -
-                             self._zoom_values.x_low) / geometry.image_width)
-    y_ratio = (relative_y * (self._zoom_values.y_high -
-                             self._zoom_values.y_low) / geometry.image_height)
-    ratio = self._zoom_ratio if direction < 0 else 1 / self._zoom_ratio
-    self._zoom_values.update_zoom(x_ratio, y_ratio, ratio)
-    return True
-
   def _update_coord(self, event: tk.Event) -> None:
     """Translate Tk motion into a display-coordinate reticle update."""
 
     if self._point_at(event.x, event.y):
       self._sync_indicator_labels()
 
-  def _point_at(self, x: int, y: int) -> bool:
-    """Update the reticle from plain display coordinates."""
-
-    if not self._is_on_image(x, y):
-      return False
-
-    self.log(logging.DEBUG, "Updating the coordinates of the current pixel")
-    (self._display_state.reticle_x,
-     self._display_state.reticle_y) = self._coord_to_pix(x, y)
-    self._update_pixel_value()
-    return True
-
-  def _update_pixel_value(self) -> None:
-    """Read the original-image value at the current reticle position."""
-
-    self.log(logging.DEBUG, "Updating the value of the current pixel")
-
-    if self._original_img is None or not self._original_img.size:
-      return
-
-    try:
-      self._display_state.reticle_value = int(np.average(
-        self._original_img[self._display_state.reticle_y,
-                           self._display_state.reticle_x]))
-    except IndexError:
-      self._display_state.reticle_x = 0
-      self._display_state.reticle_y = 0
-      self._display_state.reticle_value = int(np.average(
-        self._original_img[0, 0]))
-
-  def _coord_to_pix(self, x: int, y: int) -> tuple[int, int]:
-    """Convert display coordinates to full-image pixel coordinates."""
-
-    if self._img is None:
-      return 0, 0
-
-    img_height, img_width, *_ = self._img.shape
-    return self._display_geometry.to_pixel(x, y, img_width, img_height,
-                                           self._zoom_values)
-
   def _start_move(self, event: tk.Event) -> None:
     """Translate a Tk right-button press into a pan start."""
 
     self._begin_pan(event.x, event.y)
-
-  def _begin_pan(self, x: int, y: int) -> None:
-    """Start panning from a display coordinate on the image."""
-
-    # Invalidate previous drag before checking new start position
-    self._move_x = None
-    self._move_y = None
-    if not self._is_on_image(x, y):
-      return
-
-    self.log(logging.DEBUG, "Drag started")
-    self._move_x, self._move_y = self._display_geometry.relative(x, y)
 
   def _move(self, event: tk.Event) -> None:
     """Translate a Tk right-button drag into a pan update."""
 
     self._pan_to(event.x, event.y)
 
-  def _pan_to(self, x: int, y: int) -> None:
-    """Pan the image to a display coordinate after a valid press."""
-
-    # Do nothing if the drag did not start on the image, or if the mouse is no
-    # longer on the image.
-    if (self._move_x is None or self._move_y is None or
-        not self._is_on_image(x, y)):
-      return
-
-    self.log(logging.DEBUG, "Dragging the image")
-
-    geometry = self._display_geometry
-    zoom_x_low, zoom_x_high = self._zoom_values.x_low, self._zoom_values.x_high
-    zoom_y_low, zoom_y_high = self._zoom_values.y_low, self._zoom_values.y_high
-
-    # Getting the position delta, in the coordinates of the display
-    relative_x, relative_y = geometry.relative(x, y)
-    delta_x_disp = self._move_x - relative_x
-    delta_y_disp = self._move_y - relative_y
-
-    # Converting the position delta to a ratio between 0 and 1 relative to the
-    # size of the original image
-    delta_x = delta_x_disp * (zoom_x_high - zoom_x_low) / geometry.image_width
-    delta_y = delta_y_disp * (zoom_y_high - zoom_y_low) / geometry.image_height
-
-    # Actually updating the display
-    self._zoom_values.update_move(delta_x, delta_y)
-
-    # Resetting the original position, otherwise the drag never ends
-    self._move_x, self._move_y = relative_x, relative_y
-
   def _check_event_pos(self, event: tk.Event) -> bool:
     """Tk compatibility adapter for subclass event handlers."""
 
     return self._is_on_image(event.x, event.y)
-
-  def _is_on_image(self, x: int, y: int) -> bool:
-    """Check image hit-testing from plain display coordinates."""
-
-    return self._display_geometry.contains(x, y)
-
-  def _create_local_settings(self) -> tuple[CameraSetting, ...]:
-    """Create configurator-specific settings before building backend controls.
-
-    Subclasses can return local settings here. They are applied before camera
-    settings and are displayed before the sorted camera controls.
-    """
-
-    return tuple()
 
   def _add_settings(self) -> None:
     """Adds the settings of the camera to the GUI."""
@@ -1123,70 +926,6 @@ class CameraConfig(tk.Tk):
     if self._display_state.auto_apply:
       self._update_settings()
 
-  def _cast_img(self, img: np.ndarray) -> None:
-    """Casts the image to 8-bits as a greater precision is not required.
-
-    May also interpolate the image to obtain a higher contrast, depending on
-    the user's choice.
-    """
-
-    # Ensure the image has a supported shape
-    if len(img.shape) not in (2, 3):
-      raise ValueError(f"Cannot handle images of shape {img.shape} !")
-
-    # Ensure the image has either 1, 2, 3, or 4 channels
-    if len(img.shape) == 3 and img.shape[2] > 4:
-      raise ValueError(f"Cannot handle images of shape {img.shape} !")
-
-    # Single-channel stored in 3D arrays images should be flattened
-    if len(img.shape) == 3 and img.shape[2] == 1:
-      img = img[:, :, 0]
-
-    # Two-channel images are considered to be grey level plus an alpha channel,
-    # which is ignored here
-    if len(img.shape) == 3 and img.shape[2] == 2:
-      img = img[:, :, 0]
-
-    # Four-channel images are considered to be BGR plus an alpha channel, which
-    # is ignored here
-    if len(img.shape) == 3 and img.shape[2] == 4:
-      img = img[:, :, :3]
-
-    # Converting from BGR to RGB
-    if len(img.shape) == 3:
-      img = img[:, :, ::-1]
-
-    # If the auto_range is set, adjusting the values to the range
-    if self._display_state.auto_range:
-      self.log(logging.DEBUG, "Applying auto range to the image")
-      self._low_thresh, self._high_thresh = map(float,
-                                                np.percentile(img, (3, 97)))
-      self._img = ((np.clip(img, self._low_thresh, self._high_thresh) -
-                    self._low_thresh) * 255 /
-                   (self._high_thresh - self._low_thresh)).astype('uint8')
-
-      # The original image still needs to be saved as 8-bits
-      bit_depth = int(np.ceil(np.log2(int(np.max(img)) + 1)))
-      self._original_img = (img / 2 ** (bit_depth - 8)).astype('uint8')
-
-    # Or if the image is not already 8 bits, casting to 8 bits
-    elif img.dtype != np.uint8:
-      self.log(logging.DEBUG, "Casting the image to 8 bits")
-      bit_depth = int(np.ceil(np.log2(int(np.max(img)) + 1)))
-      self._img = (img / 2 ** (bit_depth - 8)).astype('uint8')
-      self._original_img = np.copy(self._img)
-
-    # Else, the image is usable as is
-    else:
-      self._img = img
-      self._original_img = np.copy(img)
-
-    # Updating the information
-    self._display_state.detected_bits = int(np.ceil(np.log2(int(np.max(img))
-                                                            + 1)))
-    self._display_state.max_pixel = int(np.max(img))
-    self._display_state.min_pixel = int(np.min(img))
-
   def _read_image_geometry(self) -> None:
     """Translate the Tk image-canvas size into ordinary display geometry."""
 
@@ -1338,48 +1077,13 @@ class CameraConfig(tk.Tk):
     self._display_hist()
 
   def _update_img(self) -> None:
-    """Acquires and transforms an image, then updates the GUI information."""
+    """Acquire an image through the core and render it in Tk."""
 
     self.log(logging.DEBUG, "Updating the image")
 
-    ret = self._camera.get_image()
+    if not self._acquire_image():
+      return
 
-    # Flag raised if no image could be grabbed
-    no_img = ret is None
-
-    # If no frame could be grabbed from the camera
-    if no_img:
-      # If it's the first call, generate error image to initialize the window
-      if not self._got_first_img:
-        self.log(logging.WARNING, "Could not get an image from the camera, "
-                                  "displaying an error image instead")
-        no_img_path = importlib.resources.files('crappy').joinpath(
-            'tool/data/no_image.png')
-        ret = None, np.array(Image.open(BytesIO(no_img_path.read_bytes())))
-      # Otherwise, just pass
-      else:
-        self.log(logging.DEBUG, "No image returned by the camera")
-        return
-
-    if ret is None:
-      raise RuntimeError("The returned metadata and image shouldn't be None "
-                         "at that point")
-
-    # Always set, so that the error image is only ever loaded once
-    self._got_first_img = True
-    self._n_loops += 1
-    _, img = ret
-
-    # Apply the transform operation if one was defined
-    if not no_img and self._transform is not None:
-      img = self._transform(img)
-
-    if not no_img and img.dtype.name != self.dtype:
-      self.dtype = img.dtype.name
-    if not no_img and img.shape != self.shape:
-      self.shape = img.shape
-
-    self._cast_img(img)
     self._read_image_geometry()
     self._read_histogram_geometry()
     self._draw_overlay()
