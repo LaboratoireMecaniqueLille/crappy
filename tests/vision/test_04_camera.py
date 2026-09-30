@@ -57,7 +57,7 @@ class RecordingConfig:
 
   instances: list['RecordingConfig'] = list()
   shape_value = (4, 5)
-  dtype_value = np.dtype('uint16')
+  dtype_value = 'uint16'
   result = ('configured',)
   raise_in: str | None = None
 
@@ -106,7 +106,7 @@ class TestCameraSource(VisionTestBase):
     RecordingVisionCamera.instances.clear()
     RecordingConfig.instances.clear()
     RecordingConfig.shape_value = (4, 5)
-    RecordingConfig.dtype_value = np.dtype('uint16')
+    RecordingConfig.dtype_value = 'uint16'
     RecordingConfig.result = ('configured',)
     RecordingConfig.raise_in = None
     patcher = patch.dict(camera_module.camera_dict,
@@ -529,6 +529,7 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(result, ('configured',))
     self.assertEqual(source._img_shape, (4, 5))
     self.assertEqual(source._img_dtype, 'uint16')
+    self.assertIsInstance(source._img_dtype, str)
 
   def test_configure_validates_camera_and_configurator_types(self) -> None:
     """Checks direct type validation before opening a GUI."""

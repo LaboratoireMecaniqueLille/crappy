@@ -280,7 +280,7 @@ class TestCameraBlock(CameraBlockTestBase):
     camera.process_proc = process
     config = MagicMock()
     config.shape = (6, 7)
-    config.dtype = np.dtype('uint16')
+    config.dtype = 'uint16'
     config.get_config.return_value = (sentinel.processing_config,)
 
     with patch.object(camera, '_configure', return_value=config):
@@ -288,7 +288,8 @@ class TestCameraBlock(CameraBlockTestBase):
 
     config.run.assert_called_once_with()
     self.assertEqual(camera._img_shape, (6, 7))
-    self.assertEqual(camera._img_dtype, np.dtype('uint16'))
+    self.assertEqual(camera._img_dtype, 'uint16')
+    self.assertIsInstance(camera._img_dtype, str)
     process.set_config.assert_called_once_with(sentinel.processing_config)
 
   def test_configure_ignores_empty_processing_config(self) -> None:

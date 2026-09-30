@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import numpy as np
-import numpy.dtypes as np_dt
 
 from .camera_configuration_test_base import (ConfigurationWindowTestBase,
                                              FakeTestCameraSimple)
@@ -92,7 +91,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
     self.assertTrue(self._config._got_first_img)
 
     # Image-type related parameters should no longer be None
-    self.assertIsInstance(self._config.dtype, np_dt.UInt8DType)
+    self.assertEqual(self._config.dtype, 'uint8')
     self.assertEqual(self._config.shape, (240, 320))
 
     # These image containers should not be empty
@@ -134,7 +133,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
     self.assertTrue(self._config._got_first_img)
 
     # Image-type parameters should be unchanged compared to previous loop
-    self.assertIsInstance(self._config.dtype, np_dt.UInt8DType)
+    self.assertEqual(self._config.dtype, 'uint8')
     self.assertEqual(self._config.shape, (240, 320))
 
     # The histogram should now have been loaded
@@ -160,7 +159,7 @@ class TestLoopImg(ConfigurationWindowTestBase):
 
     self.assertEqual(len(transformed), 1)
     self.assertEqual(self._config.shape, (120, 160))
-    self.assertEqual(self._config.dtype, np.dtype('uint16'))
+    self.assertEqual(self._config.dtype, 'uint16')
     bit_depth = int(np.ceil(np.log2(int(np.max(transformed[0])) + 1)))
     np.testing.assert_array_equal(self._config._original_img,
                                   (transformed[0] /
