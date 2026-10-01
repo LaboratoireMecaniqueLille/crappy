@@ -168,6 +168,7 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(source._camera_kwargs, {'serial': 'abc'})
     self.assertEqual(source.freq, 100)
     self.assertTrue(source._allow_downstream_config)
+    self.assertEqual(source._config_backend, 'tkinter')
     self.assertEqual(CameraSource.cam_count[RecordingVisionCamera.__name__], 1)
 
     generator = lambda _exx, _eyy: np.zeros((2, 3), dtype=np.uint8)
@@ -193,6 +194,8 @@ class TestCameraSource(VisionTestBase):
       {'software_trig_label': ''},
       {'software_trig_label': 1},
       {'image_generator': object()},
+      {'config_backend': 'qt'},
+      {'config_backend': None},
     )
     for options in cases:
       with self.subTest(options=options):
@@ -203,6 +206,9 @@ class TestCameraSource(VisionTestBase):
         defaults.update(options)
         with self.assertRaises((TypeError, ValueError)):
           CameraSource(**defaults)
+
+    selected = self.make_source(config_backend='tkinter', serial='abc')
+    self.assertEqual(selected._camera_kwargs, {'serial': 'abc'})
 
     deprecated_name = next(iter(camera_module.moved_to_collection))
     with self.assertRaises(NotImplementedError):
@@ -524,10 +530,13 @@ class TestCameraSource(VisionTestBase):
     source._log_level = logging.WARNING
     camera = RecordingVisionCamera()
 
-    result = source.configure(camera, RecordingConfig,
-                              'argument', option=sentinel.option)
+    with patch.object(camera_module, 'create_configurator',
+                      wraps=camera_module.create_configurator) as factory:
+      result = source.configure(camera, RecordingConfig,
+                                'argument', option=sentinel.option)
 
     config = RecordingConfig.instances[-1]
+    self.assertEqual(factory.call_args.args[2], 'tkinter')
     self.assertEqual(config.constructor_args,
                      (camera, sentinel.log_queue, logging.WARNING, 123,
                       transform, ('argument',), {'option': sentinel.option}))

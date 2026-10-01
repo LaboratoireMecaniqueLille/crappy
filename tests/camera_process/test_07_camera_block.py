@@ -338,16 +338,43 @@ class TestCameraBlock(CameraBlockTestBase):
     camera = self.make_camera(transform=transform)
     camera._camera = sentinel.camera
 
-    with patch.object(camera_module, 'CameraConfig',
-                      return_value=sentinel.config) as config_class:
+    with (patch.object(camera_module, 'CameraConfig',
+                       return_value=sentinel.config) as config_class,
+          patch.object(camera_module, 'create_configurator',
+                       wraps=camera_module.create_configurator) as factory):
       ret = camera._configure()
 
     self.assertIs(ret, sentinel.config)
+    self.assertEqual(factory.call_args.args[2], 'tkinter')
     config_class.assert_called_once_with(sentinel.camera,
                                          camera._log_queue,
                                          camera._log_level,
                                          camera.freq,
                                          transform)
+
+  def test_config_backend_is_consumed_before_camera_kwargs(self) -> None:
+    """A GUI selector cannot accidentally reach Camera.open()."""
+
+    camera = self.make_camera(config_backend='tkinter', serial='abc')
+
+    self.assertEqual(camera._config_backend, 'tkinter')
+    self.assertEqual(camera._camera_kwargs, {'serial': 'abc'})
+    with self.assertRaisesRegex(ValueError, 'config_backend'):
+      self.make_camera(config_backend='qt')
+    with self.assertRaisesRegex(TypeError, 'config_backend'):
+      self.make_camera(config_backend=None)
+
+  def test_unimplemented_pyqt_backend_does_not_open_tk(self) -> None:
+    """The accepted future backend cannot silently create a Tk window."""
+
+    camera = self.make_camera(config_backend='pyqt')
+    camera._camera = sentinel.camera
+
+    with patch.object(camera_module, 'CameraConfig') as tk_class:
+      with self.assertRaisesRegex(NotImplementedError, 'pyqt'):
+        camera._configure()
+
+    tk_class.assert_not_called()
 
   def test_configure_stops_window_on_keyboard_interrupt(self) -> None:
     """Tests that an interrupted configuration window is cleaned up."""
