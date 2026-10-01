@@ -71,21 +71,28 @@ def is_configurator_class(value: object) -> bool:
 
 def create_configurator(configurator: ConfiguratorFactory,
                         camera: Camera,
+                        config_backend: str,
                         log_queue: Queue,
                         log_level: int | None,
                         max_freq: float | None,
                         transform: Callable[[np.ndarray], np.ndarray] | None,
                         *args: Any,
                         **kwargs: Any) -> CameraConfigurator:
-  """Instantiate a configurator with the arguments shared by both Block paths.
+  """Instantiate a configurator with arguments shared by both Block paths.
 
-  This is the common class-selection boundary for the main Camera Block and
-  Vision CameraSource. A future backend selector can resolve the appropriate
-  Tk or Qt class here while preserving each Block's specialized arguments.
+  The public Camera Blocks validate ``config_backend``. Tk uses the supplied
+  configurator class, including explicit custom classes. The PyQt option is
+  reserved until its configurator classes are implemented.
   """
 
-  return configurator(camera, log_queue, log_level, max_freq, transform,
-                      *args, **kwargs)
+  if config_backend == 'tkinter':
+    return configurator(camera, log_queue, log_level, max_freq, transform,
+                        *args, **kwargs)
+  elif config_backend == 'pyqt':
+    raise NotImplementedError("The 'pyqt' CameraConfig backend is not yet "
+                              "implemented")
+  else:
+    raise ValueError(f"Unknown config_backend: {config_backend!r}")
 
 
 class ConfigurationLifecycle:

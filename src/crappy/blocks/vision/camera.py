@@ -6,7 +6,7 @@ from collections import defaultdict
 import logging
 from time import time, strftime, gmtime
 from types import MethodType
-from typing import Any
+from typing import Any, Literal
 
 from .block import VisionBlock
 from ..camera import camera_dict, DummyCam, moved_to_collection
@@ -66,6 +66,7 @@ class CameraSource(VisionBlock):
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
+               config_backend: Literal['tkinter', 'pyqt'] = 'tkinter',
                allow_downstream_config: bool = True,
                image_generator: Callable[[float, float],
                                          np.ndarray] | None = None,
@@ -95,6 +96,11 @@ class CameraSource(VisionBlock):
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
         values. Configuration also determines the output image shape and dtype.
         If :obj:`False`, both ``img_shape`` and ``img_dtype`` must be supplied.
+      config_backend: GUI backend for the configuration window. ``'tkinter'``
+        is implemented; ``'pyqt'`` is reserved and raises an error if selected
+        for configuration. This option is not passed to the Camera.
+
+        .. versionadded:: 2.1.0
       allow_downstream_config: Whether downstream VisionBlocks may replace the
         generic window with specialized configuration requests. Required
         requests can only be served when this argument and ``config`` are both
@@ -185,6 +191,10 @@ class CameraSource(VisionBlock):
       raise TypeError("When provided, transform must be a callable")
     if not isinstance(config, bool):
       raise TypeError("config must be a boolean")
+    if not isinstance(config_backend, str):
+      raise TypeError("config_backend must be a string")
+    if config_backend not in ('tkinter', 'pyqt'):
+      raise ValueError("config_backend must be either 'tkinter' or 'pyqt'")
     if not isinstance(allow_downstream_config, bool):
       raise TypeError("allow_downstream_config must be a boolean")
     if (software_trig_label is not None and
@@ -197,6 +207,7 @@ class CameraSource(VisionBlock):
     # Setting the other attributes
     self._trig_label: str | None = software_trig_label
     self._config_cam: bool = config
+    self._config_backend: Literal['tkinter', 'pyqt'] = config_backend
     self._allow_downstream_config: bool = allow_downstream_config
     self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
     self._image_generator: Callable[[float, float],
@@ -528,8 +539,8 @@ class CameraSource(VisionBlock):
                               f"{class_name} with camera "
                               f"{type(camera).__name__}, args {args}, "
                               f"kwargs {kwargs}")
-      config = create_configurator(config_class, camera, self._log_queue,
-                                   self._log_level, self.freq,
+      config = create_configurator(config_class, camera, self._config_backend,
+                                   self._log_queue, self._log_level, self.freq,
                                    self._transform, *args, **kwargs)
       assert config is not None
       config.watch_shutdown(shutdown_requested)

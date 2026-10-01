@@ -526,6 +526,7 @@ class DISCorrel(Camera):
 
     return create_configurator(DISCorrelConfig,
                                self._camera,
+                               self._config_backend,
                                self._log_queue,
                                self._log_level,
                                self.freq,

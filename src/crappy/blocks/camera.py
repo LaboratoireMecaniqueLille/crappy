@@ -77,6 +77,7 @@ class Camera(Block):
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
+               config_backend: Literal['tkinter', 'pyqt'] = 'tkinter',
                display_images: bool = False,
                displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
@@ -123,6 +124,11 @@ class Camera(Block):
         provided.
 
         .. versionadded:: 1.5.10
+      config_backend: GUI backend for the configuration window. ``'tkinter'``
+        is implemented; ``'pyqt'`` is reserved and raises an error if selected
+        for configuration. This option is not passed to the Camera.
+
+        .. versionadded:: 2.1.0
       display_images: If :obj:`True`, displays the acquired images in a
         dedicated window, using the backend given in ``displayer_backend`` and
         at the frequency specified in ``displayer_framerate``. This option
@@ -328,6 +334,10 @@ class Camera(Block):
       raise TypeError("When provided, transform must be a callable")
     if not isinstance(config, bool):
       raise TypeError("config must be a boolean")
+    if not isinstance(config_backend, str):
+      raise TypeError("config_backend must be a string")
+    if config_backend not in ('tkinter', 'pyqt'):
+      raise ValueError("config_backend must be either 'tkinter' or 'pyqt'")
     if not isinstance(display_images, bool):
       raise TypeError("display_images must be a boolean")
     if (displayer_backend is not None 
@@ -376,6 +386,7 @@ class Camera(Block):
     # Setting the other attributes
     self._trig_label: str | None = software_trig_label
     self._config_cam: bool = config
+    self._config_backend: Literal['tkinter', 'pyqt'] = config_backend
     self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
     self._image_generator: Callable[[float, float],
                                     np.ndarray] | None = image_generator
@@ -951,6 +962,7 @@ class Camera(Block):
 
     return create_configurator(CameraConfig,
                                self._camera,
+                               self._config_backend,
                                self._log_queue,
                                self._log_level,
                                self.freq,
