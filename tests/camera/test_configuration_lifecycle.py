@@ -8,7 +8,7 @@ from multiprocessing import Event
 from unittest.mock import patch
 
 from crappy.tool.camera_config.config_core.configuration_lifecycle import (
-  ConfigurationLifecycle, ExceptionInfo, is_configurator_class)
+  ConfigurationLifecycle, ExceptionInfo)
 
 
 class _Queue:
@@ -150,37 +150,6 @@ class TestConfigurationLifecycle(unittest.TestCase):
       self.assertEqual(level, logging.ERROR)
       assert info is not None
       self.assertIsNotNone(info[2])
-
-  def test_neutral_class_check_accepts_non_tk_configurator(self) -> None:
-    """The Vision caller can select a class unrelated to CameraConfig."""
-
-    class Config:
-      def run(self):
-        pass
-
-      def stop(self):
-        pass
-
-      def watch_shutdown(self, requested):
-        pass
-
-      def get_config(self):
-        return None
-
-    self.assertTrue(is_configurator_class(Config))
-    self.assertFalse(is_configurator_class(object))
-
-    class MissingShutdown:
-      def run(self):
-        pass
-
-      def stop(self):
-        pass
-
-      def get_config(self):
-        return None
-
-    self.assertFalse(is_configurator_class(MissingShutdown))
 
 
 if __name__ == '__main__':

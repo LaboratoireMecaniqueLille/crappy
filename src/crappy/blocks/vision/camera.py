@@ -10,10 +10,8 @@ from typing import Any, Literal
 
 from .block import VisionBlock
 from ..camera import camera_dict, DummyCam, moved_to_collection
-from ...tool.camera_config import (CameraConfig, ConfiguratorFactory,
-                                   create_configurator)
-from ...tool.camera_config.config_core.configuration_lifecycle import (
-  CameraConfigurator, is_configurator_class)
+from ...tool.camera_config import (CameraConfig, CameraConfigurator,
+                                   ConfiguratorFactory, create_configurator)
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,
                             load_collection_class)
@@ -516,7 +514,9 @@ class CameraSource(VisionBlock):
     # Preliminary general checks
     if not isinstance(camera, BaseCam):
       raise TypeError("camera must be an instance of Camera")
-    if not is_configurator_class(config_class):
+    if (not isinstance(config_class, type) or
+        not all(callable(getattr(config_class, name, None)) for name in
+                ('run', 'stop', 'watch_shutdown', 'get_config'))):
       raise TypeError("config_class must implement run(), stop(), "
                       "watch_shutdown(), and get_config()")
     class_name = config_class.__name__

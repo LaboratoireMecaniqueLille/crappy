@@ -584,6 +584,12 @@ class TestCameraSource(VisionTestBase):
     with self.assertRaises(TypeError):
       source.configure(camera, object)
 
+    class MissingShutdown(RecordingConfig):
+      watch_shutdown = None
+
+    with self.assertRaises(TypeError):
+      source.configure(camera, MissingShutdown)
+
   def test_configure_stops_failed_or_interrupted_window(self) -> None:
     """Checks exception translation and KeyboardInterrupt cleanup."""
 

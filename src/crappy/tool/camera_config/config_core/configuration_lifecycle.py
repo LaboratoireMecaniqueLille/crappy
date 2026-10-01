@@ -19,17 +19,6 @@ from ....camera.meta_camera import Camera
 ExceptionInfo = tuple[type[BaseException], BaseException, TracebackType | None]
 
 
-class ConfigurationLog(Protocol):
-  """Logging callback that preserves an explicitly supplied exception."""
-
-  def __call__(self,
-               level: int,
-               msg: str,
-               *,
-               exc_info: ExceptionInfo | None = None) -> None:
-    """Record a message or an exception with its original traceback."""
-
-
 class CameraConfigurator(Protocol):
   """Lifecycle and output required by Camera and Vision Block callers.
 
@@ -59,14 +48,6 @@ class CameraConfigurator(Protocol):
 
 
 ConfiguratorFactory = Callable[..., CameraConfigurator]
-
-
-def is_configurator_class(value: object) -> bool:
-  """Check the neutral lifecycle methods before constructing a configurator."""
-
-  return (isinstance(value, type) and
-          all(callable(getattr(value, name, None))
-              for name in ("run", "stop", "watch_shutdown", "get_config")))
 
 
 def create_configurator(configurator: ConfiguratorFactory,
@@ -109,12 +90,12 @@ class ConfigurationLifecycle:
                stop_event: synchronize.Event,
                histogram_process: BaseProcess,
                queues: Iterable[Queue],
-               log: ConfigurationLog) -> None:
+               log: Callable[..., None]) -> None:
 
     self._stop_event: synchronize.Event = stop_event
     self._histogram_process: BaseProcess = histogram_process
     self._queues: tuple[Queue] = tuple(queues)
-    self._log: ConfigurationLog = log
+    self._log: Callable[..., None] = log
     self._histogram_started: bool = False
     self._closed: bool = False
     self._failure: BaseException | None = None

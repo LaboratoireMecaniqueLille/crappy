@@ -6,8 +6,7 @@ from .configuration_core import CameraConfigCore
 from .configuration_lifecycle import (CameraConfigurator,
                                       ConfigurationLifecycle,
                                       ConfiguratorFactory,
-                                      create_configurator,
-                                      is_configurator_class)
+                                      create_configurator)
 from .display_state import DisplayGeometry, DisplayState
 from .selection_behavior import (BoxSelectionBehavior, ConfigAction,
                                  DICVEBehavior, DISCorrelBehavior,

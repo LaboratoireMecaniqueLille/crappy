@@ -106,12 +106,6 @@ class BoxSelectionBehavior:
       self._select_box.reset()
       self._on_selection_end()
 
-  def _cancel_box_selection(self) -> None:
-    """Discard the transient box and notify specialized selection behavior."""
-
-    self._select_box.reset()
-    self._on_selection_end()
-
   def _selection_to_pixel(self, x: int, y: int) -> tuple[int, int]:
     """Convert display coordinates to source pixels using geometry and zoom."""
 
@@ -130,16 +124,6 @@ class BoxSelectionBehavior:
 
     min_x, max_x, min_y, max_y = self._select_box.sorted()
     return min_x < max_x and min_y < max_y
-
-  def _box_fits_image(self, box: Box) -> bool:
-    """Whether a complete box lies within the current image bounds."""
-
-    if self._img is None or box.no_points():
-      return False
-
-    min_x, max_x, min_y, max_y = box.sorted()
-    height, width, *_ = self._img.shape
-    return 0 <= min_x < max_x <= width and 0 <= min_y < max_y <= height
 
   def _on_selection_start(self) -> None:
     """Hook called after a valid press begins a selection.
@@ -187,12 +171,13 @@ class BoxSelectionBehavior:
     # Only continue if there's a box, an image, and the box fits the image
     if self._img is None or box.no_points():
       return
-    if not self._box_fits_image(box):
+    min_x, max_x, min_y, max_y = box.sorted()
+    height, width, *_ = self._img.shape
+    if not (0 <= min_x < max_x <= width and
+            0 <= min_y < max_y <= height):
       self._handle_box_outside_img(box)
       return
 
-    min_x, max_x, min_y, max_y = box.sorted()
-    height, width, *_ = self._img.shape
     geometry = self._display_geometry
     thickness = max(height // max(geometry.height, 1),
                     width // max(geometry.width, 1), 1)
@@ -253,7 +238,8 @@ class DISCorrelBehavior(BoxSelectionBehavior):
     if box is self._correl_box:
       self._correl_box.reset()
     else:
-      self._cancel_box_selection()
+      self._select_box.reset()
+      self._on_selection_end()
 
   def _validate_close(self) -> str | None:
     """Require an ROI before allowing the configuration window to close."""
