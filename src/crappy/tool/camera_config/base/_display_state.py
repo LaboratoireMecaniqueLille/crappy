@@ -1,6 +1,6 @@
 # coding: utf-8
 
-"""Toolkit-independent state and geometry for a camera preview."""
+"""Backend-independent state and geometry for a camera preview."""
 
 from dataclasses import dataclass
 
@@ -76,7 +76,11 @@ class DisplayGeometry:
 
     return x - self.left, y - self.top
 
-  def to_pixel(self, x: int, y: int, image_width: int, image_height: int,
+  def to_pixel(self,
+               x: int,
+               y: int,
+               image_width: int,
+               image_height: int,
                zoom: Zoom) -> tuple[int, int]:
     """Convert a display position to pixel coordinates in the full image."""
 

@@ -6,13 +6,14 @@ from collections.abc import Callable
 from multiprocessing.queues import Queue
 import numpy as np
 
-from .camera_config_boxes import CameraConfigBoxes
-from .config_core import VideoExtensoBehavior
-from .config_tools import SpotsDetector, SpotsBoxes
-from ...camera.meta_camera import Camera
+from .camera_config_boxes import TkinterCameraConfigBoxes
+from ..base import VideoExtensoConfig
+from ..config_tools import SpotsDetector, SpotsBoxes
+from ....camera.meta_camera import Camera
 
 
-class VideoExtensoConfig(VideoExtensoBehavior, CameraConfigBoxes):
+class TkinterVideoExtensoConfig(VideoExtensoConfig,
+                                TkinterCameraConfigBoxes):
   """Configure initial spot detection for a VideoExtenso Block.
 
   Drag a box over the source image to detect spots within that crop. The
@@ -20,8 +21,8 @@ class VideoExtensoConfig(VideoExtensoBehavior, CameraConfigBoxes):
   and exposes a Save L0 action for their initial separation. On close,
   :meth:`get_config` exports the spot boxes and threshold, not the detector.
   Detection, validation, and Save L0 behavior live in
-  :class:`~crappy.tool.camera_config.config_core.selection_behavior.\
-VideoExtensoBehavior`.
+  :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig`.
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *VE_config* to *VideoExtensoConfig*

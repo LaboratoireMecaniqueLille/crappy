@@ -6,22 +6,22 @@ from collections.abc import Callable
 from multiprocessing.queues import Queue
 import numpy as np
 
-from .camera_config_boxes import CameraConfigBoxes
-from .config_core import DICVEBehavior
-from .config_tools import SpotsBoxes
-from ...camera.meta_camera import Camera
-from ...camera.meta_camera.camera_setting import CameraScaleSetting
+from .camera_config_boxes import TkinterCameraConfigBoxes
+from ..base import DICVEConfig
+from ..config_tools import SpotsBoxes
+from ....camera.meta_camera import Camera
+from ....camera.meta_camera.camera_setting import CameraScaleSetting
 
 
-class DICVEConfig(DICVEBehavior, CameraConfigBoxes):
+class TkinterDICVEConfig(DICVEConfig, TkinterCameraConfigBoxes):
   """Configure four tracking patches for a DICVE Block.
 
   Dragging a sufficiently large selection positions four patches around its
   edges. Their size comes from the local Patch size setting. The supplied
   :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` is updated in
   place, and its initial separation is saved after valid close. Patch layout
-  and validation live in :class:`~crappy.tool.camera_config.config_core.\
-selection_behavior.DICVEBehavior`.
+  and validation live in :class:`~crappy.tool.camera_config.base.\
+dic_ve_config.DICVEConfig`.
 
   .. versionadded:: 1.5.10
   .. versionchanged:: 2.0.0 renamed from *DISVE_config* to *DICVEConfig*

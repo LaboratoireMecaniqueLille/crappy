@@ -6,20 +6,20 @@ from collections.abc import Callable
 from multiprocessing.queues import Queue
 import numpy as np
 
-from .camera_config_boxes import CameraConfigBoxes
-from .config_core import DISCorrelBehavior
-from .config_tools import Box
-from ...camera.meta_camera import Camera
+from .camera_config_boxes import TkinterCameraConfigBoxes
+from ..base import DISCorrelConfig
+from ..config_tools import Box
+from ....camera.meta_camera import Camera
 
 
-class DISCorrelConfig(DISCorrelBehavior, CameraConfigBoxes):
+class TkinterDISCorrelConfig(DISCorrelConfig, TkinterCameraConfigBoxes):
   """Configure the image region used by a DISCorrel Block.
 
   Draw a box with the left mouse button to replace the correlation ROI. The
   supplied :class:`~crappy.tool.camera_config.config_tools.Box` is updated in
   place when a valid selection is released. Selection and validation rules are
-  shared by :class:`~crappy.tool.camera_config.config_core.selection_behavior.\
-DISCorrelBehavior`, Tk only supplies the interface.
+  shared by :class:`~crappy.tool.camera_config.base.dis_correl_config.\
+DISCorrelConfig`, Tk only supplies the interface.
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *DISConfig* to *DISCorrelConfig*

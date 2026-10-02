@@ -7,18 +7,19 @@ from collections.abc import Callable
 from multiprocessing.queues import Queue
 import numpy as np
 
-from .camera_config import CameraConfig
-from .config_core import BoxSelectionBehavior
-from ...camera.meta_camera import Camera
+from .camera_config import TkinterCameraConfig
+from ..base import CameraConfigBoxes
+from ....camera.meta_camera import Camera
 
 
-class CameraConfigBoxes(BoxSelectionBehavior, CameraConfig):
+class TkinterCameraConfigBoxes(CameraConfigBoxes, TkinterCameraConfig):
   """Base Tk configurator for displaying and selecting image-coordinate boxes.
 
-  It extends :class:`~crappy.tool.camera_config.CameraConfig` with transient
-  box selection and image-array overlays. The selection rules live in
-  :class:`~crappy.tool.camera_config.config_core.selection_behavior.\
-BoxSelectionBehavior`. This class binds Tk events and forwards their
+  It extends :class:`~crappy.tool.camera_config.tkinter.camera_config.\
+TkinterCameraConfig` with transient box selection and image-array overlays. The
+  selection rules live in
+  :class:`~crappy.tool.camera_config.base.camera_config_boxes.\
+CameraConfigBoxes`. This class binds Tk events and forwards their
   coordinates. A different backend can reuse the same behavior. This class is
   not used directly by a Block.
 

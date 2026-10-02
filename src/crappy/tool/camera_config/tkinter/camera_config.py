@@ -9,20 +9,20 @@ import numpy as np
 from time import monotonic, time
 import logging
 from dataclasses import dataclass
-from multiprocessing import current_process, Event, Queue, synchronize
+from multiprocessing import Event, Queue, synchronize
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
 from types import TracebackType
 from typing import TYPE_CHECKING
 from collections.abc import Callable, Iterable
 
-from .config_core import CameraConfigCore, ConfigurationLifecycle
-from .config_core.configuration_lifecycle import ExceptionInfo
-from .config_tools import HistogramProcess
-from ...camera.meta_camera.camera_setting import (
+from ..base import CameraConfig
+from ..base._configuration_lifecycle import ConfigurationLifecycle
+from ..config_tools import HistogramProcess
+from ....camera.meta_camera.camera_setting import (
   CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
-from ...camera.meta_camera import Camera
-from ..._global import OptionalModule
+from ....camera.meta_camera import Camera
+from ...._global import OptionalModule
 
 try:
   from PIL import ImageTk, Image
@@ -55,7 +55,7 @@ class _TkSettingControl:
   frame: tk.Frame | None = None
 
 
-class CameraConfig(CameraConfigCore, tk.Tk):
+class TkinterCameraConfig(CameraConfig, tk.Tk):
   """This class is a GUI allowing the user to visualize the images from a
   :class:`~crappy.camera.meta_camera.camera.Camera` before a Crappy test
   starts, and to tune the settings of the Camera.
@@ -81,8 +81,8 @@ class CameraConfig(CameraConfigCore, tk.Tk):
   also interacts with instances of the
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
   Toolkit-independent state and image interactions are inherited from
-  :class:`~crappy.tool.camera_config.config_core.configuration_core.\
-CameraConfigCore`, this class owns Tk controls, event scheduling, and
+  :class:`~crappy.tool.camera_config.base.camera_config.\
+CameraConfig`, this class owns Tk controls, event scheduling, and
   rendering.
 
   .. versionadded:: 1.4.0
@@ -123,18 +123,19 @@ CameraConfigCore`, this class owns Tk controls, event scheduling, and
         .. versionadded:: 2.1.0
     """
 
-    tk.Tk.__init__(self)
     self._hist_width: int = 0
     self._hist_height: int = 0
     self._setting_controls: dict[CameraSetting, _TkSettingControl] = dict()
+
     # Abort early in case an exception is caught while instantiating settings
     try:
-      CameraConfigCore.__init__(self, camera, max_freq, transform)
+      super().__init__(camera, log_queue, log_level, max_freq, transform)
     except BaseException:
-      self.destroy()
+      try:
+        self.destroy()
+      except (Exception,):
+        pass
       raise
-
-    self._logger: logging.Logger | None = None
 
     self._window_closed: bool = False
     self._stop_event: synchronize.Event = Event()
@@ -151,8 +152,8 @@ CameraConfigCore`, this class owns Tk controls, event scheduling, and
           processing_event=self._processing_event,
           img_in=self._img_in,
           img_out=self._img_out,
-          log_level=log_level,
-          log_queue=log_queue)
+          log_level=self._log_level,
+          log_queue=self._log_queue)
       self._lifecycle: ConfigurationLifecycle = ConfigurationLifecycle(
           self._stop_event, self._histogram_process,
           (self._img_in, self._img_out), self.log)
@@ -299,49 +300,21 @@ CameraConfigCore`, this class owns Tk controls, event scheduling, and
     else:
       self._shutdown_sched_obj = self.after(25, self._check_shutdown)
 
-  def log(self,
-          level: int,
-          msg: str,
-          *,
-          exc_info: ExceptionInfo | None = None) -> None:
-    """Record log messages for the CameraConfig window.
-
-    Also instantiates the :obj:`~logging.Logger` when logging the first
-    message.
-
-    Args:
-      level: An :obj:`int` indicating the logging level of the message.
-      msg: The message to log, as a :obj:`str`.
-      exc_info: An explicit exception tuple to log through
-        :meth:`logging.Logger.exception` at error level. This preserves the
-        traceback even when called outside the original ``except`` block.
-    
-    .. versionadded:: 2.0.0
-    """
-
-    if self._logger is None:
-      self._logger = logging.getLogger(
-        f"{current_process().name}.{type(self).__name__}")
-
-    if self._logger is None:
-      raise RuntimeError("The logger was never instantiated!")
-    if exc_info is None:
-      self._logger.log(level, msg)
-    else:
-      self._logger.exception(msg, exc_info=exc_info)
-
   def report_callback_exception(self,
                                 exc: type[BaseException],
                                 val: BaseException,
                                 tb: TracebackType | None) -> None:
     """Retain a Tk callback failure, show it, and close the window safely.
 
+    Keyboard interrupts close silently and are re-raised by :meth:`run`.
+
     .. versionadded:: 2.0.0
     """
 
     self._lifecycle.record_callback_failure(val, tb)
     try:
-      showerror("Error!", message=f"{exc.__name__}\n{val}")
+      if not isinstance(val, KeyboardInterrupt):
+        showerror("Error!", message=f"{exc.__name__}\n{val}")
     except Exception as dialog_error:
       if self._logger is not None:
         self._logger.exception("Could not display configuration error",
@@ -718,7 +691,7 @@ CameraConfigCore`, this class owns Tk controls, event scheduling, and
 
     # First, sort the settings by type for a nicer display
     sort_sets = sorted(self._camera.settings.values(),
-                       key=lambda setting: setting.type.__name__)
+                       key=lambda setting_: setting_.type.__name__)
 
     for cam_set in sort_sets:
       self._add_setting_control(cam_set)

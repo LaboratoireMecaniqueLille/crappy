@@ -1,6 +1,6 @@
 # coding: utf-8
 
-"""Toolkit-independent application of camera configuration settings.
+"""Backend-independent application of camera configuration settings.
 
 Backends provide requested values and render the effective results.
 """
@@ -38,6 +38,9 @@ class SettingManager:
                local_settings: tuple[CameraSetting, ...] = ()) -> None:
     """Begin an interactive configuration session for the given settings.
 
+    All registered settings enter interactive reload mode, allowing dependent
+    reloads to replace values protected from override during camera setup.
+
     Args:
       camera_settings: The camera's name-to-setting mapping. It is retained,
         not copied, so settings added later also enter the application order.
@@ -45,9 +48,6 @@ class SettingManager:
       local_settings: Configurator-specific settings to apply before camera
         settings, in the order given. They are registered without GUI objects,
         later local settings can be added with :meth:`register_local`.
-
-    All registered settings enter interactive reload mode, allowing dependent
-    reloads to replace values protected from override during camera setup.
     """
 
     self._camera_settings: Mapping[str, CameraSetting] = camera_settings
