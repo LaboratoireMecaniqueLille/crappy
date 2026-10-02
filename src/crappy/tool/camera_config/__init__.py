@@ -1,10 +1,8 @@
 # coding: utf-8
 
-from .camera_config import CameraConfig
-from .camera_config_boxes import CameraConfigBoxes
-from .config_core import (CameraConfigurator, ConfiguratorFactory,
-                          create_configurator)
+from .base import CameraConfig
 from .config_tools import Box, Overlay, SpotsBoxes, SpotsDetector, Zoom
-from .dic_ve_config import DICVEConfig
-from .dis_correl_config import DISCorrelConfig
-from .video_extenso_config import VideoExtensoConfig
+from .tkinter import (TkinterCameraConfig, TkinterCameraConfigBoxes,
+                      TkinterDICVEConfig, TkinterDISCorrelConfig,
+                      TkinterVideoExtensoConfig)
+from .factory import create_configurator
