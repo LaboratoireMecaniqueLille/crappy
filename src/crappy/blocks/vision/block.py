@@ -7,6 +7,7 @@ from multiprocessing import (synchronize, managers, RLock, Event, Value,
 import numpy as np
 import logging
 from typing import Any
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from base64 import urlsafe_b64encode
 from uuid import uuid4
@@ -16,7 +17,7 @@ from time import time
 from ..meta_block import Block
 from ...links import ImageLink
 from ..._global import LinkDataError, PrepareError
-from ...tool.camera_config import ConfiguratorFactory
+from ...tool.camera_config import CameraConfig
 
 
 @dataclass
@@ -33,9 +34,9 @@ class ConfigRequest:
     requester: Name of the downstream Block requesting configuration.
     args: Positional arguments forwarded to the requested configurator.
     kwargs: Keyword arguments forwarded to the requested configurator.
-    configurator: Class implementing the neutral camera configurator lifecycle
-      (``run()``, ``stop()``, ``watch_shutdown()``, and ``get_config()``) on the
-      image source.
+    configurator: A configurator class or a backend-to-class mapping. The
+      selected class implements the neutral lifecycle (``run()``, ``stop()``,
+      ``watch_shutdown()``, and ``get_config()``) on the image source.
     img_source: Name of the upstream image source handling the request.
     connection: Pipe endpoint assigned by
       :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`. Requesters
@@ -50,7 +51,8 @@ class ConfigRequest:
   requester: str
   args: tuple[Any, ...]
   kwargs: dict[str, Any]
-  configurator: ConfiguratorFactory
+  configurator: (type[CameraConfig] |
+                 Mapping[str, type[CameraConfig]])
   img_source: str
   connection: mp_connection.Connection | None = None
   completed: bool = False

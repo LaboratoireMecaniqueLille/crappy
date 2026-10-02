@@ -26,15 +26,16 @@ except (ModuleNotFoundError, ImportError):
 class SpotsDetector:
   """This class detects round spots on a grey level image.
 
-  It takes an image from a :class:`~crappy.tool.camera_config.CameraConfig`
-  window as an input of the :meth:`detect_spots` method, and tries to detect
-  the requested number of spots on it. It then stores the position and size of
-  the detected spots and the calculated threshold. In the VideoExtenso
-  workflow, the
-  :class:`~crappy.tool.camera_config.VideoExtensoConfig` window creates and
-  owns this object, then exports only those detection results to the processing
-  layer through its
-  :meth:`~crappy.tool.camera_config.VideoExtensoConfig.get_config` method.
+  It takes an image from a :class:`~crappy.tool.camera_config.base.\
+camera_config.CameraConfig` window as an input of the :meth:`detect_spots`
+  method, and tries to detect the requested number of spots on it. It then
+  stores the position and size of the detected spots and the calculated
+  threshold. In the VideoExtenso workflow, the
+  :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window creates and owns this object, then exports only
+  those detection results to the processing layer through its
+  :meth:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig.get_config` method.
 
   .. versionadded:: 2.0.0
   .. versionchanged:: 2.1.0 owned by VideoExtensoConfig instead of the public

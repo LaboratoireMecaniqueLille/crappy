@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from typing import Literal
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from pathlib import Path
 import numpy as np
 from time import time, sleep, strftime, gmtime
@@ -16,8 +16,9 @@ import logging
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
-from ..tool.camera_config import (CameraConfig, CameraConfigurator,
-                                  create_configurator)
+from ..tool.camera_config import CameraConfig, create_configurator
+from ..tool.camera_config.tkinter import TkinterCameraConfig
+from ..tool.camera_config.pyqt import PyQtCameraConfig
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
 from .._global import (CameraPrepareError, CameraRuntimeError,
@@ -55,10 +56,13 @@ class Camera(Block):
   available for tuning the record and the display.
   
   Before a test starts, this Block can also display a 
-  :class:`~crappy.tool.camera_config.CameraConfig` window in which the user can
-  visualize the acquired images, and interactively tune all the 
-  :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` available
-  for the instantiated :class:`~crappy.camera.meta_camera.camera.Camera`.
+  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window in
+  which the user can visualize the acquired images, and interactively tune all
+  the :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
+  available for the instantiated
+  :class:`~crappy.camera.meta_camera.camera.Camera`. Subclasses can replace the
+  window by overriding the ``configurator`` class attribute with a class or a
+  backend-to-class mapping.
   
   Internally, this Block is only in charge of the image acquisition, and the 
   other tasks are parallelized and delegated to 
@@ -71,7 +75,10 @@ class Camera(Block):
   .. versionadded:: 1.4.0
   """
 
-  cam_count = dict()
+  cam_count: dict[str, int] = dict()
+  configurator: Mapping[str, type[CameraConfig]] = {
+                   'tkinter': TkinterCameraConfig,
+                   'pyqt': PyQtCameraConfig}
 
   def __init__(self,
                camera: str,
@@ -113,9 +120,9 @@ class Camera(Block):
 
         .. versionadded:: 1.5.10
       config: If :obj:`True`, a 
-        :class:`~crappy.tool.camera_config.CameraConfig` window is displayed
-        before the test starts. There, the user can interactively adjust the 
-        different 
+        :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
+        window is displayed before the test starts. There, the user can
+        interactively adjust the different
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` 
         available for the selected
         :class:`~crappy.camera.meta_camera.camera.Camera`, and visualize the
@@ -124,9 +131,8 @@ class Camera(Block):
         provided.
 
         .. versionadded:: 1.5.10
-      config_backend: GUI backend for the configuration window. ``'tkinter'``
-        is implemented; ``'pyqt'`` is reserved and raises an error if selected
-        for configuration. This option is not passed to the Camera.
+      config_backend: GUI backend for the configuration window, either
+        ``'tkinter'`` or ``'pyqt'`` (requires PyQt6).
 
         .. versionadded:: 2.1.0
       display_images: If :obj:`True`, displays the acquired images in a
@@ -852,11 +858,13 @@ class Camera(Block):
     """Runs the configuration workflow shared by camera-related Blocks.
 
     This method obtains the Block-specific
-    :class:`~crappy.tool.camera_config.CameraConfig` from :meth:`_configure`,
-    runs it, and retrieves the configured image shape and data type. If an
-    image-processing :class:`~crappy.blocks.camera_processes.CameraProcess` is
-    present, the value returned by its
-    :meth:`~crappy.tool.camera_config.CameraConfig.get_config` is unpacked into
+    :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` from
+    :meth:`_configure`, runs it, and retrieves the configured image shape and
+    data type. If an image-processing
+    :class:`~crappy.blocks.camera_processes.CameraProcess` is present, the
+    value returned by its
+    :meth:`~crappy.tool.camera_config.base.camera_config.CameraConfig.\
+get_config` is unpacked into
     :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config`. This
     handoff occurs before the CameraProcess starts.
 
@@ -875,7 +883,7 @@ class Camera(Block):
        the configuration window to the image-processing CameraProcess
     """
 
-    config: CameraConfigurator | None = None
+    config: CameraConfig | None = None
     processing_config: tuple[Any, ...] | None = None
 
     def shutdown_requested() -> bool:
@@ -944,14 +952,14 @@ class Camera(Block):
     if self.process_proc is not None and processing_config is not None:
       self.process_proc.set_config(*processing_config)
 
-  def _configure(self) -> CameraConfigurator:
+  def _configure(self) -> CameraConfig:
     """Creates the Block-specific camera configuration window.
 
     It is meant to be overridden by children of the Camera Block. The
     returned configurator implements the neutral ``run()``, ``stop()``,
     ``watch_shutdown()``, and ``get_config()`` contract. The configurator's
-    :meth:`~crappy.tool.camera_config.CameraConfig.get_config` output must
-    match the processing CameraProcess's
+    :meth:`~crappy.tool.camera_config.base.camera_config.CameraConfig.\
+get_config` output must match the processing CameraProcess's
     :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` signature.
     """
 
@@ -960,7 +968,7 @@ class Camera(Block):
     if self._log_queue is None:
       raise RuntimeError("The logging Queue was never initialized")
 
-    return create_configurator(CameraConfig,
+    return create_configurator(self.configurator,
                                self._camera,
                                self._config_backend,
                                self._log_queue,

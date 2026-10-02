@@ -385,9 +385,10 @@ class CameraProcess(Process, ABC):
     before this CameraProcess starts. Subclasses whose configuration window
     returns processing-specific state should override it with positional
     parameters matching the tuple returned by
-    :meth:`~crappy.tool.camera_config.CameraConfig.get_config`. The received
-    values should normally be stored for use by :meth:`init`, where expensive
-    image-processing helpers can safely be created.
+    :meth:`~crappy.tool.camera_config.base.camera_config.CameraConfig.\
+get_config`. The received values should normally be stored for use by
+    :meth:`init`, where expensive image-processing helpers can safely be
+    created.
 
     This base implementation does nothing.
 

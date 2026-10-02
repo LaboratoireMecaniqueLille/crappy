@@ -7,8 +7,9 @@ from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
-from ..tool.camera_config import (VideoExtensoConfig, CameraConfigurator,
-                                  create_configurator)
+from ..tool.camera_config import CameraConfig, create_configurator
+from ..tool.camera_config.tkinter import TkinterVideoExtensoConfig
+from ..tool.camera_config.pyqt import PyQtVideoExtensoConfig
 
 
 class VideoExtenso(Camera):
@@ -31,17 +32,19 @@ class VideoExtenso(Camera):
   Block also performs video-extensometry based on GPU-accelerated image
   correlation.
 
-  Similar to the :class:`~crappy.tool.camera_config.CameraConfig` window that
-  can be displayed by the Camera Block, this Block can display a
-  :class:`~crappy.tool.camera_config.VideoExtensoConfig` window before the test
-  starts. Here, the user can also detect and select the spots to track. It is
-  currently not possible to specify the coordinates of the spots to track as an
-  argument, so the use of the configuration window is mandatory. This might
-  change in the future.
+  Similar to the
+  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window
+  that can be displayed by the Camera Block, this Block can display a
+  :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window before the test starts. Here, the user can also
+  detect and select the spots to track. It is currently not possible to specify
+  the coordinates of the spots to track as an argument, so the use of the
+  configuration window is mandatory. This might change in the future.
 
   This public Block is the orchestration layer and does not construct the
   low-level video-extensometry helpers itself. The
-  :class:`~crappy.tool.camera_config.VideoExtensoConfig` window owns the
+  :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window owns the
   :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` used for the
   initial selection. The
   :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` later creates
@@ -56,10 +59,14 @@ class VideoExtenso(Camera):
      tracking helpers to their owning configuration and processing layers
   """
 
+  configurator = {'tkinter': TkinterVideoExtensoConfig,
+                  'pyqt': PyQtVideoExtensoConfig}
+
   def __init__(self,
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
+               config_backend: Literal['tkinter', 'pyqt'] = 'tkinter',
                display_images: bool = False,
                displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
@@ -104,9 +111,9 @@ class VideoExtenso(Camera):
 
         .. versionadded:: 1.5.10
       config: If :obj:`True`, a
-        :class:`~crappy.tool.camera_config.VideoExtensoConfig` window is
-        displayed before the test starts. There, the user can interactively
-        adjust the different
+        :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window is displayed before the test starts. There, the user
+        can interactively adjust the different
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
         available for the selected
         :class:`~crappy.camera.meta_camera.camera.Camera`, visualize the
@@ -116,6 +123,11 @@ class VideoExtenso(Camera):
         in the future.
 
         .. versionadded:: 1.5.10
+
+      config_backend: GUI backend for the configuration window, either
+        ``'tkinter'`` or ``'pyqt'`` (requires PyQt6).
+
+        .. versionadded:: 2.1.0
       display_images: If :obj:`True`, displays the acquired images in a
         dedicated window, using the backend given in ``displayer_backend`` and
         at the frequency specified in ``displayer_framerate``. This option
@@ -383,8 +395,8 @@ class VideoExtenso(Camera):
     :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` object that
     owns runtime video-extensometry and tracking. Initial spot detection is
     deliberately left to the
-    :class:`~crappy.tool.camera_config.VideoExtensoConfig` created by
-    :meth:`~crappy.blocks.Camera._configure`.
+    :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` created by :meth:`~crappy.blocks.Camera._configure`.
     
     .. versionchanged:: 1.5.5 now accepting args and kwargs
     .. versionchanged:: 1.5.10 not accepting arguments anymore
@@ -403,15 +415,17 @@ class VideoExtenso(Camera):
 
     super().prepare()
 
-  def _configure(self) -> CameraConfigurator:
+  def _configure(self) -> CameraConfig:
     """Instantiates the
-    :class:`~crappy.tool.camera_config.VideoExtensoConfig` window for
-    configuring the :class:`~crappy.camera.meta_camera.camera.Camera` object
-    and selecting the spots.
+    :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window for configuring the
+    :class:`~crappy.camera.meta_camera.camera.Camera` object and selecting the
+    spots.
 
     The window creates and owns its spot detector. Once it closes,
-    :meth:`crappy.tool.camera_config.VideoExtensoConfig.get_config` exports
-    only the selected spots and detection threshold to the processing process.
+    :meth:`crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig.get_config` exports only the selected spots and detection
+    threshold to the processing process.
     """
 
     if self._camera is None:
@@ -420,7 +434,7 @@ class VideoExtenso(Camera):
       raise RuntimeError("At that point the log_queue should be set but it "
                          "isn't")
 
-    return create_configurator(VideoExtensoConfig,
+    return create_configurator(self.configurator,
                                self._camera,
                                self._config_backend,
                                self._log_queue,

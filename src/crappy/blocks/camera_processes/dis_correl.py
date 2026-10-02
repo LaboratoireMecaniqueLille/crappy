@@ -213,8 +213,9 @@ class DISCorrelProcess(CameraProcess):
 
     Args:
       config: The configured region of interest exported by
-        :meth:`crappy.tool.camera_config.DISCorrelConfig.get_config`. It is
-        used to initialize the image-processing tool when this process starts.
+        :meth:`crappy.tool.camera_config.base.dis_correl_config.\
+DISCorrelConfig.get_config`. It is used to initialize the image-processing tool
+        when this process starts.
 
     .. versionadded:: 2.1.0
     """

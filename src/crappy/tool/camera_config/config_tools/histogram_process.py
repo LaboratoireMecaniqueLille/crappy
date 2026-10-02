@@ -15,10 +15,10 @@ class HistogramProcess(Process):
   via a :obj:`multiprocessing.Pipe`, and returning the histogram of that image
   in another :obj:`~multiprocessing.Pipe`.
 
-  It is used by the :class:`~crappy.tool.camera_config.CameraConfig` window and
-  its children to delegate and parallelize the calculation of the histogram. It
-  allows to gain a few frames per second on the display in the configuration
-  window.
+  It is used by the :class:`~crappy.tool.camera_config.base.camera_config.\
+CameraConfig` window and its children to delegate and parallelize the
+  calculation of the histogram. It allows to gain a few frames per second on
+  the display in the configuration window.
 
   .. versionadded:: 2.0.0
   """
@@ -63,9 +63,9 @@ class HistogramProcess(Process):
     """The main method being run by the HistogramProcess.
 
     It continuously receives images from the
-    :class:`~crappy.tool.camera_config.CameraConfig`, calculates their
-    histograms and returns them back as a nice image to integrate on the
-    window.
+    :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`,
+    calculates their histograms and returns them back as a nice image to
+    integrate on the window.
     """
 
     try:

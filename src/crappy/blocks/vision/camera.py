@@ -1,8 +1,9 @@
 # coding: utf-8
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 import numpy as np
 from collections import defaultdict
+from inspect import isabstract
 import logging
 from time import time, strftime, gmtime
 from types import MethodType
@@ -10,8 +11,9 @@ from typing import Any, Literal
 
 from .block import VisionBlock
 from ..camera import camera_dict, DummyCam, moved_to_collection
-from ...tool.camera_config import (CameraConfig, CameraConfigurator,
-                                   ConfiguratorFactory, create_configurator)
+from ...tool.camera_config import CameraConfig, create_configurator
+from ...tool.camera_config.tkinter import TkinterCameraConfig
+from ...tool.camera_config.pyqt import PyQtCameraConfig
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,
                             load_collection_class)
@@ -39,13 +41,16 @@ class CameraSource(VisionBlock):
   synthetic ``'Exx(%)'`` and ``'Eyy(%)'`` strain inputs.
 
   Before acquisition starts, the Block can open a generic
-  :class:`~crappy.tool.camera_config.CameraConfig` window for previewing images
-  and adjusting the Camera settings. Downstream processors may instead request
-  specialized configuration windows, such as
-  :class:`~crappy.tool.camera_config.DICVEConfig`. With ``config`` and
-  ``allow_downstream_config`` enabled, these requests are run sequentially and
-  their results are returned to the requesting Blocks. A required configuration
-  request causes preparation to fail if interactive configuration is disabled.
+  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window
+  for previewing images and adjusting the Camera settings. Downstream
+  processors may instead request specialized configuration windows, such as
+  :class:`~crappy.tool.camera_config.base.dic_ve_config.DICVEConfig`. With
+  ``config`` and ``allow_downstream_config`` enabled, these requests are run
+  sequentially and their results are returned to the requesting Blocks. A
+  required configuration request causes preparation to fail if interactive
+  configuration is disabled. Subclasses can replace the generic window by
+  overriding the ``configurator`` class attribute with a class or
+  backend-to-class mapping.
 
   As an alternative to a physical Camera, ``image_generator`` can produce
   synthetic images from horizontal and vertical strain values. This mode is
@@ -59,6 +64,10 @@ class CameraSource(VisionBlock):
   """
 
   cam_count: dict[str, int] = defaultdict(lambda: 0)
+  configurator: (type[CameraConfig] |
+                 Mapping[str, type[CameraConfig]]) = {
+                   'tkinter': TkinterCameraConfig,
+                   'pyqt': PyQtCameraConfig}
 
   def __init__(self,
                camera: str,
@@ -88,15 +97,14 @@ class CameraSource(VisionBlock):
         image is sent, and its shape and dtype must match the prepared output
         buffer.
       config: If :obj:`True`, displays a
-        :class:`~crappy.tool.camera_config.CameraConfig` window before the test
-        when no specialized downstream request is present. The user can preview
-        images and adjust the available
+        :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
+        window before the test when no specialized downstream request is
+        present. The user can preview images and adjust the available
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
         values. Configuration also determines the output image shape and dtype.
         If :obj:`False`, both ``img_shape`` and ``img_dtype`` must be supplied.
-      config_backend: GUI backend for the configuration window. ``'tkinter'``
-        is implemented; ``'pyqt'`` is reserved and raises an error if selected
-        for configuration. This option is not passed to the Camera.
+      config_backend: GUI backend for the configuration window, either
+        ``'tkinter'`` or ``'pyqt'`` (requires PyQt6).
 
         .. versionadded:: 2.1.0
       allow_downstream_config: Whether downstream VisionBlocks may replace the
@@ -479,7 +487,8 @@ class CameraSource(VisionBlock):
 
   def configure(self,
                 camera: BaseCam,
-                config_class: ConfiguratorFactory,
+                config_class: (type[CameraConfig] |
+                               Mapping[str, type[CameraConfig]]),
                 *args,
                 **kwargs) -> tuple[Any, ...] | None:
     """Runs one interactive configuration window for a Camera.
@@ -491,20 +500,20 @@ class CameraSource(VisionBlock):
 
     Args:
       camera: Open Camera instance to configure.
-      config_class: Configurator class implementing ``run()``, ``stop()``,
-        ``watch_shutdown()``, and ``get_config()``. It need not inherit the
-        ``CameraConfig`` class.
+      config_class: A concrete CameraConfig subclass or backend-to-class
+        mapping.
       *args: Positional arguments forwarded to *config_class*.
       **kwargs: Keyword arguments forwarded to *config_class*.
 
     Returns:
       The configuration data returned by
-      :meth:`~crappy.tool.camera_config.CameraConfig.get_config`, or
-      :obj:`None` if the configurator has no data to export.
+      :meth:`~crappy.tool.camera_config.base.camera_config.CameraConfig.\
+get_config`, or :obj:`None` if the configurator has no data to export.
 
     Raises:
-      TypeError: If *camera* is not a Camera or *config_class* does not
-        implement the configurator lifecycle methods.
+      TypeError: If *camera* is not a Camera or *config_class* is not a
+        concrete CameraConfig subclass.
+      ValueError: If the mapping has no class for the selected backend.
       RuntimeError: If the logging queue has not been initialized.
       CameraConfigError: If the configuration window fails.
       PrepareError: If the Block must stop while configuration is running.
@@ -514,14 +523,20 @@ class CameraSource(VisionBlock):
     # Preliminary general checks
     if not isinstance(camera, BaseCam):
       raise TypeError("camera must be an instance of Camera")
-    if (not isinstance(config_class, type) or
-        not all(callable(getattr(config_class, name, None)) for name in
-                ('run', 'stop', 'watch_shutdown', 'get_config'))):
-      raise TypeError("config_class must implement run(), stop(), "
-                      "watch_shutdown(), and get_config()")
-    class_name = config_class.__name__
+    if isinstance(config_class, Mapping):
+      if self._config_backend not in config_class:
+        raise ValueError(f"config_class has no class for "
+                         f"{self._config_backend!r}")
+      selected = config_class[self._config_backend]
+    else:
+      selected = config_class
+    if (not isinstance(selected, type) or
+        not issubclass(selected, CameraConfig) or isabstract(selected)):
+      raise TypeError("config_class must be a concrete CameraConfig "
+                      "subclass")
+    class_name = selected.__name__
 
-    config: CameraConfigurator | None = None
+    config: CameraConfig | None = None
 
     def shutdown_requested() -> bool:
       """Check whether this Block should abandon its preparation."""
@@ -625,5 +640,5 @@ class CameraSource(VisionBlock):
                          "Camera wasn't defined")
 
     self.log(logging.INFO, "Displaying the base configuration window")
-    self.configure(self._camera, CameraConfig)
+    self.configure(self._camera, self.configurator)
     self.log(logging.INFO, "Camera configuration done")

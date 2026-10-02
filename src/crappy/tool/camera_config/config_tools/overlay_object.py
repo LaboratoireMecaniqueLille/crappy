@@ -12,8 +12,8 @@ class Overlay(ABC):
   Process of a :class:`~crappy.blocks.Camera` Block.
 
   Also used for drawing overlays on top of the images in the
-  :class:`~crappy.tool.camera_config.CameraConfig` window, for the children of
-  the Camera Block supporting it.
+  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window,
+  for the children of the Camera Block supporting it.
 
   It is mainly useful for providing the :meth:`log` method, and creating a
   clear architecture. It is also relevant to use for type-hinting.

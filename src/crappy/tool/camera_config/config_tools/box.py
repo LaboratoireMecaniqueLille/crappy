@@ -11,7 +11,7 @@ from .overlay_object import Overlay
 @dataclass
 class Box(Overlay):
   """This class represents a box to be drawn on top of the images of a
-  :class:`~crappy.tool.camera_config.CameraConfig` window or
+  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window or
   :class:`~crappy.blocks.camera_processes.Displayer` Process of a
   :class:`~crappy.blocks.Camera` Block.
 

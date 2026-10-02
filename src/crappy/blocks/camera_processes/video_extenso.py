@@ -218,12 +218,14 @@ class VideoExtensoProcess(CameraProcess):
 
   def set_config(self, config: SpotsBoxes, thresh: int) -> None:
     """Stores the initial detection result from
-    :class:`~crappy.tool.camera_config.VideoExtensoConfig`.
+    :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig`.
 
     Args:
       config: The selected
         :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` exported by
-        :meth:`crappy.tool.camera_config.VideoExtensoConfig.get_config`.
+        :meth:`crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig.get_config`.
       thresh: The gray-level threshold calculated while detecting those spots.
 
     These values are received before this process starts and are used by

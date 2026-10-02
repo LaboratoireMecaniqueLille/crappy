@@ -1,13 +1,15 @@
 # coding: utf-8
 
 from typing import Literal
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 import numpy as np
 import logging
 
 from .block import VisionBlock, ConfigRequest
 from ...tool.image_processing import DICVETool, LostPatchError
-from ...tool.camera_config import DICVEConfig, SpotsBoxes
+from ...tool.camera_config import CameraConfig, SpotsBoxes
+from ...tool.camera_config.tkinter import TkinterDICVEConfig
+from ...tool.camera_config.pyqt import PyQtDICVEConfig
 
 
 class DICVEProcessor(VisionBlock):
@@ -22,10 +24,10 @@ class DICVEProcessor(VisionBlock):
 
   Between one and four rectangular patches can be tracked. Their coordinates
   can be supplied directly with ``patches`` or selected interactively in a
-  :class:`~crappy.tool.camera_config.DICVEConfig` window opened by the upstream
-  image source. When patches are already provided, the configuration request
-  is optional and can be disabled with ``request_configuration``. When patches
-  are omitted and the source is a
+  :class:`~crappy.tool.camera_config.base.dic_ve_config.DICVEConfig` window
+  opened by the upstream image source. When patches are already provided, the
+  configuration request is optional and can be disabled with
+  ``request_configuration``. When patches are omitted and the source is a
   :class:`~crappy.blocks.vision.CameraSource`, its ``config`` and
   ``allow_downstream_config`` arguments must both be enabled.
 
@@ -59,6 +61,11 @@ class DICVEProcessor(VisionBlock):
 
   .. versionadded:: 2.1.0
   """
+
+  configurator: (type[CameraConfig] |
+                 Mapping[str, type[CameraConfig]]) = {
+                   'tkinter': TkinterDICVEConfig,
+                   'pyqt': PyQtDICVEConfig}
 
   def __init__(self,
                patches: Sequence[tuple[int, int, int, int]] | None = None,
@@ -97,10 +104,10 @@ class DICVEProcessor(VisionBlock):
         reserved ``'overlay'`` label is appended automatically and must not be
         included.
       request_configuration: If :obj:`True`, asks the upstream image source to
-        display a :class:`~crappy.tool.camera_config.DICVEConfig` window. The
-        request is required when ``patches`` is omitted and optional when
-        patches were supplied. If :obj:`False`, no request is made and at least
-        one patch must be provided.
+        display a :class:`~crappy.tool.camera_config.base.dic_ve_config.\
+DICVEConfig` window. The request is required when ``patches`` is omitted and
+        optional when patches were supplied. If :obj:`False`, no request is
+        made and at least one patch must be provided.
       method: Correlation method used to measure patch displacement. The
         available methods are ``'Disflow'``, ``'Lucas Kanade'``,
         ``'Pixel precision'``, and ``'Parabola'``. DISFlow and Lucas-Kanade use
@@ -443,10 +450,10 @@ class DICVEProcessor(VisionBlock):
         configuration window.
 
     Returns:
-      A request for :class:`~crappy.tool.camera_config.DICVEConfig`, or
-      :obj:`None` when upstream configuration is disabled. The request contains
-      the current patch boxes and is flagged as required only when no patches
-      were provided.
+      A request for :class:`~crappy.tool.camera_config.base.dic_ve_config.\
+DICVEConfig`, or :obj:`None` when upstream configuration is disabled. The
+      request contains the current patch boxes and is flagged as required only
+      when no patches were provided.
     """
 
     if not self._request_configuration:
@@ -455,6 +462,6 @@ class DICVEProcessor(VisionBlock):
     return ConfigRequest(requester=self.name,
                          args=tuple(),
                          kwargs={'patches': self._patches},
-                         configurator=DICVEConfig,
+                         configurator=self.configurator,
                          img_source=source,
                          required=self._patches.empty())
