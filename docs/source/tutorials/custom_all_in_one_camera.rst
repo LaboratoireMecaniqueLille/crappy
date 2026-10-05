@@ -109,7 +109,8 @@ Optional display configuration
 ------------------------------
 
 Set ``display_images=True`` on the Camera Block when the experiment needs an
-image window. A CameraProcess can call
+image window. Install OpenCV (``opencv-python``) or Matplotlib for this
+optional display. A CameraProcess can call
 :meth:`~crappy.blocks.camera_processes.CameraProcess.send_to_draw` with
 :class:`~crappy.tool.camera_config.config_tools.Overlay` objects to mark
 detected regions on that display. Sending overlays has no effect when the

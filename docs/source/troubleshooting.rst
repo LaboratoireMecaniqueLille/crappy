@@ -141,12 +141,15 @@ Blocks and configuration windows.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PyQtGraph, Qt bindings, Matplotlib, OpenCV, and their graphical backends have
-separate runtime requirements. The default Grapher needs PyQtGraph and one of
-its supported Qt bindings, such as PyQt6. First test the selected library
-outside Crappy using the same interpreter. If more than one backend is
-supported by the Block, select one that is installed and usable on the current
-system. The relevant backend argument and accepted values are documented in
-the Block's API entry.
+separate runtime requirements. The default Button, Canvas, Dashboard,
+StopButton, and camera-configuration windows specifically need PyQt6. Camera
+configuration also needs Pillow. The default Grapher needs PyQtGraph and one
+of its supported Qt bindings, such as PyQt6. See :doc:`installation` for the
+matching package installation commands.
+
+If more than one backend is supported by the Block, select one that is
+installed and usable on the current system. The relevant backend argument and
+accepted values are documented in the Block's API entry.
 
 Run a test without a graphical interface
 ----------------------------------------
