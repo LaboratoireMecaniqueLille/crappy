@@ -170,7 +170,7 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(source._camera_kwargs, {'serial': 'abc'})
     self.assertEqual(source.freq, 100)
     self.assertTrue(source._allow_downstream_config)
-    self.assertEqual(source._config_backend, 'tkinter')
+    self.assertEqual(source._config_backend, 'pyqt')
     self.assertEqual(CameraSource.cam_count[RecordingVisionCamera.__name__], 1)
 
     generator = lambda _exx, _eyy: np.zeros((2, 3), dtype=np.uint8)
@@ -212,9 +212,10 @@ class TestCameraSource(VisionTestBase):
     selected = self.make_source(config_backend='tkinter', serial='abc')
     self.assertEqual(selected._camera_kwargs, {'serial': 'abc'})
 
-    deprecated_name = next(iter(camera_module.moved_to_collection))
-    with self.assertRaises(NotImplementedError):
-      CameraSource(camera=deprecated_name,
+    with (patch.object(camera_module, 'moved_to_collection',
+                       ('UnimportedCollectionCamera',)),
+          self.assertRaises(NotImplementedError)):
+      CameraSource(camera='UnimportedCollectionCamera',
                    config=False,
                    img_shape=(2, 3),
                    img_dtype='uint8')
@@ -538,7 +539,7 @@ class TestCameraSource(VisionTestBase):
                                 'argument', option=sentinel.option)
 
     config = RecordingConfig.instances[-1]
-    self.assertEqual(factory.call_args.args[2], 'tkinter')
+    self.assertEqual(factory.call_args.args[2], 'pyqt')
     self.assertEqual(config.constructor_args,
                      (camera, sentinel.log_queue, logging.WARNING, 123,
                       transform, ('argument',), {'option': sentinel.option}))
@@ -598,7 +599,7 @@ class TestCameraSource(VisionTestBase):
     with self.assertRaises(TypeError):
       source.configure(camera, 'unknown')
     with self.assertRaises(ValueError):
-      source.configure(camera, {'pyqt': RecordingConfig})
+      source.configure(camera, {'unknown': RecordingConfig})
 
     class MissingShutdown(RecordingConfig):
       watch_shutdown = CameraConfig.watch_shutdown

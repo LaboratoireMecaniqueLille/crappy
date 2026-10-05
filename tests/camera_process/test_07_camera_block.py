@@ -335,7 +335,7 @@ class TestCameraBlock(CameraBlockTestBase):
     def transform(img: np.ndarray) -> np.ndarray:
       return img
 
-    camera = self.make_camera(transform=transform)
+    camera = self.make_camera(transform=transform, config_backend='tkinter')
     camera._camera = sentinel.camera
 
     with patch.object(camera_module, 'create_configurator',
