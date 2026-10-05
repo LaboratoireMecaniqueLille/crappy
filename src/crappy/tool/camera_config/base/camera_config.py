@@ -40,7 +40,7 @@ class ConfigAction:
 
   id: str
   label: str
-  callback: Callable[(), None]
+  callback: Callable[[], None]
 
 
 class CameraConfig(ABC):
