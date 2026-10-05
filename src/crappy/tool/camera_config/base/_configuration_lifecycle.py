@@ -104,14 +104,14 @@ class ConfigurationLifecycle:
         process.join(1.0)
         # If not, try to terminate it
         if process.is_alive():
-          self._log(logging.WARNING, "The histogram process failed to stop, "
-                                     "terminating it !")
+          self._log(logging.WARNING, "The histogram process did not stop "
+                                     "within the timeout, terminating it")
           process.terminate()
           process.join(1.0)
         # If still alive, now try to kill it
         if process.is_alive():
-          self._log(logging.WARNING, "The histogram process failed to "
-                                     "terminate, killing it !")
+          self._log(logging.WARNING, "The histogram process did not terminate "
+                                     "within the timeout, killing it")
           process.kill()
           process.join()
 
@@ -121,7 +121,8 @@ class ConfigurationLifecycle:
         try:
           queue.cancel_join_thread()
         except Exception as exc:
-          self._log(logging.ERROR, "Could not join thread of histogram queue",
+          self._log(logging.ERROR, "Could not cancel histogram queue thread "
+                                   "join",
                     exc_info=(type(exc), exc, exc.__traceback__))
         try:
           queue.close()

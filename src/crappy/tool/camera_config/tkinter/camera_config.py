@@ -162,15 +162,16 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
         try:
           queue.cancel_join_thread()
         except Exception as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not join thread of histogram queue",
-                                   exc_info=cleanup_error)
+          self.log(logging.ERROR, "Could not cancel histogram queue thread "
+                                  "join",
+                   exc_info=(type(cleanup_error), cleanup_error,
+                             cleanup_error.__traceback__))
         try:
           queue.close()
         except Exception as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not close histogram queue",
-                                   exc_info=cleanup_error)
+          self.log(logging.ERROR, "Could not close histogram queue",
+                   exc_info=(type(cleanup_error), cleanup_error,
+                             cleanup_error.__traceback__))
       try:
         self.destroy()
       except tk.TclError:
@@ -187,6 +188,7 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     # Other attributes used in this class
     self._last_upd_t: float | None = None
     self._next_acq_t: float = -float('inf')
+    self._n_loops: int = 0
 
     # Keeping track of the scheduled objects to be able to cancel them later
     self._img_acq_sched_obj: str | None = None
@@ -209,9 +211,9 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
       try:
         self.stop()
       except Exception as cleanup_error:
-        if self._logger is not None:
-            self._logger.exception("Could not clean up partial configuration",
-                                   exc_info=cleanup_error)
+        self.log(logging.ERROR, "Could not clean up partial configuration",
+                 exc_info=(type(cleanup_error), cleanup_error,
+                           cleanup_error.__traceback__))
       raise
 
     # Attribute used only for unit testing, do not use otherwise
@@ -228,6 +230,8 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     if self._lifecycle.closed:
       raise RuntimeError("Cannot start a closed configuration window")
 
+    self.log(logging.DEBUG, "Starting histogram processing and preview "
+                            "updates")
     # Starting the histogram calculation process
     self._histogram_process.start()
     self._lifecycle.mark_histogram_started()
@@ -263,9 +267,9 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
       try:
         self.stop()
       except Exception as cleanup_error:
-        if self._logger is not None:
-            self._logger.exception("Could not clean up configuration window",
-                                   exc_info=cleanup_error)
+        self.log(logging.ERROR, "Could not clean up configuration window",
+                 exc_info=(type(cleanup_error), cleanup_error,
+                           cleanup_error.__traceback__))
       if not isinstance(error, KeyboardInterrupt):
         self._lifecycle.raise_if_failed()
       raise
@@ -296,6 +300,8 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
       return
 
     if self._shutdown_requested():
+      self.log(logging.DEBUG, "Closing configuration after Block shutdown "
+                              "request")
       self.stop()
     else:
       self._shutdown_sched_obj = self.after(25, self._check_shutdown)
@@ -316,9 +322,9 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
       if not isinstance(val, KeyboardInterrupt):
         showerror("Error!", message=f"{exc.__name__}\n{val}")
     except Exception as dialog_error:
-      if self._logger is not None:
-        self._logger.exception("Could not display configuration error",
-                               exc_info=dialog_error)
+      self.log(logging.ERROR, "Could not display configuration error",
+               exc_info=(type(dialog_error), dialog_error,
+                         dialog_error.__traceback__))
     finally:
       self._lifecycle.request_close(self.stop)
 
@@ -344,6 +350,7 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
 
     # Otherwise perform closing action and stop
     self._on_valid_close()
+    self.log(logging.INFO, "Camera configuration validated")
     self.stop()
 
   def stop(self) -> None:
@@ -361,6 +368,8 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
       return
 
     self._window_closed = True
+    self.log(logging.DEBUG, "Closing camera configuration and releasing "
+                            "histogram resources")
     try:
       if self._img_acq_sched_obj is not None:
         try:
@@ -596,7 +605,7 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     """Binds the mousewheel to the settings canvas scrollbar when the user
     hovers over the canvas."""
 
-    self.log(logging.DEBUG, "Binding the mouse to the image canvas")
+    self.log(logging.DEBUG, "Binding the mouse wheel to the settings canvas")
 
     if system() == "Linux":
       self._settings_frame.bind_all('<4>', self._on_wheel_settings)
@@ -608,7 +617,8 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     """Unbinds the mousewheel to the settings canvas scrollbar when the mouse
     leaves the canvas."""
 
-    self.log(logging.DEBUG, "Unbinding the mouse from the image canvas")
+    self.log(logging.DEBUG, "Unbinding the mouse wheel from the settings "
+                            "canvas")
 
     self._settings_frame.unbind_all('<4>')
     self._settings_frame.unbind_all('<5>')
@@ -618,7 +628,7 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     """Adjusts the size of the scrollbar according to the size of the settings
     canvas whenever it is being resized."""
 
-    self.log(logging.DEBUG, "The image canvas has been resized")
+    self.log(logging.DEBUG, "The settings canvas has been resized")
 
     # Adjusting the height of the settings window inside the canvas
     self._settings_canvas.itemconfig(
@@ -803,6 +813,8 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
       if control.revision == setting.revision:
         continue
 
+      self.log(logging.DEBUG, f"Synchronizing control for setting "
+                              f"{setting.name}")
       if isinstance(setting, CameraScaleSetting):
         widget = control.widget
         if not isinstance(widget, tk.Scale):
@@ -867,11 +879,15 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     """Translate the Tk checkbutton state into an ordinary option value."""
 
     self._display_state.auto_range = bool(self._auto_range_var.get())
+    self.log(logging.DEBUG, "Auto range " +
+             ("enabled" if self._display_state.auto_range else "disabled"))
 
   def _on_auto_apply_toggle(self) -> None:
     """Translate the Tk checkbutton state and update the Apply button."""
 
     self._display_state.auto_apply = bool(self._auto_apply_var.get())
+    self.log(logging.DEBUG, "Auto apply " +
+             ("enabled" if self._display_state.auto_apply else "disabled"))
     self._apply_button['state'] = ('disabled' if self._display_state.auto_apply
                                    else 'normal')
 
@@ -883,6 +899,7 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     a later control before its value is read.
     """
 
+    self.log(logging.DEBUG, "Applying camera configuration settings")
     for setting in self._setting_manager.settings:
       self._apply_setting(setting)
 

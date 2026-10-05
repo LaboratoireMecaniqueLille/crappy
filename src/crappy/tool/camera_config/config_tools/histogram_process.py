@@ -70,6 +70,7 @@ CameraConfig` window and its children to delegate and parallelize the
 
     try:
       self._processing_event.clear()
+      self.log(logging.DEBUG, "Histogram worker started")
 
       # Looping until told to stop or an exception is raised
       latest = None
@@ -107,7 +108,7 @@ CameraConfig` window and its children to delegate and parallelize the
 
           # Adding vertical grey bars to indicate the limits of the auto range
           if auto_range:
-            self.log(logging.DEBUG, "Drawing the line of the auto-range")
+            self.log(logging.DEBUG, "Drawing Auto range threshold markers")
             out_img[:, round(2 * low_thresh)] = 127
             out_img[:, round(2 * high_thresh)] = 127
 
@@ -121,20 +122,21 @@ CameraConfig` window and its children to delegate and parallelize the
           latest = None
           self._processing_event.clear()
 
-      self.log(logging.INFO, "Stop event set, stopping")
+      self.log(logging.DEBUG, "Histogram worker stopping after shutdown "
+                              "request")
 
     except KeyboardInterrupt:
-      self.log(logging.INFO, "Caught KeyboardInterrupt, stopping")
+      self.log(logging.DEBUG, "Histogram worker interrupted")
     except (Exception,) as exc:
       if self._logger is None:
         self._set_logger()
-      self._logger.exception("Caught Exception while running, stopping !",
+      self._logger.exception("Histogram processing failed",
                              exc_info=exc)
     finally:
       self.log(logging.DEBUG, "Empty queues before exiting")
       self._flush_queue(self._img_in)
       self._flush_queue(self._img_out)
-      self.log(logging.INFO, "HistogramProcess finished")
+      self.log(logging.DEBUG, "Histogram worker finished")
 
   @staticmethod
   def _hist_func(x: np.ndarray,

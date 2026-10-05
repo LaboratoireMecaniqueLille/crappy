@@ -128,6 +128,8 @@ VideoExtensoConfig.get_config` method.
       containing all the detected spots.
     """
 
+    self._logger.log(logging.DEBUG, f"Detecting spots in crop of shape "
+                                    f"{img.shape} at (x={x_orig}, y={y_orig})")
     # First, blurring the image if asked to
     if self.blur is not None and self.blur > 1:
       img = cv2.medianBlur(img, self.blur)
@@ -181,11 +183,13 @@ VideoExtensoConfig.get_config` method.
 
     # Indicating the user if not enough spots were found
     if not props:
-      self._logger.log(logging.WARNING, "No spots found !")
+      self._logger.log(logging.WARNING, "No spots detected, retaining the "
+                                        "previous selection")
       return
     elif self.num_spots is not None and len(props) != self.num_spots:
       self._logger.log(logging.WARNING, f"Expected {self.num_spots} spots, "
-                                        f"found only {len(props)}")
+                                        f"found {len(props)}, retaining the "
+                                        f"previous selection")
       return
 
     # Replacing the previously detected spots with the new ones
@@ -205,6 +209,9 @@ VideoExtensoConfig.get_config` method.
       self.spots[i] = Box(x_start=x_min, x_end=x_max,
                           y_start=y_min, y_end=y_max,
                           x_centroid=x, y_centroid=y)
+
+    self._logger.log(logging.INFO, f"Detected {len(props)} spots with "
+                                   f"threshold {self.thresh}")
 
   @staticmethod
   def _overlap_bbox(prop_1, prop_2) -> bool:

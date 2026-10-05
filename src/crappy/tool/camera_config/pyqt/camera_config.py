@@ -158,7 +158,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
         try:
           queue.cancel_join_thread()
         except Exception as error:
-          self.log(logging.ERROR, 'Could not join histogram queue thread',
+          self.log(logging.ERROR, 'Could not cancel histogram queue thread '
+                                  'join',
                    exc_info=(type(error), error, error.__traceback__))
         try:
           queue.close()
@@ -299,6 +300,9 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
     if self._lifecycle.closed:
       raise RuntimeError('Cannot start a closed configuration window')
+
+    self.log(logging.DEBUG, 'Starting histogram processing and preview '
+                            'updates')
     # Start the histogram worker before the first image is acquired
     self._histogram_process.start()
     self._lifecycle.mark_histogram_started()
@@ -345,6 +349,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       QMessageBox.critical(self, 'Error !', reason)
       return
     self._on_valid_close()
+    self.log(logging.INFO, 'Camera configuration validated')
     self.stop()
 
   def closeEvent(self, event: QCloseEvent) -> None:
@@ -373,6 +378,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       self._lifecycle.close_resources()
       return
     self._window_closed = True
+    self.log(logging.DEBUG, 'Closing camera configuration and releasing '
+                            'histogram resources')
     self._acquisition_timer.stop()
     self._indicator_timer.stop()
     self._shutdown_timer.stop()
@@ -416,6 +423,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     image, with indicators and setting controls in a panel on the right.
     """
 
+    self.log(logging.DEBUG, 'Building the PyQt6 configuration layout')
     self._set_frame_style()
     # Use the same minimum image area as Tk for large and small screens
     screen = self._qt_app.primaryScreen()
@@ -533,6 +541,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     Camera settings are sorted by type to match the Tk interface.
     """
 
+    self.log(logging.DEBUG, 'Adding configuration settings to the interface')
     for setting in self._setting_manager.local_settings:
       self._add_setting_control(setting)
     for setting in sorted(self._camera.settings.values(),
@@ -669,6 +678,9 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       control = self._setting_controls.get(setting)
       if control is None or control.revision == setting.revision:
         continue
+
+      self.log(logging.DEBUG, f'Synchronizing control for setting '
+                              f'{setting.name}')
       if isinstance(setting, CameraBoolSetting):
         control.widget.setChecked(bool(setting.value))
       elif isinstance(setting, CameraScaleSetting):
@@ -707,6 +719,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     controls, as a Camera setter may alter other settings or their choices.
     """
 
+    self.log(logging.DEBUG, 'Applying camera configuration settings')
     for setting in self._setting_manager.settings:
       self._sync_setting_controls()
       control = self._setting_controls.get(setting)
@@ -726,11 +739,15 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     """Updates whether the histogram adjusts the preview's pixel range."""
 
     self._display_state.auto_range = checked
+    self.log(logging.DEBUG, f'Auto range '
+                            f'{"enabled" if checked else "disabled"}')
 
   def _on_auto_apply(self, checked: bool) -> None:
     """Enables automatic setting updates and disables the Apply button."""
 
     self._display_state.auto_apply = checked
+    self.log(logging.DEBUG, f'Auto apply '
+                            f'{"enabled" if checked else "disabled"}')
     self._apply_button.setEnabled(not checked)
 
   def _sync_indicators(self) -> None:

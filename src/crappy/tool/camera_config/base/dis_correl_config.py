@@ -38,6 +38,8 @@ class DISCorrelConfig(CameraConfigBoxes):
     """Reset an ROI that no longer fits the image, or cancel a drag."""
 
     if box is self._correl_box:
+      self.log(logging.WARNING, "The correlation region no longer fits the "
+                                "image, resetting it")
       self._correl_box.reset()
     else:
       self._select_box.reset()

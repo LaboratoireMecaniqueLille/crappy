@@ -39,13 +39,14 @@ class VideoExtensoConfig(CameraConfigBoxes):
     """Save initial spot separation when detection has found spots."""
 
     if self._detector.spots.empty():
-      self.log(logging.WARNING, "Cannot save L0, there are no spots!")
+      self.log(logging.WARNING, "Cannot save initial distance, no spots "
+                                "are selected")
       return
 
     self._detector.spots.save_length()
     self.log(logging.INFO,
-             f"Successfully saved L0! L0 x: {self._detector.spots.x_l0}, "
-             f"L0 y: {self._detector.spots.y_l0}")
+             f"Saved initial spot distance (px): "
+             f"x={self._detector.spots.x_l0}, y={self._detector.spots.y_l0}")
 
   def _draw_overlay(self) -> None:
     """Draw the selected crop and the detected spots on preview pixels."""
@@ -56,6 +57,8 @@ class VideoExtensoConfig(CameraConfigBoxes):
   def _handle_box_outside_img(self, box: Box) -> None:
     """Discard spots that no longer fit the current image."""
 
+    self.log(logging.WARNING, "A detected spot no longer fits the image, "
+                              "resetting the spots")
     self._spots.reset()
 
   def _validate_close(self) -> str | None:

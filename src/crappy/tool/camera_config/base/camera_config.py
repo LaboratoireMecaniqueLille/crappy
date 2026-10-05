@@ -224,7 +224,8 @@ class CameraConfig(ABC):
     self.log(logging.DEBUG, "Zooming on the image")
     next_step = min(max(self._zoom_step + direction, 0), self._max_zoom_step)
     if next_step == self._zoom_step:
-      self.log(logging.DEBUG, "Not zooming, already reached max zoom level")
+      self.log(logging.DEBUG, "Not zooming, the requested zoom limit is "
+                              "reached")
       return False
 
     self._zoom_step = next_step
@@ -362,8 +363,10 @@ class CameraConfig(ABC):
 
     if not no_img and img.dtype.name != self.dtype:
       self.dtype = img.dtype.name
+      self.log(logging.DEBUG, f"Preview image dtype changed to {self.dtype}")
     if not no_img and img.shape != self.shape:
       self.shape = img.shape
+      self.log(logging.DEBUG, f"Preview image shape changed to {self.shape}")
 
     self._cast_img(img)
     return True

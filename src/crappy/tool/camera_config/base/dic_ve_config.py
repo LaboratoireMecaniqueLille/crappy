@@ -75,8 +75,8 @@ class DICVEConfig(CameraConfigBoxes):
 
     self._spots.save_length()
     self.log(logging.INFO,
-             f"Successfully saved L0. L0 x: {self._spots.x_l0}, "
-             f"L0 y: {self._spots.y_l0}")
+             f"Saved initial patch distance (px): x={self._spots.x_l0}, "
+             f"y={self._spots.y_l0}")
 
   def get_config(self) -> tuple[SpotsBoxes]:
     """Export the caller-owned collection of tracking patches."""
