@@ -3,6 +3,10 @@
 """
 Program used to control the solidification furnace.
 
+It requires the labjack-ljm, pyqtgraph, and PyQt6 Python packages, the native
+LabJack LJM library, and the furnace setup described below. PyQt6 provides the
+stop button, pyqtgraph provides the graphs.
+
 It uses a Labjack T7 to send PWM signals to the transistors controlling the
 heating element of each section of the furnace. The temperature of each section
 is measured using a thermocouple. Click the stop button to end the test

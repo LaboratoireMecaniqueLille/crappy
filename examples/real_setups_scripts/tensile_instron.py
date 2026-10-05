@@ -3,6 +3,11 @@
 """
 Detailed example showing a video-extensometry-driven tensile test.
 
+It requires the labjack-ljm, ximea, opencv-python, scikit-image, Pillow,
+pyqtgraph, and PyQt6 Python packages. The native LabJack LJM library and XIMEA
+SDK must also be installed. PyQt6 provides the configuration window and stop
+button, pyqtgraph provides the graphs.
+
 This example uses a Labjack T7 board to send the position command to an Instron
 5882 tensile test machine. A Ximea camera is used to measure the strain of the
 sample and save the images. Different levels of strain are applied and the
