@@ -21,44 +21,54 @@ from ..._global import CameraConfigError, PrepareError
 
 
 class CameraSource(VisionBlock):
-  """Acquires images from one Camera and publishes them to
-  :class:`~crappy.blocks.vision.block.VisionBlock`.
+  """Acquires images from one :class:`~crappy.camera.meta_camera.camera.Camera`
+  and publishes them to :class:`~crappy.blocks.vision.block.VisionBlock`.
 
-  This Block drives one :class:`~crappy.camera.meta_camera.camera.Camera` and
+  This :class:`~crappy.blocks.meta_block.block.Block` drives one
+  :class:`~crappy.camera.meta_camera.camera.Camera` and
   sends each acquired frame and its metadata through one or more output
   :class:`~crappy.links.img_link.ImageLink` objects. It accepts no input
-  ImageLink and requires at least one output ImageLink. Acquisition is
+  :class:`~crappy.links.img_link.ImageLink` and requires at least one output
+  :class:`~crappy.links.img_link.ImageLink`. Acquisition is
   intentionally separated from processing, display, and recording. Connect
   processors, :class:`~crappy.blocks.vision.ImageDisplayer`, or
   :class:`~crappy.blocks.vision.ImageRecorder` to build the desired pipeline.
 
-  For every published image, the Block also sends a dictionary through its
-  regular output :class:`~crappy.links.link.Link` objects. The ``'t(s)'`` entry
-  is the acquisition time relative to the beginning of the test,
-  ``'img_index'`` is the Camera-provided ``'ImageUniqueID'``, and ``'meta'`` is
-  the complete metadata dictionary. Regular input Links can provide a software
+  For every published image, the :class:`~crappy.blocks.meta_block.block.Block`
+  also sends a dictionary through its regular output
+  :class:`~crappy.links.link.Link` objects. The ``'t(s)'`` entry is the
+  acquisition time relative to the beginning of the test, ``'img_index'`` is
+  the :class:`~crappy.camera.meta_camera.camera.Camera`-provided
+  ``'ImageUniqueID'``, and ``'meta'`` is the complete metadata dictionary.
+  Regular input :class:`Links <crappy.links.link.Link>` can provide a software
   trigger. When ``image_generator`` is used, they can additionally update its
   synthetic ``'Exx(%)'`` and ``'Eyy(%)'`` strain inputs.
 
-  Before acquisition starts, the Block can open a generic
-  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window
-  for previewing images and adjusting the Camera settings. Downstream
+  Before acquisition starts, the :class:`~crappy.blocks.meta_block.block.Block`
+  can open a Tkinter or PyQt6 window, selected with ``config_backend``, to
+  preview images and adjust :class:`~crappy.camera.meta_camera.camera.Camera`
+  settings. Downstream
   processors may instead request specialized configuration windows, such as
   :class:`~crappy.tool.camera_config.base.dic_ve_config.DICVEConfig`. With
   ``config`` and ``allow_downstream_config`` enabled, these requests are run
-  sequentially and their results are returned to the requesting Blocks. A
-  required configuration request causes preparation to fail if interactive
+  sequentially and their results are returned to the requesting
+  :class:`Blocks <crappy.blocks.meta_block.block.Block>`. A required
+  configuration request causes preparation to fail if interactive
   configuration is disabled. Subclasses can replace the generic window by
   overriding the ``configurator`` class attribute with a class or
-  backend-to-class mapping.
+  backend-to-class mapping. The :doc:`configuration tutorial
+  </tutorials/custom_camera_configuration>` covers both shared and
+  backend-specific extensions.
 
-  As an alternative to a physical Camera, ``image_generator`` can produce
-  synthetic images from horizontal and vertical strain values. This mode is
-  primarily intended for examples and development.
+  As an alternative to a physical
+  :class:`~crappy.camera.meta_camera.camera.Camera`, ``image_generator`` can
+  produce synthetic images from horizontal and vertical strain values. This
+  mode is primarily intended for examples and development.
 
-  Unlike :class:`~crappy.blocks.Camera`, this Block only performs acquisition.
-  The older Camera Block combines acquisition with optional child processes
-  for image processing, display, and recording.
+  Unlike :class:`~crappy.blocks.Camera`, this
+  :class:`~crappy.blocks.meta_block.block.Block` only performs acquisition.
+  The older :class:`Camera Block <crappy.blocks.Camera>` combines acquisition
+  with optional child processes for image processing, display, and recording.
 
   .. versionadded:: 2.1.0
   """
@@ -84,44 +94,51 @@ class CameraSource(VisionBlock):
                debug: bool | None = False,
                freq: float | None = 100,
                **kwargs) -> None:
-    """Sets the Camera, configuration, and acquisition options.
+    """Sets the :class:`~crappy.camera.meta_camera.camera.Camera`,
+    configuration, and acquisition options.
 
     Args:
       camera: Name of the :class:`~crappy.camera.meta_camera.camera.Camera` to
-        use. Additional Camera-specific arguments can be supplied through
-        ``kwargs``. This argument is ignored when ``image_generator`` is
-        provided, and may then be an empty string.
-      transform: Callable receiving each acquired image and returning the image
-        to publish. It runs synchronously immediately after acquisition, so a
-        costly transform can reduce acquisition frequency. Only the transformed
-        image is sent, and its shape and dtype must match the prepared output
-        buffer.
-      config: If :obj:`True`, displays a
-        :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
-        window before the test when no specialized downstream request is
+        use. Additional :class:`~crappy.camera.meta_camera.camera.Camera`
+        -specific arguments can be supplied through ``kwargs``. This argument
+        is ignored when ``image_generator`` is provided, and may then be an
+        empty string.
+      transform: :obj:`~collections.abc.Callable` receiving each acquired image
+        and returning the image to publish. It runs synchronously immediately
+        after acquisition, so a costly transform can reduce acquisition
+        frequency. Only the transformed image is sent, and its shape and dtype
+        must match the prepared output buffer.
+      config: If :obj:`True`, displays the selected configuration window
+        before the test when no specialized downstream request is
         present. The user can preview images and adjust the available
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
         values. Configuration also determines the output image shape and dtype.
         If :obj:`False`, both ``img_shape`` and ``img_dtype`` must be supplied.
       config_backend: GUI backend for the configuration window, either
-        ``'tkinter'`` or ``'pyqt'`` (requires PyQt6).
+        ``'tkinter'`` (requires Tk) or ``'pyqt'`` (requires PyQt6). Both
+        require Pillow. This choice is independent of the potential
+        :class:`~crappy.blocks.vision.ImageDisplayer` backend.
 
         .. versionadded:: 2.1.0
-      allow_downstream_config: Whether downstream VisionBlocks may replace the
-        generic window with specialized configuration requests. Required
-        requests can only be served when this argument and ``config`` are both
-        :obj:`True`. Optional requests are declined when either is disabled.
-      image_generator: Callable taking horizontal and vertical strain values in
-        percent and returning a :class:`numpy.ndarray`. When provided, a dummy
-        Camera exposes ``'Exx'`` and ``'Eyy'`` settings, the ``camera``
-        argument is ignored, and incoming ``'Exx(%)'`` and ``'Eyy(%)'`` values
-        update the generated image. This mode is primarily intended for
-        examples and development.
+      allow_downstream_config: Whether downstream
+        :class:`VisionBlocks <crappy.blocks.vision.block.VisionBlock>` may
+        replace the generic window with specialized configuration requests.
+        Required requests can only be served when this argument and ``config``
+        are both :obj:`True`. Optional requests are declined when either is
+        disabled.
+      image_generator: :obj:`~collections.abc.Callable` taking horizontal and
+        vertical strain values in percent and returning a
+        :class:`numpy.ndarray`. When provided, a dummy
+        :class:`~crappy.camera.meta_camera.camera.Camera` exposes ``'Exx'`` and
+        ``'Eyy'`` settings, the ``camera`` argument is ignored, and incoming
+        ``'Exx(%)'`` and ``'Eyy(%)'`` values update the generated image. This
+        mode is primarily intended for examples and development.
       software_trig_label: Name of a label used as a software acquisition
         trigger. An image is acquired only after data containing this label
-        arrives on a regular input Link, the value itself is ignored. This is
-        not a precision trigger and should generally be kept below 10 Hz, use
-        hardware triggering at higher rates if possible.
+        arrives on a regular input :class:`~crappy.links.link.Link`, the value
+        itself is ignored. This is not a precision trigger and should generally
+        be kept below 10 Hz, use hardware triggering at higher rates if
+        possible.
       img_shape: Shape of the published images. It is mandatory when ``config``
         is :obj:`False`. When configuration supplies a different shape, the
         configured value takes precedence.
@@ -134,10 +151,12 @@ class CameraSource(VisionBlock):
       debug: If :obj:`True`, displays all log messages, including
         :obj:`~logging.DEBUG` messages. If :obj:`False`, only displays messages
         at :obj:`~logging.INFO` level or higher. If :obj:`None`, disables
-        logging for this Block.
+        logging for this :class:`~crappy.blocks.meta_block.block.Block`.
       freq: Target acquisition-loop frequency. If :obj:`None`, loops as fast as
-        possible. The Camera and processing time may limit the actual rate.
-      **kwargs: Additional arguments forwarded to the selected Camera's
+        possible. The :class:`~crappy.camera.meta_camera.camera.Camera` and
+        processing time may limit the actual rate.
+      **kwargs: Additional arguments forwarded to the selected
+        :class:`~crappy.camera.meta_camera.camera.Camera`'s
         :meth:`~crappy.camera.meta_camera.camera.Camera.open` method.
     """
 
@@ -221,27 +240,36 @@ class CameraSource(VisionBlock):
     self._camera_kwargs = kwargs
 
   def prepare(self) -> None:
-    """Opens the Camera, runs configuration, and creates image buffers.
+    """Opens the :class:`~crappy.camera.meta_camera.camera.Camera`, runs
+    configuration, and creates image buffers.
 
-    This Block must have at least one output ImageLink and no input ImageLink.
-    A physical Camera is instantiated and opened with the Camera-specific
-    keyword arguments, or a dummy Camera is prepared around
+    This :class:`~crappy.blocks.meta_block.block.Block` must have at least one
+    output :class:`~crappy.links.img_link.ImageLink` and no input
+    :class:`~crappy.links.img_link.ImageLink`. A physical
+    :class:`~crappy.camera.meta_camera.camera.Camera` is instantiated and
+    opened with the :class:`~crappy.camera.meta_camera.camera.Camera`-specific
+    keyword arguments, or a dummy
+    :class:`~crappy.camera.meta_camera.camera.Camera` is prepared around
     ``image_generator``. If interactive configuration is enabled, specialized
-    downstream requests are handled in order. Otherwise, the generic Camera
-    configuration window is used. Optional requests that cannot be handled are
-    answered with :obj:`None`, while required requests abort preparation.
+    downstream requests are handled in order. Otherwise, the generic
+    :class:`~crappy.camera.meta_camera.camera.Camera` configuration window is
+    used. Optional requests that cannot be handled are answered with
+    :obj:`None`, while required requests abort preparation.
 
     The method also resolves ``'Hdw after config'`` trigger mode, verifies that
     the final output image shape and dtype are known, and delegates shared
     buffer creation to :class:`~crappy.blocks.vision.block.VisionBlock`.
 
     Raises:
-      IOError: If the Block has an input ImageLink or no output ImageLink.
-      RuntimeError: If the Camera is unavailable or a required configuration
-        request cannot be handled.
+      IOError: If the :class:`~crappy.blocks.meta_block.block.Block` has an
+        input :class:`~crappy.links.img_link.ImageLink` or no output
+        :class:`~crappy.links.img_link.ImageLink`.
+      RuntimeError: If the :class:`~crappy.camera.meta_camera.camera.Camera` is
+        unavailable or a required configuration request cannot be handled.
       ValueError: If preparation synchronization objects or the final image
         format are unavailable.
-      PrepareError: If another Block fails while configurations are running.
+      PrepareError: If another :class:`~crappy.blocks.meta_block.block.Block`
+        fails while configurations are running.
       CameraConfigError: If an interactive configuration window fails.
     """
 
@@ -385,23 +413,28 @@ class CameraSource(VisionBlock):
   def loop(self) -> None:
     """Acquires and publishes one image when the source is ready.
 
-    Incoming regular-Link data first gates the optional software trigger and,
-    in image-generator mode, updates the synthetic strain settings. The method
-    then calls :meth:`~crappy.camera.meta_camera.camera.Camera.get_image`. If
-    the Camera supplies only a timestamp, standard ``'DateTimeOriginal'``,
-    ``'SubsecTimeOriginal'``, and ``'ImageUniqueID'`` metadata are generated.
-    The ``'t(s)'`` timestamp is made relative to the test start before the
-    optional image transform runs.
+    Incoming regular-:class:`~crappy.links.link.Link` data first gates the
+    optional software trigger and, in image-generator mode, updates the
+    synthetic strain settings. The method then calls
+    :meth:`~crappy.camera.meta_camera.camera.Camera.get_image`. If the
+    :class:`~crappy.camera.meta_camera.camera.Camera` supplies only a
+    timestamp, standard ``'DateTimeOriginal'``, ``'SubsecTimeOriginal'``, and
+    ``'ImageUniqueID'`` metadata are generated. The ``'t(s)'`` timestamp is
+    made relative to the test start before the optional image transform runs.
 
     The resulting image and metadata are published through all output
-    ImageLinks. A dictionary containing ``'t(s)'``, ``'img_index'``, and the
-    complete ``'meta'`` dictionary is also sent through regular output Links.
-    If the trigger is absent or the Camera returns no image, the loop returns
-    without publishing anything.
+    :class:`ImageLinks <crappy.links.img_link.ImageLink>`. A dictionary
+    containing ``'t(s)'``, ``'img_index'``, and the complete ``'meta'``
+    dictionary is also sent through regular output
+    :class:`Links <crappy.links.link.Link>`. If the trigger is absent or the
+    :class:`~crappy.camera.meta_camera.camera.Camera` returns no image, the
+    loop returns without publishing anything.
 
     Raises:
-      RuntimeError: If the Camera has not been initialized.
-      ValueError: If Camera metadata is not a dictionary containing ``'t(s)'``.
+      RuntimeError: If the :class:`~crappy.camera.meta_camera.camera.Camera`
+        has not been initialized.
+      ValueError: If :class:`~crappy.camera.meta_camera.camera.Camera` metadata
+        is not a dictionary containing ``'t(s)'``.
     """
 
     # Receiving the data from upstream Blocks
@@ -469,11 +502,13 @@ class CameraSource(VisionBlock):
       self._print_freq(img_handled=True)
 
   def finish(self) -> None:
-    """Closes the physical Camera and releases shared image resources.
+    """Closes the physical :class:`~crappy.camera.meta_camera.camera.Camera`
+    and releases shared image resources.
 
-    The Camera's :meth:`~crappy.camera.meta_camera.camera.Camera.close` method
-    is skipped in image-generator mode. Shared-memory cleanup is then delegated
-    to :class:`~crappy.blocks.vision.block.VisionBlock`.
+    The :class:`~crappy.camera.meta_camera.camera.Camera`'s
+    :meth:`~crappy.camera.meta_camera.camera.Camera.close` method is skipped in
+    image-generator mode. Shared-memory cleanup is then delegated to
+    :class:`~crappy.blocks.vision.block.VisionBlock`.
     """
 
     # Closing the Camera object
@@ -491,17 +526,21 @@ class CameraSource(VisionBlock):
                                Mapping[str, type[CameraConfig]]),
                 *args,
                 **kwargs) -> tuple[Any, ...] | None:
-    """Runs one interactive configuration window for a Camera.
+    """Runs one interactive configuration window for a
+    :class:`~crappy.camera.meta_camera.camera.Camera`.
 
-    The requested configurator receives this Block's logging settings, target
+    The requested configurator receives this
+    :class:`~crappy.blocks.meta_block.block.Block`'s logging settings, target
     frequency, image transform, and any request-specific arguments. Its final
     image shape and dtype replace the current output format, with a warning if
     either differs from an already known value.
 
     Args:
-      camera: Open Camera instance to configure.
-      config_class: A concrete CameraConfig subclass or backend-to-class
-        mapping.
+      camera: Open :class:`~crappy.camera.meta_camera.camera.Camera` instance
+        to configure.
+      config_class: A
+        :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
+        subclass or backend-to-class mapping.
       *args: Positional arguments forwarded to *config_class*.
       **kwargs: Keyword arguments forwarded to *config_class*.
 
@@ -511,12 +550,16 @@ class CameraSource(VisionBlock):
 get_config`, or :obj:`None` if the configurator has no data to export.
 
     Raises:
-      TypeError: If *camera* is not a Camera or *config_class* is not a
-        concrete CameraConfig subclass.
+      TypeError: If *camera* is not a
+        :class:`~crappy.camera.meta_camera.camera.Camera` or *config_class* is
+        not a
+        :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
+        subclass.
       ValueError: If the mapping has no class for the selected backend.
       RuntimeError: If the logging queue has not been initialized.
       CameraConfigError: If the configuration window fails.
-      PrepareError: If the Block must stop while configuration is running.
+      PrepareError: If the :class:`~crappy.blocks.meta_block.block.Block` must
+        stop while configuration is running.
       KeyboardInterrupt: If configuration is interrupted by the user.
     """
 
@@ -539,7 +582,8 @@ get_config`, or :obj:`None` if the configurator has no data to export.
     config: CameraConfig | None = None
 
     def shutdown_requested() -> bool:
-      """Check whether this Block should abandon its preparation."""
+      """Check whether this :class:`~crappy.blocks.meta_block.block.Block`
+      should abandon its preparation."""
 
       return ((self._ready_barrier is not None and
                self._ready_barrier.broken) or
@@ -623,14 +667,17 @@ get_config`, or :obj:`None` if the configurator has no data to export.
     return result
 
   def default_configuration(self) -> None:
-    """Runs the generic Camera configuration window.
+    """Runs the generic :class:`~crappy.camera.meta_camera.camera.Camera`
+    configuration window.
 
-    The selected image shape and dtype are stored on this Block for creation
-    of its shared image buffer. No configuration response is sent to a
-    downstream Block.
+    The selected image shape and dtype are stored on this
+    :class:`~crappy.blocks.meta_block.block.Block` for creation of its shared
+    image buffer. No configuration response is sent to a downstream
+    :class:`~crappy.blocks.meta_block.block.Block`.
 
     Raises:
-      RuntimeError: If the Camera has not been initialized.
+      RuntimeError: If the :class:`~crappy.camera.meta_camera.camera.Camera`
+        has not been initialized.
       CameraConfigError: If the configuration window fails.
       KeyboardInterrupt: If configuration is interrupted by the user.
     """

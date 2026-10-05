@@ -12,16 +12,23 @@ from ..config_tools.spots_boxes import SpotsBoxes
 
 
 class CameraConfigBoxes(CameraConfig):
-  """Extend the configuration core with box selection and image overlays.
+  """Abstract camera configuration with box-selection and drawing hooks.
 
-  Image state, geometry, zoom, hit testing, and logging are inherited from
-  :class:`~crappy.tool.camera_config.base.camera_config.\
-CameraConfig`. Subclasses still implement the configuration lifecycle.
+  Selection gestures use display coordinates and are converted to full-image
+  pixels through the shared geometry and zoom. Temporary boxes and overlays
+  affect preview pixels only. Subclasses define what a completed box means
+  and implement the lifecycle through an implemented backend.
+
+  .. versionadded:: 2.1.0
   """
 
   def __init__(self, *args: Any, **kwargs: Any) -> None:
-    """Create transient selection state, then initialize the core and
-    backend."""
+    """Initializes transient selection state and the shared configuration.
+
+    Args:
+      *args: Positional arguments forwarded through cooperative initialization.
+      **kwargs: Keyword arguments forwarded through cooperative initialization.
+    """
 
     self._spots: SpotsBoxes = SpotsBoxes()
     self._select_box: Box = Box()
@@ -92,41 +99,52 @@ CameraConfig`. Subclasses still implement the configuration lifecycle.
     return min_x < max_x and min_y < max_y
 
   def _on_selection_start(self) -> None:
-    """Hook called after a valid press begins a selection.
+    """Reacts to a valid press that begins a selection.
 
-    Meant to be overridden in children classes.
+    Override this hook to prepare a specialized selection. The default does
+    nothing.
     """
 
     ...
 
   def _on_selection_drag(self) -> None:
-    """Hook called after a drag changes the transient box.
+    """Reacts when dragging changes the transient selection box.
 
-    Meant to be overridden in children classes.
+    Override this hook to update derived selections. The default does nothing.
     """
 
     ...
 
   def _on_selection_complete(self, box: Box) -> None:
-    """Hook called with a valid box before its coordinates are cleared.
+    """Consumes a valid selection before the transient box is cleared.
 
-    Meant to be overridden in children classes.
+    The default does nothing.
+
+    Args:
+      box: Temporary box in full-image pixel coordinates. Copy its values into
+        persistent state, as the same box is reset after this hook returns.
     """
 
     ...
 
   def _on_selection_end(self) -> None:
-    """Hook called when a selection ends or is canceled.
+    """Reacts when a selection completes or is canceled.
 
-    Meant to be overridden in children classes.
+    This also runs before a new press clears an unfinished selection. Override
+    it to restore drawing state. The default does nothing.
     """
 
     ...
 
   def _handle_box_outside_img(self, box: Box) -> None:
-    """Hook for invalidating a box after the image dimensions change.
+    """Handles a selection that no longer fits the current image.
 
-    Meant to be overridden in children classes.
+    Override this hook to discard or reset invalid selections. The default does
+    nothing.
+
+    Args:
+      box: :class:`~crappy.tool.camera_config.config_tools.Box` whose
+        coordinates fall outside the current preview image.
     """
 
     ...

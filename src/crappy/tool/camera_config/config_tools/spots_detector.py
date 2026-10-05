@@ -24,22 +24,21 @@ except (ModuleNotFoundError, ImportError):
 
 
 class SpotsDetector:
-  """This class detects round spots on a grey level image.
+  """Detects up to four round spots in a grayscale image.
 
-  It takes an image from a :class:`~crappy.tool.camera_config.base.\
-camera_config.CameraConfig` window as an input of the :meth:`detect_spots`
-  method, and tries to detect the requested number of spots on it. It then
-  stores the position and size of the detected spots and the calculated
-  threshold. In the VideoExtenso workflow, the
-  :class:`~crappy.tool.camera_config.base.video_extenso_config.\
-VideoExtensoConfig` window creates and owns this object, then exports only
-  those detection results to the processing layer through its
-  :meth:`~crappy.tool.camera_config.base.video_extenso_config.\
-VideoExtensoConfig.get_config` method.
+  The detector stores full-image spot coordinates and an intensity threshold.
+  Concrete :class:`~crappy.blocks.VideoExtenso` configuration windows own it
+  and export detection results. Initial detection requires scikit-image, and
+  median filtering additionally requires OpenCV.
+
+  Attributes:
+    spots: :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`
+      collection updated in place after successful detection.
+    thresh: Threshold calculated for the latest detection attempt.
 
   .. versionadded:: 2.0.0
-  .. versionchanged:: 2.1.0 owned by VideoExtensoConfig instead of the public
-     VideoExtenso Block
+  .. versionchanged:: 2.1.0 owned by the configuration window rather than the
+     public :class:`~crappy.blocks.VideoExtenso` Block
   """
 
   def __init__(self,
@@ -50,7 +49,7 @@ VideoExtensoConfig.get_config` method.
                update_thresh: bool = False,
                safe_mode: bool = False,
                border: int = 5) -> None:
-    """Sets the arguments.
+    """Stores detection options and creates an empty spot collection.
 
     Args:
       white_spots: If :obj:`True`, detects white spots over a black background.
@@ -112,20 +111,19 @@ VideoExtensoConfig.get_config` method.
                    img: np.ndarray,
                    y_orig: int,
                    x_orig: int) -> None:
-    """Transforms the image to improve spot detection, detects up to 4 spots
-    and return a :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`
-    object containing all the detected spots.
+    """Detects spots in a crop and updates stored results in place.
+
+    The intensity threshold is recalculated on each attempt. Small,
+    noncircular, and overlapping candidates are filtered before keeping up to
+    four regions. An unsuccessful attempt logs a warning and retains the
+    previous spot boxes, although thresh has been updated. This method returns
+    :obj:`None`.
 
     Args:
-      img: The sub-image on which the spots should be detected.
-      y_orig: The y coordinate of the top-left pixel of the sub-image on the
-        entire image.
-      x_orig: The x coordinate of the top-left pixel of the sub-image on the
-        entire image.
-
-    Returns:
-      A :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` object
-      containing all the detected spots.
+      img: Grayscale crop to analyze, normally an 8-bit preview image.
+      y_orig: Vertical coordinate of the crop's top-left pixel in the full
+        image.
+      x_orig: Horizontal coordinate of that pixel in the full image.
     """
 
     self._logger.log(logging.DEBUG, f"Detecting spots in crop of shape "

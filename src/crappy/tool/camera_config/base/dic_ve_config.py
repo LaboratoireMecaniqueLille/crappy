@@ -1,6 +1,7 @@
 # coding: utf-8
 
-"""Backend-independent configuration of DICVE tracking patches."""
+"""Backend-independent configuration of :class:`~crappy.blocks.DICVE` tracking
+patches."""
 
 import logging
 
@@ -12,7 +13,16 @@ from ....camera.meta_camera.camera_setting import (CameraSetting,
 
 
 class DICVEConfig(CameraConfigBoxes):
-  """Construct and validate four tracking patches without GUI dependencies."""
+  """Abstract configuration of digital image correlation tracking patches.
+
+  A left-button drag places four patches around a rectangle once both spans
+  reach three times the local Patch size setting. Closing requires a non-empty
+  patch collection and saves its initial horizontal and vertical distance.
+  Implemented backends supply the caller-owned patch collection and GUI
+  lifecycle.
+
+  .. versionadded:: 2.1.0
+  """
 
   _patch_size: CameraScaleSetting | None
 
@@ -79,6 +89,14 @@ class DICVEConfig(CameraConfigBoxes):
              f"y={self._spots.y_l0}")
 
   def get_config(self) -> tuple[SpotsBoxes]:
-    """Export the caller-owned collection of tracking patches."""
+    """Returns the selected patches and their saved initial distance.
+
+    Returns:
+      One-element :obj:`tuple` containing the same
+      :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` collection
+      supplied to the configuration window.
+      :class:`~crappy.tool.camera_config.config_tools.Box` coordinates are
+      full-image pixel coordinates.
+    """
 
     return self._spots,

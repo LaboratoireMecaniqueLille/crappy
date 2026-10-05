@@ -1,13 +1,24 @@
 # coding: utf-8
 
-"""Backend-independent configuration of a DISCorrel region of interest."""
+"""Backend-independent configuration of a :class:`~crappy.blocks.DISCorrel`
+region of interest."""
+
+import logging
 
 from .camera_config_boxes import CameraConfigBoxes
 from ..config_tools.box import Box
 
 
 class DISCorrelConfig(CameraConfigBoxes):
-  """Manage the correlation ROI without depending on a GUI toolkit."""
+  """Abstract configuration of a :class:`~crappy.blocks.DISCorrel` region of
+  interest (ROI).
+
+  A completed non-empty selection updates the provided correlation box. An
+  unfinished or flat selection leaves the previous ROI unchanged. Closing
+  requires an ROI. Implemented backends supply that box and the GUI lifecycle.
+
+  .. versionadded:: 2.1.0
+  """
 
   _correl_box: Box
   _draw_correl_box: bool
@@ -54,12 +65,18 @@ class DISCorrelConfig(CameraConfigBoxes):
     return None
 
   def get_config(self) -> tuple[Box]:
-    """Export the same ROI box object supplied to the configurator."""
+    """Returns the selected region of interest.
+
+    Returns:
+      One-element :obj:`tuple` containing the selected
+      :class:`~crappy.tool.camera_config.config_tools.Box`.Its coordinates
+      refer to the full image, independently of preview zoom.
+    """
 
     return self._correl_box,
 
   @property
   def box(self) -> Box:
-    """The caller-owned correlation region of interest."""
+    """Selected correlation region of interest in full-image pixels."""
 
     return self._correl_box

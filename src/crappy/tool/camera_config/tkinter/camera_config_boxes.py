@@ -13,19 +13,19 @@ from ....camera.meta_camera import Camera
 
 
 class TkinterCameraConfigBoxes(CameraConfigBoxes, TkinterCameraConfig):
-  """Base Tk configurator for displaying and selecting image-coordinate boxes.
+  """Tkinter camera configuration with left-button box selection.
 
-  It extends :class:`~crappy.tool.camera_config.tkinter.camera_config.\
-TkinterCameraConfig` with transient box selection and image-array overlays. The
-  selection rules live in
-  :class:`~crappy.tool.camera_config.base.camera_config_boxes.\
-CameraConfigBoxes`. This class binds Tk events and forwards their
-  coordinates. A different backend can reuse the same behavior. This class is
-  not used directly by a Block.
+  A left-button drag defines a temporary box in full-image pixel coordinates.
+  The shared :class:`~crappy.tool.camera_config.base.camera_config_boxes.\
+CameraConfigBoxes` hooks determine how a completed box is used. This class
+  supplies the backend event handling, not a processing-specific selection
+  policy.
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0
      renamed from *Camera_config_with_boxes* to *CameraConfigBoxes*
+  .. versionchanged:: 2.1.0 renamed from *CameraConfigBoxes* to
+     *TkinterCameraConfigBoxes*
   """
 
   def __init__(self,
@@ -34,26 +34,26 @@ CameraConfigBoxes`. This class binds Tk events and forwards their
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None) -> None:
-    """Initialize box-selection state and the parent camera configurator.
+    """Initializes box-selection state and the camera window.
 
     Args:
-      camera: The :class:`~crappy.camera.meta_camera.camera.Camera` object in
-        charge of acquiring the images.
-      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
-        the main :obj:`~logging.Logger`, only used in Windows.
+      camera: Open :class:`~crappy.camera.meta_camera.camera.Camera` object
+        providing preview images and adjustable settings.
+      log_queue: Crappy logging queue, forwarded to the histogram worker.
 
         .. versionadded:: 2.0.0
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
+      log_level: Script logging level, or :obj:`None` to disable worker
+        logging. The window uses the logger configured by its owning
+        :class:`~crappy.blocks.meta_block.block.Block`.
 
         .. versionadded:: 2.0.0
-      max_freq: The maximum frequency this window is allowed to loop at. It is
-        simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
-        Block.
+      max_freq: Maximum preview acquisition rate in hertz. :obj:`None` removes
+        this limit, but acquisition and rendering may reduce the achieved rate.
 
         .. versionadded:: 2.0.0
-      transform: A callable taking an image as an argument, and returning a
-        transformed image as an output.
+      transform: :obj:`~collections.abc.Callable` applied to acquired images
+        before preview conversion and image-format reporting, or :obj:`None` to
+        leave them unchanged.
 
         .. versionadded:: 2.1.0
     """

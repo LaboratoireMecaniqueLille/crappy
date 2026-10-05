@@ -13,13 +13,18 @@ class DisplayState:
 
   Attributes:
     fps: Measured preview refresh rate.
-    min_pixel: Minimum value in the latest image.
-    max_pixel: Maximum value in the latest image.
+    min_pixel: Minimum post-transform
+      :class:`~crappy.camera.meta_camera.camera.Camera` value, before preview
+      conversion.
+    max_pixel: Maximum post-transform
+      :class:`~crappy.camera.meta_camera.camera.Camera` value, before preview
+      conversion.
     detected_bits: Bits needed to represent the latest image's maximum value.
     zoom_percent: Displayed zoom level, with 100 meaning no zoom.
     reticle_x: Horizontal reticle position in full-image pixels.
     reticle_y: Vertical reticle position in full-image pixels.
-    reticle_value: Value of the image pixel under the reticle.
+    reticle_value: Pixel value under the reticle in the 8-bit preview copy,
+      before contrast scaling and overlays. Color channels are averaged.
     auto_range: Whether preview contrast is adjusted automatically.
     auto_apply: Whether setting edits are applied without pressing Apply.
   """

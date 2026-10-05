@@ -13,7 +13,7 @@ ExceptionInfo = tuple[type[BaseException], BaseException, TracebackType | None]
 
 
 class ConfigurationLifecycle:
-  """Own GUI-independent resources and failures for a camera configuration
+  """Owns GUI-independent resources and failures for a camera configuration
   session.
   """
 
@@ -22,13 +22,15 @@ class ConfigurationLifecycle:
                histogram_process: BaseProcess,
                queues: Iterable[Queue],
                log: Callable[..., None]) -> None:
-    """Initialize the resources and state for one configuration session.
+    """Initializes the resources and state for one configuration session.
 
     Args:
-      stop_event: Event shared with the histogram process to signal when the
-        configuration window enters the closing phase.
-      histogram_process: Process computing preview histograms in parallel to
-        the execution of the configuration window.
+      stop_event: :obj:`Event <multiprocessing.Event>` shared with the
+        histogram process to signal when the configuration window enters the
+        closing phase.
+      histogram_process: :obj:`Process <multiprocessing.Process>` computing
+        preview histograms in parallel to the execution of the configuration
+        window.
       queues: Queues communicating with the histogram process and that need to
         be closed when exiting the configuration window.
       log: Method to use for logging information.
@@ -45,7 +47,7 @@ class ConfigurationLifecycle:
 
   @property
   def closed(self) -> bool:
-    """returns :obj:`True` if resource cleanup has already begun."""
+    """Whether resource cleanup has already begun."""
 
     return self._closed
 
@@ -58,9 +60,13 @@ class ConfigurationLifecycle:
   def record_callback_failure(self,
                               error: BaseException,
                               traceback: TracebackType | None) -> None:
-    """Retain the first callback error for re-raising after the GUI closes.
+    """Retains the first callback error for re-raising after the GUI closes.
 
-    Keyboard interrupts are cancellation requests, not errors to report.
+    Keyboard interrupts are retained without an error log.
+
+    Args:
+      error: Exception raised by a toolkit callback.
+      traceback: Original callback traceback, or :obj:`None` if unavailable.
     """
 
     if self._failure is None:
@@ -72,22 +78,32 @@ class ConfigurationLifecycle:
                 exc_info=(type(error), error, traceback))
 
   def raise_if_failed(self) -> None:
-    """Expose a callback failure hidden by the GUI toolkit's event loop."""
+    """Re-raises a callback failure hidden by the GUI toolkit's event loop."""
 
     if self._failure is not None:
       raise self._failure.with_traceback(self._failure_traceback)
 
   def request_close(self, close: Callable[[], None]) -> None:
-    """Ask a GUI backend to close after retaining a callback failure."""
+    """Asks a GUI backend to close after retaining a callback failure.
+
+    Errors from closing are logged without replacing the original failure.
+
+    Args:
+      close: Backend method that closes the window without validation.
+    """
 
     try:
       close()
     except Exception as exc:
-      self._log(logging.ERROR, "Could not close configuration UI",
+      self._log(logging.ERROR, "Could not close configuration window",
                 exc_info=(type(exc), exc, exc.__traceback__))
 
   def close_resources(self) -> None:
-    """Stop the histogram process and queues once, including before start."""
+    """Stops the histogram process and queues once, including before start.
+
+    Requests graceful worker shutdown, then terminates or kills the process if
+    it remains alive. Queue cleanup is attempted even if process cleanup fails.
+    """
 
     # Nothing to do if the window was already closed
     if self._closed:

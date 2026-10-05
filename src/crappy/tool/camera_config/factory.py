@@ -21,27 +21,44 @@ def create_configurator(configurator: type[CameraConfig] |
                         transform: Callable[[np.ndarray], np.ndarray] | None,
                         *args: Any,
                         **kwargs: Any) -> CameraConfig:
-  """Instantiates an explicit class or one selected from a backend mapping.
+  """Instantiates a configuration class from an explicit given type or a
+  backend mapping.
 
-  A class provided directly is used as supplied, regardless of
-  ``config_backend``. The public Camera Blocks validate ``config_backend``,
-  subclasses select their configurator through a class attribute.
+  A class supplied directly is used regardless of ``config_backend``. Public
+  :class:`Camera Blocks <crappy.blocks.Camera>` validate backend selection,
+  while :class:`~crappy.blocks.meta_block.block.Block` subclasses choose
+  configurator classes through their configurator attribute. This helper does
+  not register classes, validate arguments, or start the configuration window.
 
   Args:
-    configurator: Concrete CameraConfig subclass, or a mapping from
-      backend names to those classes.
-    camera: Camera to configure.
-    config_backend: Backend name used to select a class from *configurator*
-      when it is a mapping.
-    log_queue: Queue used to send configuration log messages.
-    log_level: Logging level for the configuration window.
-    max_freq: Maximum preview acquisition frequency.
-    transform: Optional transformation applied to acquired images.
+    configurator:
+      :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
+      subclass or mapping from backend names to classes.
+    camera: Open :class:`~crappy.camera.meta_camera.camera.Camera` object
+      providing preview images and adjustable settings.
+    config_backend: Mapping key selecting the requested backend. Ignored when
+      configurator is a class.
+    log_queue: Crappy logging queue, forwarded to the histogram worker.
+    log_level: Script logging level, or :obj:`None` to disable worker logging.
+      The window uses the logger configured by its owning
+      :class:`~crappy.blocks.meta_block.block.Block`.
+    max_freq: Maximum preview acquisition rate in hertz. :obj:`None` removes
+      this limit, but acquisition and rendering may reduce the achieved rate.
+    transform: :obj:`~collections.abc.Callable` applied to acquired images
+      before preview conversion and image-format reporting, or :obj:`None` to
+      leave them unchanged.
     *args: Additional positional arguments passed to the selected class.
     **kwargs: Additional keyword arguments passed to the selected class.
 
   Returns:
-    The instantiated configuration window.
+    Initialized configurator. Call
+    :meth:`run() <crappy.tool.camera_config.base.camera_config.CameraConfig.\
+run>` to start configuration.
+
+  Raises:
+    KeyError: If a mapping does not contain config_backend.
+
+  .. versionadded:: 2.1.0
   """
 
   selected = (configurator[config_backend]

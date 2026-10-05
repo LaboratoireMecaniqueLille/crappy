@@ -1,6 +1,6 @@
 # coding: utf-8
 
-"""Tk-backed DISCorrel configuration."""
+"""Tk-backend :class:`~crappy.blocks.DISCorrel` configuration."""
 
 from collections.abc import Callable
 from multiprocessing.queues import Queue
@@ -13,16 +13,19 @@ from ....camera.meta_camera import Camera
 
 
 class TkinterDISCorrelConfig(DISCorrelConfig, TkinterCameraConfigBoxes):
-  """Configure the image region used by a DISCorrel Block.
+  """Tkinter window for selecting a :class:`~crappy.blocks.DISCorrel` region of
+  interest (ROI).
 
-  Draw a box with the left mouse button to replace the correlation ROI. The
-  supplied :class:`~crappy.tool.camera_config.config_tools.Box` is updated in
-  place when a valid selection is released. Selection and validation rules are
-  shared by :class:`~crappy.tool.camera_config.base.dis_correl_config.\
-DISCorrelConfig`, Tk only supplies the interface.
+  A left-button drag replaces any existing correlation
+  :class:`~crappy.tool.camera_config.config_tools.Box` when a non-empty
+  selection is released. Closing requires a selected ROI. Selection and
+  validation rules are inherited from the shared
+  :class:`~crappy.tool.camera_config.base.dis_correl_config.DISCorrelConfig`.
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *DISConfig* to *DISCorrelConfig*
+  .. versionchanged:: 2.1.0 renamed from *DISCorrelConfig* to
+     *TkinterDISCorrelConfig*
   """
 
   def __init__(self,
@@ -32,31 +35,33 @@ DISCorrelConfig`, Tk only supplies the interface.
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
                patch: Box) -> None:
-    """Initialize the configurator with the caller-owned correlation ROI.
+    """Builds the window with the provided correlation region.
 
     Args:
-      camera: The :class:`~crappy.camera.meta_camera.camera.Camera` object in
-        charge of acquiring the images.
-      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
-        the main :obj:`~logging.Logger`, only used in Windows.
+      camera: Open :class:`~crappy.camera.meta_camera.camera.Camera` object
+        providing preview images and adjustable settings.
+      log_queue: Crappy logging queue, forwarded to the histogram worker.
 
         .. versionadded:: 2.0.0
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
+      log_level: Script logging level, or :obj:`None` to disable worker
+        logging. The window uses the logger configured by its owning
+        :class:`~crappy.blocks.meta_block.block.Block`.
 
         .. versionadded:: 2.0.0
-      max_freq: The maximum frequency this window is allowed to loop at. It is
-        simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
-        Block.
+      max_freq: Maximum preview acquisition rate in hertz. :obj:`None` removes
+        this limit, but acquisition and rendering may reduce the achieved rate.
 
         .. versionadded:: 2.0.0
-      transform: A callable taking an image as an argument, and returning a
-        transformed image as an output.
+      transform: :obj:`~collections.abc.Callable` applied to acquired images
+        before preview conversion and image-format reporting, or :obj:`None` to
+        leave them unchanged.
 
         .. versionadded:: 2.1.0
-      patch: The :class:`~crappy.tool.camera_config.config_tools.Box` container
-        that will save the information on the patch where to perform image
-        correlation.
+      patch: :class:`~crappy.tool.camera_config.config_tools.Box` to display
+        and update in place. The same
+        :class:`~crappy.tool.camera_config.config_tools.Box` is returned by
+        :meth:`get_config() <crappy.tool.camera_config.base.dis_correl_config.\
+DISCorrelConfig.get_config>` after validation.
 
         .. versionadded:: 2.0.0
     """

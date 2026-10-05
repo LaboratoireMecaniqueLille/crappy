@@ -1,6 +1,7 @@
 # coding: utf-8
 
-"""Camera configuration state and interactions shared by GUI backends."""
+""":class:`~crappy.camera.meta_camera.camera.Camera` configuration state and
+interactions shared by GUI backends."""
 
 import logging
 import importlib.resources
@@ -43,12 +44,24 @@ class ConfigAction:
 
 
 class CameraConfig(ABC):
-  """Abstract base for camera configuration state, interactions, and lifecycle.
+  """Abstract camera configuration shared by the Tkinter and PyQt6 backends.
 
-  Subclasses implement :meth:`run`, :meth:`stop`, and :meth:`watch_shutdown`
-  with or without a GUI. This class manages the camera model, logging, and
-  image interactions shared by all implementations. Resource and window
-  lifetime remain the subclass's responsibility.
+  This class owns the :class:`~crappy.camera.meta_camera.camera.Camera`
+  reference, setting models, preview indicators, image conversion, zoom, and
+  pointer coordinates. It does not create widgets or start a histogram worker.
+  Subclasses implement :meth:`run() <crappy.tool.camera_config.base.\
+camera_config.CameraConfig.run>`, :meth:`stop() <crappy.tool.camera_config.\
+base.camera_config.CameraConfig.stop>`, and :meth:`watch_shutdown() <crappy.\
+tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
+
+  Attributes:
+    shape: Shape of the latest acquired image after transform, before preview
+      conversion. :obj:`None` until a
+      :class:`~crappy.camera.meta_camera.camera.Camera` image has been
+      acquired.
+    dtype: NumPy dtype of that image, or :obj:`None` before acquisition.
+
+  .. versionadded:: 2.1.0
   """
 
   def __init__(self,
@@ -59,15 +72,20 @@ class CameraConfig(ABC):
                transform: Callable[[np.ndarray], np.ndarray] | None,
                *_,
                **__) -> None:
-    """Initialize the attributes and the core state.
+    """Initializes the shared models without starting acquisition.
 
     Args:
-      camera: Camera acquiring the images and exposing settings.
-      log_queue: Queue forwarding log messages to the main process, only used
-        in Windows.
-      log_level: The minimum logging level of the Crappy script.
-      max_freq: Maximum preview acquisition frequency.
-      transform: Optional transformation applied to acquired images.
+      camera: Open :class:`~crappy.camera.meta_camera.camera.Camera` object
+        providing preview images and adjustable settings.
+      log_queue: Crappy logging queue, forwarded to the histogram worker.
+      log_level: Script logging level, or :obj:`None` to disable worker
+        logging. The window uses the logger configured by its owning
+        :class:`~crappy.blocks.meta_block.block.Block`.
+      max_freq: Maximum preview acquisition rate in hertz. :obj:`None` removes
+        this limit, but acquisition and rendering may reduce the achieved rate.
+      transform: :obj:`~collections.abc.Callable` applied to acquired images
+        before preview conversion and image-format reporting, or :obj:`None` to
+        leave them unchanged.
     """
 
     # Logging must be available during GUI and local settings initialization
@@ -108,33 +126,40 @@ class CameraConfig(ABC):
 
   @abstractmethod
   def run(self) -> None:
-    """Run the configuration until it completes, fails, or is asked to stop.
+    """Runs configuration until validation, cancellation, or failure.
 
-    Implementations must release their resources before returning or raising
-    an error. GUI callback failures must be raised after the window closes.
+    GUI implementations must release resources before returning or raising.
+    Callback failures must propagate after the event loop ends.
+    :exc:`KeyboardInterrupt` must propagate after cleanup without an error
+    dialog or error log.
     """
 
     ...
 
   @abstractmethod
   def stop(self) -> None:
-    """Release configuration resources, including after a partial start.
+    """Closes configuration without validating or exporting a selection.
 
-    Implementations must allow repeated calls when the owning Block handles
-    an exception.
+    GUI implementations must release their resources, including after a
+    partial start, and allow repeated calls. This method does not close the
+    :class:`~crappy.camera.meta_camera.camera.Camera` object, which remains
+    owned by the :class:`~crappy.blocks.meta_block.block.Block`.
     """
 
     ...
 
   @abstractmethod
   def watch_shutdown(self, requested: Callable[[], bool]) -> None:
-    """Stop without close validation when the owning Block must stop preparing.
+    """Registers a predicate for canceling configuration during preparation.
 
-    Implementations check this predicate while :meth:`run` is executing.
+    GUI implementations check it while :meth:`run() <crappy.tool.\
+camera_config.base.camera_config.CameraConfig.run>` executes. A :obj:`True`
+    result must close without selection validation or finalization.
 
     Args:
-      requested: Returns :obj:`True` if the Block's stop Event is set or its
-        preparation Barrier has broken.
+      requested: :obj:`~collections.abc.Callable` returning :obj:`True` when
+        the owning :class:`~crappy.blocks.meta_block.block.Block` must stop,
+        for example when its stop event is set or preparation has failed.
     """
 
     ...
@@ -143,17 +168,18 @@ class CameraConfig(ABC):
           level: int,
           msg: str,
           exc_info: ExceptionInfo | None = None) -> None:
-    """Record log messages for the CameraConfig window.
+    """Records a message using the owning process's logging configuration.
 
-    Also instantiates the :obj:`~logging.Logger` when logging the first
-    message.
+    The logger is created on first use and named after the process and concrete
+    configurator class. This method does not install logging handlers.
 
     Args:
-      level: An :obj:`int` indicating the logging level of the message.
-      msg: The message to log, as a :obj:`str`.
-      exc_info: An explicit exception tuple to log through
-        :meth:`logging.Logger.exception` at error level. This preserves the
-        traceback even when called outside the original ``except`` block.
+      level: Logging level of the message.
+      msg: Message to record.
+      exc_info: Exception type, instance, and traceback to log at error level.
+        An explicit :obj:`tuple` preserves callback tracebacks outside their
+        original exception handler. :obj:`None` records a normal message at
+        level.
     """
 
     if self._logger is None:
@@ -166,55 +192,77 @@ class CameraConfig(ABC):
       self._logger.exception(msg, exc_info=exc_info)
 
   def _create_local_settings(self) -> tuple[CameraSetting, ...]:
-    """Create configurator-specific settings before building GUI controls.
+    """Creates settings owned by the configurator rather than the
+    :class:`~crappy.camera.meta_camera.camera.Camera`.
 
-    Subclasses can return local settings here. They are applied before camera
-    settings and displayed before the sorted camera controls.
+    Called during initialization, before GUI controls exist. Override this hook
+    to supply additional settings, and combine the parent's result with your
+    own when extending a specialized configuration.
+
+    Returns:
+      Settings displayed and applied before the
+      :class:`~crappy.camera.meta_camera.camera.Camera` settings. The default
+      is an empty :obj:`tuple`.
     """
 
     return tuple()
 
   def _extra_actions(self) -> tuple[ConfigAction, ...]:
-    """Return specific actions for the backend to integrate as a button in the
-    GUI."""
+    """Supplies additional actions for the backend's button panel.
+
+    Called while the backend builds its layout. Callbacks may use the
+    initialized shared state, but should not depend on controls that have not
+    yet been built.
+
+    Returns:
+      Actions with unique identifiers within this window, in display
+      order. The default is an empty :obj:`tuple`.
+    """
 
     return tuple()
 
   def _validate_close(self) -> str | None:
-    """Override to implement a check preventing user from closing the
-    configuration window when a given condition isn't met.
+    """Checks whether a user-requested close can accept the configuration.
 
-    This condition should be returned as a :obj:`str`.
+    Returns:
+      A message to display when closing must be refused, or :obj:`None`
+      to accept it. The default accepts closing.
+      :class:`~crappy.blocks.meta_block.block.Block` shutdown and callback
+      failures bypass this check.
     """
 
     ...
 
   def _on_valid_close(self) -> None:
-    """Finalize a validated configuration before the backend closes.
+    """Finalizes a selection after close validation succeeds.
 
-    Specialized configurations can save their selection or derived data here.
+    Override this hook to save derived values before the backend releases its
+    resources. The default does nothing. It is not called during cancellation.
     """
 
     ...
 
   def get_config(self) -> tuple[Any, ...] | None:
-    """Export values consumed by an image-processing CameraProcess.
+    """Returns the configuration values after successful configuration.
 
-    The owning Block calls this after the configuration window closes and
-    before starting its processing Process. Subclasses should return a tuple
-    matching the positional parameters of the ``CameraProcess.set_config()``
-    method that will receive the config information.
+    The all-in-one :class:`Camera Block <crappy.blocks.Camera>` unpacks the
+    :obj:`tuple` into
+    :meth:`CameraProcess.set_config() <crappy.blocks.camera_processes.\
+CameraProcess.set_config>` before starting its processing worker.
+    :class:`~crappy.blocks.vision.CameraSource` returns it to the requesting
+    :class:`~crappy.blocks.vision.block.VisionBlock`. Keep the :obj:`tuple`
+    compatible with that consumer, and return serializable data.
 
     Returns:
-      Positional arguments for ``set_config()``, or ``None`` if no processing
-      configuration is required.
+      Processing-specific configuration values, or :obj:`None` when none
+      are needed. The default returns :obj:`None`.
     """
 
     ...
 
   def _zoom_at(self, x: int, y: int, direction: int) -> bool:
-    """Zoom at a display position using a signed, backend-independent
-    direction."""
+    """:class:`~crappy.tool.camera_config.config_tools.Zoom` at a display
+    position using a signed, backend-independent direction."""
 
     # Only proceed if the point to zoom on is on the image
     if not direction or not self._is_on_image(x, y):
@@ -262,7 +310,7 @@ class CameraConfig(ABC):
     return True
 
   def _update_pixel_value(self) -> None:
-    """Read the original-image value at the current reticle position."""
+    """Reads the pre-contrast preview value at the current reticle position."""
 
     self.log(logging.DEBUG, "Updating the value of the current pixel")
 
@@ -345,7 +393,7 @@ class CameraConfig(ABC):
         no_img_path = importlib.resources.files('crappy').joinpath(
             'tool/data/no_image.png')
         ret = None, np.array(Image.open(BytesIO(no_img_path.read_bytes())))
-      # Otherwise just leave the last received immage on display
+      # Otherwise just leave the last received image on display
       else:
         self.log(logging.DEBUG, "No image returned by the camera")
         return False

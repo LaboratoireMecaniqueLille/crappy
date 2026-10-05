@@ -1,6 +1,7 @@
 # coding: utf-8
 
-"""Backend-independent spot detection and configuration for VideoExtenso."""
+"""Backend-independent spot detection and configuration for
+:class:`~crappy.blocks.VideoExtenso`."""
 
 import logging
 
@@ -12,8 +13,17 @@ from ..config_tools.spots_detector import SpotsDetector
 
 
 class VideoExtensoConfig(CameraConfigBoxes):
-  """Detect spots from a crop and manage their initial lengths without a
-  GUI."""
+  """Abstract configuration of video-extensometry spot detection.
+
+  A completed box selection runs detection on the corresponding preview crop.
+  The Save L0 action records initial horizontal and vertical spot distance.
+  Closing requires detected spots and saves those lengths if still unset.
+  Implemented backends create the
+  :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` and supply the
+  GUI lifecycle.
+
+  .. versionadded:: 2.1.0
+  """
 
   _detector: SpotsDetector
 
@@ -23,7 +33,11 @@ class VideoExtensoConfig(CameraConfigBoxes):
     return (ConfigAction("save_l0", "Save L0", self._save_l0),)
 
   def _on_selection_complete(self, box: Box) -> None:
-    """Detect spots in the selected crop of the unmodified source image."""
+    """Detects spots in the selected crop before contrast scaling or overlays.
+
+    The shared original-image copy is already converted to an 8-bit preview. It
+    is not the raw :class:`~crappy.camera.meta_camera.camera.Camera` image.
+    """
 
     if self._original_img is None:
       return
@@ -76,6 +90,12 @@ class VideoExtensoConfig(CameraConfigBoxes):
       self._save_l0()
 
   def get_config(self) -> tuple[SpotsBoxes, int]:
-    """Export detected spot boxes and threshold for the processing Block."""
+    """Returns the spot-detection result for the processing stage.
+
+    Returns:
+      :obj:`tuple` of the detector's
+      :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` collection
+      and intensity threshold.
+    """
 
     return self._detector.spots, self._detector.thresh

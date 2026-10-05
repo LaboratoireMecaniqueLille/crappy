@@ -18,6 +18,10 @@ class SettingApplyResult:
 
   ``changed`` includes settings reloaded indirectly by the edited setting's
   setter, even when the reload changed only bounds, step, or choices.
+
+  Attributes:
+    effective: Value read back from the edited setting after application.
+    changed: Registered settings whose revision changed during application.
   """
 
   effective: Any
@@ -25,18 +29,19 @@ class SettingApplyResult:
 
 
 class SettingManager:
-  """Apply ordinary requested values without knowing about GUI controls.
+  """Applies requested setting values without knowing about GUI controls.
 
-  Camera settings retain their insertion order. Local settings are applied
-  first, in registration order. A backend reads each requested value just
-  before calling :meth:`apply`, and refreshes its controls using ``changed``.
-  This prevents an earlier setter's reload from applying a stale later edit.
+  :class:`~crappy.camera.meta_camera.camera.Camera` settings retain their
+  insertion order. Local settings are applied first, in registration order. A
+  backend reads each requested value just before calling :meth:`apply`, and
+  refreshes its controls using ``changed``. This prevents an earlier setter's
+  reload from applying a stale later edit.
   """
 
   def __init__(self,
                camera_settings: Mapping[str, CameraSetting],
                local_settings: tuple[CameraSetting, ...] = ()) -> None:
-    """Begin an interactive configuration session for the given settings.
+    """Initializes an interactive configuration session for the given settings.
 
     All registered settings enter interactive reload mode, allowing dependent
     reloads to replace values protected from override during camera setup.
@@ -74,7 +79,16 @@ class SettingManager:
     return *local_settings, *camera_settings
 
   def register_local(self, setting: CameraSetting) -> None:
-    """Include a configurator-specific setting in the application order."""
+    """Includes a configurator-specific setting in the application order.
+
+    Repeated registration does not duplicate the setting.
+    :class:`~crappy.camera.meta_camera.camera.Camera` settings are enabled for
+    interactive reload but retain their
+    :class:`~crappy.camera.meta_camera.camera.Camera` application order.
+
+    Args:
+      setting: Setting model to register without a GUI control.
+    """
 
     # A camera setting added after this manager was constructed also enters
     # the interactive reload phase when its backend control is registered
@@ -89,10 +103,22 @@ class SettingManager:
   def apply(self,
             setting: CameraSetting,
             requested: Any) -> SettingApplyResult:
-    """Set a requested value and read back its effective value and reloads.
+    """Applies a requested value and reads back its effective value and
+    reloads.
 
     The caller is responsible for obtaining ``requested`` from its backend
     control and for displaying the effective values afterward.
+
+    Args:
+      setting: Registered setting to edit.
+      requested: Value read from the backend control.
+
+    Returns:
+      Effective value and registered settings changed by this application,
+      including dependent reloads.
+
+    Raises:
+      ValueError: If setting is not registered.
     """
 
     settings = self.settings

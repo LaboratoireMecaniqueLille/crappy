@@ -5,12 +5,16 @@ from dataclasses import dataclass
 
 @dataclass
 class Zoom:
-  """This class stores the upper and lower limits of the image to display in
-  the :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
-  window.
+  """Normalized image bounds used by camera configuration previews.
 
-  It also allows updating them when the user changes the zoom ratio or drags
-  the image with the mouse.
+  Each bound is a fraction of the full image dimension. The initial rectangle
+  covers the whole image. Zoom and pan updates keep it within that image.
+
+  Attributes:
+    x_low: Left bound, initially 0.
+    x_high: Right bound, initially 1.
+    y_low: Top bound, initially 0.
+    y_high: Bottom bound, initially 1.
 
   .. versionadded:: 2.0.0
   """
@@ -69,14 +73,14 @@ class Zoom:
       self.y_high = self.y_low + 1 / ratio * (prev_y_high - prev_y_low)
 
   def update_move(self, delta_x: float, delta_y: float) -> None:
-    """Updates the upper and lower limits of the image when the user moves the
-    image with a left button click.
+    """Moves the visible rectangle while keeping it inside the full image.
+
+    :class:`~crappy.camera.meta_camera.camera.Camera` configuration backends
+    use this after a right-button drag.
 
     Args:
-      delta_x: The `x` displacement to apply to the image, as a ratio of the
-        total image width.
-      delta_y: The `y` displacement to apply to the image, as a ratio of the
-        total image height.
+      delta_x: Horizontal displacement as a fraction of the full image width.
+      delta_y: Vertical displacement as a fraction of the full image height.
     """
 
     prev_x_low, prev_x_high = self.x_low, self.x_high

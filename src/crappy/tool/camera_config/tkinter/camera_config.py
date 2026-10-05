@@ -16,8 +16,7 @@ from types import TracebackType
 from typing import TYPE_CHECKING
 from collections.abc import Callable, Iterable
 
-from ..base import CameraConfig
-from ..base._configuration_lifecycle import ConfigurationLifecycle
+from ..base import CameraConfig, ConfigurationLifecycle
 from ..config_tools import HistogramProcess
 from ....camera.meta_camera.camera_setting import (
   CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
@@ -46,7 +45,7 @@ class _TkSettingControl:
       a count of user edits, comparing it with ``setting.revision`` lets the
       view avoid overwriting an unrelated pending edit.
     frame: The parent frame for choice radio buttons, needed when ``reload()``
-      changes the number of choices. ``None`` for other setting types.
+      changes the number of choices. :obj:`None` for other setting types.
   """
 
   variable: tk.Variable
@@ -56,37 +55,34 @@ class _TkSettingControl:
 
 
 class TkinterCameraConfig(CameraConfig, tk.Tk):
-  """This class is a GUI allowing the user to visualize the images from a
-  :class:`~crappy.camera.meta_camera.camera.Camera` before a Crappy test
-  starts, and to tune the settings of the Camera.
+  """Tkinter window for previewing
+  :class:`~crappy.camera.meta_camera.camera.Camera` images and adjusting
+  settings.
 
-  It is meant to be user-friendly and interactive. It is possible to zoom on
-  the image using the mousewheel, and to move on the zoomed image by
-  right-clicking and dragging.
+  The window shows an image, pixel histogram, preview frames per second (FPS),
+  pixel-value indicators, and :class:`~crappy.camera.meta_camera.camera.Camera`
+  settings. The mouse wheel zooms, and a right-button drag pans. Auto range
+  changes preview contrast only. Apply Settings writes pending edits, while
+  Auto apply writes them after a control change or slider release. Closing does
+  not apply unsubmitted edits.
 
-  In addition to the image, the interface also displays a histogram of the
-  pixel values, an FPS counter, a detected bits counter, the minimum and
-  maximum pixel values, and the value and position of the pixel currently under
-  the mouse. A checkbox allows auto-adjusting the pixel range to get a better
-  contrast.
+  The shared
+  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` owns
+  image and setting models. This backend owns widgets, event scheduling,
+  rendering, and histogram-worker resources. Use
+  :meth:`run() <crappy.tool.camera_config.tkinter.camera_config.\
+TkinterCameraConfig.run>` to configure synchronously. A user close validates
+  and finalizes the selection, while
+  :meth:`stop() <crappy.tool.camera_config.tkinter.camera_config.\
+TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
+  shutdown bypass validation.
 
-  This class is used as is by the :class:`~crappy.blocks.Camera`, but also 
-  subclassed to provide more specific functionalities to other camera-related 
-  Blocks like :class:`~crappy.blocks.VideoExtenso` or 
-  :class:`~crappy.blocks.DICVE`.
-  
-  This class is a child of :obj:`tkinter.Tk`. It relies on the
-  :class:`~crappy.tool.camera_config.config_tools.Zoom` and
-  :class:`~crappy.tool.camera_config.config_tools.HistogramProcess` tools. It
-  also interacts with instances of the
-  :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
-  Toolkit-independent state and image interactions are inherited from
-  :class:`~crappy.tool.camera_config.base.camera_config.\
-CameraConfig`, this class owns Tk controls, event scheduling, and
-  rendering.
+  Requires Tk support from the Python installation and Pillow.
 
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Camera_config* to *CameraConfig*
+  .. versionchanged:: 2.1.0 renamed from *CameraConfig* to
+     *TkinterCameraConfig*
   """
 
   def __init__(self,
@@ -97,28 +93,26 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
                transform: Callable[[np.ndarray], np.ndarray] | None,
                *_,
                **__) -> None:
-    """Initializes the interface and displays it.
+    """Builds the window and histogram resources without starting acquisition.
 
     Args:
-      camera: The :class:`~crappy.camera.meta_camera.camera.Camera` object in
-        charge of acquiring the images.
-      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to
-        the main :obj:`~logging.Logger`, only used in Windows.
+      camera: Open :class:`~crappy.camera.meta_camera.camera.Camera` object
+        providing preview images and adjustable settings.
+      log_queue: Crappy logging queue, forwarded to the histogram worker.
 
         .. versionadded:: 2.0.0
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
+      log_level: Script logging level, or :obj:`None` to disable worker
+        logging. The window uses the logger configured by its owning
+        :class:`~crappy.blocks.meta_block.block.Block`.
 
         .. versionadded:: 2.0.0
-      max_freq: The maximum frequency this window is allowed to loop at. It is
-        simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
-        Block.
+      max_freq: Maximum preview acquisition rate in hertz. :obj:`None` removes
+        this limit, but acquisition and rendering may reduce the achieved rate.
 
         .. versionadded:: 2.0.0
-      transform: A callable taking an image as an argument, and returning a
-        transformed image as an output. The transformed image is used for the
-        preview and for determining the image shape and data type reported to
-        the owning Block.
+      transform: :obj:`~collections.abc.Callable` applied to acquired images
+        before preview conversion and image-format reporting, or :obj:`None` to
+        leave them unchanged.
 
         .. versionadded:: 2.1.0
     """
@@ -220,9 +214,19 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     self._testing: bool = False
 
   def start(self) -> None:
-    """Constantly updates the image and the information on the GUI, until asked
-    to stop.
-    
+    """Starts the histogram worker and schedules preview updates.
+
+    This method does not wait for the window to close. Use
+    :meth:`run() <crappy.tool.camera_config.tkinter.camera_config.\
+TkinterCameraConfig.run>` for the complete workflow, or manage the toolkit's
+    event loop yourself when using
+    :meth:`start() <crappy.tool.camera_config.tkinter.camera_config.\
+TkinterCameraConfig.start>`. The window can be started only once. A closed
+    window cannot be restarted.
+
+    Raises:
+      RuntimeError: If configuration resources have already been closed.
+
     .. versionadded:: 1.5.10
     .. versionchanged:: 2.0.7 Renamed from *main()* to *start()*
     """
@@ -246,12 +250,18 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
       self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
   def run(self) -> None:
-    """Run the Tk configuration until user close, failure, or Block shutdown.
+    """Runs configuration until user close, failure, or
+    :class:`~crappy.blocks.meta_block.block.Block` shutdown.
 
-    Block callers should use this neutral entry point. ``start()`` remains
-    available for subclasses and existing integrations that manage Tk's
-    ``wait_window()`` themselves. A shutdown registered with
-    :meth:`watch_shutdown` bypasses normal closing validation.
+    Starts acquisition and waits for the window. Resources are released before
+    returning or propagating a failure, including failures during startup. A
+    shutdown registered with
+    :meth:`watch_shutdown() <crappy.tool.camera_config.tkinter.camera_config.\
+TkinterCameraConfig.watch_shutdown>` bypasses selection validation.
+
+    Raises:
+      RuntimeError: If the window has already been closed.
+      KeyboardInterrupt: After cleanup, without an error dialog or error log.
     """
 
     try:
@@ -279,20 +289,25 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     self._lifecycle.raise_if_failed()
 
   def watch_shutdown(self, requested: Callable[[], bool]) -> None:
-    """Close without validation when the owning Block must stop preparing.
+    """Registers a shutdown condition, regularly checked by the tkinter event
+    loop.
 
-    The predicate is checked by Tk on its own thread while ``run()`` waits
-    for the window. Block synchronization objects remain owned by the Block.
+    The condition normally performs checks on synchronization objects owned by
+    a :class:`~crappy.blocks.meta_block.block.Block`. A true result closes
+    without validating or finalizing the current selection.
 
     Args:
-      requested: Returns :obj:`True` if the Block's stop Event is set or its
-        preparation Barrier has broken.
+      requested: :obj:`~collections.abc.Callable` returning :obj:`True` when
+        the :class:`~crappy.blocks.meta_block.block.Block` is stopping or
+        another :class:`~crappy.blocks.meta_block.block.Block` has failed
+        during preparation.
     """
 
     self._shutdown_requested = requested
 
   def _check_shutdown(self) -> None:
-    """Poll the Block's shutdown condition from Tk's event loop."""
+    """Poll the :class:`~crappy.blocks.meta_block.block.Block`'s shutdown
+    condition from Tk's event loop."""
 
     self._shutdown_sched_obj = None
 
@@ -329,11 +344,18 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
       self._lifecycle.request_close(self.stop)
 
   def finish(self) -> None:
-    """Method called when the user tries to close the configuration window.
+    """Validates and finalizes a user-requested close.
 
-    Shared behavior validates and finalizes the configuration, the Tk backend
-    presents any reason that prevents closing.
-    
+    An invalid selection logs a warning and shows the reason, leaving the
+    window open. A valid selection calls
+    :meth:`_on_valid_close() <crappy.tool.camera_config.base.camera_config.\
+CameraConfig._on_valid_close>` before
+    :meth:`stop() <crappy.tool.camera_config.tkinter.camera_config.\
+TkinterCameraConfig.stop>`. Pending
+    :class:`~crappy.camera.meta_camera.camera.Camera` setting edits are not
+    applied here. If the :class:`~crappy.blocks.meta_block.block.Block`
+    requests shutdown, validation and finalization are skipped.
+
     .. versionadded:: 2.0.0
     """
 
@@ -354,10 +376,12 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     self.stop()
 
   def stop(self) -> None:
-    """Method called for gracefully stopping the GUI.
+    """Closes the window and releases histogram resources without validation.
 
-    Destroys the window promptly, then stops the histogram process and closes
-    its queues. This path does not validate the current selection.
+    Cancels scheduled updates and closes the histogram queues. Repeated calls
+    are safe, including before acquisition starts. The
+    :class:`~crappy.camera.meta_camera.camera.Camera` object remains open and
+    owned by the :class:`~crappy.blocks.meta_block.block.Block`.
 
     .. versionadded:: 2.0.0
     """
@@ -768,7 +792,7 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
       variable, widget, cam_set.revision))
 
   def _add_choice_setting(self, cam_set: CameraChoiceSetting) -> None:
-    """Adds a setting represented by a list of radio buttons."""
+    """Adds a setting represented by a :obj:`list` of radio buttons."""
 
     self.log(logging.DEBUG, f"Adding the choice setting {cam_set.name}")
 
@@ -916,13 +940,11 @@ CameraConfig`, this class owns Tk controls, event scheduling, and
     self._sync_setting_controls(result.changed)
 
   def _auto_apply_settings(self, *_: tk.Event):
-    """Applies the settings without clicking on the Apply Settings
-     button when the Auto apply button is checked.
+    """Applies pending edits when Auto apply is enabled.
 
-     The scale settings will be applied when the slicer is released. The bool
-     settings will be applied when the bool button is checked. The choice
-     settings will be applied when the choice button is checked.
-     """
+    Checkboxes and radio buttons apply on activation. Scales apply when the
+    slider is released. All settings use the shared application order.
+    """
 
     if self._display_state.auto_apply:
       self._update_settings()

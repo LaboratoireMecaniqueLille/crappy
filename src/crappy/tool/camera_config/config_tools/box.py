@@ -10,16 +10,23 @@ from .overlay_object import Overlay
 
 @dataclass
 class Box(Overlay):
-  """This class represents a box to be drawn on top of the images of a
-  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window or
-  :class:`~crappy.blocks.camera_processes.Displayer` Process of a
-  :class:`~crappy.blocks.Camera` Block.
+  """Image-coordinate rectangle with optional tracking data.
 
-  It is a child of :class:`~crappy.tool.camera_config.config_tools.Overlay`.
+  Used for selection regions, tracking patches, and display overlays.
+  Configuration windows draw it with preview-scaled line thickness. Its own
+  :meth:`draw() <crappy.tool.camera_config.config_tools.Box.draw>` method
+  supports runtime display overlays.
 
-  It can represent either the box drawn when selecting a region, or the
-  bounding box of a tracked area.
-  
+  Attributes:
+    x_start: First horizontal corner coordinate, or :obj:`None` if unset.
+    x_end: Opposite horizontal corner coordinate, or :obj:`None` if unset.
+    y_start: First vertical corner coordinate, or :obj:`None` if unset.
+    y_end: Opposite vertical corner coordinate, or :obj:`None` if unset.
+    x_disp: Optional horizontal tracking displacement.
+    y_disp: Optional vertical tracking displacement.
+    x_centroid: Optional horizontal center coordinate.
+    y_centroid: Optional vertical center coordinate.
+
   .. versionadded:: 2.0.0
   """
 
@@ -47,16 +54,20 @@ class Box(Overlay):
             f"({self.x_end}, {self.y_end})")
 
   def __add__(self, other: tuple[int, int]) -> Box:
-    """Adds an offset to the coordinates of the current Box.
+    """Returns a box shifted by an integer pixel offset.
 
     Args:
-      other: a :obj:`tuple` of two obj:`int` containing the x and y offset to
-        apply.
+      other: :obj:`tuple` containing horizontal and vertical integer offsets.
 
     Returns:
-      Either the current Box if any of its corners is undefined, or the current
-      Box offset by the provided values otherwise. The disp and centroid
-      parameters are also shifted.
+      A new :class:`~crappy.tool.camera_config.config_tools.Box` with
+      shifted corners, defined displacements, and centroids. If any corner is
+      unset, returns the original
+      :class:`~crappy.tool.camera_config.config_tools.Box` unchanged.
+
+    Raises:
+      TypeError: If other is not a :obj:`tuple`.
+      ValueError: If the :obj:`tuple` does not contain two integers.
     """
 
     if not isinstance(other, tuple):
@@ -80,11 +91,16 @@ class Box(Overlay):
                else None)
 
   def draw(self, img: np.ndarray) -> None:
-    """Draws the Box on top of the given image, and returns the modified image.
+    """Draws visible rectangle edges into an image in place.
 
-    The thickness of the drawn lines adapts to the size of the image, so that
-    the lines are always visible even when casting the image to a smaller
-    format.
+    Edge thickness adapts to image dimensions, and brightness contrasts with
+    the underlying pixels.
+
+    Args:
+      img: Display image array to modify.
+
+    Raises:
+      ValueError: If corner coordinates are incomplete.
     """
 
     # First, checking if all points are defined
@@ -112,7 +128,14 @@ class Box(Overlay):
                              "ignoring", exc_info=exc)
 
   def update(self, box: Box) -> None:
-    """Changes the coordinates of the box to those of another box."""
+    """Copies another box's coordinates and tracking fields into this box.
+
+    Args:
+      box: Source :class:`~crappy.tool.camera_config.config_tools.Box`. This
+        method copies field values without replacing this object, so references
+        held by the owning :class:`~crappy.blocks.meta_block.block.Block`
+        remain valid.
+    """
 
     self.log(logging.DEBUG, f"Updating {self} to {box}")
 
@@ -128,13 +151,13 @@ class Box(Overlay):
     self.y_centroid = box.y_centroid
 
   def no_points(self) -> bool:
-    """Returns whether all four sides of the box are defined or not."""
+    """Whether at least one of the four corner coordinates is unset."""
 
     return any(point is None for point in (self.x_start, self.x_end,
                                            self.y_start, self.y_end))
 
   def reset(self) -> None:
-    """Resets the sides to :obj:`None`."""
+    """Clears corner coordinates and centroids, retaining displacements."""
 
     self.log(logging.DEBUG, f"Resetting {self}")
 
@@ -147,8 +170,15 @@ class Box(Overlay):
     self.y_centroid = None
 
   def sorted(self) -> tuple[int, int, int, int]:
-    """Returns the four coordinates but sorted in the order : min x, max x,
-    min y, max y."""
+    """Returns ordered corner coordinates.
+
+    Returns:
+      :obj:`tuple` of minimum x, maximum x, minimum y, and maximum y
+      coordinates.
+
+    Raises:
+      ValueError: If any corner coordinate is unset.
+    """
 
     if self.no_points():
       self.log(logging.WARNING, f"Trying to sort the Box, but some of its "

@@ -20,14 +20,11 @@ import logging
 import os
 import numpy as np
 
-from ..base import CameraConfig, CameraConfigBoxes
-from ..base._configuration_lifecycle import ConfigurationLifecycle
+from ..base import CameraConfig, CameraConfigBoxes, ConfigurationLifecycle
 from ..config_tools import HistogramProcess
 from ....camera.meta_camera import Camera
-from ....camera.meta_camera.camera_setting import (CameraBoolSetting,
-                                                  CameraChoiceSetting,
-                                                  CameraScaleSetting,
-                                                  CameraSetting)
+from ....camera.meta_camera.camera_setting import (
+  CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting, CameraSetting)
 from ...._global import OptionalModule
 
 try:
@@ -88,17 +85,32 @@ class _QtABCMeta(ABCMeta, type(QWidget)):
 
 
 class PyQtCameraConfig(CameraConfig, QWidget, metaclass=_QtABCMeta):
-  """PyQt6 window for previewing images and tuning Camera settings.
+  """PyQt6 window for previewing
+  :class:`~crappy.camera.meta_camera.camera.Camera` images and adjusting
+  settings.
 
-  Like :class:`~crappy.tool.camera_config.tkinter.camera_config.\
-TkinterCameraConfig`, this window displays
-  the image, its pixel histogram, acquisition information, and the available
-  Camera settings. The mousewheel zooms the image and right-dragging pans it.
-  Specialized camera Blocks can add selection gestures and action buttons.
+  The window shows an image, pixel histogram, preview frames per second (FPS),
+  pixel-value indicators, and :class:`~crappy.camera.meta_camera.camera.Camera`
+  settings. The mouse wheel zooms, and a right-button drag pans. Auto range
+  changes preview contrast only. Apply Settings writes pending edits, while
+  Auto apply writes them after a control change or slider release. Closing does
+  not apply unsubmitted edits.
 
-  Toolkit-independent state and image interactions are inherited from
-  :class:`~crappy.tool.camera_config.base.camera_config.\
-CameraConfig`. This class owns the Qt widgets, timers, and rendering.
+  The shared
+  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` owns
+  image and setting models. This backend owns widgets, event scheduling,
+  rendering, and histogram-worker resources. Use
+  :meth:`run() <crappy.tool.camera_config.pyqt.camera_config.PyQtCameraConfig.\
+run>` to configure synchronously. A user close validates and finalizes the
+  selection, while
+  :meth:`stop() <crappy.tool.camera_config.pyqt.camera_config.\
+PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
+  shutdown bypass validation.
+
+  Requires PyQt6 and Pillow when instantiated. The interface and histogram
+  follow the Qt application's light or dark palette.
+
+  .. versionadded:: 2.1.0
   """
 
   def __init__(self,
@@ -108,15 +120,20 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
                *_, **__) -> None:
-    """Initializes the window and its histogram calculation process.
+    """Builds the window and histogram resources without starting acquisition.
 
     Args:
-      camera: The Camera object in charge of acquiring the images.
-      log_queue: The queue forwarding log messages to the main process.
-      log_level: The minimum logging level of the Crappy script.
-      max_freq: The maximum frequency at which the preview may acquire images.
-      transform: An optional callable applied to images before previewing them
-        and reporting their shape and data type to the owning Block.
+      camera: Open :class:`~crappy.camera.meta_camera.camera.Camera` object
+        providing preview images and adjustable settings.
+      log_queue: Crappy logging queue, forwarded to the histogram worker.
+      log_level: Script logging level, or :obj:`None` to disable worker
+        logging. The window uses the logger configured by its owning
+        :class:`~crappy.blocks.meta_block.block.Block`.
+      max_freq: Maximum preview acquisition rate in hertz. :obj:`None` removes
+        this limit, but acquisition and rendering may reduce the achieved rate.
+      transform: :obj:`~collections.abc.Callable` applied to acquired images
+        before preview conversion and image-format reporting, or :obj:`None` to
+        leave them unchanged.
     """
 
     # Reuse an application created by the caller, or create one for this window
@@ -268,11 +285,18 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       self._lifecycle.request_close(self.stop)
 
   def run(self) -> None:
-    """Runs the configuration window until it closes.
+    """Runs configuration until user close, failure, or
+    :class:`~crappy.blocks.meta_block.block.Block` shutdown.
 
-    The Qt event loop hides exceptions raised by signal callbacks, so those
-    failures are saved by :meth:`_guard` and raised after the loop exits.
-    Histogram resources are also released if opening the window fails.
+    Starts acquisition and waits for the window. Resources are released before
+    returning or propagating a failure, including failures during startup. A
+    shutdown registered with
+    :meth:`watch_shutdown() <crappy.tool.camera_config.pyqt.camera_config.\
+PyQtCameraConfig.watch_shutdown>` bypasses selection validation.
+
+    Raises:
+      RuntimeError: If the window has already been closed.
+      KeyboardInterrupt: After cleanup, without an error dialog or error log.
     """
 
     try:
@@ -300,10 +324,18 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     self._lifecycle.raise_if_failed()
 
   def start(self) -> None:
-    """Starts histogram processing and the periodic GUI updates.
+    """Starts the histogram worker and schedules preview updates.
 
-    Image acquisition uses a single-shot timer to respect ``max_freq``. A
-    separate timer updates the displayed FPS twice per second.
+    This method does not wait for the window to close. Use
+    :meth:`run() <crappy.tool.camera_config.pyqt.camera_config.\
+PyQtCameraConfig.run>` for the complete workflow, or manage PyQt's event loop
+    yourself when using
+    :meth:`start() <crappy.tool.camera_config.pyqt.camera_config.\
+PyQtCameraConfig.start>`. The window can be started only once. A closed window
+    cannot be restarted.
+
+    Raises:
+      RuntimeError: If configuration resources have already been closed.
     """
 
     if self._lifecycle.closed:
@@ -323,11 +355,17 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       self._shutdown_timer.start()
 
   def watch_shutdown(self, requested: Callable[[], bool]) -> None:
-    """Closes the window when the owning Block requests shutdown.
+    """Registers a shutdown condition checked by PyQt's event loop.
+
+    The condition normally performs checks on synchronization objects owned by
+    a :class:`~crappy.blocks.meta_block.block.Block`. A true result closes
+    without validating or finalizing the current selection.
 
     Args:
-      requested: A callback returning whether the Block is stopping or its
-        preparation has failed.
+      requested: :obj:`~collections.abc.Callable` returning :obj:`True` when
+        the :class:`~crappy.blocks.meta_block.block.Block` is stopping or
+        another :class:`~crappy.blocks.meta_block.block.Block` has failed
+        during preparation.
     """
 
     self._shutdown_requested = requested
@@ -335,7 +373,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       self._shutdown_timer.start()
 
   def _check_shutdown(self) -> None:
-    """Checks the Block shutdown request from the Qt event loop."""
+    """Checks the :class:`~crappy.blocks.meta_block.block.Block` shutdown
+    request from the Qt event loop."""
 
     if (not self._window_closed and
         self._shutdown_requested is not None and
@@ -345,10 +384,17 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       self.stop()
 
   def finish(self) -> None:
-    """Validates a user close and finalizes the selected configuration.
+    """Validates and finalizes a user-requested close.
 
-    A Block shutdown bypasses validation, while an invalid user selection
-    keeps the window open so it can be corrected.
+    An invalid selection logs a warning and shows the reason, leaving the
+    window open. A valid selection calls
+    :meth:`_on_valid_close() <crappy.tool.camera_config.base.camera_config.\
+CameraConfig._on_valid_close>` before
+    :meth:`stop() <crappy.tool.camera_config.pyqt.camera_config.\
+PyQtCameraConfig.stop>`. Pending :class:`~crappy.camera.meta_camera.camera.\
+Camera` setting edits are not applied here. If the
+    :class:`~crappy.blocks.meta_block.block.Block` requests shutdown,
+    validation and finalization are skipped.
     """
 
     # The Block may need to close even when its current selection is invalid
@@ -382,10 +428,12 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       a0.ignore()
 
   def stop(self) -> None:
-    """Closes the window without validation and releases its resources.
+    """Closes the window and releases histogram resources without validation.
 
-    This is also called during shutdown or after a callback failure, so it
-    remains safe to call more than once.
+    Cancels scheduled updates and closes the worker queues. Repeated calls are
+    safe, including before acquisition starts. The
+    :class:`~crappy.camera.meta_camera.camera.Camera` object remains open and
+    owned by the :class:`~crappy.blocks.meta_block.block.Block`.
     """
 
     if self._window_closed:
@@ -436,8 +484,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
   def _set_layout(self) -> None:
     """Places the histogram, image, information, and settings on the window.
 
-    The layout follows the Tk configurator: the histogram sits above the
-    image, with indicators and setting controls in a panel on the right.
+    The histogram sits above the image, with indicators and setting controls in
+    a panel on the right.
     """
 
     self.log(logging.DEBUG, 'Building the PyQt6 configuration layout')
@@ -553,9 +601,11 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     self._sync_indicators()
 
   def _add_settings(self) -> None:
-    """Creates controls for local settings, then for Camera settings.
+    """Creates controls for local settings, then for
+    :class:`~crappy.camera.meta_camera.camera.Camera` settings.
 
-    Camera settings are sorted by type to match the Tk interface.
+    :class:`~crappy.camera.meta_camera.camera.Camera` settings are sorted by
+    type.
     """
 
     self.log(logging.DEBUG, 'Adding configuration settings to the interface')
@@ -566,7 +616,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       self._add_setting_control(setting)
 
   def _add_setting_control(self, setting: CameraSetting) -> None:
-    """Adds the appropriate Qt editor for one Camera setting.
+    """Adds the appropriate Qt editor for one
+    :class:`~crappy.camera.meta_camera.camera.Camera` setting.
 
     Args:
       setting: The boolean, scale, or choice setting to display.
@@ -645,7 +696,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
   @staticmethod
   def _configure_slider(setting: CameraScaleSetting, slider: QSlider) -> None:
-    """Maps a Camera scale onto the integer range accepted by Qt sliders."""
+    """Maps a :class:`~crappy.camera.meta_camera.camera.Camera` scale onto the
+    integer range accepted by Qt sliders."""
 
     span = setting.highest - setting.lowest
     step = setting.step or (1 if setting.type is int else span / 1000)
@@ -660,8 +712,10 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     return round((value - setting.lowest) * slider.maximum() / span)
 
   @staticmethod
-  def _slider_value(setting: CameraScaleSetting, slider: QSlider) -> int | float:
-    """Returns the requested Camera value at the current slider position."""
+  def _slider_value(setting: CameraScaleSetting,
+                    slider: QSlider) -> int | float:
+    """Returns the requested :class:`~crappy.camera.meta_camera.camera.Camera`
+    value at the current slider position."""
 
     span = setting.highest - setting.lowest
     step = setting.step or (1 if setting.type is int else span / 1000)
@@ -670,7 +724,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
   @staticmethod
   def _scale_label(setting: CameraScaleSetting, value: int | float) -> str:
-    """Formats a scale's label without changing the requested Camera value.
+    """Formats a scale's label without changing the requested
+    :class:`~crappy.camera.meta_camera.camera.Camera` value.
 
     Args:
       setting: The scale setting whose name and precision are displayed.
@@ -742,7 +797,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
     Settings are processed in the manager's order. Before each one, model
     changes made by an earlier setting are copied into the corresponding
-    controls, as a Camera setter may alter other settings or their choices.
+    controls, as a :class:`~crappy.camera.meta_camera.camera.Camera` setter may
+    alter other settings or their choices.
     """
 
     self.log(logging.DEBUG, 'Applying camera configuration settings')
@@ -762,7 +818,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       self._update_settings()
 
   def _on_auto_range(self, checked: bool) -> None:
-    """Updates whether the histogram adjusts the preview's pixel range."""
+    """Updates whether preview contrast is adjusted automatically."""
 
     self._display_state.auto_range = checked
     self.log(logging.DEBUG, f'Auto range '
@@ -793,7 +849,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
   def _acquire_and_render(self) -> None:
     """Acquires an image when due and schedules the next preview update.
 
-    A single-shot timer follows the Camera Block's frequency limit without
+    A single-shot timer follows the
+    :class:`Camera Block <crappy.blocks.Camera>`'s frequency limit without
     blocking Qt's event loop between acquisitions.
     """
 
@@ -857,6 +914,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       self._display_geometry.image_width = 0
       self._display_geometry.image_height = 0
       return
+
     height, width, *_ = cropped.shape
     fit_width, fit_height = self._display_geometry.fit(width, height)
     if not fit_width or not fit_height:
@@ -945,7 +1003,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     self._hist_canvas.setPixmap(pixmap)
 
   def _draw_overlay(self) -> None:
-    """Draws the selection overlay added by a specialized camera Block."""
+    """Draws the selection overlay added by a specialized camera
+    :class:`~crappy.blocks.meta_block.block.Block`."""
 
     ...
 
