@@ -1,6 +1,8 @@
 # coding: utf-8
 
 from multiprocessing import Value
+from itertools import cycle
+import pickle
 from typing import Any
 from unittest.mock import patch
 
@@ -91,6 +93,7 @@ class TestGenerator(BlockTestBase):
     kwargs.setdefault('debug', None)
 
     generator = Generator(path, **kwargs)
+    generator.prepare()
     generator._instance_t0 = Value('d', self._t0)
     return generator
 
@@ -171,6 +174,25 @@ class TestGenerator(BlockTestBase):
       with self.subTest(path=path):
         with self.assertRaises(exception):
           Generator(path, freq=None)
+
+  def test_repeating_path_iterator_is_created_only_during_prepare(self) -> None:
+    """Keep unpicklable cycles out of the state sent to a child process."""
+
+    path = [{'type': 'Constant', 'value': 3, 'condition': None}]
+    for repeat in (False, True):
+      with self.subTest(repeat=repeat):
+        generator = Generator(path, repeat=repeat, freq=None)
+        self.assertIsNone(generator._current_path)
+        self.assertEqual(list(pickle.loads(pickle.dumps(generator._path))), [])
+        self.assertEqual(pickle.loads(pickle.dumps(generator._raw_path)), path)
+        generator.prepare()
+        self.assertEqual(isinstance(generator._path, cycle), repeat)
+        self.assertEqual(next(generator._path), path[0])
+        if repeat:
+          self.assertEqual(next(generator._path), path[0])
+        else:
+          with self.assertRaises(StopIteration):
+            next(generator._path)
 
   def test_begin_instantiates_first_path_with_shared_state(self) -> None:
     """Checks first Path setup from the Generator start time."""
