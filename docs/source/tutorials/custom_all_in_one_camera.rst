@@ -128,7 +128,8 @@ before the test. For that advanced case:
 
 Crappy passes those values to the CameraProcess before image handling begins.
 Use ordinary constructor arguments instead when interactive selection is not
-needed.
+needed. The :doc:`custom_camera_configuration` tutorial shows how to extend
+the shared configuration classes and concrete windows.
 
 Adapt it to a real camera
 -------------------------
