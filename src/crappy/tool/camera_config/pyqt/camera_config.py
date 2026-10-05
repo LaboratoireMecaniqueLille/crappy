@@ -15,7 +15,7 @@ from multiprocessing import Event, Queue, synchronize
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
 from time import monotonic, time
-from typing import Any
+from typing import Any, TYPE_CHECKING
 import logging
 import os
 import numpy as np
@@ -36,22 +36,28 @@ except (ModuleNotFoundError, ImportError):
   Image = OptionalModule('pillow')
 
 try:
-  from PyQt6.QtCore import QEvent, QEventLoop, Qt, QTimer
+  from PyQt6.QtCore import QEvent, QEventLoop, Qt, QTimer, QCoreApplication
   from PyQt6.QtGui import QCloseEvent, QImage, QPalette, QPixmap
   from PyQt6.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QFrame,
                                QGroupBox, QHBoxLayout, QLabel, QMessageBox,
                                QPushButton, QRadioButton, QScrollArea,
                                QSizePolicy, QSlider, QVBoxLayout, QWidget)
 except (ModuleNotFoundError, ImportError):
-  _missing_pyqt = OptionalModule('PyQt6')
-  QEvent = QEventLoop = Qt = QTimer = _missing_pyqt
-  QCloseEvent = QImage = QPalette = QPixmap = _missing_pyqt
-  QApplication = QButtonGroup = QCheckBox = QFrame = QGroupBox = _missing_pyqt
-  QHBoxLayout = QLabel = QMessageBox = QPushButton = _missing_pyqt
-  QRadioButton = QScrollArea = QSizePolicy = _missing_pyqt
-  QSlider = QVBoxLayout = _missing_pyqt
+  QEvent = QEventLoop = Qt = QTimer = QCloseEvent = QImage = QPalette = \
+    QPixmap = QApplication = QButtonGroup = QCheckBox = QFrame = QGroupBox = \
+    QHBoxLayout = QLabel = QMessageBox = QPushButton = QRadioButton = \
+    QScrollArea = QSizePolicy = QSlider = QVBoxLayout = QCoreApplication = \
+    OptionalModule('PyQt6')
   # A base class must be a type, even when Qt is unavailable
   QWidget = object
+
+if TYPE_CHECKING:
+  from PyQt6.QtCore import QEvent, QEventLoop, Qt, QTimer, QCoreApplication
+  from PyQt6.QtGui import QCloseEvent, QImage, QPalette, QPixmap
+  from PyQt6.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QFrame,
+                               QGroupBox, QHBoxLayout, QLabel, QMessageBox,
+                               QPushButton, QRadioButton, QScrollArea,
+                               QSizePolicy, QSlider, QVBoxLayout, QWidget)
 
 
 @dataclass
@@ -114,14 +120,15 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     """
 
     # Reuse an application created by the caller, or create one for this window
-    self._qt_app = self._get_application()
-    self._window_closed = False
+    self._qt_app: QApplication = self._get_application()
+    self._window_closed: bool = False
     self._shutdown_requested: Callable[[], bool] | None = None
     self._event_loop: QEventLoop | None = None
     self._last_upd_t: float | None = None
-    self._next_acq_t = -float('inf')
+    self._next_acq_t: float = -float('inf')
+    self._n_loops: int = 0
     self._hist: np.ndarray | None = None
-    self._setting_controls: dict[CameraSetting, _QtSettingControl] = {}
+    self._setting_controls: dict[CameraSetting, _QtSettingControl] = dict()
 
     # Abort early if the Camera settings cannot be initialized
     try:
@@ -130,7 +137,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       self._window_closed = True
       try:
         self.close()
-      except Exception:
+      except (Exception,):
         pass
       raise
 
@@ -171,13 +178,14 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       raise
 
     # Separate timers acquire images, refresh the FPS, and watch Block shutdown
-    self._acquisition_timer = QTimer(self)
+    self._acquisition_timer: QTimer = QTimer(self)
     self._acquisition_timer.setSingleShot(True)
-    self._acquisition_timer.timeout.connect(self._guard(self._acquire_and_render))
-    self._indicator_timer = QTimer(self)
+    self._acquisition_timer.timeout.connect(self._guard(
+        self._acquire_and_render))
+    self._indicator_timer: QTimer = QTimer(self)
     self._indicator_timer.setInterval(500)
     self._indicator_timer.timeout.connect(self._guard(self._update_indicators))
-    self._shutdown_timer = QTimer(self)
+    self._shutdown_timer: QTimer = QTimer(self)
     self._shutdown_timer.setInterval(25)
     self._shutdown_timer.timeout.connect(self._guard(self._check_shutdown))
 
@@ -200,7 +208,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     only while constructing the application and then restored.
     """
 
-    app = QApplication.instance()
+    app = QCoreApplication.instance()
     if app is not None:
       if not isinstance(app, QApplication):
         raise RuntimeError("A non-widget Qt application already exists")
@@ -329,8 +337,11 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
   def _check_shutdown(self) -> None:
     """Checks the Block shutdown request from the Qt event loop."""
 
-    if (not self._window_closed and self._shutdown_requested is not None and
+    if (not self._window_closed and
+        self._shutdown_requested is not None and
         self._shutdown_requested()):
+      self.log(logging.DEBUG, 'Closing configuration after Block shutdown '
+                              'request')
       self.stop()
 
   def finish(self) -> None:
@@ -352,20 +363,23 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     self.log(logging.INFO, 'Camera configuration validated')
     self.stop()
 
-  def closeEvent(self, event: QCloseEvent) -> None:
+  def closeEvent(self, a0: QCloseEvent | None) -> None:
     """Routes window-manager close requests through :meth:`finish`."""
 
+    if a0 is None:
+      return
+
     if self._window_closed:
-      event.accept()
+      a0.accept()
       return
     try:
       self.finish()
     except BaseException as error:
       self._record_callback_failure(error)
     if self._window_closed:
-      event.accept()
+      a0.accept()
     else:
-      event.ignore()
+      a0.ignore()
 
   def stop(self) -> None:
     """Closes the window without validation and releases its resources.
@@ -377,12 +391,14 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     if self._window_closed:
       self._lifecycle.close_resources()
       return
+
     self._window_closed = True
     self.log(logging.DEBUG, 'Closing camera configuration and releasing '
                             'histogram resources')
     self._acquisition_timer.stop()
     self._indicator_timer.stop()
     self._shutdown_timer.stop()
+
     try:
       self.close()
     finally:
@@ -400,7 +416,8 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     self.setStyleSheet('')
     self.setStyleSheet(f'''
         QFrame[configFrame="true"], QGroupBox {{
-          border: 1px solid rgba({text.red()}, {text.green()}, {text.blue()}, 80);
+          border: 1px solid rgba({text.red()}, {text.green()}, {text.blue()},
+          80);
           border-radius: 6px;
         }}
         QLabel[configFrame="true"], QScrollArea[configFrame="true"] {{
@@ -425,7 +442,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
     self.log(logging.DEBUG, 'Building the PyQt6 configuration layout')
     self._set_frame_style()
-    # Use the same minimum image area as Tk for large and small screens
+    # Minimum image area for large and small screens
     screen = self._qt_app.primaryScreen()
     size = screen.availableGeometry() if screen is not None else None
     if size is not None and size.width() >= 1600 and size.height() >= 900:
@@ -556,12 +573,14 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     """
 
     # Boolean settings use a checkbox
+    self.log(logging.DEBUG, f'Adding control for setting {setting.name}')
     if isinstance(setting, CameraBoolSetting):
       checkbox = QCheckBox(setting.name)
       checkbox.setChecked(bool(setting.value))
       checkbox.clicked.connect(self._guard(self._auto_apply_settings))
       self._settings_layout.addWidget(checkbox)
       control = _QtSettingControl(checkbox, setting.revision)
+
     # Scale settings show their current request next to a horizontal slider
     elif isinstance(setting, CameraScaleSetting):
       frame = QWidget()
@@ -580,6 +599,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       layout.addWidget(slider)
       self._settings_layout.addWidget(frame)
       control = _QtSettingControl(frame, setting.revision, slider, label)
+
     # Choice settings use a group of mutually exclusive radio buttons
     elif isinstance(setting, CameraChoiceSetting):
       group = QGroupBox(setting.name)
@@ -596,8 +616,10 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     self._setting_manager.register_local(setting)
     self._setting_controls[setting] = control
 
-  def _set_choices(self, setting: CameraChoiceSetting,
-                   buttons: QButtonGroup, layout: QVBoxLayout) -> None:
+  def _set_choices(self,
+                   setting: CameraChoiceSetting,
+                   buttons: QButtonGroup,
+                   layout: QVBoxLayout) -> None:
     """Rebuilds the radio buttons when a setting's choices change.
 
     Args:
@@ -611,6 +633,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
       buttons.removeButton(button)
       layout.removeWidget(button)
       button.deleteLater()
+
     for choice in setting.choices:
       button = QRadioButton(str(choice))
       button.setProperty('choice', choice)
@@ -626,7 +649,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
     span = setting.highest - setting.lowest
     step = setting.step or (1 if setting.type is int else span / 1000)
-    slider.setRange(0, min(max(round(span / step), 1), 2_000_000_000))
+    slider.setRange(0, min(max(round(span / step), 1), 2000000000))
 
   @staticmethod
   def _slider_position(setting: CameraScaleSetting, slider: QSlider,
@@ -659,7 +682,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     # Keep fractional steps and offsets, without showing binary float noise
     step = setting.step or (setting.highest - setting.lowest) / 1000
     decimals = max(0, -min(Decimal(str(number)).normalize().as_tuple().exponent
-                          for number in (step, setting.lowest)))
+                           for number in (step, setting.lowest)))
     return f'{setting.name} : {round(value, decimals):.10g}'
 
   def _sync_setting_controls(self,
@@ -683,6 +706,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
                               f'{setting.name}')
       if isinstance(setting, CameraBoolSetting):
         control.widget.setChecked(bool(setting.value))
+
       elif isinstance(setting, CameraScaleSetting):
         assert control.slider is not None and control.value_label is not None
         control.slider.blockSignals(True)
@@ -691,8 +715,10 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
             setting, control.slider, setting.value))
         control.slider.blockSignals(False)
         control.value_label.setText(self._scale_label(setting, setting.value))
+
       elif isinstance(setting, CameraChoiceSetting):
-        assert control.buttons is not None and control.choices_layout is not None
+        assert control.buttons is not None
+        assert control.choices_layout is not None
         self._set_choices(setting, control.buttons, control.choices_layout)
       control.revision = setting.revision
 
@@ -817,6 +843,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
     if self._img is None:
       return
+
     # Crop the image according to the current zoom before fitting the canvas
     img_height, img_width, *_ = self._img.shape
     zoom = self._zoom_values
@@ -824,6 +851,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
                         int(img_height * zoom.y_high),
                         int(img_width * zoom.x_low):
                         int(img_width * zoom.x_high)]
+
     if not cropped.size:
       self._img_canvas.clear()
       self._display_geometry.image_width = 0
@@ -833,16 +861,19 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
     fit_width, fit_height = self._display_geometry.fit(width, height)
     if not fit_width or not fit_height:
       return
+
     # Qt must own a copy because the NumPy image may be replaced next frame
     cropped = np.ascontiguousarray(cropped)
     if cropped.ndim == 2:
       fmt = QImage.Format.Format_Grayscale8
     else:
       fmt = QImage.Format.Format_RGB888
+
     image = QImage(cropped.data, width, height, cropped.strides[0], fmt).copy()
     pixmap = QPixmap.fromImage(image).scaled(
         fit_width, fit_height, Qt.AspectRatioMode.IgnoreAspectRatio,
         Qt.TransformationMode.SmoothTransformation)
+
     self._img_canvas.setPixmap(pixmap)
     self._display_geometry.image_width = fit_width
     self._display_geometry.image_height = fit_height
@@ -856,6 +887,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
     if self._original_img is None:
       return
+
     # The worker needs at most a 320 by 240 grayscale sample
     if not self._processing_event.is_set():
       hist_img = Image.fromarray(self._original_img)
@@ -867,6 +899,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
         hist_img = hist_img.convert('L')
       self._img_in.put_nowait((hist_img, self._display_state.auto_range,
                                self._low_thresh, self._high_thresh))
+
     # Drain completed results so the display uses the newest histogram
     try:
       while True:
@@ -884,9 +917,11 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
     if self._hist is None:
       return
+
     bounds = self._hist_canvas.contentsRect()
     if bounds.isEmpty():
       return
+
     # The worker encodes bars as 0 and range markers as 127
     palette = self._qt_app.palette()
     background = palette.color(QPalette.ColorRole.Base)
@@ -898,6 +933,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
                             foreground.blue())
     rgb[self._hist == 127] = (marker.red(), marker.green(), marker.blue())
     rgb = np.ascontiguousarray(rgb)
+
     # Copy the temporary NumPy buffer before creating the Qt pixmap
     height, width, _ = rgb.shape
     image = QImage(rgb.data, width, height, rgb.strides[0],
@@ -913,7 +949,7 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
     ...
 
-  def eventFilter(self, watched: QWidget, event: QEvent) -> bool:
+  def eventFilter(self, a0: QWidget | None, a1: QEvent | None) -> bool:
     """Translates Qt mouse and resize events into core image interactions.
 
     Right-dragging pans, the mousewheel zooms, and left-dragging defines a
@@ -923,41 +959,46 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
 
     try:
       # The histogram only needs repainting when its canvas changes size
-      if watched is self._hist_canvas:
-        if event.type() == QEvent.Type.Resize:
+      if a0 is self._hist_canvas:
+        if a1.type() == QEvent.Type.Resize:
           self._render_histogram()
-      elif watched is self._img_canvas:
-        kind = event.type()
+
+      elif a0 is self._img_canvas:
+        kind = a1.type()
         if kind == QEvent.Type.Resize:
           self._read_image_geometry()
           if self._img is not None:
             self._draw_overlay()
           self._render_image()
+
         # Mouse events use widget coordinates shared with the display core
         elif kind == QEvent.Type.MouseMove:
-          pos = event.position().toPoint()
+          pos = a1.position().toPoint()
           x, y = pos.x(), pos.y()
-          if event.buttons() & Qt.MouseButton.RightButton:
+          if a1.buttons() & Qt.MouseButton.RightButton:
             self._pan_to(x, y)
-          if event.buttons() & Qt.MouseButton.LeftButton and isinstance(
+          if a1.buttons() & Qt.MouseButton.LeftButton and isinstance(
               self, CameraConfigBoxes):
             self._extend_box_to(x, y)
           if self._point_at(x, y):
             self._sync_indicators()
+
         elif kind == QEvent.Type.MouseButtonPress:
-          pos = event.position().toPoint()
-          if event.button() == Qt.MouseButton.RightButton:
+          pos = a1.position().toPoint()
+          if a1.button() == Qt.MouseButton.RightButton:
             self._begin_pan(pos.x(), pos.y())
-          elif (event.button() == Qt.MouseButton.LeftButton and
+          elif (a1.button() == Qt.MouseButton.LeftButton and
                 isinstance(self, CameraConfigBoxes)):
             self._start_box_at(pos.x(), pos.y())
+
         elif (kind == QEvent.Type.MouseButtonRelease and
-              event.button() == Qt.MouseButton.LeftButton and
+              a1.button() == Qt.MouseButton.LeftButton and
               isinstance(self, CameraConfigBoxes)):
           self._complete_box_selection()
+
         elif kind == QEvent.Type.Wheel:
-          pos = event.position().toPoint()
-          direction = (event.angleDelta().y() > 0) - (event.angleDelta().y() < 0)
+          pos = a1.position().toPoint()
+          direction = (a1.angleDelta().y() > 0) - (a1.angleDelta().y() < 0)
           if self._zoom_at(pos.x(), pos.y(), direction):
             self._read_image_geometry()
             if self._img is not None:
@@ -965,18 +1006,20 @@ CameraConfig`. This class owns the Qt widgets, timers, and rendering.
             self._render_image()
             self._sync_indicators()
           return True
+
     except BaseException as error:
       # Exceptions inside Qt event filters are not reliably propagated
       self._record_callback_failure(error)
       return True
-    return QWidget.eventFilter(self, watched, event)
 
-  def changeEvent(self, event: QEvent) -> None:
+    return QWidget.eventFilter(self, a0, a1)
+
+  def changeEvent(self, a0: QEvent | None) -> None:
     """Recolors the frame outlines and histogram when the palette changes."""
 
-    QWidget.changeEvent(self, event)
-    if event.type() in (QEvent.Type.PaletteChange,
-                        QEvent.Type.ApplicationPaletteChange):
+    QWidget.changeEvent(self, a0)
+    if a0.type() in (QEvent.Type.PaletteChange,
+                     QEvent.Type.ApplicationPaletteChange):
       if hasattr(self, '_hist_canvas'):
         if self._frame_palette != self._qt_app.palette():
           self._set_frame_style()
