@@ -63,6 +63,7 @@ if __name__ == "__main__":
   ve = crappy.blocks.VideoExtenso(
       '',  # The name of Camera to open is ignored because image_generator is
       # given
+      config_backend='tkinter',
       display_images=True,  # The displayer window follows the
       # spots on the acquired images
       blur=False,  # No blurring in this simple example

@@ -55,6 +55,7 @@ if __name__ == '__main__':
   disco = crappy.blocks.DISCorrel(
       '',  # The name of Camera to open is ignored because image_generator is
       # given
+      config_backend='tkinter',
       config=True,  # Displaying the configuration window before starting
       # Mandatory if the patch to track is not given as an argument
       display_images=True,  # The displayer window follows the patch on the

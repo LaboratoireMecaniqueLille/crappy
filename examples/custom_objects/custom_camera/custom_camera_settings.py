@@ -170,6 +170,7 @@ if __name__ == '__main__':
   # features a few settings that the user can tune in the configuration window.
   cam = crappy.blocks.Camera(
       'CustomCam',  # The name of the custom Camera that was just written
+      config_backend='tkinter',
       config=True,  # Prefer enabling configuration when possible
       display_images=True,  # Displaying the images to show how they look
       displayer_framerate=30,  # Matching the acquisition frame rate

@@ -95,6 +95,7 @@ if __name__ == '__main__':
   # It simply acquires images and displays them in a dedicated Displayer window
   cam = crappy.blocks.Camera(
       'CustomCam',  # The name of the custom Camera that was just written
+      config_backend='tkinter',
       config=True,  # Easier to set to True when possible
       display_images=True,  # Displaying the images to show how they look
       displayer_framerate=30,  # Displaying up to 30 frames per second

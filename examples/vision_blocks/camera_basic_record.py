@@ -37,6 +37,7 @@ if __name__ == '__main__':
   # example runnable without a physical camera.
   camera = crappy.blocks.vision.CameraSource(
       'FakeCamera',  # Name of the Camera implementation to open
+      config_backend='tkinter',
       config=True,  # Let the user configure FakeCamera before recording
       freq=40,  # Maximum frequency at which CameraSource checks for frames
 

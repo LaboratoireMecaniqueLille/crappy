@@ -63,6 +63,7 @@ if __name__ == "__main__":
   dicve = crappy.blocks.DICVE(
       '',  # The name of Camera to open is ignored because image_generator is
       # given
+      config_backend='tkinter',
       display_images=True,  # The displayer window follows the patches on the
       # acquired images
       image_generator=crappy.tool.ApplyStrainToImage(img),  # This argument

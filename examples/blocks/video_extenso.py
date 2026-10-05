@@ -56,6 +56,7 @@ if __name__ == '__main__':
   extenso = crappy.blocks.VideoExtenso(
       '',  # The name of Camera to open is ignored because image_generator is
       # given
+      config_backend='tkinter',
       config=True,  # Displaying the configuration window before starting,
       # config=False is not implemented yet
       display_images=True,  # The displayer window follows the

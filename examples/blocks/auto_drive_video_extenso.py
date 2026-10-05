@@ -82,6 +82,7 @@ if __name__ == '__main__':
   # strain and the positions of the detected spots
   video_extenso = crappy.blocks.VideoExtenso(
       '',  # The Camera name is ignored because image_generator is given
+      config_backend='tkinter',
       config=True,  # Displaying the configuration window before starting
       display_images=True,  # Displaying the image and the detected spots
       # during the test

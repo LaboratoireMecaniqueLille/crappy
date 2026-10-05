@@ -62,6 +62,7 @@ if __name__ == '__main__':
   # publishes it. Configuration must be enabled for the downstream request.
   camera = crappy.blocks.vision.CameraSource(
       '',  # The Camera name is ignored when image_generator is provided
+      config_backend='tkinter',
       image_generator=crappy.tool.ApplyStrainToImage(img),
       config=True,  # Required by VideoExtensoProcessor's configuration
       allow_downstream_config=True,  # Serve the specialized downstream window

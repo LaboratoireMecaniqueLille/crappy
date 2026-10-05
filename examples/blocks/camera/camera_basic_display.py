@@ -27,6 +27,7 @@ if __name__ == '__main__':
   cam = crappy.blocks.Camera(
       'FakeCamera',  # Using the FakeCamera camera so that no hardware is
       # required
+      config_backend='tkinter',
       config=True,  # Before the test starts, displays a configuration window
       # for configuring the camera
       display_images=True,  # During the test, the acquired images are

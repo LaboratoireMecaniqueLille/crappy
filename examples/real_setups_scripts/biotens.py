@@ -43,7 +43,8 @@ if __name__ == '__main__':
   crappy.link(generator, biotens)
 
   # The Block acquiring images from the setup and performing video extensometry
-  extenso = crappy.blocks.VideoExtenso(camera="XiAPI")
+  extenso = crappy.blocks.VideoExtenso(camera="XiAPI",
+                                       config_backend='tkinter')
 
   # The Blocks saving the recorded data to text files
   rec_effort = crappy.blocks.Recorder(save_path / "effort.csv")
