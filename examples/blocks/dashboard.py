@@ -2,7 +2,7 @@
 
 """
 This example demonstrates the use of the Dashboard Block. It does not require
-any hardware to run.
+any hardware to run, but requires PyQt6.
 
 The Dashboard Block displays the latest received values of a given set of
 labels in a nice window. It is a very basic display Block of Crappy. In this

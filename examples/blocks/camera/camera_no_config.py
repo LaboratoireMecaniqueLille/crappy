@@ -3,8 +3,8 @@
 """
 This example demonstrates the use of the Camera Block for the use case of
 displaying the acquired images but with the configuration window disabled. It
-does not require any hardware to run, but necessitates the opencv-python module
-to be installed.
+does not require any hardware to run, but requires opencv-python for image
+display and PyQt6 for the stop button.
 
 It acquires images from a fake camera and displays them in a small
 visualization window. The difference with the basic examples is that the

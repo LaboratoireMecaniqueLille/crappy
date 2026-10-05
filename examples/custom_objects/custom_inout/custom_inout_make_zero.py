@@ -4,8 +4,8 @@
 This example demonstrates the instantiation of a custom InOut object in Crappy
 whose make_zero method is customized by the user. The example is almost the
 same as custom_inout_basic_in.py, except that the custom InOut also defines the
-make_zero method. It requires neither hardware nor any specific Python modules
-to run.
+make_zero method. It does not require hardware, but requires PyQt6 for the
+graphical displays.
 
 In Crappy, users can define their own InOut objects and use them with the
 IOBlock. This lets users interface with their own hardware without integrating

@@ -4,8 +4,8 @@
 This example demonstrates the instantiation of a custom Camera Block subclass
 in Crappy. It also shows how to instantiate a CameraProcess, which is required
 for implementing a custom Camera Block, and an optional Overlay object. This
-example requires a camera compatible with OpenCV and the Pillow and
-opencv-python Python modules.
+example requires a camera compatible with OpenCV and the Pillow,
+opencv-python, and PyQt6 Python modules.
 
 Advanced Crappy users can define Camera Block subclasses that perform custom
 image processing. This lets users adapt Crappy's image-management features to

@@ -3,8 +3,8 @@
 """
 This example demonstrates how to add several settings to a custom Camera object
 in Crappy. It builds on custom_camera_basic.py, which should be read first. It
-does not require any hardware, but requires the Pillow and opencv-python Python
-modules.
+does not require any hardware, but requires the Pillow, opencv-python, and
+PyQt6 Python modules.
 
 Crappy Camera objects can implement settings that usually correspond to
 controls available on the hardware. Several setting types are available, each

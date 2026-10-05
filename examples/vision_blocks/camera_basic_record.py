@@ -3,7 +3,7 @@
 """
 This example demonstrates how to record images with independent VisionBlocks.
 It does not require any hardware or optional image-writing backend to run, but
-Pillow is required by the interactive Camera configuration window.
+Pillow and PyQt6 are required by the interactive Camera configuration window.
 
 A CameraSource Block acquires images from FakeCamera and publishes them through
 an ImageLink. An ImageRecorder Block receives the image stream and saves one

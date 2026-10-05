@@ -3,8 +3,9 @@
 """
 This example demonstrates how to customize the shared Camera configuration
 behavior without writing GUI code. It does not require hardware, but requires
-Pillow, matplotlib, and Tk support in the Python installation. To use the PyQt6
-window instead, also install PyQt6 and change config_backend below to 'pyqt'.
+Pillow, PyQt6, and matplotlib. The default configuration window uses PyQt6.
+To try Tkinter instead, pass 'tkinter' as config_backend and ensure Tk support
+is available in the Python installation.
 
 The custom configuration adds a Confirm setup checkbox and refuses to close
 until that setting has been applied. The checkbox belongs to the configuration
