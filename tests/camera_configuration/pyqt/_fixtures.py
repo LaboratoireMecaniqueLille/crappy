@@ -43,7 +43,8 @@ class PyQtConfigTestCase(unittest.TestCase):
     config = configurator(self.camera, self.log_queue, None, 30, None, *args)
     if not histogram_process:
       # Only the end-to-end histogram test needs to spawn an actual worker
-      process = Mock(spec=config._histogram_process)
+      # Spec the class to avoid reading an unstarted process's sentinel property
+      process = Mock(spec=type(config._histogram_process))
       process.is_alive.return_value = False
       config._histogram_process = process
       config._lifecycle._histogram_process = process

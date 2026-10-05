@@ -103,7 +103,8 @@ class TkinterConfigTestCase(unittest.TestCase):
 
     # Most GUI tests exercise controls, drawing, or image conversion and do not
     # assert worker behavior. Keep it mocked, including when run() calls start().
-    process = Mock(spec=self._config._histogram_process)
+    # Spec the class to avoid reading an unstarted process's sentinel property
+    process = Mock(spec=type(self._config._histogram_process))
     process.is_alive.return_value = False
     self._config._histogram_process = process
     self._config._lifecycle._histogram_process = process
