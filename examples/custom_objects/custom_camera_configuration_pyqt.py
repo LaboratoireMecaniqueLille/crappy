@@ -3,7 +3,8 @@
 """
 This example demonstrates how to customize a GUI backend without changing the
 shared Camera configuration behavior. It does not require hardware, but
-requires PyQt6, Pillow, matplotlib, and Tk support in the Python installation.
+requires PyQt6, Pillow, and matplotlib. Tk support is only needed when trying
+the optional Tkinter configuration backend.
 
 The custom PyQt6 window has a laboratory-specific title and an instruction
 banner above the settings panel. It also adds a Ctrl+Return shortcut to the

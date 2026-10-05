@@ -14,18 +14,17 @@ Prerequisites
 
 - Use Crappy 2.1.0 or later.
 - Complete :doc:`image_pipeline` and be comfortable creating a Python subclass.
-- Install Pillow and Matplotlib with the interpreter running the example:
+- Install PyQt6, Pillow, and Matplotlib with the interpreter running the
+  example:
 
   .. code-block:: shell-session
 
-     python -m pip install Pillow matplotlib
+     python -m pip install PyQt6 Pillow matplotlib
 
-- Use a graphical desktop. The default backend requires Tk support from the
-  Python installation. For the PyQt6 backend, also install PyQt6:
-
-  .. code-block:: shell-session
-
-     python -m pip install PyQt6
+- Use a graphical desktop. The configuration window uses the default PyQt6
+  backend. Matplotlib displays images after configuration. Tk support from the
+  Python installation is only needed when trying the optional Tkinter
+  configuration backend.
 
 The example uses :class:`~crappy.camera.FakeCamera`: no physical hardware or
 output files are needed. It opens a configuration window, then displays images
@@ -66,9 +65,10 @@ The terminal reports ``Camera setup confirmed``. The image window then shows
 :class:`~crappy.camera.FakeCamera`'s moving grayscale pattern. A
 ``Stop criterion reached`` warning indicates the planned end of the experiment.
 
-To try the same confirmation with PyQt6, change ``config_backend='tkinter'`` to
-``config_backend='pyqt'`` in the ``ConfirmedCameraSource`` call in ``main()``,
-then run the script again with the same command.
+To try the same confirmation with Tkinter, add ``config_backend='tkinter'``
+to the ``ConfirmedCameraSource`` call in ``main()`` and ensure that the Python
+installation includes Tk support. Run the script again with the same command.
+Remove that argument to return to the default PyQt6 window.
 
 Adapt the rule to your experiment
 ---------------------------------
@@ -123,10 +123,10 @@ To give only the Qt window a different title, add these classes above
                      'pyqt': LaboratoryQtConfig}
 
 Replace ``ConfirmedCameraSource`` with ``LaboratoryCameraSource`` in
-``main()`` and set ``config_backend='pyqt'``, then run the script again. The
+``main()`` and keep the default PyQt6 backend, then run the script again. The
 window title becomes **Laboratory Camera setup**, and the confirmation checkbox
-still works. Set ``config_backend='tkinter'`` to keep the original Tkinter
-window.
+still works. Set ``config_backend='tkinter'`` to use the original Tkinter
+window instead.
 
 For a Tkinter-only title change, subclass ``ConfirmedTkConfig`` instead and
 call ``self.title('Laboratory Camera setup')`` after the parent's

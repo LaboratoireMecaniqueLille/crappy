@@ -3,8 +3,8 @@
 """
 This example demonstrates how to trigger Camera Block image acquisition using
 a software trigger. The acquired images are then displayed. It does not require
-any hardware to run, but necessitates the opencv-python and Pillow modules to
-be installed.
+any hardware to run, but requires opencv-python, Pillow, and PyQt6 to be
+installed.
 
 It acquires images from a fake camera and displays them in a small
 visualization window. Before the test starts, it also lets the user adjust some
@@ -46,7 +46,6 @@ if __name__ == '__main__':
   cam = crappy.blocks.Camera(
       'FakeCamera',  # Using the FakeCamera camera so that no hardware is
       # required
-      config_backend='tkinter',
       software_trig_label='trigger',  # A frame will be acquired each time a
       # value is received over this label. The received value does not matter
       config=True,  # Before the test starts, displays a configuration window

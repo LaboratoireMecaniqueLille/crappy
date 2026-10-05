@@ -3,7 +3,7 @@
 """
 This example demonstrates how to add a software ROI setting to a custom Camera
 object in Crappy. It builds on custom_camera_basic.py, which should be read
-first. It does not require any hardware, but requires the Pillow and
+first. It does not require any hardware, but requires the Pillow, PyQt6, and
 opencv-python Python modules.
 
 Crappy makes it easy to implement a software ROI setting in Camera objects.
@@ -101,7 +101,6 @@ if __name__ == '__main__':
   # features a setting for applying a software ROI to the images
   cam = crappy.blocks.Camera(
       'CustomCam',  # The name of the custom Camera that was just written
-      config_backend='tkinter',
       config=True,  # Easier to set to True when possible
       display_images=True,  # Displaying the images to show how they look
       displayer_framerate=30,  # Matching the acquisition frame rate

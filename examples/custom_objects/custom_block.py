@@ -3,8 +3,8 @@
 """
 This example demonstrates the instantiation of a custom Block object in Crappy.
 The example presented here shows most of the attributes and methods to use when
-building a Block. It requires neither hardware nor any specific Python modules
-to run.
+building a Block. It does not require hardware, but requires PyQt6 for the
+graphical displays.
 
 In Crappy, users can define their own Block objects and use them in their
 scripts. This lets users customize their test scripts precisely without

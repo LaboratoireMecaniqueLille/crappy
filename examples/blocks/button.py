@@ -2,7 +2,7 @@
 
 """
 This example demonstrates the use of the Button Block. It does not require any
-hardware to run.
+hardware to run, but requires PyQt6.
 
 This Block displays a button on which the user can click, keeps track of the
 number of clicks, and sends it to downstream Blocks.

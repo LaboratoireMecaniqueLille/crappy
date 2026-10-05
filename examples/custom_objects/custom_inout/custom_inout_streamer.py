@@ -3,8 +3,8 @@
 """
 This example demonstrates the instantiation of a custom InOut object in Crappy
 that only acquires data from hardware and only supports streamer mode. It shows
-a basic implementation of such an InOut. It requires neither hardware nor any
-specific Python modules to run.
+a basic implementation of such an InOut. It does not require hardware, but
+requires PyQt6 for the graphical displays.
 
 In Crappy, users can define their own InOut objects and use them with the
 IOBlock. This lets users interface with their own hardware without integrating

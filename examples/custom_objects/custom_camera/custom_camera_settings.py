@@ -3,8 +3,8 @@
 """
 This example demonstrates how to add several settings to a custom Camera object
 in Crappy. It builds on custom_camera_basic.py, which should be read first. It
-does not require any hardware, but requires the Pillow and opencv-python Python
-modules.
+does not require any hardware, but requires the Pillow, opencv-python, and
+PyQt6 Python modules.
 
 Crappy Camera objects can implement settings that usually correspond to
 controls available on the hardware. Several setting types are available, each
@@ -170,7 +170,6 @@ if __name__ == '__main__':
   # features a few settings that the user can tune in the configuration window.
   cam = crappy.blocks.Camera(
       'CustomCam',  # The name of the custom Camera that was just written
-      config_backend='tkinter',
       config=True,  # Prefer enabling configuration when possible
       display_images=True,  # Displaying the images to show how they look
       displayer_framerate=30,  # Matching the acquisition frame rate

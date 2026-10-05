@@ -3,8 +3,9 @@
 """
 This example demonstrates how to customize the shared Camera configuration
 behavior without writing GUI code. It does not require hardware, but requires
-Pillow, matplotlib, and Tk support in the Python installation. To use the PyQt6
-window instead, also install PyQt6 and change config_backend below to 'pyqt'.
+Pillow, PyQt6, and matplotlib. The default configuration window uses PyQt6.
+To try Tkinter instead, pass 'tkinter' as config_backend and ensure Tk support
+is available in the Python installation.
 
 The custom configuration adds a Confirm setup checkbox and refuses to close
 until that setting has been applied. The checkbox belongs to the configuration
@@ -80,10 +81,9 @@ class ConfirmedCameraSource(crappy.blocks.vision.CameraSource):
 if __name__ == '__main__':
 
   # This custom CameraSource opens one of the windows defined above during
-  # preparation. Change config_backend to 'pyqt' to try the other interface.
+  # preparation using the default PyQt6 backend.
   camera = ConfirmedCameraSource(
       'FakeCamera',
-      config_backend='tkinter',
       width=320,
       height=240,
       speed=40,

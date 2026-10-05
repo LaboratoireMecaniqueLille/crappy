@@ -3,7 +3,7 @@
 """
 This example demonstrates how to instantiate a custom Camera object in Crappy.
 It shows the basic steps for creating a Camera object. It does not require any
-hardware, but requires the Pillow and opencv-python Python modules.
+hardware, but requires the Pillow, opencv-python, and PyQt6 Python modules.
 
 In Crappy, users can define their own Camera objects and use them with
 the Camera Block and the other image-processing Blocks like VideoExtenso. This
@@ -95,7 +95,6 @@ if __name__ == '__main__':
   # It simply acquires images and displays them in a dedicated Displayer window
   cam = crappy.blocks.Camera(
       'CustomCam',  # The name of the custom Camera that was just written
-      config_backend='tkinter',
       config=True,  # Easier to set to True when possible
       display_images=True,  # Displaying the images to show how they look
       displayer_framerate=30,  # Displaying up to 30 frames per second

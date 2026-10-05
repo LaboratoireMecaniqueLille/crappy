@@ -114,6 +114,7 @@ class Generator(Block):
     self._spam = spam
     self._safe_start = safe_start
     self._safe_started = False
+    self._repeat: bool = repeat
 
     # Basic checks for path consistency
     path = list(path)
@@ -126,7 +127,8 @@ class Generator(Block):
                        "'type' key")
 
     # The path is an iterable object
-    self._path = cycle(path) if repeat else iter(path)
+    self._raw_path: list[dict[str, Any]] = path
+    self._path: Iterator = iter([])
 
     # More attributes
     self._ended_no_raise = False
@@ -138,6 +140,17 @@ class Generator(Block):
 
     # Checking the validity of the path
     self._check_path_validity(iter(deepcopy(iter(path))))
+
+  def prepare(self) -> None:
+    """Starting from Python 3.14, :obj:`itertools.cycle` is no longer pickable
+    and needs to be applied once the Block has started.
+
+    .. versionadded:: 2.1.0
+    """
+
+    # The path is an iterable object
+    self._path = (cycle(self._raw_path) if self._repeat
+                  else iter(self._raw_path))
 
   def begin(self) -> None:
     """Initializes the first

@@ -52,17 +52,25 @@ PyPI with:
 python -m pip install crappy
 ```
 
+The default graphical interfaces in Crappy use PyQt6 and PyQtGraph. Install 
+these GUI dependencies with:
+
+```shell
+python -m pip install PyQt6 pyqtgraph
+```
+
 See the [installation guide](https://crappy.readthedocs.io/en/latest/installation.html)
 for platform-specific instructions and optional dependencies.
 
 ## Example script
 
 This example reads the computer's memory usage, displays it live, records it in
-`data.csv`, and stops automatically after ten seconds. It requires no  physical 
-hardware, but uses Matplotlib for the graph and psutil for the simulated input:
+`data.csv`, and stops automatically after ten seconds. It requires no physical
+hardware, but uses PyQtGraph and PyQt6 for the graph and psutil for the 
+simulated input:
 
 ```shell
-python -m pip install matplotlib psutil
+python -m pip install pyqtgraph PyQt6 psutil
 ```
 
 ```python

@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the Camera Block for the basic use case
 of just displaying the acquired images. It does not require any hardware to
-run, but necessitates the opencv-python and Pillow modules to be installed.
+run, but requires the opencv-python, Pillow, and PyQt6 modules to be installed.
 
 It acquires images from a fake camera and displays them in a small
 visualization window. Before the test starts, it also lets the user adjust some
@@ -27,7 +27,6 @@ if __name__ == '__main__':
   cam = crappy.blocks.Camera(
       'FakeCamera',  # Using the FakeCamera camera so that no hardware is
       # required
-      config_backend='tkinter',
       config=True,  # Before the test starts, displays a configuration window
       # for configuring the camera
       display_images=True,  # During the test, the acquired images are

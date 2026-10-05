@@ -2,7 +2,7 @@
 
 """
 This example demonstrates the use of the Recorder Block. It does not require
-any hardware to run, but necessitates the psutil module to be installed.
+any hardware to run, but requires the psutil and PyQt6 modules to be installed.
 
 The Recorder Block saves the data it receives to a .csv file created at the
 desired location. It can only record data from one Block, so multiple Recorders

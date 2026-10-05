@@ -2,7 +2,8 @@
 
 """
 This example demonstrates the instantiation of a custom Modifier object in
-Crappy. It requires neither hardware nor any specific Python modules to run.
+Crappy. It does not require hardware, but requires PyQt6 for the graphical
+displays.
 
 In Crappy, users can define their own Modifier objects and add them to Links
 between Blocks. This lets users customize their test scripts precisely without

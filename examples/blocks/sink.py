@@ -1,8 +1,8 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the Sink Block. It requires neither
-hardware nor any specific Python modules to run.
+This example demonstrates the use of the Sink Block. It does not require
+hardware, but requires PyQt6 for the stop button.
 
 The Sink Block discards any data it receives and does nothing more. It is
 mainly intended for debugging or as a placeholder for a Block that has not yet

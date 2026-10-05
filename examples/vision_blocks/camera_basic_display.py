@@ -3,8 +3,8 @@
 """
 This example demonstrates the simplest use of the VisionBlock pipeline: images
 are acquired by a CameraSource Block and displayed by an independent
-ImageDisplayer Block. It does not require any hardware, but necessitates Pillow
-and either the opencv-python or matplotlib module to be installed.
+ImageDisplayer Block. It does not require any hardware, but requires Pillow,
+PyQt6, and either the opencv-python or matplotlib module to be installed.
 
 Unlike the Camera Block, CameraSource only acquires images. Displaying,
 recording, and processing are performed by other Blocks that receive its images
@@ -35,7 +35,6 @@ if __name__ == '__main__':
   # FakeCamera generates a moving greyscale pattern, so no camera is required.
   camera = crappy.blocks.vision.CameraSource(
       'FakeCamera',  # Name of the Camera implementation to open
-      config_backend='tkinter',
       config=True,  # Show the generic Camera configuration window first
       freq=40,  # Maximum frequency at which CameraSource checks for frames
 

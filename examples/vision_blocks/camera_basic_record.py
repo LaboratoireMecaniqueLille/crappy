@@ -3,7 +3,7 @@
 """
 This example demonstrates how to record images with independent VisionBlocks.
 It does not require any hardware or optional image-writing backend to run, but
-Pillow is required by the interactive Camera configuration window.
+Pillow and PyQt6 are required by the interactive Camera configuration window.
 
 A CameraSource Block acquires images from FakeCamera and publishes them through
 an ImageLink. An ImageRecorder Block receives the image stream and saves one
@@ -37,7 +37,6 @@ if __name__ == '__main__':
   # example runnable without a physical camera.
   camera = crappy.blocks.vision.CameraSource(
       'FakeCamera',  # Name of the Camera implementation to open
-      config_backend='tkinter',
       config=True,  # Let the user configure FakeCamera before recording
       freq=40,  # Maximum frequency at which CameraSource checks for frames
 

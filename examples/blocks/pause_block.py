@@ -2,7 +2,7 @@
 
 """
 This example demonstrates the use of the Pause Block. It does not require any
-hardware, but requires the psutil Python module.
+hardware, but requires the psutil and PyQt6 Python modules.
 
 This Block pauses other Blocks during a test based on a given set of
 conditions, then resumes them later. This can be useful when human intervention

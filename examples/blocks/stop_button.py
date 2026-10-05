@@ -1,8 +1,8 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the StopButton Block. It requires neither
-hardware nor any specific Python modules.
+This example demonstrates the use of the StopButton Block. It does not require
+hardware, but requires PyQt6.
 
 This Block provides a GUI button that cleanly stops a test when clicked.
 

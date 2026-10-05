@@ -43,9 +43,9 @@ class ConfirmedCameraSource(crappy.blocks.vision.CameraSource):
 
 
 def main() -> None:
-  # Change config_backend to 'pyqt' to use the PyQt6 window
+  # The default window uses PyQt6; add config_backend='tkinter' to compare
   source = ConfirmedCameraSource(
-      'FakeCamera', config_backend='tkinter',
+      'FakeCamera',
       width=160, height=120, speed=25, fps=10, freq=20)
   display = crappy.blocks.vision.ImageDisplayer(
       title='Confirmed Camera setup', backend='mpl', framerate=10)
