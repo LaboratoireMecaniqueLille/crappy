@@ -7,7 +7,7 @@ import logging
 from multiprocessing import Event
 from unittest.mock import patch
 
-from crappy.tool.camera_config.config_core.configuration_lifecycle import (
+from crappy.tool.camera_config.base._configuration_lifecycle import (
   ConfigurationLifecycle, ExceptionInfo)
 
 
@@ -127,11 +127,24 @@ class TestConfigurationLifecycle(unittest.TestCase):
     lifecycle.request_close(fail_close)
 
     self.assertEqual(messages[-1][0:2],
-                     (logging.ERROR, 'Could not close configuration UI'))
+                     (logging.ERROR, 'Could not close configuration window'))
     info = messages[-1][2]
     assert info is not None
     self.assertIsInstance(info[1], RuntimeError)
     self.assertIsNotNone(info[2])
+
+  def test_keyboard_interrupt_is_retained_without_error_logging(self) -> None:
+    """Cancellation reaches the caller without being reported as a failure."""
+
+    lifecycle, _, _, messages = self.make_lifecycle(_Process())
+    interrupt = KeyboardInterrupt()
+    lifecycle.record_callback_failure(interrupt, None)
+
+    with self.assertRaises(KeyboardInterrupt) as raised:
+      lifecycle.raise_if_failed()
+
+    self.assertIs(raised.exception, interrupt)
+    self.assertEqual(messages, [])
 
   def test_queue_cleanup_failures_keep_exception_details(self) -> None:
     """Resource cleanup reports caught failures as exception records."""
@@ -144,7 +157,7 @@ class TestConfigurationLifecycle(unittest.TestCase):
       lifecycle.close_resources()
 
     self.assertEqual([message for _, message, _ in messages],
-                     ['Could not join thread of histogram queue',
+                     ['Could not cancel histogram queue thread join',
                       'Could not close histogram queue'])
     for level, _, info in messages:
       self.assertEqual(level, logging.ERROR)

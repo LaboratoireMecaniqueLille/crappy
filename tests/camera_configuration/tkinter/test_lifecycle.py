@@ -1,16 +1,48 @@
 # coding: utf-8
 
-"""Tk integration checks for the neutral configuration lifecycle."""
+"""Tk window lifecycle, cleanup, cancellation, and callback failures."""
 
 from multiprocessing import Event, Queue
 from unittest.mock import patch
 
-from .camera_configuration_test_base import ConfigurationWindowTestBase, tk
-from crappy.tool.camera_config import CameraConfig
-import crappy.tool.camera_config.camera_config as camera_config_module
+from ._fixtures import TkinterConfigTestCase, tk
+from crappy.tool.camera_config.tkinter import TkinterCameraConfig
+import crappy.tool.camera_config.tkinter.camera_config as camera_config_module
 
 
-class TestConfigurationLifecycle(ConfigurationWindowTestBase):
+class TestFinish(TkinterConfigTestCase):
+  """Class for testing the exit behavior of the configuration window.
+
+  .. versionadded:: 2.0.8
+  """
+
+  start_histogram_process = True
+
+  def test_exit(self) -> None:
+    """Tests whether the configuration window exits as expected when closed."""
+
+    # The stop event should not be set
+    self.assertFalse(self._config._stop_event.is_set())
+
+    # The histogram process should still be alive
+    self.assertTrue(self._config._histogram_process.is_alive())
+
+    # Destroying the main window
+    self._config.finish()
+
+    # The stop event should be set
+    self.assertTrue(self._config._stop_event.is_set())
+
+    # This call should raise an error as the window shouldn't exist anymore
+    with self.assertRaises(tk.TclError):
+      self._config.wm_state()
+
+    # The histogram process should have been killed
+    self.assertFalse(self._config._histogram_process.is_alive())
+
+
+class TestConfigurationLifecycle(TkinterConfigTestCase):
+
   def test_run_closes_normally(self) -> None:
     """run() starts acquisition, waits, and returns after a valid close."""
 
@@ -105,6 +137,45 @@ class TestConfigurationLifecycle(ConfigurationWindowTestBase):
     with self.assertRaisesRegex(ValueError, 'early callback failed'):
       self._config.run()
 
+  def test_callback_keyboard_interrupt_closes_silently(self) -> None:
+    """Tk callback cancellation closes resources without a dialog or error."""
+
+    interrupt = KeyboardInterrupt()
+
+    def cancel() -> None:
+      raise interrupt
+
+    self._config.after(0, cancel)
+    with (patch.object(camera_config_module, 'showerror') as dialog,
+          patch.object(self._config._lifecycle, '_log') as log):
+      with self.assertRaises(KeyboardInterrupt) as raised:
+        self._config.run()
+
+    self.assertIs(raised.exception, interrupt)
+    dialog.assert_not_called()
+    log.assert_not_called()
+    self.assertTrue(self._config._window_closed)
+    self.assertTrue(self._config._img_in._closed)
+    self.assertTrue(self._config._img_out._closed)
+    self.assertFalse(self._config._histogram_process.is_alive())
+
+  def test_wait_keyboard_interrupt_closes_silently(self) -> None:
+    """An interrupt outside a Tk callback also cleans up before propagating."""
+
+    with (patch.object(self._config, 'wait_window',
+                       side_effect=KeyboardInterrupt),
+          patch.object(camera_config_module, 'showerror') as dialog,
+          patch.object(self._config._lifecycle, '_log') as log):
+      with self.assertRaises(KeyboardInterrupt):
+        self._config.run()
+
+    dialog.assert_not_called()
+    log.assert_not_called()
+    self.assertTrue(self._config._window_closed)
+    self.assertTrue(self._config._img_in._closed)
+    self.assertTrue(self._config._img_out._closed)
+    self.assertFalse(self._config._histogram_process.is_alive())
+
   def test_start_failure_cleans_unstarted_process(self) -> None:
     """A failed histogram start still closes its queues and Tk window."""
 
@@ -149,7 +220,7 @@ class TestConfigurationLifecycle(ConfigurationWindowTestBase):
   def test_constructor_failure_cleans_resources(self) -> None:
     """Failure during layout creation releases process resources."""
 
-    class BrokenConfig(CameraConfig):
+    class BrokenConfig(TkinterCameraConfig):
       instance = None
 
       def _set_layout(self) -> None:
@@ -183,7 +254,7 @@ class TestConfigurationLifecycle(ConfigurationWindowTestBase):
           patch.object(camera_config_module, 'HistogramProcess',
                        side_effect=RuntimeError('histogram failed'))):
       with self.assertRaisesRegex(RuntimeError, 'histogram failed'):
-        CameraConfig(self._camera, self._log_queue,
+        TkinterCameraConfig(self._camera, self._log_queue,
                      self._log_level, self._freq, None)
 
     self.assertEqual(len(queues), 2)

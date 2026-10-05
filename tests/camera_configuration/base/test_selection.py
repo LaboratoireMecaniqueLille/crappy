@@ -3,43 +3,37 @@
 """Selection semantics can be exercised without constructing a Tk window."""
 
 import unittest
+from unittest.mock import sentinel
 
 import numpy as np
 
 from crappy.tool.camera_config.config_tools import Box, SpotsBoxes, Zoom
-from crappy.tool.camera_config.config_core import DisplayGeometry
-from crappy.tool.camera_config.config_core.selection_behavior import (
-  BoxSelectionBehavior, DISCorrelBehavior, DICVEBehavior, VideoExtensoBehavior)
+from crappy.tool.camera_config.base._display_state import DisplayGeometry
+from crappy.tool.camera_config.base import (
+  CameraConfigBoxes, DISCorrelConfig, DICVEConfig, VideoExtensoConfig)
+from .._fixtures import DummyCamera
+from ._fixtures import RecordingCore
 
 
-class _Host(BoxSelectionBehavior):
+class _Host(CameraConfigBoxes, RecordingCore):
   def __init__(self) -> None:
-    super().__init__()
+    super().__init__(DummyCamera(), sentinel.log_queue, None, None, None)
     self._img = np.zeros((100, 100), dtype=np.uint8)
     self._original_img = np.arange(10000, dtype=np.uint16).reshape(100, 100)
-    self._zoom_values = Zoom()
     self._display_geometry = DisplayGeometry(width=100, height=100,
                                               image_width=100,
                                               image_height=100)
 
-  def _is_on_image(self, x: int, y: int) -> bool:
-    return 0 <= x < 100 and 0 <= y < 100
-
-  def log(self, level: int, message: str) -> None:
-    pass
-
-
-class _DIS(DISCorrelBehavior, _Host):
+class _DIS(DISCorrelConfig, _Host):
   def __init__(self) -> None:
     super().__init__()
     self._correl_box = Box(10, 30, 10, 30)
     self._draw_correl_box = True
 
 
-class _DIC(DICVEBehavior, _Host):
+class _DIC(DICVEConfig, _Host):
   def __init__(self) -> None:
     super().__init__()
-    self._create_local_settings()
     self._patch_size.value = 10
 
 
@@ -56,7 +50,7 @@ class _Detector:
     self.spots.spot_1 = Box(x, x + 3, y, y + 3)
 
 
-class _VE(VideoExtensoBehavior, _Host):
+class _VE(VideoExtensoConfig, _Host):
   def __init__(self) -> None:
     super().__init__()
     self._detector = _Detector()

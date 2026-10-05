@@ -7,7 +7,6 @@ import numpy as np
 
 import crappy.blocks.vision.video_extenso as video_extenso_module
 from crappy.blocks.vision import VideoExtensoProcessor
-from crappy.tool.camera_config import VideoExtensoConfig
 from crappy.tool.camera_config.config_tools import SpotsBoxes
 from crappy.tool.image_processing import LostSpotError
 
@@ -157,7 +156,9 @@ class TestVideoExtensoProcessor(VisionTestBase):
 
     self.assertEqual(request.requester, processor.name)
     self.assertEqual(request.img_source, 'camera')
-    self.assertIs(request.configurator, VideoExtensoConfig)
+    self.assertEqual(request.configurator,
+                     {'tkinter': video_extenso_module.TkinterVideoExtensoConfig,
+                      'pyqt': video_extenso_module.PyQtVideoExtensoConfig})
     self.assertTrue(request.required)
     self.assertEqual(request.args, tuple())
     self.assertEqual(request.kwargs, {

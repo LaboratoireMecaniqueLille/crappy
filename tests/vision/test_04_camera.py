@@ -53,8 +53,8 @@ class RecordingVisionCamera(BaseCamera):
     self.close_calls += 1
 
 
-class RecordingConfig:
-  """Non-Tk configurator implementing the neutral lifecycle contract."""
+class RecordingConfig(CameraConfig):
+  """Headless core subclass implementing the configuration lifecycle."""
 
   instances: list['RecordingConfig'] = list()
   shape_value = (4, 5)
@@ -66,6 +66,7 @@ class RecordingConfig:
                *args, **kwargs) -> None:
     """Records constructor arguments without initializing Tk."""
 
+    super().__init__(camera, log_queue, log_level, max_freq, transform)
     self.constructor_args = (camera, log_queue, log_level, max_freq,
                              transform, args, kwargs)
     self.shape = type(self).shape_value
@@ -122,7 +123,8 @@ class TestCameraSource(VisionTestBase):
     patcher.start()
     self.addCleanup(patcher.stop)
 
-  def make_source(self, **kwargs) -> CameraSource:
+  def make_source(self, source_type: type[CameraSource] = CameraSource,
+                  **kwargs) -> CameraSource:
     """Creates and tracks a physical CameraSource with safe defaults."""
 
     options = {
@@ -132,7 +134,7 @@ class TestCameraSource(VisionTestBase):
       'img_dtype': 'uint8',
     }
     options.update(kwargs)
-    source = CameraSource(**options)
+    source = source_type(**options)
     self.track_block(source)
     return source
 
@@ -547,6 +549,16 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(source._img_dtype, 'uint16')
     self.assertIsInstance(source._img_dtype, str)
 
+  def test_pyqt_backend_accepts_custom_neutral_configurator(self) -> None:
+    """A non-Tk configurator is still accepted by the PyQt selection path."""
+
+    source = self.make_source(config_backend='pyqt')
+    source._log_queue = sentinel.log_queue
+    result = source.configure(RecordingVisionCamera(), RecordingConfig)
+
+    self.assertEqual(result, ('configured',))
+    self.assertEqual(RecordingConfig.instances[-1].run_calls, 1)
+
   def test_configure_aborts_if_preparation_barrier_breaks(self) -> None:
     """A canceled source request cannot publish partial configuration."""
 
@@ -583,12 +595,39 @@ class TestCameraSource(VisionTestBase):
       source.configure(object(), RecordingConfig)
     with self.assertRaises(TypeError):
       source.configure(camera, object)
+    with self.assertRaises(TypeError):
+      source.configure(camera, 'unknown')
+    with self.assertRaises(ValueError):
+      source.configure(camera, {'pyqt': RecordingConfig})
 
     class MissingShutdown(RecordingConfig):
-      watch_shutdown = None
+      watch_shutdown = CameraConfig.watch_shutdown
 
     with self.assertRaises(TypeError):
       source.configure(camera, MissingShutdown)
+
+  def test_backend_mapping_instantiates_the_selected_configurator(self) -> None:
+    """CameraSource selects explicit classes through its public configure API."""
+
+    class TkConfig(RecordingConfig):
+      pass
+
+    class QtConfig(RecordingConfig):
+      pass
+
+    for backend, expected in (('tkinter', TkConfig), ('pyqt', QtConfig)):
+      with self.subTest(backend=backend):
+        source = self.make_source(config_backend=backend)
+        source._log_queue = sentinel.log_queue
+        camera = RecordingVisionCamera()
+        result = source.configure(camera,
+                                  {'tkinter': TkConfig, 'pyqt': QtConfig})
+
+        config = expected.instances[-1]
+        self.assertIs(type(config), expected)
+        self.assertIs(config.constructor_args[0], camera)
+        self.assertEqual(config.run_calls, 1)
+        self.assertEqual(result, ('configured',))
 
   def test_configure_stops_failed_or_interrupted_window(self) -> None:
     """Checks exception translation and KeyboardInterrupt cleanup."""
@@ -659,7 +698,24 @@ class TestCameraSource(VisionTestBase):
 
     source.default_configuration()
 
-    source.configure.assert_called_once_with(camera, CameraConfig)
+    source.configure.assert_called_once_with(
+      camera, {'tkinter': camera_module.TkinterCameraConfig,
+               'pyqt': camera_module.PyQtCameraConfig})
+
+  def test_source_subclass_chooses_its_generic_window(self) -> None:
+    """A CameraSource subclass can replace the default configurator class."""
+
+    class CustomSource(CameraSource):
+      configurator = RecordingConfig
+
+    source = self.make_source(source_type=CustomSource)
+    camera = RecordingVisionCamera()
+    source._camera = camera
+    source.configure = Mock(return_value=None)
+
+    source.default_configuration()
+
+    source.configure.assert_called_once_with(camera, RecordingConfig)
 
 
 if __name__ == '__main__':
