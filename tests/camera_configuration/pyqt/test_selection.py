@@ -29,12 +29,15 @@ class TestSelection(PyQtConfigTestCase):
       with self.subTest(configurator=configurator.__name__):
         config = self.make_config(configurator, *args)
         self.assertIsInstance(config, expected)
+        if configurator is PyQtDISCorrelConfig:
+          self.assertIs(config.get_config()[0], roi)
+        elif configurator is PyQtDICVEConfig:
+          self.assertIs(config.get_config()[0], patches)
+        elif configurator is PyQtVideoExtensoConfig:
+          self.assertIs(config.get_config()[0], config._spots)
+          config._action_buttons['save_l0'].click()
+          self.assertFalse(config._window_closed)
 
-    self.assertIs(self.configs[2].get_config()[0], roi)
-    self.assertIs(self.configs[3].get_config()[0], patches)
-    self.assertIs(self.configs[4].get_config()[0], self.configs[4]._spots)
-    self.configs[4]._action_buttons['save_l0'].click()
-    self.assertFalse(self.configs[4]._window_closed)
   def test_qt_mouse_selection_and_close_validation(self) -> None:
     """Qt pointer events reach the shared ROI rules and close validation."""
 
