@@ -17,6 +17,7 @@ class TestAppearance(PyQtConfigTestCase):
     config = self.make_config()
     config.show()
     app = config._qt_app
+    app.processEvents()
     config._hist = np.full((80, 512), 255, dtype=np.uint8)
     original = app.palette()
     self.addCleanup(app.setPalette, original)
