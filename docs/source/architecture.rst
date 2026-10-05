@@ -281,6 +281,100 @@ result before constructing its processing helpers. A required request must be
 answered, while an optional request may return ``None``. This exchange happens
 before the common start and is separate from ImageLink frame transport.
 
+.. _architecture-camera-configuration:
+
+Camera configuration
+--------------------
+
+Interactive camera configuration lets users adjust camera settings and select
+the image regions needed by a processing algorithm before the experiment
+starts. The classes in :mod:`crappy.tool.camera_config` support both
+:class:`~crappy.blocks.vision.CameraSource` and the all-in-one
+:class:`Camera Blocks <crappy.blocks.Camera>`.
+
+Where configuration runs
+++++++++++++++++++++++++
+
+The acquisition Block opens the
+:class:`~crappy.camera.meta_camera.camera.Camera` first, then runs its
+configuration window in its own process during preparation. The preview and
+setting controls therefore use the same camera that will acquire images during
+the experiment. Closing the window leaves that camera open and the configured
+settings applied.
+
+For an image pipeline, this also allows a downstream processing Block to ask
+:class:`~crappy.blocks.vision.CameraSource` for a specialized window. For
+example, a correlation processor can request a region-of-interest selection on
+the source's live image without opening the camera itself. The source handles
+the interaction and returns the selection before processing begins. As with
+other preparation work, configuration must finish before the common start.
+
+Shared behavior and GUI backends
+++++++++++++++++++++++++++++++++
+
+The separation between
+:mod:`camera_config.base <crappy.tool.camera_config.base>`
+and the :mod:`tkinter <crappy.tool.camera_config.tkinter>` and
+:mod:`pyqt <crappy.tool.camera_config.pyqt>` packages keeps processing rules
+independent of the GUI implementation. The abstract
+:class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` provides
+common preview and setting logic, while
+:class:`~crappy.tool.camera_config.base.camera_config_boxes.CameraConfigBoxes`
+adds rectangular selection. Specialized classes build on these foundations:
+for example,
+:class:`~crappy.tool.camera_config.base.dis_correl_config.DISCorrelConfig`
+defines what makes a valid correlation region and how to export it.
+
+A GUI window combines that shared behavior with a backend's widgets,
+image rendering, and event handling. A change to the correlation selection
+rules therefore belongs in the shared class, whereas a change to how a Qt
+control looks or responds belongs in the Qt implementation. Switching backends
+does not require a different camera driver or processing algorithm, and adding
+a backend does not require rewriting the selection rules. Reusable image and
+selection tools live in
+:mod:`camera_config.config_tools <crappy.tool.camera_config.config_tools>`.
+
+Camera drivers define the available settings and how to read or change them,
+the windows turn those definitions into controls. When an edit is applied,
+the shared logic reads back the value accepted by the camera rather than
+assuming the requested value was accepted unchanged. It also refreshes any
+other controls affected by that change. This keeps the displayed settings
+consistent with the device without putting GUI-specific code in drivers.
+
+The acquisition Block's ``configurator`` class attribute identifies the window
+class, or maps backend names to window classes. In the latter case,
+``config_backend`` selects the implementation. A custom Block can replace this
+attribute to use a specialized window while keeping the existing acquisition
+and configuration workflow.
+
+Returning results and stopping configuration
+++++++++++++++++++++++++++++++++++++++++++++
+
+Once the user completes configuration,
+:meth:`get_config() <crappy.tool.camera_config.base.camera_config.\
+CameraConfig.get_config>` exports the information needed by processing, such as
+the coordinates of the selected correlation region. This is data rather than a
+reference to the window: processing can run in another process without
+depending on the GUI toolkit. :class:`~crappy.blocks.vision.CameraSource` sends
+the result to the requesting :class:`~crappy.blocks.vision.block.VisionBlock`,
+an all-in-one :class:`Camera Block <crappy.blocks.Camera>` passes it to
+:meth:`CameraProcess.set_config() <crappy.blocks.camera_processes.\
+CameraProcess.set_config>`. Both paths let the processor initialize with the
+user's selection before it handles experiment images.
+
+Completing configuration and cancelling preparation are different operations.
+A normal close checks that the selection is usable by the processor, but a
+shutdown request bypasses that check: an experiment being stopped must not
+remain stuck waiting for a region to be selected. Both backends close their
+window and release their configuration resources in that case. Errors raised
+during GUI callbacks are also passed back to the owning Block after cleanup,
+so they participate in Crappy's preparation error handling instead of leaving
+the window running independently.
+
+For extension examples, see :doc:`tutorials/custom_camera_configuration`.
+The :doc:`crappy_docs/tools` reference describes the individual class contracts
+and hooks.
+
 .. _architecture-all-in-one-camera:
 
 All-in-one Camera internals
