@@ -12,6 +12,7 @@ from multiprocessing import (Array, Manager, Event, RLock, Pipe, Barrier,
 from multiprocessing import managers, synchronize, connection
 from threading import BrokenBarrierError
 import logging
+from warnings import warn
 
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
@@ -93,7 +94,7 @@ class Camera(Block):
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
-               config_backend: Literal['tkinter', 'pyqt'] = 'tkinter',
+               config_backend: Literal['tkinter', 'pyqt'] = 'pyqt',
                display_images: bool = False,
                displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
@@ -287,6 +288,13 @@ class Camera(Block):
        *fps_label*, *ext*, *input_label* and *no_loop* arguments
     .. versionremoved:: 2.0.0 *img_name* argument
     """
+
+    warn("\nThe default backend for camera configuration was changed from "
+         "'tkinter' to 'pyqt' without prior notice.\nThis change was "
+         "implemented nevertheless because it significantly increases "
+         "performance\nSet config_backend='tkinter' to switch back to the "
+         "previous behavior.\nInstall PyQt6 to use the new, lighter and "
+         "faster camera configuration window.\n", UserWarning, stacklevel=2)
 
     self._save_proc: ImageSaver | None = None
     self._display_proc: Displayer | None = None

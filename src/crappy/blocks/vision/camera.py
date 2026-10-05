@@ -83,7 +83,7 @@ class CameraSource(VisionBlock):
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
-               config_backend: Literal['tkinter', 'pyqt'] = 'tkinter',
+               config_backend: Literal['tkinter', 'pyqt'] = 'pyqt',
                allow_downstream_config: bool = True,
                image_generator: Callable[[float, float],
                                          np.ndarray] | None = None,
