@@ -81,7 +81,9 @@ class TestPauseFreq(BlockTestBase):
     self.assertGreater(self._block.last_fps.value, -1.0)
     self.assertGreaterEqual(self._block.last_t.value,
                             self._block.last_fps.value)
-    self.assertGreater(self._block.n_loops.value, 0)
+    # The first loop records zero; frequency handling advances it afterward.
+    self.assertTrue(self.wait_until(lambda: self._block.n_loops.value > 0),
+                    "frequency bookkeeping did not advance")
 
     t = self._block.last_t.value
     n_l = self._block.loops.value
