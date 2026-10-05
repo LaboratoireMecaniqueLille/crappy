@@ -35,7 +35,6 @@ if __name__ == '__main__':
   # FakeCamera generates a moving greyscale pattern, so no camera is required.
   camera = crappy.blocks.vision.CameraSource(
       'FakeCamera',  # Name of the Camera implementation to open
-      config_backend='tkinter',
       config=True,  # Show the generic Camera configuration window first
       freq=40,  # Maximum frequency at which CameraSource checks for frames
 

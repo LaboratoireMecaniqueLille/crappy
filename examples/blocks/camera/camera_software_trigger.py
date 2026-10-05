@@ -46,7 +46,6 @@ if __name__ == '__main__':
   cam = crappy.blocks.Camera(
       'FakeCamera',  # Using the FakeCamera camera so that no hardware is
       # required
-      config_backend='tkinter',
       software_trig_label='trigger',  # A frame will be acquired each time a
       # value is received over this label. The received value does not matter
       config=True,  # Before the test starts, displays a configuration window

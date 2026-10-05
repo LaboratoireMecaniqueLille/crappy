@@ -67,7 +67,6 @@ if __name__ == "__main__":
   dis = crappy.blocks.DISCorrel(
       '',  # The name of Camera to open is ignored because image_generator is
       # given
-      config_backend='tkinter',
       display_images=True,  # The displayer window follows the patch on the
       # acquired images
       labels=['t(s)', 'meta', 'x', 'y', 'meas_Exx(%)', 'meas_Eyy(%)'],

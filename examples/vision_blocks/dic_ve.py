@@ -65,7 +65,6 @@ if __name__ == '__main__':
   # physical Camera with a generated one based on the bundled speckle image.
   camera = crappy.blocks.vision.CameraSource(
       '',  # The Camera name is ignored when image_generator is provided
-      config_backend='tkinter',
       image_generator=crappy.tool.ApplyStrainToImage(img),
       config=True,  # Required because no DICVE patches are supplied below
       allow_downstream_config=True,  # Accept DICVE's specialized request

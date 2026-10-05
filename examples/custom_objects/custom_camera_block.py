@@ -295,7 +295,6 @@ if __name__ == '__main__':
   cam = CustomCameraBlock(
       'Webcam',  # The name of the Camera to acquire images from. Here, a
       # camera readable by OpenCV must be used, typically a webcam will do
-      config_backend='tkinter',
       display_images=True,  # The acquired images will be displayed in a
       # dedicated window
       save_images=False,  # The acquired images will not be recorded

@@ -46,7 +46,6 @@ if __name__ == '__main__':
   # 'trigger' before every acquisition attempt.
   camera = crappy.blocks.vision.CameraSource(
       'FakeCamera',  # Name of the Camera implementation to open
-      config_backend='tkinter',
       software_trig_label='trigger',  # Label enabling an acquisition
       config=True,  # Configure FakeCamera before triggering becomes active
       freq=40,  # Frequency at which trigger messages are checked

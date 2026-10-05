@@ -80,10 +80,9 @@ class ConfirmedCameraSource(crappy.blocks.vision.CameraSource):
 if __name__ == '__main__':
 
   # This custom CameraSource opens one of the windows defined above during
-  # preparation. Change config_backend to 'pyqt' to try the other interface.
+  # preparation using the default PyQt6 backend.
   camera = ConfirmedCameraSource(
       'FakeCamera',
-      config_backend='tkinter',
       width=320,
       height=240,
       speed=40,

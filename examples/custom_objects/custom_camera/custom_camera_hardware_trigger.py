@@ -143,7 +143,6 @@ if __name__ == '__main__':
   # user can choose in which trigger mode the Camera runs.
   cam = crappy.blocks.Camera(
       'CustomCam',  # The name of the custom Camera that was just written
-      config_backend='tkinter',
       config=True,  # Easier to set to True when possible
       display_images=True,  # Displaying the images to show how they look
       displayer_framerate=30,  # Matching the acquisition frame rate
