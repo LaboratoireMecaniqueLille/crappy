@@ -17,6 +17,7 @@ from queue import Empty
 from time import monotonic, time
 from typing import Any, TYPE_CHECKING
 import logging
+import locale
 import os
 import numpy as np
 
@@ -244,9 +245,12 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
         else:
           os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
 
+    # Qt changes the numeric locale on Unix, breaking Tk's float controls
+    numeric_locale = locale.setlocale(locale.LC_NUMERIC)
     try:
       return QApplication([])
     finally:
+      locale.setlocale(locale.LC_NUMERIC, numeric_locale)
       if original is not None:
         os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
 

@@ -41,9 +41,13 @@ class TestPreview(PyQtConfigTestCase):
   def test_resize_renders_existing_image_and_histogram(self) -> None:
     """A resize redraws existing content without requiring a new acquisition."""
 
+    from PyQt6.QtTest import QTest
+
     config = self.make_config()
     config.show()
     app = config._qt_app
+    # Wait for the native window's initial geometry before requesting a resize
+    self.assertTrue(QTest.qWaitForWindowExposed(config))
     app.processEvents()
     config._update_img()
     config._hist = np.full((80, 512), 255, dtype=np.uint8)

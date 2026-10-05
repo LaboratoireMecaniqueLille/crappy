@@ -2,8 +2,56 @@
 
 """Tk controls, deferred Apply, Auto apply, and dependent setting reloads."""
 
+import locale
+
 from ._fixtures import TkinterConfigTestCase, FakeTestCameraParams
 from crappy.camera.meta_camera.camera_setting import CameraScaleSetting
+
+
+class TestNumericLocale(TkinterConfigTestCase):
+  """Floating-point controls must work after another GUI changes the locale."""
+
+  def make_camera(self) -> FakeTestCameraParams:
+    """Create a Camera with integer and floating-point settings."""
+
+    camera = FakeTestCameraParams()
+    camera.open()
+    return camera
+
+  def customSetUp(self) -> None:
+    """Start the window with a comma-based numeric locale already selected."""
+
+    previous = locale.setlocale(locale.LC_NUMERIC)
+    self.addCleanup(locale.setlocale, locale.LC_NUMERIC, previous)
+    for numeric_locale in ('fr_FR.UTF-8', 'French_France.1252'):
+      try:
+        locale.setlocale(locale.LC_NUMERIC, numeric_locale)
+      except locale.Error:
+        continue
+      break
+    else:
+      self.skipTest('a French numeric locale is required')
+
+    self.assertEqual(locale.localeconv()['decimal_point'], ',')
+    self._text_locale = locale.setlocale(locale.LC_CTYPE)
+    super().customSetUp()
+
+  def test_float_scale_after_comma_numeric_locale(self) -> None:
+    """Float values remain readable, can be applied, and survive a reload."""
+
+    control = self.setting_control('scale_float_setting')
+    control.widget.set(4.1)
+    self.assertEqual(control.widget.get(), 4.1)
+    self.assertEqual(control.variable.get(), 4.1)
+    self._config._update_button.invoke()
+    self.assertEqual(self._camera.settings['scale_float_setting'].value, 4.1)
+
+    self._camera.settings['scale_float_setting'].reload(-5.0, 5.0, 4.2)
+    self._config._sync_setting_controls()
+    self.assertEqual(control.widget.get(), 4.2)
+    self.assertEqual(control.variable.get(), 4.2)
+    self.assertEqual(locale.setlocale(locale.LC_NUMERIC), 'C')
+    self.assertEqual(locale.setlocale(locale.LC_CTYPE), self._text_locale)
 
 
 class TestSetParams(TkinterConfigTestCase):

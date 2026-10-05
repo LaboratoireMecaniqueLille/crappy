@@ -3,6 +3,7 @@
 """Qt application reuse and temporary OpenCV plugin-path isolation."""
 
 import os
+import locale
 import unittest
 from unittest.mock import patch, sentinel
 
@@ -10,6 +11,33 @@ from crappy.tool.camera_config.pyqt import camera_config as pyqt_config
 
 
 class TestApplication(unittest.TestCase):
+  def test_application_creation_preserves_numeric_locale(self) -> None:
+    """Qt initialization must not change how Tk parses floating-point values."""
+
+    original = locale.setlocale(locale.LC_NUMERIC)
+    self.addCleanup(locale.setlocale, locale.LC_NUMERIC, original)
+    for fails in (False, True):
+      with self.subTest(fails=fails):
+        locale.setlocale(locale.LC_NUMERIC, 'C')
+
+        def create_application(args):
+          locale.setlocale(locale.LC_NUMERIC, '')
+          if fails:
+            raise RuntimeError('application failed')
+          return sentinel.application
+
+        with (patch.object(pyqt_config, 'QCoreApplication') as core_application,
+              patch.object(pyqt_config, 'QApplication',
+                           side_effect=create_application)):
+          core_application.instance.return_value = None
+          if fails:
+            with self.assertRaisesRegex(RuntimeError, 'application failed'):
+              pyqt_config.PyQtCameraConfig._get_application()
+          else:
+            self.assertIs(pyqt_config.PyQtCameraConfig._get_application(),
+                           sentinel.application)
+          self.assertEqual(locale.setlocale(locale.LC_NUMERIC), 'C')
+
   def test_opencv_plugin_paths_are_filtered_only_during_creation(self) -> None:
     """Qt creation excludes OpenCV's plugins and restores the original path."""
 

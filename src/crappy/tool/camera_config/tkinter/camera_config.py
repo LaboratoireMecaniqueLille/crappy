@@ -8,6 +8,7 @@ from math import ceil
 import numpy as np
 from time import monotonic, time
 import logging
+import locale
 from dataclasses import dataclass
 from multiprocessing import Event, Queue, synchronize
 from multiprocessing.queues import Queue as MPQueue
@@ -120,6 +121,9 @@ TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
     self._hist_width: int = 0
     self._hist_height: int = 0
     self._setting_controls: dict[CameraSetting, _TkSettingControl] = dict()
+
+    # A Qt application created elsewhere may already have changed this locale
+    locale.setlocale(locale.LC_NUMERIC, 'C')
 
     # Abort early in case an exception is caught while instantiating settings
     try:
