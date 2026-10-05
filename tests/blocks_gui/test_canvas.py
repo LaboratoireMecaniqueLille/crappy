@@ -139,19 +139,20 @@ class TestCanvas(CanvasTests, BlockTestBase):
 
     for dpi in (100, 101.6):
       with self.subTest(dpi=dpi):
-        with patch.dict(canvas_module.mpl.rcParams, {'figure.dpi': dpi}):
+        with (patch.dict(canvas_module.mpl.rcParams, {'figure.dpi': dpi}),
+              patch.object(canvas_module.mpl_figure, 'Figure',
+                           wraps=canvas_module.mpl_figure.Figure) as figure):
           canvas, _ = self._prepare_canvas(title='Test Canvas',
                                            window_size=(3, 2),
                                            color_range=(1, 5))
+        # Check the requested size before Tk applies display scaling and
+        # rounds the widget dimensions, possibly more than once
+        figure.assert_called_once_with(figsize=(3, 2))
         self.assertEqual(canvas._root.title(), 'Test Canvas')
         self.assertIs(canvas._tk_canvas.figure, canvas._fig)
         self.assertIs(canvas._tk_canvas.get_tk_widget().master, canvas._root)
         self.assertEqual(canvas.ax.get_title(), 'Test Canvas')
         self.assertFalse(canvas.ax.axison)
-        # Tk rounds widget dimensions to whole pixels, then Matplotlib
-        # converts them back to inches using the effective figure DPI
-        for actual, expected in zip(canvas._fig.get_size_inches(), (3, 2)):
-          self.assertAlmostEqual(actual, expected, delta=1 / canvas._fig.dpi)
         self.assertEqual(len(canvas._fig.axes), 2)
         self.assertEqual(canvas._fig.axes[1].get_xlabel(), 'Dot text values')
         self.assertEqual([text.get_text() for text in
