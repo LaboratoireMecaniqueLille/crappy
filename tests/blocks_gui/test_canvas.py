@@ -137,19 +137,26 @@ class TestCanvas(CanvasTests, BlockTestBase):
   def test_prepare_embeds_figure_and_color_bar(self) -> None:
     """The Tk canvas uses a FigureCanvasTkAgg rather than a pyplot window."""
 
-    canvas, _ = self._prepare_canvas(title='Test Canvas', window_size=(3, 2),
-                                     color_range=(1, 5))
-    self.assertEqual(canvas._root.title(), 'Test Canvas')
-    self.assertIs(canvas._tk_canvas.figure, canvas._fig)
-    self.assertIs(canvas._tk_canvas.get_tk_widget().master, canvas._root)
-    self.assertEqual(canvas.ax.get_title(), 'Test Canvas')
-    self.assertFalse(canvas.ax.axison)
-    self.assertEqual(tuple(canvas._fig.get_size_inches()), (3, 2))
-    self.assertEqual(len(canvas._fig.axes), 2)
-    self.assertEqual(canvas._fig.axes[1].get_xlabel(), 'Dot text values')
-    self.assertEqual([text.get_text() for text in
-                      canvas._fig.axes[1].get_xticklabels()], ['1', '5'])
-    self.assertIsNone(canvas._qt_window)
+    for dpi in (100, 101.6):
+      with self.subTest(dpi=dpi):
+        with patch.dict(canvas_module.mpl.rcParams, {'figure.dpi': dpi}):
+          canvas, _ = self._prepare_canvas(title='Test Canvas',
+                                           window_size=(3, 2),
+                                           color_range=(1, 5))
+        self.assertEqual(canvas._root.title(), 'Test Canvas')
+        self.assertIs(canvas._tk_canvas.figure, canvas._fig)
+        self.assertIs(canvas._tk_canvas.get_tk_widget().master, canvas._root)
+        self.assertEqual(canvas.ax.get_title(), 'Test Canvas')
+        self.assertFalse(canvas.ax.axison)
+        # Tk rounds widget dimensions to whole pixels, then Matplotlib
+        # converts them back to inches using the effective figure DPI
+        for actual, expected in zip(canvas._fig.get_size_inches(), (3, 2)):
+          self.assertAlmostEqual(actual, expected, delta=1 / canvas._fig.dpi)
+        self.assertEqual(len(canvas._fig.axes), 2)
+        self.assertEqual(canvas._fig.axes[1].get_xlabel(), 'Dot text values')
+        self.assertEqual([text.get_text() for text in
+                          canvas._fig.axes[1].get_xticklabels()], ['1', '5'])
+        self.assertIsNone(canvas._qt_window)
 
   def test_loop_services_idle_gui_without_redrawing(self) -> None:
     """Without data or a timer, pump Tk events but avoid unnecessary draws."""
