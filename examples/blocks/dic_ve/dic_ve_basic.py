@@ -56,6 +56,7 @@ if __name__ == '__main__':
   dic_ve = crappy.blocks.DICVE(
       '',  # The name of Camera to open is ignored because image_generator is
       # given
+      config_backend='tkinter',
       config=True,  # Displaying the configuration window before starting
       # Mandatory if the patches to track are not given as arguments
       display_images=True,  # The displayer window follows the patches on the

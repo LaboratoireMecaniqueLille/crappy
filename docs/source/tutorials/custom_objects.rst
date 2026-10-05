@@ -53,6 +53,10 @@ Advanced customization
 :doc:`custom_all_in_one_camera`
   Add image processing inside the supported all-in-one Camera Block.
 
+:doc:`custom_camera_configuration`
+  Extend a configuration window for one backend or share selection rules
+  between both backends.
+
 Read :doc:`../concepts/image_pipelines` before choosing an image architecture.
 
 Reuse or contribute a custom object
@@ -80,3 +84,4 @@ tests that do not require access to the physical device.
    custom_streaming_inout
    custom_vision_block
    custom_all_in_one_camera
+   custom_camera_configuration

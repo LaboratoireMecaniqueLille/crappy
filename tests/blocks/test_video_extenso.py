@@ -92,26 +92,24 @@ class TestVideoExtenso(CameraWrapperTestBase):
       return img
 
     block = VideoExtenso(transform=transform,
+                         config_backend='tkinter',
                          **self.camera_kwargs(config=True))
     block._camera = sentinel.camera
     block._log_queue = sentinel.log_queue
     block._log_level = 30
     block.freq = 123
 
-    with patch.object(video_extenso_module, 'VideoExtensoConfig',
-                      return_value=sentinel.config) as config:
+    with patch.object(video_extenso_module, 'create_configurator',
+                      return_value=sentinel.config) as factory:
       ret = block._configure()
 
     self.assertIs(ret, sentinel.config)
-    config.assert_called_once_with(sentinel.camera,
-                                   sentinel.log_queue,
-                                   30,
-                                   123.0,
-                                   transform,
-                                   white_spots=False,
-                                   num_spots=None,
-                                   min_area=150,
-                                   blur=5,
-                                   update_thresh=False,
-                                   safe_mode=False,
-                                   border=5)
+    factory.assert_called_once_with(
+                                    {'tkinter': video_extenso_module.TkinterVideoExtensoConfig,
+                                     'pyqt': video_extenso_module.PyQtVideoExtensoConfig},
+                                    sentinel.camera,
+                                    'tkinter', sentinel.log_queue, 30, 123.0,
+                                    transform, white_spots=False,
+                                    num_spots=None, min_area=150, blur=5,
+                                    update_thresh=False, safe_mode=False,
+                                    border=5)

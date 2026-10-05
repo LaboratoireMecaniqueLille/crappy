@@ -30,9 +30,15 @@ An individual package or test module can also be run directly, for example:
     python -m unittest -v tests.modifier
     python -m unittest -v tests.modifier.test_mean
 
-The ``blocks_gui``, ``camera_configuration``, ``camera_processes_gui``, and
-``vision_gui`` packages open graphical interfaces and therefore require a 
-display. On a headless Linux system, run them through Xvfb, for example:
+Camera-configuration tests are grouped into ``tests.camera_configuration.base``
+(headless shared behavior), ``tests.camera_configuration.tkinter``, and
+``tests.camera_configuration.pyqt`` (backend integration). The aggregate
+``tests.camera_configuration`` entry point runs all three layers.
+
+The ``blocks_gui``, camera-configuration backend suites,
+``camera_processes_gui``, and ``vision_gui`` packages open graphical interfaces
+and therefore require a display. On a headless Linux system, run them through
+Xvfb, for example:
 
     xvfb-run --auto-servernum python -m unittest -v tests.blocks_gui
 

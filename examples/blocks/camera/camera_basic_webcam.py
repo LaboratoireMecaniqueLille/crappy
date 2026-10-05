@@ -25,6 +25,7 @@ if __name__ == '__main__':
   # Here, the very basic Webcam Camera is used
   cam = crappy.blocks.Camera(
       'Webcam',  # Using the Webcam to acquire the images
+      config_backend='tkinter',
       config=True,  # Before the test starts, displays a configuration window
       # for configuring the camera
       display_images=True,  # During the test, the acquired images are

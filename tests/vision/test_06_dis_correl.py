@@ -6,7 +6,7 @@ import numpy as np
 
 import crappy.blocks.vision.dis_correl as dis_correl_module
 from crappy.blocks.vision import DISCorrelProcessor
-from crappy.tool.camera_config import Box, DISCorrelConfig, SpotsBoxes
+from crappy.tool.camera_config import Box, SpotsBoxes
 
 from .vision_test_base import VisionTestBase
 
@@ -187,7 +187,9 @@ class TestDISCorrelProcessor(VisionTestBase):
     request = configured.request_config('camera')
     self.assertEqual(request.requester, configured.name)
     self.assertEqual(request.img_source, 'camera')
-    self.assertIs(request.configurator, DISCorrelConfig)
+    self.assertEqual(request.configurator,
+                     {'tkinter': dis_correl_module.TkinterDISCorrelConfig,
+                      'pyqt': dis_correl_module.PyQtDISCorrelConfig})
     self.assertIs(request.kwargs['patch'], configured._patch)
     self.assertFalse(request.required)
 

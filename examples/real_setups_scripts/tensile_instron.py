@@ -49,6 +49,7 @@ if __name__ == "__main__":
 
   # This Block calculates the strain using video extensometry
   ve = crappy.blocks.VideoExtenso('XiAPI',
+                                  config_backend='tkinter',
                                   save_images=True,
                                   save_folder='img/')
   crappy.link(ve, gen)

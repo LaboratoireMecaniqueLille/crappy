@@ -12,7 +12,8 @@ from crappy.blocks.vision import (CameraSource, DICVEProcessor,
                                   DISCorrelProcessor, ImageRecorder,
                                   VideoExtensoProcessor, VisionBlock)
 from crappy.blocks.vision.block import ConfigRequest
-from crappy.tool.camera_config import CameraConfig, SpotsBoxes
+from crappy.tool.camera_config import SpotsBoxes
+from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
 
 def generate_vision_test_image(_: float, __: float) -> np.ndarray:
@@ -131,7 +132,7 @@ class ConfiguredFrameProbe(VisionBlock):
     return ConfigRequest(requester=self.name,
                          args=tuple(),
                          kwargs={'token': self._token},
-                         configurator=CameraConfig,
+                         configurator=TkinterCameraConfig,
                          img_source=source,
                          required=True)
 

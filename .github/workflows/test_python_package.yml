@@ -67,6 +67,7 @@ jobs:
         python -m unittest -v tests.block
         python -m unittest -v tests.blocks
         python -m unittest -v tests.camera
+        python -m unittest -v tests.camera_configuration.base
         python -m unittest -v tests.collection
         python -m unittest -v tests.camera_configuration_tools
         python -m unittest -v tests.camera_process
@@ -86,7 +87,8 @@ jobs:
         MPLBACKEND: TkAgg
       run: |
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.blocks_gui
-        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_configuration
+        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_configuration.pyqt
+        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_configuration.tkinter
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_processes_gui
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.vision_gui
     # GitHub-hosted Windows and macOS runners provide a native GUI session
@@ -97,6 +99,7 @@ jobs:
       run: |
         python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
         python -m unittest -v tests.blocks_gui
-        python -m unittest -v tests.camera_configuration
+        python -m unittest -v tests.camera_configuration.pyqt
+        python -m unittest -v tests.camera_configuration.tkinter
         python -m unittest -v tests.camera_processes_gui
         python -m unittest -v tests.vision_gui

@@ -131,12 +131,15 @@ class TestMachine(BlockTestBase):
     cases = (
       ([], ValueError),
       ([{'cmd_label': 'cmd'}], ValueError),
-      ([{'type': 'Fake_motor'}], NotImplementedError),
+      ([{'type': 'Fake_motor'}], ValueError),
+      ([{'type': 'UnimportedCollectionActuator'}], NotImplementedError),
       ([{'type': 'UnknownActuator'}], ValueError),
       ([{'type': 'TrackingActuator', 'mode': 'speeed'}], ValueError),
     )
 
-    with self._actuator_patch():
+    with (self._actuator_patch(),
+          patch.object(machine_module, 'moved_to_collection',
+                       ('UnimportedCollectionActuator',))):
       for actuators, exception in cases:
         with self.subTest(actuators=actuators):
           with self.assertRaises(exception):

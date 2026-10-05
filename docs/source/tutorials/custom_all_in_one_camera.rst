@@ -119,14 +119,15 @@ Some analysis methods require the user to select a region or other settings
 before the test. For that advanced case:
 
 1. Override :meth:`crappy.blocks.Camera._configure` to return a suitable
-   :class:`~crappy.tool.camera_config.CameraConfig`.
+   :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`.
 2. Make its ``get_config()`` method return the selected values as a tuple.
 3. Define matching arguments on
    :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config`.
 
 Crappy passes those values to the CameraProcess before image handling begins.
 Use ordinary constructor arguments instead when interactive selection is not
-needed.
+needed. The :doc:`custom_camera_configuration` tutorial shows how to extend
+the shared configuration classes and concrete windows.
 
 Adapt it to a real camera
 -------------------------

@@ -1,13 +1,16 @@
 # coding: utf-8
 
 from typing import Literal, Sequence
+from collections.abc import Mapping
 import numpy as np
 import logging
 
 from .block import VisionBlock, ConfigRequest
 from ...tool.image_processing.fields import allowed_fields
 from ...tool.image_processing import DISCorrelTool
-from ...tool.camera_config import DISCorrelConfig, Box, SpotsBoxes
+from ...tool.camera_config import Box, CameraConfig, SpotsBoxes
+from ...tool.camera_config.tkinter import TkinterDISCorrelConfig
+from ...tool.camera_config.pyqt import PyQtDISCorrelConfig
 
 field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
                      'exy', 'eyx', 'exy2', 'z'] | np.ndarray
@@ -25,10 +28,10 @@ class DISCorrelProcessor(VisionBlock):
 
   The correlation is performed on one rectangular patch. Its coordinates can
   be supplied directly with ``patch`` or selected interactively in a
-  :class:`~crappy.tool.camera_config.DISCorrelConfig` window opened by the
-  upstream image source. When a patch is already provided, the configuration
-  request is optional. Set ``request_configuration`` to :obj:`False` to
-  suppress this request entirely.
+  :class:`~crappy.tool.camera_config.base.dis_correl_config.DISCorrelConfig`
+  window opened by the upstream image source. When a patch is already provided,
+  the configuration request is optional. Set ``request_configuration`` to
+  :obj:`False` to suppress this request entirely.
 
   The first received image becomes the fixed reference image and produces no
   output. For every subsequent image, a
@@ -52,6 +55,11 @@ class DISCorrelProcessor(VisionBlock):
 
   .. versionadded:: 2.1.0
   """
+
+  configurator: (type[CameraConfig] |
+                 Mapping[str, type[CameraConfig]]) = {
+                   'tkinter': TkinterDISCorrelConfig,
+                   'pyqt': PyQtDISCorrelConfig}
 
   def __init__(self,
                patch: tuple[int, int, int, int] | None = None,
@@ -96,10 +104,10 @@ class DISCorrelProcessor(VisionBlock):
         automatically added ``'res'`` and reserved ``'overlay'`` labels must
         not be included.
       request_configuration: If :obj:`True`, asks the upstream image source to
-        display a :class:`~crappy.tool.camera_config.DISCorrelConfig` window.
-        The request is required when ``patch`` is omitted and optional when a
-        patch was supplied. If :obj:`False`, no request is made and ``patch``
-        must be provided.
+        display a :class:`~crappy.tool.camera_config.base.dis_correl_config.\
+DISCorrelConfig` window. The request is required when ``patch`` is omitted and
+        optional when a patch was supplied. If :obj:`False`, no request is made
+        and ``patch`` must be provided.
       alpha: Weight of the smoothness term in DISFlow. Must be finite and
         non-negative.
       delta: Weight of the color-constancy term in DISFlow. Must be finite and
@@ -429,9 +437,9 @@ class DISCorrelProcessor(VisionBlock):
         configuration window.
 
     Returns:
-      A request for :class:`~crappy.tool.camera_config.DISCorrelConfig`, or
-      :obj:`None` when upstream configuration is disabled. The request is
-      flagged as required only when no complete patch was provided.
+      A request for :class:`~crappy.tool.camera_config.base.dis_correl_config.\
+DISCorrelConfig`, or :obj:`None` when upstream configuration is disabled. The
+      request is flagged as required only when no complete patch was provided.
     """
 
     if not self._request_configuration:
@@ -440,6 +448,6 @@ class DISCorrelProcessor(VisionBlock):
     return ConfigRequest(requester=self.name,
                          args=tuple(),
                          kwargs={'patch': self._patch},
-                         configurator=DISCorrelConfig,
+                         configurator=self.configurator,
                          img_source=source,
                          required=self._patch.no_points())

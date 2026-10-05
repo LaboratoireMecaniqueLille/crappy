@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from collections.abc import Callable
 from multiprocessing import Value
 from unittest.mock import Mock, call, patch, sentinel
 import logging
@@ -53,11 +54,11 @@ class RecordingVisionCamera(BaseCamera):
 
 
 class RecordingConfig(CameraConfig):
-  """Non-GUI CameraConfig double used by CameraSource.configure tests."""
+  """Headless core subclass implementing the configuration lifecycle."""
 
   instances: list['RecordingConfig'] = list()
   shape_value = (4, 5)
-  dtype_value = np.dtype('uint16')
+  dtype_value = 'uint16'
   result = ('configured',)
   raise_in: str | None = None
 
@@ -65,37 +66,40 @@ class RecordingConfig(CameraConfig):
                *args, **kwargs) -> None:
     """Records constructor arguments without initializing Tk."""
 
+    super().__init__(camera, log_queue, log_level, max_freq, transform)
     self.constructor_args = (camera, log_queue, log_level, max_freq,
                              transform, args, kwargs)
     self.shape = type(self).shape_value
     self.dtype = type(self).dtype_value
-    self.start_calls = 0
-    self.wait_calls = list()
+    self.run_calls = 0
     self.stop_calls = 0
+    self.shutdown_requested: Callable[[], bool] = lambda: False
     type(self).instances.append(self)
 
-  def start(self) -> None:
-    """Records startup and optionally raises."""
+  def run(self) -> None:
+    """Record the interactive lifecycle and optionally raise."""
 
-    self.start_calls += 1
+    self.run_calls += 1
     if type(self).raise_in == 'start':
       raise ValueError('configuration failed')
     if type(self).raise_in == 'keyboard':
       raise KeyboardInterrupt
-
-  def wait_window(self, window) -> None:
-    """Records the object passed to Tk's wait helper."""
-
-    self.wait_calls.append(window)
 
   def stop(self) -> None:
     """Records error cleanup."""
 
     self.stop_calls += 1
 
+  def watch_shutdown(self, requested: Callable[[], bool]) -> None:
+    """Store the Block's shutdown predicate for inspection."""
+
+    self.shutdown_requested = requested
+
   def get_config(self):
     """Returns deterministic configuration data."""
 
+    if type(self).raise_in == 'result':
+      raise ValueError('cannot export configuration')
     return type(self).result
 
 
@@ -110,7 +114,7 @@ class TestCameraSource(VisionTestBase):
     RecordingVisionCamera.instances.clear()
     RecordingConfig.instances.clear()
     RecordingConfig.shape_value = (4, 5)
-    RecordingConfig.dtype_value = np.dtype('uint16')
+    RecordingConfig.dtype_value = 'uint16'
     RecordingConfig.result = ('configured',)
     RecordingConfig.raise_in = None
     patcher = patch.dict(camera_module.camera_dict,
@@ -119,7 +123,8 @@ class TestCameraSource(VisionTestBase):
     patcher.start()
     self.addCleanup(patcher.stop)
 
-  def make_source(self, **kwargs) -> CameraSource:
+  def make_source(self, source_type: type[CameraSource] = CameraSource,
+                  **kwargs) -> CameraSource:
     """Creates and tracks a physical CameraSource with safe defaults."""
 
     options = {
@@ -129,7 +134,7 @@ class TestCameraSource(VisionTestBase):
       'img_dtype': 'uint8',
     }
     options.update(kwargs)
-    source = CameraSource(**options)
+    source = source_type(**options)
     self.track_block(source)
     return source
 
@@ -165,6 +170,7 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(source._camera_kwargs, {'serial': 'abc'})
     self.assertEqual(source.freq, 100)
     self.assertTrue(source._allow_downstream_config)
+    self.assertEqual(source._config_backend, 'pyqt')
     self.assertEqual(CameraSource.cam_count[RecordingVisionCamera.__name__], 1)
 
     generator = lambda _exx, _eyy: np.zeros((2, 3), dtype=np.uint8)
@@ -190,6 +196,8 @@ class TestCameraSource(VisionTestBase):
       {'software_trig_label': ''},
       {'software_trig_label': 1},
       {'image_generator': object()},
+      {'config_backend': 'qt'},
+      {'config_backend': None},
     )
     for options in cases:
       with self.subTest(options=options):
@@ -201,9 +209,13 @@ class TestCameraSource(VisionTestBase):
         with self.assertRaises((TypeError, ValueError)):
           CameraSource(**defaults)
 
-    deprecated_name = next(iter(camera_module.deprecated_cameras))
-    with self.assertRaises(NotImplementedError):
-      CameraSource(camera=deprecated_name,
+    selected = self.make_source(config_backend='tkinter', serial='abc')
+    self.assertEqual(selected._camera_kwargs, {'serial': 'abc'})
+
+    with (patch.object(camera_module, 'moved_to_collection',
+                       ('UnimportedCollectionCamera',)),
+          self.assertRaises(NotImplementedError)):
+      CameraSource(camera='UnimportedCollectionCamera',
                    config=False,
                    img_shape=(2, 3),
                    img_dtype='uint8')
@@ -521,19 +533,57 @@ class TestCameraSource(VisionTestBase):
     source._log_level = logging.WARNING
     camera = RecordingVisionCamera()
 
-    result = source.configure(camera, RecordingConfig,
-                              'argument', option=sentinel.option)
+    with patch.object(camera_module, 'create_configurator',
+                      wraps=camera_module.create_configurator) as factory:
+      result = source.configure(camera, RecordingConfig,
+                                'argument', option=sentinel.option)
 
     config = RecordingConfig.instances[-1]
+    self.assertEqual(factory.call_args.args[2], 'pyqt')
     self.assertEqual(config.constructor_args,
                      (camera, sentinel.log_queue, logging.WARNING, 123,
                       transform, ('argument',), {'option': sentinel.option}))
-    self.assertEqual(config.start_calls, 1)
-    self.assertEqual(config.wait_calls, [config])
+    self.assertEqual(config.run_calls, 1)
     self.assertEqual(config.stop_calls, 0)
     self.assertEqual(result, ('configured',))
     self.assertEqual(source._img_shape, (4, 5))
     self.assertEqual(source._img_dtype, 'uint16')
+    self.assertIsInstance(source._img_dtype, str)
+
+  def test_pyqt_backend_accepts_custom_neutral_configurator(self) -> None:
+    """A non-Tk configurator is still accepted by the PyQt selection path."""
+
+    source = self.make_source(config_backend='pyqt')
+    source._log_queue = sentinel.log_queue
+    result = source.configure(RecordingVisionCamera(), RecordingConfig)
+
+    self.assertEqual(result, ('configured',))
+    self.assertEqual(RecordingConfig.instances[-1].run_calls, 1)
+
+  def test_configure_aborts_if_preparation_barrier_breaks(self) -> None:
+    """A canceled source request cannot publish partial configuration."""
+
+    source = self.make_source()
+    self.set_prepare_sync(source)
+    source._log_queue = sentinel.log_queue
+    camera = RecordingVisionCamera()
+
+    class WatchedConfig(RecordingConfig):
+      """Configurator that observes a peer failure during its run."""
+
+      def run(self) -> None:
+        """Simulate a peer crashing while this window is open."""
+
+        source._ready_barrier.abort()
+
+    with self.assertRaises(PrepareError):
+      source.configure(camera, WatchedConfig)
+
+    config = WatchedConfig.instances[-1]
+    self.assertTrue(config.shutdown_requested())
+    self.assertEqual(config.stop_calls, 1)
+    self.assertEqual(source._img_shape, (2, 3))
+    self.assertEqual(source._img_dtype, 'uint8')
 
   def test_configure_validates_camera_and_configurator_types(self) -> None:
     """Checks direct type validation before opening a GUI."""
@@ -546,6 +596,39 @@ class TestCameraSource(VisionTestBase):
       source.configure(object(), RecordingConfig)
     with self.assertRaises(TypeError):
       source.configure(camera, object)
+    with self.assertRaises(TypeError):
+      source.configure(camera, 'unknown')
+    with self.assertRaises(ValueError):
+      source.configure(camera, {'unknown': RecordingConfig})
+
+    class MissingShutdown(RecordingConfig):
+      watch_shutdown = CameraConfig.watch_shutdown
+
+    with self.assertRaises(TypeError):
+      source.configure(camera, MissingShutdown)
+
+  def test_backend_mapping_instantiates_the_selected_configurator(self) -> None:
+    """CameraSource selects explicit classes through its public configure API."""
+
+    class TkConfig(RecordingConfig):
+      pass
+
+    class QtConfig(RecordingConfig):
+      pass
+
+    for backend, expected in (('tkinter', TkConfig), ('pyqt', QtConfig)):
+      with self.subTest(backend=backend):
+        source = self.make_source(config_backend=backend)
+        source._log_queue = sentinel.log_queue
+        camera = RecordingVisionCamera()
+        result = source.configure(camera,
+                                  {'tkinter': TkConfig, 'pyqt': QtConfig})
+
+        config = expected.instances[-1]
+        self.assertIs(type(config), expected)
+        self.assertIs(config.constructor_args[0], camera)
+        self.assertEqual(config.run_calls, 1)
+        self.assertEqual(result, ('configured',))
 
   def test_configure_stops_failed_or_interrupted_window(self) -> None:
     """Checks exception translation and KeyboardInterrupt cleanup."""
@@ -555,14 +638,48 @@ class TestCameraSource(VisionTestBase):
     camera = RecordingVisionCamera()
 
     RecordingConfig.raise_in = 'start'
-    with self.assertRaises(CameraConfigError):
+    with self.assertRaises(CameraConfigError) as raised:
       source.configure(camera, RecordingConfig)
+    self.assertIsInstance(raised.exception.__cause__, ValueError)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
     RecordingConfig.raise_in = 'keyboard'
     with self.assertRaises(KeyboardInterrupt):
       source.configure(camera, RecordingConfig)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
+
+    RecordingConfig.raise_in = 'result'
+    with self.assertRaises(CameraConfigError) as raised:
+      source.configure(camera, RecordingConfig)
+    self.assertIsInstance(raised.exception.__cause__, ValueError)
+    self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
+
+  def test_configure_preserves_failure_when_cleanup_fails(self) -> None:
+    """A failing stop cannot replace the original configurator error."""
+
+    source = self.make_source()
+    source._log_queue = sentinel.log_queue
+    failure = ValueError('configuration failed')
+
+    class FailingStopConfig(RecordingConfig):
+      """Configurator whose cleanup also fails after a run error."""
+
+      def run(self) -> None:
+        """Fail as a configuration callback would."""
+
+        raise failure
+
+      def stop(self) -> None:
+        """Record cleanup, then raise a second error."""
+
+        self.stop_calls += 1
+        raise RuntimeError('cleanup failed')
+
+    with self.assertRaises(CameraConfigError) as raised:
+      source.configure(RecordingVisionCamera(), FailingStopConfig)
+
+    self.assertIs(raised.exception.__cause__, failure)
+    self.assertEqual(FailingStopConfig.instances[-1].stop_calls, 1)
 
   def test_configure_reports_missing_log_queue_as_runtime_error(self) -> None:
     """Checks the documented error for unavailable logging infrastructure."""
@@ -582,7 +699,24 @@ class TestCameraSource(VisionTestBase):
 
     source.default_configuration()
 
-    source.configure.assert_called_once_with(camera, CameraConfig)
+    source.configure.assert_called_once_with(
+      camera, {'tkinter': camera_module.TkinterCameraConfig,
+               'pyqt': camera_module.PyQtCameraConfig})
+
+  def test_source_subclass_chooses_its_generic_window(self) -> None:
+    """A CameraSource subclass can replace the default configurator class."""
+
+    class CustomSource(CameraSource):
+      configurator = RecordingConfig
+
+    source = self.make_source(source_type=CustomSource)
+    camera = RecordingVisionCamera()
+    source._camera = camera
+    source.configure = Mock(return_value=None)
+
+    source.default_configuration()
+
+    source.configure.assert_called_once_with(camera, RecordingConfig)
 
 
 if __name__ == '__main__':

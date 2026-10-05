@@ -10,36 +10,6 @@ from crappy.camera.meta_camera.camera_setting import (CameraBoolSetting,
                                                       CameraSetting)
 
 
-class FakeTkVar:
-  """Tiny stand-in for Tk variables used by camera settings."""
-
-  def __init__(self) -> None:
-    self.calls = list()
-
-  def set(self, value) -> None:
-    self.calls.append(value)
-
-
-class FakeButton:
-  """Tiny stand-in for Tk radio buttons used by choice settings."""
-
-  def __init__(self) -> None:
-    self.configs = list()
-
-  def configure(self, **kwargs) -> None:
-    self.configs.append(kwargs)
-
-
-class FakeScale:
-  """Tiny stand-in for Tk scales used by scale settings."""
-
-  def __init__(self) -> None:
-    self.configs = list()
-
-  def configure(self, **kwargs) -> None:
-    self.configs.append(kwargs)
-
-
 class TestCameraSetting(TestCase):
   """Unit tests for the CameraSetting base class."""
 
@@ -53,8 +23,9 @@ class TestCameraSetting(TestCase):
     self.assertIs(setting.type, int)
     self.assertFalse(setting.was_set)
     self.assertFalse(setting.user_set)
-    self.assertIsNone(setting.tk_var)
-    self.assertIsNone(setting.tk_obj)
+    self.assertFalse(hasattr(setting, 'tk_var'))
+    self.assertFalse(hasattr(setting, 'tk_obj'))
+    self.assertEqual(setting.revision, 0)
     self.assertEqual(setting.value, 5)
 
   def test_log_initializes_process_scoped_logger(self) -> None:
@@ -110,15 +81,16 @@ class TestCameraSetting(TestCase):
     self.assertEqual(logs[-1][0], logging.WARNING)
     self.assertIn('Could not set gain to 8', logs[-1][1])
 
-  def test_value_updates_tk_variable(self) -> None:
-    """Checks GUI variable synchronization."""
+  def test_value_advances_revision_without_gui_state(self) -> None:
+    """A setting reports a change without owning a GUI control."""
 
     setting = CameraSetting('gain', None, None, 5)
-    setting.tk_var = FakeTkVar()
 
     setting.value = 8
 
-    self.assertEqual(setting.tk_var.calls, [8])
+    self.assertEqual(setting.revision, 1)
+    self.assertFalse(hasattr(setting, 'tk_var'))
+    self.assertFalse(hasattr(setting, 'tk_obj'))
 
   def test_reload_is_noop_on_base_setting(self) -> None:
     """Checks base reload default implementation."""
@@ -225,20 +197,34 @@ class TestCameraChoiceSetting(TestCase):
     with self.assertRaises(ValueError):
       setting.reload(('a', 'b'), value='b')
 
-  def test_reload_updates_radio_buttons(self) -> None:
-    """Checks GUI radio button synchronization."""
+  def test_reload_updates_metadata_revision_for_new_choice_count(self) -> None:
+    """A view can detect choice changes without a fixed button count."""
 
     setting = CameraChoiceSetting('mode', ('a', 'b', 'c'))
-    setting.tk_obj = [FakeButton(), FakeButton(), FakeButton()]
 
     setting.reload(('x', 'y'))
 
-    self.assertEqual(setting.tk_obj[0].configs[-1],
-                     {'value': 'x', 'text': 'x', 'state': 'normal'})
-    self.assertEqual(setting.tk_obj[1].configs[-1],
-                     {'value': 'y', 'text': 'y', 'state': 'normal'})
-    self.assertEqual(setting.tk_obj[2].configs[-1],
-                     {'state': 'disabled', 'value': '', 'text': ''})
+    self.assertEqual(setting.choices, ('x', 'y'))
+    self.assertGreater(setting.revision, 0)
+
+    previous_revision = setting.revision
+    setting.reload(('x', 'y', 'z', 'w'))
+
+    self.assertEqual(setting.choices, ('x', 'y', 'z', 'w'))
+    self.assertGreater(setting.revision, previous_revision)
+
+  def test_reload_may_override_kwarg_during_interactive_configuration(
+      self) -> None:
+    """The explicit reload policy replaces the former Tk-variable sentinel."""
+
+    setting = CameraChoiceSetting('mode', ('a', 'b'))
+    setting.value = 'a'
+    setting.user_set = True
+    setting.allow_reload_override()
+
+    setting.reload(('a', 'b'), value='b')
+
+    self.assertEqual(setting.value, 'b')
 
 
 class TestCameraScaleSetting(TestCase):
@@ -318,13 +304,12 @@ class TestCameraScaleSetting(TestCase):
 
     calls = list()
     setting = CameraScaleSetting('gain', 0, 10, setter=calls.append)
-    setting.tk_var = FakeTkVar()
 
     setting.value = 12
 
     self.assertEqual(setting.value, 10)
     self.assertEqual(calls, [10])
-    self.assertEqual(setting.tk_var.calls, [10])
+    self.assertEqual(setting.revision, 1)
 
   def test_getter_value_is_clamped_and_cast(self) -> None:
     """Checks scale getter behavior."""
@@ -357,16 +342,27 @@ class TestCameraScaleSetting(TestCase):
     self.assertEqual(setting.default, 0.5)
     self.assertEqual(setting.value, 0.5)
 
-  def test_reload_updates_scale_widget(self) -> None:
-    """Checks GUI scale synchronization."""
+  def test_reload_updates_bounds_and_metadata_revision(self) -> None:
+    """A view can detect changed scale metadata without a widget reference."""
 
     setting = CameraScaleSetting('gain', 0, 10)
-    setting.tk_obj = FakeScale()
 
     setting.reload(1, 5, step=2)
 
-    self.assertEqual(setting.tk_obj.configs[-1],
-                     {'to': 5, 'from_': 1, 'resolution': 2})
+    self.assertEqual((setting.lowest, setting.highest, setting.step),
+                     (1, 5, 2))
+    self.assertGreater(setting.revision, 0)
+
+  def test_reload_value_before_set_only_updates_default(self) -> None:
+    """Dependent reloads preserve camera setup order before set_all."""
+
+    setting = CameraScaleSetting('gain', 0, 10)
+
+    setting.reload(0, 10, value=8)
+
+    self.assertEqual(setting.default, 8)
+    self.assertEqual(setting.value, 5)
+    self.assertFalse(setting.was_set)
 
   def test_reload_user_set_conflict_is_rejected(self) -> None:
     """Checks that user kwargs are not silently overridden."""
@@ -377,3 +373,16 @@ class TestCameraScaleSetting(TestCase):
 
     with self.assertRaises(ValueError):
       setting.reload(0, 10, value=4)
+
+  def test_reload_may_override_kwarg_during_interactive_configuration(
+      self) -> None:
+    """A camera kwarg can be replaced once interactive editing begins."""
+
+    setting = CameraScaleSetting('gain', 0, 10)
+    setting.value = 3
+    setting.user_set = True
+    setting.allow_reload_override()
+
+    setting.reload(0, 10, value=4)
+
+    self.assertEqual(setting.value, 4)

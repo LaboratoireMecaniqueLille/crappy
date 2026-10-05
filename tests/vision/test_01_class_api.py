@@ -10,7 +10,7 @@ import crappy.blocks.vision.block as block_module
 from crappy.blocks.vision import VisionBlock
 from crappy.blocks.vision.block import ConfigRequest, ImgData, ImgLinkData
 from crappy.links import ImageLink
-from crappy.tool.camera_config import CameraConfig
+from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
 from .vision_test_base import StubVisionBlock, VisionTestBase
 
@@ -79,7 +79,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
     request = ConfigRequest(requester='consumer',
                             args=(1,),
                             kwargs={'answer': 42},
-                            configurator=CameraConfig,
+                            configurator=TkinterCameraConfig,
                             img_source='source')
 
     self.assertFalse(request.completed)
@@ -93,7 +93,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
           ConfigRequest(requester='consumer',
                         args=tuple(),
                         kwargs=dict(),
-                        configurator=CameraConfig,
+                        configurator=TkinterCameraConfig,
                         img_source='source',
                         **kwargs)
 

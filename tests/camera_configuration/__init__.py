@@ -1,4 +1,4 @@
-"""Tests for the graphical camera-configuration tools."""
+"""Camera-configuration tests grouped by shared base and GUI backend."""
 
 from pathlib import Path
 from unittest import TestLoader, TestSuite

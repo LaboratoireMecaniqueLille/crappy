@@ -6,7 +6,7 @@ import numpy as np
 
 import crappy.blocks.vision.dic_ve as dic_ve_module
 from crappy.blocks.vision import DICVEProcessor
-from crappy.tool.camera_config import DICVEConfig, SpotsBoxes
+from crappy.tool.camera_config import SpotsBoxes
 from crappy.tool.image_processing import LostPatchError
 
 from .vision_test_base import VisionTestBase
@@ -170,7 +170,9 @@ class TestDICVEProcessor(VisionTestBase):
     request = configured.request_config('camera')
     self.assertEqual(request.requester, configured.name)
     self.assertEqual(request.img_source, 'camera')
-    self.assertIs(request.configurator, DICVEConfig)
+    self.assertEqual(request.configurator,
+                     {'tkinter': dic_ve_module.TkinterDICVEConfig,
+                      'pyqt': dic_ve_module.PyQtDICVEConfig})
     self.assertIs(request.kwargs['patches'], configured._patches)
     self.assertFalse(request.required)
 
@@ -180,6 +182,14 @@ class TestDICVEProcessor(VisionTestBase):
 
     disabled = self.make_processor(request_configuration=False)
     self.assertIsNone(disabled.request_config('camera'))
+
+    class CustomDICVE(DICVEProcessor):
+      configurator = dic_ve_module.TkinterDICVEConfig
+
+    custom = CustomDICVE(patches=[(1, 2, 3, 4)])
+    self.track_block(custom)
+    self.assertIs(custom.request_config('camera').configurator,
+                  CustomDICVE.configurator)
 
   def test_prepare_validates_supported_topology(self) -> None:
     """Checks the one-image-input, no-other-input topology."""
