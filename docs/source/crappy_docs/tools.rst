@@ -186,10 +186,10 @@ Data
 ----
 The folder `src/crappy/tool/data/` contains various images that need to be
 distributed with the module. The `no_image.png` image is used by the
-:class:`~crappy.tool.camera_config.CameraConfig` window in case no image could
-be acquired yet. The `speckle.png` and `ve_markers.tif` images serve as example
-of samples with respectively a speckle and spots drawn on them. They are used
-in several examples to demonstrate the use of
+:class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window in
+case no image could be acquired yet. The `speckle.png` and `ve_markers.tif`
+images serve as example of samples with respectively a speckle and spots drawn
+on them. They are used in several examples to demonstrate the use of
 :class:`~crappy.blocks.VideoExtenso` or :class:`~crappy.blocks.DICVE` without
 requiring any camera. The `pad.png` image is used for demonstrating the
 use of the :class:`~crappy.blocks.Canvas` Block.
