@@ -87,7 +87,8 @@ class TestClassAPI(BlockTestBase):
     Block.raise_event = Event()
     Block.kbi_event = Event()
     Block.log_queue = Queue()
-    Block.log_thread = Thread(target=Block._log_target)
+    Block.log_thread = Thread(target=Block._log_target,
+                              args=(Block.log_queue,))
 
     Block.reset()
 

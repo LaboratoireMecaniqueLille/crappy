@@ -6,11 +6,12 @@ from crappy.blocks.meta_block import block as block_module
 from multiprocessing import synchronize, queues, get_start_method, Event
 from multiprocessing.sharedctypes import Synchronized
 from threading import Thread
+from queue import Empty
 from time import monotonic, sleep
 from platform import system
 import logging
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from .block_test_base import BlockTestBase, TestBlock
 
@@ -279,6 +280,21 @@ class TestStartupSequence(BlockTestBase):
     self.assertTrue(self._block.prepared.wait(3.0))
 
     Block.launch_all()
+
+  def test_log_thread_stops_after_reset(self) -> None:
+    """A logging worker must stop when reset discards its startup context."""
+
+    queue = Mock()
+
+    def reset_while_reading(*args, **kwargs):
+      Block.reset()
+      raise Empty
+
+    queue.get.side_effect = reset_while_reading
+    Block.log_queue = queue
+    Block._log_target(queue)
+
+    queue.get.assert_called_once_with(block=True, timeout=0.05)
 
   def test_cleanup(self) -> None:
     """Tests the different raise/no-raise combinations of _cleanup."""
