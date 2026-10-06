@@ -36,6 +36,8 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.mathjax",
               "sphinx.ext.graphviz",
               "sphinx_copybutton",
+              "sphinx_design",
+              "sphinxext.opengraph",
               "_ext.hardware_matrix"]
 
 source_suffix = {".rst": "restructuredtext"}
