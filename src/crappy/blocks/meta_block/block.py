@@ -304,7 +304,11 @@ class Block(Process, ABC):
 
       # Initializing the objects required for logging
       cls.log_queue = Queue()
-      cls.log_thread = Thread(target=cls._log_target)
+      # Pass log queue explicitly so that the Thread keeps the same queue even
+      # if a new one is created at the class level
+      cls.log_thread = Thread(target=cls._log_target,
+                              args=(cls.log_queue,),
+                              name='crappy.log-reader', daemon=True)
       if get_start_method() != 'fork':
         if cls.log_thread is None:
           raise RuntimeError("The log Thread was not initialized, cannot start"
@@ -748,8 +752,8 @@ class Block(Process, ABC):
     """Method called at the very end of every script execution.
 
     It first waits for all the Blocks to end, and kills them if they don't stop
-    by themselves. Then, it stops the log_thread and warns the user in case
-    Processes would still be running.
+    by themselves. Then, it stops the log_thread and records a failure if
+    Processes or the logging Thread would still be running.
 
     Finally, it raises an exception if needed, in order to stop the script of
     the main Process. This way, any action that could follow the normal
@@ -757,51 +761,53 @@ class Block(Process, ABC):
     Crappy's exception and decides to go on with the script.
     """
 
+    log_thread_failed = False
     try:
 
-      # Setting the stop Event, to indicate all the Blocks to finish
-      if cls.stop_event is None:
-        cls.cls_log(logging.ERROR, "The stop Event should be set but "
-                                   "doesn't exist!")
-      else:
-        cls.stop_event.set()
-        cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks to '
-                                  'finish')
-      t = time()
+      try:
+        # Setting the stop Event, to indicate all the Blocks to finish
+        if cls.stop_event is None:
+          cls.cls_log(logging.ERROR, "The stop Event should be set but "
+                                     "doesn't exist!")
+        else:
+          cls.stop_event.set()
+          cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks '
+                                    'to finish')
+        t = time()
 
-      # Waiting at most 3 seconds for all the Blocks to finish
-      while cls.instances and not all(not inst.is_alive() for inst
-                                      in cls.instances):
-        cls.cls_log(logging.INFO, "All Blocks not stopped yet")
-        sleep(0.5)
+        # Waiting at most 3 seconds for all the Blocks to finish
+        while cls.instances and not all(not inst.is_alive() for inst
+                                        in cls.instances):
+          cls.cls_log(logging.INFO, "All Blocks not stopped yet")
+          sleep(0.5)
 
-        # After 3 seconds, killing the Blocks that didn't stop
-        if time() - t > 3:
-          cls.cls_log(logging.WARNING, 'All Blocks not stopped, terminating '
-                                       'the living ones')
-          for inst in cls.instances:
-            if inst.is_alive():
-              inst.terminate()
-              cls.cls_log(logging.WARNING, f'Block {inst.name} terminated')
-            else:
-              cls.cls_log(logging.INFO, f'Block {inst.name} done')
+          # After 3 seconds, killing the Blocks that didn't stop
+          if time() - t > 3:
+            cls.cls_log(logging.WARNING, 'All Blocks not stopped, terminating '
+                                         'the living ones')
+            for inst in cls.instances:
+              if inst.is_alive():
+                inst.terminate()
+                cls.cls_log(logging.WARNING, f'Block {inst.name} terminated')
+              else:
+                cls.cls_log(logging.INFO, f'Block {inst.name} done')
 
-          break
+            break
 
-      # Stopping the shared Manager if required
-      if cls.shared_mgr is not None:
-        cls.cls_log(logging.INFO, "Stopping the shared Manager")
-        cls.shared_mgr.shutdown()
+        # Stopping the shared Manager if required
+        if cls.shared_mgr is not None:
+          cls.cls_log(logging.INFO, "Stopping the shared Manager")
+          cls.shared_mgr.shutdown()
 
-      # Stopping the log thread if required
-      if get_start_method() != 'fork' and cls.log_thread is not None:
+      # Stop logging even if an earlier cleanup step failed
+      finally:
         cls.thread_stop = True
-        cls.log_thread.join(timeout=0.1)
-
-      # Warning in case the log thread did not stop correctly
-      if cls.log_thread is not None and cls.log_thread.is_alive():
-        cls.cls_log(logging.WARNING, "The Thread reading the log messages did "
-                                     "not terminate in time !")
+        if cls.log_thread is not None and cls.log_thread.ident is not None:
+          cls.log_thread.join(timeout=1.0)
+          if cls.log_thread.is_alive():
+            log_thread_failed = True
+            raise RuntimeError("The Thread reading the log messages did not "
+                               "terminate within one second!")
 
       # Checking whether all Blocks terminated gracefully
       if cls.instances and any(inst.is_alive() for inst in cls.instances):
@@ -986,6 +992,14 @@ class Block(Process, ABC):
     started yet.
     """
 
+    # If this condition is False, means we likely can't record log messages now
+    log_thread_stopped = (cls.log_thread is None or
+                          not cls.log_thread.is_alive())
+
+    # Discard the old logging session before clearing its stop flag
+    cls.log_queue = None
+    cls.log_thread = None
+
     cls.instances = WeakSet()
     cls.names = list()
     cls.thread_stop = False
@@ -1003,10 +1017,8 @@ class Block(Process, ABC):
 
     cls.shared_mgr = None
 
-    cls.log_queue = None
-    cls.log_thread = None
-
-    if cls.logger is not None:
+    # Only log if it has chances to reach the logger
+    if cls.logger is not None and log_thread_stopped:
       cls.cls_log(logging.INFO, 'Crappy was successfully reset')
 
     link_graph.reset()
@@ -1031,21 +1043,26 @@ class Block(Process, ABC):
     cls.logger.log(level=level, msg=msg)
 
   @classmethod
-  def _log_target(cls) -> None:
+  def _log_target(cls, log_queue: queues.Queue) -> None:
     """This method is the target to the Logger Thread.
 
     It reads log messages from a Queue and passes them to the Logger for
     handling.
     """
 
-    if cls.log_queue is None:
+    # Make sure to only read from a single log queue
+    if log_queue is None:
       raise RuntimeError("The log queue doesn't exist!")
 
-    while not cls.thread_stop:
+    while not cls.thread_stop and cls.log_queue is log_queue:
       try:
-        record = cls.log_queue.get(block=True, timeout=0.05)
+        record = log_queue.get(block=True, timeout=0.05)
       except Empty:
         continue
+
+      # Don't log messages if the Thread should stop or a new queue was created
+      if cls.thread_stop or cls.log_queue is not log_queue:
+        return
 
       logger = logging.getLogger(record.name)
       logger.handle(record)
