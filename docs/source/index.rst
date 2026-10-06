@@ -56,15 +56,38 @@ to implement and use it.
 Find explanations and reference material
 ----------------------------------------
 
-- :doc:`concepts` explains behavior shared by different tasks.
-- :doc:`examples` indexes every distributed example by task.
-- :doc:`api` documents public classes, functions, and arguments.
-- :doc:`troubleshooting` explains common failures and recovery steps.
-- :doc:`support` lists support channels and the information to include when
-  reporting a problem.
-- The `examples directory
-  <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_
-  contains a collection of ready-to-use examples for Crappy.
+.. grid:: 1 2 2 2
+   :gutter: 2
+
+   .. grid-item-card:: Core concepts
+
+      Read :doc:`concepts` for behavior shared by different tasks, including
+      Blocks, Links, labels, and how a test starts and stops.
+
+   .. grid-item-card:: Examples by task
+
+      Explore :doc:`examples` to find distributed examples by task. The
+      `examples directory
+      <https://github.com/LaboratoireMecaniqueLille/crappy/tree/master/examples>`_
+      contains the Python scripts.
+
+   .. grid-item-card:: API reference
+
+      :doc:`api` documents public classes, functions, and arguments.
+
+   .. grid-item-card:: Hardware compatibility
+
+      :doc:`hardware` lists available drivers, platforms, dependencies, and
+      verification status.
+
+   .. grid-item-card:: Troubleshooting
+
+      :doc:`troubleshooting` explains common failures and recovery steps.
+
+   .. grid-item-card:: Support and reporting
+
+      :doc:`support` lists support channels and the information to include
+      when reporting a problem.
 
 Complete documentation index
 ----------------------------
