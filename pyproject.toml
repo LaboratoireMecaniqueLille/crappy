@@ -11,18 +11,18 @@ license = "GPL-2.0-or-later"
 license-files = ["LICENSE"]
 keywords = ["control", "command", "acquisition", "multiprocessing"]
 dependencies = ["numpy>=2.0.0"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [{name = "LaMcube", email = "antoine.weisrock@gmail.com"}]
 maintainers = [{name = "Antoine Weisrock", email = "antoine.weisrock@gmail.com"}]
 classifiers = ["Development Status :: 4 - Beta",
                "Intended Audience :: Science/Research",
                "Natural Language :: English",
                "Operating System :: OS Independent",
-               "Programming Language :: Python :: 3.10",
                "Programming Language :: Python :: 3.11",
                "Programming Language :: Python :: 3.12",
                "Programming Language :: Python :: 3.13",
                "Programming Language :: Python :: 3.14",
+               "Programming Language :: Python :: 3.15",
                "Topic :: Scientific/Engineering",
                "Topic :: Software Development :: Build Tools",
                "Topic :: Software Development :: Embedded Systems"]
