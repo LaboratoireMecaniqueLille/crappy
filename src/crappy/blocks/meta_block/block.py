@@ -843,20 +843,24 @@ class Block(Process, ABC):
           cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
                                        'KeyboardInterrupt while cleaning up')
       else:
-        # Not much we can do if there's no logger set to report Exception
-        if cls.logger is not None:
+        # If the log Thread is stuck, fall back to printing the error
+        if log_thread_failed:
+          print(f"crappy ERROR: {exc}", file=stderr)
+        elif cls.logger is not None:
           cls.logger.exception("Caught exception while cleaning up !",
                                exc_info=exc)
 
         # Any Exception caught in the main Process must stop the script
         if cls.raise_event is None:
-          cls.cls_log(logging.ERROR, "The raise Event should be set but "
-                                     "doesn't exist!")
+          if not log_thread_failed:
+            cls.cls_log(logging.ERROR, "The raise Event should be set but "
+                                       "doesn't exist!")
         else:
           cls.raise_event.set()
-          cls.cls_log(logging.WARNING, 'Set the raise Event after exception '
-                                       'was caught in the main Process while '
-                                       'cleaning up')
+          if not log_thread_failed:
+            cls.cls_log(logging.WARNING, 'Set the raise Event after exception '
+                                         'was caught in the main Process '
+                                         'while cleaning up')
 
     # Deciding whether to raise and stop the main Process, and also resetting
     finally:
@@ -865,19 +869,24 @@ class Block(Process, ABC):
       try:
         # Really messed-up states
         if cls.raise_event is None:
-          cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
-                                     "execution, so bad that the raise Event "
-                                     "doesn't even exist, raising CrappyFail!")
+          if not log_thread_failed:
+            cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                       "execution, so bad that the raise "
+                                       "Event doesn't even exist, raising "
+                                       "CrappyFail!")
           raise CrappyFail
         if cls.kbi_event is None:
-          cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
-                                     "execution, so bad that the KBI Event "
-                                     "doesn't even exist, raising CrappyFail!")
+          if not log_thread_failed:
+            cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                       "execution, so bad that the KBI Event "
+                                       "doesn't even exist, raising "
+                                       "CrappyFail!")
           raise CrappyFail
         # Deciding whether to raise or not
         if cls.raise_event.is_set() and not cls.no_raise:
-          cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
-                                     "execution, raising CrappyFail!")
+          if not log_thread_failed:
+            cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                       "execution, raising CrappyFail!")
           raise CrappyFail
         elif cls.kbi_event.is_set() and not cls.no_raise:
           cls.cls_log(logging.ERROR, "KeyboardInterrupt called while running "
