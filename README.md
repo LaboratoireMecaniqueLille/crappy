@@ -45,7 +45,7 @@ write the underlying software.
 
 ## Installation
 
-Crappy requires Python 3.10 or newer and NumPy 2.0 or newer. Install it from
+Crappy requires Python 3.11 or newer and NumPy 2.0 or newer. Install it from
 PyPI with:
 
 ```shell
