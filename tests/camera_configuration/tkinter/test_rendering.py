@@ -102,6 +102,7 @@ class TestResize(TkinterConfigTestCase):
                                     self._config.winfo_geometry()).groups())
     self._config.geometry(f"{int(0.6 * w)}x{int(0.8 * h)}+{x}+{y}")
     self._config.update_idletasks()
+    self._config.update()
 
     # Call new loops to apply the changes
     for _ in range(2):

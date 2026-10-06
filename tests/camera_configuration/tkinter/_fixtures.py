@@ -84,6 +84,8 @@ class TkinterConfigTestCase(unittest.TestCase):
     self._config = None
     self.addCleanup(self._close_configuration)
     self.customSetUp()
+    # Windows delivers native mapping and resize events outside idle processing
+    self._config.update()
 
   def customSetUp(self) -> None:
     """Instantiates the configuration window and starts it."""
