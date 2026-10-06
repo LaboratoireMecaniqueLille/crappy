@@ -100,8 +100,8 @@ jobs:
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_processes_gui
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.vision_gui
     # GitHub-hosted Windows and macOS runners provide a native GUI session
-    - name: Test Crappy (graphical, native)
-      if: runner.os == 'Windows' || runner.os == 'macOS'
+    - name: Test Crappy (graphical, Windows)
+      if: runner.os == 'Windows'
       shell: bash
       env:
         MPLBACKEND: TkAgg
@@ -118,3 +118,22 @@ jobs:
         python -m unittest -v tests.camera_configuration.tkinter
         python -m unittest -v tests.camera_processes_gui
         python -m unittest -v tests.vision_gui
+    # On macOS, Tk test processes need to retain their first Tcl interpreter
+    - name: Test Crappy (graphical, macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      env:
+        MPLBACKEND: TkAgg
+      run: |
+        python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
+        python .github/scripts/run_macos_tk_tests.py -v \
+          tests.blocks_gui.TestButton tests.blocks_gui.TestCanvas \
+          tests.blocks_gui.TestDashboard tests.blocks_gui.TestStopButton
+        python -m unittest -v \
+          tests.blocks_gui.TestButtonPyQt tests.blocks_gui.TestCanvasPyQt \
+          tests.blocks_gui.TestDashboardPyQt tests.blocks_gui.TestStopButtonPyQt \
+          tests.blocks_gui.TestGrapher
+        python -m unittest -v tests.camera_configuration.pyqt
+        python .github/scripts/run_macos_tk_tests.py -v tests.camera_configuration.tkinter
+        python .github/scripts/run_macos_tk_tests.py -v tests.camera_processes_gui
+        python .github/scripts/run_macos_tk_tests.py -v tests.vision_gui
