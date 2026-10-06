@@ -223,8 +223,10 @@ this path, which is why hardware safety cannot depend only on ``finish``.
 The main cleanup routine sets the stop event and gives the Blocks a limited
 time to exit. The current timeout is three seconds. It terminates processes
 that remain alive, then shuts down the optional image manager and logging
-thread. Finally, :meth:`~crappy.blocks.meta_block.block.Block.reset` clears the
-registries, graph, shared-object references, and lifecycle flags.
+thread. The logging thread is asked to stop and given one second to exit, a
+missed deadline is recorded as a shutdown failure. Finally,
+:meth:`~crappy.blocks.meta_block.block.Block.reset` clears the registries,
+graph, shared-object references, and lifecycle flags.
 
 Unless ``no_raise`` was selected, the main process raises after cleanup when a
 runtime exception, keyboard interruption, or incomplete shutdown was recorded.
