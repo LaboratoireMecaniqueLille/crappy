@@ -15,6 +15,8 @@ from crappy.blocks.vision.block import ConfigRequest
 from crappy.tool.camera_config import SpotsBoxes
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
+from .vision import CorrelationRecorder
+
 
 def generate_vision_test_image(_: float, __: float) -> np.ndarray:
   """Returns a deterministic greyscale image for VisionBlock scenarios."""
@@ -31,7 +33,7 @@ def _make_vision_speckle() -> np.ndarray:
 
 
 def _make_strain_generator() -> crappy.blocks.Generator:
-  """Returns the finite strain command shared by correlation scenarios."""
+  """Returns a finite strain command, leaving shutdown to the Recorder."""
 
   return crappy.blocks.Generator(
     ({'type': 'Ramp',
@@ -40,7 +42,7 @@ def _make_strain_generator() -> crappy.blocks.Generator:
       'init_value': 0},),
     cmd_label='Exx(%)',
     spam=True,
-    end_delay=0.2,
+    end_delay=None,
     freq=20)
 
 
@@ -324,7 +326,7 @@ def build_vision_dicve_recorder(output_dir: Path) -> tuple[Block, ...]:
     follow=False,
     raise_on_patch_exit=False,
     freq=30)
-  recorder = crappy.blocks.Recorder(
+  recorder = CorrelationRecorder(
     output_dir / 'vision_dicve.csv',
     labels=('t(s)', 'Eyy(%)', 'Exx(%)'),
     delay=0.1,
@@ -353,7 +355,7 @@ def build_vision_dis_correl_recorder(
     gradient_iterations=5,
     residual=False,
     freq=30)
-  recorder = crappy.blocks.Recorder(
+  recorder = CorrelationRecorder(
     output_dir / 'vision_dis_correl.csv',
     labels=('t(s)', 'Exx(%)', 'Eyy(%)'),
     delay=0.1,
