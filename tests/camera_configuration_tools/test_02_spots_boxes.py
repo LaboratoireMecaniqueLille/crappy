@@ -102,3 +102,34 @@ class TestSpotBoxes(unittest.TestCase):
     self.assertEqual(list(self._spots), boxes)
     self.assertEqual(list(combinations(self._spots, 2)),
                      list(combinations(boxes, 2)))
+
+  def test_05_copy(self) -> None:
+    """Tests copying boxes with and without their measured displacements."""
+
+    self._spots.spot_1 = Box(x_start=10, x_end=20,
+                             y_start=30, y_end=40,
+                             x_disp=2.4, y_disp=-1.6)
+    self._spots.spot_3 = Box(x_start=50, x_end=60,
+                             y_start=70, y_end=80)
+    self._spots.x_l0 = 40.0
+    self._spots.y_l0 = 40.0
+
+    copied = self._spots.copy()
+    displaced = self._spots.copy(use_displacements=True)
+
+    self.assertIsNot(copied, self._spots)
+    self.assertIsNot(copied.spot_1, self._spots.spot_1)
+    self.assertEqual(copied, self._spots)
+    self.assertIsNone(copied.spot_2)
+    self.assertIsNone(copied.spot_4)
+    self.assertEqual((displaced.spot_1.x_start,
+                      displaced.spot_1.x_end,
+                      displaced.spot_1.y_start,
+                      displaced.spot_1.y_end),
+                     (12, 22, 28, 38))
+    self.assertEqual((displaced.spot_3.x_start,
+                      displaced.spot_3.x_end,
+                      displaced.spot_3.y_start,
+                      displaced.spot_3.y_end),
+                     (50, 60, 70, 80))
+    self.assertEqual((displaced.x_l0, displaced.y_l0), (40.0, 40.0))

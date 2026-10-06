@@ -2,12 +2,6 @@
 LaMcube
 =======
 
-Bi Spectral
------------
-.. autoclass:: crappy.lamcube.BiSpectral
-   :members: open, get_image
-   :special-members: __init__
-
 Biaxe
 -----
 .. autoclass:: crappy.lamcube.Biaxe

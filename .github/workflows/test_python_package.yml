@@ -38,13 +38,24 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-    # Install the build and test dependencies
+    # Install packages required by Qt
+    - name: Install Qt runtime dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libegl1 libfontconfig1 libfreetype6 libgl1 \
+          libx11-6 libx11-xcb1 libxcb1 libxcb-cursor0 libxcb-icccm4 \
+          libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
+          libxcb-render0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 \
+          libxcb-xfixes0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 \
+          libxrender1
+    # Install the build dependencies
     - name: Install build dependencies
       run: python -m pip install --upgrade pip wheel build setuptools
     # Install Crappy
     - name: Install Crappy
       run: python -m pip install .
-    # Install dependencies
+    # Install the test dependencies
     - name: Install test dependencies
       run: python -m pip install -r tests/requirements.txt
     # Keep the non-GUI suites independent of the runner's display state
@@ -56,6 +67,8 @@ jobs:
         python -m unittest -v tests.block
         python -m unittest -v tests.blocks
         python -m unittest -v tests.camera
+        python -m unittest -v tests.camera_configuration.base
+        python -m unittest -v tests.collection
         python -m unittest -v tests.camera_configuration_tools
         python -m unittest -v tests.camera_process
         python -m unittest -v tests.camera_processes
@@ -63,23 +76,64 @@ jobs:
         python -m unittest -v tests.image_processing
         python -m unittest -v tests.inout
         python -m unittest -v tests.integration
+        python -m unittest -v tests.links
         python -m unittest -v tests.modifier
-    # The Ubuntu runner is headless; xvfb-run starts and cleans up Xvfb for us
+        python -m unittest -v tests.schedulers
+        python -m unittest -v tests.vision
+    # Keep Tk and Qt Blocks in separate interpreters to avoid crash on macOS
+    # Grapher's Matplotlib tests use Agg, so its class belongs to the Qt group.
+    # The Ubuntu runner is headless, xvfb-run starts and cleans up Xvfb for us
     - name: Test Crappy (graphical, Linux/Xvfb)
       if: runner.os == 'Linux'
       env:
         MPLBACKEND: TkAgg
       run: |
-        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.blocks_gui
-        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_configuration
+        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v \
+          tests.blocks_gui.TestButton tests.blocks_gui.TestCanvas \
+          tests.blocks_gui.TestDashboard tests.blocks_gui.TestStopButton
+        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v \
+          tests.blocks_gui.TestButtonPyQt tests.blocks_gui.TestCanvasPyQt \
+          tests.blocks_gui.TestDashboardPyQt tests.blocks_gui.TestStopButtonPyQt \
+          tests.blocks_gui.TestGrapher
+        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_configuration.pyqt
+        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_configuration.tkinter
         xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_processes_gui
+        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.vision_gui
     # GitHub-hosted Windows and macOS runners provide a native GUI session
-    - name: Test Crappy (graphical, native)
-      if: runner.os == 'Windows' || runner.os == 'macOS'
+    - name: Test Crappy (graphical, Windows)
+      if: runner.os == 'Windows'
+      shell: bash
       env:
         MPLBACKEND: TkAgg
       run: |
         python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
-        python -m unittest -v tests.blocks_gui
-        python -m unittest -v tests.camera_configuration
+        python -m unittest -v \
+          tests.blocks_gui.TestButton tests.blocks_gui.TestCanvas \
+          tests.blocks_gui.TestDashboard tests.blocks_gui.TestStopButton
+        python -m unittest -v \
+          tests.blocks_gui.TestButtonPyQt tests.blocks_gui.TestCanvasPyQt \
+          tests.blocks_gui.TestDashboardPyQt tests.blocks_gui.TestStopButtonPyQt \
+          tests.blocks_gui.TestGrapher
+        python -m unittest -v tests.camera_configuration.pyqt
+        python -m unittest -v tests.camera_configuration.tkinter
         python -m unittest -v tests.camera_processes_gui
+        python -m unittest -v tests.vision_gui
+    # On macOS, Tk test processes need to retain their first Tcl interpreter
+    - name: Test Crappy (graphical, macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      env:
+        MPLBACKEND: TkAgg
+      run: |
+        python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
+        python .github/scripts/run_macos_tk_tests.py -v \
+          tests.blocks_gui.TestButton tests.blocks_gui.TestCanvas \
+          tests.blocks_gui.TestDashboard tests.blocks_gui.TestStopButton
+        python -m unittest -v \
+          tests.blocks_gui.TestButtonPyQt tests.blocks_gui.TestCanvasPyQt \
+          tests.blocks_gui.TestDashboardPyQt tests.blocks_gui.TestStopButtonPyQt \
+          tests.blocks_gui.TestGrapher
+        python -m unittest -v tests.camera_configuration.pyqt
+        python .github/scripts/run_macos_tk_tests.py -v tests.camera_configuration.tkinter
+        python .github/scripts/run_macos_tk_tests.py -v tests.camera_processes_gui
+        python .github/scripts/run_macos_tk_tests.py -v tests.vision_gui

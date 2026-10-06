@@ -19,7 +19,7 @@ class GeneratorNoStop(Exception):
 
 class Generator(Block):
   """This Block generates a signal following a user-defined assembly of
-  :class:`~crappy.blocks.generator_path.meta_path.Path`.
+  :class:`~crappy.blocks.generator_path.meta_path.path.Path`.
   
   The generated signal is just a waveform that can serve any purpose. It can
   for example be used for driving a :class:`~crappy.blocks.Machine` Block, or 
@@ -30,9 +30,16 @@ class Generator(Block):
   is to stop the entire script when it reaches the end of all the Paths.
 
   This Block can also accept inputs from other Blocks, as these inputs may be
-  used by a :class:`~crappy.blocks.generator_path.meta_path.Path`. The most
-  common use of this feature is to have the stop condition of a Path depend on
-  the received values of a label.
+  used by a :class:`~crappy.blocks.generator_path.meta_path.path.Path`. The
+  most common use of this feature is to have the stop condition of a Path
+  depend on the received values of a label.
+
+  Choose the Generator when one waveform or setpoint can be described as a
+  sequence of Paths that always run in the given order. For a procedure that
+  needs several coordinated output labels or can branch between phases and
+  return to earlier ones, use the :class:`~crappy.blocks.Scheduler` Block
+  instead. Its States define both the output values and the possible
+  destinations of each transition.
   
   .. versionadded:: 1.4.0
   """
@@ -53,19 +60,19 @@ class Generator(Block):
     Args:
       path: An iterable (like a :obj:`list` or a :obj:`tuple`) of :obj:`dict`,
         each dict providing the parameters to generate a 
-        :class:`~crappy.blocks.generator_path.meta_path.Path`. The Paths are
-        generated in the order in which they are given, and the stop condition
-        of each Path is used for determining when to switch to the next one.
-        The ``'type'`` key of each :obj:`dict` gives the name of the Path to
-        use, and all the other keys correspond to the arguments to give to
-        this Path. Refer to the documentation of the chosen Paths to know which
-        keys to provide.
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path`. The Paths
+        are generated in the order in which they are given, and the stop
+        condition of each Path is used for determining when to switch to the
+        next one. The ``'type'`` key of each :obj:`dict` gives the name of the
+        Path to use, and all the other keys correspond to the arguments to give
+        to this Path. Refer to the documentation of the chosen Paths to know
+        which keys to provide.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       cmd_label: The label of the signal sent to the downstream Blocks.
       path_index_label: In addition to the ``cmd_label``, this label holds the
         index of the current
-        :class:`~crappy.blocks.generator_path.meta_path.Path`. Useful to
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path`. Useful to
         trigger a Block when the current Path changes, as the output value
         might not necessarily change.
       repeat: If :obj:`True`, the ``path`` will loop forever instead of
@@ -107,6 +114,7 @@ class Generator(Block):
     self._spam = spam
     self._safe_start = safe_start
     self._safe_started = False
+    self._repeat: bool = repeat
 
     # Basic checks for path consistency
     path = list(path)
@@ -119,22 +127,34 @@ class Generator(Block):
                        "'type' key")
 
     # The path is an iterable object
-    self._path = cycle(path) if repeat else iter(path)
+    self._raw_path: list[dict[str, Any]] = path
+    self._path: Iterator = iter([])
 
     # More attributes
     self._ended_no_raise = False
     self._last_cmd = None
     self._last_id = None
-    self._last_t = None
+    self._last_t_gen = None
     self._current_path = None
     self._path_id = None
 
     # Checking the validity of the path
     self._check_path_validity(iter(deepcopy(iter(path))))
 
+  def prepare(self) -> None:
+    """Starting from Python 3.14, :obj:`itertools.cycle` is no longer pickable
+    and needs to be applied once the Block has started.
+
+    .. versionadded:: 2.1.0
+    """
+
+    # The path is an iterable object
+    self._path = (cycle(self._raw_path) if self._repeat
+                  else iter(self._raw_path))
+
   def begin(self) -> None:
     """Initializes the first
-    :class:`~crappy.blocks.generator_path.meta_path.Path`."""
+    :class:`~crappy.blocks.generator_path.meta_path.path.Path`."""
 
     self._update_path()
 
@@ -143,7 +163,7 @@ class Generator(Block):
     send, and finally sends it to downstream Blocks.
 
     It also manages the transitions between the
-    :class:`~crappy.blocks.generator_path.meta_path.Path`.
+    :class:`~crappy.blocks.generator_path.meta_path.path.Path`.
     """
 
     # Case when the Generator shouldn't raise CrappyStop after it ended
@@ -164,7 +184,7 @@ class Generator(Block):
     data = self.recv_all_data()
     try:
       # Getting the next command to send
-      self._last_t = time()
+      self._last_t_gen = time()
       cmd = self._current_path.get_cmd(data)
       self.log(logging.DEBUG, f"Returned command: {cmd}")
     except StopIteration:
@@ -190,7 +210,7 @@ class Generator(Block):
       self._last_cmd = cmd
       self._last_id = self._path_id
       # Actually sending the command
-      self.send([self._last_t - self.t0, cmd, self._path_id])
+      self.send([self._last_t_gen - self.t0, cmd, self._path_id])
 
   def _update_path(self) -> None:
     """Gets the next Path from the list of Paths and instantiates it.
@@ -211,7 +231,11 @@ class Generator(Block):
     except StopIteration:
       # First option, stopping the program after a delay
       if self._end_delay is not None:
-        sleep(self._end_delay)
+        remaining = self._end_delay
+        while remaining > 0:
+          delay = min(remaining, 0.1)
+          sleep(delay)
+          remaining -= delay
         raise GeneratorStop
       # Second option, not stopping the program and looping forever
       else:
@@ -224,7 +248,7 @@ class Generator(Block):
     path_name = next_path_dict.pop('type')
     self._check_path_exists(path_name)
     path_type = paths_dict[path_name]
-    Path.t0 = self._last_t if self._last_t is not None else self.t0
+    Path.t0 = self._last_t_gen if self._last_t_gen is not None else self.t0
     Path.last_cmd = self._last_cmd
     self._current_path = path_type(**next_path_dict)
 

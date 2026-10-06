@@ -19,7 +19,7 @@ class Constant(Path):
 
     Args:
       condition: The condition for switching to the next Path. Refer to
-        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path` for more
         information.
       value: The value to output.
       

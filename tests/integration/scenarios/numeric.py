@@ -4,6 +4,7 @@ from pathlib import Path
 
 import crappy
 from crappy.blocks import Block
+from crappy.blocks.schedulers import State, Constant, Ramp, Delay
 
 
 def build_generator_recorder(output_dir: Path) -> tuple[Block, ...]:
@@ -27,6 +28,32 @@ def build_generator_recorder(output_dir: Path) -> tuple[Block, ...]:
   crappy.link(generator, recorder)
 
   return generator, recorder
+
+
+def build_scheduler_recorder(output_dir: Path) -> tuple[Block, ...]:
+  """Builds a finite two-State Scheduler -> Recorder script."""
+
+  scheduler = crappy.blocks.Scheduler(
+    states=(State('idle',
+                  (Constant('signal', 0), Constant('enabled', False)),
+                  ((Delay(0.2), 'drive'),)),
+            State('drive',
+                  (Ramp('signal', 1, 2), Constant('enabled', True)),
+                  ((Delay(0.4), 'End'),))),
+    output_labels=('signal', 'enabled'),
+    last_output={'signal': 0, 'enabled': False},
+    end_delay=0.2,
+    freq=50)
+
+  recorder = crappy.blocks.Recorder(
+    output_dir / 'scheduled.csv',
+    labels=('state', 'signal', 'enabled'),
+    delay=0.05,
+    freq=50)
+
+  crappy.link(scheduler, recorder)
+
+  return scheduler, recorder
 
 
 def build_multiplexer_recorder(output_dir: Path) -> tuple[Block, ...]:

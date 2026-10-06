@@ -32,7 +32,7 @@ class Integrator(Path):
 
     Args:
       condition: The condition for switching to the next Path. Refer to
-        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path` for more
         information.
       inertia: Value of the equivalent inertia to use for driving the signal.
         In the above formula, it is the value of `m`. The larger this value,

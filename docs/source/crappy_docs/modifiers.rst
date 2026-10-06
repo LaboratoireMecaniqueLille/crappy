@@ -65,7 +65,9 @@ Parent Modifier
 
 Modifier
 ++++++++
-.. autoclass:: crappy.modifier.Modifier
+.. currentmodule:: crappy.modifier.meta_modifier.modifier
+
+.. autoclass:: Modifier
    :members: log
    :special-members: __init__, __call__
 

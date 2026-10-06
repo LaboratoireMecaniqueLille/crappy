@@ -3,8 +3,9 @@
 """
 This example demonstrates the use of the ClientServer Block for receiving data
 from an MQTT broker. It requires the Mosquitto MQTT broker to be installed on
-the computer to run. It also requires to start the server.py script once this
-one is running. See https://mosquitto.org/ for installing Mosquitto.
+the computer, along with the paho-mqtt, pyqtgraph, and PyQt6 Python packages.
+It also requires to start the server.py script once this one is running. See
+https://mosquitto.org/ for installing Mosquitto.
 
 In this example, the ClientServer Block receives data from the MQTT broker, and
 sends it to the Grapher and Dashboard Blocks for display. The Grapher displays
@@ -12,18 +13,20 @@ the 'value' label against the local and server time.
 
 After starting this script, notice how the curve for the local time starts to
 be drawn. This is because of the init_output argument of the ClientServer
-Block, that allows sending values before any data is received from the server.
+Block, which allows it to send values before any data is received from the
+server.
+
 Then, start the server.py script. The server starts sending data, and the
 second curve for the server time appears. The 'flag' label on the Dashboard is
-also updated. You can then stop the server.py script, and finally stop this one
-by hitting CTRL+C.
+also updated. When you are finished, click the stop button in the server.py
+window, then click the stop button in this script's window.
 """
 
 import crappy
 
 if __name__ == '__main__':
 
-  # This Block received data from the server and outputs it to the Grapher and
+  # This Block receives data from the server and outputs it to the Grapher and
   # Dashboard Blocks for visualization. It subscribes to the given topics on
   # the MQTT broker, and these topics carry the data. Because spam is True,
   # data is output at each loop even if no value was received from the broker
@@ -65,5 +68,8 @@ if __name__ == '__main__':
   crappy.link(client, graph)
   crappy.link(client, dash)
 
-  # Setting no_raise because CTRL+C is the most natural way to stop this demo
-  crappy.start(no_raise=True)
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
+
+  # Mandatory line for starting the test, this call is blocking
+  crappy.start()

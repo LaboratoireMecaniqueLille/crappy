@@ -53,9 +53,10 @@ class Pause(Block):
         is no limit to the given number of stop criteria. If a criterion is
         given as an :obj:`~collections.abc.Callable`, it should accept as its
         sole argument the output of the
-        :meth:`crappy.blocks.Block.recv_all_data` method and return :obj:`True`
-        if the criterion is met, and :obj:`False` otherwise. If the criterion
-        is given as a :obj:`str`, it should follow one the following syntaxes :
+        :meth:`crappy.blocks.meta_block.block.Block.recv_all_data` method and
+        return :obj:`True` if the criterion is met, and :obj:`False` otherwise.
+        If the criterion is given as a :obj:`str`, it should follow one the
+        following syntaxes:
         ::
 
           '<lab> > <threshold>'

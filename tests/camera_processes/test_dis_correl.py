@@ -26,6 +26,7 @@ class DummyDISCorrelTool:
     self.img0 = None
     self.calls = list()
     self.return_value = [10.0, 20.0, 30.0]
+    self.offset = (2, -1)
 
     type(self).instances.append(self)
 
@@ -49,6 +50,29 @@ class DummyDISCorrelTool:
 class TestDISCorrelProcess(CameraProcessTestBase):
   """Unit tests for the DISCorrel CameraProcess wrapper."""
 
+  @classmethod
+  def _make_process(cls, **kwargs) -> DISCorrelProcess:
+    """Creates a process with the public Block's default options."""
+
+    defaults = {
+      'patch': cls._box(),
+      'fields': ['x', 'y', 'exx', 'eyy'],
+      'alpha': 3,
+      'delta': 1,
+      'gamma': 0,
+      'finest_scale': 1,
+      'iterations': 1,
+      'gradient_iterations': 10,
+      'init': True,
+      'patch_size': 8,
+      'patch_stride': 3,
+      'residual': False,
+      'border': 16,
+      'follow': False,
+    }
+    defaults.update(kwargs)
+    return DISCorrelProcess(**defaults)
+
   @staticmethod
   def _box() -> Box:
     """Returns a deterministic ROI box."""
@@ -65,18 +89,20 @@ class TestDISCorrelProcess(CameraProcessTestBase):
 
     box = self._box()
     fields = ['x', 'y']
-    process = DISCorrelProcess(patch=box,
-                               fields=fields,
-                               alpha=1,
-                               delta=2,
-                               gamma=3,
-                               finest_scale=4,
-                               init=False,
-                               iterations=5,
-                               gradient_iterations=6,
-                               patch_size=7,
-                               patch_stride=8,
-                               residual=True)
+    process = self._make_process(patch=box,
+                                 fields=fields,
+                                 alpha=1,
+                                 delta=2,
+                                 gamma=3,
+                                 finest_scale=4,
+                                 init=False,
+                                 iterations=5,
+                                 gradient_iterations=6,
+                                 patch_size=7,
+                                 patch_stride=8,
+                                 residual=True,
+                                 border=(9, 10),
+                                 follow=True)
 
     with patch.object(dis_correl_module, 'DISCorrelTool',
                       DummyDISCorrelTool):
@@ -97,15 +123,17 @@ class TestDISCorrelProcess(CameraProcessTestBase):
       'gradient_iterations': 6,
       'patch_size': 7,
       'patch_stride': 8,
+      'border': (9, 10),
+      'follow': True,
     })
 
   def test_loop_sets_reference_then_sends_data_and_overlay(self) -> None:
     """Checks first-frame setup and data/overlay forwarding."""
 
     box = self._box()
-    process = DISCorrelProcess(patch=box,
-                               fields=['x', 'y', 'res'],
-                               residual=True)
+    process = self._make_process(patch=box,
+                                 fields=['x', 'y', 'res'],
+                                 residual=True)
     self._process = process
     self.set_test_logger(process)
 
@@ -151,4 +179,19 @@ class TestDISCorrelProcess(CameraProcessTestBase):
     self.assertTrue(tool.calls[0][1])
     self.assertEqual(len(sent_overlays), 1)
     self.assertIsInstance(sent_overlays[0], SpotsBoxes)
-    self.assertIs(sent_overlays[0].spot_1, box)
+    self.assertIsNot(sent_overlays[0].spot_1, box)
+    self.assertEqual((sent_overlays[0].spot_1.x_start,
+                      sent_overlays[0].spot_1.x_end,
+                      sent_overlays[0].spot_1.y_start,
+                      sent_overlays[0].spot_1.y_end),
+                     (4, 8, 0, 3))
+
+  def test_set_config_replaces_box(self) -> None:
+    """Checks the ROI selected in the GUI is installed before startup."""
+
+    process = self._make_process()
+    box = self._box()
+
+    process.set_config(box)
+
+    self.assertIs(process._box, box)

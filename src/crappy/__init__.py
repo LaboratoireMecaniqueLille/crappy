@@ -21,7 +21,10 @@ from ._global import OptionalModule, docs, resources
 
 # Useful aliases
 link = links.link
+img_link = links.img_link
+display_graph = links.link_graph.display
 Block = blocks.Block
+VisionBlock = blocks.vision.VisionBlock
 Actuator = actuator.Actuator
 Camera = camera.Camera
 InOut = inout.InOut

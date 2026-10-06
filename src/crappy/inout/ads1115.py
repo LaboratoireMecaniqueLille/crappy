@@ -113,11 +113,10 @@ class ADS1115(InOut):
           'Pi4', 'blinka'
 
         The `'Pi4'` backend is optimized but only works on boards supporting
-        the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing
-        :mod:`Adafruit-Blinka` and :mod:`adafruit-circuitpython-ads1x15`, but
-        these modules are compatible with and maintained on a wide variety of
-        boards.
+        the :external+smbus2:mod:`smbus2` module, like the Raspberry Pis. The
+        `'blinka'` backend may be less performant and requires installing the
+        ``Adafruit-Blinka`` and ``adafruit-circuitpython-ads1x15`` packages,
+        which are compatible with and maintained on a wide variety of boards.
       device_address: The I2C address of the ADS1115. The default address is
         `0x48`, but it is possible to change this setting using the `ADDR` pin.
       i2c_port: The I2C port over which the ADS1115 should communicate. On most
@@ -202,10 +201,7 @@ class ADS1115(InOut):
       self._multiplexer = multiplexer
 
     if dry_pin is not None:
-      if backend == 'ft232h' and not isinstance(dry_pin, str):
-        raise TypeError('int_pin should be a string when using the ft232h '
-                        'backend !')
-      elif backend == 'Pi4' and not isinstance(dry_pin, int):
+      if backend == 'Pi4' and not isinstance(dry_pin, int):
         raise TypeError('int_pin should be an int when using the Pi4 '
                         'backend !')
       elif backend == 'blinka' and dry_pin is not None:
@@ -348,7 +344,5 @@ class ADS1115(InOut):
                                            Ads1115_pointer_config,
                                            1)[0] & 0x80
     # EOC signal from a GPIO
-    elif self._backend == 'ft232h':
-      return not bool(self._bus.get_gpio(self._dry_pin))
     else:
       return not bool(GPIO.input(self._dry_pin))

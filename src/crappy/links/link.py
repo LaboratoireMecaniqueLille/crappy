@@ -11,26 +11,35 @@ from platform import system
 from multiprocessing import current_process
 import logging
 
+from .link_graph import link_graph
 from .._global import LinkDataError
 
-ModifierType = Callable[[dict[str, Any]], dict[str, Any]]
+ModifierType = Callable[[dict[str, Any]], [dict[str, Any] | None]]
 
 
 class Link:
   """This class is used for transferring information between two instances of
-  :class:`~crappy.blocks.Block`.
+  :class:`~crappy.blocks.meta_block.block.Block`.
 
   The created Link is unidirectional, from the input Block to the output Block.
   Under the hood, a Link is basically a :obj:`multiprocessing.Pipe` with
   extra features.
 
+  This class should not be mistaken with
+  :class:`~crappy.links.img_link.ImageLink`, that is used for transferring
+  images between Blocks. The regular Link can only transfer linear data.
+
   Note:
-    It is possible to add one or multiple :class:`~crappy.modifier.Modifier` to
-    modify the transferred value. The Modifiers should be callables taking a
-    :obj:`dict` as argument and returning a :obj:`dict`. They can be functions,
-    or preferably children of :class:`~crappy.modifier.Modifier`.
+    It is possible to add one or multiple
+    :class:`~crappy.modifier.meta_modifier.modifier.Modifier` to modify the
+    transferred value. The Modifiers should be callables taking a :obj:`dict`
+    as argument and returning a :obj:`dict`. They can be functions, or
+    preferably children of
+    :class:`~crappy.modifier.meta_modifier.modifier.Modifier`.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.1.0 Links are registered in the connection graph and
+     parallel Links must be explicitly enabled
   """
 
   _count = 0
@@ -39,7 +48,8 @@ class Link:
                input_block,
                output_block,
                modifiers: list[ModifierType] | None = None,
-               name: str | None = None) -> None:
+               name: str | None = None,
+               allow_parallel: bool = False) -> None:
     """Sets the instance attributes.
 
     Args:
@@ -47,10 +57,17 @@ class Link:
       output_block: The Block receiving data through the Link.
       modifiers: A :obj:`list` containing callables. If several objects given,
         they will be called in the given order. Refer to
-        :class:`~crappy.modifier.Modifier` for more information.
+        :class:`~crappy.modifier.meta_modifier.modifier.Modifier` for more
+        information.
       name: Name of the Link, to differentiate it from the others when
         debugging. If no specific name is given, the Links are numbered in the
-        order in which they are instantiated in the script.
+        order in which they are instantiated in the script. Names must be
+        unique across both regular Links and ImageLinks.
+      allow_parallel: If :obj:`True`, allows this Link to have the same source
+        and target as an existing regular Link. It does not allow duplicate
+        names. This is useful for applying multiple
+        :class:`~crappy.modifier.meta_modifier.modifier.Modifier` independently
+        between the same two Blocks.
     
     .. versionchanged:: 1.5.9 renamed *condition* argument to *conditions*
     .. versionchanged:: 1.5.9 renamed *modifier* argument to *modifiers*
@@ -67,16 +84,28 @@ class Link:
                       f"callable : {not_callable} !")
 
     self.name = name if name is not None else f'link{self._get_count()}'
-    self._in, self._out = Pipe()
-    self._modifiers = modifiers
-
-    # Associating the link to the input and output blocks
-    input_block.add_output(self)
-    output_block.add_input(self)
 
     self._last_warn = time()
     self._logger: logging.Logger | None = None
     self._system = system()
+    self._modifiers = modifiers
+
+    # Create the Pipe before registering the edge, so a resource allocation
+    # failure cannot leave a stale edge in the graph.
+    self._in, self._out = Pipe()
+
+    # Registering the Link in the global graph
+    try:
+      link_graph.add_edge(self.name, input_block.name, output_block.name,
+                          kind='link', allow_parallel=allow_parallel)
+    except Exception:
+      self._in.close()
+      self._out.close()
+      raise
+
+    # Associating the link to the input and output blocks
+    input_block.add_output(self)
+    output_block.add_input(self)
 
   def __new__(cls, *args, **kwargs):
     """When instantiating a new Link, increments the Link counter."""
@@ -213,11 +242,12 @@ def link(in_block,
          out_block,
          /, *,
          modifier: Sequence[ModifierType] | ModifierType | None = None,
-         name: str | None = None) -> None:
+         name: str | None = None,
+         allow_parallel: bool = False) -> None:
   """Function linking two Blocks, allowing to send data from one to the other.
 
-  It instantiates a :class:`~crappy.links.Link` between two children of
-  :class:`~crappy.blocks.Block`.
+  It instantiates a :class:`~crappy.links.link.Link` between two children of
+  :class:`~crappy.blocks.meta_block.block.Block`.
 
   The created Link is unidirectional, from the input Block to the output Block.
   Under the hood, a Link is basically a :obj:`multiprocessing.Pipe` with
@@ -235,17 +265,22 @@ def link(in_block,
     modifier: Either a callable, or an iterable (like a :obj:`list` or a
       :obj:`tuple`) containing callables. If several given (in an iterable),
       they are called in the given order. They should preferably be children of
-      :class:`~crappy.modifier.Modifier`. Refer to  the associated
-      documentation for more information.
+      :class:`~crappy.modifier.meta_modifier.modifier.Modifier`. Refer to  the
+      associated documentation for more information.
 
       .. versionchanged:: 2.0.7
          now a keyword-only argument
     name: Name of the Link, to differentiate it from the others when debugging.
       If no specific name is given, the Links are numbered in the order in
-      which they are instantiated in the script.
+      which they are instantiated in the script. Names must be unique across
+      both regular Links and ImageLinks.
 
       .. versionchanged:: 2.0.7
          now a keyword-only argument
+    allow_parallel: If :obj:`True`, allows this Link to have the same source
+      and target as an existing regular Link. Link names must still be unique.
+
+      .. versionadded:: 2.1.0
       
   .. versionadded:: 1.4.0
   .. versionchanged:: 1.5.9
@@ -266,4 +301,5 @@ def link(in_block,
   Link(input_block=in_block,
        output_block=out_block,
        modifiers=modifier,
-       name=name)
+       name=name,
+       allow_parallel=allow_parallel)

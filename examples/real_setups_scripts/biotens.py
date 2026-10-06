@@ -4,13 +4,21 @@
 This program is often used as the starting point when performing tests on the
 "Biotens" machine.
 
+It requires the Biotens machine, a Comedi-compatible acquisition board, and a
+Ximea camera. The required Python packages are pyserial, ximea, opencv-python,
+scikit-image, Pillow, pyqtgraph, and PyQt6. The native libcomedi library and
+XIMEA SDK must also be installed. PyQt6 provides the configuration window and
+stop button, pyqtgraph provides the graphs.
+
 It creates a new folder for each experiment and performs tensile tests using
-video-extensometry.
+video extensometry. The test ends automatically when the force threshold is
+reached; the stop button can end it earlier.
 """
 
 from time import strftime, gmtime
 from pathlib import Path
 import crappy
+import crappy.collection
 
 save_path = Path(f"biotens_data/{strftime('%a %b %d %H_%M_%S', gmtime())}")
 
@@ -40,7 +48,7 @@ if __name__ == '__main__':
                                     'cmd_label': 'cmd'}])
   crappy.link(generator, biotens)
 
-  # The Block acquiring images from the setup and performing video-extensometry
+  # The Block acquiring images from the setup and performing video extensometry
   extenso = crappy.blocks.VideoExtenso(camera="XiAPI")
 
   # The Blocks saving the recorded data to text files
@@ -57,5 +65,8 @@ if __name__ == '__main__':
   graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
   crappy.link(effort, graph_effort)
   crappy.link(extenso, graph_extenso)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   crappy.start()

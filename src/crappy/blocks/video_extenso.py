@@ -7,19 +7,22 @@ from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
-from ..tool.camera_config import VideoExtensoConfig, SpotsDetector
+from ..tool.camera_config import CameraConfig, create_configurator
+from ..tool.camera_config.tkinter import TkinterVideoExtensoConfig
+from ..tool.camera_config.pyqt import PyQtVideoExtensoConfig
 
 
 class VideoExtenso(Camera):
   """This Block can perform video-extensometry on images acquired by a
-  :class:`~crappy.camera.Camera` object, by tracking spots on the images.
+  :class:`~crappy.camera.meta_camera.camera.Camera` object, by tracking spots
+  on the images.
 
-  It takes no input :class:`~crappy.links.Link` in a majority of situations,
-  and outputs the results of the video-extensometry. It is a subclass of the
-  :class:`~crappy.blocks.Camera` Block, and inherits of all its features. That
-  includes the possibility to record and to display images in real-time,
-  simultaneously to the image acquisition and processing. Refer to the
-  documentation of the Camera Block for more information on these features.
+  It takes no input :class:`~crappy.links.link.Link` in a majority of
+  situations, and outputs the results of the video-extensometry. It is a
+  subclass of the :class:`~crappy.blocks.Camera` Block, and inherits of all its
+  features. That includes the possibility to record and to display images in
+  real-time, simultaneously to the image acquisition and processing. Refer to
+  the documentation of the Camera Block for more information on these features.
 
   This Block is quite similar to the :class:`~crappy.blocks.DICVE` Block,
   except this latter tracks patches with a texture instead of spots. Both
@@ -29,22 +32,41 @@ class VideoExtenso(Camera):
   Block also performs video-extensometry based on GPU-accelerated image
   correlation.
 
-  Similar to the :class:`~crappy.tool.camera_config.CameraConfig` window that
-  can be displayed by the Camera Block, this Block can display a
-  :class:`~crappy.tool.camera_config.VideoExtensoConfig` window before the test
-  starts. Here, the user can also detect and select the spots to track. It is
-  currently not possible to specify the coordinates of the spots to track as an
-  argument, so the use of the configuration window is mandatory. This might
-  change in the future.
+  Similar to the
+  :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window
+  that can be displayed by the Camera Block, this Block can display a
+  :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window before the test starts. Here, the user can also
+  detect and select the spots to track. It is currently not possible to specify
+  the coordinates of the spots to track as an argument, so the use of the
+  configuration window is mandatory. This might change in the future.
+
+  This public Block is the orchestration layer and does not construct the
+  low-level video-extensometry helpers itself. The
+  :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window owns the
+  :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` used for the
+  initial selection. The
+  :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` later creates
+  the :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`,
+  which in turn creates and manages one
+  :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker` process
+  per spot.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from Video_extenso to VideoExtenso
+  .. versionchanged:: 2.1.0 delegates creation of detection, processing, and
+     tracking helpers to their owning configuration and processing layers
   """
+
+  configurator = {'tkinter': TkinterVideoExtensoConfig,
+                  'pyqt': PyQtVideoExtensoConfig}
 
   def __init__(self,
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
+               config_backend: Literal['tkinter', 'pyqt'] = 'pyqt',
                display_images: bool = False,
                displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
@@ -75,9 +97,9 @@ class VideoExtenso(Camera):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      camera: The name of the :class:`~crappy.camera.Camera` object to use for
-        acquiring the images. Arguments can be passed to this Camera as
-        ``kwargs`` of this Block. This argument is ignored if the
+      camera: The name of the :class:`~crappy.camera.meta_camera.camera.Camera`
+        object to use for acquiring the images. Arguments can be passed to this
+        Camera as ``kwargs`` of this Block. This argument is ignored if the
         ``image_generator`` argument is provided.
       transform: A callable taking an image as an argument, and returning a
         transformed image as an output. Allows applying a post-processing
@@ -89,17 +111,23 @@ class VideoExtenso(Camera):
 
         .. versionadded:: 1.5.10
       config: If :obj:`True`, a
-        :class:`~crappy.tool.camera_config.VideoExtensoConfig` window is
-        displayed before the test starts. There, the user can interactively
-        adjust the different
+        :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window is displayed before the test starts. There, the user
+        can interactively adjust the different
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
-        available for the selected :class:`~crappy.camera.Camera`, visualize
-        the acquired images, and detect and select the spots to track. The test
+        available for the selected
+        :class:`~crappy.camera.meta_camera.camera.Camera`, visualize the
+        acquired images, and detect and select the spots to track. The test
         starts when closing the configuration window. **It is currently not
         possible to set this argument to** :obj:`False` **!** This might change
         in the future.
 
         .. versionadded:: 1.5.10
+
+      config_backend: GUI backend for the configuration window, either
+        ``'tkinter'`` or ``'pyqt'`` (requires PyQt6).
+
+        .. versionadded:: 2.1.0
       display_images: If :obj:`True`, displays the acquired images in a
         dedicated window, using the backend given in ``displayer_backend`` and
         at the frequency specified in ``displayer_framerate``. This option
@@ -113,7 +141,7 @@ class VideoExtenso(Camera):
         .. versionchanged:: 1.5.10
            renamed from *show_image* to *display_images*
       displayer_backend: The backend to use for displaying the images. Can be
-        either ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` (OpenCV)
+        either ``'cv2'`` or ``'mpl'``, to use respectively ``cv2`` (OpenCV)
         or :mod:`matplotlib`. ``'cv2'`` usually allows achieving a higher
         display frequency. Ignored if ``display_images`` is :obj:`False`. If
         not given and ``display_images`` is :obj:`True`, ``'cv2'`` is tried
@@ -127,12 +155,12 @@ class VideoExtenso(Camera):
 
         .. versionadded:: 1.5.10
       software_trig_label: The name of a label used as a software trigger for
-        the :class:`~crappy.camera.Camera`. If given, images will only be
-        acquired when receiving data over this label. The received value does
-        not matter. This software trigger is not meant to be very precise, it
-        is recommended not to rely on it for a trigger frequency greater than
-        10Hz, in which case a hardware trigger should be preferred if available
-        on the camera.
+        the :class:`~crappy.camera.meta_camera.camera.Camera`. If given, images
+        will only be acquired when receiving data over this label. The received
+        value does not matter. This software trigger is not meant to be very
+        precise, it is recommended not to rely on it for a trigger frequency
+        greater than 10Hz, in which case a hardware trigger should be preferred
+        if available on the camera.
 
         .. versionadded:: 2.0.0
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -156,12 +184,13 @@ class VideoExtenso(Camera):
         the name : ``<frame_nr>_<timestamp>.<extension>``, and can thus easily
         be identified. Along with the images, a ``metadata.csv`` file records
         the metadata of all the saved images. This metadata is either the one
-        returned by the :meth:`~crappy.camera.Camera.get_image` method of the
-        :class:`~crappy.camera.Camera` object, or the default one generated in
-        the :meth:`~crappy.blocks.Camera.loop` method of the
-        :class:`~crappy.blocks.Camera` Block. Depending on the framerate of the
-        camera and the performance of the computer, it is not guaranteed that
-        all the acquired images will be recorded.
+        returned by the
+        :meth:`~crappy.camera.meta_camera.camera.Camera.get_image` method of
+        the :class:`~crappy.camera.meta_camera.camera.Camera` object, or the
+        default one generated in the :meth:`~crappy.blocks.Camera.loop` method
+        of this Block. Depending on the framerate of the camera and the
+        performance of the computer, it is not guaranteed that all the acquired
+        images will be recorded.
 
         .. versionadded:: 1.5.10
       img_extension: The file extension for the recorded images, as a
@@ -196,8 +225,8 @@ class VideoExtenso(Camera):
 
           'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
-        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
+        They correspond to the modules ``SimpleITK``, :mod:`PIL` (Pillow
+        Fork), ``cv2`` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
         backend saves the images as raw :obj:`numpy.array`, and thus ignores
         the ``img_extension`` argument. Depending on the machine, some backends
         may be faster or slower. For using each backend, the corresponding
@@ -217,17 +246,17 @@ class VideoExtenso(Camera):
 
         .. versionadded:: 1.5.10
       img_shape: The shape of the images returned by the
-        :class:`~crappy.camera.Camera` object as a :obj:`tuple` of :obj:`int`.
-        It should correspond to the value returned by :obj:`numpy.shape`.
-        **This argument is always ignored as** ``config`` **cannot be set to**
-        :obj:`False`. This might change in the future.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object as a
+        :obj:`tuple` of :obj:`int`. It should correspond to the value returned
+        by :obj:`numpy.shape`. **This argument is mandatory in case**
+        ``config`` **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       img_dtype: The `dtype` of the images returned by the
-        :class:`~crappy.camera.Camera` object, as a :obj:`str`. It should
-        correspond to a valid data type in :mod:`numpy`, e.g. ``'uint8'``.
-        **This argument is always ignored as** ``config`` **cannot be set to**
-        :obj:`False`. This might change in the future.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, as a
+        :obj:`str`. It should correspond to a valid data type in :mod:`numpy`,
+        e.g. ``'uint8'``. **This argument is mandatory in case** ``config``
+        **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       labels: The labels to use for sending data to downstream Blocks. If not
@@ -278,8 +307,9 @@ class VideoExtenso(Camera):
         blur improves the spot detection by smoothening the noise, but also
         takes a bit more time compared to no blurring.
       **kwargs: Any additional argument will be passed to the
-        :class:`~crappy.camera.Camera` object, and used as a kwarg to its
-        :meth:`~crappy.camera.Camera.open` method.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, and used as a
+        kwarg to its :meth:`~crappy.camera.meta_camera.camera.Camera.open`
+        method.
 
     .. versionremoved:: 1.5.10 
        *ext*, *fps_label*, *wait_l0* and *input_label* arguments
@@ -289,6 +319,7 @@ class VideoExtenso(Camera):
     super().__init__(camera=camera,
                      transform=transform,
                      config=config,
+                     config_backend=config_backend,
                      display_images=display_images,
                      displayer_backend=displayer_backend,
                      displayer_framerate=displayer_framerate,
@@ -312,38 +343,50 @@ class VideoExtenso(Camera):
 
     # Forcing the labels into a list
     if labels is None:
-      self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
+      _labels: list[str] = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
     elif isinstance(labels, str):
-      self.labels = [labels]
+      _labels: list[str] = [labels]
     else:
-      self.labels = list(labels)
-
-    # Make sure only string labels are provided
-    if (self.labels is not None and
-        not all(isinstance(label, str) for label in self.labels)):
-      non_str = [label for label in self.labels if not isinstance(label, str)]
-      raise ValueError(f"Some labels are not strings: "
-                       f"{', '.join(map(repr, non_str))}")
-
-    if self.labels is not None and len(set(self.labels)) != len(self.labels):
-      raise ValueError("Duplicate labels provided in the list of labels!")
+      _labels: list[str] = list(labels)
 
     # Making sure a consistent number of labels was given
-    if len(self.labels) != 5:
+    if len(_labels) != 5:
       raise ValueError("The number of labels should be 5 !\n"
                        "Make sure that the time label was given")
 
-    self._raise_on_lost_spot = raise_on_lost_spot
-    self._spot_detector = SpotsDetector()
+    self.labels = _labels
 
-    # These arguments are for the SpotsDetector
-    self._white_spots = white_spots
-    self._num_spots = num_spots
-    self._min_area = min_area
-    self._blur = blur
-    self._update_thresh = update_thresh
-    self._safe_mode = safe_mode
-    self._border = border
+    # Checking the validity of the provided arguments
+    if not isinstance(raise_on_lost_spot, bool):
+      raise TypeError("raise_on_lost_spot must be a boolean")
+    if not isinstance(white_spots, bool):
+      raise TypeError("white_spots must be a boolean")
+    if (num_spots is not None and
+        (not isinstance(num_spots, int) or not 0 < num_spots < 5)):
+      raise ValueError("When provided, num_spots must be an integer between "
+                       "1 and 4")
+    if not isinstance(min_area, int) or min_area < 0:
+      raise ValueError("min_area must be a positive integer")
+    if (blur is not None and
+        (not isinstance(blur, int) or blur < 1 or not blur % 2)):
+      raise ValueError("When provided, blur must be a positive odd integer")
+    if not isinstance(update_thresh, bool):
+      raise TypeError("update_thresh must be a boolean")
+    if not isinstance(safe_mode, bool):
+      raise TypeError("safe_mode must be a boolean")
+    if not isinstance(border, int) or border < 0:
+      raise ValueError("border must be a positive integer")
+
+    self._raise_on_lost_spot: bool = raise_on_lost_spot
+
+    # Options forwarded to the configuration and processing layers
+    self._white_spots: bool = white_spots
+    self._num_spots: int | None = num_spots
+    self._min_area: int = min_area
+    self._blur: int | None = blur
+    self._update_thresh: bool = update_thresh
+    self._safe_mode: bool = safe_mode
+    self._border: int = border
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
@@ -351,34 +394,58 @@ class VideoExtenso(Camera):
 
     In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.VideoExtensoProcess` object that
-    performs the video-extensometry and the tracking.
+    owns runtime video-extensometry and tracking. Initial spot detection is
+    deliberately left to the
+    :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` created by :meth:`~crappy.blocks.Camera._configure`.
     
     .. versionchanged:: 1.5.5 now accepting args and kwargs
     .. versionchanged:: 1.5.10 not accepting arguments anymore
     """
 
-    # Instantiating the SpotsDetector containing the spots to track
-    self._spot_detector = SpotsDetector(white_spots=self._white_spots,
-                                        num_spots=self._num_spots,
-                                        min_area=self._min_area,
-                                        blur=self._blur,
-                                        update_thresh=self._update_thresh,
-                                        safe_mode=self._safe_mode,
-                                        border=self._border)
-
     # Instantiating the VideoExtensoProcess
     self.process_proc = VideoExtensoProcess(
-      detector=self._spot_detector,
-      raise_on_lost_spot=self._raise_on_lost_spot)
+        white_spots=self._white_spots,
+        num_spots=self._num_spots,
+        min_area=self._min_area,
+        blur=self._blur,
+        update_thresh=self._update_thresh,
+        safe_mode=self._safe_mode,
+        border=self._border,
+        raise_on_lost_spot=self._raise_on_lost_spot)
 
     super().prepare()
 
-  def _configure(self) -> VideoExtensoConfig:
-    """This method should instantiate the
-    :class:`~crappy.tool.camera_config.VideoExtensoConfig` window for
-    configuring the :class:`~crappy.camera.Camera` object.
+  def _configure(self) -> CameraConfig:
+    """Instantiates the
+    :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window for configuring the
+    :class:`~crappy.camera.meta_camera.camera.Camera` object and selecting the
+    spots.
+
+    The window creates and owns its spot detector. Once it closes,
+    :meth:`crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig.get_config` exports only the selected spots and detection
+    threshold to the processing process.
     """
 
-    return VideoExtensoConfig(self._camera, self._log_queue,
-                              self._log_level, self.freq,
-                              self._spot_detector)
+    if self._camera is None:
+      raise RuntimeError("At that point the Camera should be set but it isn't")
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+
+    return create_configurator(self.configurator,
+                               self._camera,
+                               self._config_backend,
+                               self._log_queue,
+                               self._log_level,
+                               self.freq,
+                               self._transform,
+                               white_spots=self._white_spots,
+                               num_spots=self._num_spots,
+                               min_area=self._min_area,
+                               blur=self._blur,
+                               update_thresh=self._update_thresh,
+                               safe_mode=self._safe_mode,
+                               border=self._border)

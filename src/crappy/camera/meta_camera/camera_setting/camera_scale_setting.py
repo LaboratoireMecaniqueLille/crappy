@@ -67,8 +67,8 @@ class CameraScaleSetting(CameraSetting):
       lowest, highest = highest, lowest
 
     self.type = int if isinstance(lowest + highest, int) else float
-    self.lowest = self.type(lowest)
-    self.highest = self.type(highest)
+    self.lowest: NbrType = self.type(lowest)
+    self.highest: NbrType = self.type(highest)
     self.step = step
 
     # Ensuring that the default value lies between the bounds
@@ -111,6 +111,7 @@ class CameraScaleSetting(CameraSetting):
     self.was_set = True
 
     self._value_no_getter = self.type(val)
+    self._mark_changed()
     if self._setter is not None:
       self._setter(self.type(val))
 
@@ -122,18 +123,13 @@ class CameraScaleSetting(CameraSetting):
       self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
                                 f"value is {self.value} !")
 
-    # Update the GUI, in case the value was modified via a reload() call
-    if self.tk_var is not None:
-      self.tk_var.set(self.value)
-
   def reload(self,
              lowest: NbrType,
              highest: NbrType,
              value: NbrType | None = None,
              default: NbrType | None = None,
              step: NbrType | None = None) -> None:
-    """Allows modifying the limits and the step of the scale bar once it is
-    already instantiated.
+    """Allows modifying the limits and step after instantiation.
 
     Args:
       lowest: The new lowest possible value for the scale setting.
@@ -197,6 +193,7 @@ class CameraScaleSetting(CameraSetting):
         self.default = self.type(default)
 
     self._check_default()
+    self._mark_changed()
 
     if value is not None and not self.lowest <= value <= self.highest:
       self.log(logging.WARNING,
@@ -211,14 +208,8 @@ class CameraScaleSetting(CameraSetting):
                f"it to {self.default} instead")
       value = self.default
 
-    # Updating the slider limits and the setting value
-    if self.tk_obj is not None:
-      self.tk_obj.configure(to=self.highest,
-                            from_=self.lowest,
-                            resolution=self.step)
-
     if value is not None:
-      if self.tk_var is None:
+      if not self._reload_override_allowed:
         # If the setting was never set, not setting it yet but tweaking its
         # default so that it will only be set to the right value when expected
         if not self.was_set:
@@ -235,8 +226,8 @@ class CameraScaleSetting(CameraSetting):
         # default
         else:
           self.value = value
-      # Once in the graphical interface it is assumed that the user does not
-      # want strict control over settings, always setting
+      # During interactive configuration, dependent reloads may replace
+      # values originally supplied as camera kwargs
       else:
         self.value = value
 

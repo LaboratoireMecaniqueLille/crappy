@@ -1,11 +1,12 @@
 # coding: utf-8
 
+from math import ceil, sqrt
 from typing import Literal
 import numpy as np
 
 from ..._global import OptionalModule
 from ..camera_config import Box
-from .fields import get_res, get_field, allowed_fields
+from .fields import get_res, get_field
 
 try:
   import cv2
@@ -16,10 +17,11 @@ except (ModuleNotFoundError, ImportError):
 class DISCorrelTool:
   """This class is the core of the :class:`~crappy.blocks.DISCorrel` Block.
 
-  It receives images from a :class:`~crappy.camera.Camera` object, and performs 
-  Dense Inverse Search correlation on each new image to get fields of interest. 
-  It relies on DISFlow for the image correlation, handles the projection of the 
-  image on the chosen fields, and calculates the residuals.
+  It receives images from a :class:`~crappy.camera.meta_camera.camera.Camera`
+  object, and performs Dense Inverse Search correlation on each new image to
+  get fields of interest. It relies on DISFlow for the image correlation,
+  handles the projection of the image on the chosen fields, and calculates the
+  residuals.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *DISCorrel* to *DISCorrelTool*
@@ -29,16 +31,18 @@ class DISCorrelTool:
                box: Box,
                fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
                                     'exy', 'eyx', 'exy2', 'z'] |
-                            np.ndarray] | None = None,
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               init: bool = True,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               patch_size: int = 8,
-               patch_stride: int = 3) -> None:
+                            np.ndarray],
+               alpha: float,
+               delta: float,
+               gamma: float,
+               finest_scale: int,
+               init: bool,
+               iterations: int,
+               gradient_iterations: int,
+               patch_size: int,
+               patch_stride: int,
+               border: int | tuple[int, int] | None,
+               follow: bool) -> None:
     """Sets the parameters of DISFlow.
 
     Args:
@@ -81,37 +85,49 @@ class DISCorrelTool:
         (in pixels).
       patch_stride: Stride between neighbor patches in DISFlow. Must be
         less than patch size.
+      border: Width in pixels of the additional area around the correlation
+        patch that is passed to DISFlow. An :obj:`int` applies the same border
+        in both directions, while a ``(x, y)`` tuple allows setting the
+        horizontal and vertical borders independently. ``None`` uses the full
+        image, which corresponds to the former behavior.
+
+        .. versionadded:: 2.1.0
+      follow: If :obj:`True`, shifts the correlation area according to the
+        average rigid-body displacement measured on the patch. This allows the
+        patch to follow large cumulative translations while keeping the
+        correlation area small. The reported fields remain relative to the
+        original reference image.
+
+        .. versionadded:: 2.1.0
     """
 
-    if fields is not None:
-      # Splitting the given fields into strings and numpy arrays
-      auto_fields = [field for field in fields if isinstance(field, str)]
-      user_fields = [field for field in fields
-                     if isinstance(field, np.ndarray)]
+    self._fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                               'exy', 'eyx', 'exy2', 'z']
+                       | np.ndarray] = fields
+    self._init: bool = init
+    self._follow: bool = follow
+    self._patch_size: int = patch_size
 
-      # Ensuring all the given fields are either strings or numpy arrays
-      if len(fields) != len(auto_fields) + len(user_fields):
-        raise TypeError('Correlation fields must be either strings or '
-                        'numpy arrays !')
-
-      # Ensuring all the string fields are valid ones
-      if not all((field in allowed_fields for field in auto_fields)):
-        raise ValueError(f"The only allowed values for the fields given as "
-                         f"strings are {allowed_fields}")
-
-      self._fields: list[str | np.ndarray] = fields
+    # Three options for the border values
+    if border is None:
+      self._border_x: int | None = None
+      self._border_y: int | None = None
+    elif isinstance(border, int):
+      self._border_x: int | None = border
+      self._border_y: int | None = border
     else:
-      self._fields: list[str | np.ndarray] = ["x", "y", "exx", "eyy"]
-
-    self._init = init
+      self._border_x, self._border_y = border
 
     # These attributes will be set later
-    self._img0 = None
-    self._height, self._width = None, None
-    self.box = box
-    self._dis_flow = None
-    self._base = None
-    self._norm2 = None
+    self._img0: np.ndarray | None = None
+    self._height: int | None = None
+    self._width: int | None = None
+    self.box: Box = box
+    self._dis_flow: np.ndarray | None = None
+    self._base: list[np.ndarray] | None = None
+    self._norm2: list[float] | None = None
+    self._correl_box: tuple[int, int, int, int] | None = None
+    self.offset: tuple[int, int] = (0, 0)
 
     # Setting the parameters of Disflow
     self._dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
@@ -125,14 +141,54 @@ class DISCorrelTool:
     self._dis.setPatchStride(patch_stride)
 
   def set_img0(self, img0: np.ndarray) -> None:
-    """Sets the initial image to use for the correlation.
+    """Sets the initial image and initializes the correlation crop and flow.
+
+    The correlation crop is clipped to the reference-image bounds. A
+    :exc:`ValueError` is raised if the resulting crop is too small for the
+    configured DISFlow patch size.
     
     .. versionadded:: 1.5.10
     """
 
+    if not isinstance(img0, np.ndarray):
+      raise TypeError("The reference image must be a Numpy array")
+    if img0.dtype != np.uint8:
+      raise ValueError("The reference image must have dtype uint8")
+
     self._img0 = img0
     self._height, self._width, *_ = img0.shape
-    self._dis_flow = np.zeros((self._height, self._width, 2))
+    if self._width is None or self._height is None:
+      raise RuntimeError("The width and height of the reference image weren't "
+                         "set")
+
+    # Set the correlation box, full-frame if no borders were provided
+    if self._border_x is None or self._border_y is None:
+      self._correl_box = (0, self._width, 0, self._height)
+    # Otherwise intersection of provided border and image limits
+    else:
+      x_min, x_max, y_min, y_max = self.box.sorted()
+      self._correl_box = (max(0, x_min - self._border_x),
+                          min(self._width, x_max + self._border_x),
+                          max(0, y_min - self._border_y),
+                          min(self._height, y_max + self._border_y))
+
+    # Use the correlation box to initialize the optical flow
+    if self._correl_box is not None:
+      x_min, x_max, y_min, y_max = self._correl_box
+      width = x_max - x_min
+      height = y_max - y_min
+      min_long_side = ceil(sqrt(2) * self._patch_size)
+      # Check that the given patch size is consistent with the image dimensions
+      if (min(width, height) < self._patch_size or
+          max(width, height) < min_long_side):
+        raise ValueError(
+            f"The correlation area ({width}x{height}) is too small for a "
+            f"patch size of {self._patch_size}: its shortest side must be at "
+            f"least {self._patch_size} pixels and its longest side at least "
+            f"{min_long_side} pixels")
+      shape = (y_max - y_min, x_max - x_min, 2)
+      if self._dis_flow is None or self._dis_flow.shape != shape:
+        self._dis_flow = np.zeros(shape, dtype=np.float32)
 
   def set_box(self) -> None:
     """Sets the region of interest to use for the correlation, and initializes
@@ -155,11 +211,24 @@ class DISCorrelTool:
         fields[:, :, 0, i], fields[:, :, 1, i] = get_field(field, box_height,
                                                            box_width)
       elif isinstance(field, np.ndarray):
+        expected_shape = (box_height, box_width, 2)
+        if field.shape != expected_shape:
+          raise ValueError(f"Custom fields must have shape {expected_shape}, "
+                           f"got {field.shape}")
+        if not (np.issubdtype(field.dtype, np.integer) or
+                np.issubdtype(field.dtype, np.floating)):
+          raise TypeError("Custom fields must have a numeric dtype")
+        if not np.all(np.isfinite(field)):
+          raise ValueError("Custom fields must contain only finite values")
         fields[:, :, :, i] = field
 
     # These attributes will be used later
     self._base = [fields[:, :, :, i] for i in range(fields.shape[3])]
+    if self._base is None:
+      raise RuntimeError("The list of bases was not initialized")
     self._norm2 = [float(np.sum(base_field ** 2)) for base_field in self._base]
+    if any(not np.isfinite(norm2) or norm2 <= 0 for norm2 in self._norm2):
+      raise ValueError("Fields must have a finite, non-zero norm")
 
   def get_data(self,
                img: np.ndarray,
@@ -169,8 +238,8 @@ class DISCorrelTool:
 
     Args:
       img: The new image to process.
-      residuals: Whether the residuals should be calculated or not for the
-        image, as a :obj:`bool`.
+      residuals: Whether the average absolute residual should be calculated
+        over the correlation area, as a :obj:`bool`.
 
     Returns:
       A :obj:`list` containing the data to calculate, and the residuals at the
@@ -186,26 +255,95 @@ class DISCorrelTool:
     elif self._base is None:
       raise ValueError("The method set_box must be called first for setting "
                        "the region of interest !")
+    if self._correl_box is None:
+      raise RuntimeError("The correlation crop isn't initialized")
+    if not isinstance(img, np.ndarray):
+      raise TypeError("The image to process must be a Numpy array")
+    if img.dtype != np.uint8:
+      raise ValueError("The image to process must have dtype uint8")
+    if img.shape != self._img0.shape:
+      raise ValueError("The image to process must have the same shape as the "
+                       "reference image")
+
+    # Get the cropped reference image and offset current image
+    x_min, x_max, y_min, y_max = self._correl_box
+    x_offset, y_offset = self.offset
+    img0_crop = np.ascontiguousarray(self._img0[y_min:y_max, x_min:x_max])
+    img_crop = np.ascontiguousarray(img[y_min + y_offset:y_max + y_offset,
+                                        x_min + x_offset:x_max + x_offset])
 
     # Updating the optical flow with the latest image
     if self._init:
-      self._dis_flow = self._dis.calc(self._img0, img, self._dis_flow)
+      self._dis_flow = self._dis.calc(img0_crop, img_crop, self._dis_flow)
     else:
-      self._dis_flow = self._dis.calc(self._img0, img, None)
+      self._dis_flow = self._dis.calc(img0_crop, img_crop, None)
 
-    # Getting the values to calculate as floats
-    ret = [float(np.sum(vec * self._crop(self._dis_flow))) / n2 for vec, n2 in
+    if self._dis_flow is None:
+      raise RuntimeError("DISFlow did not return an optical flow")
+
+    # Keeping only the user-defined patch for projection, and adding the
+    # displacement offset to the optical flow
+    flow = self._crop_to_box(self._dis_flow).copy()
+    x_offset, y_offset = self.offset
+    flow[:, :, 0] += x_offset
+    flow[:, :, 1] += y_offset
+
+    # Computing the projections of the optical flow on the required fields
+    if self._norm2 is None:
+      raise RuntimeError("The list of norms2 was not initialized")
+    ret = [float(np.sum(vec * flow)) / n2 for vec, n2 in
            zip(self._base, self._norm2)]
 
     # Adding the average residual value if requested
     if residuals:
-      ret.append(float(np.average(np.abs(get_res(self._img0, img,
-                                                 self._dis_flow)))))
+      res = get_res(img0_crop, img_crop, self._dis_flow)
+      ret.append(float(np.average(np.abs(res))))
+
+    # Re-centering the correlation crop for the next image if requested
+    if self._follow:
+      self._update_offset(flow)
 
     return ret
 
-  def _crop(self, img: np.ndarray) -> np.ndarray:
-    """Crops the image to the given region of interest."""
+  def _crop_to_box(self, img: np.ndarray) -> np.ndarray:
+    """Crops an array expressed in correlation-crop coordinates to the ROI."""
 
-    x_min, x_max, y_min, y_max = self.box.sorted()
+    if self._correl_box is None:
+      raise RuntimeError("The correlation crop isn't initialized")
+
+    box_x_min, box_x_max, box_y_min, box_y_max = self.box.sorted()
+    corr_x_min, _, corr_y_min, _ = self._correl_box
+
+    x_min = box_x_min - corr_x_min
+    x_max = box_x_max - corr_x_min
+    y_min = box_y_min - corr_y_min
+    y_max = box_y_max - corr_y_min
     return img[y_min:y_max, x_min:x_max]
+
+  def _update_offset(self, flow: np.ndarray) -> None:
+    """Updates the correlation box offset from the measured rigid body
+    transformation."""
+
+    if (self._correl_box is None or self._width is None
+        or self._height is None):
+      raise RuntimeError("The correlation crop isn't initialized")
+
+    # The mean displacement of the ROI is used as the rigid-body translation
+    x_disp, y_disp = np.average(flow, axis=(0, 1))
+    new_x_offset = round(float(x_disp))
+    new_y_offset = round(float(y_disp))
+
+    # The offset shouldn't make the correlation box exit the image
+    x_min, x_max, y_min, y_max = self._correl_box
+    new_x_offset = min(max(new_x_offset, -x_min), self._width - x_max)
+    new_y_offset = min(max(new_y_offset, -y_min), self._height - y_max)
+
+    old_x_offset, old_y_offset = self.offset
+
+    # If the previous flow is reused as an initialization, correct it to match
+    # the new coordinates system
+    if self._dis_flow is not None and self._init:
+      self._dis_flow[:, :, 0] -= new_x_offset - old_x_offset
+      self._dis_flow[:, :, 1] -= new_y_offset - old_y_offset
+
+    self.offset = (new_x_offset, new_y_offset)

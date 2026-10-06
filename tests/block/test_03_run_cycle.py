@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from crappy import Block
-from multiprocessing import Barrier, Event, Value, Queue
+from crappy._global import SchedulerStop
+from multiprocessing import Barrier, Event, Value, Queue, Pipe
 
 from .block_test_base import BlockTestBase, TestBlock
 
@@ -36,6 +37,16 @@ class TestBlockRaiseLoop(TestBlock):
     raise ValueError
 
 
+class TestBlockRaiseSchedulerStop(TestBlock):
+  """Test Block ending normally with SchedulerStop from loop."""
+
+  def loop(self) -> None:
+    """Records the loop call, then requests Scheduler-style shutdown."""
+
+    super().loop()
+    raise SchedulerStop
+
+
 class TestBlockRaiseFinish(TestBlock):
   """Test Block raising an exception from finish."""
 
@@ -48,6 +59,31 @@ class TestBlockRaiseFinish(TestBlock):
 
 class TestRunCycle(BlockTestBase):
   """Tests the per-Block execution cycle driven by Block.run."""
+
+  def test_run_closes_inherited_config_connections(self) -> None:
+    """Tests that run closes stale configuration Pipe endpoints."""
+
+    self._block = TestBlock()
+    recv_conn, send_conn = Pipe(duplex=False)
+    self.addCleanup(recv_conn.close)
+    self.addCleanup(send_conn.close)
+    self._block._config_connections_to_close.extend((recv_conn, send_conn))
+
+    self._block._ready_barrier = Barrier(1)
+    self._block._start_event = Event()
+    self._block._stop_event = Event()
+    self._block._raise_event = Event()
+    self._block._kbi_event = Event()
+    self._block._pause_event = Event()
+    self._block._instance_t0 = Value('d', 0.0)
+    self._block._log_queue = Queue()
+    self._block._start_event.set()
+
+    self._block.run()
+
+    self.assertTrue(recv_conn.closed)
+    self.assertTrue(send_conn.closed)
+    self.assertEqual(self._block._config_connections_to_close, list())
 
   def test_normal_run(self) -> None:
     """Tests the nominal prepare/begin/loop/finish sequence."""
@@ -117,8 +153,8 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block.looped.is_set())
     self.assertTrue(self._block.finished.is_set())
 
-    self.assertEqual(self._block.last_t.value, -1.0)
-    self.assertEqual(self._block.last_fps.value, -1.0)
+    self.assertEqual(self._block.last_t.value, float('-inf'))
+    self.assertEqual(self._block.last_fps.value, float('-inf'))
 
     Block.reset()
 
@@ -153,8 +189,8 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block.looped.is_set())
     self.assertTrue(self._block.finished.is_set())
 
-    self.assertEqual(self._block.last_t.value, -1.0)
-    self.assertEqual(self._block.last_fps.value, -1.0)
+    self.assertEqual(self._block.last_t.value, float('-inf'))
+    self.assertEqual(self._block.last_fps.value, float('-inf'))
 
     Block.reset()
 
@@ -191,6 +227,41 @@ class TestRunCycle(BlockTestBase):
 
     self.assertGreater(self._block.last_t.value, -1.0)
     self.assertGreater(self._block.last_fps.value, -1.0)
+
+    Block.reset()
+
+  def test_scheduler_stop(self) -> None:
+    """SchedulerStop stops cleanly without marking the run as failed."""
+
+    self._block = TestBlockRaiseSchedulerStop(stop=False)
+
+    self._block._ready_barrier = Barrier(1)
+    self._block._start_event = Event()
+    self._block._stop_event = Event()
+    self._block._raise_event = Event()
+    self._block._kbi_event = Event()
+    self._block._pause_event = Event()
+    self._block._instance_t0 = Value('d', 0.0)
+    self._block._log_queue = Queue()
+
+    self._block._start_event.set()
+
+    self._block.start()
+    self._block.join(4.0)
+
+    self.assertFalse(self._block.is_alive())
+    self.assertEqual(self._block.exitcode, 0)
+    self.assertTrue(self._block._start_event.is_set())
+    self.assertTrue(self._block._stop_event.is_set())
+    self.assertFalse(self._block._ready_barrier.broken)
+    self.assertFalse(self._block._raise_event.is_set())
+    self.assertFalse(self._block._kbi_event.is_set())
+
+    self.assertTrue(self._block.prepared.is_set())
+    self.assertTrue(self._block.begun.is_set())
+    self.assertTrue(self._block.looped.is_set())
+    self.assertTrue(self._block.finished.is_set())
+    self.assertEqual(self._block.loops.value, 1)
 
     Block.reset()
 
@@ -261,8 +332,8 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block.looped.is_set())
     self.assertTrue(self._block.finished.is_set())
 
-    self.assertEqual(self._block.last_t.value, -1.0)
-    self.assertEqual(self._block.last_fps.value, -1.0)
+    self.assertEqual(self._block.last_t.value, float('-inf'))
+    self.assertEqual(self._block.last_fps.value, float('-inf'))
 
     Block.reset()
 
@@ -295,7 +366,7 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block.looped.is_set())
     self.assertTrue(self._block.finished.is_set())
 
-    self.assertEqual(self._block.last_t.value, -1.0)
-    self.assertEqual(self._block.last_fps.value, -1.0)
+    self.assertEqual(self._block.last_t.value, float('-inf'))
+    self.assertEqual(self._block.last_fps.value, float('-inf'))
 
     Block.reset()

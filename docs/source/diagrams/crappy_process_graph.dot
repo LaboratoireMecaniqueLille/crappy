@@ -1,0 +1,438 @@
+digraph crappy_process_graph {
+  graph [
+    rankdir=TB,
+    bgcolor="#FFFFFF",
+    pad="0.10",
+    nodesep="0.30",
+    ranksep="0.20",
+    splines=ortho,
+    newrank=true,
+    outputorder=edgesfirst,
+    fontname="Helvetica",
+    fontcolor="#24313F"
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    fillcolor="#F5F8FC",
+    color="#557896",
+    penwidth=1.25,
+    fontname="Helvetica",
+    fontsize=11,
+    fontcolor="#1F2B37",
+    margin="0.17,0.10"
+  ];
+
+  edge [
+    fontname="Helvetica",
+    fontsize=8.6,
+    color="#557896",
+    fontcolor="#64717E",
+    penwidth=1.10,
+    arrowsize=0.66
+  ];
+
+
+  sensor [
+    label="Sensor",
+    shape=ellipse,
+    width=1.25,
+    height=0.44,
+    fixedsize=true,
+    fillcolor="#F7F8FA",
+    color="#9AA4AE",
+    penwidth=1.0,
+    group="R"
+  ];
+
+  actuator [
+    label="Actuator",
+    shape=ellipse,
+    width=1.25,
+    height=0.44,
+    fixedsize=true,
+    fillcolor="#F7F8FA",
+    color="#9AA4AE",
+    penwidth=1.0,
+    group="C"
+  ];
+
+
+  subgraph cluster_blocks {
+    label="Crappy Block graph - each rounded box runs in its own process";
+    labelloc=t;
+    labeljust=l;
+
+    fontsize=10.8;
+    fontname="Helvetica";
+    fontcolor="#24313F";
+
+    color="#C7CFD8";
+    penwidth=1.0;
+    style="rounded,filled";
+    fillcolor="#FBFCFE";
+    margin=10;
+
+
+    generator [
+      label="Generator Block\nprovides the target",
+      shape=box,
+      style="rounded,filled",
+      width=2.35,
+      height=0.58,
+      fillcolor="#FBFCFE",
+      color="#000000",
+      fontcolor="#1F2B37",
+      group="L"
+    ];
+
+    ioblock [
+      label="IOBlock\nacquires measurements",
+      shape=box,
+      style="rounded,filled",
+      width=2.05,
+      height=0.58,
+      fillcolor="#FBFCFE",
+      color="#000000",
+      fontcolor="#1F2B37",
+      group="R",
+
+    ];
+
+    pid [
+      label="PID Block\ncompares target and feedback",
+      shape=box,
+      style="rounded,filled",
+      width=3.20,
+      height=0.64,
+      fillcolor="#FBFCFE",
+      color="#000000",
+      fontcolor="#1F2B37",
+      group="C"
+    ];
+
+    recorder [
+      label="Recorder Block\nsaves measurements",
+      shape=box,
+      style="rounded,filled",
+      width=2.65,
+      height=0.60,
+      fillcolor="#FBFCFE",
+      color="#000000",
+      fontcolor="#1F2B37",
+      group="R"
+    ];
+
+    machine [
+      label="Machine Block\ndrives the actuator",
+      shape=box,
+      style="rounded,filled",
+      width=2.05,
+      height=0.58,
+      fillcolor="#FBFCFE",
+      color="#000000",
+      fontcolor="#1F2B37",
+      group="C"
+    ];
+
+
+    /*
+     * Link labels.
+     */
+
+    l_target [
+      label="Link\ntarget dictionary",
+      shape=box,
+      style=filled,
+      fillcolor="#FBFCFE",
+      color="#FBFCFE",
+      penwidth=0,
+      margin="0,0",
+      fontsize=8.4,
+      fontcolor="#64717E",
+      group="L"
+    ];
+
+    l_measure [
+      label="Link\nmeasurement dictionary",
+      shape=box,
+      style=filled,
+      fillcolor="#FBFCFE",
+      color="#FBFCFE",
+      penwidth=0,
+      margin="0.007,0.005",
+      fontsize=8.4,
+      fontcolor="#64717E",
+      group="R"
+    ];
+
+    l_command [
+      label="Link\ncommand dictionary",
+      shape=box,
+      style=filled,
+      fillcolor="#FBFCFE",
+      color="#FBFCFE",
+      penwidth=0,
+      margin="0.015,0.005",
+      fontsize=8.4,
+      fontcolor="#64717E",
+      group="C"
+    ];
+
+
+    /*
+     * Feedback label:
+     *
+     * The node itself is almost zero-sized, while the text
+     * is allowed to overflow. This lets the feedback edge
+     * remain continuous through the label position.
+     */
+
+    l_feedback [
+      label="Link\nfeedback dictionary",
+      shape=plaintext,
+      width=0.01,
+      height=0.01,
+      fixedsize=shape,
+      margin=0,
+      fontsize=8.4,
+      fontcolor="#64717E",
+      group="FR"
+    ];
+
+
+    /*
+     * Feedback-path anchors.
+     */
+
+    fb_top [
+      shape=box,
+      width=0.01,
+      height=0.58,
+      fixedsize=true,
+      label="",
+      style=invis,
+      group="FR"
+    ];
+
+    fb_mid [
+      shape=point,
+      width=0.01,
+      label="",
+      style=invis,
+      group="FR"
+    ];
+
+    fb_bottom [
+      shape=point,
+      width=0.01,
+      label="",
+      style=invis,
+      group="FR"
+    ];
+
+    fb_left [
+      shape=point,
+      width=0.01,
+      label="",
+      style=invis
+    ];
+
+
+    /*
+     * Small invisible spacer to move Generator Block
+     * slightly farther left.
+     */
+
+    gen_shift [
+      shape=box,
+      width=0.45,
+      height=0.01,
+      fixedsize=true,
+      label="",
+      style=invis
+    ];
+
+
+    /*
+     * Layout rows.
+     */
+
+    {
+      rank=same;
+      generator;
+      fb_top;
+      ioblock;
+    }
+
+    {
+      rank=same;
+      l_target;
+      fb_mid;
+      l_feedback;
+      l_measure;
+    }
+
+    {
+      rank=same;
+      pid;
+      fb_left;
+      fb_bottom;
+      recorder;
+    }
+
+    {
+      rank=same;
+      l_command;
+    }
+
+    {
+      rank=same;
+      machine;
+    }
+
+
+    /*
+     * Invisible ordering constraints.
+     */
+
+    generator -> gen_shift -> gen_shift -> gen_shift -> fb_top -> ioblock [
+      style=invis,
+      weight=80
+    ];
+
+    l_target -> l_feedback -> l_measure [
+      style=invis,
+      weight=80
+    ];
+
+    l_target -> fb_mid -> l_measure [
+      style=invis,
+      weight=80
+    ];
+
+    pid -> fb_left -> fb_bottom -> recorder [
+      style=invis,
+      weight=80
+    ];
+
+
+    /*
+     * Generator -> PID
+     */
+
+    generator -> l_target [
+      arrowhead=none,
+      weight=8
+    ];
+
+    l_target -> pid [
+      weight=8
+    ];
+
+
+    /*
+     * IOBlock -> Recorder
+     */
+
+    ioblock:s -> l_measure [
+      arrowhead=none,
+      weight=8
+    ];
+
+    l_measure -> recorder:n [
+      weight=8
+    ];
+
+
+    /*
+     * PID -> Machine
+     */
+
+    pid:s -> l_command [
+      arrowhead=none,
+      weight=8
+    ];
+
+    l_command -> machine:n [
+      weight=8
+    ];
+
+
+    /*
+     * IOBlock -> PID feedback
+     *
+     */
+
+    ioblock:w -> pid [
+      weight=5,
+      constraint=false,
+    ];
+  }
+
+
+  /*
+   * External device labels.
+   */
+
+  read_label [
+    label="device read",
+    shape=box,
+    style=filled,
+    fillcolor="#FFFFFF",
+    color="#FFFFFF",
+    penwidth=0,
+    margin="0.015,0.005",
+    fontname="Helvetica",
+    fontsize=8.2,
+    fontcolor="#7A858F",
+    height=0.15,
+    group="R"
+  ];
+
+  command_label [
+    label="device command",
+    shape=box,
+    style=filled,
+    fillcolor="#FFFFFF",
+    color="#FFFFFF",
+    penwidth=0,
+    margin="0.015,0.005",
+    fontname="Helvetica",
+    fontsize=8.2,
+    fontcolor="#7A858F",
+    height=0.15,
+    group="C"
+  ];
+
+
+  sensor -> read_label [
+    arrowhead=none,
+    style=dashed,
+    color="#9AA4AE",
+    penwidth=0.95
+  ];
+
+  read_label -> ioblock [
+    style=dashed,
+    color="#9AA4AE",
+    penwidth=0.95,
+    arrowsize=0.62
+  ];
+
+
+  machine -> command_label [
+    arrowhead=none,
+    style=dashed,
+    color="#9AA4AE",
+    penwidth=0.95
+  ];
+
+  command_label -> actuator [
+    style=dashed,
+    color="#9AA4AE",
+    penwidth=0.95,
+    arrowsize=0.62
+  ];
+}

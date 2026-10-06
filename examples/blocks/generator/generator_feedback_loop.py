@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of a Generator Block whose stop conditions
 depend on the value of a label. It does not require any specific hardware to
-run, but necessitates the matplotlib Python module to be installed.
+run, but necessitates the pyqtgraph and PyQt6 Python modules to be installed.
 
 The Generator Block outputs a signal following a provided path. Several paths
 are available, each with a different behavior and different options. They can
@@ -15,9 +15,9 @@ here the stop condition of the Generator path depends on the value of a label,
 whereas in the basic example a delay is given instead.
 
 After starting this script, you can visualize the shape of the generated signal
-in the Grapher window. This script ends after 62s. You can also hit CTRL+C to
-stop it earlier, but it is not a clean way to stop Crappy. You can then restart
-it with different parameters for the Generator path.
+in the Grapher window. This script ends after 62 seconds. You can then restart
+it with different parameters for the Generator path. Click the stop button to
+end the demo early.
 """
 
 import crappy
@@ -58,10 +58,13 @@ if __name__ == '__main__':
   graph = crappy.blocks.Grapher(('t(s)', 'signal'))
 
   # Linking the Block so that the information is correctly sent and received
-  # The Generator is linked to itself because it takes decision based on its
+  # The Generator is linked to itself because it makes decisions based on its
   # own output
   crappy.link(gen, gen)
   crappy.link(gen, graph)
+
+  # This Block provides a clean way to stop the test before it ends
+  stop = crappy.blocks.StopButton()
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

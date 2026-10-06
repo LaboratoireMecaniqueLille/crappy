@@ -1,6 +1,8 @@
 # coding: utf-8
 
 from multiprocessing import Value
+from itertools import cycle
+import pickle
 from typing import Any
 from unittest.mock import patch
 
@@ -91,6 +93,7 @@ class TestGenerator(BlockTestBase):
     kwargs.setdefault('debug', None)
 
     generator = Generator(path, **kwargs)
+    generator.prepare()
     generator._instance_t0 = Value('d', self._t0)
     return generator
 
@@ -171,6 +174,25 @@ class TestGenerator(BlockTestBase):
       with self.subTest(path=path):
         with self.assertRaises(exception):
           Generator(path, freq=None)
+
+  def test_repeating_path_iterator_is_created_only_during_prepare(self) -> None:
+    """Keep unpicklable cycles out of the state sent to a child process."""
+
+    path = [{'type': 'Constant', 'value': 3, 'condition': None}]
+    for repeat in (False, True):
+      with self.subTest(repeat=repeat):
+        generator = Generator(path, repeat=repeat, freq=None)
+        self.assertIsNone(generator._current_path)
+        self.assertEqual(list(pickle.loads(pickle.dumps(generator._path))), [])
+        self.assertEqual(pickle.loads(pickle.dumps(generator._raw_path)), path)
+        generator.prepare()
+        self.assertEqual(isinstance(generator._path, cycle), repeat)
+        self.assertEqual(next(generator._path), path[0])
+        if repeat:
+          self.assertEqual(next(generator._path), path[0])
+        else:
+          with self.assertRaises(StopIteration):
+            next(generator._path)
 
   def test_begin_instantiates_first_path_with_shared_state(self) -> None:
     """Checks first Path setup from the Generator start time."""
@@ -299,20 +321,29 @@ class TestGenerator(BlockTestBase):
     self.assertEqual(sent, [[2.0, 2, 1]])
 
   def test_exhaustion_with_end_delay_raises_generator_stop(self) -> None:
-    """Checks default terminal behavior when all Paths are exhausted."""
+    """Checks the terminal delay is split into short sleeps."""
 
-    generator = self._make_generator([
-      {'type': 'GeneratorUnitPath', 'commands': ['stop']},
-    ], end_delay=0)
-    generator.begin()
-    self._set_received_batches(generator, [{}])
+    for end_delay, expected_sleeps in ((0, 0),
+                                       (0.05, 1),
+                                       (0.1, 1),
+                                       (0.2, 2),
+                                       (0.25, 3)):
+      with self.subTest(end_delay=end_delay):
+        generator = self._make_generator([
+          {'type': 'GeneratorUnitPath', 'commands': ['stop']},
+        ], end_delay=end_delay)
+        generator.begin()
+        self._set_received_batches(generator, [{}])
 
-    with (patch.object(generator_module, 'time', return_value=11),
-          patch.object(generator_module, 'sleep') as sleep_mock):
-      with self.assertRaises(GeneratorStop):
-        generator.loop()
+        with (patch.object(generator_module, 'time', return_value=11),
+              patch.object(generator_module, 'sleep') as sleep_mock):
+          with self.assertRaises(GeneratorStop):
+            generator.loop()
 
-    sleep_mock.assert_called_once_with(0)
+        sleeps = [call.args[0] for call in sleep_mock.call_args_list]
+        self.assertEqual(len(sleeps), expected_sleeps)
+        self.assertTrue(all(0 < delay <= 0.1 for delay in sleeps))
+        self.assertAlmostEqual(sum(sleeps), end_delay)
 
   def test_exhaustion_without_end_delay_stays_idle(self) -> None:
     """Checks non-stopping terminal behavior when end_delay is None."""

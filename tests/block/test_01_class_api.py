@@ -2,10 +2,11 @@
 
 from crappy import Block
 from crappy._global import DefinitionError
+from crappy.links import link_graph
 from multiprocessing import Value, Barrier, Event, Queue
 from threading import Thread
 
-from .block_test_base import BlockTestBase, TestBlock
+from .block_test_base import BlockTestBase, TestBlock, link
 
 
 class TestClassAPI(BlockTestBase):
@@ -51,6 +52,8 @@ class TestClassAPI(BlockTestBase):
       with self.subTest(i=i):
         self.assertIn(instances[i], Block.instances)
         self.assertEqual(Block.names[i], f"crappy.TestBlock-{i+1}")
+        self.assertIs(link_graph._nodes[instances[i].name].block_type,
+                      TestBlock)
 
     class CustomBlock2(TestBlock):
       ...
@@ -64,11 +67,17 @@ class TestClassAPI(BlockTestBase):
     Block.reset()
 
     self.assertEqual(0, len(Block.instances))
+    self.assertEqual(link_graph._nodes, dict())
 
   def test_reset(self) -> None:
     """Tests that Block.reset clears all shared class attributes."""
 
-    TestBlock()
+    source = TestBlock()
+    target = TestBlock()
+    link(source, target, name='reset-link')
+
+    self.assertEqual(len(link_graph._nodes), 2)
+    self.assertEqual(link_graph.link_names(), ('reset-link',))
 
     Block.ready_barrier = Barrier(1)
     Block.shared_t0 = Value('d', -1.0)
@@ -81,6 +90,9 @@ class TestClassAPI(BlockTestBase):
     Block.log_thread = Thread(target=Block._log_target)
 
     Block.reset()
+
+    self.assertEqual(link_graph._nodes, dict())
+    self.assertEqual(link_graph._edges, dict())
 
   def test_stop_all(self) -> None:
     """Tests that Block.stop_all sets the shared stop Event."""

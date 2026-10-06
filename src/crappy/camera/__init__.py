@@ -2,15 +2,9 @@
 
 from .fake_camera import FakeCamera
 from .file_reader import FileReader
-from .gphoto2_camera import CameraGPhoto2
 from .opencv_camera_webcam import Webcam
-from .raspberry_pi_camera import RaspberryPiCamera
 from .raspberry_pi_camera_2 import RaspberryPiCamera2
-from .seek_thermal_pro import SeekThermalPro
 from .ximea_xiapi import XiAPI
-
-from .cameralink import BaslerIronmanCameraLink
-from .cameralink import JaiGO5000CPMCL, JaiGO5000CPMCL8Bits
 
 from .meta_camera import Camera, camera_setting
 
@@ -29,5 +23,5 @@ else:
   from .gstreamer_camera_basic import CameraGstreamer
   from .opencv_camera_basic import CameraOpencv
 
-from ._deprecated import deprecated_cameras
+from ._collection import moved_to_collection
 camera_dict: dict[str, type[Camera]] = Camera.classes

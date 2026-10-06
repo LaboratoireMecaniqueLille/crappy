@@ -18,9 +18,9 @@ class Actuator:
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.8 remove metaclass and perform checks in
      __init_subclass__
+  .. versionchanged:: 2.1.0 removed the *ft232h* class attribute
   """
 
-  ft232h: bool = False
   classes = dict()
 
   def __init_subclass__(cls, **kwargs) -> None:

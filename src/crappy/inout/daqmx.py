@@ -30,12 +30,12 @@ class DAQmx(InOut):
   """This class can drive data acquisition hardware from National Instruments.
 
   It is similar to :class:`~crappy.inout.NIDAQmx` InOut, except it relies on
-  the :mod:`PyDAQmx` module. It was written and tested on a USB 6008 DAQ board,
+  the ``PyDAQmx`` package. It was written and tested on a USB 6008 DAQ board,
   but should work with other instruments as well.
 
   Note:
     This class requires the NIDAQmx C driver to be installed, as well as the
-    :mod:`PyDAQmx` module.
+    ``PyDAQmx`` package.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Daqmx* to *DAQmx*

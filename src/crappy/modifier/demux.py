@@ -12,7 +12,7 @@ class Demux(Modifier):
   """Modifier converting a stream into a regular data flow interpretable by
   most Blocks.
 
-  It is meant to be used on a :class:`~crappy.links.Link` taking an
+  It is meant to be used on a :class:`~crappy.links.link.Link` taking an
   :class:`~crappy.blocks.IOBlock` in streamer mode as an input. It converts
   the stream to make it readable by most Blocks, and also splits the stream in
   several labels if necessary.

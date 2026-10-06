@@ -25,10 +25,11 @@ except (ImportError, ModuleNotFoundError):
 class Phidget4AStepper(Actuator):
   """This class can drive Phidget's 4A Stepper module in speed or in position.
 
-  It relies on the :mod:`Phidget22` module to communicate with the motor
-  driver. The driver can deliver up to 4A to the motor, and uses 16 microsteps
-  by default. Its acquisition rate is set to 10 values per second in this
-  class.
+  It relies on the `Phidget22 Python package
+  <https://www.phidgets.com/docs/Language_-_Python>`_ to communicate with the
+  motor driver. The driver can deliver up to 4A to the motor, and uses 16
+  microsteps by default. Its acquisition rate is set to 10 values per second
+  in this class.
 
   The distance unit is the `mm` and the time unit is the `s`, so speeds are in
   `mm/s` and accelerations in `mm/s²`.

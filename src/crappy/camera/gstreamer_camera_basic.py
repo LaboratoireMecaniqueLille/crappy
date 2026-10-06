@@ -48,8 +48,8 @@ class CameraGstreamer(Camera):
     more parameters than the basic version.
 
   Note:
-    This Camera requires the module :mod:`PyGObject` to be installed, as well
-    as GStreamer.
+    This Camera requires `PyGObject <https://pygobject.gnome.org/>`_ and
+    GStreamer to be installed.
   
   .. versionadded:: 1.5.9
   .. versionchanged:: 2.0.0

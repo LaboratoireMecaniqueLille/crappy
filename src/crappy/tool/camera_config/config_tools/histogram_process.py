@@ -11,14 +11,12 @@ from functools import partial
 
 
 class HistogramProcess(Process):
-  """This class is a :obj:`multiprocessing.Process` taking an image as an input
-  via a :obj:`multiprocessing.Pipe`, and returning the histogram of that image
-  in another :obj:`~multiprocessing.Pipe`.
+  """Worker process that computes an 8-bit preview histogram through queues.
 
-  It is used by the :class:`~crappy.tool.camera_config.CameraConfig` window and
-  its children to delegate and parallelize the calculation of the histogram. It
-  allows to gain a few frames per second on the display in the configuration
-  window.
+  Concrete camera configuration windows submit reduced grayscale images and
+  receive histogram images independently of their GUI event loop. The worker
+  processes the newest queued request and uses a shared event to report
+  activity.
 
   .. versionadded:: 2.0.0
   """
@@ -30,22 +28,23 @@ class HistogramProcess(Process):
                img_out: Queue,
                log_level: int | None,
                log_queue: Queue) -> None:
-    """Sets the arguments and initializes the parent class.
+    """Initializes worker resources without starting the process.
 
     Args:
-      stop_event: An :obj:`multiprocessing.Event` signaling the
-        :obj:`~multiprocessing.Process` when to stop running.
-      processing_event: An :obj:`multiprocessing.Event` set by the
-        :obj:`multiprocessing.Process` to indicate that it's currently
-        processing an image. Avoids having images to process piling up.
-      img_in: The :class:`~multiprocessing.queues.Queue` through which
-        the images to process are received.
-      img_out: The :class:`~multiprocessing.queues.Queue` through which
-        the calculated histograms are sent back.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
-      log_queue: A :class:`multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
+      stop_event: Shared :obj:`multiprocessing.Event` requesting worker
+        shutdown.
+      processing_event: Shared :obj:`multiprocessing.Event` set while a request
+        is being processed.
+      img_in: Input :obj:`~multiprocessing.Queue` carrying (image, auto_range,
+        low_thresh, high_thresh) tuples. Images contain 8-bit grayscale preview
+        pixels.
+      img_out: Output :obj:`~multiprocessing.Queue` receiving uint8 histogram
+        images of shape (80, 512). Background pixels are 255, bars are 0, and
+        Auto range markers are 127.
+      log_level: Worker logging level, or :obj:`None` to disable worker
+        logging.
+      log_queue: Crappy logging queue, used with spawn and forkserver start
+        methods to forward records to the main process.
     """
 
     self._logger: logging.Logger | None = None
@@ -60,16 +59,16 @@ class HistogramProcess(Process):
     self._img_out: Queue = img_out
 
   def run(self) -> None:
-    """The main method being run by the HistogramProcess.
+    """Processes histogram requests until shutdown or failure.
 
-    It continuously receives images from the
-    :class:`~crappy.tool.camera_config.CameraConfig`, calculates their
-    histograms and returns them back as a nice image to integrate on the
-    window.
+    Calculates 256 intensity bins, scales the largest bin to the display
+    height, and adds optional Auto range markers. Results are images for
+    backend rendering, not numerical bin counts.
     """
 
     try:
       self._processing_event.clear()
+      self.log(logging.DEBUG, "Histogram worker started")
 
       # Looping until told to stop or an exception is raised
       latest = None
@@ -107,7 +106,7 @@ class HistogramProcess(Process):
 
           # Adding vertical grey bars to indicate the limits of the auto range
           if auto_range:
-            self.log(logging.DEBUG, "Drawing the line of the auto-range")
+            self.log(logging.DEBUG, "Drawing Auto range threshold markers")
             out_img[:, round(2 * low_thresh)] = 127
             out_img[:, round(2 * high_thresh)] = 127
 
@@ -121,20 +120,21 @@ class HistogramProcess(Process):
           latest = None
           self._processing_event.clear()
 
-      self.log(logging.INFO, "Stop event set, stopping")
+      self.log(logging.DEBUG, "Histogram worker stopping after shutdown "
+                              "request")
 
     except KeyboardInterrupt:
-      self.log(logging.INFO, "Caught KeyboardInterrupt, stopping")
+      self.log(logging.DEBUG, "Histogram worker interrupted")
     except (Exception,) as exc:
       if self._logger is None:
         self._set_logger()
-      self._logger.exception("Caught Exception while running, stopping !",
+      self._logger.exception("Histogram processing failed",
                              exc_info=exc)
     finally:
       self.log(logging.DEBUG, "Empty queues before exiting")
       self._flush_queue(self._img_in)
       self._flush_queue(self._img_out)
-      self.log(logging.INFO, "HistogramProcess finished")
+      self.log(logging.DEBUG, "Histogram worker finished")
 
   @staticmethod
   def _hist_func(x: np.ndarray,
@@ -147,11 +147,11 @@ class HistogramProcess(Process):
 
   @staticmethod
   def _flush_queue(queue: Queue) -> None:
-    """Helper for flushing a :class:`~multiprocessing.queues.Queue` before
-    exiting.
+    """Drains a :obj:`~multiprocessing.Queue` before exiting.
 
-    On Windows, not empty queues can prevent the HistogramProcess from
-    finishing on time.
+    Pending queue contents can prevent the
+    :class:`~crappy.tool.camera_config.config_tools.HistogramProcess` from
+    finishing on time, especially with the spawn start method.
     """
 
     try:
@@ -161,7 +161,8 @@ class HistogramProcess(Process):
       pass
 
   def log(self, level: int, msg: str) -> None:
-    """Records log messages for the HistogramProcess.
+    """Records log messages for the
+    :class:`~crappy.tool.camera_config.config_tools.HistogramProcess`.
 
     Also instantiates the :obj:`~logging.Logger` when logging the first
     message.
@@ -177,7 +178,8 @@ class HistogramProcess(Process):
     self._logger.log(level, msg)
 
   def _set_logger(self) -> None:
-    """Instantiates and sets up the logger for the HistogramProcess."""
+    """Instantiates and sets up the logger for the
+    :class:`~crappy.tool.camera_config.config_tools.HistogramProcess`."""
 
     logger = logging.getLogger(self.name)
 
@@ -187,8 +189,9 @@ class HistogramProcess(Process):
     else:
       logging.disable()
 
-    # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn" and self._log_level is not None:
+    # On spawn and forkserver, the messages need to be sent through a Queue for
+    # logging
+    if get_start_method() != 'fork' and self._log_level is not None:
       queue_handler = logging.handlers.QueueHandler(self._log_queue)
       queue_handler.setLevel(self._log_level)
       logger.addHandler(queue_handler)

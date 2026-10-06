@@ -36,8 +36,8 @@ def read():
 
 
 """Enters an infinite loop and exits only upon reception of 'goXY'. X is the
-number of command labels, Y is the number of labels. The labels are then 
-received and stored. This setup prevents the program from doing anything before 
+number of command labels, and Y is the number of labels. The labels are then
+received and stored. This setup prevents the program from doing anything before
 it is told to."""
 while True:
   if p.poll(0):
@@ -76,7 +76,7 @@ def send_to_pc(var, label):
   """Sends back data to the PC.
 
   If send_t is True, also sends back the timestamp in milliseconds. The time
-  is encoded as an integer, the data as a float. Inbetween, a signed char
+  is encoded as an integer and the data as a float. In between, a signed char
   indicates the index of the label that is being sent. This index has been set
   by the PC and sent in the labels dict.
 
@@ -106,7 +106,7 @@ while True:
 
   # Acquiring commands
   # Their names are those of the cmd_labels in the UController block
-  # In the example only freq can be updated as it is the only element of
+  # In the example, only freq can be updated because it is the only element of
   # cmd_labels
   if msg:
     globals()[commands[int(msg[0])]] = float(msg[1:])
@@ -139,6 +139,6 @@ while True:
 
     # <<<<<<<<
 
-"""Reset the microcontroller, so that it is then stuck again in the first 
+"""Resets the microcontroller so that it is again held in the first
 infinite loop and waiting for the 'go' message."""
 reset()

@@ -7,7 +7,11 @@ from pathlib import Path
 
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
-from ..tool.camera_config import DISCorrelConfig, Box
+from ..tool.camera_config import (CameraConfig, Box,
+                                  create_configurator)
+from ..tool.camera_config.tkinter import TkinterDISCorrelConfig
+from ..tool.camera_config.pyqt import PyQtDISCorrelConfig
+from ..tool.image_processing.fields import allowed_fields
 
 field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
                      'exy', 'eyx', 'exy2', 'z'] | np.ndarray
@@ -15,15 +19,15 @@ field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
 
 class DISCorrel(Camera):
   """This Block can perform Dense Inverse Search on a sub-frame (patch) of
-  images acquired by a :class:`~crappy.camera.Camera` object, and project the
-  result on various fields.
+  images acquired by a :class:`~crappy.camera.meta_camera.camera.Camera`
+  object, and project the result on various fields.
 
   It is mostly used for computing the displacement and the strain over the
   given patch, but other fields are also available. refer to the ``fields`` and
   ``labels`` arguments for more details. It relies on OpenCV's DISFlow
   algorithm, and offers the possibility to adjust many of its settings.
 
-  This Block takes no input :class:`~crappy.links.Link` in a majority of
+  This Block takes no input :class:`~crappy.links.link.Link` in a majority of
   situations, and outputs the results of image correlation. It is a subclass of
   the :class:`~crappy.blocks.Camera` Block, and inherits of all its features.
   That includes the possibility to record and to display images in real-time,
@@ -36,19 +40,24 @@ class DISCorrel(Camera):
   correlation for computing the displacement and strain on images, but it
   tracks multiple patches and uses video-extensometry.
 
-  Similar to the :class:`~crappy.tool.camera_config.CameraConfig` window that
-  can be displayed by the Camera Block, this Block can display a
-  :class:`~crappy.tool.camera_config.DISCorrelConfig` window before the test
-  starts. Here, the user can also select the patch to track if it was not
-  already specified as an argument.
+  Similar to the :class:`~crappy.tool.camera_config.base.camera_config.\
+CameraConfig` window that can be displayed by the Camera Block, this Block can
+  display a
+  :class:`~crappy.tool.camera_config.base.dis_correl_config.DISCorrelConfig`
+  window before the test starts. Here, the user can also select the patch to
+  track if it was not already specified as an argument.
   
   .. versionadded:: 1.4.0
   """
+
+  configurator = {'tkinter': TkinterDISCorrelConfig,
+                  'pyqt': PyQtDISCorrelConfig}
 
   def __init__(self,
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
+               config_backend: Literal['tkinter', 'pyqt'] = 'pyqt',
                display_images: bool = False,
                displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
@@ -79,13 +88,15 @@ class DISCorrel(Camera):
                patch_size: int = 8,
                patch_stride: int = 3,
                residual: bool = False,
+               border: int | tuple[int, int] | None = 16,
+               follow: bool = False,
                **kwargs) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
-      camera: The name of the :class:`~crappy.camera.Camera` object to use for
-        acquiring the images. Arguments can be passed to this Camera as
-        ``kwargs`` of this Block. This argument is ignored if the
+      camera: The name of the :class:`~crappy.camera.meta_camera.camera.Camera`
+        object to use for acquiring the images. Arguments can be passed to this
+        Camera as ``kwargs`` of this Block. This argument is ignored if the
         ``image_generator`` argument is provided.
       transform: A callable taking an image as an argument, and returning a
         transformed image as an output. Allows applying a post-processing
@@ -97,17 +108,22 @@ class DISCorrel(Camera):
 
         .. versionadded:: 1.5.10
       config: If :obj:`True`, a
-        :class:`~crappy.tool.camera_config.DISCorrelConfig` window is displayed
-        before the test starts. There, the user can interactively adjust the
-        different
+        :class:`~crappy.tool.camera_config.base.dis_correl_config.\
+DISCorrelConfig` window is displayed before the test starts. There, the user
+        can interactively adjust the different
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
-        available for the selected :class:`~crappy.camera.Camera`, visualize
-        the acquired images, and select the patch to track if it hasn't
-        been given in the ``patch`` argument. The test starts when closing
-        the configuration window. If not enabled, the ``img_dtype``,
-        ``img_shape`` and ``patch`` arguments must be provided.
+        available for the selected
+        :class:`~crappy.camera.meta_camera.camera.Camera`, visualize the
+        acquired images, and select the patch to track if it hasn't been given
+        in the ``patch`` argument. The test starts when closing the
+        configuration window. If not enabled, the ``img_dtype``, ``img_shape``
+        and ``patch`` arguments must be provided.
 
         .. versionadded:: 1.5.10
+      config_backend: GUI backend for the configuration window, either
+        ``'tkinter'`` or ``'pyqt'`` (requires PyQt6).
+
+        .. versionadded:: 2.1.0
       display_images: If :obj:`True`, displays the acquired images in a
         dedicated window, using the backend given in ``displayer_backend`` and
         at the frequency specified in ``displayer_framerate``. This option
@@ -121,7 +137,7 @@ class DISCorrel(Camera):
         .. versionchanged:: 1.5.10
            renamed from *show_image* to *display_images*
       displayer_backend: The backend to use for displaying the images. Can be
-        either ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` (OpenCV)
+        either ``'cv2'`` or ``'mpl'``, to use respectively ``cv2`` (OpenCV)
         or :mod:`matplotlib`. ``'cv2'`` usually allows achieving a higher
         display frequency. Ignored if ``display_images`` is :obj:`False`. If
         not given and ``display_images`` is :obj:`True`, ``'cv2'`` is tried
@@ -135,12 +151,12 @@ class DISCorrel(Camera):
 
         .. versionadded:: 1.5.10
       software_trig_label: The name of a label used as a software trigger for
-        the :class:`~crappy.camera.Camera`. If given, images will only be
-        acquired when receiving data over this label. The received value does
-        not matter. This software trigger is not meant to be very precise, it
-        is recommended not to rely on it for a trigger frequency greater than
-        10Hz, in which case a hardware trigger should be preferred if available
-        on the camera.
+        the :class:`~crappy.camera.meta_camera.camera.Camera`. If given, images
+        will only be acquired when receiving data over this label. The received
+        value does not matter. This software trigger is not meant to be very
+        precise, it is recommended not to rely on it for a trigger frequency
+        greater than 10Hz, in which case a hardware trigger should be preferred
+        if available on the camera.
 
         .. versionadded:: 2.0.0
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -164,12 +180,13 @@ class DISCorrel(Camera):
         the name : ``<frame_nr>_<timestamp>.<extension>``, and can thus easily
         be identified. Along with the images, a ``metadata.csv`` file records
         the metadata of all the saved images. This metadata is either the one
-        returned by the :meth:`~crappy.camera.Camera.get_image` method of the
-        :class:`~crappy.camera.Camera` object, or the default one generated in
-        the :meth:`~crappy.blocks.Camera.loop` method of the
-        :class:`~crappy.blocks.Camera` Block. Depending on the framerate of the
-        camera and the performance of the computer, it is not guaranteed that
-        all the acquired images will be recorded.
+        returned by the
+        :meth:`~crappy.camera.meta_camera.camera.Camera.get_image` method of
+        the :class:`~crappy.camera.meta_camera.camera.Camera` object, or the
+        default one generated in the :meth:`~crappy.blocks.Camera.loop` method
+        of this Block. Depending on the framerate of the camera and the
+        performance of the computer, it is not guaranteed that all the acquired
+        images will be recorded.
 
         .. versionadded:: 1.5.10
       img_extension: The file extension for the recorded images, as a
@@ -204,8 +221,8 @@ class DISCorrel(Camera):
 
           'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
-        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
+        They correspond to the modules ``SimpleITK``, :mod:`PIL` (Pillow
+        Fork), ``cv2`` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
         backend saves the images as raw :obj:`numpy.array`, and thus ignores
         the ``img_extension`` argument. Depending on the machine, some backends
         may be faster or slower. For using each backend, the corresponding
@@ -225,17 +242,17 @@ class DISCorrel(Camera):
 
         .. versionadded:: 1.5.10
       img_shape: The shape of the images returned by the
-        :class:`~crappy.camera.Camera` object as a :obj:`tuple` of :obj:`int`.
-        It should correspond to the value returned by :obj:`numpy.shape`.
-        **This argument is mandatory in case** ``config`` **is** :obj:`False`.
-        It is otherwise ignored.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object as a
+        :obj:`tuple` of :obj:`int`. It should correspond to the value returned
+        by :obj:`numpy.shape`. **This argument is mandatory in case**
+        ``config`` **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       img_dtype: The `dtype` of the images returned by the
-        :class:`~crappy.camera.Camera` object, as a :obj:`str`. It should
-        correspond to a valid data type in :mod:`numpy`, e.g. ``'uint8'``.
-        **This argument is mandatory in case** ``config`` **is** :obj:`False`.
-        It is otherwise ignored.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, as a
+        :obj:`str`. It should correspond to a valid data type in :mod:`numpy`,
+        e.g. ``'uint8'``. **This argument is mandatory in case** ``config``
+        **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       patch: The coordinates of the patch to track, as a :obj:`tuple` of
@@ -299,9 +316,29 @@ class DISCorrel(Camera):
         label, that should not be included in the given labels. This option is
         mainly intended as a debug feature, to monitor the quality of the
         image correlation.
+      border: Width in pixels of the additional area around the correlation
+        patch that is passed to DISFlow. An :obj:`int` applies the same border
+        in both directions, while a ``(x, y)`` tuple allows setting the
+        horizontal and vertical borders independently. ``None`` uses the full
+        image, which corresponds to the legacy behavior. A larger border
+        provides stability under large displacements, at the cost of a
+        performance penalty. Without ``follow``, it should exceed the maximum
+        displacement from the reference image; with ``follow``, it should
+        exceed the expected displacement between consecutive frames.
+
+        ..  versionadded:: 2.1.0
+      follow: If :obj:`True`, shifts the correlation area according to the
+        average rigid-body displacement measured on the patch. This allows the
+        patch to follow large cumulative translations while keeping the
+        correlation area small. The reported fields remain relative to the
+        original reference image. This option is relevant when large
+        displacements of the observed area are expected.
+
+        .. versionadded:: 2.1.0
       **kwargs: Any additional argument will be passed to the
-        :class:`~crappy.camera.Camera` object, and used as a kwarg to its
-        :meth:`~crappy.camera.Camera.open` method.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, and used as a
+        kwarg to its :meth:`~crappy.camera.meta_camera.camera.Camera.open`
+        method.
 
     .. versionadded:: 1.5.10 *img_name* argument
     .. versionremoved:: 1.5.10 *residual_full* argument
@@ -311,6 +348,7 @@ class DISCorrel(Camera):
     super().__init__(camera=camera,
                      transform=transform,
                      config=config,
+                     config_backend=config_backend,
                      display_images=display_images,
                      displayer_backend=displayer_backend,
                      displayer_framerate=displayer_framerate,
@@ -328,17 +366,16 @@ class DISCorrel(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
+    # Make sure the patches are correctly provided
     if not config and patch is None:
       raise ValueError("If the config window is disabled, the patch must be "
                        "provided !")
-
     if patch is not None and (not isinstance(patch, tuple)
                               or len(patch) != 4
                               or not all(isinstance(val, int) for val in patch)
                               or not all(val >= 0 for val in patch)):
       raise ValueError("The patch should be provided as a tuple of 4 "
                        "positive integer values")
-
     if patch is not None and (patch[2] <= 0 or patch[3] <= 0):
       raise ValueError("The width and height of the patch must be "
                        "strictly positive integers")
@@ -349,55 +386,96 @@ class DISCorrel(Camera):
 
     # Forcing the fields into a list
     if fields is None:
-      fields = ["x", "y", "exx", "eyy"]
+      _fields = ['x', 'y', 'exx', 'eyy']
     elif isinstance(fields, str) or isinstance(fields, np.ndarray):
-      fields = [fields]
+      _fields = [fields]
     else:
-      fields = list(fields)
+      _fields = list(fields)
+
+    if not all(isinstance(field, (np.ndarray, str)) for field in _fields):
+      raise TypeError("All the provided fields must be either strings or "
+                      "numpy arrays")
+    if not all(field in allowed_fields for field in _fields
+               if isinstance(field, str)):
+      raise ValueError(f"The only allowed values for the fields given as "
+                       f"strings are {allowed_fields}")
 
     # Forcing the labels into a list
     if labels is None:
-      self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)']
+      _labels: list[str] = ['t(s)', 'meta', 'x(pix)', 'y(pix)',
+                            'Exx(%)', 'Eyy(%)']
     elif isinstance(labels, str):
-      self.labels = [labels]
+      _labels: list[str] = [labels]
     else:
-      self.labels = list(labels)
+      _labels: list[str] = list(labels)
 
     # Adding the residuals if required
-    if residual and self.labels is not None:
-      self.labels.append('res')
-
-    # Make sure only string labels are provided
-    if (self.labels is not None and
-        not all(isinstance(label, str) for label in self.labels)):
-      non_str = [label for label in self.labels if not isinstance(label, str)]
-      raise ValueError(f"Some labels are not strings: "
-                       f"{', '.join(map(repr, non_str))}")
-
-    if self.labels is not None and len(set(self.labels)) != len(self.labels):
-      raise ValueError("Duplicate labels provided in the list of labels!")
-
-    self._patch_int = patch
-    self._patch: Box | None = None
+    if residual and _labels is not None:
+      _labels.append('res')
 
     # Making sure a consistent number of labels and fields was given
-    if 2 + len(fields) + int(residual) != len(self.labels):
-      raise ValueError(
-        "The number of fields is inconsistent with the number "
-        "of labels !\nMake sure that the time label was given")
+    if 2 + len(_fields) + int(residual) != len(_labels):
+      raise ValueError("The number of fields is inconsistent with the number "
+                       "of labels !\nMake sure that the time label was given")
+
+    self.labels = _labels
+
+    if ((not isinstance(alpha, float) and not isinstance(alpha, int))
+        or alpha < 0):
+      raise ValueError("alpha must be a positive float")
+    if ((not isinstance(delta, float) and not isinstance(delta, int))
+        or delta < 0):
+      raise ValueError("delta must be a positive float")
+    if ((not isinstance(gamma, float) and not isinstance(gamma, int))
+        or gamma < 0):
+      raise ValueError("gamma must be a positive float")
+    if not isinstance(finest_scale, int) or finest_scale < 0:
+      raise ValueError("finest_scale must be a positive integer")
+    if not isinstance(iterations, int) or iterations < 0:
+      raise ValueError("iterations must be a positive integer")
+    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
+      raise ValueError("gradient_iterations must be a positive integer")
+    if not isinstance(patch_size, int) or patch_size < 0:
+      raise ValueError("patch_size must be a positive integer")
+    if not isinstance(patch_stride, int) or patch_stride < 0:
+      raise ValueError("patch_stride must be a positive integer")
+    if not isinstance(init, bool):
+      raise TypeError("init must be a boolean")
+    if not isinstance(residual, bool):
+      raise TypeError("residual must be a boolean")
+    if border is not None and not isinstance(border, (int, tuple)):
+      raise TypeError("border must be either None, an integer, or a tuple of "
+                      "two integers")
+    if (isinstance(border, tuple) and
+        (len(border) != 2 or not all(isinstance(val, int) for val in border) or
+         not all(val >= 0 for val in border))):
+      raise ValueError("If provided as a tuple, border must contain exactly "
+                       "two non-negative integers")
+    if isinstance(border, int) and border < 0:
+      raise ValueError("If provided as an integer, border must be "
+                       "non-negative")
+    if not isinstance(follow, bool):
+      raise TypeError("follow must be a boolean")
+
+    self._patch_int: tuple[int, int, int, int] | None = patch
+    self._patch: Box | None = None
 
     # These arguments are for the DISCorrelProcess
-    self._fields = fields
-    self._alpha = alpha
-    self._delta = delta
-    self._gamma = gamma
-    self._finest_scale = finest_scale
-    self._init = init
-    self._iterations = iterations
-    self._gradient_iterations = gradient_iterations
-    self._patch_size = patch_size
-    self._patch_stride = patch_stride
-    self._residual = residual
+    self._fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',
+                               'exy', 'eyx', 'exy2', 'z'] |
+                       np.ndarray] = _fields
+    self._alpha: float = alpha
+    self._delta: float = delta
+    self._gamma: float = gamma
+    self._finest_scale: int = finest_scale
+    self._init: bool = init
+    self._iterations: int = iterations
+    self._gradient_iterations: int = gradient_iterations
+    self._patch_size: int = patch_size
+    self._patch_stride: int = patch_stride
+    self._residual: bool = residual
+    self._border: int | tuple[int, int] | None = border
+    self._follow: bool = follow
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
@@ -420,6 +498,10 @@ class DISCorrel(Camera):
     else:
       self._patch = Box()
 
+    if self._patch is None:
+       raise RuntimeError("The patch should have been initialized at that "
+                          "point")
+
     # Instantiating the DISCorrelProcess
     self.process_proc = DISCorrelProcess(
         patch=self._patch,
@@ -433,15 +515,33 @@ class DISCorrel(Camera):
         gradient_iterations=self._gradient_iterations,
         patch_size=self._patch_size,
         patch_stride=self._patch_stride,
-        residual=self._residual)
+        residual=self._residual,
+        border=self._border,
+        follow=self._follow)
 
     super().prepare()
 
-  def _configure(self) -> DISCorrelConfig:
+  def _configure(self) -> CameraConfig:
     """This method should instantiate the
-    :class:`~crappy.tool.camera_config.DISCorrelConfig` window for configuring
-    the :class:`~crappy.camera.Camera` object.
+    :class:`~crappy.tool.camera_config.base.dis_correl_config.DISCorrelConfig`
+    window for configuring the
+    :class:`~crappy.camera.meta_camera.camera.Camera` object.
     """
 
-    return DISCorrelConfig(self._camera, self._log_queue, self._log_level,
-                           self.freq, self._patch)
+    if self._camera is None:
+      raise RuntimeError("At that point the Camera should be set but it isn't")
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+    if self._patch is None:
+      raise RuntimeError("At that point the patch to track should be set but "
+                         "it is not")
+
+    return create_configurator(self.configurator,
+                               self._camera,
+                               self._config_backend,
+                               self._log_queue,
+                               self._log_level,
+                               self.freq,
+                               self._transform,
+                               patch=self._patch)

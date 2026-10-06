@@ -174,7 +174,7 @@ class TestUController(BlockTestBase):
                                           cmd_labels='freq',
                                           init_output={'nr': 0})
 
-    self.assertEqual(ctrl._labels, ['nr'])
+    self.assertEqual(ctrl._uc_labels, ['nr'])
     self.assertEqual(ctrl._cmd_labels, ['freq'])
     self.assertEqual(ctrl._prev_cmd, {'freq': None})
 
@@ -183,7 +183,7 @@ class TestUController(BlockTestBase):
                                           init_output={'a': 0, 'b': 1},
                                           freq=None)
 
-    self.assertEqual(ctrl._labels, ['a', 'b'])
+    self.assertEqual(ctrl._uc_labels, ['a', 'b'])
     self.assertEqual(ctrl._cmd_labels, ['x', 'y'])
     self.assertIsNone(ctrl.freq)
 

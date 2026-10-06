@@ -31,6 +31,8 @@ class TestDISCorrel(CameraWrapperTestBase):
       't(s)', 'meta', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)',
     ])
     self.assertEqual(block._patch_int, (1, 2, 3, 4))
+    self.assertEqual(block._border, 16)
+    self.assertFalse(block._follow)
 
   def test_constructor_normalizes_custom_fields_and_residual_label(self
                                                                     ) -> None:
@@ -78,6 +80,18 @@ class TestDISCorrel(CameraWrapperTestBase):
       DISCorrel(patch=(0, 0, 2, 2), fields=['r'],
                 **self.camera_kwargs())
 
+    with self.assertRaises(TypeError):
+      DISCorrel(patch=(0, 0, 2, 2),
+                fields=['x', object()],
+                labels=['time', 'meta', 'x', 'custom'],
+                **self.camera_kwargs())
+
+    with self.assertRaises(ValueError):
+      DISCorrel(patch=(0, 0, 2, 2),
+                fields=['missing'],
+                labels=['time', 'meta', 'missing'],
+                **self.camera_kwargs())
+
     cases = (
       ['too', 'few'],
       ['same'] * 6,
@@ -89,6 +103,30 @@ class TestDISCorrel(CameraWrapperTestBase):
         with self.assertRaises(ValueError):
           DISCorrel(patch=(0, 0, 2, 2), labels=labels,
                     **self.camera_kwargs())
+
+  def test_constructor_validates_border_and_follow(self) -> None:
+    """Checks correlation crop and following option validation."""
+
+    invalid = (
+      {'border': 'wide'},
+      {'border': (1,)},
+      {'border': (1, -1)},
+      {'border': -1},
+      {'follow': 1},
+    )
+    for options in invalid:
+      with self.subTest(options=options):
+        with self.assertRaises((TypeError, ValueError)):
+          DISCorrel(patch=(0, 0, 2, 2),
+                    **options,
+                    **self.camera_kwargs())
+
+    block = DISCorrel(patch=(0, 0, 2, 2),
+                      border=(0, 0),
+                      follow=True,
+                      **self.camera_kwargs())
+    self.assertEqual(block._border, (0, 0))
+    self.assertTrue(block._follow)
 
   def test_prepare_builds_box_and_forwards_process_options(self) -> None:
     """Checks ROI conversion and DISCorrelProcess option forwarding."""
@@ -107,6 +145,8 @@ class TestDISCorrel(CameraWrapperTestBase):
                       patch_size=7,
                       patch_stride=8,
                       residual=True,
+                      border=(9, 10),
+                      follow=True,
                       **self.camera_kwargs())
 
     with (patch.object(dis_correl_module, 'DISCorrelProcess', RecordingProcess),
@@ -134,6 +174,8 @@ class TestDISCorrel(CameraWrapperTestBase):
       'patch_size': 7,
       'patch_stride': 8,
       'residual': True,
+      'border': (9, 10),
+      'follow': True,
     })
 
   def test_prepare_allows_gui_to_populate_box(self) -> None:
@@ -152,7 +194,12 @@ class TestDISCorrel(CameraWrapperTestBase):
   def test_configure_forwards_camera_and_box(self) -> None:
     """Checks DISCorrelConfig receives the current Camera and ROI."""
 
+    def transform(img):
+      return img
+
     block = DISCorrel(patch=(0, 0, 2, 2),
+                      transform=transform,
+                      config_backend='tkinter',
                       **self.camera_kwargs(config=True))
     block._camera = sentinel.camera
     block._log_queue = sentinel.log_queue
@@ -160,13 +207,14 @@ class TestDISCorrel(CameraWrapperTestBase):
     block.freq = 123
     block._patch = sentinel.box
 
-    with patch.object(dis_correl_module, 'DISCorrelConfig',
-                      return_value=sentinel.config) as config:
+    with patch.object(dis_correl_module, 'create_configurator',
+                      return_value=sentinel.config) as factory:
       ret = block._configure()
 
     self.assertIs(ret, sentinel.config)
-    config.assert_called_once_with(sentinel.camera,
-                                   sentinel.log_queue,
-                                   30,
-                                   123,
-                                   sentinel.box)
+    factory.assert_called_once_with(
+                                    {'tkinter': dis_correl_module.TkinterDISCorrelConfig,
+                                     'pyqt': dis_correl_module.PyQtDISCorrelConfig},
+                                    sentinel.camera, 'tkinter',
+                                    sentinel.log_queue, 30, 123.0, transform,
+                                    patch=sentinel.box)

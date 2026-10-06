@@ -52,8 +52,8 @@ class GPIOSwitch(InOut):
           'Pi4', 'blinka'
 
         The `'Pi4'` backend only works on the Raspberry Pis. The `'blinka'`
-        backend requires installing :mod:`Adafruit-Blinka`, but this module is
-        compatible with and maintained on a wide variety of boards.
+        backend requires installing ``Adafruit-Blinka``, which is compatible
+        with and maintained on a wide variety of boards.
 
         .. versionadded:: 1.5.10
     

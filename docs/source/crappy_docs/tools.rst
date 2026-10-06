@@ -35,40 +35,122 @@ Py Spectrum
 Camera Configurators
 --------------------
 
-Camera Configurator
+.. automodule:: crappy.tool.camera_config
+
+.. list-table:: Configuration class families
+   :header-rows: 1
+   :widths: 25 37 38
+
+   * - Shared base
+     - Tkinter window
+     - PyQt6 window
+   * - :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
+     - :class:`~crappy.tool.camera_config.tkinter.camera_config.TkinterCameraConfig`
+     - :class:`~crappy.tool.camera_config.pyqt.camera_config.PyQtCameraConfig`
+   * - :class:`~crappy.tool.camera_config.base.camera_config_boxes.CameraConfigBoxes`
+     - :class:`~crappy.tool.camera_config.tkinter.camera_config_boxes.TkinterCameraConfigBoxes`
+     - :class:`~crappy.tool.camera_config.pyqt.camera_config_boxes.PyQtCameraConfigBoxes`
+   * - :class:`~crappy.tool.camera_config.base.dic_ve_config.DICVEConfig`
+     - :class:`~crappy.tool.camera_config.tkinter.dic_ve_config.TkinterDICVEConfig`
+     - :class:`~crappy.tool.camera_config.pyqt.dic_ve_config.PyQtDICVEConfig`
+   * - :class:`~crappy.tool.camera_config.base.dis_correl_config.DISCorrelConfig`
+     - :class:`~crappy.tool.camera_config.tkinter.dis_correl_config.TkinterDISCorrelConfig`
+     - :class:`~crappy.tool.camera_config.pyqt.dis_correl_config.PyQtDISCorrelConfig`
+   * - :class:`~crappy.tool.camera_config.base.video_extenso_config.VideoExtensoConfig`
+     - :class:`~crappy.tool.camera_config.tkinter.video_extenso_config.TkinterVideoExtensoConfig`
+     - :class:`~crappy.tool.camera_config.pyqt.video_extenso_config.PyQtVideoExtensoConfig`
+
+Base configurations
 +++++++++++++++++++
-.. autoclass:: crappy.tool.camera_config.CameraConfig
-   :members: start, log
+
+.. automodule:: crappy.tool.camera_config.base
+
+.. autoclass:: crappy.tool.camera_config.base.camera_config.CameraConfig
+   :members: run, stop, watch_shutdown, get_config, log,
+             _create_local_settings, _extra_actions, _validate_close,
+             _on_valid_close
    :special-members: __init__
 
-Camera Configurator with Boxes
-++++++++++++++++++++++++++++++
-.. autoclass:: crappy.tool.camera_config.CameraConfigBoxes
+.. autoclass:: crappy.tool.camera_config.base.camera_config.ConfigAction
    :special-members: __init__
 
-DIS Correl Configurator
-+++++++++++++++++++++++
-.. autoclass:: crappy.tool.camera_config.DISCorrelConfig
+.. autoclass:: crappy.tool.camera_config.base.camera_config_boxes.CameraConfigBoxes
+   :members: _on_selection_start, _on_selection_drag, _on_selection_complete,
+             _on_selection_end, _handle_box_outside_img
    :special-members: __init__
 
-DIS VE Configurator
-+++++++++++++++++++
-.. autoclass:: crappy.tool.camera_config.DICVEConfig
+.. autoclass:: crappy.tool.camera_config.base.dis_correl_config.DISCorrelConfig
+   :members: box, get_config
+
+.. autoclass:: crappy.tool.camera_config.base.dic_ve_config.DICVEConfig
+   :members: get_config
+
+.. autoclass:: crappy.tool.camera_config.base.video_extenso_config.VideoExtensoConfig
+   :members: get_config
+
+Tkinter configurations
+++++++++++++++++++++++
+
+.. automodule:: crappy.tool.camera_config.tkinter
+
+.. autoclass:: crappy.tool.camera_config.tkinter.camera_config.TkinterCameraConfig
+   :members: run, start, watch_shutdown, finish, stop
    :special-members: __init__
 
-Video Extenso Configurator
-++++++++++++++++++++++++++
-.. autoclass:: crappy.tool.camera_config.VideoExtensoConfig
+.. autoclass:: crappy.tool.camera_config.tkinter.camera_config_boxes.TkinterCameraConfigBoxes
    :special-members: __init__
+
+.. autoclass:: crappy.tool.camera_config.tkinter.dic_ve_config.TkinterDICVEConfig
+   :members: get_config
+   :special-members: __init__
+
+.. autoclass:: crappy.tool.camera_config.tkinter.dis_correl_config.TkinterDISCorrelConfig
+   :members: get_config
+   :special-members: __init__
+
+.. autoclass:: crappy.tool.camera_config.tkinter.video_extenso_config.TkinterVideoExtensoConfig
+   :members: get_config
+   :special-members: __init__
+
+PyQt6 configurations
+++++++++++++++++++++
+
+.. automodule:: crappy.tool.camera_config.pyqt
+
+.. autoclass:: crappy.tool.camera_config.pyqt.camera_config.PyQtCameraConfig
+   :members: run, start, watch_shutdown, finish, stop
+   :special-members: __init__
+
+.. autoclass:: crappy.tool.camera_config.pyqt.camera_config_boxes.PyQtCameraConfigBoxes
+   :special-members: __init__
+
+.. autoclass:: crappy.tool.camera_config.pyqt.dic_ve_config.PyQtDICVEConfig
+   :members: get_config
+   :special-members: __init__
+
+.. autoclass:: crappy.tool.camera_config.pyqt.dis_correl_config.PyQtDISCorrelConfig
+   :members: get_config
+   :special-members: __init__
+
+.. autoclass:: crappy.tool.camera_config.pyqt.video_extenso_config.PyQtVideoExtensoConfig
+   :members: get_config
+   :special-members: __init__
+
+Configurator selection
+++++++++++++++++++++++
+
+.. autofunction:: crappy.tool.camera_config.factory.create_configurator
 
 Configurator Tools
 ++++++++++++++++++
 
+.. automodule:: crappy.tool.camera_config.config_tools
+
 Box
 """
 .. autoclass:: crappy.tool.camera_config.config_tools.Box
-   :members: no_points, reset, sorted, draw
-   :special-members: __init__, __post_init__
+   :members: no_points, reset, sorted, update, draw
+   :special-members: __init__, __post_init__, __add__
 
 Histogram Process
 """""""""""""""""
@@ -85,7 +167,7 @@ Overlay
 Spots Boxes
 """""""""""
 .. autoclass:: crappy.tool.camera_config.config_tools.SpotsBoxes
-   :members: set_spots, empty, reset
+   :members: set_spots, save_length, empty, reset, copy
    :special-members: __init__
 
 Spots Detector
@@ -104,47 +186,33 @@ Data
 ----
 The folder `src/crappy/tool/data/` contains various images that need to be
 distributed with the module. The `no_image.png` image is used by the
-:class:`~crappy.tool.camera_config.CameraConfig` window in case no image could
-be acquired yet. The `speckle.png` and `ve_markers.tif` images serve as example
-of samples with respectively a speckle and spots drawn on them. They are used
-in several examples to demonstrate the use of
+:class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` window in
+case no image could be acquired yet. The `speckle.png` and `ve_markers.tif`
+images serve as example of samples with respectively a speckle and spots drawn
+on them. They are used in several examples to demonstrate the use of
 :class:`~crappy.blocks.VideoExtenso` or :class:`~crappy.blocks.DICVE` without
 requiring any camera. The `pad.png` image is used for demonstrating the
 use of the :class:`~crappy.blocks.Canvas` Block.
 
-FT232H Tools
-------------
-
-FT232H
-++++++
-.. autoclass:: crappy.tool.ft232h.FT232H
-   :members: write_byte, write_byte_data, write_word_data, write_block_data,
-             write_i2c_block_data, read_byte, read_byte_data, read_word_data,
-             read_i2c_block_data, i2c_rdwr, bits_per_word, cshigh, loop, no_cs,
-             lsbfirst, max_speed_hz, mode, threewire, readbytes, writebytes,
-             writebytes2, xfer, xfer2, xfer3, get_gpio, set_gpio, close, log
-   :special-members: __init__
-
-FT232H Server
-+++++++++++++
-.. autoclass:: crappy.tool.ft232h.FT232HServer
-   :members: close
-   :special-members: __init__
-
-I2C Message
-+++++++++++
-.. autoclass:: crappy.tool.ft232h.I2CMessage
-   :members: read, write, addr, buf, len
-   :special-members: __init__
-
-USB Server
-++++++++++
-.. autoclass:: crappy.tool.ft232h.USBServer
-   :members: register, start_server, stop_server, run, log
-   :special-members: __init__
-
 Image Processing Tools
 ----------------------
+
+.. automodule:: crappy.tool.image_processing
+
+Synthetic Strain Image
+++++++++++++++++++++++
+
+.. automodule:: crappy.tool.apply_strain_image
+
+.. currentmodule:: crappy.tool.apply_strain_image
+
+.. autoclass:: ApplyStrainToImage
+   :special-members: __init__, __call__
+
+This public helper deforms a reference image according to horizontal and
+vertical strain values. It is primarily used as the ``image_generator`` of a
+:class:`~crappy.blocks.vision.CameraSource` or all-in-one Camera Block in
+hardware-free examples. It requires OpenCV.
 
 DIS Correl Tool
 +++++++++++++++
@@ -170,10 +238,12 @@ GPU Correl Tool
              get_res, clean
    :special-members: __init__
 
+.. _gpu-kernels:
+
 GPU Kernels
 +++++++++++
 The `src/crappy/tool/image_processing/kernels.cu` file contains the default
-kernels to use with :mod:`pycuda`. They're used by the
+kernels to use with :external+pycuda:mod:`pycuda`. They're used by the
 :class:`~crappy.tool.image_processing.GPUCorrelTool` if no other kernel file is
 provided.
 

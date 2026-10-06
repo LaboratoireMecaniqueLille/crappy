@@ -9,13 +9,26 @@ from .box import Box
 
 @dataclass
 class SpotsBoxes:
-  """This class stores up to four instances of
-  :class:`~crappy.tool.camera_config.config_tools.Box`, defining the bounding
-  boxes of the spots for :class:`~crappy.blocks.VideoExtenso` or the patches
-  for :class:`~crappy.blocks.DICVE`.
+  """Collection of up to four spot or tracking-patch boxes.
 
-  It can also instantiate the Box objects by parsing a list of tuples
-  containing enough information.
+  Iteration visits all four slots, including empty ones. :obj:`len() <len>`
+  counts populated slots. Initial lengths are the horizontal and vertical
+  distance between extreme centroids, saved independently of the box
+  collection.
+
+  Attributes:
+    spot_1: First :class:`~crappy.tool.camera_config.config_tools.Box`, or
+      :obj:`None` if unused.
+    spot_2: Second :class:`~crappy.tool.camera_config.config_tools.Box`, or
+      :obj:`None` if unused.
+    spot_3: Third :class:`~crappy.tool.camera_config.config_tools.Box`, or
+      :obj:`None` if unused.
+    spot_4: Fourth :class:`~crappy.tool.camera_config.config_tools.Box`, or
+      :obj:`None` if unused.
+    x_l0: Initial horizontal centroid distance in pixels, or :obj:`None` if
+      unset.
+    y_l0: Initial vertical centroid distance in pixels, or :obj:`None` if
+      unset.
 
   .. versionadded:: 2.0.0
   """
@@ -62,18 +75,23 @@ class SpotsBoxes:
 
   def set_spots(self,
                 spots: list[tuple[int, int, int, int]]) -> None:
-    """Parses a list of tuples and instantiates the corresponding
-    :class:`~crappy.tool.camera_config.config_tools.Box` objects."""
+    """Creates boxes from region coordinates without clearing unused slots.
+
+    Args:
+      spots: Up to four (y, x, height, width) tuples in full-image pixels. Call
+        :meth:`reset() <crappy.tool.camera_config.config_tools.SpotsBoxes.\
+reset>` first when replacing a larger existing collection.
+    """
 
     for i, spot in enumerate(spots):
       self[i] = Box(x_start=spot[1], x_end=spot[1] + spot[3],
                     y_start=spot[0], y_end=spot[0] + spot[2])
 
   def save_length(self) -> None:
-    """Setting the :attr:`x_l0` and :attr:`y_l0` attributes based on the
-    positions of the centroids.
+    """Saves horizontal and vertical distance between extreme centroids.
 
-    If only one spot is detected, setting the initial lengths to 0.
+    Missing centroids are calculated from box corners. With at most one
+    populated spot, both lengths are zero. Results are stored in x_l0 and y_l0.
     """
 
     # Calculating the centroids of the spots if not already known
@@ -87,6 +105,15 @@ class SpotsBoxes:
     if len(self) > 1:
       x_centers = [spot.x_centroid for spot in self if spot is not None]
       y_centers = [spot.y_centroid for spot in self if spot is not None]
+      x_len, y_len = len(x_centers), len(y_centers)
+      x_centers = [el for el in x_centers if el is not None]
+      y_centers = [el for el in y_centers if el is not None]
+      if x_len != len(x_centers):
+        raise RuntimeError("One of the spot's x centroid wasn't computed as "
+                           "expected")
+      if y_len != len(y_centers):
+        raise RuntimeError("One of the spot's y centroid wasn't computed as "
+                           "expected")
       self.x_l0 = max(x_centers) - min(x_centers)
       self.y_l0 = max(y_centers) - min(y_centers)
 
@@ -101,7 +128,38 @@ class SpotsBoxes:
     return all(spot is None for spot in self)
 
   def reset(self) -> None:
-    """Resets the boxes to :obj:`None`."""
+    """Clears all four box slots without changing the saved initial lengths."""
 
     for i in range(4):
       self[i] = None
+
+  def copy(self, use_displacements: bool = False) -> SpotsBoxes:
+    """Returns an independent copy of the stored boxes.
+
+    Args:
+      use_displacements: If :obj:`True`, adds each
+        :class:`~crappy.tool.camera_config.config_tools.Box`'s rounded
+        ``x_disp`` and ``y_disp`` to its coordinates. Undefined displacements
+        are treated as zero. This is useful for generating overlays when the
+        tracked boxes themselves remain at their reference positions.
+
+    Returns:
+      A new :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`
+      instance with the same populated slots and initial lengths. Each
+      populated slot contains a new
+      :class:`~crappy.tool.camera_config.config_tools.Box` created using
+      :meth:`~crappy.tool.camera_config.config_tools.Box.__add__`.
+    """
+
+    spots = SpotsBoxes(x_l0=self.x_l0, y_l0=self.y_l0)
+    for i, spot in enumerate(self):
+      if spot is None:
+        continue
+
+      x_offset = spot.x_disp if (use_displacements
+                                 and spot.x_disp is not None) else 0
+      y_offset = spot.y_disp if (use_displacements
+                                 and spot.y_disp is not None) else 0
+      spots[i] = spot + (round(x_offset), round(y_offset))
+
+    return spots

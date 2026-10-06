@@ -2,16 +2,13 @@
 
 """
 This example demonstrates the use of the StopButton Block. It does not require
-any hardware nor specific Python module to run.
+hardware, but requires PyQt6.
 
-This Block simply allows to stop a test when clicking on a button in a GUI. It
-constitutes one of the clean ways to stop a Crappy script.
+This Block provides a GUI button that cleanly stops a test when clicked.
 
 Here, only one StopButton Block is instantiated, waiting to be clicked.
 
-After starting this script, just click on the button that appeared and it will
-stop the test. You can also stop this script by hitting CTRL+C, but it is not a
-proper way to end a script in Crappy.
+After starting this script, click the button to stop the test.
 """
 
 import crappy

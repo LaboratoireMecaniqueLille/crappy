@@ -2,12 +2,16 @@
 Cameras
 =======
 
-Regular Cameras
----------------
+Camera drivers
+--------------
+
+Drivers whose documented path starts with ``crappy.collection`` are retained
+for compatibility but are not actively maintained. Import
+``crappy.collection`` before selecting one of them in a Camera Block.
 
 Camera gPhoto2
 ++++++++++++++
-.. autoclass:: crappy.camera.CameraGPhoto2
+.. autoclass:: crappy.collection.camera.gphoto2_camera.CameraGPhoto2
    :members: open, get_image, close
    :special-members: __init__
 
@@ -37,7 +41,7 @@ File Reader
 
 Raspberry Pi Camera
 +++++++++++++++++++
-.. autoclass:: crappy.camera.RaspberryPiCamera
+.. autoclass:: crappy.collection.camera.raspberry_pi_camera.RaspberryPiCamera
    :members: open, get_image, close
    :special-members: __init__
 
@@ -49,7 +53,7 @@ Raspberry Pi Camera 2
 
 Seek Thermal Pro
 ++++++++++++++++
-.. autoclass:: crappy.camera.SeekThermalPro
+.. autoclass:: crappy.collection.camera.seek_thermal_pro.SeekThermalPro
    :members: open, get_image, close
    :special-members: __init__
 
@@ -65,33 +69,16 @@ Xi API
    :members: open, get_image, close
    :special-members: __init__
 
-CameraLink Cameras
-------------------
-
-Basler Ironman Camera Link
-++++++++++++++++++++++++++
-.. autoclass:: crappy.camera.cameralink.BaslerIronmanCameraLink
-   :members: open, get_image, close
-   :special-members: __init__
-
-JAI GO-5000C-PMCL
-+++++++++++++++++
-.. autoclass:: crappy.camera.cameralink.JaiGO5000CPMCL
-   :members: open, get_image
-   :special-members: __init__
-
-JAI GO-5000C-PMCL 8 bits
-++++++++++++++++++++++++
-.. autoclass:: crappy.camera.cameralink.JaiGO5000CPMCL8Bits
-   :members: open
-   :special-members: __init__
-
 Parent Camera
 -------------
 
 Camera
 ++++++
-.. autoclass:: crappy.camera.Camera
+.. automodule:: crappy.camera.meta_camera.camera
+
+.. currentmodule:: crappy.camera.meta_camera.camera
+
+.. autoclass:: Camera
    :members: open, get_image, close, log, add_bool_setting, add_choice_setting,
              add_scale_setting, add_trigger_setting, add_software_roi,
              reload_software_roi, apply_soft_roi, set_all
@@ -103,7 +90,7 @@ Camera Settings
 Camera Setting
 """"""""""""""
 .. autoclass:: crappy.camera.meta_camera.camera_setting.CameraSetting
-   :members: value, log, reload
+   :members: value, revision, allow_reload_override, log, reload
    :special-members: __init__
 
 Camera Bool Setting

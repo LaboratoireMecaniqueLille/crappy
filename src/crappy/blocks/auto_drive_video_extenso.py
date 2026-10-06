@@ -6,13 +6,13 @@ import logging
 
 from .meta_block import Block
 from ..actuator import actuator_dict, Actuator
-from ..tool.ft232h import USBServer
 
 
 class AutoDriveVideoExtenso(Block):
-  """This Block is meant to drive an :class:`~crappy.actuator.Actuator` on 
-  which a :class:`~crappy.camera.Camera` performing video-extensometry is 
-  mounted, so that the spots stay centered on the image.
+  """This Block is meant to drive an
+  :class:`~crappy.actuator.meta_actuator.actuator.Actuator` on which a
+  :class:`~crappy.camera.meta_camera.camera.Camera` performing
+  video-extensometry is mounted, so that the spots stay centered on the image.
 
   It takes the output of a :class:`~crappy.blocks.VideoExtenso` Block and uses 
   the coordinates of the spots to drive the Actuator. The Actuator can only be 
@@ -25,6 +25,8 @@ class AutoDriveVideoExtenso(Block):
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *AutoDrive* to *AutoDriveVideoExtenso*
+  .. versionchanged:: 2.1.0 removed support for Actuators communicating through
+     an FT232H
   """
 
   def __init__(self,
@@ -33,7 +35,6 @@ class AutoDriveVideoExtenso(Block):
                direction: Literal['X-', 'X+', 'Y-', 'Y+'] = 'Y-',
                pixel_range: int = 2048,
                max_speed: float = 200000,
-               ft232h_ser_num: str | None = None,
                freq: float | None = 200,
                display_freq: bool = False,
                debug: bool | None = False) -> None:
@@ -41,10 +42,10 @@ class AutoDriveVideoExtenso(Block):
 
     Args:
       actuator: A :obj:`dict` for initializing the 
-        :class:`~crappy.actuator.Actuator` to drive. Unlike for the
-        :class:`~crappy.blocks.Machine` Block, only the ``'type'`` key is
-        mandatory here. All the other keys will be considered as kwargs to
-        pass to the Actuator.
+        :class:`~crappy.actuator.meta_actuator.actuator.Actuator` to drive.
+        Unlike for the :class:`~crappy.blocks.Machine` Block, only the
+        ``'type'`` key is mandatory here. All the other keys will be considered
+        as kwargs to pass to the Actuator.
       gain: The gain for driving the Actuator in speed. The speed command is
         simply the difference in pixels between the center of the image and the
         center of the spots, multiplied by this gain.
@@ -72,10 +73,11 @@ class AutoDriveVideoExtenso(Block):
         disables logging for this Block.
 
         .. versionadded:: 2.0.0
+
+    .. versionremoved:: 2.1.0 *ft232h_ser_num* argument
     """
 
     self._device: Actuator | None = None
-    self._ft232h_args = None
 
     super().__init__()
     self.labels = ['t(s)', 'diff(pix)']
@@ -107,13 +109,9 @@ class AutoDriveVideoExtenso(Block):
     self._pixel_range = pixel_range
     self._max_speed = max_speed
 
-    # Checking whether the Actuator communicates through an FT232H
-    if actuator_dict[actuator['type']].ft232h:
-      self._ft232h_args = USBServer.register(ft232h_ser_num)
-
   def prepare(self) -> None:
     """Checks the consistency of the linking and initializes the 
-    :class:`~crappy.actuator.Actuator` to drive."""
+    :class:`~crappy.actuator.meta_actuator.actuator.Actuator` to drive."""
 
     # Checking that there's exactly one input link
     if not self.inputs:
@@ -125,11 +123,7 @@ class AutoDriveVideoExtenso(Block):
 
     # Opening and initializing the actuator to drive
     actuator_name = self._actuator.pop('type')
-    if self._ft232h_args is None:
-      self._device = actuator_dict[actuator_name](**self._actuator)
-    else:
-      self._device = actuator_dict[actuator_name](
-        **self._actuator, _ft232h_args=self._ft232h_args)
+    self._device = actuator_dict[actuator_name](**self._actuator)
     self.log(logging.INFO, f"Opening the {type(self._device).__name__} "
                            f"actuator")
     self._device.open()
@@ -138,7 +132,8 @@ class AutoDriveVideoExtenso(Block):
   def loop(self) -> None:
     """Receives the latest data from the :class:`~crappy.blocks.VideoExtenso` 
     Block, calculates the center coordinate in the chosen direction, and sets 
-    the :class:`~crappy.actuator.Actuator` speed accordingly."""
+    the :class:`~crappy.actuator.meta_actuator.actuator.Actuator` speed
+    accordingly."""
 
     # Receiving the latest data
     if not (data := self.recv_last_data(fill_missing=False)):
@@ -166,7 +161,8 @@ class AutoDriveVideoExtenso(Block):
     self.send([t - self.t0, diff])
 
   def finish(self) -> None:
-    """Stops the :class:`~crappy.actuator.Actuator` and closes it."""
+    """Stops the :class:`~crappy.actuator.meta_actuator.actuator.Actuator` and
+    closes it."""
 
     if self._device is not None:
       self.log(logging.INFO, f"Stopping the {type(self._device).__name__} "

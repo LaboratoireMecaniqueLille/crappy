@@ -24,16 +24,21 @@ except (ModuleNotFoundError, ImportError):
 
 
 class SpotsDetector:
-  """This class detects round spots on a grey level image.
+  """Detects up to four round spots in a grayscale image.
 
-  It takes an image from a :class:`~crappy.tool.camera_config.CameraConfig`
-  window as an input of the :meth:`detect_spots` method, and tries to detect
-  the requested number of spots on it. It then stores the position and size of
-  the detected spots, to pass them later on to the
-  :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` along
-  with other variables once the CameraConfig window is closed.
+  The detector stores full-image spot coordinates and an intensity threshold.
+  Concrete :class:`~crappy.blocks.VideoExtenso` configuration windows own it
+  and export detection results. Initial detection requires scikit-image, and
+  median filtering additionally requires OpenCV.
+
+  Attributes:
+    spots: :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`
+      collection updated in place after successful detection.
+    thresh: Threshold calculated for the latest detection attempt.
 
   .. versionadded:: 2.0.0
+  .. versionchanged:: 2.1.0 owned by the configuration window rather than the
+     public :class:`~crappy.blocks.VideoExtenso` Block
   """
 
   def __init__(self,
@@ -44,13 +49,11 @@ class SpotsDetector:
                update_thresh: bool = False,
                safe_mode: bool = False,
                border: int = 5) -> None:
-    """Sets the arguments.
+    """Stores detection options and creates an empty spot collection.
 
     Args:
       white_spots: If :obj:`True`, detects white spots over a black background.
-        If :obj:`False`, detects black spots over a white background. Also
-        passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
+        If :obj:`False`, detects black spots over a white background.
       num_spots: The number of spots to detect, as an :obj:`int` between `1`
         and `4`. If given, will try to detect exactly that number of spots and
         will fail if not enough spots can be detected. If left to :obj:`None`,
@@ -62,32 +65,29 @@ class SpotsDetector:
       blur: An :obj:`int`, odd and greater than `1`, defining the size of the
         kernel to use when applying a median blur filter to the image before
         trying to detect spots. Can also be set to :obj:`None`, in which case
-        no median blur filter is applied before detecting the spots. Also
-        passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
+        no median blur filter is applied before detecting the spots.
       update_thresh: If :obj:`True`, the grey level threshold for detecting
         the spots is re-calculated at each new image. Otherwise, the first
         calculated threshold is kept for the entire test. The spots are less
         likely to be lost with adaptive threshold, but the measurement will be
         more noisy. Adaptive threshold may also yield inconsistent results when
-        spots are lost. Passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` 
-        and not used in this class.
+        spots are lost. This setting is not used during initial detection; the
+        VideoExtenso Block supplies it separately to the runtime processing
+        layer.
       safe_mode: If :obj:`True`, will stop and raise an exception as soon as
         overlapping spots are detected. Otherwise, will first try to reduce the
         detection window to get rid of overlapping. This argument should be
         used when inconsistency in the results may have critical consequences.
-        Passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` 
-        and not used in this class.
+        This setting is not used during initial detection; the VideoExtenso
+        Block supplies it separately to the runtime processing layer.
       border: When searching for the new position of a spot, will search in the
         last known bounding box of this spot plus a few additional pixels in
         each direction. This argument sets the number of additional pixels to
         use. It should be greater than the expected "speed" of the spots, in
         pixels / frame. But if set too high, noise or other spots might hinder
-        the detection. Passed to the 
-        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` 
-        and not used in this class.
+        the detection. This setting is not used during initial detection; the
+        VideoExtenso Block supplies it separately to the runtime processing
+        layer.
     """
 
     self.white_spots = white_spots
@@ -111,22 +111,23 @@ class SpotsDetector:
                    img: np.ndarray,
                    y_orig: int,
                    x_orig: int) -> None:
-    """Transforms the image to improve spot detection, detects up to 4 spots
-    and return a :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`
-    object containing all the detected spots.
+    """Detects spots in a crop and updates stored results in place.
+
+    The intensity threshold is recalculated on each attempt. Small,
+    noncircular, and overlapping candidates are filtered before keeping up to
+    four regions. An unsuccessful attempt logs a warning and retains the
+    previous spot boxes, although thresh has been updated. This method returns
+    :obj:`None`.
 
     Args:
-      img: The sub-image on which the spots should be detected.
-      y_orig: The y coordinate of the top-left pixel of the sub-image on the
-        entire image.
-      x_orig: The x coordinate of the top-left pixel of the sub-image on the
-        entire image.
-
-    Returns:
-      A :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` object
-      containing all the detected spots.
+      img: Grayscale crop to analyze, normally an 8-bit preview image.
+      y_orig: Vertical coordinate of the crop's top-left pixel in the full
+        image.
+      x_orig: Horizontal coordinate of that pixel in the full image.
     """
 
+    self._logger.log(logging.DEBUG, f"Detecting spots in crop of shape "
+                                    f"{img.shape} at (x={x_orig}, y={y_orig})")
     # First, blurring the image if asked to
     if self.blur is not None and self.blur > 1:
       img = cv2.medianBlur(img, self.blur)
@@ -180,11 +181,13 @@ class SpotsDetector:
 
     # Indicating the user if not enough spots were found
     if not props:
-      self._logger.log(logging.WARNING, "No spots found !")
+      self._logger.log(logging.WARNING, "No spots detected, retaining the "
+                                        "previous selection")
       return
     elif self.num_spots is not None and len(props) != self.num_spots:
       self._logger.log(logging.WARNING, f"Expected {self.num_spots} spots, "
-                                        f"found only {len(props)}")
+                                        f"found {len(props)}, retaining the "
+                                        f"previous selection")
       return
 
     # Replacing the previously detected spots with the new ones
@@ -205,6 +208,9 @@ class SpotsDetector:
                           y_start=y_min, y_end=y_max,
                           x_centroid=x, y_centroid=y)
 
+    self._logger.log(logging.INFO, f"Detected {len(props)} spots with "
+                                   f"threshold {self.thresh}")
+
   @staticmethod
   def _overlap_bbox(prop_1, prop_2) -> bool:
     """Determines whether two bboxes are overlapping or not."""
@@ -212,5 +218,6 @@ class SpotsDetector:
     y_min_1, x_min_1, y_max_1, x_max_1 = prop_1.bbox
     y_min_2, x_min_2, y_max_2, x_max_2 = prop_2.bbox
 
-    return max((min(x_max_1, x_max_2) - max(x_min_1, x_min_2)), 0) * max(
-      (min(y_max_1, y_max_2) - max(y_min_1, y_min_2)), 0) > 0
+    return (max((int(min(x_max_1, x_max_2)) - int(max(x_min_1, x_min_2))), 0) *
+            max((int(min(y_max_1, y_max_2)) - int(max(y_min_1, y_min_2))), 0)
+            > 0)

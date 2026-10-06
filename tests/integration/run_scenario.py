@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 import json
 import logging
+from multiprocessing import get_all_start_methods, set_start_method
 from pathlib import Path
 
 import crappy
@@ -16,7 +17,11 @@ def main() -> None:
   parser = ArgumentParser(description='Run one Crappy integration scenario.')
   parser.add_argument('scenario', choices=sorted(scenario_builders))
   parser.add_argument('output_dir', type=Path)
+  parser.add_argument('--start-method', choices=get_all_start_methods())
   args = parser.parse_args()
+
+  if args.start_method is not None:
+    set_start_method(args.start_method)
 
   args.output_dir.mkdir(parents=True, exist_ok=True)
 

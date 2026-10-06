@@ -233,6 +233,8 @@ class TestCamera(TestCase):
     camera.add_software_roi(width=5, height=4)
     camera.ROI_x = 1
     camera.ROI_y = 1
+    revisions = {name: setting.revision
+                 for name, setting in camera.settings.items()}
 
     camera.reload_software_roi(width=7, height=6)
 
@@ -242,6 +244,8 @@ class TestCamera(TestCase):
     self.assertEqual(camera.ROI_height, 6)
     self.assertEqual(camera.settings[camera.roi_x_name].highest, 6)
     self.assertEqual(camera.settings[camera.roi_y_name].highest, 5)
+    self.assertTrue(all(setting.revision > revisions[name]
+                        for name, setting in camera.settings.items()))
 
   def test_apply_soft_roi_without_roi_returns_input_image(self) -> None:
     """Checks ROI passthrough before settings exist."""

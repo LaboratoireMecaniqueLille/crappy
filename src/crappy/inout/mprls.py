@@ -62,11 +62,10 @@ class MPRLS(InOut):
           'Pi4', 'blinka'
 
         The `'Pi4'` backend is optimized but only works on boards supporting
-        the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing
-        :mod:`Adafruit-Blinka` and :mod:`adafruit-circuitpython-mprls`, but
-        these modules are compatible with and maintained on a wide
-        variety of boards.
+        the :external+smbus2:mod:`smbus2` module, like the Raspberry Pis. The
+        `'blinka'` backend may be less performant and requires installing the
+        ``Adafruit-Blinka`` and ``adafruit-circuitpython-mprls`` packages,
+        which are compatible with and maintained on a wide variety of boards.
 
         .. versionadded:: 1.5.8
       eoc_pin: Optionally, reads the end of conversion signal from the polarity
@@ -114,9 +113,6 @@ class MPRLS(InOut):
     if eoc_pin is not None:
       if backend == 'blinka' and not isinstance(eoc_pin, str):
         raise TypeError('eoc_pin should be a string when using the blinka '
-                        'backend !')
-      elif backend == 'ft232h' and not isinstance(eoc_pin, str):
-        raise TypeError('eoc_pin should be a string when using the ft232h '
                         'backend !')
       elif backend == 'Pi4' and not isinstance(eoc_pin, int):
         raise TypeError('eoc_pin should be an int when using the Pi4 '

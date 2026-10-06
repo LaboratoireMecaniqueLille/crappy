@@ -64,8 +64,8 @@ class ImageSaver(CameraProcess):
 
           'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
-        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Depending on the machine,
+        They correspond to the modules ``SimpleITK``, :mod:`PIL` (Pillow
+        Fork), ``cv2`` (OpenCV), and :mod:`numpy`. Depending on the machine,
         some may be faster or slower. The ``img_extension`` is ignored for the
         backend ``'npy'``, that saves the images as raw numpy arrays.
       send_msg: In case no processing is performed, and if output Links are

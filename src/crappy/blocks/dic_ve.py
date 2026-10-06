@@ -7,20 +7,23 @@ from pathlib import Path
 
 from .camera_processes import DICVEProcess
 from .camera import Camera
-from ..tool.camera_config import DICVEConfig, SpotsBoxes
+from ..tool.camera_config import (CameraConfig, SpotsBoxes,
+                                  create_configurator)
+from ..tool.camera_config.tkinter import TkinterDICVEConfig
+from ..tool.camera_config.pyqt import PyQtDICVEConfig
 
 
 class DICVE(Camera):
   """This Block can perform video-extensometry on images acquired by a
-  :class:`~crappy.camera.Camera` object, by tracking patches using Digital
-  Image Correlation techniques.
+  :class:`~crappy.camera.meta_camera.camera.Camera` object, by tracking patches
+  using Digital Image Correlation techniques.
 
-  It takes no input :class:`~crappy.links.Link` in a majority of situations,
-  and outputs the results of the video-extensometry. It is a subclass of the
-  :class:`~crappy.blocks.Camera` Block, and inherits of all its features. That
-  includes the possibility to record and to display images in real-time,
-  simultaneously to the image acquisition and processing. Refer to the
-  documentation of the Camera Block for more information on these features.
+  It takes no input :class:`~crappy.links.link.Link` in a majority of
+  situations, and outputs the results of the video-extensometry. It is a
+  subclass of the :class:`~crappy.blocks.Camera` Block, and inherits of all its
+  features. That includes the possibility to record and to display images in
+  real-time, simultaneously to the image acquisition and processing. Refer to
+  the documentation of the Camera Block for more information on these features.
 
   This Block is quite similar to the :class:`~crappy.blocks.VideoExtenso`
   Block, except this latter tracks spots instead of patches with a texture.
@@ -40,20 +43,25 @@ class DICVE(Camera):
   For each image, several values are computed and sent to the downstream
   Blocks. See the ``labels`` argument for a complete list.
 
-  Similar to the :class:`~crappy.tool.camera_config.CameraConfig` window that
-  can be displayed by the Camera Block, this Block can display a
-  :class:`~crappy.tool.camera_config.DICVEConfig` window before the test
-  starts. Here, the user can also select the patches to track if they were not
-  already specified as an argument.
+  Similar to the :class:`~crappy.tool.camera_config.base.camera_config.\
+CameraConfig` window that can be displayed by the Camera Block, this Block can
+  display a
+  :class:`~crappy.tool.camera_config.base.dic_ve_config.DICVEConfig` window
+  before the test starts. Here, the user can also select the patches to track
+  if they were not already specified as an argument.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *DISVE* to *DICVE*
   """
 
+  configurator = {'tkinter': TkinterDICVEConfig,
+                  'pyqt': PyQtDICVEConfig}
+
   def __init__(self,
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
+               config_backend: Literal['tkinter', 'pyqt'] = 'pyqt',
                display_images: bool = False,
                displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
@@ -91,9 +99,9 @@ class DICVE(Camera):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      camera: The name of the :class:`~crappy.camera.Camera` object to use for
-        acquiring the images. Arguments can be passed to this Camera as
-        ``kwargs`` of this Block. This argument is ignored if the
+      camera: The name of the :class:`~crappy.camera.meta_camera.camera.Camera`
+        object to use for acquiring the images. Arguments can be passed to this
+        Camera as ``kwargs`` of this Block. This argument is ignored if the
         ``image_generator`` argument is provided.
       transform: A callable taking an image as an argument, and returning a
         transformed image as an output. Allows applying a post-processing
@@ -105,17 +113,22 @@ class DICVE(Camera):
 
         .. versionadded:: 1.5.10
       config: If :obj:`True`, a
-        :class:`~crappy.tool.camera_config.DICVEConfig` window is displayed
-        before the test starts. There, the user can interactively adjust the
-        different
+        :class:`~crappy.tool.camera_config.base.dic_ve_config.DICVEConfig`
+        window is displayed before the test starts. There, the user can
+        interactively adjust the different
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
-        available for the selected :class:`~crappy.camera.Camera`, visualize
-        the acquired images, and select the patches to track if they haven't
-        been given in the ``patches`` argument. The test starts when closing
-        the configuration window. If not enabled, the ``img_dtype``,
-        ``img_shape`` and ``patches`` arguments must be provided.
+        available for the selected
+        :class:`~crappy.camera.meta_camera.camera.Camera`, visualize the
+        acquired images, and select the patches to track if they haven't been
+        given in the ``patches`` argument. The test starts when closing the
+        configuration window. If not enabled, the ``img_dtype``, ``img_shape``
+        and ``patches`` arguments must be provided.
 
         .. versionadded:: 1.5.10
+      config_backend: GUI backend for the configuration window, either
+        ``'tkinter'`` or ``'pyqt'`` (requires PyQt6).
+
+        .. versionadded:: 2.1.0
       display_images: If :obj:`True`, displays the acquired images in a
         dedicated window, using the backend given in ``displayer_backend`` and
         at the frequency specified in ``displayer_framerate``. This option
@@ -129,7 +142,7 @@ class DICVE(Camera):
         .. versionchanged:: 1.5.10
            renamed from *show_image* to *display_images*
       displayer_backend: The backend to use for displaying the images. Can be
-        either ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` (OpenCV)
+        either ``'cv2'`` or ``'mpl'``, to use respectively ``cv2`` (OpenCV)
         or :mod:`matplotlib`. ``'cv2'`` usually allows achieving a higher
         display frequency. Ignored if ``display_images`` is :obj:`False`. If
         not given and ``display_images`` is :obj:`True`, ``'cv2'`` is tried
@@ -143,12 +156,12 @@ class DICVE(Camera):
 
         .. versionadded:: 1.5.10
       software_trig_label: The name of a label used as a software trigger for
-        the :class:`~crappy.camera.Camera`. If given, images will only be
-        acquired when receiving data over this label. The received value does
-        not matter. This software trigger is not meant to be very precise, it
-        is recommended not to rely on it for a trigger frequency greater than
-        10Hz, in which case a hardware trigger should be preferred if available
-        on the camera.
+        the :class:`~crappy.camera.meta_camera.camera.Camera`. If given, images
+        will only be acquired when receiving data over this label. The received
+        value does not matter. This software trigger is not meant to be very
+        precise, it is recommended not to rely on it for a trigger frequency
+        greater than 10Hz, in which case a hardware trigger should be preferred
+        if available on the camera.
 
         .. versionadded:: 2.0.0
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -172,12 +185,13 @@ class DICVE(Camera):
         the name : ``<frame_nr>_<timestamp>.<extension>``, and can thus easily
         be identified. Along with the images, a ``metadata.csv`` file records
         the metadata of all the saved images. This metadata is either the one
-        returned by the :meth:`~crappy.camera.Camera.get_image` method of the
-        :class:`~crappy.camera.Camera` object, or the default one generated in
-        the :meth:`~crappy.blocks.Camera.loop` method of the
-        :class:`~crappy.blocks.Camera` Block. Depending on the framerate of the
-        camera and the performance of the computer, it is not guaranteed that
-        all the acquired images will be recorded.
+        returned by the
+        :meth:`~crappy.camera.meta_camera.camera.Camera.get_image` method of
+        the :class:`~crappy.camera.meta_camera.camera.Camera` object, or the
+        default one generated in the :meth:`~crappy.blocks.Camera.loop` method
+        of this Block. Depending on the framerate of the camera and the
+        performance of the computer, it is not guaranteed that all the acquired
+        images will be recorded.
 
         .. versionadded:: 1.5.10
       img_extension: The file extension for the recorded images, as a
@@ -212,8 +226,8 @@ class DICVE(Camera):
 
           'sitk', 'pil', 'cv2', 'npy'
 
-        They correspond to the modules :mod:`SimpleITK`, :mod:`PIL` (Pillow
-        Fork), :mod:`cv2` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
+        They correspond to the modules ``SimpleITK``, :mod:`PIL` (Pillow
+        Fork), ``cv2`` (OpenCV), and :mod:`numpy`. Note that the ``'npy'``
         backend saves the images as raw :obj:`numpy.array`, and thus ignores
         the ``img_extension`` argument. Depending on the machine, some backends
         may be faster or slower. For using each backend, the corresponding
@@ -233,17 +247,17 @@ class DICVE(Camera):
 
         .. versionadded:: 1.5.10
       img_shape: The shape of the images returned by the
-        :class:`~crappy.camera.Camera` object as a :obj:`tuple` of :obj:`int`.
-        It should correspond to the value returned by :obj:`numpy.shape`.
-        **This argument is mandatory in case** ``config`` **is** :obj:`False`.
-        It is otherwise ignored.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object as a
+        :obj:`tuple` of :obj:`int`. It should correspond to the value returned
+        by :obj:`numpy.shape`. **This argument is mandatory in case**
+        ``config`` **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       img_dtype: The `dtype` of the images returned by the
-        :class:`~crappy.camera.Camera` object, as a :obj:`str`. It should
-        correspond to a valid data type in :mod:`numpy`, e.g. ``'uint8'``.
-        **This argument is mandatory in case** ``config`` **is** :obj:`False`.
-        It is otherwise ignored.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, as a
+        :obj:`str`. It should correspond to a valid data type in :mod:`numpy`,
+        e.g. ``'uint8'``. **This argument is mandatory in case** ``config``
+        **is** :obj:`False`. It is otherwise ignored.
 
         .. versionadded:: 2.0.0
       patches: The coordinates of the several patches to track, as an iterable
@@ -337,8 +351,9 @@ class DICVE(Camera):
 
         .. versionadded:: 2.0.0
       **kwargs: Any additional argument will be passed to the
-        :class:`~crappy.camera.Camera` object, and used as a kwarg to its
-        :meth:`~crappy.camera.Camera.open` method.
+        :class:`~crappy.camera.meta_camera.camera.Camera` object, and used as a
+        kwarg to its :meth:`~crappy.camera.meta_camera.camera.Camera.open`
+        method.
 
     .. versionremoved:: 1.5.9 *fields* argument
     .. versionremoved:: 2.0.0 *img_name* argument
@@ -347,6 +362,7 @@ class DICVE(Camera):
     super().__init__(camera=camera,
                      transform=transform,
                      config=config,
+                     config_backend=config_backend,
                      display_images=display_images,
                      displayer_backend=displayer_backend,
                      displayer_framerate=displayer_framerate,
@@ -388,46 +404,74 @@ class DICVE(Camera):
 
     # Forcing the labels into a list
     if labels is None:
-      self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
-                     'Exx(%)', 'Disp(px)']
+      _labels: list[str] = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
+                            'Exx(%)', 'Disp(px)']
     elif isinstance(labels, str):
-      self.labels = [labels]
+      _labels: list[str] = [labels]
     else:
-      self.labels = list(labels)
+      _labels: list[str] = list(labels)
 
-    # Make sure only string labels are provided
-    if (self.labels is not None and
-        not all(isinstance(label, str) for label in self.labels)):
-      non_str = [label for label in self.labels if not isinstance(label, str)]
-      raise ValueError(f"Some labels are not strings: "
-                       f"{', '.join(map(repr, non_str))}")
-
-    if self.labels is not None and len(set(self.labels)) != len(self.labels):
-      raise ValueError("Duplicate labels provided in the list of labels!")
-
-    # Making sure a coherent number of labels and fields was given
-    if len(self.labels) != 6:
+    # Making sure a consistent number of labels and fields was given
+    if len(_labels) != 6:
       raise ValueError("The number of labels should be 6 !\n"
                        "Make sure that the time label was given")
 
+    self.labels = _labels
+
     self._patches: SpotsBoxes | None = None
 
-    self._raise_on_exit = raise_on_patch_exit
-    self._patches_int = list(patches) if patches is not None else None
+    self._raise_on_exit: bool = raise_on_patch_exit
+    self._patches_int: list[
+        tuple[int, int, int, int]] | None = (list(patches) if patches
+                                             is not None else None)
+
+    # Checking the validity of the provided arguments
+    if method not in ('Disflow', 'Lucas Kanade',
+                      'Pixel precision', 'Parabola'):
+      raise ValueError("The method argument should be one of 'Disflow', "
+                       "'Lucas Kanade', 'Pixel precision', 'Parabola'")
+    if ((not isinstance(alpha, float) and not isinstance(alpha, int))
+        or alpha < 0):
+      raise ValueError("alpha must be a positive float")
+    if ((not isinstance(delta, float) and not isinstance(delta, int))
+        or delta < 0):
+      raise ValueError("delta must be a positive float")
+    if ((not isinstance(gamma, float) and not isinstance(gamma, int))
+        or gamma < 0):
+      raise ValueError("gamma must be a positive float")
+    if not isinstance(finest_scale, int) or finest_scale < 0:
+      raise ValueError("finest_scale must be a positive integer")
+    if not isinstance(iterations, int) or iterations < 0:
+      raise ValueError("iterations must be a positive integer")
+    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
+      raise ValueError("gradient_iterations must be a positive integer")
+    if not isinstance(patch_size, int) or patch_size < 0:
+      raise ValueError("patch_size must be a positive integer")
+    if not isinstance(patch_stride, int) or patch_stride < 0:
+      raise ValueError("patch_stride must be a positive integer")
+    if ((not isinstance(border, float) and not isinstance(border, int))
+        or not 0 <= border < 1):
+      raise ValueError("border must be greater than or equal to 0 and strictly"
+                       " less than 1")
+    if not isinstance(safe, bool):
+      raise TypeError("safe must be a boolean")
+    if not isinstance(follow, bool):
+      raise TypeError("follow must be a boolean")
 
     # These arguments are for the DICVEProcess
-    self._method = method
-    self._alpha = alpha
-    self._delta = delta
-    self._gamma = gamma
-    self._finest_scale = finest_scale
-    self._iterations = iterations
-    self._gradient_iterations = gradient_iterations
-    self._patch_size = patch_size
-    self._patch_stride = patch_stride
-    self._border = border
-    self._safe = safe
-    self._follow = follow
+    self._method: Literal['Disflow', 'Lucas Kanade',
+                          'Pixel precision', 'Parabola'] = method
+    self._alpha: float = alpha
+    self._delta: float = delta
+    self._gamma: float = gamma
+    self._finest_scale: int = finest_scale
+    self._iterations: int = iterations
+    self._gradient_iterations: int = gradient_iterations
+    self._patch_size: int = patch_size
+    self._patch_stride: int = patch_stride
+    self._border: float = border
+    self._safe: bool = safe
+    self._follow: bool = follow
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare` 
@@ -443,11 +487,14 @@ class DICVE(Camera):
 
     # Instantiating the SpotsBoxes containing the patches to track
     self._patches = SpotsBoxes()
-    if self._patches_int is not None:
+    if self._patches_int is not None and self._patches is not None:
       self._patches.set_spots(self._patches_int)
       self._patches.save_length()
 
     # Instantiating the DICVEProcess
+    if self._patches is None:
+       raise RuntimeError("The patches should have been initialized at that "
+                          "point")
     self.process_proc = DICVEProcess(
         patches=self._patches,
         method=self._method,
@@ -466,11 +513,27 @@ class DICVE(Camera):
 
     super().prepare()
 
-  def _configure(self) -> DICVEConfig:
+  def _configure(self) -> CameraConfig:
     """This method should instantiate the
-    :class:`~crappy.tool.camera_config.DICVEConfig` window for configuring the
-    :class:`~crappy.camera.Camera` object.
+    :class:`~crappy.tool.camera_config.base.dic_ve_config.DICVEConfig` window
+    for configuring the :class:`~crappy.camera.meta_camera.camera.Camera`
+    object.
     """
 
-    return DICVEConfig(self._camera, self._log_queue, self._log_level,
-                       self.freq, self._patches)
+    if self._camera is None:
+      raise RuntimeError("At that point the Camera should be set but it isn't")
+    if self._log_queue is None:
+      raise RuntimeError("At that point the log_queue should be set but it "
+                         "isn't")
+    if self._patches is None:
+      raise RuntimeError("At that point the patches to track should be set "
+                         "but they are not")
+
+    return create_configurator(self.configurator,
+                               self._camera,
+                               self._config_backend,
+                               self._log_queue,
+                               self._log_level,
+                               self.freq,
+                               self._transform,
+                               patches=self._patches)

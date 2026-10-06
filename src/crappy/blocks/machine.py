@@ -7,8 +7,9 @@ from dataclasses import dataclass, fields
 import logging
 
 from .meta_block import Block
-from ..actuator import actuator_dict, Actuator, deprecated_actuators
-from ..tool.ft232h import USBServer
+from .._collection import (CollectionEntry, collection_registry,
+                           load_collection_class)
+from ..actuator import actuator_dict, Actuator, moved_to_collection
 
 
 @dataclass
@@ -27,8 +28,8 @@ class ActuatorInstance:
 
 class Machine(Block):
   """This Block is meant to drive one or several
-  :class:`~crappy.actuator.Actuator`. It can set speed or position commands on
-  hardware actuators.
+  :class:`~crappy.actuator.meta_actuator.actuator.Actuator`. It can set speed
+  or position commands on hardware actuators.
 
   The possibility to drive several Actuators from a unique Block is given so
   that they can be driven in a synchronized way. If synchronization is not
@@ -37,11 +38,13 @@ class Machine(Block):
   This Block takes the speed or position commands for the Actuators  as inputs,
   and can optionally read and output the current speed and/or positions of the
   Actuators. The speed and position commands are set respectively by calling
-  the :meth:`~crappy.actuator.Actuator.set_position` and
-  :meth:`~crappy.actuator.Actuator.set_speed` methods of the Actuators, and the
-  current speed and position values are acquired by calling the
-  :meth:`~crappy.actuator.Actuator.get_position` and
-  :meth:`~crappy.actuator.Actuator.get_speed` methods of the Actuators.
+  the :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.set_position` and
+  :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.set_speed` methods of
+  the Actuators, and the current speed and position values are acquired by
+  calling the
+  :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.get_position` and
+  :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.get_speed` methods of
+  the Actuators.
 
   It is possible to tune for each Actuator the label over which it receives its
   commands, and optionally the labels over which it sends its current speed
@@ -49,13 +52,14 @@ class Machine(Block):
   independently for each Actuator.
   
   .. versionadded:: 1.4.0
+  .. versionchanged:: 2.1.0 removed support for Actuators communicating through
+     an FT232H
   """
 
   def __init__(self,
                actuators: Sequence[dict[str, Any]],
                common: dict[str, Any] | None = None,
                time_label: str = 't(s)',
-               ft232h_ser_num: str | None = None,
                spam: bool = False,
                freq: float | None = 200,
                display_freq: bool = False,
@@ -64,20 +68,16 @@ class Machine(Block):
 
     Args:
       actuators: An iterable (like a :obj:`list` or a :obj:`tuple`) of all the
-        :class:`~crappy.actuator.Actuator` this Block needs to drive. It 
-        contains one :obj:`dict` for every Actuator, with mandatory and 
-        optional keys. The keys providing information on how to drive the 
-        Actuator are listed below. Any other unrecognized key will be passed to 
-        the Actuator as argument when instantiating it.
+        :class:`~crappy.actuator.meta_actuator.actuator.Actuator` this Block
+        needs to drive. It contains one :obj:`dict` for every Actuator, with
+        mandatory and optional keys. The keys providing information on how to
+        drive the Actuator are listed below. Any other unrecognized key will be
+        passed to the Actuator as argument when instantiating it.
       common: The keys of this :obj:`dict` will be common to all the Actuators.
         If one key conflicts with an existing key for an Actuator, the common 
         one will prevail.
       time_label: If reading speed or position from one or more Actuators, the
         time information will be carried by this label.
-      ft232h_ser_num: Serial number of the FT232H device to use for driving
-        the controlled Actuator.
-        
-        .. versionadded:: 2.0.0
       spam: If :obj:`True`, a command is sent to the Actuators at each loop of
         the Block, else it is sent every time a new command is received.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
@@ -97,35 +97,38 @@ class Machine(Block):
     Note:
       - ``actuators`` keys:
 
-        - ``type``: The name of the :class:`~crappy.actuator.Actuator` class to 
+        - ``type``: The name of the
+          :class:`~crappy.actuator.meta_actuator.actuator.Actuator` class to
           instantiate. This key is mandatory.
         - ``cmd_label``: The label carrying the command for driving the
           Actuator. It defaults to `'cmd'`.
         - ``mode``: Can be either `'speed'` or `'position'`. Either
-          :meth:`~crappy.actuator.Actuator.set_speed` or
-          :meth:`~crappy.actuator.Actuator.set_position` is called to drive the
-          Actuator, depending on the selected mode. When driven in `'position'` 
-          mode, the speed of the actuator can also be adjusted, see the 
-          ``speed`` and ``speed_cmd_label`` keys. The default mode is 
-          `'speed'`.
+          :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.set_speed` or
+          :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.set_position`
+          is called to drive the Actuator, depending on the selected mode. When
+          driven in `'position'` mode, the speed of the actuator can also be
+          adjusted, see the ``speed`` and ``speed_cmd_label`` keys. The default
+          mode is `'speed'`.
         - ``speed``: If mode is `'position'`, the speed at which the Actuator
           should move. This speed is passed as second argument to the
-          :meth:`~crappy.actuator.Actuator.set_position` method of the
-          Actuator. If the ``speed_cmd_label`` key is not specified, this speed
-          will remain the same for the entire test. This key is not mandatory.
+          :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.set_position`
+          method of the Actuator. If the ``speed_cmd_label`` key is not
+          specified, this speed will remain the same for the entire test. This
+          key is not mandatory.
         - ``position_label``: If given, the Block will return the value of
-          :meth:`~crappy.actuator.Actuator.get_position` under this label. This
-          key is not mandatory.
+          :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.get_position`
+          under this label. This key is not mandatory.
         - ``speed_label``: If given, the Block will return the value of
-          :meth:`~crappy.actuator.Actuator.get_speed` under this label. This
-          key is not mandatory.
+          :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.get_speed`
+          under this label. This key is not mandatory.
         - ``speed_cmd_label``: The label carrying the speed to set when driving
           in `'position'` mode. Each time a value is received, the stored speed
           value is updated. It will also overwrite the ``speed`` key if given.
+
+    .. versionremoved:: 2.1.0 *ft232h_ser_num* argument
     """
 
     self._actuators: list[ActuatorInstance] = list()
-    self._ft232h_args = None
 
     super().__init__()
     self.freq = freq
@@ -164,22 +167,43 @@ class Machine(Block):
     # The list of all the Actuator types to instantiate
     self._types = [actuator['type'] for actuator in actuators]
 
-    # Checking for deprecated names
-    deprecated = [type_ for type_ in self._types
-                  if type_ in deprecated_actuators]
-    for type_ in deprecated:
-      raise NotImplementedError(
-          f"The {type_} Actuator was deprecated in version 2.0.0, and renamed "
-          f"to {deprecated_actuators[type_]} ! Please update your code "
-          f"accordingly and check the documentation for more information")
+    # None means that this is an ordinary core or user-defined InOut
+    self._collection_entries: list[CollectionEntry] = list()
+    unknown = list()
 
-    # Checking that all the given actuators are valid
-    if not all(type_ in actuator_dict for type_ in self._types):
-      unknown = ', '.join(tuple(type_ for type_ in self._types if type_
-                          not in actuator_dict))
+    # Checking that all the given Actuators names are valid
+    for type_ in self._types:
+      # Check if the requested Actuator is part of crappy.collection
+      entry = collection_registry.get("Actuator", type_)
+      # This loop only handles invalid Actuators
+      if type_ in actuator_dict:
+        # Store the Actuator if it was already loaded in a separate Block
+        if (entry is not None and
+            actuator_dict[type_].__module__ == entry.module):
+          self._collection_entries.append(entry)
+        continue
+      # First option, the Actuator should be loaded from crappy.collection
+      if entry is not None:
+        # This call raises early if the module cannot be loaded
+        load_collection_class(entry, actuator_dict)
+        self._collection_entries.append(entry)
+      # Second case, the Actuator was moved to crappy.collection but this
+      # module was not imported
+      # Not reporting all moved Actuators at once but temporary for migration
+      elif type_ in moved_to_collection:
+        raise NotImplementedError(f"The Actuator {type_} was moved to "
+                                  f"crappy.collection. To use it, simply "
+                                  f"add import crappy.collection at the "
+                                  f"beginning of your script")
+      # The name of the Actuator simply cannot be found anywhere
+      else:
+        unknown.append(type_)
+    # Report all the missing Actuators at once instead of raising for only one
+    if unknown:
+      unknown = ', '.join(unknown)
       possible = ', '.join(sorted(actuator_dict.keys()))
-      raise ValueError(f"Unknown actuator type(s) : {unknown} ! "
-                       f"The possible types are : {possible}")
+      raise ValueError(f"Unknown actuator name(s) : {unknown}! "
+                       f"The currently available ones are: {possible}")
 
     # The settings that won't be passed to the Actuator objects
     self._settings = [{key: value for key, value in actuator.items()
@@ -191,27 +215,27 @@ class Machine(Block):
                            if key not in ('type', *actuator_settings)}
                           for actuator in actuators]
 
-    # Checking whether the Actuators communicate through an FT232H
-    if any(actuator_dict[type_].ft232h for type_ in self._types):
-      self._ft232h_args = USBServer.register(ft232h_ser_num)
-
   def prepare(self) -> None:
     """Checks the validity of the linking and initializes all the Actuator
     objects to drive.
 
-    This method calls the :meth:`~crappy.actuator.Actuator.open` method of each
-    Actuator.
+    This method calls the
+    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.open` method of
+    each Actuator.
     """
 
     # Checking the consistency of the linking
     if not self.inputs and not self.outputs:
       raise IOError("The Machine block isn't linked to any other block !")
 
+    # Under the spawn multiprocessing start method, it is necessary to re-load
+    # the modules from crappy.collection
+    for entry in self._collection_entries:
+      load_collection_class(entry, actuator_dict)
+
     # Instantiating the actuators and storing them
     self._actuators = [ActuatorInstance(
-      actuator=actuator_dict[type_](**actuator_kw)
-      if not actuator_dict[type_].ft232h else
-      actuator_dict[type_](**actuator_kw, _ft232h_args=self._ft232h_args),
+      actuator=actuator_dict[type_](**actuator_kw),
       **setting)
       for type_, setting, actuator_kw in zip(self._types,
                                              self._settings,
@@ -227,21 +251,22 @@ class Machine(Block):
 
   def loop(self) -> None:
     """Sets the received position and speed commands, and reads the current 
-    speed and position from the :class:`~crappy.actuator.Actuator`.
+    speed and position from the
+    :class:`~crappy.actuator.meta_actuator.actuator.Actuator`.
     
     For each Actuator, a command is set **only** if a new one was received or 
     if the ``spam`` argument is :obj:`True`. It is set using either 
-    :meth:`~crappy.actuator.Actuator.set_position` or
-    :meth:`~crappy.actuator.Actuator.set_speed` depending on the selected
-    driving mode.
+    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.set_position` or
+    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.set_speed`
+    depending on the selected driving mode.
     
     For each Actuator, a speed and/or position value is read **only** if the 
     ``speed_label`` and/or the ``position_label`` was set. If so, these values
     are read at each loop and sent to downstream Blocks over the given labels.
     This is independent of the chosen driving mode. The
-    :meth:`~crappy.actuator.Actuator.get_position` and
-    :meth:`~crappy.actuator.Actuator.get_speed` are called for acquiring the
-    position and speed values respectively.
+    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.get_position` and
+    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.get_speed` are
+    called for acquiring the position and speed values respectively.
     """
 
     # Iterating over the actuators for setting the commands
@@ -295,8 +320,10 @@ class Machine(Block):
   def finish(self) -> None:
     """Stops and closes all the Actuators to drive.
 
-    This method calls the :meth:`~crappy.actuator.Actuator.stop` and
-    :meth:`~crappy.actuator.Actuator.close` method of each Actuator.
+    This method calls the
+    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.stop` and
+    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.close` method of
+    each Actuator.
     """
 
     for actuator in self._actuators:

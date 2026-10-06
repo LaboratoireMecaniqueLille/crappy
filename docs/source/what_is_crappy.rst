@@ -1,99 +1,89 @@
 =================
-What is Crappy ?
+What is Crappy?
 =================
 
 |Downloads|
 |Documentation status|
 |PyPi version|
 |PyPI pyversions|
+|Test Python package|
 
 Overview
 --------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
-
 CRAPPY is an acronym and stands for **C**\ommand and **R**\eal-time
 **A**\cquisition in **P**\arallelized **PY**\thon.
 
-Its aim is to provide an easy-to-use software environment for **controlling**
-**tests and driving hardware**. It targets an audience of **experimental**
-**researchers and R&D engineers**, and provides a framework that manages the
-**operation, the parallelization and the synchronization** of the test
-equipment. Any device that can be controlled from Python can be integrated into
-Crappy, regardless of its manufacturer. In addition to interfacing with
-hardware, Crappy also comes with **a rich set of signal and image processing**
-**solutions** that can be combined to build and **drive arbitrarily complex**
-**experimental setups** !
+Crappy provides a software environment for controlling tests and driving
+hardware. It is intended for experimental researchers and research and
+development (R&D) engineers. A single test can acquire measurements, send
+commands, process data, display results, and save files. Crappy provides
+ready-to-use components for these tasks, and users can add custom components
+for their own equipment or procedures.
+
+A device can be integrated with Crappy if it can be controlled from Python,
+regardless of its manufacturer. Ready-to-use signal-processing and
+image-processing features can be combined with hardware control when an
+experiment requires them.
 
 Crappy is developed at the `LaMCube <https://lamcube.univ-lille.fr/>`_, a
 mechanical research laboratory based in Lille, France. It was originally
-intended for material mechanics, but **can be used in any domain** that
-requires to run experimental tests.
+intended for material mechanics, but it can be used in any domain that runs
+experimental tests.
 
 Key features of Crappy
 ----------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+- **Open source:**
+  The source code and contribution workflow are hosted on GitHub.
 
-- **open-source** :
-  It is natural for us to make our work available to anyone, and to keep it
-  open to outside contributions. All the code base is freely hosted on GitHub.
+- **Modular:**
+  Components can be extended to drive new hardware or perform custom data
+  operations.
 
-- **modular** :
-  The software basis we provide can be easily extended and fine-tuned to drive
-  new hardware or perform custom operations on data.
+- **Python-based:**
+  Tests are written as regular `Python <https://www.python.org/>`_ scripts
+  using ready-to-use components for acquisition, control, and data handling.
 
-- **simple** :
-  `Python <https://www.python.org/>`_ was chosen for Crappy because it is one
-  of the most accessible languages. We are not professional developers, and
-  neither are our users ! The module was also designed so that most of its
-  complexity is hidden from users.
+- **Performance-oriented:**
+  Crappy aims to use the computer efficiently when acquisition, commands,
+  display, processing, and recording all run during the same test.
 
-- **performance** :
-  Under the hood, a complex code ensures that the computer running Crappy
-  operates at full power to maximize the performance of the framework. We're
-  well aware that experimental tests require a good repeatability and
-  stability, and may become hazardous in case of non-handled issues.
+- **Built for complete experiments:**
+  A single script can coordinate hardware, process measurements, display
+  results, and save data throughout a test.
 
-- **parallelization** :
-  One of the keys to a good test is the synchronisation between the different
-  sensors. Therefore, we chose to massively parallelize our framework,
-  ensuring that every device can operate simultaneously on a same time basis.
-  This is truly one of Crappy's main strengths !
-
-Is Crappy for me ?
+When to use Crappy
 ------------------
 
-.. sectionauthor:: Antoine Weisrock <antoine.weisrock@gmail.com>
+Consider Crappy when:
 
-Crappy is **the right solution** for you if :
+- You want to acquire measurements from sensors and drive actuators from one
+  test script.
 
-- You want to drive sensors and actuators in a synchronized and parallelized
-  way.
+- You want to add your own hardware integrations, processing functions, or test
+  protocols to a modular framework.
 
-- You want a modular solution in which you can easily add new hardware,
-  functions and write your own test protocols.
-
-- You don't want to bother coding in a low-level language.
+- You want to define a test in Python rather than a low-level or specialized
+  language.
 
 - You want to remain independent from commercial software environments.
 
-As Crappy's scope is well-defined, there are also situations in which Crappy
-won't be able to help you. So Crappy is **NOT for you** if :
+Choose a different tool when:
 
-- You need deterministic sampling at frequencies higher than a few dozen Hz
-  (those who need it will know what that means !).
+- You need deterministic sampling or hard real-time guarantees. Crappy does
+  not provide them.
 
 - Your devices cannot be driven from Python, e.g. if they can only be driven
-  from a proprietary software.
+  by proprietary software.
 
-- You don't want to code a single line in Python (you should really give it a
-  try, it's great and easy to learn !).
+- You need a graphical application for configuring and running tests without
+  writing code.
 
 .. |Downloads| image:: https://static.pepy.tech/badge/crappy
    :target: https://static.pepy.tech/badge/crappy
 
-.. |Documentation status| image:: https://readthedocs.org/projects/crappy/badge/?version=latest
+.. |Documentation status| image:: https://app.readthedocs.org/projects/crappy/badge/?version=latest
    :target: https://crappy.readthedocs.io/en/latest/?badge=latest
 
 .. |PyPi version| image:: https://badgen.net/pypi/v/crappy/
@@ -101,3 +91,6 @@ won't be able to help you. So Crappy is **NOT for you** if :
 
 .. |PyPI pyversions| image:: https://img.shields.io/pypi/pyversions/crappy.svg
    :target: https://pypi.org/project/crappy/
+
+.. |Test Python package| image:: https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml/badge.svg
+   :target: https://github.com/LaboratoireMecaniqueLille/crappy/actions/workflows/test_python_package.yml

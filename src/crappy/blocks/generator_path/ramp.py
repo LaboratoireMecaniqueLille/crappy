@@ -21,7 +21,7 @@ class Ramp(Path):
 
     Args:
       condition: The condition for switching to the next Path. Refer to
-        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path` for more
         information.
       speed: The slope of the ramp, in `units/s`.
       init_value: If given, overwrites the last value of the signal as the

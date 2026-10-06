@@ -2,7 +2,8 @@
 
 """This file contains the code for binding the C++ Spectrum library in Python.
 
-It is only used by the :class:`~crappy.inout.SpectrumM2I4711` InOut. The
+It is only used by the
+:class:`~crappy.collection.inout.spectrum_m2i4711.SpectrumM2I4711` InOut. The
 bindings haven't been tested for a while.
 """
 

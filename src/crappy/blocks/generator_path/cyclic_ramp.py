@@ -31,10 +31,10 @@ class CyclicRamp(Path):
 
     Args:
       condition1: The condition for switching to ``speed2``. Refer to
-        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path` for more
         information.
       condition2: The condition for switching to ``speed1``. Refer to
-        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        :class:`~crappy.blocks.generator_path.meta_path.path.Path` for more
         information.
       speed1: Slope of the first generated ramp, in `units/s`.
       speed2: Slope of the second generated ramp, in `units/s`.

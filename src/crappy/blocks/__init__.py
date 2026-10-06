@@ -23,6 +23,7 @@ from .multiplexer import Multiplexer
 from .pause import Pause
 from .pid import PID
 from .recorder import Recorder
+from .scheduler import Scheduler
 from .sink import Sink
 from .stop_block import StopBlock
 from .stop_button import StopButton
@@ -31,7 +32,9 @@ from .ucontroller import UController
 from .video_extenso import VideoExtenso
 
 from . import generator_path
+from . import schedulers
 from . import camera_processes
+from . import vision
 
 from ._deprecated import (AutoDrive, Client_server, Displayer, DISVE, Drawing,
                           Fake_machine, GUI, Hdf_recorder, Mean_block,

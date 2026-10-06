@@ -9,6 +9,8 @@ formats: []
 # Set the OS, Python version and other tools you might need
 build:
   os: ubuntu-26.04
+  apt_packages:
+    - graphviz
   tools:
     python: "3.14"
     # You can also specify other tool versions:
