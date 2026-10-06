@@ -24,7 +24,7 @@ version = ".".join(release.split(".")[:2])
 
 # Extensions and source files
 
-needs_sphinx = "8.1"
+needs_sphinx = "9.0"
 extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.autosummary",
               "sphinx.ext.coverage",

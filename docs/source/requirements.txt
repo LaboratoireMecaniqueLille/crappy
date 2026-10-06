@@ -1,5 +1,5 @@
-# Sphinx 8.1 is the newest feature line that supports Python 3.10
-Sphinx>=8.1,<8.2
+# Sphinx 9.0 is the newest feature line that supports Python 3.11
+Sphinx>=9.0,<9.1
 
 # Other direct documentation extensions
 # The runtime dependencies (currently only NumPy) are resolved from
