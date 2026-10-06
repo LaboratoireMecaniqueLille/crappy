@@ -5,13 +5,13 @@ from multiprocessing import (Process, Value, Barrier, Event, Queue,
                              get_start_method, synchronize, queues,
                              sharedctypes, Manager, managers, Pipe, connection,
                              resource_tracker)
-from threading import BrokenBarrierError, Thread
+from threading import BrokenBarrierError, Thread, Event as ThreadEvent
 from queue import Empty
 import logging
 import logging.handlers
 from time import sleep, time, time_ns
 from weakref import WeakSet
-from typing import Any
+from typing import Any, Self
 from collections.abc import Sequence
 from collections import defaultdict
 import subprocess
@@ -638,14 +638,41 @@ class Block(Process, ABC):
 
       cls.launched_all = True
 
-      # The Barrier waits for the main Process to be ready so that the
-      # prepare_all and launch_all methods can be used separately for a finer
-      # grained control
-      cls.cls_log(logging.INFO, 'Waiting for all Blocks to be ready')
+      # There should be a Barrier at that point
       if cls.ready_barrier is None:
         raise RuntimeError("Should wait for the ready Barrier but it doesn't "
                            "exist!")
-      cls.ready_barrier.wait()
+      if cls.raise_event is None:
+        raise RuntimeError("The raise Event should exist before starting the "
+                           "Barrier watchdog!")
+
+      # Set up a watchdog Thread preventing deadlocks at the Barrier
+      watchdog_event = ThreadEvent()
+      watchdog_thread = Thread(target=cls._watchdog_target,
+                               args=(watchdog_event, tuple(cls.instances),
+                                     cls.ready_barrier, cls.raise_event),
+                               name='crappy.barrier-watchdog', daemon=True)
+
+      # The Barrier waits for the main Process to be ready so that the
+      # prepare_all and launch_all methods can be used separately for a finer
+      # grained control
+      try:
+        watchdog_thread.start()
+        cls.cls_log(logging.INFO, 'Waiting for all Blocks to be ready')
+        cls.ready_barrier.wait()
+      finally:
+        watchdog_event.set()
+        if watchdog_thread.ident is not None:
+          watchdog_thread.join(1.0)
+          if watchdog_thread.is_alive():
+            raise RuntimeError("The Barrier watchdog thread didn't stop as "
+                               "expected")
+
+      # Handle a possible race condition between Barrier being released and the
+      # watchdog Thread crashing
+      if cls.ready_barrier.broken:
+        raise BrokenBarrierError
+
       cls.cls_log(logging.INFO, 'All Blocks ready now')
 
       # Setting t0 and telling all the Blocks to start
@@ -1022,6 +1049,45 @@ class Block(Process, ABC):
 
       logger = logging.getLogger(record.name)
       logger.handle(record)
+
+  @classmethod
+  def _watchdog_target(cls,
+                       stop_event: ThreadEvent,
+                       blocks: Sequence[Self],
+                       ready_barrier: synchronize.Barrier,
+                       raise_event: synchronize.Event) -> None:
+    """Aborts startup if a Block exits before the watchdog is disarmed.
+
+    The main Process disarms this Thread after its Barrier wait finishes,
+    before setting the start Event. Explicit references keep the Thread tied
+    to this startup even if cleanup later resets the class attributes.
+    """
+
+    try:
+      sentinels = {block.sentinel: block for block in blocks}
+      while sentinels and not stop_event.is_set():
+        exited = connection.wait(sentinels, timeout=0.1)
+        # If a Block has crashed while preparing
+        if stop_event.is_set() or ready_barrier.broken:
+          return
+        # If a Block has crashed so abruptly it hasn't even set the error flags
+        if exited:
+          raise_event.set()
+          for sentinel in exited:
+            block = sentinels[sentinel]
+            cls.cls_log(logging.ERROR,
+                        f"Block {block.name} (PID {block.pid}) exited before "
+                        f"startup completed (exit code {block.exitcode})")
+          ready_barrier.abort()
+          return
+
+    # A watchdog failure must also release the main Thread's Barrier wait
+    except (Exception,) as exc:
+      if not stop_event.is_set() and not ready_barrier.broken:
+        raise_event.set()
+        if cls.logger is not None:
+          cls.logger.exception("The Barrier watchdog failed", exc_info=exc)
+        ready_barrier.abort()
 
   @staticmethod
   def _stdout_filter(rec: logging.LogRecord) -> bool:
