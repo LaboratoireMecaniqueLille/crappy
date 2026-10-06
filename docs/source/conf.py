@@ -131,6 +131,12 @@ html_baseurl = environ.get(
 html_static_path = ["_static"]
 html_css_files = ["accessibility.css"]
 
+# Link previews share the documentation's canonical base and existing artwork
+ogp_site_url = html_baseurl + "/"
+ogp_site_name = "Crappy documentation"
+ogp_image = "_static/branding/banner_1024.png"
+ogp_image_alt = "Crappy logo and wordmark"
+
 # Hand-reviewed files copied to the root of the generated documentation
 html_extra_path = ["llms.txt"]
 
