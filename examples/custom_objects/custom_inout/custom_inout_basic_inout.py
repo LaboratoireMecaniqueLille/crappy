@@ -5,8 +5,8 @@ This example demonstrates the instantiation of a custom InOut object in Crappy
 that both acquires data from hardware and applies received commands to it. The
 example shows the basic steps for creating an InOut object that acquires and
 sets values. It extends custom_inout_basic_in.py, so you should read that
-example first. It requires neither hardware nor any specific Python modules to
-run.
+example first. It does not require hardware, but requires PyQt6 for the
+graphical displays.
 
 In Crappy, users can define their own InOut objects and use them with the
 IOBlock. This lets users interface with their own hardware without integrating

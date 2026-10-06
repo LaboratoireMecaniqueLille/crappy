@@ -2,7 +2,8 @@
 
 """
 This example uses ordinary Python functions as Scheduler outputs and stop
-conditions. It runs with a FakeMachine and requires no hardware.
+conditions. It runs with a FakeMachine and requires no hardware. The stop
+button requires PyQt6.
 
 The speed drops when measured force rises. A custom condition combines force
 and displacement to select Hold. A five-second timeout provides a finite

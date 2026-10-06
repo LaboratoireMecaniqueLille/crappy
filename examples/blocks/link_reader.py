@@ -1,8 +1,8 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the LinkReader Block. It requires neither
-hardware nor any specific Python modules to run.
+This example demonstrates the use of the LinkReader Block. It does not require
+hardware, but requires PyQt6 for the stop button.
 
 The LinkReader Block is a basic display Block printing each message it receives
 from upstream Links in the console. The messages are printed separately rather

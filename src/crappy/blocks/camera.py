@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from typing import Literal
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from pathlib import Path
 import numpy as np
 from time import time, sleep, strftime, gmtime
@@ -12,12 +12,14 @@ from multiprocessing import (Array, Manager, Event, RLock, Pipe, Barrier,
 from multiprocessing import managers, synchronize, connection
 from threading import BrokenBarrierError
 import logging
+from warnings import warn
 
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
-from ..camera import (camera_dict, Camera as BaseCam, deprecated_cameras,
-                      moved_to_collection)
-from ..tool.camera_config import CameraConfig
+from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
+from ..tool.camera_config import CameraConfig, create_configurator
+from ..tool.camera_config.tkinter import TkinterCameraConfig
+from ..tool.camera_config.pyqt import PyQtCameraConfig
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
 from .._global import (CameraPrepareError, CameraRuntimeError,
@@ -25,7 +27,8 @@ from .._global import (CameraPrepareError, CameraRuntimeError,
 
 
 class DummyCam(BaseCam):
-  """Used to instantiate Camera object without implementing required method."""
+  """Used to instantiate :class:`~crappy.camera.meta_camera.camera.Camera`
+  object without implementing required method."""
 
   def get_image(self) -> tuple[dict[str, Any] | float, np.ndarray] | None:
     """Pass ABC guard but don't alter behavior."""
@@ -34,49 +37,64 @@ class DummyCam(BaseCam):
 
 
 class Camera(Block):
-  """This Block can drive a :class:`~crappy.camera.meta_camera.camera.Camera`
-  object. It can acquire images, display them and record them. It can only
-  drive one Camera at once.
+  """This :class:`~crappy.blocks.meta_block.block.Block` can drive a
+  :class:`~crappy.camera.meta_camera.camera.Camera` object. It can acquire
+  images, display them and record them. It can only drive one
+  :class:`~crappy.camera.meta_camera.camera.Camera` at once.
   
   It takes no input :class:`~crappy.links.link.Link` in a majority of
-  situations, and usually doesn't have output Links neither. The only
-  situations when it can accept input Links is when an ``image_generator`` is
-  defined, or when defining a ``software_trig_label``. If ``save_images`` is
-  set to :obj:`True`, and if an output Link is present, a message is sent to
-  downstream Blocks at each saved image, containing the timestamp, the index,
-  and the metadata of the image. They are respectively carried by the `'t(s)'`,
-  `'img_index'` and `'meta'` labels. This is useful for performing an action
-  conditionally at each new saved image.
+  situations, and usually doesn't have output
+  :class:`Links <crappy.links.link.Link>` neither. The only
+  situations when it can accept input :class:`Links <crappy.links.link.Link>`
+  is when an ``image_generator`` is defined, or when defining a
+  ``software_trig_label``. If ``save_images`` is set to :obj:`True`, and if an
+  output :class:`~crappy.links.link.Link` is present, a message is sent to
+  downstream :class:`Blocks <crappy.blocks.meta_block.block.Block>` at each
+  saved image, containing the timestamp, the index, and the metadata of the
+  image. They are respectively carried by the `'t(s)'`, `'img_index'` and
+  `'meta'` labels. This is useful for performing an action conditionally at
+  each new saved image.
 
-  Most of the time, this Block is used for recording to the desired location
-  the images it acquires. Optionally, the images can also be displayed in a
-  dedicated window. Both of these features are however optional, and it is
-  possible to acquire images and not do anything with them. Several options are
-  available for tuning the record and the display.
+  Most of the time, this :class:`~crappy.blocks.meta_block.block.Block` is used
+  for recording to the desired location the images it acquires. Optionally, the
+  images can also be displayed in a dedicated window. Both of these features
+  are however optional, and it is possible to acquire images and not do
+  anything with them. Several options are available for tuning the record and
+  the display.
   
-  Before a test starts, this Block can also display a 
-  :class:`~crappy.tool.camera_config.CameraConfig` window in which the user can
-  visualize the acquired images, and interactively tune all the 
+  Before a test starts, this :class:`~crappy.blocks.meta_block.block.Block` can
+  display a Tkinter or PyQt6 configuration window selected with
+  ``config_backend``. The user can preview images and tune the
   :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` available
   for the instantiated :class:`~crappy.camera.meta_camera.camera.Camera`.
+  Subclasses can replace the window by overriding the ``configurator`` class
+  attribute with a class or a backend-to-class mapping. See
+  :doc:`the configuration tutorial </tutorials/custom_camera_configuration>`
+  for shared and backend-specific extensions.
   
-  Internally, this Block is only in charge of the image acquisition, and the 
-  other tasks are parallelized and delegated to 
-  :class:`~crappy.blocks.camera_processes.CameraProcess` objects. The display 
-  is handled by the :class:`~crappy.blocks.camera_processes.Displayer`, and
-  the recording by the :class:`~crappy.blocks.camera_processes.ImageSaver`.
-  This Block manages the instantiation, the synchronization and the
-  termination of all the CameraProcess it controls.
+  Internally, this :class:`~crappy.blocks.meta_block.block.Block` is only in
+  charge of the image acquisition, and the other tasks are parallelized and
+  delegated to  :class:`~crappy.blocks.camera_processes.CameraProcess` objects.
+  The display is handled by the
+  :class:`~crappy.blocks.camera_processes.Displayer`, and the recording by the
+  :class:`~crappy.blocks.camera_processes.ImageSaver`. This
+  :class:`~crappy.blocks.meta_block.block.Block` manages the instantiation, the
+  synchronization and the termination of all the
+  :class:`~crappy.blocks.camera_processes.CameraProcess` it controls.
   
   .. versionadded:: 1.4.0
   """
 
-  cam_count = dict()
+  cam_count: dict[str, int] = dict()
+  configurator: Mapping[str, type[CameraConfig]] = {
+                   'tkinter': TkinterCameraConfig,
+                   'pyqt': PyQtCameraConfig}
 
   def __init__(self,
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
+               config_backend: Literal['tkinter', 'pyqt'] = 'pyqt',
                display_images: bool = False,
                displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
@@ -100,8 +118,9 @@ class Camera(Block):
     Args:
       camera: The name of the :class:`~crappy.camera.meta_camera.camera.Camera`
         object to use for acquiring the images. Arguments can be passed to this
-        Camera as ``kwargs`` of this Block. This argument is ignored if the
-        ``image_generator`` argument is provided.
+        :class:`~crappy.camera.meta_camera.camera.Camera` as ``kwargs`` of this
+        :class:`~crappy.blocks.meta_block.block.Block`. This argument is
+        ignored if the ``image_generator`` argument is provided.
       transform: A callable taking an image as an argument, and returning a
         transformed image as an output. Allows applying a post-processing
         operation to the acquired images. This is done right after the
@@ -111,10 +130,9 @@ class Camera(Block):
         affect the acquisition framerate if it is too heavy.
 
         .. versionadded:: 1.5.10
-      config: If :obj:`True`, a 
-        :class:`~crappy.tool.camera_config.CameraConfig` window is displayed
-        before the test starts. There, the user can interactively adjust the 
-        different 
+      config: If :obj:`True`, the selected configuration window is displayed
+        before the test starts. There, the user can interactively adjust the
+        different
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` 
         available for the selected
         :class:`~crappy.camera.meta_camera.camera.Camera`, and visualize the
@@ -123,6 +141,11 @@ class Camera(Block):
         provided.
 
         .. versionadded:: 1.5.10
+      config_backend: GUI backend for the configuration window, either
+        ``'tkinter'`` (requires Tk) or ``'pyqt'`` (requires PyQt6). Both
+        require Pillow. This choice is independent of ``displayer_backend``.
+
+        .. versionadded:: 2.1.0
       display_images: If :obj:`True`, displays the acquired images in a
         dedicated window, using the backend given in ``displayer_backend`` and
         at the frequency specified in ``displayer_framerate``. This option
@@ -157,33 +180,35 @@ class Camera(Block):
 
         .. versionadded:: 2.0.0
       display_freq: If :obj:`True`, displays the looping frequency of the
-        Block.
+        :class:`~crappy.blocks.meta_block.block.Block`.
 
         .. versionchanged:: 2.0.0 renamed from *verbose* to *display_freq*
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
-        disables logging for this Block.
+        disables logging for this
+        :class:`~crappy.blocks.meta_block.block.Block`.
 
         .. versionadded:: 2.0.0
-      freq: The target looping frequency for the Block. If :obj:`None`, loops
+      freq: The target looping frequency for the
+        :class:`~crappy.blocks.meta_block.block.Block`. If :obj:`None`, loops
         as fast as possible.
 
         .. versionadded:: 1.5.10
       save_images: If :obj:`True`, the acquired images are saved to the folder
-        specified in ``save_folder``, in the format specified in 
+        specified in ``save_folder``, in the format specified in
         ``img_extension``, using the backend specified in ``save_backend``, and
         at the frequency specified in ``save_period``. Each image is saved with
         the name : ``<frame_nr>_<timestamp>.<extension>``, and can thus easily
-        be identified. Along with the images, a ``metadata.csv`` file records 
-        the metadata of all the saved images. This metadata is either the one 
+        be identified. Along with the images, a ``metadata.csv`` file records
+        the metadata of all the saved images. This metadata is either the one
         returned by the
         :meth:`~crappy.camera.meta_camera.camera.Camera.get_image` method of
         the :class:`~crappy.camera.meta_camera.camera.Camera` object, or the
-        default one generated in the :meth:`loop` method of this Block.
-        Depending on the framerate of the camera and the performance of the
-        computer, it is not guaranteed that all the acquired images will be
-        recorded.
+        default one generated in the :meth:`loop` method of this
+        :class:`~crappy.blocks.meta_block.block.Block`. Depending on the
+        framerate of the camera and the performance of the computer, it is not
+        guaranteed that all the acquired images will be recorded.
 
         .. versionadded:: 1.5.10
       img_extension: The file extension for the recorded images, as a
@@ -234,8 +259,9 @@ class Camera(Block):
         for use in the examples of Crappy, to apply an artificial strain on a
         base image. Most users should ignore it.** When given, the ``camera``
         argument is ignored and the images are acquired from the generator. To
-        apply a strain on the image, strain values (in `%`) should be sent to 
-        the Camera Block over the labels ``'Exx(%)'`` and ``'Eyy(%)'``.
+        apply a strain on the image, strain values (in `%`) should be sent to
+        the :class:`Camera Block <crappy.blocks.Camera>` over the labels
+        ``'Exx(%)'`` and ``'Eyy(%)'``.
 
         .. versionadded:: 1.5.10
       img_shape: The shape of the images returned by the 
@@ -263,6 +289,13 @@ class Camera(Block):
     .. versionremoved:: 2.0.0 *img_name* argument
     """
 
+    warn("\nThe default backend for camera configuration was changed from "
+         "'tkinter' to 'pyqt' without prior notice.\nThis change was "
+         "implemented nevertheless because it significantly increases "
+         "performance\nSet config_backend='tkinter' to switch back to the "
+         "previous behavior.\nInstall PyQt6 to use the new, lighter and "
+         "faster camera configuration window.\n", UserWarning, stacklevel=2)
+
     self._save_proc: ImageSaver | None = None
     self._display_proc: Displayer | None = None
     self.process_proc: CameraProcess | None = None
@@ -281,13 +314,6 @@ class Camera(Block):
       raise TypeError("camera must be a string")
     if not camera and image_generator is None:
       raise ValueError("camera must be a non-empty string")
-
-    # Checking for deprecated names
-    if camera in deprecated_cameras:
-      raise NotImplementedError(
-          f"The {camera} Camera was deprecated in version 2.0.0, and renamed "
-          f"to {deprecated_cameras[camera]} ! Please update your code "
-          f"accordingly and check the documentation for more information")
 
     # None means that this is an ordinary core or user-defined Camera
     self._collection_entry: CollectionEntry | None = None
@@ -335,6 +361,10 @@ class Camera(Block):
       raise TypeError("When provided, transform must be a callable")
     if not isinstance(config, bool):
       raise TypeError("config must be a boolean")
+    if not isinstance(config_backend, str):
+      raise TypeError("config_backend must be a string")
+    if config_backend not in ('tkinter', 'pyqt'):
+      raise ValueError("config_backend must be either 'tkinter' or 'pyqt'")
     if not isinstance(display_images, bool):
       raise TypeError("display_images must be a boolean")
     if (displayer_backend is not None 
@@ -383,6 +413,7 @@ class Camera(Block):
     # Setting the other attributes
     self._trig_label: str | None = software_trig_label
     self._config_cam: bool = config
+    self._config_backend: Literal['tkinter', 'pyqt'] = config_backend
     self._transform: Callable[[np.ndarray], np.ndarray] | None = transform
     self._image_generator: Callable[[float, float],
                                     np.ndarray] | None = image_generator
@@ -421,8 +452,9 @@ class Camera(Block):
     self._displayer_backend: Literal['cv2', 'mpl'] | None = displayer_backend
 
   def __del__(self) -> None:
-    """Safety method called when deleting the Block and ensuring that all the
-    instantiated :class:`~crappy.blocks.camera_processes.CameraProcess` as well 
+    """Safety method called when deleting the
+    :class:`~crappy.blocks.meta_block.block.Block` and ensuring that all the
+    instantiated :class:`~crappy.blocks.camera_processes.CameraProcess` as well
     as the :obj:`~multiprocessing.Manager` are stopped before exiting.
     
     If they did not stop in time, just terminates them.
@@ -561,8 +593,9 @@ class Camera(Block):
 
     # Instantiating the Array for sharing the frames with the CameraProcesses
     self.log(logging.DEBUG, "Instantiating the shared objects")
-    self._img_array = Array(np.ctypeslib.as_ctypes_type(self._img_dtype),
-                            int(np.prod(self._img_shape)))
+    self._img_array = Array(
+        np.ctypeslib.as_ctypes_type(np.dtype(self._img_dtype)),
+        int(np.prod(self._img_shape)))
     if self._img_array is None:
       raise RuntimeError("Couldn't initialized the shared image array")
     self._img = np.frombuffer(self._img_array.get_obj(),
@@ -691,21 +724,25 @@ class Camera(Block):
     """Finishes startup before image acquisition begins.
 
     The CameraProcesses have already synchronized during :meth:`prepare`,
-    before the other Blocks receive the global start time.
+    before the other :class:`Blocks <crappy.blocks.meta_block.block.Block>`
+    receive the global start time.
     """
 
     self._last_cam_fps = time()
 
   def loop(self) -> None:
-    """This method receives data from upstream Blocks, acquires a frame from 
-    the :class:`~crappy.camera.meta_camera.camera.Camera` object, and transmits
-    it to all the :class:`~crappy.blocks.camera_processes.CameraProcess`.
+    """This method receives data from upstream
+    :class:`Blocks <crappy.blocks.meta_block.block.Block>`, acquires a frame
+    from the :class:`~crappy.camera.meta_camera.camera.Camera` object, and
+    transmits it to all the
+    :class:`~crappy.blocks.camera_processes.CameraProcess`.
 
-    The image is acquired by calling the 
+    The image is acquired by calling the
     :meth:`~crappy.camera.meta_camera.camera.Camera.get_image` method of the
-    Camera object. If only a timestamp is returned by this method, and not a
-    complete :obj:`dict` of metadata, some basic metadata is generated here and
-    transmitted to the CameraProcesses.
+    :class:`~crappy.camera.meta_camera.camera.Camera` object. If only a
+    timestamp is returned by this method, and not a complete :obj:`dict` of
+    metadata, some basic metadata is generated here and transmitted to the
+    CameraProcesses.
     
     This method also manages the software trigger if this option was set, 
     applies the image transformation function if one was given, and displays
@@ -844,71 +881,122 @@ class Camera(Block):
       self._manager.shutdown()
 
   def configure(self) -> None:
-    """Runs the configuration workflow shared by camera-related Blocks.
+    """Runs the configuration workflow shared by camera-related
+    :class:`Blocks <crappy.blocks.meta_block.block.Block>`.
 
-    This method obtains the Block-specific
-    :class:`~crappy.tool.camera_config.CameraConfig` from :meth:`_configure`,
-    runs it, and retrieves the configured image shape and data type. If an
-    image-processing :class:`~crappy.blocks.camera_processes.CameraProcess` is
-    present, the value returned by its
-    :meth:`~crappy.tool.camera_config.CameraConfig.get_config` is unpacked into
+    This method obtains the :class:`~crappy.blocks.meta_block.block.Block`
+    -specific
+    :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` from
+    :meth:`_configure`, runs it, and retrieves the configured image shape and
+    data type. If an image-processing
+    :class:`~crappy.blocks.camera_processes.CameraProcess` is present, the
+    value returned by its
+    :meth:`~crappy.tool.camera_config.base.camera_config.CameraConfig.\
+get_config` is unpacked into
     :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config`. This
-    handoff occurs before the CameraProcess starts.
+    handoff occurs before the
+    :class:`~crappy.blocks.camera_processes.CameraProcess` starts.
 
     Exceptions raised by the configuration window are converted to
     :exc:`~crappy._global.CameraConfigError` after the window is stopped. A
     :exc:`KeyboardInterrupt` is instead propagated unchanged after cleanup.
+    If another :class:`~crappy.blocks.meta_block.block.Block` fails during
+    preparation or a stop is requested, the window closes without validating or
+    exporting an incomplete selection and :exc:`~crappy._global.PrepareError`
+    is propagated.
 
-    It is common to all camera-related Blocks, except for those that don't have
-    a configuration window. Child Blocks should normally customize
-    :meth:`_configure`, not this method.
+    It is common to camera-related
+    :class:`Blocks <crappy.blocks.meta_block.block.Block>` that open a
+    configuration window. Subclasses should choose a custom window through
+    ``configurator`` and only override :meth:`_configure` when its constructor
+    needs extra arguments.
 
     .. versionchanged:: 2.1.0 forwards processing-specific configuration from
-       the configuration window to the image-processing CameraProcess
+       the configuration window to the image-processing
+       :class:`~crappy.blocks.camera_processes.CameraProcess`
     """
 
-    config = None
+    config: CameraConfig | None = None
+    processing_config: tuple[Any, ...] | None = None
+
+    def shutdown_requested() -> bool:
+      """Check whether this :class:`~crappy.blocks.meta_block.block.Block`
+      should abandon its preparation."""
+
+      return ((self._ready_barrier is not None and
+               self._ready_barrier.broken) or
+              (self._stop_event is not None and self._stop_event.is_set()))
 
     # Instantiating and starting the configuration window
     try:
       config = self._configure()
-      config.start()
-      config.wait_window(config)
+      assert config is not None
+      config.watch_shutdown(shutdown_requested)
+      config.run()
+      if shutdown_requested():
+        raise PrepareError("Camera configuration stopped during preparation")
+      configured_shape = config.shape
+      configured_dtype = config.dtype
+      # Get the configuration output if there's a processing Process
+      if self.process_proc is not None:
+        processing_config = config.get_config()
 
+    # A peer failed during preparation, or the test was asked to stop
+    except PrepareError:
+      if config is not None:
+        try:
+          config.stop()
+        except (Exception,) as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not stop the configuration window",
+                                   exc_info=cleanup_error)
+      raise
     # If an exception is raised in the config window, closing it before raising
     except (Exception,) as exc:
       # Not much we can do if there's no logger set to report Exception
       if self._logger is not None:
         self._logger.exception("Caught exception in the configuration "
-                               "window !", exc_info=exc)
+                               "window!", exc_info=exc)
       if config is not None:
-        config.stop()
-      raise CameraConfigError
+        try:
+          config.stop()
+        except (Exception,) as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not stop the configuration window",
+                                   exc_info=cleanup_error)
+      raise CameraConfigError("Camera configuration failed") from exc
     # Special case of KeyboardInterrupt because it's a non-local exception
     except KeyboardInterrupt:
       if config is not None:
-        config.stop()
+        try:
+          config.stop()
+        except (Exception,) as cleanup_error:
+          if self._logger is not None:
+            self._logger.exception("Could not stop the configuration window",
+                                   exc_info=cleanup_error)
       raise
 
     # Getting the image dtype and shape for setting the shared Array
-    if config.shape is not None:
-      self._img_shape = config.shape
-    if config.dtype is not None:
-      self._img_dtype = config.dtype
+    if configured_shape is not None:
+      self._img_shape = configured_shape
+    if configured_dtype is not None:
+      self._img_dtype = configured_dtype
 
     # Apply the result of the configuration to the processing Process
-    if self.process_proc is not None:
-      if (conf := config.get_config()) is not None:
-        self.process_proc.set_config(*conf)
+    if self.process_proc is not None and processing_config is not None:
+      self.process_proc.set_config(*processing_config)
 
   def _configure(self) -> CameraConfig:
-    """Creates the Block-specific camera configuration window.
+    """Creates the :class:`~crappy.blocks.meta_block.block.Block`-specific
+    camera configuration window.
 
-    It is meant to be overridden by children of the Camera Block, as other
-    image processing Blocks rely on subclasses of
-    :class:`~crappy.tool.camera_config.CameraConfig`. The returned window's
-    :meth:`~crappy.tool.camera_config.CameraConfig.get_config` output must
-    match the processing CameraProcess's
+    Override ``configurator`` to select a custom concrete class or mapping.
+    Override this method when construction needs additional arguments. The
+    returned configurator implements the shared ``run()``, ``stop()``,
+    ``watch_shutdown()``, and ``get_config()`` contract. The configurator's
+    :meth:`~crappy.tool.camera_config.base.camera_config.CameraConfig.\
+get_config` output must match the processing
+    :class:`~crappy.blocks.camera_processes.CameraProcess`'s
     :meth:`~crappy.blocks.camera_processes.CameraProcess.set_config` signature.
     """
 
@@ -917,5 +1005,10 @@ class Camera(Block):
     if self._log_queue is None:
       raise RuntimeError("The logging Queue was never initialized")
 
-    return CameraConfig(self._camera, self._log_queue,
-                        self._log_level, self.freq, self._transform)
+    return create_configurator(self.configurator,
+                               self._camera,
+                               self._config_backend,
+                               self._log_queue,
+                               self._log_level,
+                               self.freq,
+                               self._transform)

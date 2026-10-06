@@ -73,30 +73,36 @@ Without a virtual environment, replace the interpreter path with ``python``:
    python -m pip install --upgrade pip
    python -m pip install crappy
 
-Install optional packages only for the tasks that need them. Common examples
-include:
+Install optional packages only for the tasks that need them. PyQt6 and
+PyQtGraph are the key dependencies for Crappy's default graphical interfaces:
 
-- ``pyqtgraph`` and a Qt binding such as ``PyQt6`` for the default Grapher
+- ``PyQt6`` provides the default Button, Canvas, Dashboard, StopButton, and
+  camera-configuration windows.
+- ``pyqtgraph`` additionally provides the default Grapher.
+- ``Pillow`` is additionally required for camera-configuration previews.
+
+For scripts using these graphical features, install their dependencies with
+the same interpreter used for Crappy:
+
+.. code-block:: shell-session
+
+   venv_crappy/bin/python -m pip install PyQt6 pyqtgraph Pillow
+
+Other common optional dependencies include:
+
 - ``matplotlib`` for the Grapher's Matplotlib plotter and Matplotlib image
   display
-- ``opencv-python`` and ``Pillow`` for many image-acquisition and display tasks
+- ``opencv-python`` for many image-acquisition, processing, and display tasks
 - ``scikit-image`` for video extensometry
 - ``SimpleITK`` for an additional image-reading and writing backend
 - ``tables`` for HDF5 streaming-data recording
 - ``pyserial`` for serial devices
+- ``paho-mqtt`` and a Mosquitto broker for ClientServer communication
 - ``pyusb`` for drivers that communicate directly over USB
 - ``PyCUDA`` and a compatible CUDA installation for GPU image processing
 
-For example, install the default Grapher dependencies with the same interpreter
-used for Crappy:
-
-.. code-block:: shell-session
-
-   venv_crappy/bin/python -m pip install pyqtgraph PyQt6
-
-Use the plain ``python`` interpreter instead when appropriate. Driver-specific
-dependencies and backend choices are listed in :doc:`hardware` and in each
-driver's :doc:`API entry <api>`.
+Driver-specific dependencies and backend choices are listed in :doc:`hardware`
+and in each driver's :doc:`API entry <api>`.
 
 4. Check the installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~

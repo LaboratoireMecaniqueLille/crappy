@@ -114,3 +114,23 @@ class TestPublicApiReference(unittest.TestCase):
       with self.subTest(export=export):
         source = (self._source_dir / file_name).read_text(encoding='utf-8')
         self.assertIn(marker, source)
+
+  def test_camera_configuration_families_are_documented(self) -> None:
+    """Keeps the shared classes and both window backends in the reference."""
+
+    source = (self._source_dir / 'tools.rst').read_text(encoding='utf-8')
+    families = ('CameraConfig', 'CameraConfigBoxes', 'DICVEConfig',
+                'DISCorrelConfig', 'VideoExtensoConfig')
+    for backend, prefix in (('base', ''), ('tkinter', 'Tkinter'),
+                            ('pyqt', 'PyQt')):
+      module = import_module(f'crappy.tool.camera_config.{backend}')
+      for family in families:
+        with self.subTest(backend=backend, family=family):
+          config_class = getattr(module, f'{prefix}{family}')
+          marker = (f'.. autoclass:: {config_class.__module__}.'
+                    f'{config_class.__name__}\n')
+          self.assertEqual(source.count(marker), 1)
+
+    self.assertEqual(source.count('.. autofunction:: '
+                                  'crappy.tool.camera_config.factory.'
+                                  'create_configurator\n'), 1)

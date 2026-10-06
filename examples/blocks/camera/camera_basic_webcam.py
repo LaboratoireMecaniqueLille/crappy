@@ -4,7 +4,7 @@
 This example demonstrates the use of the Camera Block for the basic use case
 of just displaying the acquired images. It requires a camera able to interface
 with OpenCV, an integrated or external webcam will typically work.
-It also requires the opencv-python and Pillow modules to be installed.
+It also requires the opencv-python, Pillow, and PyQt6 modules to be installed.
 
 It acquires images from the webcam and displays them in a small visualization
 window. Before the test starts, it also lets the user adjust some settings on

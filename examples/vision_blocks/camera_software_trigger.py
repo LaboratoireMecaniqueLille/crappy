@@ -2,8 +2,8 @@
 
 """
 This example demonstrates software-triggered acquisition with a CameraSource
-Block. It does not require any hardware, but necessitates Pillow and either the
-opencv-python or matplotlib module to be installed.
+Block. It does not require any hardware, but requires Pillow, PyQt6, and either
+the opencv-python or matplotlib module to be installed.
 
 CameraSource can wait for a label received through a regular Link before asking
 its Camera for an image. Here, a Button Block sends the trigger label whenever

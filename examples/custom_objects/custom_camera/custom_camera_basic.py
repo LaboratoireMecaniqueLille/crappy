@@ -3,7 +3,7 @@
 """
 This example demonstrates how to instantiate a custom Camera object in Crappy.
 It shows the basic steps for creating a Camera object. It does not require any
-hardware, but requires the Pillow and opencv-python Python modules.
+hardware, but requires the Pillow, opencv-python, and PyQt6 Python modules.
 
 In Crappy, users can define their own Camera objects and use them with
 the Camera Block and the other image-processing Blocks like VideoExtenso. This

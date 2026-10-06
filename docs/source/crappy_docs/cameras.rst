@@ -69,27 +69,6 @@ Xi API
    :members: open, get_image, close
    :special-members: __init__
 
-CameraLink Cameras
-------------------
-
-Basler Ironman Camera Link
-++++++++++++++++++++++++++
-.. autoclass:: crappy.camera.cameralink.BaslerIronmanCameraLink
-   :members: open, get_image, close
-   :special-members: __init__
-
-JAI GO-5000C-PMCL
-+++++++++++++++++
-.. autoclass:: crappy.camera.cameralink.JaiGO5000CPMCL
-   :members: open, get_image
-   :special-members: __init__
-
-JAI GO-5000C-PMCL 8 bits
-++++++++++++++++++++++++
-.. autoclass:: crappy.camera.cameralink.JaiGO5000CPMCL8Bits
-   :members: open
-   :special-members: __init__
-
 Parent Camera
 -------------
 
@@ -111,7 +90,7 @@ Camera Settings
 Camera Setting
 """"""""""""""
 .. autoclass:: crappy.camera.meta_camera.camera_setting.CameraSetting
-   :members: value, log, reload
+   :members: value, revision, allow_reload_override, log, reload
    :special-members: __init__
 
 Camera Bool Setting

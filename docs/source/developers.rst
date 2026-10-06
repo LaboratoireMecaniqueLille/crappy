@@ -55,7 +55,11 @@ tested with simulated devices, test doubles, or patched dependencies. New
 hardware-driver tests should remain runnable on an ordinary development
 machine and in continuous integration.
 
-The ``blocks_gui``, ``camera_configuration``, ``camera_processes_gui``, and
+The shared camera-configuration tests in
+``tests.camera_configuration.base`` run without a display. Their backend
+integration suites (``tests.camera_configuration.tkinter`` and
+``tests.camera_configuration.pyqt``), are separate. The ``blocks_gui``,
+camera-configuration backend suites, ``camera_processes_gui``, and
 ``vision_gui`` suites open graphical windows and require Tk, Qt, and a display.
 On a headless Linux system, run a graphical suite through Xvfb:
 

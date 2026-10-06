@@ -7,7 +7,8 @@ import logging
 import numpy as np
 from unittest.mock import MagicMock, patch, sentinel
 from crappy import Block
-from crappy._global import CameraPrepareError, CameraRuntimeError, PrepareError
+from crappy._global import (CameraConfigError, CameraPrepareError,
+                            CameraRuntimeError, PrepareError)
 from crappy.blocks.camera import Camera
 import crappy.blocks.camera as camera_module
 
@@ -132,7 +133,7 @@ class CameraBlockTestBase(CameraProcessTestBase):
       Block.reset()
       super().tearDown()
 
-  def make_camera(self, **kwargs) -> Camera:
+  def make_camera(self, block_type: type[Camera] = Camera, **kwargs) -> Camera:
     """Instantiates a Camera Block using an image generator."""
 
     image = np.arange(20, dtype=np.uint8).reshape(4, 5)
@@ -149,7 +150,7 @@ class CameraBlockTestBase(CameraProcessTestBase):
                                     img_dtype='uint8')
     defaults.update(kwargs)
 
-    self._camera_block = Camera(**defaults)
+    self._camera_block = block_type(**defaults)
     self._camera_block._log_level = logging.CRITICAL
     self._camera_block._log_queue = Queue()
     self._queues.append(self._camera_block._log_queue)
@@ -279,16 +280,16 @@ class TestCameraBlock(CameraBlockTestBase):
     camera.process_proc = process
     config = MagicMock()
     config.shape = (6, 7)
-    config.dtype = np.dtype('uint16')
+    config.dtype = 'uint16'
     config.get_config.return_value = (sentinel.processing_config,)
 
     with patch.object(camera, '_configure', return_value=config):
       camera.configure()
 
-    config.start.assert_called_once_with()
-    config.wait_window.assert_called_once_with(config)
+    config.run.assert_called_once_with()
     self.assertEqual(camera._img_shape, (6, 7))
-    self.assertEqual(camera._img_dtype, np.dtype('uint16'))
+    self.assertEqual(camera._img_dtype, 'uint16')
+    self.assertIsInstance(camera._img_dtype, str)
     process.set_config.assert_called_once_with(sentinel.processing_config)
 
   def test_configure_ignores_empty_processing_config(self) -> None:
@@ -308,37 +309,186 @@ class TestCameraBlock(CameraBlockTestBase):
     config.get_config.assert_called_once_with()
     process.set_config.assert_not_called()
 
+  def test_configure_aborts_if_preparation_barrier_breaks(self) -> None:
+    """Forced closure must not export an incomplete selection."""
+
+    camera = self.make_camera()
+    process = MagicMock()
+    camera.process_proc = process
+    config = MagicMock()
+    config.run.side_effect = camera._ready_barrier.abort
+
+    with (patch.object(camera, '_configure', return_value=config),
+          self.assertRaises(PrepareError)):
+      camera.configure()
+
+    config.watch_shutdown.assert_called_once()
+    self.assertTrue(config.watch_shutdown.call_args.args[0]())
+    config.stop.assert_called_once_with()
+    config.get_config.assert_not_called()
+    process.set_config.assert_not_called()
+    self.assertEqual(camera._img_dtype, 'uint8')
+
   def test_configure_factory_forwards_transform(self) -> None:
     """Tests that CameraConfig previews the transformed camera image."""
 
     def transform(img: np.ndarray) -> np.ndarray:
       return img
 
-    camera = self.make_camera(transform=transform)
+    camera = self.make_camera(transform=transform, config_backend='tkinter')
     camera._camera = sentinel.camera
 
-    with patch.object(camera_module, 'CameraConfig',
-                      return_value=sentinel.config) as config_class:
+    with patch.object(camera_module, 'create_configurator',
+                      return_value=sentinel.config) as factory:
       ret = camera._configure()
 
     self.assertIs(ret, sentinel.config)
-    config_class.assert_called_once_with(sentinel.camera,
-                                         camera._log_queue,
-                                         camera._log_level,
-                                         camera.freq,
-                                         transform)
+    factory.assert_called_once_with(
+                                    {'tkinter': camera_module.TkinterCameraConfig,
+                                     'pyqt': camera_module.PyQtCameraConfig},
+                                    sentinel.camera, 'tkinter',
+                                    camera._log_queue, camera._log_level,
+                                    camera.freq, transform)
+
+  def test_config_backend_is_consumed_before_camera_kwargs(self) -> None:
+    """A GUI selector cannot accidentally reach Camera.open()."""
+
+    camera = self.make_camera(config_backend='tkinter', serial='abc')
+
+    self.assertEqual(camera._config_backend, 'tkinter')
+    self.assertEqual(camera._camera_kwargs, {'serial': 'abc'})
+    with self.assertRaisesRegex(ValueError, 'config_backend'):
+      self.make_camera(config_backend='qt')
+    with self.assertRaisesRegex(TypeError, 'config_backend'):
+      self.make_camera(config_backend=None)
+
+  def test_pyqt_backend_is_forwarded_to_factory(self) -> None:
+    """The Camera Block requests the selected configuration backend."""
+
+    camera = self.make_camera(config_backend='pyqt')
+    camera._camera = sentinel.camera
+
+    with patch.object(camera_module, 'create_configurator',
+                      return_value=sentinel.config) as factory:
+      result = camera._configure()
+
+    self.assertIs(result, sentinel.config)
+    self.assertEqual(factory.call_args.args[2], 'pyqt')
+
+  def test_backend_mapping_instantiates_the_selected_configurator(self) -> None:
+    """Exercise the actual selection path through the Camera Block API."""
+
+    from tests.camera_configuration._fixtures import DummyCamera
+    from tests.camera_configuration.base._fixtures import RecordingCore
+
+    class TkConfig(RecordingCore):
+      pass
+
+    class QtConfig(RecordingCore):
+      pass
+
+    for backend, expected in (('tkinter', TkConfig), ('pyqt', QtConfig)):
+      with self.subTest(backend=backend):
+        camera = self.make_camera(config_backend=backend)
+        camera._camera = DummyCamera()
+        camera.configurator = {'tkinter': TkConfig, 'pyqt': QtConfig}
+        config = camera._configure()
+
+        self.assertIsInstance(config, expected)
+        self.assertIs(config._camera, camera._camera)
+        self.assertIs(config._log_queue, camera._log_queue)
+        self.assertEqual(config._max_freq, camera.freq)
+
+  def test_block_subclass_selects_custom_configurator(self) -> None:
+    """A Camera subclass can replace the window without a new API argument."""
+
+    class CustomTk(camera_module.TkinterCameraConfig):
+      pass
+
+    class CustomCamera(Camera):
+      configurator = {'tkinter': CustomTk,
+                      'pyqt': camera_module.PyQtCameraConfig}
+
+    camera = self.make_camera(block_type=CustomCamera)
+    camera._camera = sentinel.camera
+    with patch.object(camera_module, 'create_configurator',
+                      return_value=sentinel.config) as factory:
+      result = camera._configure()
+
+    self.assertIs(result, sentinel.config)
+    self.assertIs(factory.call_args.args[0], CustomCamera.configurator)
+    self.assertNotIn('configurator', camera._camera_kwargs)
 
   def test_configure_stops_window_on_keyboard_interrupt(self) -> None:
     """Tests that an interrupted configuration window is cleaned up."""
 
     camera = self.make_camera()
     config = MagicMock()
-    config.start.side_effect = KeyboardInterrupt
+    config.run.side_effect = KeyboardInterrupt
 
     with (patch.object(camera, '_configure', return_value=config),
           self.assertRaises(KeyboardInterrupt)):
       camera.configure()
 
+    config.stop.assert_called_once_with()
+
+  def test_configure_wraps_run_failure_after_cleanup(self) -> None:
+    """A callback or startup failure reaches the Block with its cause."""
+
+    camera = self.make_camera()
+    config = MagicMock()
+    failure = ValueError('configuration callback failed')
+    config.run.side_effect = failure
+
+    with (patch.object(camera, '_configure', return_value=config),
+          self.assertRaises(CameraConfigError) as raised):
+      camera.configure()
+
+    self.assertIs(raised.exception.__cause__, failure)
+    config.stop.assert_called_once_with()
+
+  def test_configure_wraps_constructor_failure(self) -> None:
+    """A failed configurator constructor reaches the Block with its cause."""
+
+    camera = self.make_camera()
+    failure = ValueError('cannot construct configuration window')
+
+    with (patch.object(camera, '_configure', side_effect=failure),
+          self.assertRaises(CameraConfigError) as raised):
+      camera.configure()
+
+    self.assertIs(raised.exception.__cause__, failure)
+
+  def test_configure_preserves_failure_when_cleanup_also_fails(self) -> None:
+    """Cleanup failure does not hide the original configuration error."""
+
+    camera = self.make_camera()
+    config = MagicMock()
+    failure = ValueError('configuration failed')
+    config.run.side_effect = failure
+    config.stop.side_effect = RuntimeError('cleanup failed')
+
+    with (patch.object(camera, '_configure', return_value=config),
+          self.assertRaises(CameraConfigError) as raised):
+      camera.configure()
+
+    self.assertIs(raised.exception.__cause__, failure)
+    config.stop.assert_called_once_with()
+
+  def test_configure_wraps_export_failure(self) -> None:
+    """A failed get_config is still treated as configuration failure."""
+
+    camera = self.make_camera()
+    camera.process_proc = MagicMock()
+    config = MagicMock()
+    failure = ValueError('cannot export ROI')
+    config.get_config.side_effect = failure
+
+    with (patch.object(camera, '_configure', return_value=config),
+          self.assertRaises(CameraConfigError) as raised):
+      camera.configure()
+
+    self.assertIs(raised.exception.__cause__, failure)
     config.stop.assert_called_once_with()
 
   def test_prepare_aborts_before_configuration_after_external_failure(

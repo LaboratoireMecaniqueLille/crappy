@@ -7,7 +7,10 @@ from pathlib import Path
 
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
-from ..tool.camera_config import DISCorrelConfig, Box
+from ..tool.camera_config import (CameraConfig, Box,
+                                  create_configurator)
+from ..tool.camera_config.tkinter import TkinterDISCorrelConfig
+from ..tool.camera_config.pyqt import PyQtDISCorrelConfig
 from ..tool.image_processing.fields import allowed_fields
 
 field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
@@ -37,19 +40,24 @@ class DISCorrel(Camera):
   correlation for computing the displacement and strain on images, but it
   tracks multiple patches and uses video-extensometry.
 
-  Similar to the :class:`~crappy.tool.camera_config.CameraConfig` window that
-  can be displayed by the Camera Block, this Block can display a
-  :class:`~crappy.tool.camera_config.DISCorrelConfig` window before the test
-  starts. Here, the user can also select the patch to track if it was not
-  already specified as an argument.
+  Similar to the :class:`~crappy.tool.camera_config.base.camera_config.\
+CameraConfig` window that can be displayed by the Camera Block, this Block can
+  display a
+  :class:`~crappy.tool.camera_config.base.dis_correl_config.DISCorrelConfig`
+  window before the test starts. Here, the user can also select the patch to
+  track if it was not already specified as an argument.
   
   .. versionadded:: 1.4.0
   """
+
+  configurator = {'tkinter': TkinterDISCorrelConfig,
+                  'pyqt': PyQtDISCorrelConfig}
 
   def __init__(self,
                camera: str,
                transform: Callable[[np.ndarray], np.ndarray] | None = None,
                config: bool = True,
+               config_backend: Literal['tkinter', 'pyqt'] = 'pyqt',
                display_images: bool = False,
                displayer_backend: Literal['cv2', 'mpl'] | None = None,
                displayer_framerate: float = 5,
@@ -100,9 +108,9 @@ class DISCorrel(Camera):
 
         .. versionadded:: 1.5.10
       config: If :obj:`True`, a
-        :class:`~crappy.tool.camera_config.DISCorrelConfig` window is displayed
-        before the test starts. There, the user can interactively adjust the
-        different
+        :class:`~crappy.tool.camera_config.base.dis_correl_config.\
+DISCorrelConfig` window is displayed before the test starts. There, the user
+        can interactively adjust the different
         :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
         available for the selected
         :class:`~crappy.camera.meta_camera.camera.Camera`, visualize the
@@ -112,6 +120,10 @@ class DISCorrel(Camera):
         and ``patch`` arguments must be provided.
 
         .. versionadded:: 1.5.10
+      config_backend: GUI backend for the configuration window, either
+        ``'tkinter'`` or ``'pyqt'`` (requires PyQt6).
+
+        .. versionadded:: 2.1.0
       display_images: If :obj:`True`, displays the acquired images in a
         dedicated window, using the backend given in ``displayer_backend`` and
         at the frequency specified in ``displayer_framerate``. This option
@@ -336,6 +348,7 @@ class DISCorrel(Camera):
     super().__init__(camera=camera,
                      transform=transform,
                      config=config,
+                     config_backend=config_backend,
                      display_images=display_images,
                      displayer_backend=displayer_backend,
                      displayer_framerate=displayer_framerate,
@@ -508,10 +521,11 @@ class DISCorrel(Camera):
 
     super().prepare()
 
-  def _configure(self) -> DISCorrelConfig:
+  def _configure(self) -> CameraConfig:
     """This method should instantiate the
-    :class:`~crappy.tool.camera_config.DISCorrelConfig` window for configuring
-    the :class:`~crappy.camera.meta_camera.camera.Camera` object.
+    :class:`~crappy.tool.camera_config.base.dis_correl_config.DISCorrelConfig`
+    window for configuring the
+    :class:`~crappy.camera.meta_camera.camera.Camera` object.
     """
 
     if self._camera is None:
@@ -523,5 +537,11 @@ class DISCorrel(Camera):
       raise RuntimeError("At that point the patch to track should be set but "
                          "it is not")
 
-    return DISCorrelConfig(self._camera, self._log_queue, self._log_level,
-                           self.freq, self._transform, self._patch)
+    return create_configurator(self.configurator,
+                               self._camera,
+                               self._config_backend,
+                               self._log_queue,
+                               self._log_level,
+                               self.freq,
+                               self._transform,
+                               patch=self._patch)

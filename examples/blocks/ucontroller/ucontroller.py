@@ -3,9 +3,10 @@
 """
 This example demonstrates the use of a UController Block for communicating with
 a microcontroller over a USB connection. It requires a microcontroller with
-MicroPython installed to run, and does not require any specific Python module.
-It was written for and tested on Adafruit's Huzzah ESP32 board, but should
-work on other microcontrollers or boards with minor adjustments.
+MicroPython installed, and the pyserial and PyQt6 Python packages on the
+computer for serial communication and the graphical displays. It was written
+for and tested on Adafruit's Huzzah ESP32 board, but should work on other
+microcontrollers or boards with minor adjustments.
 
 The UController Block can drive a microcontroller with MicroPython installed,
 and running the microcontroller.py template adjusted to user's needs. It can

@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 from crappy._global import PrepareError
 from crappy.blocks.vision.block import ConfigRequest
-from crappy.tool.camera_config import CameraConfig
+from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
 from .vision_test_base import StubVisionBlock, VisionTestBase
 
@@ -22,7 +22,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
     return ConfigRequest(requester='consumer',
                          args=(1, 2),
                          kwargs={'option': 3},
-                         configurator=CameraConfig,
+                         configurator=TkinterCameraConfig,
                          img_source=source,
                          connection=connection,
                          required=required)

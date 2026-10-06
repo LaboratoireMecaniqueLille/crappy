@@ -14,6 +14,7 @@ class TestCustomObjectTutorialDownloads(unittest.TestCase):
     'custom_all_in_one_camera.py': 'custom-all-in-one-camera',
     'custom_block_average.py': 'custom-block',
     'custom_camera_source.py': 'custom-camera',
+    'custom_camera_configuration.py': 'custom-camera-configuration',
     'custom_generator_path.py': 'custom-generator-path',
     'custom_inout_regular.py': 'custom-inout',
     'custom_inout_streamer.py': 'custom-streaming-inout',

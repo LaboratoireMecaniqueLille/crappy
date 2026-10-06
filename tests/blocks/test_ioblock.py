@@ -173,16 +173,16 @@ class TestIOBlock(BlockTestBase):
     self.assertEqual(block._exit_cmd, [2])
     self.assertFalse(block._cmd_labels)
 
-  def test_unknown_and_deprecated_inouts_are_rejected(self) -> None:
-    """Checks InOut name validation."""
+  def test_unknown_and_unimported_collection_inouts_are_rejected(self) -> None:
+    """Checks unknown names and collection drivers that are not registered."""
 
     with self.assertRaises(ValueError):
       IOBlock('MissingInOut')
 
-    with patch.dict(ioblock_module.deprecated_inouts,
-                    {'OldInOut': 'NewInOut'}):
+    with patch.object(ioblock_module, 'moved_to_collection',
+                      ('UnimportedCollectionInOut',)):
       with self.assertRaises(NotImplementedError):
-        IOBlock('OldInOut')
+        IOBlock('UnimportedCollectionInOut')
 
   def test_prepare_requires_links_and_command_labels(self) -> None:
     """Checks prepare-time Link layout validation."""

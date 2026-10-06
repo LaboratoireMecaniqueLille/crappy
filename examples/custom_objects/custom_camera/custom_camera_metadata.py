@@ -3,8 +3,8 @@
 """
 This example demonstrates custom metadata handling in a custom Crappy Camera
 object. It builds on custom_camera_basic.py, which should be read first. It
-does not require any hardware, but requires the Pillow and opencv-python Python
-modules.
+does not require any hardware, but requires the Pillow, opencv-python, and
+PyQt6 Python modules.
 
 In Camera objects, it is possible for the get_image method to return an entire
 metadata dictionary instead of just a timestamp. This way, metadata from the

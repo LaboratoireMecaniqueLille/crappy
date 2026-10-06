@@ -7,16 +7,18 @@ from abc import ABC, abstractmethod
 
 
 class Overlay(ABC):
-  """This class is the base class for all the classes adding overlays on top of
-  the images displayed by a :class:`~crappy.blocks.camera_processes.Displayer`
-  Process of a :class:`~crappy.blocks.Camera` Block.
+  """Abstract overlay that draws into a display image in place.
 
-  Also used for drawing overlays on top of the images in the
-  :class:`~crappy.tool.camera_config.CameraConfig` window, for the children of
-  the Camera Block supporting it.
-
-  It is mainly useful for providing the :meth:`log` method, and creating a
-  clear architecture. It is also relevant to use for type-hinting.
+  Used by the all-in-one image
+  :class:`~crappy.blocks.camera_processes.Displayer` and the
+  :class:`~crappy.blocks.vision.block.VisionBlock`
+  :class:`~crappy.blocks.vision.ImageDisplayer`. Subclasses implement
+  :meth:`draw() <crappy.tool.camera_config.config_tools.Overlay.draw>` and can
+  use the process-local
+  :meth:`log() <crappy.tool.camera_config.base.camera_config.CameraConfig.log>`
+  helper. Configuration selection classes also use
+  :class:`~crappy.tool.camera_config.config_tools.Box` containers, with drawing
+  adapted to their preview geometry.
 
   .. versionadded:: 2.0.0
   """
@@ -30,16 +32,17 @@ class Overlay(ABC):
 
   @abstractmethod
   def draw(self, img: ndarray) -> None:
-    """This method takes the image to display as an input, draws an overlay on
-    top of it, and returns the modified image.
+    """Draws an overlay into the supplied image in place.
 
-    It is meant to be overridden by subclasses of this class.
+    Args:
+      img: Display image array to modify.
     """
 
     ...
 
   def log(self, log_level: int, msg: str) -> None:
-    """Method for recording log messages from the Overlay class.
+    """Method for recording log messages from the
+    :class:`~crappy.tool.camera_config.config_tools.Overlay` class.
 
     Args:
       log_level: An :obj:`int` indicating the logging level of the message.

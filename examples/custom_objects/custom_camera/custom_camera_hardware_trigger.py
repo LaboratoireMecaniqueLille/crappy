@@ -3,7 +3,7 @@
 """
 This example demonstrates how to add a trigger setting to a custom Camera
 object in Crappy. It builds on custom_camera_basic.py, which should be read
-first. It does not require any hardware, but requires the Pillow and
+first. It does not require any hardware, but requires the Pillow, PyQt6, and
 opencv-python Python modules.
 
 Crappy makes it easy to implement a trigger setting in Camera objects. In the

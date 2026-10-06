@@ -1,8 +1,8 @@
 # coding: utf-8
 
 """
-This example demonstrates the use of the StopBlock. It requires neither
-hardware nor any specific Python modules.
+This example demonstrates the use of the StopBlock. It does not require
+hardware, but requires PyQt6 for the Button interface.
 
 This Block checks if given criteria are met in the data it receives. If so, it
 triggers an event that stops the entire Crappy script. It is one of the clean

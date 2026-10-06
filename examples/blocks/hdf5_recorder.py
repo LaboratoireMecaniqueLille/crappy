@@ -2,7 +2,7 @@
 
 """
 This example demonstrates the use of the HDF5Recorder Block. It does not
-require any hardware to run, but necessitates the tables and psutil Python
+require any hardware to run, but requires the tables, psutil, and PyQt6 Python
 modules to be installed.
 
 This Block takes a stream input from an IOBlock and records it in a .hdf5 file.

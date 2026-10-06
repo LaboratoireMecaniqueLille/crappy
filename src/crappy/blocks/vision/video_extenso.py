@@ -1,12 +1,14 @@
 # coding: utf-8
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 import logging
 
 from .block import VisionBlock, ConfigRequest
-from ...tool.camera_config import VideoExtensoConfig
 from ...tool.image_processing import VideoExtensoTool, LostSpotError
 from ...tool.camera_config.config_tools import SpotsBoxes
+from ...tool.camera_config import CameraConfig
+from ...tool.camera_config.tkinter import TkinterVideoExtensoConfig
+from ...tool.camera_config.pyqt import PyQtVideoExtensoConfig
 
 
 class VideoExtensoProcessor(VisionBlock):
@@ -21,10 +23,12 @@ class VideoExtensoProcessor(VisionBlock):
   VisionBlocks to that source.
 
   Before the test starts, the VideoExtensoProcessor asks its upstream image
-  source to run a :class:`~crappy.tool.camera_config.VideoExtensoConfig`
-  window. This window lets the user adjust the Camera settings, visualize the
-  acquired images, and detect or manually select the spots to track. When the
-  source is a :class:`~crappy.blocks.vision.CameraSource`, its ``config`` and
+  source to run a
+  :class:`~crappy.tool.camera_config.base.video_extenso_config.\
+VideoExtensoConfig` window. This window lets the user adjust the Camera
+  settings, visualize the acquired images, and detect or manually select the
+  spots to track. When the source is a
+  :class:`~crappy.blocks.vision.CameraSource`, its ``config`` and
   ``allow_downstream_config`` arguments must therefore both be enabled. It is
   currently not possible to provide spot coordinates directly, so successful
   interactive configuration is mandatory.
@@ -52,6 +56,11 @@ class VideoExtensoProcessor(VisionBlock):
   .. versionadded:: 2.1.0
   """
 
+  configurator: (type[CameraConfig] |
+                 Mapping[str, type[CameraConfig]]) = {
+                   'tkinter': TkinterVideoExtensoConfig,
+                   'pyqt': PyQtVideoExtensoConfig}
+
   def __init__(self,
                labels: str | Sequence[str] | None = None,
                raise_on_lost_spot: bool = True,
@@ -77,8 +86,8 @@ class VideoExtensoProcessor(VisionBlock):
         The reserved ``'overlay'`` label is appended automatically and carries
         the current spot boxes.
       raise_on_lost_spot: If :obj:`True`, raises an exception when a spot is
-        lost, which stops the test. If :obj:`False`, tracking stops but the test
-        continues; the last valid result is sent once more with an empty
+        lost, which stops the test. If :obj:`False`, tracking stops but the
+        test continues. The last valid result is sent once more with an empty
         overlay before this Block becomes idle.
       white_spots: If :obj:`True`, detects light spots over a dark background.
         If :obj:`False`, detects dark spots over a light background.
@@ -354,8 +363,9 @@ class VideoExtensoProcessor(VisionBlock):
         configuration window.
 
     Returns:
-      A request for :class:`~crappy.tool.camera_config.VideoExtensoConfig`
-      containing the spot-detection options set on this Block.
+      A request for :class:`~crappy.tool.camera_config.base.\
+video_extenso_config.VideoExtensoConfig` containing the spot-detection options
+      set on this Block.
     """
 
     return ConfigRequest(requester=self.name,
@@ -367,6 +377,6 @@ class VideoExtensoProcessor(VisionBlock):
                                  'update_thresh': self._update_thresh,
                                  'safe_mode': self._safe_mode,
                                  'border': self._border},
-                         configurator=VideoExtensoConfig,
+                         configurator=self.configurator,
                          img_source=source,
                          required=True)

@@ -155,8 +155,8 @@ class PrepareError(IOError):
 
 
 class CameraConfigError(RuntimeError):
-  """Error raised by a :class:`~crappy.tool.camera_config.CameraConfig` window
-  when encountering an exception."""
+  """Error raised by a :class:`~crappy.tool.camera_config.base.camera_config.\
+CameraConfig` window when encountering an exception."""
 
 
 class CameraPrepareError(RuntimeError):

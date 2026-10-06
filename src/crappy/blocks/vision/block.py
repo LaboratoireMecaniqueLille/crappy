@@ -7,6 +7,7 @@ from multiprocessing import (synchronize, managers, RLock, Event, Value,
 import numpy as np
 import logging
 from typing import Any
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from base64 import urlsafe_b64encode
 from uuid import uuid4
@@ -33,8 +34,9 @@ class ConfigRequest:
     requester: Name of the downstream Block requesting configuration.
     args: Positional arguments forwarded to the requested configurator.
     kwargs: Keyword arguments forwarded to the requested configurator.
-    configurator: :class:`~crappy.tool.camera_config.CameraConfig` subclass to
-      instantiate on the image source.
+    configurator: A configurator class or a backend-to-class mapping. The
+      selected class implements the neutral lifecycle (``run()``, ``stop()``,
+      ``watch_shutdown()``, and ``get_config()``) on the image source.
     img_source: Name of the upstream image source handling the request.
     connection: Pipe endpoint assigned by
       :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`. Requesters
@@ -49,7 +51,8 @@ class ConfigRequest:
   requester: str
   args: tuple[Any, ...]
   kwargs: dict[str, Any]
-  configurator: type[CameraConfig]
+  configurator: (type[CameraConfig] |
+                 Mapping[str, type[CameraConfig]])
   img_source: str
   connection: mp_connection.Connection | None = None
   completed: bool = False
@@ -431,7 +434,7 @@ class VisionBlock(Block, ABC):
 
     # Double-check image type and dtype consistency
     if img.dtype != self._out_link_data.npy_buffer.dtype:
-      raise ValueError(f"The dtype of the image to send ({img.dtype}) "
+      raise ValueError(f"The dtype of the image to send ({img.dtype.name}) "
                        f"doesn't match the one of the image buffer "
                        f"({self._out_link_data.npy_buffer.dtype})")
     if img.shape != self._out_link_data.npy_buffer.shape:

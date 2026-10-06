@@ -110,9 +110,9 @@ class Camera(ABC):
     ``<setting_name>=<setting_value>`` to the Camera Block, with
     ``<setting_name>`` the exact name given to the setting. It can be desirable
     to provide setting values here in case the display of the
-    :class:`~crappy.tool.camera_config.CameraConfig` is disabled
-    (``config=False`` set on the Camera Block), or to gain time if the correct
-    values are already known.
+    :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig` is
+    disabled (``config=False`` set on the Camera Block), or to gain time if the
+    correct values are already known.
 
     Important:
       To effectively set the setting values, the method :meth:`set_all` must be
@@ -184,9 +184,9 @@ class Camera(ABC):
     :class:`~crappy.camera.meta_camera.camera_setting.CameraBoolSetting` using
     the provided arguments.
 
-    If a :class:`~crappy.tool.camera_config.CameraConfig` window is displayed
-    (``config=True`` set on the Camera Block), this setting will appear as a
-    checkbox.
+    If a :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
+    window is displayed (``config=True`` set on the Camera Block), this setting
+    will appear as a checkbox.
 
     Args:
       name: The name of the setting, that will be displayed in the
@@ -228,9 +228,9 @@ class Camera(ABC):
     :class:`~crappy.camera.meta_camera.camera_setting.CameraScaleSetting` using
     the provided arguments.
 
-    If a :class:`~crappy.tool.camera_config.CameraConfig` window is displayed
-    (``config=True`` set on the Camera Block), this setting will appear as a
-    slider.
+    If a :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
+    window is displayed (``config=True`` set on the Camera Block), this setting
+    will appear as a slider.
 
     Note:
       If any of ``lowest`` or ``highest`` is a :obj:`float`, then the setting
@@ -282,9 +282,9 @@ class Camera(ABC):
     :class:`~crappy.camera.meta_camera.camera_setting.CameraChoiceSetting`
     using the provided arguments.
 
-    If a :class:`~crappy.tool.camera_config.CameraConfig` window is displayed
-    (``config=True`` set on the Camera Block), this setting will appear as a
-    set of radio buttons.
+    If a :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
+    window is displayed (``config=True`` set on the Camera Block), this setting
+    will appear as a set of radio buttons.
 
     Args:
       name: The name of the setting, that will be displayed in the
@@ -343,7 +343,8 @@ class Camera(ABC):
     It can also be left to :obj:`None`.
 
     The rationale behind the ``'Hdw after config'`` choice is to allow the user
-    to tune settings in the :class:`~crappy.tool.camera_config.CameraConfig`
+    to tune settings in the
+    :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
     window with the camera in free run mode, and to switch afterward to the
     hardware trigger mode once the test begins. It proves extremely useful if
     the hardware triggers are generated from Crappy, as they're not started yet
@@ -489,7 +490,7 @@ class Camera(ABC):
         return img
       # If there's no pixel left to display, return None
       else:
-        return
+        return None
 
     # Simply returning the image if the ROI settings were not defined
     else:
