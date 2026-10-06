@@ -79,15 +79,19 @@ class TestVisionIntegration(IntegrationTestBase):
   def test_dis_correl_recorder_pipeline(self) -> None:
     """Checks generated strain is processed by DISCorrel and recorded."""
 
-    with self.run_scenario('dis_correl_recorder') as output_dir:
-      rows = self._read_csv(output_dir,
-                            'dis_correl.csv',
-                            ['t(s)', 'Exx(%)', 'Eyy(%)'])
+    for scenario in ('dis_correl_recorder', 'delayed_dis_correl_recorder'):
+      with self.subTest(scenario=scenario):
+        with self.run_scenario(scenario) as output_dir:
+          rows = self._read_csv(output_dir,
+                                'dis_correl.csv',
+                                ['t(s)', 'Exx(%)', 'Eyy(%)'])
 
-      times = [float(row['t(s)']) for row in rows]
-      exx = [float(row['Exx(%)']) for row in rows]
-      eyy = [float(row['Eyy(%)']) for row in rows]
+          times = [float(row['t(s)']) for row in rows]
+          exx = [float(row['Exx(%)']) for row in rows]
+          eyy = [float(row['Eyy(%)']) for row in rows]
 
-      self.assertTrue(all(map(isfinite, (*times, *exx, *eyy))))
-      self.assertEqual(times, sorted(times))
-      self.assertTrue(all(time_value >= 0 for time_value in times))
+          self.assertTrue(all(map(isfinite, (*times, *exx, *eyy))))
+          self.assertEqual(times, sorted(times))
+          self.assertTrue(all(time_value >= 0 for time_value in times))
+          if scenario == 'delayed_dis_correl_recorder':
+            self.assertGreaterEqual(times[0], 1.5)

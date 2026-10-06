@@ -17,6 +17,7 @@ from .lifecycle import (build_auto_drive_recorder,
                         build_generator_sink,
                         build_pause_stop_probe)
 from .vision import (build_camera_image_saver,
+                     build_delayed_dis_correl_recorder,
                      build_dicve_recorder,
                      build_dis_correl_recorder)
 from .vision_blocks import (build_vision_broken_required_config,
@@ -30,6 +31,7 @@ from .vision_blocks import (build_vision_broken_required_config,
 scenario_builders: dict[str, Callable[[Path], tuple[Block, ...]]] = {
   'auto_drive_recorder': build_auto_drive_recorder,
   'camera_image_saver': build_camera_image_saver,
+  'delayed_dis_correl_recorder': build_delayed_dis_correl_recorder,
   'dicve_recorder': build_dicve_recorder,
   'dis_correl_recorder': build_dis_correl_recorder,
   'generator_link_reader': build_generator_link_reader,

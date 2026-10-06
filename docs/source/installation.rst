@@ -5,7 +5,7 @@ Installation
 Install a published release
 ---------------------------
 
-Crappy requires Python ``>=3.10``. Its only base package dependency is:
+Crappy requires Python ``>=3.11``. Its only base package dependency is:
 
 - ``numpy>=2.0.0``
 
@@ -31,7 +31,7 @@ Run this command in a terminal:
 
    python --version
 
-If the reported version does not satisfy ``>=3.10``, install a newer Python
+If the reported version does not satisfy ``>=3.11``, install a newer Python
 before continuing. On Windows, Python may need to be installed first. On Linux
 and macOS, install another Python version alongside the system Python instead
 of removing the system interpreter.
