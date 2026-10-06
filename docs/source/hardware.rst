@@ -9,6 +9,29 @@ tested. Follow a driver's name for its complete API and configuration details.
 The operating-system column records intended or required platforms from the
 implementation and existing documentation, it is not a verification claim.
 
+.. grid:: 1 1 3 3
+   :gutter: 2
+
+   .. grid-item-card:: Cameras
+
+      The :ref:`hardware:Camera integrations` table lists image-acquisition
+      drivers.
+      Start with the :doc:`image-pipeline tutorial <tutorials/image_pipeline>`.
+
+   .. grid-item-card:: InOuts
+
+      The :ref:`hardware:InOut integrations` table lists sensor and instrument
+      drivers.
+      Start with the :doc:`data-acquisition tutorial
+      <tutorials/data_acquisition>`.
+
+   .. grid-item-card:: Actuators
+
+      The :ref:`hardware:Actuator integrations` table lists motor and actuator
+      drivers.
+      Start with the :doc:`actuator-control tutorial
+      <tutorials/actuator_control>`.
+
 How to read the status
 ----------------------
 
