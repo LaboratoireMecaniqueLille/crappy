@@ -170,10 +170,13 @@ nothing there.
 ``launch_all``
 +++++++++++++++
 
-The main process waits on the readiness barrier with the Blocks. After every
-participant arrives, it records the current time in the shared ``t0`` value
-and sets the start event. It then waits for a Block to finish. Normal completion
-of any Block begins the coordinated shutdown of the remaining graph.
+The main process waits on the readiness barrier with the Blocks. A temporary
+watchdog thread monitors Block process sentinels during this wait, aborts the
+barrier if a Block exits, and stops before the start event is set. After every
+participant arrives, the main process records the current time in the shared
+``t0`` value and sets the start event. It then waits for a Block to finish.
+Normal completion of any Block begins the coordinated shutdown of the remaining
+graph.
 
 Block process sequence
 ----------------------

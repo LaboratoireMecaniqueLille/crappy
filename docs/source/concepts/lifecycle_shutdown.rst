@@ -82,7 +82,8 @@ creating an output file.
 After preparing, every Block waits at a synchronization barrier. If one Block
 fails during preparation, the barrier is released as an error so that the
 others do not wait indefinitely. The test proceeds only after every Block and
-the coordinator are ready.
+the coordinator are ready. Abrupt Block exits are also detected by a temporary
+watchdog thread in the main process, which aborts the barrier.
 
 Crappy then records a common start timestamp, available through
 :attr:`~crappy.blocks.meta_block.block.Block.t0`, and releases the Blocks. This
