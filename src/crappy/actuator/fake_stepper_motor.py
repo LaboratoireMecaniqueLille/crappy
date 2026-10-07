@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from time import time, sleep
+from time import monotonic, sleep
 from math import sqrt, copysign
 from threading import Thread, RLock
 import logging
@@ -64,7 +64,7 @@ class FakeStepperMotor(Actuator):
     self._pos: float = 0
     self._target_pos: float | None = 0
     self._target_speed: float | None = None
-    self._t: float = time()
+    self._t: float = monotonic()
 
     # Attributes managing the Thread emulating the motor
     self._stop_thread: bool = False
@@ -172,7 +172,7 @@ class FakeStepperMotor(Actuator):
         c1 = self._max_speed ** 2 / self._accel
 
         # Updating the last timestamp
-        t = time()
+        t = monotonic()
         delta_t = t - self._t
         self._t = t
 

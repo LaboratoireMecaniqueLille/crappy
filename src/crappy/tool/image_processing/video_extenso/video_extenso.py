@@ -4,7 +4,7 @@ from multiprocessing import Pipe, current_process, connection
 from multiprocessing.queues import Queue
 import numpy as np
 from itertools import combinations
-from time import time
+from time import monotonic
 import logging
 import logging.handlers
 from select import select
@@ -122,7 +122,7 @@ class VideoExtensoTool:
     self._log_level: int | None = log_level
     self._log_queue: Queue = log_queue
 
-    self._last_warn: float = time()
+    self._last_warn: float = monotonic()
     self._system: str = system()
 
   def __del__(self) -> None:
@@ -402,8 +402,8 @@ class VideoExtensoTool:
     if self._system == 'Linux':
       if select([], [conn], [], 0)[1]:
         conn.send(val)
-      elif time() - self._last_warn > 1:
-          self._last_warn = time()
+      elif monotonic() - self._last_warn > 1:
+          self._last_warn = monotonic()
           self._log(logging.WARNING, f"Cannot send the image to process to the"
                                      f" Tracker process, the Pipe is full !")
     else:

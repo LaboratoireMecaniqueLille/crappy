@@ -10,7 +10,7 @@ from collections.abc import Iterable, Sequence
 import logging
 import logging.handlers
 from select import select
-from time import time, sleep
+from time import sleep, monotonic
 from platform import system
 from abc import ABC, abstractmethod
 
@@ -75,10 +75,10 @@ class CameraProcess(Process, ABC):
     self._img0_set = False
 
     # Other attribute for internal use
-    self._last_warn = time()
+    self._last_warn = monotonic()
     self.fps_count = 0
     self._display_freq: bool | None = None
-    self._last_fps = time()
+    self._last_fps = monotonic()
 
   def set_shared(self,
                  array: sharedctypes.SynchronizedArray,
@@ -192,7 +192,7 @@ class CameraProcess(Process, ABC):
       self._cam_barrier.wait()
       self.log(logging.INFO, "All Camera processes ready now")
 
-      self._last_fps = time()
+      self._last_fps = monotonic()
 
       # Looping forever until told to stop or an exception is raised
       if self._stop_event is None:
@@ -209,7 +209,7 @@ class CameraProcess(Process, ABC):
 
         # Displaying the looping frequency is required
         if self._display_freq:
-          t = time()
+          t = monotonic()
           if t - self._last_fps > 2:
             self.log(logging.INFO, f"Images processed /s: "
                                    f"{self.fps_count / (t - self._last_fps)}")
@@ -370,9 +370,9 @@ class CameraProcess(Process, ABC):
       if select([], [self._to_draw_conn], [], 0)[1]:
         # Can only check on Linux if a pipe is full
         self._to_draw_conn.send(to_draw)
-      elif time() - self._last_warn > 1:
+      elif monotonic() - self._last_warn > 1:
         # Warning in case the pipe is full
-        self._last_warn = time()
+        self._last_warn = monotonic()
         self.log(logging.WARNING, f"Cannot send the overlay to draw to the "
                                   f"Displayer process, the Pipe is full !")
     else:

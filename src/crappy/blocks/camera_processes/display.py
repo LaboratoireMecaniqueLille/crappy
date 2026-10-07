@@ -4,7 +4,7 @@ from threading import Thread
 from math import log2, ceil
 import numpy as np
 from collections.abc import Iterable
-from time import time, sleep
+from time import sleep, monotonic
 import logging
 import logging.handlers
 
@@ -91,7 +91,7 @@ class Displayer(CameraProcess):
     # Setting other instance attributes
     self._ax = None
     self._fig = None
-    self._last_upd = time()
+    self._last_upd = monotonic()
 
   def __del__(self) -> None:
     """On exit, ensuring that the :obj:`~threading.Thread` in charge of
@@ -145,12 +145,12 @@ class Displayer(CameraProcess):
       # In case the frame in buffer was already handled during a previous loop,
       # or it's too early to grab a new frame because of the target framerate
       if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID'] \
-          or time() - self._last_upd < 1 / self._framerate:
+          or monotonic() - self._last_upd < 1 / self._framerate:
         return False
 
       # Copying the metadata
       self.metadata = self._data_dict.copy()
-      self._last_upd = time()
+      self._last_upd = monotonic()
 
       self.log(logging.DEBUG, f"Got new image to process with id "
                               f"{self.metadata['ImageUniqueID']}")

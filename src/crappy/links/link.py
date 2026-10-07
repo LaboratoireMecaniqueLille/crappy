@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from multiprocessing import Pipe
-from time import time
+from time import monotonic
 from copy import deepcopy
 from typing import Any
 from collections.abc import Callable, Sequence
@@ -85,7 +85,7 @@ class Link:
 
     self.name = name if name is not None else f'link{self._get_count()}'
 
-    self._last_warn = time()
+    self._last_warn = monotonic()
     self._logger: logging.Logger | None = None
     self._system = system()
     self._modifiers = modifiers
@@ -168,8 +168,8 @@ class Link:
       if select([], [self._out], [], 0)[1]:
         self._out.send(value)
       # Warning in case the pipe is full
-      elif time() - self._last_warn > 1:
-          self._last_warn = time()
+      elif monotonic() - self._last_warn > 1:
+          self._last_warn = monotonic()
           self.log(logging.WARNING, f"Cannot send the values, the Link is "
                                     f"full !")
     else:

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from base64 import urlsafe_b64encode
 from uuid import uuid4
 from math import prod
-from time import time
+from time import monotonic
 
 from ..meta_block import Block
 from ...links import ImageLink
@@ -241,7 +241,7 @@ class VisionBlock(Block, ABC):
     # Attributes for displaying the FPS counter
     self._loop_count = 0
     self._fps_count = 0
-    self._last_fps_img = time()
+    self._last_fps_img = monotonic()
 
   def prepare(self) -> None:
     """Creates outgoing image buffers and attaches to incoming ones.
@@ -328,7 +328,7 @@ class VisionBlock(Block, ABC):
   def begin(self) -> None:
     """Starts handled-image frequency measurement when the test begins."""
 
-    self._last_fps_img = time()
+    self._last_fps_img = monotonic()
 
   def finish(self) -> None:
     """Releases shared-memory resources owned or attached by this Block.
@@ -891,7 +891,7 @@ class VisionBlock(Block, ABC):
     """
 
     self._fps_count += int(img_handled)
-    t = time()
+    t = monotonic()
     if t - self._last_fps_img > 2:
       self.log(logging.INFO, f"Frames handled per second: "
                              f"{self._fps_count / (t - self._last_fps_img)}")

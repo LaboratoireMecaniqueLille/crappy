@@ -6,7 +6,7 @@ from tkinter.messagebox import showerror
 from platform import system
 from math import ceil
 import numpy as np
-from time import monotonic, time
+from time import monotonic
 import logging
 import locale
 from dataclasses import dataclass
@@ -245,7 +245,7 @@ TkinterCameraConfig.start>`. The window can be started only once. A closed
     self._lifecycle.mark_histogram_started()
 
     self._n_loops = 0
-    self._last_upd_t = time()
+    self._last_upd_t = monotonic()
     self._next_acq_t = -float('inf')
 
     # Let Tk's event loop handle the first frame and the first FPS update
@@ -451,10 +451,10 @@ TkinterCameraConfig.stop>`. Pending
       self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
     # Updating the indicators in the GUI
-    elapsed = time() - self._last_upd_t
+    elapsed = monotonic() - self._last_upd_t
     self._display_state.fps = self._n_loops / elapsed if elapsed > 0 else 0.0
     self._n_loops = 0
-    self._last_upd_t = time()
+    self._last_upd_t = monotonic()
     self._sync_indicator_labels()
 
   def _set_layout(self) -> None:

@@ -4,7 +4,7 @@ from multiprocessing import Process, get_start_method
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 import numpy as np
-from time import time
+from time import monotonic
 from select import select
 import logging
 import logging.handlers
@@ -93,7 +93,7 @@ class Tracker(Process):
     self._log_queue = log_queue
 
     self._n = 0
-    self._last_warn = time()
+    self._last_warn = monotonic()
 
   @classmethod
   def get_name(cls, logger_name: str, self_name: str) -> str:
@@ -248,8 +248,8 @@ class Tracker(Process):
     if self._system == 'Linux':
       if select([], [self._pipe], [], 0)[1]:
         self._pipe.send(val)
-      elif time() - self._last_warn > 1:
-          self._last_warn = time()
+      elif monotonic() - self._last_warn > 1:
+          self._last_warn = monotonic()
           self._log(logging.WARNING, f"Cannot send the detected spot to the "
                                      f"VideoExtenso tool, the Pipe is full !")
     else:

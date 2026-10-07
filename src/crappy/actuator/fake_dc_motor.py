@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from time import time
+from time import monotonic
 
 from .meta_actuator import Actuator
 
@@ -58,7 +58,7 @@ class FakeDCMotor(Actuator):
     self._rpm = 0
     self._pos = 0
     self._volt = 0
-    self._t = time()
+    self._t = monotonic()
 
   def open(self) -> None:
     """Sets the variables describing the state of the motor."""
@@ -66,7 +66,7 @@ class FakeDCMotor(Actuator):
     self._rpm = self._initial_speed
     self._pos = self._initial_pos
     self._volt = 0
-    self._t = time() * self._simulation_speed
+    self._t = monotonic() * self._simulation_speed
 
   def get_speed(self) -> float:
     """Return the speed of the motor, in RPM."""
@@ -96,7 +96,7 @@ class FakeDCMotor(Actuator):
     It supposes that the voltage has been constant since the last update.
     """
 
-    t1 = time() * self._simulation_speed
+    t1 = monotonic() * self._simulation_speed
     dt = (t1 - self._t)
     self._t = t1
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from typing import Literal
-from time import time
+from time import monotonic
 import numpy as np
 import logging
 from math import ceil, log2
@@ -194,26 +194,26 @@ class ImageDisplayer(VisionBlock):
         try:
           overlays = tuple(data['overlay'])
         except (Exception,):
-          if time() - self._last_warn > 2:
+          if monotonic() - self._last_warn > 2:
             self.log(logging.WARNING, f"Ignoring invalid overlay data received"
                                       f" from Link {link.name}: expected an "
                                       f"iterable of Overlay objects")
-            self._last_warn = time()
+            self._last_warn = monotonic()
           continue
 
         if not all(overlay is None or isinstance(overlay, Overlay)
                    for overlay in overlays):
-          if time() - self._last_warn > 2:
+          if monotonic() - self._last_warn > 2:
             self.log(logging.WARNING, f"Ignoring invalid overlay data received"
                                       f" from Link {link.name}: expected only "
                                       f"Overlay objects or None placeholders")
-            self._last_warn = time()
+            self._last_warn = monotonic()
           continue
 
         self._overlay_buffer[link.name] = overlays
 
     # Enforce framerate by skipping loops
-    if time() - self._last_upd < 1 / self._framerate:
+    if monotonic() - self._last_upd < 1 / self._framerate:
       self.log(logging.DEBUG, "Too early to loop, to achieve the desired "
                               "framerate")
       # If requested, displays the FPS of the image display
@@ -221,7 +221,7 @@ class ImageDisplayer(VisionBlock):
         self._print_freq(img_handled=False)
       return
     # Update last received time
-    self._last_upd = time()
+    self._last_upd = monotonic()
 
     # Nothing to do if no new image was received
     if not (upd_links := self.receive_imgs()):

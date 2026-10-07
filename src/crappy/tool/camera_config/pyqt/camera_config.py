@@ -14,7 +14,7 @@ from math import ceil
 from multiprocessing import Event, Queue, synchronize
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
-from time import monotonic, time
+from time import monotonic
 from typing import Any, TYPE_CHECKING
 import logging
 import locale
@@ -351,7 +351,7 @@ PyQtCameraConfig.start>`. The window can be started only once. A closed window
     self._histogram_process.start()
     self._lifecycle.mark_histogram_started()
     self._n_loops = 0
-    self._last_upd_t = time()
+    self._last_upd_t = monotonic()
     self._next_acq_t = -float('inf')
     self._acquisition_timer.start(0)
     self._indicator_timer.start()
@@ -874,10 +874,10 @@ Camera` setting edits are not applied here. If the
 
     if self._last_upd_t is None:
       return
-    elapsed = time() - self._last_upd_t
+    elapsed = monotonic() - self._last_upd_t
     self._display_state.fps = self._n_loops / elapsed if elapsed > 0 else 0.0
     self._n_loops = 0
-    self._last_upd_t = time()
+    self._last_upd_t = monotonic()
     self._sync_indicators()
 
   def _update_img(self) -> None:

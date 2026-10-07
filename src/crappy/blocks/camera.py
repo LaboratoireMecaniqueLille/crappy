@@ -4,7 +4,7 @@ from typing import Literal
 from collections.abc import Callable, Mapping
 from pathlib import Path
 import numpy as np
-from time import time, sleep, strftime, gmtime
+from time import time, sleep, strftime, gmtime, monotonic
 from types import MethodType
 from typing import Any
 from multiprocessing import (Array, Manager, Event, RLock, Pipe, Barrier,
@@ -435,7 +435,7 @@ class Camera(Block):
 
     self._loop_count: int = 0
     self._fps_count: int = 0
-    self._last_cam_fps: float = time()
+    self._last_cam_fps: float = monotonic()
 
     # Instantiating the ImageSaver if requested
     self._save_images: bool = save_images
@@ -728,7 +728,7 @@ class Camera(Block):
     receive the global start time.
     """
 
-    self._last_cam_fps = time()
+    self._last_cam_fps = monotonic()
 
   def loop(self) -> None:
     """This method receives data from upstream
@@ -829,7 +829,7 @@ class Camera(Block):
     # If requested, displays the FPS of the image acquisition
     if self.display_freq:
       self._fps_count += 1
-      t = time()
+      t = monotonic()
       if t - self._last_cam_fps > 2:
         self.log(logging.INFO, f"Acquisition FPS: "
                                f"{self._fps_count / (t - self._last_cam_fps)}")
