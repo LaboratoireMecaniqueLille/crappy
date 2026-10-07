@@ -221,10 +221,11 @@ runtime failure. A process that must be terminated externally cannot complete
 this path, which is why hardware safety cannot depend only on ``finish``.
 
 The main cleanup routine sets the stop event and gives the Blocks a limited
-time to exit. The current timeout is three seconds. It terminates processes
-that remain alive, then shuts down the optional image manager and logging
-thread. The logging thread is asked to stop and given one second to exit, a
-missed deadline is recorded as a shutdown failure. Finally,
+time to exit. The current timeout is three seconds. It terminates survivors,
+then kills any still alive, allowing one second for each escalation stage,
+before shutting down the optional image manager and logging thread. The
+logging thread is asked to stop and given one second to exit, a missed deadline
+is recorded as a shutdown failure. Finally,
 :meth:`~crappy.blocks.meta_block.block.Block.reset` clears the registries,
 graph, shared-object references, and lifecycle flags.
 

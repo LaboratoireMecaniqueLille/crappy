@@ -11,7 +11,8 @@ from time import monotonic, sleep
 from platform import system
 import logging
 import unittest
-from unittest.mock import Mock, patch
+import signal
+from unittest.mock import Mock, patch, call
 from weakref import WeakSet
 
 from .block_test_base import BlockTestBase, TestBlock
@@ -40,6 +41,14 @@ class TestBlockRaise(TestBlock):
     if not self._wait_for_loop.wait(3.0):
       raise RuntimeError("The peer Block never entered its loop")
     raise ValueError
+
+
+class TestBlockIgnoreTerminate(TestBlockNoResponse):
+  """POSIX child deliberately ignoring SIGTERM to require kill escalation."""
+
+  def prepare(self) -> None:
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    super().prepare()
 
 
 class TestStartupSequence(BlockTestBase):
@@ -412,8 +421,10 @@ class TestStartupSequence(BlockTestBase):
     real_wait = block_module.connection.wait
 
     def accelerated_wait(objects, timeout=None):
-      return real_wait(objects, timeout=None if timeout is None else
-                       timeout / 100)
+      # Only accelerate the main grace-period wait, not Process.join internals.
+      scaled = (timeout / 100
+                if timeout is not None and isinstance(objects, dict) else timeout)
+      return real_wait(objects, timeout=scaled)
 
     with patch.object(block_module, 'monotonic',
                       side_effect=accelerated_time), \
@@ -463,6 +474,106 @@ class TestStartupSequence(BlockTestBase):
     for block in blocks:
       block.join.assert_called_once_with(timeout=3.0)
       block.terminate.assert_not_called()
+      block.kill.assert_not_called()
+
+  @unittest.skipIf(system() == 'Windows', 'SIGTERM handling is POSIX-only')
+  def test_cleanup_kills_block_ignoring_terminate(self) -> None:
+    """A real SIGTERM-ignoring child is killed and reaped before reset."""
+
+    self._block = TestBlockIgnoreTerminate()
+    peer = TestBlockRaise(self._block.looped)
+    blocks = (self._block, peer)
+
+    def reap_blocks():
+      for inst in blocks:
+        if inst.is_alive():
+          inst.kill()
+        if inst.pid is not None:
+          inst.join(timeout=1.0)
+
+    self.addCleanup(reap_blocks)
+    Block.prepare_all(log_level=logging.CRITICAL)
+    self.assertTrue(self._block.prepared.wait(timeout=3.0))
+    cleanup_start = monotonic()
+    real_wait = block_module.connection.wait
+
+    def accelerated_time():
+      return cleanup_start + 100 * (monotonic() - cleanup_start)
+
+    def accelerated_wait(objects, timeout=None):
+      # Process.join must retain a real timeout long enough to reap the child.
+      scaled = (timeout / 100
+                if timeout is not None and isinstance(objects, dict) else timeout)
+      return real_wait(objects, timeout=scaled)
+
+    with (patch.object(block_module, 'monotonic', side_effect=accelerated_time),
+          patch.object(block_module.connection, 'wait',
+                       side_effect=accelerated_wait),
+          patch.object(self._block, 'terminate',
+                       wraps=self._block.terminate) as terminate,
+          patch.object(self._block, 'kill', wraps=self._block.kill) as kill,
+          self.assertRaises(CrappyFail)):
+      Block.launch_all()
+
+    terminate.assert_called_once()
+    kill.assert_called_once()
+    self.assertFalse(self._block.is_alive())
+    self.assertEqual(self._block.exitcode, -signal.SIGKILL)
+
+  def test_cleanup_does_not_kill_after_successful_termination(self) -> None:
+    """Give terminate() time to complete before considering kill()."""
+
+    Block.stop_event = Event()
+    Block.raise_event = Event()
+    Block.kbi_event = Event()
+    block = Mock(spec=Block)
+    block.sentinel = 10
+    block.is_alive.return_value = True
+    Block._run_blocks = (block,)
+
+    def join(*, timeout):
+      if block.terminate.called:
+        block.is_alive.return_value = False
+
+    block.join.side_effect = join
+    with (patch.object(block_module, 'monotonic', return_value=0.0),
+          patch.object(block_module.connection, 'wait', return_value=[10])):
+      Block._cleanup()
+
+    block.terminate.assert_called_once()
+    block.kill.assert_not_called()
+    self.assertEqual(block.join.call_args_list,
+                     [call(timeout=3.0), call(timeout=1.0)])
+
+  def test_cleanup_escalation_shares_deadlines(self) -> None:
+    """Termination and kill stages each have one budget for all Blocks."""
+
+    Block.stop_event = Event()
+    Block.raise_event = Event()
+    Block.kbi_event = Event()
+    blocks = (Mock(spec=Block), Mock(spec=Block))
+    Block._run_blocks = blocks
+    for sentinel, block in enumerate(blocks, start=10):
+      block.sentinel = sentinel
+      block.is_alive.return_value = True
+      block.kill.side_effect = lambda block=block: setattr(
+          block.is_alive, 'return_value', False)
+
+    with (patch.object(block_module, 'monotonic',
+                       side_effect=(0.0, 0.0, 0.0, 0.0,
+                                    3.0, 3.1, 3.8, 4.0, 4.4, 4.9)),
+          patch.object(block_module.connection, 'wait', return_value=[10, 11])):
+      Block._cleanup()
+
+    for block, terminate_timeout, kill_timeout in zip(blocks,
+                                                     (0.9, 0.2), (0.6, 0.1)):
+      block.terminate.assert_called_once()
+      block.kill.assert_called_once()
+      self.assertEqual(block.join.call_count, 3)
+      self.assertAlmostEqual(block.join.call_args_list[1].kwargs['timeout'],
+                             terminate_timeout)
+      self.assertAlmostEqual(block.join.call_args_list[2].kwargs['timeout'],
+                             kill_timeout)
 
   def test_cleanup_join_uses_remaining_deadline(self) -> None:
     """Reaping multiple ready Blocks must not restart the shutdown budget."""
@@ -504,7 +615,7 @@ class TestStartupSequence(BlockTestBase):
          patch.object(block_module.connection, 'wait', return_value=[10]):
       Block._cleanup()
 
-    block.join.assert_called_once_with(timeout=0.001)
+    block.join.assert_called_once_with(timeout=0.1)
     block.terminate.assert_not_called()
 
   def test_cleanup_does_not_reap_unstarted_blocks(self) -> None:
@@ -547,7 +658,10 @@ class TestStartupSequence(BlockTestBase):
       with self.assertRaises(CrappyFail):
         Block._cleanup()
 
-    block.join.assert_called_once_with(timeout=3.0)
+    self.assertEqual(block.join.call_args_list,
+                     [call(timeout=3.0), call(timeout=1.0), call(timeout=1.0)])
+    block.terminate.assert_called_once()
+    block.kill.assert_called_once()
     self.assertTrue(failure.is_set())
 
   def test_cleanup_caps_wait_at_remaining_deadline(self) -> None:
@@ -564,7 +678,7 @@ class TestStartupSequence(BlockTestBase):
     Block._run_blocks = (block,)
 
     with patch.object(block_module, 'monotonic',
-                      side_effect=(0.0, 0.0, 2.8, 3.0)), \
+                      side_effect=(0.0, 0.0, 2.8, 3.0, 3.0, 3.0)), \
          patch.object(block_module.connection, 'wait',
                       return_value=[]) as wait:
       Block._cleanup()

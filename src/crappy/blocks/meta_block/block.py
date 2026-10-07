@@ -787,9 +787,10 @@ class Block(Process, ABC):
   def _cleanup(cls) -> None:
     """Method called at the very end of every script execution.
 
-    It first waits for all the Blocks to end, and kills them if they don't stop
-    by themselves. Then, it stops the log_thread and records a failure if
-    Processes or the logging Thread would still be running.
+    It first waits for all the Blocks to end, terminates survivors, and kills
+    those still running after termination. Then, it stops the log_thread and
+    records a failure if Processes or the logging Thread would still be
+    running.
 
     Finally, it raises an exception if needed, in order to stop the script of
     the main Process. This way, any action that could follow the normal
@@ -822,15 +823,41 @@ class Block(Process, ABC):
             pending.pop(sentinel).join(timeout=max(0.1,
                                                    deadline - monotonic()))
 
-        if pending:
+        survivors = [inst for inst in cls._run_blocks if inst.is_alive()]
+        if survivors:
           cls.cls_log(logging.WARNING, 'All Blocks not stopped after 3 '
                                        'seconds, terminating the living ones')
-          for inst in cls._run_blocks:
-              if inst.is_alive():
-                cls.cls_log(logging.WARNING, f'Terminating Block {inst.name}')
-                inst.terminate()
-              else:
-                cls.cls_log(logging.INFO, f'Block {inst.name} done')
+          for inst in survivors:
+            cls.cls_log(logging.WARNING, f'Terminating Block {inst.name}')
+            inst.terminate()
+
+          # Waiting at most one second for the survivors to terminate
+          deadline = monotonic() + 1.0
+          for inst in survivors:
+            inst.join(timeout=max(0.0, deadline - monotonic()))
+
+          # If a Block survives termination, try to kill it
+          survivors = [inst for inst in survivors if inst.is_alive()]
+          if survivors:
+            for inst in survivors:
+              cls.cls_log(logging.WARNING, f'Killing Block {inst.name}')
+              inst.kill()
+
+            # Waiting at most one second for the survivors to get killed
+            deadline = monotonic() + 1.0
+            for inst in survivors:
+              inst.join(timeout=max(0.0, deadline - monotonic()))
+
+            # If there are still survivors, all we can do is notify the user
+            survivors = [inst for inst in survivors if inst.is_alive()]
+            if survivors:
+              cls.cls_log(logging.ERROR, "Not all Blocks could be stopped "
+                                         "even after killing them")
+            else:
+              cls.cls_log(logging.INFO, "All Blocks stopped after killing")
+
+          else:
+            cls.cls_log(logging.INFO, "All Blocks stopped after termination")
         else:
           cls.cls_log(logging.INFO, 'All Blocks stopped')
 
@@ -1370,6 +1397,7 @@ class Block(Process, ABC):
           self._stop_event.set()
         self.log(logging.INFO, "Calling the finish method")
         self.finish()
+        self.log(logging.INFO, f"Block {self.name} done")
       except KeyboardInterrupt:
         self.log(logging.WARNING, "Caught KeyboardInterrupt while finishing, "
                                   "ignoring it")
