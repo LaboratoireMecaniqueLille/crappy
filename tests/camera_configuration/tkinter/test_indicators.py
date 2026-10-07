@@ -41,8 +41,7 @@ class TestFPS(TkinterConfigTestCase):
     def acquire_image() -> None:
       self._config._n_loops += 1
 
-    with patch.object(camera_config_module, 'time', side_effect=fake_time), \
-         patch.object(camera_config_module, 'monotonic',
+    with patch.object(camera_config_module, 'monotonic',
                       side_effect=fake_time), \
          patch.object(self._config, '_update_img', side_effect=acquire_image):
       # Ten evenly-spaced frames are enough to verify each frequency exactly;

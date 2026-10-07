@@ -76,7 +76,7 @@ class TestDisplayer(CameraProcessTestBase):
 
     # Fresh Displayer instances should initially throttle according to
     # framerate.
-    displayer._last_upd = display_module.time()
+    displayer._last_upd = display_module.monotonic()
     self.assertFalse(displayer._get_data())
 
     displayer._last_upd = 0
@@ -86,7 +86,7 @@ class TestDisplayer(CameraProcessTestBase):
 
     img1 = img0 + 10
     self.write_image(shared, img1, {'ImageUniqueID': 2, 't(s)': 0.2})
-    displayer._last_upd = display_module.time()
+    displayer._last_upd = display_module.monotonic()
     self.assertFalse(displayer._get_data())
     np.testing.assert_array_equal(displayer.img, img0)
 

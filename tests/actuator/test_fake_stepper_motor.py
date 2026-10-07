@@ -61,7 +61,7 @@ class TestFakeStepperMotor(TestCase):
                          'sleep',
                          side_effect=stop_after_sleep),
             patch.object(fake_stepper_motor_module,
-                         'time',
+                         'monotonic',
                          return_value=now)):
         motor._thread_target()
     finally:

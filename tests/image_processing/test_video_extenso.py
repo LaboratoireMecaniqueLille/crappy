@@ -363,7 +363,7 @@ class TestVideoExtensoTool(TestCase):
     tool._last_warn = 0
 
     with (patch.object(ve_module, 'select', return_value=([], [], [])),
-          patch.object(ve_module, 'time', return_value=2)):
+          patch.object(ve_module, 'monotonic', return_value=2)):
       tool._send(pipe, ('other', 'other', 'other'))
 
     self.assertEqual(pipe.sent, [('payload', 'payload', 'payload')])
@@ -462,7 +462,7 @@ class TestTracker(TestCase):
     tracker._last_warn = 0
 
     with (patch.object(tracker_module, 'select', return_value=([], [], [])),
-          patch.object(tracker_module, 'time', return_value=2)):
+          patch.object(tracker_module, 'monotonic', return_value=2)):
       tracker._send('other')
 
     self.assertEqual(pipe.sent, ['value'])

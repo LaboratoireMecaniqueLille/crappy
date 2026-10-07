@@ -61,7 +61,7 @@ class TestRunCycle(CameraProcessTestBase):
     self.write_image(shared, img)
 
     times = iter((0.0, 3.0))
-    with patch.object(camera_process_module, 'time', side_effect=times):
+    with patch.object(camera_process_module, 'monotonic', side_effect=times):
       self._process.run()
 
     self.assertFalse(shared.barrier.broken)

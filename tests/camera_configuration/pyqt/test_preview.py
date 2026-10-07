@@ -10,6 +10,20 @@ from crappy.tool.camera_config.pyqt import camera_config as pyqt_config
 
 
 class TestPreview(PyQtConfigTestCase):
+  def test_fps_uses_elapsed_monotonic_time(self) -> None:
+    """Preview FPS and its next measurement anchor use the monotonic clock."""
+
+    config = self.make_config()
+    config._last_upd_t = 100.0
+    config._n_loops = 20
+
+    with patch.object(pyqt_config, 'monotonic', return_value=100.5):
+      config._update_indicators()
+
+    self.assertEqual(config._display_state.fps, 40.0)
+    self.assertEqual(config._n_loops, 0)
+    self.assertEqual(config._last_upd_t, 100.5)
+
   def test_image_preview_reports_shape_and_dtype(self) -> None:
     """Qt displays the acquired image and exposes its format to the Block."""
 

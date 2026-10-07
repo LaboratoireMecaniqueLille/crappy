@@ -12,7 +12,8 @@ from ..block import BlockTestBase
 class TestFakeMachine(BlockTestBase):
   """Unit tests for the FakeMachine Block-specific behavior."""
 
-  _t0 = 10.0
+  _t0 = 1000.0
+  _monotonic_t0 = 10.0
 
   def _make_machine(self, **kwargs) -> FakeMachine:
     """Creates a deterministic FakeMachine ready for direct method calls."""
@@ -71,10 +72,13 @@ class TestFakeMachine(BlockTestBase):
     machine = self._make_machine(rigidity=1000, l0=100, nu=0.25)
     sent = self._capture_send(machine)
 
-    with patch.object(fake_machine_module, 'time', return_value=10.25):
+    with (patch.object(fake_machine_module, 'monotonic',
+                       return_value=self._monotonic_t0),
+          patch.object(fake_machine_module, 'time',
+                       return_value=self._t0 + 0.25)):
       machine.begin()
 
-    self.assertEqual(machine._prev_t, self._t0)
+    self.assertEqual(machine._prev_t, self._monotonic_t0)
     self.assertEqual(len(sent), 1)
     self._assert_sent_values(sent[0],
                              t=0.25,
@@ -83,19 +87,39 @@ class TestFakeMachine(BlockTestBase):
                              exx=0,
                              eyy=0)
 
+  def test_wall_clock_jump_does_not_change_simulated_motion(self) -> None:
+    """Physics uses elapsed monotonic time; output timestamps use wall time."""
+
+    machine = self._make_machine(rigidity=200, l0=100,
+                                 plastic_law=lambda _: 0)
+    sent = self._capture_send(machine)
+    self._set_received(machine, {'cmd': 2})
+
+    with (patch.object(fake_machine_module, 'monotonic',
+                       side_effect=(10.0, 10.5)),
+          patch.object(fake_machine_module, 'time',
+                       side_effect=(self._t0, self._t0 - 100))):
+      machine.begin()
+      machine.loop()
+
+    self.assertEqual(len(sent), 2)
+    self.assertAlmostEqual(machine._current_pos, 1.0)
+    self.assertEqual(sent[-1]['t(s)'], -100)
+
   def test_loop_returns_if_command_label_is_missing(self) -> None:
     """Checks that missing commands leave the machine state untouched."""
 
     machine = self._make_machine(cmd_label='drive')
-    machine._prev_t = self._t0
+    machine._prev_t = self._monotonic_t0
     machine._current_pos = 1.5
     sent = self._capture_send(machine)
     fill_missing_values = self._set_received(machine, {'cmd': 5})
 
-    machine.loop()
+    with patch.object(fake_machine_module, 'monotonic', return_value=11.0):
+      machine.loop()
 
     self.assertEqual(fill_missing_values, [True])
-    self.assertEqual(machine._prev_t, self._t0)
+    self.assertEqual(machine._prev_t, self._monotonic_t0)
     self.assertEqual(machine._current_pos, 1.5)
     self.assertEqual(sent, [])
 
@@ -116,13 +140,15 @@ class TestFakeMachine(BlockTestBase):
                                      max_speed=5,
                                      plastic_law=lambda _: 0,
                                      mode='speed')
-        machine._prev_t = self._t0
+        machine._prev_t = self._monotonic_t0
         machine._current_pos = case['current_pos']
         sent = self._capture_send(machine)
         fill_missing_values = self._set_received(machine, {'cmd': case['cmd']})
 
-        t = self._t0 + case['delta_t']
-        with patch.object(fake_machine_module, 'time', side_effect=(t, t)):
+        with (patch.object(fake_machine_module, 'monotonic',
+                           return_value=self._monotonic_t0 + case['delta_t']),
+              patch.object(fake_machine_module, 'time',
+                           return_value=self._t0 + case['delta_t'])):
           machine.loop()
 
         position = case['position']
@@ -153,14 +179,16 @@ class TestFakeMachine(BlockTestBase):
                                      plastic_law=lambda _: 0,
                                      mode='position',
                                      cmd_label='target')
-        machine._prev_t = self._t0
+        machine._prev_t = self._monotonic_t0
         machine._current_pos = case['current_pos']
         sent = self._capture_send(machine)
         fill_missing_values = self._set_received(
           machine, {'target': case['cmd']})
 
-        t = self._t0 + case['delta_t']
-        with patch.object(fake_machine_module, 'time', side_effect=(t, t)):
+        with (patch.object(fake_machine_module, 'monotonic',
+                           return_value=self._monotonic_t0 + case['delta_t']),
+              patch.object(fake_machine_module, 'time',
+                           return_value=self._t0 + case['delta_t'])):
           machine.loop()
 
         position = case['position']
@@ -184,11 +212,13 @@ class TestFakeMachine(BlockTestBase):
                                  max_strain=100,
                                  max_speed=5,
                                  plastic_law=plastic_law)
-    machine._prev_t = self._t0
+    machine._prev_t = self._monotonic_t0
     sent = self._capture_send(machine)
     self._set_received(machine, {'cmd': 20})
 
-    with patch.object(fake_machine_module, 'time', side_effect=(12.0, 12.0)):
+    with (patch.object(fake_machine_module, 'monotonic', return_value=12.0),
+          patch.object(fake_machine_module, 'time',
+                       return_value=self._t0 + 2)):
       machine.loop()
 
     self.assertEqual(machine._max_recorded_strain, 0.1)
@@ -207,13 +237,14 @@ class TestFakeMachine(BlockTestBase):
                                  l0=100,
                                  max_strain=5,
                                  max_speed=5)
-    machine._prev_t = self._t0
+    machine._prev_t = self._monotonic_t0
     machine._prev_broke_t = 11.5
     sent = self._capture_send(machine)
     self._set_received(machine, {'cmd': 20})
 
-    with patch.object(fake_machine_module, 'time',
-                      side_effect=(12.0, 12.0, 12.0)):
+    with (patch.object(fake_machine_module, 'monotonic', return_value=12.0),
+          patch.object(fake_machine_module, 'time',
+                       return_value=self._t0 + 2)):
       machine.loop()
 
     self.assertEqual(machine._rigidity, 0)

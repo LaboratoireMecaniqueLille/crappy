@@ -515,14 +515,24 @@ class TestCameraBlock(CameraBlockTestBase):
         camera.prepare()
 
   def test_loop_writes_shared_frame(self) -> None:
-    """Tests that Camera.loop writes frames for CameraProcess instances."""
+    """Frame timestamps use wall time while acquisition FPS uses monotonic."""
 
-    camera = self.make_camera()
+    camera = self.make_camera(display_freq=True)
     camera.prepare()
+    camera._instance_t0.value = 1000.0
 
-    camera.loop()
+    with (patch.object(camera_module, 'monotonic', side_effect=(10.0, 13.0)),
+          patch.object(camera_module, 'time', return_value=1000.5),
+          patch.object(camera, 'log') as log):
+      camera.begin()
+      camera.loop()
+
+    log.assert_any_call(logging.INFO, f'Acquisition FPS: {1 / 3}')
+    self.assertEqual(camera._last_cam_fps, 13.0)
+    self.assertEqual(camera._fps_count, 0)
 
     self.assertEqual(camera._metadata['ImageUniqueID'], 0)
+    self.assertEqual(camera._metadata['t(s)'], 0.5)
     self.assertIn('DateTimeOriginal', camera._metadata)
     self.assertIn('SubsecTimeOriginal', camera._metadata)
 

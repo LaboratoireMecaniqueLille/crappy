@@ -220,7 +220,7 @@ class TestImageDisplayer(VisionTestBase):
     displayer.receive_imgs = Mock()
     displayer._print_freq = Mock()
 
-    with patch.object(display_module, 'time', return_value=10.1):
+    with patch.object(display_module, 'monotonic', return_value=10.1):
       displayer.loop()
 
     self.assertEqual(displayer._overlay_buffer[regular.name], (overlay, None))
@@ -244,7 +244,7 @@ class TestImageDisplayer(VisionTestBase):
 
     for timestamp in (10.0, 11.0, 12.0):
       displayer._last_upd = float('-inf')
-      with patch.object(display_module, 'time', return_value=timestamp):
+      with patch.object(display_module, 'monotonic', return_value=timestamp):
         displayer.loop()
 
       if timestamp < 12:
@@ -269,7 +269,7 @@ class TestImageDisplayer(VisionTestBase):
     displayer.log = Mock()
 
     for timestamp in (10.1, 11.0):
-      with patch.object(display_module, 'time', return_value=timestamp):
+      with patch.object(display_module, 'monotonic', return_value=timestamp):
         displayer.loop()
 
     self.assertEqual(displayer._overlay_buffer[regular.name], (retained,))
@@ -294,7 +294,7 @@ class TestImageDisplayer(VisionTestBase):
     metadata = {'ImageUniqueID': 7, 't(s)': 1.25, 'camera': 'fake'}
     self.feed_image(displayer, image, metadata)
 
-    with patch.object(display_module, 'time', return_value=10.0):
+    with patch.object(display_module, 'monotonic', return_value=10.0):
       displayer.loop()
 
     self.assertEqual(overlay.calls, 1)
@@ -321,7 +321,7 @@ class TestImageDisplayer(VisionTestBase):
     image = np.zeros((2, 3), dtype=np.uint8)
     self.feed_image(displayer, image)
 
-    with patch.object(display_module, 'time', return_value=10.0):
+    with patch.object(display_module, 'monotonic', return_value=10.0):
       displayer.loop()
 
     self.assertEqual(image.flat[0], 0)
@@ -334,7 +334,7 @@ class TestImageDisplayer(VisionTestBase):
     displayer.receive_imgs = Mock(return_value=[])
     displayer._print_freq = Mock()
 
-    with patch.object(display_module, 'time', return_value=10.0):
+    with patch.object(display_module, 'monotonic', return_value=10.0):
       displayer.loop()
 
     displayer._print_freq.assert_called_once_with(img_handled=False)
@@ -349,7 +349,7 @@ class TestImageDisplayer(VisionTestBase):
     self.feed_image(displayer, image)
 
     displayer.last_received['display-image'].metadata = None
-    with patch.object(display_module, 'time', return_value=10.0):
+    with patch.object(display_module, 'monotonic', return_value=10.0):
       with self.assertRaises(RuntimeError):
         displayer.loop()
 
@@ -357,7 +357,7 @@ class TestImageDisplayer(VisionTestBase):
       with self.subTest(metadata=metadata):
         displayer._last_upd = float('-inf')
         displayer.last_received['display-image'].metadata = metadata
-        with patch.object(display_module, 'time', return_value=11.0):
+        with patch.object(display_module, 'monotonic', return_value=11.0):
           with self.assertRaises(RuntimeError):
             displayer.loop()
 
