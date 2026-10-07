@@ -35,14 +35,12 @@ class TestProperties(BlockTestBase):
     self._block.freq = 25.0
     self._block.display_freq = True
     self._block.pausable = False
-    self._block.is_vision_block = True
 
     self.assertEqual(self._block.niceness, -20)
     self.assertEqual(self._block.labels, ('time', 'value'))
     self.assertEqual(self._block.freq, 25.0)
     self.assertTrue(self._block.display_freq)
     self.assertFalse(self._block.pausable)
-    self.assertTrue(self._block.is_vision_block)
 
     self._block.niceness = 19
     self._block.labels = None
@@ -105,6 +103,14 @@ class TestProperties(BlockTestBase):
         with self.subTest(attribute=attribute, value=value):
           with self.assertRaises(TypeError):
             setattr(self._block, attribute, value)
+
+  def test_vision_flag_requires_vision_methods(self) -> None:
+    """A regular Block cannot claim to implement the vision interface."""
+
+    with self.assertRaisesRegex(TypeError, 'required methods'):
+      self._block.is_vision_block = True
+
+    self.assertFalse(self._block.is_vision_block)
 
   def test_name_updates_global_bookkeeping(self) -> None:
     """Checks renaming and uniqueness across Block instances."""

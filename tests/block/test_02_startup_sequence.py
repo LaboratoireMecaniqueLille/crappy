@@ -22,15 +22,22 @@ class TestBlockNoResponse(TestBlock):
   def loop(self) -> None:
     """Sleeps long enough for the cleanup code to have to intervene."""
 
+    self.looped.set()
     sleep(10)
 
 
 class TestBlockRaise(TestBlock):
-  """Test Block raising an exception from loop."""
+  """Test Block raising after a peer has entered its unresponsive loop."""
+
+  def __init__(self, wait_for_loop: synchronize.Event) -> None:
+    super().__init__()
+    self._wait_for_loop = wait_for_loop
 
   def loop(self) -> None:
-    """Raises immediately when the main loop is entered."""
+    """Waits for the peer's loop to start before raising."""
 
+    if not self._wait_for_loop.wait(3.0):
+      raise RuntimeError("The peer Block never entered its loop")
     raise ValueError
 
 
@@ -376,8 +383,18 @@ class TestStartupSequence(BlockTestBase):
     """Tests that cleanup terminates a Block that does not stop by itself."""
 
     self._block = TestBlockNoResponse()
-    _ = TestBlockRaise()
+    peer = TestBlockRaise(self._block.looped)
+    blocks = (self._block, peer)
 
+    def reap_blocks() -> None:
+      # Keep process references across Block.reset, including assertion failures.
+      for inst in blocks:
+        if inst.is_alive():
+          inst.kill()
+        if inst.pid is not None:
+          inst.join(1.0)
+
+    self.addCleanup(reap_blocks)
     Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertTrue(self._block.prepared.wait(3.0))
@@ -389,11 +406,76 @@ class TestStartupSequence(BlockTestBase):
     def accelerated_time() -> float:
       return cleanup_start + 100 * (monotonic() - cleanup_start)
 
-    with patch.object(block_module, 'time', side_effect=accelerated_time), \
-         patch.object(block_module, 'sleep', side_effect=lambda _: sleep(0.01)):
+    real_wait = block_module.connection.wait
+
+    def accelerated_wait(objects, timeout=None):
+      return real_wait(objects, timeout=None if timeout is None else
+                       timeout / 100)
+
+    with patch.object(block_module, 'monotonic',
+                      side_effect=accelerated_time), \
+         patch.object(block_module.connection, 'wait',
+                      side_effect=accelerated_wait), \
+         patch.object(self._block, 'terminate',
+                      wraps=self._block.terminate) as terminate:
       with self.assertRaises(CrappyFail):
         Block.launch_all()
 
-    for inst in Block.instances:
+      terminate.assert_called_once()
+
+    self.assertTrue(self._block.looped.is_set())
+    for inst in blocks:
       inst.join(1.0)
       self.assertFalse(inst.is_alive())
+
+  def test_cleanup_waits_for_all_sentinels(self) -> None:
+    """One exited Block must not end the wait for its still-running peer."""
+
+    Block.stop_event = Event()
+    Block.raise_event = Event()
+    Block.kbi_event = Event()
+    blocks = (Mock(spec=Block), Mock(spec=Block))
+    for sentinel, block in enumerate(blocks, start=10):
+      block.sentinel = sentinel
+      block.is_alive.return_value = True
+      Block.instances.add(block)
+    observed = list()
+    remaining = list(blocks)
+
+    def report_exit(objects, timeout):
+      observed.append((set(objects), timeout))
+      block = remaining.pop(0)
+      block.is_alive.return_value = False
+      return [block.sentinel]
+
+    with patch.object(block_module, 'monotonic', return_value=0.0), \
+         patch.object(block_module.connection, 'wait', side_effect=report_exit):
+      Block._cleanup()
+
+    self.assertEqual(observed, [({10, 11}, 0.5), ({11}, 0.5)])
+    for block in blocks:
+      block.terminate.assert_not_called()
+
+  def test_cleanup_caps_wait_at_remaining_deadline(self) -> None:
+    """The last sentinel wait must use only the remaining shutdown budget."""
+
+    Block.stop_event = Event()
+    Block.raise_event = Event()
+    Block.kbi_event = Event()
+    block = Mock(spec=Block)
+    block.sentinel = 10
+    block.is_alive.return_value = True
+    block.terminate.side_effect = lambda: setattr(
+        block.is_alive, 'return_value', False)
+    Block.instances.add(block)
+
+    with patch.object(block_module, 'monotonic',
+                      side_effect=(0.0, 0.0, 2.8, 3.0)), \
+         patch.object(block_module.connection, 'wait',
+                      return_value=[]) as wait:
+      Block._cleanup()
+
+    self.assertEqual(wait.call_count, 2)
+    self.assertAlmostEqual(wait.call_args_list[0].kwargs['timeout'], 0.5)
+    self.assertAlmostEqual(wait.call_args_list[1].kwargs['timeout'], 0.2)
+    block.terminate.assert_called_once()
