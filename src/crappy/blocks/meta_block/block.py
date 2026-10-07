@@ -794,26 +794,26 @@ class Block(Process, ABC):
           cls.stop_event.set()
           cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks '
                                     'to finish')
-        t = time()
 
         # Waiting at most 3 seconds for all the Blocks to finish
-        while cls.instances and not all(not inst.is_alive() for inst
-                                        in cls.instances):
+        pending = {inst.sentinel for inst in cls.instances if inst.is_alive()}
+        deadline = monotonic() + 3.0
+        while pending and (remaining := deadline - monotonic()) > 0:
           cls.cls_log(logging.INFO, "All Blocks not stopped yet")
-          sleep(0.5)
+          pending.difference_update(connection.wait(
+              pending, timeout=min(0.5, remaining)))
 
-          # After 3 seconds, killing the Blocks that didn't stop
-          if time() - t > 3:
-            cls.cls_log(logging.WARNING, 'All Blocks not stopped, terminating '
-                                         'the living ones')
-            for inst in cls.instances:
+        if pending:
+          cls.cls_log(logging.WARNING, 'All Blocks not stopped after 3 '
+                                       'seconds, terminating the living ones')
+          for inst in cls.instances:
               if inst.is_alive():
+                cls.cls_log(logging.WARNING, f'Terminating Block {inst.name}')
                 inst.terminate()
-                cls.cls_log(logging.WARNING, f'Block {inst.name} terminated')
               else:
                 cls.cls_log(logging.INFO, f'Block {inst.name} done')
-
-            break
+        else:
+          cls.cls_log(logging.INFO, 'All Blocks stopped')
 
         # Stopping the shared Manager if required
         if cls.shared_mgr is not None:
