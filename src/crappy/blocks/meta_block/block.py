@@ -1435,9 +1435,7 @@ class Block(Process, ABC):
     interest and this method should always be rewritten.
     """
 
-    self.log(logging.WARNING, f"Loop method not defined, this block does "
-                              f"nothing !")
-    sleep(1)
+    ...
 
   def finish(self) -> None:
     """This method should perform any action required for properly ending the
