@@ -811,13 +811,16 @@ class Block(Process, ABC):
                                     'to finish')
 
         # Waiting at most 3 seconds for all the Blocks to finish
-        pending = {inst.sentinel for inst in cls._run_blocks
+        pending = {inst.sentinel: inst for inst in cls._run_blocks
                    if inst.is_alive()}
         deadline = monotonic() + 3.0
         while pending and (remaining := deadline - monotonic()) > 0:
           cls.cls_log(logging.INFO, "All Blocks not stopped yet")
-          pending.difference_update(connection.wait(
-              pending, timeout=min(0.5, remaining)))
+          exited = connection.wait(pending, timeout=min(0.5, remaining))
+          # Avoid race condition between sentinel available and Process end
+          for sentinel in exited:
+            pending.pop(sentinel).join(timeout=max(0.1,
+                                                   deadline - monotonic()))
 
         if pending:
           cls.cls_log(logging.WARNING, 'All Blocks not stopped after 3 '

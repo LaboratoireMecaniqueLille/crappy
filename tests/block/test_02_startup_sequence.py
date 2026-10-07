@@ -432,7 +432,7 @@ class TestStartupSequence(BlockTestBase):
       self.assertFalse(inst.is_alive())
 
   def test_cleanup_waits_for_all_sentinels(self) -> None:
-    """One exited Block must not end the wait for its still-running peer."""
+    """Ready Blocks are reaped without ending the wait for their peers."""
 
     Block.stop_event = Event()
     Block.raise_event = Event()
@@ -442,13 +442,17 @@ class TestStartupSequence(BlockTestBase):
     for sentinel, block in enumerate(blocks, start=10):
       block.sentinel = sentinel
       block.is_alive.return_value = True
+      block.join.side_effect = lambda *, timeout, block=block: setattr(
+          block.is_alive, 'return_value', False)
     observed = list()
     remaining = list(blocks)
 
     def report_exit(objects, timeout):
       observed.append((set(objects), timeout))
       block = remaining.pop(0)
-      block.is_alive.return_value = False
+      # Sentinel readiness alone need not make is_alive() return False.
+      self.assertTrue(block.is_alive())
+      block.join.assert_not_called()
       return [block.sentinel]
 
     with patch.object(block_module, 'monotonic', return_value=0.0), \
@@ -457,7 +461,94 @@ class TestStartupSequence(BlockTestBase):
 
     self.assertEqual(observed, [({10, 11}, 0.5), ({11}, 0.5)])
     for block in blocks:
+      block.join.assert_called_once_with(timeout=3.0)
       block.terminate.assert_not_called()
+
+  def test_cleanup_join_uses_remaining_deadline(self) -> None:
+    """Reaping multiple ready Blocks must not restart the shutdown budget."""
+
+    Block.stop_event = Event()
+    Block.raise_event = Event()
+    Block.kbi_event = Event()
+    blocks = (Mock(spec=Block), Mock(spec=Block))
+    Block._run_blocks = blocks
+    for sentinel, block in enumerate(blocks, start=10):
+      block.sentinel = sentinel
+      block.is_alive.return_value = True
+      block.join.side_effect = lambda *, timeout, block=block: setattr(
+          block.is_alive, 'return_value', False)
+
+    with patch.object(block_module, 'monotonic',
+                      side_effect=(0.0, 0.0, 1.0, 2.0)), \
+         patch.object(block_module.connection, 'wait', return_value=[10, 11]):
+      Block._cleanup()
+
+    blocks[0].join.assert_called_once_with(timeout=2.0)
+    blocks[1].join.assert_called_once_with(timeout=1.0)
+
+  def test_cleanup_join_stays_positive_at_deadline(self) -> None:
+    """A sentinel ready at the deadline still needs more than join(0)."""
+
+    Block.stop_event = Event()
+    Block.raise_event = Event()
+    Block.kbi_event = Event()
+    block = Mock(spec=Block)
+    block.sentinel = 10
+    block.is_alive.return_value = True
+    block.join.side_effect = lambda *, timeout: setattr(
+        block.is_alive, 'return_value', False)
+    Block._run_blocks = (block,)
+
+    with patch.object(block_module, 'monotonic',
+                      side_effect=(0.0, 2.9, 3.0)), \
+         patch.object(block_module.connection, 'wait', return_value=[10]):
+      Block._cleanup()
+
+    block.join.assert_called_once_with(timeout=0.001)
+    block.terminate.assert_not_called()
+
+  def test_cleanup_does_not_reap_unstarted_blocks(self) -> None:
+    """Partial startup must not access an unstarted Block's sentinel or join."""
+
+    Block.stop_event = Event()
+    Block.raise_event = Event()
+    Block.kbi_event = Event()
+    self._block = TestBlock()
+    started = Mock(spec=Block)
+    started.sentinel = 10
+    started.is_alive.return_value = True
+    started.join.side_effect = lambda *, timeout: setattr(
+        started.is_alive, 'return_value', False)
+    Block._run_blocks = (started, self._block)
+
+    with patch.object(block_module, 'monotonic', return_value=0.0), \
+         patch.object(block_module.connection, 'wait', return_value=[10]), \
+         patch.object(self._block, 'join') as unstarted_join:
+      Block._cleanup()
+
+    started.join.assert_called_once_with(timeout=3.0)
+    unstarted_join.assert_not_called()
+
+  def test_cleanup_join_does_not_hide_a_still_running_block(self) -> None:
+    """Joining is not itself proof that the Block actually stopped."""
+
+    Block.stop_event = Event()
+    Block.raise_event = Event()
+    Block.kbi_event = Event()
+    failure = Block.raise_event
+    block = Mock(spec=Block)
+    block.name = 'crappy.still-running'
+    block.sentinel = 10
+    block.is_alive.return_value = True
+    Block._run_blocks = (block,)
+
+    with patch.object(block_module, 'monotonic', return_value=0.0), \
+         patch.object(block_module.connection, 'wait', return_value=[10]):
+      with self.assertRaises(CrappyFail):
+        Block._cleanup()
+
+    block.join.assert_called_once_with(timeout=3.0)
+    self.assertTrue(failure.is_set())
 
   def test_cleanup_caps_wait_at_remaining_deadline(self) -> None:
     """The last sentinel wait must use only the remaining shutdown budget."""
