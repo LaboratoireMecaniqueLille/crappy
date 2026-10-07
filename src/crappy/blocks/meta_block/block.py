@@ -11,7 +11,7 @@ import logging
 import logging.handlers
 from time import sleep, time, time_ns
 from weakref import WeakSet
-from typing import Any, Self
+from typing import Any, Protocol, runtime_checkable
 from collections.abc import Sequence
 from collections import defaultdict
 import subprocess
@@ -25,6 +25,25 @@ from ..._global import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
                         CameraPrepareError, CameraRuntimeError, SchedulerStop,
                         CameraConfigError, CrappyFail, DefinitionError)
+
+
+@runtime_checkable
+class VisionBlockType(Protocol):
+  """Protocol for the extra methods implemented by the
+  :class:`~crappy.blocks.vision.block.VisionBlock`"""
+
+  def request_config(self, source: str) -> Any:
+    """Method for requesting configuration information from an image source
+    Block."""
+
+  def add_config_request_in(self, request) -> None:
+    """Registers a configuration request received from a downstream Block."""
+
+  def add_config_request_out(self, request) -> None:
+    """Registers a configuration request sent to an upstream image source."""
+
+  def set_shared_objects(self) -> None:
+    """Creates and distributes synchronization objects for output images."""
 
 
 class Block(Process, ABC):
@@ -61,7 +80,7 @@ class Block(Process, ABC):
   .. versionchanged:: 2.1.0 removed management of the FT232H USB server
   """
 
-  instances = WeakSet()
+  instances: WeakSet[Block] = WeakSet()
   names: list[str] = list()
   log_level: int | None = logging.DEBUG
 
@@ -357,16 +376,17 @@ class Block(Process, ABC):
         # Manage config requests for each source-consumer pair
         for source_name in link_graph.img_sources():
           source = instances_lookup[source_name]
+          if not isinstance(source, VisionBlockType):
+            raise TypeError(f"The image source {source_name} does not "
+                            f"implement all the required methods")
           for consumer_name in link_graph.descendants(source_name,
                                                       kind='image'):
             consumer = instances_lookup[consumer_name]
             # If there's a configuration request from the consumer, share it
             # with the source
-            if (hasattr(consumer, 'request_config') and
-                callable(consumer.request_config) and
+            if (isinstance(consumer, VisionBlockType) and
                 (config_request := consumer.request_config(source_name))
                 is not None):
-              config_request: Any
               if config_request.requester != consumer.name:
                 raise ValueError("The name of the config requester doesn't "
                                  "match the name of the downstream Block")
@@ -413,7 +433,8 @@ class Block(Process, ABC):
 
         # Making vision Blocks generate their shared synchronization objects
         for instance in cls.instances:
-          if instance.is_vision_block:
+          if (instance.is_vision_block and
+              isinstance(instance, VisionBlockType)):
             instance.set_shared_objects()
             cls.cls_log(logging.INFO, f"Set shared image-related objects for "
                                       f"the {instance.name} Block")
@@ -1711,6 +1732,9 @@ class Block(Process, ABC):
   def is_vision_block(self, val: bool) -> None:
     if not isinstance(val, bool):
       raise TypeError("is_vision_block must be a boolean")
+    if not isinstance(self, VisionBlockType):
+      raise TypeError(f"The Block {self.name} does not implement all the "
+                      f"required methods of a VisionBlock!")
     self._is_vision_block = val
 
   def add_output(self, link: Link) -> None:

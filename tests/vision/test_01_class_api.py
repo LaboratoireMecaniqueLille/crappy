@@ -6,6 +6,7 @@ import logging
 import numpy as np
 
 import crappy
+from crappy.blocks.meta_block.block import VisionBlockType
 import crappy.blocks.vision.block as block_module
 from crappy.blocks.vision import VisionBlock
 from crappy.blocks.vision.block import ConfigRequest, ImgData, ImgLinkData
@@ -24,6 +25,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
     block = StubVisionBlock()
 
     self.assertIs(crappy.VisionBlock, VisionBlock)
+    self.assertIsInstance(block, VisionBlockType)
     self.assertTrue(block.is_vision_block)
     self.assertEqual(block.freq, 200)
     self.assertFalse(block.display_freq)
