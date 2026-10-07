@@ -9,7 +9,7 @@ from threading import BrokenBarrierError, Thread, Event as ThreadEvent
 from queue import Empty
 import logging
 import logging.handlers
-from time import sleep, time, time_ns
+from time import time, monotonic
 from weakref import WeakSet
 from typing import Any, Protocol, runtime_checkable
 from collections.abc import Sequence
@@ -703,7 +703,7 @@ class Block(Process, ABC):
       # Setting t0 and telling all the Blocks to start
       if cls.shared_t0 is None:
         raise RuntimeError("Should set shared_t0 but it doesn't exist!")
-      cls.shared_t0.value = time_ns() / 1e9
+      cls.shared_t0.value = time()
       cls.cls_log(logging.INFO, f'Start time set to {cls.shared_t0.value}s')
       if cls.start_event is None:
         raise RuntimeError("Should set the start Event but it doesn't exist!")
@@ -1100,7 +1100,7 @@ class Block(Process, ABC):
   @classmethod
   def _watchdog_target(cls,
                        stop_event: ThreadEvent,
-                       blocks: Sequence[Self],
+                       blocks: Sequence[Block],
                        ready_barrier: synchronize.Barrier,
                        raise_event: synchronize.Event) -> None:
     """Aborts startup if a Block exits before the watchdog is disarmed.
@@ -1216,7 +1216,7 @@ class Block(Process, ABC):
       self.begin()
 
       # Setting the attributes for counting the performance
-      self._last_t = time_ns() / 1e9
+      self._last_t = monotonic()
       self._last_fps = self._last_t
       self._n_loops = 0
 
@@ -1387,12 +1387,16 @@ class Block(Process, ABC):
     while not self._stop_event.is_set():
       if self._pause_event is None:
         raise RuntimeError("The pause Event doesn't exist, it should")
+      # Record the last time the Block started a loop or had the opportunity to
+      self._last_t = monotonic()
       # Only looping if the Block is not paused
       if not self._pause_event.is_set() or not self.pausable:
         self.log(logging.DEBUG, "Looping")
         self.loop()
       else:
         self.log(logging.DEBUG, "Block currently paused, not calling loop()")
+      # Add the loop that just finished to the loop counter
+      self._n_loops += 1
       # Handling the frequency in all cases to avoid hyperactive Blocks when
       # "paused"
       self.log(logging.DEBUG, "Handling freq")
@@ -1483,26 +1487,17 @@ class Block(Process, ABC):
     possible.
     """
 
-    self._n_loops += 1
-    t = time_ns() / 1e9
-
     # Only handling frequency if requested
     if self.freq is not None:
-
-      # Correcting the error of the sleep function through a recursive approach
-      # The last 2 milliseconds are in free loop
-      while self._last_t + 1 / self.freq - t > 0:
-        t = time_ns() / 1e9
-        remaining = self._last_t + 1 / self.freq - t
-        sleep(max(0., remaining / 2 - 2e-3))
-
-    self._last_t = t
+      next_t = self._last_t + 1 / self.freq
+      assert self._stop_event is not None
+      if self._stop_event.wait(max(0., next_t - monotonic())):
+        return
 
     # Displaying frequency every 2 seconds
     if self.display_freq and self._last_t - self._last_fps > 2:
-      self.log(
-        logging.INFO,
-        f"loops/s: {self._n_loops / (self._last_t - self._last_fps)}")
+      self.log(logging.INFO,
+               f"loops/s: {self._n_loops / (self._last_t - self._last_fps)}")
 
       self._n_loops = 0
       self._last_fps = self._last_t
