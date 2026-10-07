@@ -485,8 +485,11 @@ class IOBlock(Block):
       for index, error in enumerate(failures):
         if isinstance(error, KeyboardInterrupt):
           others = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
           raise error from BaseExceptionGroup("Other InOut cleanup failures",
                                               others)
+    # Otherwise just raise all Exceptions at once
     elif failures:
       raise ExceptionGroup("InOut cleanup failures", failures)
 

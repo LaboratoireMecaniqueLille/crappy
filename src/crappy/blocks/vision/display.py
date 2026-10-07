@@ -131,6 +131,7 @@ class ImageDisplayer(VisionBlock):
     # Setting other attributes
     self._ax = None
     self._fig = None
+    self._window_opened: bool = False
     self._last_upd: float = float('-inf')
     self._overlay_buffer: dict[str, Sequence[Overlay | None]] = dict()
     self._last_warn: float = -float('inf')
@@ -280,14 +281,47 @@ class ImageDisplayer(VisionBlock):
   def finish(self) -> None:
     """Closes the display window and releases the input image buffer."""
 
-    # Closing the Displayer window
-    self.log(logging.INFO, "Closing the displayer window")
-    if self._backend == 'cv2':
-      self._finish_cv2()
-    elif self._backend == 'mpl':
-      self._finish_mpl()
+    failures: list[Exception | KeyboardInterrupt] = list()
 
-    super().finish()
+    # Release the parent resources first
+    try:
+      super().finish()
+    except (Exception, KeyboardInterrupt) as error:
+      error.add_note("ImageDisplayer cleanup step: release shared image "
+                     "buffers")
+      failures.append(error)
+
+    if self._window_opened:
+      self.log(logging.INFO, "Closing the displayer window")
+      try:
+        if self._backend == 'cv2':
+          self._finish_cv2()
+        elif self._backend == 'mpl':
+          self._finish_mpl()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"ImageDisplayer cleanup step: close {self._backend} "
+                       f"window {self._title!r}")
+        failures.append(error)
+      else:
+        self._window_opened = False
+        self._fig = None
+        self._ax = None
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other ImageDisplayer cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("ImageDisplayer cleanup failures", failures)
 
   def _prepare_cv2(self) -> None:
     """Creates a resizable OpenCV display window."""
@@ -297,12 +331,14 @@ class ImageDisplayer(VisionBlock):
     except AttributeError:
       flags = cv2.WINDOW_NORMAL
     cv2.namedWindow(self._title, flags)
+    self._window_opened = True
 
   def _prepare_mpl(self) -> None:
     """Enables interactive Matplotlib mode and creates a Figure."""
 
     plt.ion()
     self._fig, self._ax = plt.subplots()
+    self._window_opened = True
 
   def _update_cv2(self, img: np.ndarray) -> None:
     """Downscales an image when needed and displays it with OpenCV.
