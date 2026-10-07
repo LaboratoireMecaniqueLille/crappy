@@ -61,6 +61,9 @@ class ImageLink:
                                 f"handle images, impossible to link it with "
                                 f"crappy.img_link()")
 
+    # Keep a reference to the shared notification object
+    self._img_condition: synchronize.Condition = output_block.img_condition
+
     # Registering the ImageLink in the global graph
     link_graph.add_edge(self.name, input_block.name, output_block.name,
                         kind='image')
@@ -70,6 +73,13 @@ class ImageLink:
     output_block.add_img_input(self)
 
     self._logger: logging.Logger | None = None
+
+  @property
+  def img_condition(self) -> synchronize.Condition:
+    """Condition notified by this ImageLink's source when it has a new
+    image."""
+
+    return self._img_condition
 
   def __new__(cls, *args, **kwargs):
     """When instantiating a new ImageLink, increments the ImageLink counter."""

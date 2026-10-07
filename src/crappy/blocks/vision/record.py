@@ -249,7 +249,7 @@ class ImageRecorder(VisionBlock):
     """
 
     # Nothing to do if no new image was received
-    if not (upd_links := self.receive_imgs()):
+    if not (upd_links := self.receive_imgs(timeout=0.1)):
       self.log(logging.DEBUG, "No new image received during this loop")
       # If requested, displays the FPS of the image display
       if self.display_freq:

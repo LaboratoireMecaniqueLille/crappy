@@ -3,7 +3,8 @@
 from abc import ABC
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import (synchronize, managers, RLock, Event, Value,
-                             sharedctypes, connection as mp_connection)
+                             Condition, sharedctypes,
+                             connection as mp_connection)
 import numpy as np
 import logging
 from typing import Any
@@ -11,7 +12,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from base64 import urlsafe_b64encode
 from uuid import uuid4
-from math import prod
+from math import prod, isfinite
 from time import monotonic
 
 from ..meta_block import Block
@@ -235,6 +236,10 @@ class VisionBlock(Block, ABC):
     # Objects for sharing images with downstream Blocks if needed
     self._out_link_data = ImgLinkData()
 
+    # All upstream image sources notify the same Condition for this consumer
+    self.img_condition = Condition()
+    self._out_img_conditions: list[synchronize.Condition] = list()
+
     # Counter keeping track of the number of images that were sent
     self._sent_img_counter: int = 0
 
@@ -354,6 +359,11 @@ class VisionBlock(Block, ABC):
         self.log(logging.INFO, "Closed image buffer shared with downstream "
                                "Blocks")
 
+    # Wake downstream receivers so they can notice the shared stop/error flags.
+    for condition in self._out_img_conditions:
+      with condition:
+        condition.notify_all()
+
   def add_img_output(self, img_link) -> None:
     """Registers an ImageLink through which this Block sends images.
 
@@ -456,7 +466,12 @@ class VisionBlock(Block, ABC):
       self._out_link_data.img_id.value = self._sent_img_counter
       self._sent_img_counter += 1
 
-  def receive_imgs(self) -> list[str]:
+    # Release the image lock before notifying downstream Blocks
+    for condition in self._out_img_conditions:
+      with condition:
+        condition.notify_all()
+
+  def receive_imgs(self, timeout: float = 0.0) -> list[str]:
     """Copies the newest frame available on each input ImageLink.
 
     Each source is checked under its shared lock. If its transport-level image
@@ -466,13 +481,46 @@ class VisionBlock(Block, ABC):
     without a new frame are ignored. Since an ImageLink owns only one shared
     buffer, intermediate frames may have been overwritten by the newest one.
 
+    Args:
+      timeout: Maximum notification wait in seconds, finite and non-negative.
+        By default, the call is nonblocking. A positive timeout waits for any
+        input to update, or for the shared stop/error flags to be set.
+
     Returns:
       Names of the ImageLinks from which a new image was copied.
 
     Raises:
       ValueError: If shared synchronization objects or buffers are unavailable,
-        or if local and shared image formats are inconsistent.
+        local and shared image formats are inconsistent, or the timeout is
+        negative or non-finite.
+      TypeError: If the timeout is not a number.
     """
+
+    if not isinstance(timeout, (int, float)):
+      raise TypeError("The image receive timeout must be a number")
+    if not isfinite(timeout) or timeout < 0:
+      raise ValueError("The image receive timeout must be finite and "
+                       "non-negative")
+
+    # Return early in case the Block should stop
+    if self._image_wait_should_stop():
+      return list()
+
+    # In case of a positive timeout, wait for the predicate to be True
+    if timeout > 0 and self.img_inputs:
+      # Check image buffer consistency
+      if len(self.img_inputs) != len(self._in_link_data):
+        raise ValueError("Image buffers have not been initialized for all "
+                         "input ImageLinks")
+
+      with self.img_condition:
+        if not self.img_condition.wait_for(self._image_available,
+                                           timeout=timeout):
+          return list()
+
+      # Return early in case the Block should stop
+      if self._image_wait_should_stop():
+        return list()
 
     updated: list[str] = list()
 
@@ -485,6 +533,10 @@ class VisionBlock(Block, ABC):
 
       # Guard reading and writing against race conditions
       with data_in.img_lock:
+
+        # Return early in case the Block should stop
+        if self._image_wait_should_stop():
+          return updated
 
         # Fail early in case of inconsistent state
         if data_in.img_id is None:
@@ -533,6 +585,25 @@ class VisionBlock(Block, ABC):
     self.log(logging.DEBUG, f"Data received during this call from ImageLinks: "
                             f"{', '.join(updated)}")
     return updated
+
+  def _image_available(self) -> bool:
+    """Predicate watched by the image Condition."""
+
+    if self._image_wait_should_stop():
+      return True
+    for link, data in zip(self.img_inputs, self._in_link_data):
+      if data.img_id is None:
+        raise ValueError("No image ID counter set for this ImageLink!")
+      if data.img_id.value != self.last_received[link.name].id:
+        return True
+    return False
+
+  def _image_wait_should_stop(self) -> bool:
+    """Checks the existing lifecycle flags without holding an image lock."""
+
+    return ((self._stop_event is not None and self._stop_event.is_set()) or
+            (self._raise_event is not None and self._raise_event.is_set()) or
+            (self._ready_barrier is not None and self._ready_barrier.broken))
 
   def request_config(self, source: str) -> ConfigRequest | None:
     """Returns this Block's configuration request for an image source.
@@ -728,6 +799,10 @@ class VisionBlock(Block, ABC):
       raise ValueError("The base Manager hasn't been initialized yet!")
     self._out_link_data.img_id = Value('l')
     self._out_link_data.img_id.value = -1
+
+    # Gather all the Conditions to notify when an image is ready
+    self._out_img_conditions = [link.img_condition for link
+                                in self.img_outputs]
 
     # Share the buffer objects with the provided downstream ImageLinks
     for img_link in self.img_outputs:

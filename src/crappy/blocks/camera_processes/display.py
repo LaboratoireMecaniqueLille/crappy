@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from threading import Thread
-from math import log2, ceil
+from math import log2, ceil, isfinite
 import numpy as np
 from collections.abc import Iterable
 from time import sleep, monotonic
@@ -126,7 +126,7 @@ class Displayer(CameraProcess):
     elif self._backend == 'mpl':
       self._prepare_mpl()
 
-  def _get_data(self) -> bool:
+  def _get_data(self, timeout: float = 0.0) -> bool:
     """Method similar to the one of the parent class, except it also ensures 
     that the achieved framerate stays within the limit specified by the user.
     
@@ -135,32 +135,27 @@ class Displayer(CameraProcess):
       :obj:`False` if no frame was grabbed and nothing should be done.
     """
 
-    # Acquiring the Lock to avoid conflicts with other CameraProcesses
-    with self._lock:
+    if not isinstance(timeout, (int, float)):
+      raise TypeError("The image receive timeout must be a number")
+    if not isfinite(timeout) or timeout < 0:
+      raise ValueError("The image receive timeout must be finite and "
+                       "non-negative")
 
-      # In case there's no frame grabbed yet
-      if 'ImageUniqueID' not in self._data_dict:
-        return False
-
-      # In case the frame in buffer was already handled during a previous loop,
-      # or it's too early to grab a new frame because of the target framerate
-      if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID'] \
-          or monotonic() - self._last_upd < 1 / self._framerate:
-        return False
-
-      # Copying the metadata
-      self.metadata = self._data_dict.copy()
+    # Wake at the next display deadline even if no further image is available
+    if timeout > 0:
+      remaining = 1 / self._framerate - (monotonic() - self._last_upd)
+      if remaining > 0:
+        timeout = min(timeout, remaining)
+    received = super()._get_data(timeout=timeout)
+    if received:
       self._last_upd = monotonic()
+    return received
 
-      self.log(logging.DEBUG, f"Got new image to process with id "
-                              f"{self.metadata['ImageUniqueID']}")
+  def _has_new_image(self) -> bool:
+    """Includes the display rate limit in the Condition's predicate."""
 
-      # Copying the frame
-      np.copyto(self.img,
-                np.frombuffer(self._img_array.get_obj(),
-                              dtype=self._dtype).reshape(self._shape))
-
-    return True
+    return (super()._has_new_image() and
+            monotonic() - self._last_upd >= 1 / self._framerate)
 
   def loop(self) -> None:
     """This method grabs the latest frame, casts it to 8 bits if necessary,

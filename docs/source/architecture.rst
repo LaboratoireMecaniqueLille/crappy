@@ -108,7 +108,7 @@ Block registry and graph together so that their state cannot diverge between
 tests.
 
 A regular Link creates its pipe during construction. An ImageLink initially
-stores only its graph relationship and placeholders for shared image state.
+stores its graph relationship and placeholders for shared image state.
 The image transport is completed during preparation, once Crappy knows the
 entire graph.
 
@@ -143,10 +143,11 @@ References to these objects are assigned to every Block before the processes
 start. Block-specific logging levels are also reconciled with the global
 logging level at this point.
 
-If at least one VisionBlock is present, preparation also validates that the
-Block registry and LinkGraph contain the same names. It walks the ImageLink
-graph to route downstream configuration requests to their CameraSource. Each
-accepted request receives a dedicated one-way configuration pipe.
+Preparation validates that the Block registry and LinkGraph contain the same
+names for all Blocks. If at least one VisionBlock is present, it walks the
+ImageLink graph to route downstream configuration requests to their
+CameraSource. Each accepted request receives a dedicated one-way configuration
+pipe.
 
 Crappy then creates the manager-backed dictionaries used for image metadata
 and image-format information. Each image producer creates the buffer name,
@@ -265,6 +266,10 @@ replaces the metadata, copies the NumPy array, and increments the transport
 counter before releasing the lock. Each consumer keeps the last counter value
 it copied. ``receive_imgs`` acquires the same lock and copies both metadata and
 image only when that value changed.
+
+Each receiver also owns a Condition notified by all its image sources. A
+positive ``receive_imgs(timeout=...)`` waits for a new frame on any input or a
+shared stop/error flag.
 
 The counter is a transport implementation detail. It is distinct from the
 public ``ImageUniqueID`` stored in image metadata. A consumer must use the
@@ -392,11 +397,12 @@ acquisition. Depending on its options and subclass, it can create internal
 display, and recording. These children are processes but are not Blocks or
 nodes in the public LinkGraph.
 
-The Camera Block creates a shared image array, metadata dictionary, lock,
-readiness barrier, and stop event for these workers. Acquisition replaces the
-latest shared frame. Each worker checks for a new image and runs at its own
-rate. The Camera Block starts, monitors, and stops the workers as part of its
-own Block lifecycle.
+The Camera Block creates a shared image array, metadata dictionary, a separate
+lock and Condition per worker, readiness barrier, and stop event. Acquisition
+replaces the latest shared frame and notifies the workers, which use timed
+Condition waits for new images or shutdown and run at their own rate. The
+Camera Block starts, monitors, and stops the workers as part of its own Block
+lifecycle.
 
 The Camera configuration window runs before these workers start. A processing
 CameraProcess can receive explicit configuration values through the paired

@@ -252,6 +252,30 @@ class TestImageDisplayer(VisionTestBase):
 
     self.assertEqual(displayer._overlay_buffer[regular.name], tuple())
 
+  def test_display_deadline_starts_after_notification_wait(self) -> None:
+    """Waiting for a frame must not shorten the next display interval."""
+
+    displayer = self.make_displayer(framerate=5)
+    self.feed_image(displayer, np.zeros((2, 3), dtype=np.uint8))
+    displayer._update_cv2 = Mock()
+    displayer._last_upd = 0.0
+    clock = [20.0]
+
+    def receive(*, timeout):
+      self.assertEqual(timeout, 0.1)
+      clock[0] = 20.1
+      return ['display-image']
+
+    displayer.receive_imgs.side_effect = receive
+    with patch.object(display_module, 'monotonic', side_effect=lambda: clock[0]):
+      displayer.loop()
+      self.assertEqual(displayer._last_upd, 20.1)
+      clock[0] = 20.2
+      displayer.loop()
+
+    displayer.receive_imgs.assert_called_once_with(timeout=0.1)
+    displayer._update_cv2.assert_called_once()
+
   def test_loop_ignores_malformed_overlays_and_throttles_warnings(self) -> None:
     """Checks bad overlay iterables do not replace prior valid state."""
 
@@ -338,7 +362,8 @@ class TestImageDisplayer(VisionTestBase):
       displayer.loop()
 
     displayer._print_freq.assert_called_once_with(img_handled=False)
-    self.assertEqual(displayer._last_upd, 10.0)
+    self.assertEqual(displayer._last_upd, float('-inf'))
+    displayer.receive_imgs.assert_called_once_with(timeout=0.1)
 
   def test_loop_requires_metadata_and_mandatory_keys(self) -> None:
     """Checks clear failures for incomplete received image metadata."""

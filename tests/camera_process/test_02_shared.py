@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import logging
+from multiprocessing import Condition
 import numpy as np
 
 from .camera_process_test_base import (CameraProcessTestBase, TestLink,
@@ -9,6 +10,18 @@ from .camera_process_test_base import (CameraProcessTestBase, TestLink,
 
 class TestSharedObjects(CameraProcessTestBase):
   """Tests sharing Camera-owned multiprocessing objects."""
+
+  def test_condition_must_use_the_image_lock(self) -> None:
+    self._process = TestCameraProcess()
+    shared = self.make_shared()
+    arguments = shared._asdict()
+    arguments['event'] = arguments.pop('stop_event')
+    arguments['condition'] = Condition()
+
+    with self.assertRaisesRegex(ValueError, 'same image lock'):
+      self._process.set_shared(**arguments)
+
+    self.assertIs(self._process._condition, shared.condition)
 
   def test_set_shared(self) -> None:
     """Tests shared references and local image allocation."""
@@ -29,6 +42,8 @@ class TestSharedObjects(CameraProcessTestBase):
     self.assertIs(self._process._img_array, shared.array)
     self.assertIs(self._process._data_dict, shared.data_dict)
     self.assertIs(self._process._lock, shared.lock)
+    self.assertIs(self._process._condition, shared.condition)
+    self.assertIs(shared.condition._lock, shared.lock)
     self.assertIs(self._process._cam_barrier, shared.barrier)
     self.assertIs(self._process._stop_event, shared.stop_event)
     self.assertEqual(self._process._shape, (2, 3))

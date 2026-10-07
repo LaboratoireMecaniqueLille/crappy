@@ -8,7 +8,7 @@ from time import time, sleep, strftime, gmtime, monotonic
 from types import MethodType
 from typing import Any
 from multiprocessing import (Array, Manager, Event, RLock, Pipe, Barrier,
-                             sharedctypes)
+                             Condition, sharedctypes)
 from multiprocessing import managers, synchronize, connection
 from threading import BrokenBarrierError
 import logging
@@ -432,6 +432,9 @@ class Camera(Block):
     self._save_lock: synchronize.RLock | None = None
     self._disp_lock: synchronize.RLock | None = None
     self._proc_lock: synchronize.RLock | None = None
+    self._save_condition: synchronize.Condition | None = None
+    self._disp_condition: synchronize.Condition | None = None
+    self._proc_condition: synchronize.Condition | None = None
 
     self._loop_count: int = 0
     self._fps_count: int = 0
@@ -492,6 +495,9 @@ class Camera(Block):
     self._save_lock = RLock()
     self._disp_lock = RLock()
     self._proc_lock = RLock()
+    self._save_condition = Condition(self._save_lock)
+    self._disp_condition = Condition(self._disp_lock)
+    self._proc_condition = Condition(self._proc_lock)
 
     # Instantiating the ImageSaver CameraProcess
     if self._save_images:
@@ -626,6 +632,7 @@ class Camera(Block):
       self.process_proc.set_shared(array=self._img_array,
                                    data_dict=self._metadata,
                                    lock=self._proc_lock,
+                                   condition=self._proc_condition,
                                    barrier=self._cam_barrier,
                                    event=self._stop_event_cam,
                                    shape=self._img_shape,
@@ -661,6 +668,7 @@ class Camera(Block):
       self._save_proc.set_shared(array=self._img_array,
                                  data_dict=self._metadata,
                                  lock=self._save_lock,
+                                 condition=self._save_condition,
                                  barrier=self._cam_barrier,
                                  event=self._stop_event_cam,
                                  shape=self._img_shape,
@@ -696,6 +704,7 @@ class Camera(Block):
       self._display_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._disp_lock,
+                                    condition=self._disp_condition,
                                     barrier=self._cam_barrier,
                                     event=self._stop_event_cam,
                                     shape=self._img_shape,
@@ -812,6 +821,11 @@ class Camera(Block):
     if self._proc_lock is None:
       raise RuntimeError("The processing Lock isn't initialized when it "
                          "should be")
+    conditions = (self._save_condition, self._disp_condition,
+                  self._proc_condition)
+    if any(condition is None for condition in conditions):
+      raise RuntimeError("The image notification Conditions aren't "
+                         "initialized")
     with self._save_lock, self._disp_lock, self._proc_lock:
       if self._metadata is None:
         raise RuntimeError("The shared metadata dictionary isn't initialized")
@@ -823,6 +837,12 @@ class Camera(Block):
         raise RuntimeError("The shared image array isn't initialized")
       self.log(logging.DEBUG, "Writing image to shared array")
       np.copyto(self._img, img)
+
+      # Notify the consumers that a new image is available for reading
+      for condition in conditions:
+        assert condition is not None
+        # No need to use `with condition` since the Locks are already acquired
+        condition.notify_all()
 
     self._loop_count += 1
 
@@ -858,6 +878,11 @@ class Camera(Block):
     if self._stop_event_cam is not None:
       self.log(logging.DEBUG, "Asking all the children processes to stop")
       self._stop_event_cam.set()
+      for condition in (self._save_condition, self._disp_condition,
+                        self._proc_condition):
+        if condition is not None:
+          with condition:
+            condition.notify_all()
       sleep(0.2)
 
     # If the processing CameraProcess is not done, terminating it

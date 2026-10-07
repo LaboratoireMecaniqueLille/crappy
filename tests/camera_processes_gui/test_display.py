@@ -5,7 +5,8 @@ from pathlib import Path
 from platform import system
 import subprocess
 import sys
-from time import sleep
+from time import sleep, monotonic
+from unittest.mock import patch
 import unittest
 
 import numpy as np
@@ -93,6 +94,39 @@ class TestDisplayer(CameraProcessTestBase):
     displayer._last_upd = 0
     self.assertTrue(displayer._get_data())
     np.testing.assert_array_equal(displayer.img, img1)
+
+  def test_condition_wait_respects_display_deadline(self) -> None:
+    """A pending frame becomes eligible without needing another notification."""
+
+    displayer = Displayer(title='timed display', framerate=20, backend='mpl')
+    self._process = displayer
+    shared = self.make_shared(process=displayer, shape=(2, 3))
+    image = np.arange(6, dtype=np.uint8).reshape(2, 3)
+    self.write_image(shared, image)
+    displayer._last_upd = monotonic()
+    started = monotonic()
+
+    with patch.object(shared.condition, 'wait_for',
+                      wraps=shared.condition.wait_for) as wait:
+      self.assertTrue(displayer._get_data(timeout=0.2))
+
+    self.assertGreaterEqual(monotonic() - started, 0.04)
+    self.assertGreater(wait.call_args.kwargs['timeout'], 0)
+    self.assertLessEqual(wait.call_args.kwargs['timeout'], 0.05)
+    np.testing.assert_array_equal(displayer.img, image)
+
+  def test_condition_wait_does_not_spin_while_display_is_throttled(self) -> None:
+    displayer = Displayer(title='throttled display', framerate=1, backend='mpl')
+    self._process = displayer
+    shared = self.make_shared(process=displayer, shape=(2, 3))
+    self.write_image(shared, np.zeros((2, 3), dtype=np.uint8))
+    displayer._last_upd = monotonic()
+    started = monotonic()
+
+    self.assertFalse(displayer._get_data(timeout=0.03))
+
+    self.assertGreaterEqual(monotonic() - started, 0.02)
+    self.assertIsNone(displayer.metadata['ImageUniqueID'])
 
   def test_cv2_backend_opens_updates_and_closes_real_window(self) -> None:
     """Checks the real OpenCV display lifecycle."""

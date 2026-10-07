@@ -275,7 +275,7 @@ class TestVideoExtensoProcessor(VisionTestBase):
 
     processor.loop()
 
-    processor.receive_imgs.assert_called_once_with()
+    processor.receive_imgs.assert_called_once_with(timeout=0.1)
     processor._print_freq.assert_called_once_with(img_handled=False)
 
     processor.receive_imgs.reset_mock()

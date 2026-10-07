@@ -220,11 +220,8 @@ class ImageDisplayer(VisionBlock):
       if self.display_freq:
         self._print_freq(img_handled=False)
       return
-    # Update last received time
-    self._last_upd = monotonic()
-
     # Nothing to do if no new image was received
-    if not (upd_links := self.receive_imgs()):
+    if not (upd_links := self.receive_imgs(timeout=0.1)):
       self.log(logging.DEBUG, "No new image received during this loop")
       # If requested, displays the FPS of the image display
       if self.display_freq:
@@ -232,6 +229,9 @@ class ImageDisplayer(VisionBlock):
       return
     # Get the ImageLink name
     upd_link, = upd_links
+
+    # Record the processing start
+    self._last_upd = monotonic()
 
     # Handles to the received data
     metadata = self.last_received[upd_link].metadata

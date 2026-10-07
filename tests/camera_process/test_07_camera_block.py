@@ -3,6 +3,7 @@
 from multiprocessing import Barrier, Event, Queue, Value
 from threading import BrokenBarrierError, Thread
 from typing import Any
+from contextlib import ExitStack
 import logging
 import numpy as np
 from unittest.mock import MagicMock, patch, sentinel
@@ -164,6 +165,80 @@ class CameraBlockTestBase(CameraProcessTestBase):
 class TestCameraBlock(CameraBlockTestBase):
   """Tests the contract between CameraProcess and the Camera Block."""
 
+  def test_publication_notifies_independent_helper_conditions(self) -> None:
+    """All helpers are notified only after a complete frame is published."""
+
+    camera = self.make_camera(save_images=True, display_images=True)
+    camera.process_proc = TrackingCameraProcess()
+    camera.prepare()
+    conditions = (camera._save_condition, camera._disp_condition,
+                  camera._proc_condition)
+    locks = (camera._save_lock, camera._disp_lock, camera._proc_lock)
+    self.assertEqual(len({id(condition._lock) for condition in conditions}), 3)
+    notifications = list()
+
+    with ExitStack() as patches:
+      for condition, lock in zip(conditions, locks):
+        self.assertIs(condition._lock, lock)
+        real_notify = condition.notify_all
+
+        def notify(condition=condition, real_notify=real_notify):
+          self.assertTrue(condition._lock._semlock._is_mine())
+          self.assertEqual(camera._metadata['ImageUniqueID'], 0)
+          np.testing.assert_array_equal(
+              camera._img, np.arange(20, dtype=np.uint8).reshape(4, 5))
+          notifications.append(condition)
+          real_notify()
+
+        patches.enter_context(patch.object(condition, 'notify_all',
+                                            side_effect=notify))
+
+      camera.loop()
+
+    self.assertEqual(notifications, list(conditions))
+
+  def test_finish_notifies_helpers_after_stop_flag(self) -> None:
+    """Shutdown wakes readers even if no final frame is published."""
+
+    camera = self.make_camera()
+    camera.prepare()
+    conditions = (camera._save_condition, camera._disp_condition,
+                  camera._proc_condition)
+    notifications = list()
+
+    for condition in conditions:
+      real_notify = condition.notify_all
+
+      def notify(condition=condition, real_notify=real_notify):
+        self.assertTrue(camera._stop_event_cam.is_set())
+        notifications.append(condition)
+        real_notify()
+
+      patcher = patch.object(condition, 'notify_all', side_effect=notify)
+      patcher.start()
+      self.addCleanup(patcher.stop)
+
+    with patch.object(camera_module, 'sleep'):
+      camera.finish()
+
+    self.assertEqual(notifications, list(conditions))
+
+  def test_real_helper_receives_camera_publication(self) -> None:
+    """The Condition notification crosses a real process boundary."""
+
+    self._process = TestCameraProcess()
+    camera = self.make_camera()
+    camera.process_proc = self._process
+    camera.prepare()
+
+    camera.loop()
+    self._process.join(timeout=3.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertEqual(self._process.last_image_id.value, 0)
+    self.assertEqual(self._process.last_image_sum.value,
+                     float(np.sum(np.arange(20, dtype=np.uint8))))
+
   def test_prepare_process_proc(self) -> None:
     """Tests how Camera.prepare shares objects with a processing process."""
 
@@ -182,6 +257,7 @@ class TestCameraBlock(CameraBlockTestBase):
     self.assertIs(process._img_array, camera._img_array)
     self.assertIs(process._data_dict, camera._metadata)
     self.assertIs(process._lock, camera._proc_lock)
+    self.assertIs(process._condition, camera._proc_condition)
     self.assertIs(process._cam_barrier, camera._cam_barrier)
     self.assertIs(process._stop_event, camera._stop_event_cam)
     self.assertIsNone(process._to_draw_conn)
@@ -212,6 +288,7 @@ class TestCameraBlock(CameraBlockTestBase):
     self.assertIs(camera._display_proc._to_draw_conn,
                   camera._overlay_conn_out)
     self.assertIs(camera._display_proc._lock, camera._disp_lock)
+    self.assertIs(camera._display_proc._condition, camera._disp_condition)
     self.assertEqual(camera._display_proc._outputs, list())
     self.assertEqual(camera._display_proc._labels, list())
     self.assertEqual(camera._display_proc.backend, 'cv2')

@@ -52,6 +52,21 @@ class TestRunCycle(CameraProcessTestBase):
     self.assertTrue(self._process.finished.is_set())
     self.assertEqual(self._process.loops.value, 0)
 
+  def test_idle_process_stops_without_notification(self) -> None:
+    """The finite receive timeout notices an unnotified stop request."""
+
+    self._process = TestCameraProcess()
+    shared = self.make_shared()
+    self._process.start()
+    self.assertTrue(self._process.initialized.wait(timeout=3.0))
+
+    shared.stop_event.set()
+    self._process.join(timeout=3.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertTrue(self._process.finished.is_set())
+    self.assertFalse(self._process.looped.is_set())
+
   def test_handle_freq(self) -> None:
     """Tests the internal frequency bookkeeping during a run."""
 
