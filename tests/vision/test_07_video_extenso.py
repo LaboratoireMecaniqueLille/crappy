@@ -391,12 +391,33 @@ class TestVideoExtensoProcessor(VisionTestBase):
       processor.finish()
     self.assertEqual(tool.stop_calls, 1)
     inherited.assert_called_once_with()
+    self.assertIsNone(processor._ve)
 
     tool.raise_on_stop = True
+    processor._ve = tool
     with patch.object(video_extenso_module.VisionBlock, 'finish') as inherited:
       with self.assertRaises(RuntimeError):
         processor.finish()
     inherited.assert_called_once_with()
+
+  def test_finish_reports_tracker_and_memory_errors_together(self) -> None:
+    """Neither local nor inherited cleanup failures overwrite the other."""
+
+    processor = self.make_processor()
+    tool = processor._ve = Mock()
+    errors = [RuntimeError('tracker stop'), RuntimeError('memory cleanup')]
+    tool.stop_tracking.side_effect = errors[0]
+    with patch.object(video_extenso_module.VisionBlock, 'finish',
+                      side_effect=errors[1]):
+      with self.assertRaises(ExceptionGroup) as caught:
+        processor.finish()
+    self.assertEqual(caught.exception.exceptions, tuple(errors))
+    tool.stop_tracking.assert_called_once_with()
+    self.assertIs(processor._ve, tool)
+    tool.stop_tracking.side_effect = None
+    processor.finish()
+    processor.finish()
+    self.assertEqual(tool.stop_tracking.call_count, 2)
 
 
 if __name__ == '__main__':

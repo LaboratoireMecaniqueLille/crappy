@@ -43,6 +43,8 @@ class RecordingProcess:
     """Stores constructor arguments for later assertions."""
 
     self.kwargs = kwargs
+    self.name = type(self).__name__
+    self.closed = False
     type(self).instances.append(self)
 
   @classmethod
@@ -56,3 +58,8 @@ class RecordingProcess:
     """Reports that this stand-in has no running child process."""
 
     return False
+
+  def close(self) -> None:
+    """Records the Camera's release of an unstarted process object."""
+
+    self.closed = True

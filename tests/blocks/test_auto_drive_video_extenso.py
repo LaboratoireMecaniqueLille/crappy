@@ -19,6 +19,13 @@ class TrackingAutoDriveActuator:
     """Records constructor kwargs and initializes call state."""
 
     self.kwargs = dict(kwargs)
+    if kwargs.get('constructor_error') is not None:
+      raise kwargs['constructor_error']
+    self.open_error = kwargs.get('open_error')
+    self.speed_error = kwargs.get('speed_error')
+    self.stop_error = kwargs.get('stop_error')
+    self.close_error = kwargs.get('close_error')
+    self.calls: list[str] = list()
     self.speed_commands = list()
     self.opened = False
     self.stopped = False
@@ -34,21 +41,33 @@ class TrackingAutoDriveActuator:
   def open(self) -> None:
     """Records open calls."""
 
+    self.calls.append('open')
+    if self.open_error is not None:
+      raise self.open_error
     self.opened = True
 
   def set_speed(self, speed: float) -> None:
     """Records speed commands."""
 
     self.speed_commands.append(speed)
+    self.calls.append('set_speed')
+    if self.speed_error is not None:
+      raise self.speed_error
 
   def stop(self) -> None:
     """Records stop calls."""
 
+    self.calls.append('stop')
+    if self.stop_error is not None:
+      raise self.stop_error
     self.stopped = True
 
   def close(self) -> None:
     """Records close calls."""
 
+    self.calls.append('close')
+    if self.close_error is not None:
+      raise self.close_error
     self.closed = True
 
 
@@ -136,9 +155,22 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
 
     cases = (
       ({}, {}, ValueError),
+      ([], {}, TypeError),
+      ({'type': 1}, {}, TypeError),
+      ({'type': ' '}, {}, ValueError),
+      ({'type': 'UnknownActuator'}, {}, ValueError),
       ({'type': 'TrackingAutoDriveActuator'}, {'direction': 'Z+'}, ValueError),
+      ({'type': 'TrackingAutoDriveActuator'}, {'direction': None}, TypeError),
       ({'type': 'TrackingAutoDriveActuator'}, {'pixel_range': 0}, ValueError),
+      ({'type': 'TrackingAutoDriveActuator'}, {'pixel_range': 1.5}, TypeError),
+      ({'type': 'TrackingAutoDriveActuator'}, {'pixel_range': True}, TypeError),
       ({'type': 'TrackingAutoDriveActuator'}, {'max_speed': 0}, ValueError),
+      ({'type': 'TrackingAutoDriveActuator'}, {'max_speed': 'fast'}, TypeError),
+      ({'type': 'TrackingAutoDriveActuator'},
+       {'max_speed': float('inf')}, ValueError),
+      ({'type': 'TrackingAutoDriveActuator'}, {'gain': None}, TypeError),
+      ({'type': 'TrackingAutoDriveActuator'},
+       {'gain': float('nan')}, ValueError),
     )
 
     with self._actuator_patch():
@@ -268,11 +300,14 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
       block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator'})
     actuator = TrackingAutoDriveActuator()
     block._device = actuator
+    block._device_opened = True
 
     block.finish()
 
     self.assertTrue(actuator.stopped)
     self.assertTrue(actuator.closed)
+    block.finish()
+    self.assertEqual(actuator.calls, ['stop', 'close'])
 
   def test_finish_without_actuator_is_a_noop(self) -> None:
     """Checks finish before prepare remains harmless."""
@@ -283,3 +318,106 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     block.finish()
 
     self.assertEqual(TrackingAutoDriveActuator.instances, [])
+
+  def test_prepare_does_not_mutate_actuator_options(self) -> None:
+    """Checks preparation retains the caller's type and driver kwargs."""
+
+    options = {'type': 'TrackingAutoDriveActuator', 'custom': 1}
+    with self._actuator_patch():
+      block = AutoDriveVideoExtenso(options)
+      link(TestBlock(), block)
+      block.prepare()
+    self.assertEqual(options,
+                     {'type': 'TrackingAutoDriveActuator', 'custom': 1})
+    block.finish()
+
+  def test_finish_after_partial_preparation(self) -> None:
+    """Checks constructor/open failures and failed initial zero-speed calls."""
+
+    for step in ('constructor_error', 'open_error', 'speed_error'):
+      with self.subTest(step=step), self._actuator_patch():
+        TrackingAutoDriveActuator.reset()
+        error = RuntimeError(f'{step} failed')
+        block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
+                                      step: error})
+        link(TestBlock(), block)
+        with self.assertRaises(RuntimeError) as caught:
+          block.prepare()
+        self.assertIs(caught.exception, error)
+        block.finish()
+        block.finish()
+
+        if step == 'constructor_error':
+          self.assertIsNone(block._device)
+          self.assertEqual(TrackingAutoDriveActuator.instances, [])
+        else:
+          device = TrackingAutoDriveActuator.instances[-1]
+          expected = (['open', 'close'] if step == 'open_error' else
+                      ['open', 'set_speed', 'stop', 'close'])
+          self.assertEqual(device.calls, expected)
+
+  def test_finish_groups_stop_and_close_failures(self) -> None:
+    """Checks close is attempted after stop fails and both errors survive."""
+
+    stop_error = RuntimeError('stop failed')
+    close_error = OSError('close failed')
+    with self._actuator_patch():
+      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
+                                    'stop_error': stop_error,
+                                    'close_error': close_error})
+      link(TestBlock(), block)
+      block.prepare()
+    device = TrackingAutoDriveActuator.instances[-1]
+    device.calls.clear()
+
+    with self.assertRaises(ExceptionGroup) as caught:
+      block.finish()
+
+    self.assertEqual(device.calls, ['stop', 'close'])
+    self.assertEqual(caught.exception.exceptions, (stop_error, close_error))
+    self.assertIn('stop', stop_error.__notes__[0])
+    self.assertIn('close', close_error.__notes__[0])
+    device.stop_error = device.close_error = None
+    block.finish()
+
+  def test_finish_retries_close_without_repeating_stop(self) -> None:
+    """Checks successful cleanup steps are not repeated."""
+
+    error = OSError('close failed')
+    with self._actuator_patch():
+      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
+                                    'close_error': error})
+      link(TestBlock(), block)
+      block.prepare()
+    device = TrackingAutoDriveActuator.instances[-1]
+    device.calls.clear()
+
+    with self.assertRaises(OSError) as caught:
+      block.finish()
+    self.assertIs(caught.exception, error)
+    device.close_error = None
+    block.finish()
+    block.finish()
+    self.assertEqual(device.calls, ['stop', 'close', 'close'])
+
+  def test_finish_preserves_interrupt_with_close_failure_as_cause(self) -> None:
+    """Checks interrupted stop still closes and retains its close failure."""
+
+    interrupt = KeyboardInterrupt()
+    error = OSError('close failed')
+    with self._actuator_patch():
+      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
+                                    'stop_error': interrupt,
+                                    'close_error': error})
+      link(TestBlock(), block)
+      block.prepare()
+    device = TrackingAutoDriveActuator.instances[-1]
+    device.calls.clear()
+
+    with self.assertRaises(KeyboardInterrupt) as caught:
+      block.finish()
+    self.assertIs(caught.exception, interrupt)
+    self.assertEqual(device.calls, ['stop', 'close'])
+    self.assertEqual(interrupt.__cause__.exceptions, (error,))
+    device.stop_error = device.close_error = None
+    block.finish()
