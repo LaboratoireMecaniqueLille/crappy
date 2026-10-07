@@ -12,6 +12,7 @@ from platform import system
 import logging
 import unittest
 from unittest.mock import Mock, patch
+from weakref import WeakSet
 
 from .block_test_base import BlockTestBase, TestBlock
 
@@ -100,11 +101,12 @@ class TestStartupSequence(BlockTestBase):
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(Block.prepared_all)
     self.assertFalse(Block.launched_all)
+    self.assertEqual(Block._run_blocks, (self._block,))
 
     # The shared synchronization objects should be instantiated and left in
     # their initial state
     self.assertIsInstance(Block.ready_barrier, synchronize.Barrier)
-    self.assertEqual(Block.ready_barrier.parties, len(Block.instances) + 1)
+    self.assertEqual(Block.ready_barrier.parties, len(Block._run_blocks) + 1)
     self.assertIsInstance(Block.shared_t0, Synchronized)
     self.assertEqual(Block.shared_t0.value, -1.0)
 
@@ -166,7 +168,8 @@ class TestStartupSequence(BlockTestBase):
 
     # The unit under test is command construction. Mocking the system call
     # avoids depending on external ``ps``/``renice`` executables or permissions.
-    with patch.object(block_module.subprocess, 'call') as call:
+    with patch.object(Block, 'instances', WeakSet()), \
+         patch.object(block_module.subprocess, 'call') as call:
       Block.renice_all(allow_root=False)
 
     call.assert_called_once_with(
@@ -435,10 +438,10 @@ class TestStartupSequence(BlockTestBase):
     Block.raise_event = Event()
     Block.kbi_event = Event()
     blocks = (Mock(spec=Block), Mock(spec=Block))
+    Block._run_blocks = blocks
     for sentinel, block in enumerate(blocks, start=10):
       block.sentinel = sentinel
       block.is_alive.return_value = True
-      Block.instances.add(block)
     observed = list()
     remaining = list(blocks)
 
@@ -467,7 +470,7 @@ class TestStartupSequence(BlockTestBase):
     block.is_alive.return_value = True
     block.terminate.side_effect = lambda: setattr(
         block.is_alive, 'return_value', False)
-    Block.instances.add(block)
+    Block._run_blocks = (block,)
 
     with patch.object(block_module, 'monotonic',
                       side_effect=(0.0, 0.0, 2.8, 3.0)), \
