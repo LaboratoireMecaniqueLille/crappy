@@ -81,6 +81,7 @@ class Block(Process, ABC):
   """
 
   instances: WeakSet[Block] = WeakSet()
+  _run_blocks: tuple[Block, ...] = tuple()
   names: list[str] = list()
   log_level: int | None = logging.DEBUG
 
@@ -248,6 +249,9 @@ class Block(Process, ABC):
     VisionBlocks, configuration requests are routed to their image sources
     through one-way Pipes before the child Processes start.
 
+    Rejects missing Blocks recorded in the LinkGraph and retains the validated
+    participants until :meth:`reset`.
+
     Once started with this method, the Blocks will call their
     :meth:`~crappy.blocks.meta_block.block.Block.prepare` method and then be
     blocked by a :obj:`multiprocessing.Barrier`.
@@ -297,6 +301,28 @@ class Block(Process, ABC):
         # Raising will skip all the setup part and keep the existing context
         raise RuntimeError
 
+      # Freeze the current Blocks before allocating resources
+      blocks = tuple(cls.instances)
+      instances_lookup = {instance.name: instance for instance in blocks}
+      graph_names = set(link_graph.nodes)
+      instance_names = set(instances_lookup)
+
+      # Abort in case of inconsistency with the Blocks registered in the graph
+      missing = sorted(graph_names - instance_names)
+      unregistered = sorted(instance_names - graph_names)
+      if missing or unregistered:
+        details = list()
+        # Case when a Block is in the graph but not in the instances
+        if missing:
+          details.append(f"Blocks missing before startup (possibly "
+                         f"garbage-collected): {', '.join(missing)}")
+        # Case when a block is in the instances but not in the graph
+        if unregistered:
+          details.append(f"Blocks absent from the LinkGraph: "
+                         f"{', '.join(unregistered)}")
+        raise GraphStructureError('; '.join(details))
+      cls._run_blocks = blocks
+
       cls.log_level = log_level
 
       # Initializing the logger and displaying the first messages
@@ -307,7 +333,7 @@ class Block(Process, ABC):
       cls.cls_log(logging.INFO, 'Logger configured')
 
       # Setting all the synchronization objects at the class level
-      cls.ready_barrier = Barrier(len(cls.instances) + 1)
+      cls.ready_barrier = Barrier(len(cls._run_blocks) + 1)
       cls.shared_t0 = Value('d', -1.0)
       cls.start_event = Event()
       cls.pause_event = Event()
@@ -336,7 +362,7 @@ class Block(Process, ABC):
         cls.cls_log(logging.INFO, 'Logger thread started')
 
       # Passing the synchronization and logging objects to each Block
-      for instance in cls.instances:
+      for instance in cls._run_blocks:
         instance._ready_barrier = cls.ready_barrier
         instance._instance_t0 = cls.shared_t0
         instance._stop_event = cls.stop_event
@@ -359,19 +385,7 @@ class Block(Process, ABC):
 
       # Build the connection graph of the VisionBlocks and share configuration
       # requests to relevant sources
-      if (cls.instances and
-          any(instance.is_vision_block for instance in cls.instances)):
-
-        # Lookup table to associate unique Block name to actual instance
-        instances_lookup = {instance.name: instance for instance
-                            in cls.instances}
-
-        graph_names = set(link_graph.nodes.keys())
-        instance_names = set(instances_lookup.keys())
-        if graph_names != instance_names:
-          raise GraphStructureError("The names of the Blocks as stored in the "
-                                    "LinkGraph and in the master Block do not "
-                                    "match")
+      if any(instance.is_vision_block for instance in cls._run_blocks):
 
         # Manage config requests for each source-consumer pair
         for source_name in link_graph.img_sources():
@@ -412,7 +426,7 @@ class Block(Process, ABC):
         # parent. Explicitly tell each Block which unrelated endpoints it must
         # close on startup so that a dead Block can still be detected via EOF
         if get_start_method() == 'fork':
-          for instance in cls.instances:
+          for instance in cls._run_blocks:
             owned_connections = {id(conn) for conn in
                                  config_connections_by_owner[instance.name]}
             instance._config_connections_to_close = [
@@ -426,13 +440,12 @@ class Block(Process, ABC):
                                   "graph nor sharing config requests")
 
       # Initialize the common Manager for image Blocks if needed
-      if (cls.instances and
-          any(instance.is_vision_block for instance in cls.instances)):
+      if any(instance.is_vision_block for instance in cls._run_blocks):
         cls.shared_mgr = Manager()
         cls.cls_log(logging.INFO, 'Created the shared Manager object')
 
         # Making vision Blocks generate their shared synchronization objects
-        for instance in cls.instances:
+        for instance in cls._run_blocks:
           if (instance.is_vision_block and
               isinstance(instance, VisionBlockType)):
             instance.set_shared_objects()
@@ -444,13 +457,13 @@ class Block(Process, ABC):
 
       # Under fork, ensures proper management of SharedMemory tracking at the
       # Process-level
-      if (get_start_method() == 'fork' and cls.instances and
-          any(instance.is_vision_block for instance in cls.instances)):
+      if (get_start_method() == 'fork' and
+          any(instance.is_vision_block for instance in cls._run_blocks)):
         resource_tracker.ensure_running()
         cls.cls_log(logging.INFO, 'Shared-memory resource tracker started')
 
       # Starting all the Blocks
-      for instance in cls.instances:
+      for instance in cls._run_blocks:
         instance.start()
         cls.cls_log(logging.INFO, f'Started the {instance.name} Block')
 
@@ -463,6 +476,7 @@ class Block(Process, ABC):
 
       # If there is no specific cleanup to perform, only raising
       if not cleanup:
+        cls._run_blocks = tuple()
         raise
 
       # KeyboardInterrupt is a separate case
@@ -553,7 +567,7 @@ class Block(Process, ABC):
 
       # Renicing all the Blocks
       cls.cls_log(logging.INFO, 'Renicing processes')
-      for inst in cls.instances:
+      for inst in cls._run_blocks:
         # If root is not allowed then the minimum niceness is 0
         niceness = max(inst.niceness, 0 if not allow_root else -20)
 
@@ -674,7 +688,7 @@ class Block(Process, ABC):
       # Set up a watchdog Thread preventing deadlocks at the Barrier
       watchdog_event = ThreadEvent()
       watchdog_thread = Thread(target=cls._watchdog_target,
-                               args=(watchdog_event, tuple(cls.instances),
+                               args=(watchdog_event, cls._run_blocks,
                                      cls.ready_barrier, cls.raise_event),
                                name='crappy.barrier-watchdog', daemon=True)
 
@@ -713,9 +727,10 @@ class Block(Process, ABC):
       # The main Process mustn't finish before all the Blocks are stopped
       cls.cls_log(logging.INFO, 'Main Process done, waiting for all Blocks to '
                                 'finish')
-      for _ in connection.wait([inst.sentinel for inst in cls.instances]):
-        cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
-                                  "other ones to follow")
+      if cls._run_blocks:
+        for _ in connection.wait([inst.sentinel for inst in cls._run_blocks]):
+          cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
+                                    "other ones to follow")
 
     except (BrokenBarrierError, KeyboardInterrupt, Exception) as exc:
 
@@ -796,7 +811,8 @@ class Block(Process, ABC):
                                     'to finish')
 
         # Waiting at most 3 seconds for all the Blocks to finish
-        pending = {inst.sentinel for inst in cls.instances if inst.is_alive()}
+        pending = {inst.sentinel for inst in cls._run_blocks
+                   if inst.is_alive()}
         deadline = monotonic() + 3.0
         while pending and (remaining := deadline - monotonic()) > 0:
           cls.cls_log(logging.INFO, "All Blocks not stopped yet")
@@ -806,7 +822,7 @@ class Block(Process, ABC):
         if pending:
           cls.cls_log(logging.WARNING, 'All Blocks not stopped after 3 '
                                        'seconds, terminating the living ones')
-          for inst in cls.instances:
+          for inst in cls._run_blocks:
               if inst.is_alive():
                 cls.cls_log(logging.WARNING, f'Terminating Block {inst.name}')
                 inst.terminate()
@@ -831,8 +847,8 @@ class Block(Process, ABC):
                                "terminate within one second!")
 
       # Checking whether all Blocks terminated gracefully
-      if cls.instances and any(inst.is_alive() for inst in cls.instances):
-        running = ', '.join(inst.name for inst in cls.instances
+      if any(inst.is_alive() for inst in cls._run_blocks):
+        running = ', '.join(inst.name for inst in cls._run_blocks
                             if inst.is_alive())
         cls.cls_log(logging.ERROR, f"Crappy failed to finish gracefully, "
                                    f"Block(s) {running} still running !")
@@ -1031,6 +1047,7 @@ class Block(Process, ABC):
     cls.log_thread = None
 
     cls.instances = WeakSet()
+    cls._run_blocks = tuple()
     cls.names = list()
     cls.thread_stop = False
     cls.prepared_all = False
