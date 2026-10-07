@@ -3,6 +3,8 @@
 from typing import Any
 from collections.abc import Sequence
 import logging
+from numbers import Real
+from math import isfinite
 
 from .meta_block import Block
 from .._collection import (CollectionEntry, collection_registry,
@@ -56,7 +58,7 @@ class IOBlock(Block):
     Args:
       name: The name of the :class:`~crappy.inout.meta_inout.inout.InOut` class
         to instantiate.
-      labels: An iterable (e.g. a :obj:`list` or a :obj:`tuple`) containing the
+      labels: A sequence (e.g. a :obj:`list` or a :obj:`tuple`) containing the
         output labels for InOuts that acquire data. They correspond to the
         values returned by the InOut's
         :meth:`~crappy.inout.meta_inout.inout.InOut.get_data` method, so there
@@ -65,7 +67,7 @@ class IOBlock(Block):
         preferably called ``'t(s)'``. This argument can be omitted if
         :meth:`~crappy.inout.meta_inout.inout.InOut.get_data` returns a
         :obj:`dict`. Ignored if the Block has no output Link.
-      cmd_labels: An iterable (e.g. a :obj:`list` or a :obj:`tuple`) containing
+      cmd_labels: A sequence (e.g. a :obj:`list` or a :obj:`tuple`) containing
         the labels considered as inputs of this Block, for InOuts that set
         commands. The values received from these labels will be passed to the
         InOut's :meth:`~crappy.inout.meta_inout.inout.InOut.set_cmd` method, in
@@ -83,11 +85,11 @@ class IOBlock(Block):
         to the documentation of these methods for more information.
       initial_cmd: An initial command for the InOut, set during
         :meth:`prepare`. If given, there must be as many values as in
-        ``cmd_labels``. Must be given as an iterable (e.g. a :obj:`list` or a
+        ``cmd_labels``. Must be given as a sequence (e.g. a :obj:`list` or a
         :obj:`tuple`).
       exit_cmd: A final command for the InOut, set during :meth:`finish`. If
         given, there must be as many values as in ``cmd_labels``. Must be given
-        as an iterable (e.g. a :obj:`list` or a :obj:`tuple`).
+        as a sequence (e.g. a :obj:`list` or a :obj:`tuple`).
 
         .. versionchanged:: 1.5.10 renamed from *exit_values* to *exit_cmd*
       make_zero_delay: If set, will acquire data before the beginning of the
@@ -129,53 +131,15 @@ class IOBlock(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    # The label argument can be omitted for streaming
-    if labels is None and streamer:
-      self.labels = ['t(s)', 'stream']
-    # Forcing the labels into a list
-    elif labels is not None and isinstance(labels, str):
-      self.labels = [labels]
-    elif labels is not None:
-      self.labels = list(labels)
-    else:
-      self.labels = None
-
-    # Forcing the cmd_labels into a list or None
-    if cmd_labels is not None and isinstance(cmd_labels, str):
-      self._cmd_labels = [cmd_labels]
-    elif cmd_labels is not None:
-      self._cmd_labels = list(cmd_labels)
-    else:
-      self._cmd_labels = list()
-
-    # Forcing the initial_cmd into a list
-    if initial_cmd is not None and isinstance(initial_cmd, str):
-      self._initial_cmd = [initial_cmd]
-    elif initial_cmd is not None:
-      self._initial_cmd = list(initial_cmd)
-    else:
-      self._initial_cmd = None
-
-    # Forcing the exit_cmd into a list
-    if exit_cmd is not None and isinstance(exit_cmd, str):
-      self._exit_cmd = [exit_cmd]
-    elif exit_cmd is not None:
-      self._exit_cmd = list(exit_cmd)
-    else:
-      self._exit_cmd = None
-
-    # Checking that the initial_cmd and exit_cmd length are consistent
-    if self._cmd_labels:
-      if (self._initial_cmd is not None
-          and len(self._initial_cmd) != len(self._cmd_labels)):
-        raise ValueError("There should be as many values in initial_cmd as "
-                         "there are in cmd_labels !")
-      if (self._exit_cmd is not None
-          and len(self._exit_cmd) != len(self._cmd_labels)):
-        raise ValueError("There should be as many values in exit_cmd as "
-                         "there are in cmd_labels !")
-
-    self._trig_label = trigger_label
+    match name:
+      case str() if name.strip():
+        pass
+      case str():
+        raise ValueError("The InOut name must be provided as a non-empty "
+                         "string")
+      case _:
+        raise TypeError("The InOut name must be provided as a non-empty "
+                        "string")
 
     # None means that this is an ordinary core or user-defined InOut
     self._collection_entry: CollectionEntry | None = None
@@ -206,16 +170,145 @@ class IOBlock(Block):
     elif entry is not None and inout_dict[name].__module__ == entry.module:
       self._collection_entry = entry
 
-    self._io_name = name
-    self._inout_kwargs = kwargs
+    self._io_name: str = name
 
-    self._streamer = streamer
-    self._spam = spam
-    self._make_zero_delay = make_zero_delay
+    match streamer:
+      case bool():
+        self._streamer: bool = streamer
+      case _:
+        raise TypeError("streamer mut be provided as a boolean")
 
-    self._stream_started = False
-    self._last_cmd = None
-    self._prev_values = dict()
+    match labels:
+      case None if streamer:
+        self.labels = ['t(s)', 'stream']
+      case None:
+        self.labels = labels
+      case ():
+        raise ValueError("labels were provided as an empty sequence, set to "
+                         "None instead if you don't want to set any labels")
+      case str() if labels.strip():
+        self.labels = [labels]
+      case str():
+        raise ValueError("labels were provided as an empty string, set to "
+                         "None instead if you don't want to set any labels")
+      case (*labels,) if (all(isinstance(label, str) for label in labels) and
+                          all(label.strip() for label in labels)):
+        self.labels = list(labels)
+      case (*labels, ) if all(isinstance(label, str) for label in labels):
+        raise ValueError("All the labels must be provided as non-empty "
+                         "strings")
+      case (*_,):
+        raise TypeError("All the labels must be provided as non-empty strings")
+      case _:
+        raise TypeError("The IOBlock labels must be provided as a sequence of "
+                        "non-empty strings, a non-empty strings, or None")
+
+    match cmd_labels:
+      case None:
+        self._cmd_labels: list[str] = list()
+      case ():
+        raise ValueError("cmd_labels were provided as an empty sequence, set "
+                         "to None instead if you don't want to set any labels")
+      case str() if cmd_labels.strip():
+        self._cmd_labels: list[str] = [cmd_labels]
+      case str():
+        raise ValueError("cmd_labels were provided as an empty string, set to "
+                         "None instead if you don't want to set any labels")
+      case (*cmd_labels,) if (all(isinstance(label, str) for label
+                                  in cmd_labels) and
+                              all(label.strip() for label in cmd_labels)):
+        self._cmd_labels: list[str] = list(cmd_labels)
+      case (*cmd_labels, ) if all(isinstance(label, str) for label
+                                  in cmd_labels):
+        raise ValueError("All the cmd_labels must be provided as non-empty "
+                         "strings")
+      case (*_,):
+        raise TypeError("All the cmd_labels must be provided as non-empty "
+                        "strings")
+      case _:
+        raise TypeError("The IOBlock cmd_labels must be provided as a "
+                        "sequence of non-empty strings, a non-empty strings, "
+                        "or None")
+
+    match trigger_label:
+      case None:
+        self._trig_label: str | None = trigger_label
+      case str() if trigger_label.strip():
+        self._trig_label: str | None = trigger_label
+      case str():
+        raise ValueError("trigger_label must be provided as a non-empty "
+                         "string or None")
+      case _:
+        raise TypeError("trigger_label must be provided as a non-empty "
+                        "string or None")
+
+    match initial_cmd:
+      case None:
+        self._initial_cmd: list[Any] | None = initial_cmd
+      case str() if initial_cmd.strip():
+        self._initial_cmd: list[Any] | None = [initial_cmd]
+      case str():
+        raise ValueError("If provided as a string, initial_cmd must be "
+                         "non-empty")
+      case ():
+        raise ValueError("If provided as a sequence, initial_cmd must be "
+                         "non-empty")
+      case (*_,):
+        self._initial_cmd: list[Any] | None = list(initial_cmd)
+      case _:
+        raise TypeError("The initial_cmd must be provided as a non-empty "
+                        "sequence or None")
+
+    match exit_cmd:
+      case None:
+        self._exit_cmd: list[Any] | None = exit_cmd
+      case str() if exit_cmd.strip():
+        self._exit_cmd: list[Any] | None = [exit_cmd]
+      case str():
+        raise ValueError("If provided as a string, exit_cmd must be "
+                         "non-empty")
+      case ():
+        raise ValueError("If provided as a sequence, exit_cmd must be "
+                         "non-empty")
+      case (*_,):
+        self._exit_cmd: list[Any] | None = list(exit_cmd)
+      case _:
+        raise TypeError("The exit_cmd must be provided as a non-empty "
+                        "sequence or None")
+
+    match make_zero_delay:
+      case None:
+        self._make_zero_delay: float | None = None
+      case Real() if make_zero_delay >= 0 and isfinite(make_zero_delay):
+        self._make_zero_delay: float | None = float(make_zero_delay)
+      case Real():
+        raise ValueError("make_zero_delay must be provided as a positive, "
+                         "finite float or None")
+      case _:
+        raise TypeError("make_zero_delay must be provided as a positive, "
+                        "finite float or None")
+
+    match spam:
+      case bool():
+        self._spam: bool = spam
+      case _:
+        raise TypeError("spam mut be provided as a boolean")
+
+    # Checking that the initial_cmd and exit_cmd length are consistent
+    if self._cmd_labels:
+      if (self._initial_cmd is not None
+          and len(self._initial_cmd) != len(self._cmd_labels)):
+        raise ValueError("There should be as many values in initial_cmd as "
+                         "there are in cmd_labels!")
+      if (self._exit_cmd is not None
+          and len(self._exit_cmd) != len(self._cmd_labels)):
+        raise ValueError("There should be as many values in exit_cmd as "
+                         "there are in cmd_labels!")
+
+    self._inout_kwargs: dict[str, Any] = kwargs
+    self._stream_started: bool = False
+    self._last_cmd: list[Any] | None = None
+    self._prev_values: dict[str, Any] = dict()
 
   def prepare(self) -> None:
     """Checks the consistency of the Link layout, opens the InOut and sets the
@@ -226,22 +319,14 @@ class IOBlock(Block):
     InOut.
     """
 
-    # Under the spawn multiprocessing start method, it is necessary to re-load
-    # the modules from crappy.collection
-    if self._collection_entry is not None:
-      load_collection_class(self._collection_entry, inout_dict)
-
-    # Instantiating the device
-    self._device = inout_dict[self._io_name](**self._inout_kwargs)
-
-    # Checking that the block has inputs or outputs
+    # Checking that the Block has inputs or outputs
     if not self.inputs and not self.outputs:
-      raise IOError('Error ! The IOBlock is neither an input nor an output !')
+      raise IOError('Error ! The IOBlock is neither an input nor an output!')
 
-    # cmd_labels must be defined when the block has inputs
+    # cmd_labels must be defined when the Block has inputs
     if self.inputs and not self._cmd_labels and self._trig_label is None:
-      raise ValueError('Error ! The IOBlock has incoming links but no '
-                       'cmd_labels have been given !')
+      raise ValueError('Error! The IOBlock has incoming links but no '
+                       'cmd_labels have been given!')
 
     self._read = bool(self.outputs)
     self._write = bool(self._cmd_labels)
