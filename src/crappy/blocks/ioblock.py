@@ -122,6 +122,8 @@ class IOBlock(Block):
     """
 
     self._device: InOut | None = None
+    self._device_opened: bool = False
+    self._exit_cmd_sent: bool = False
     self._read: bool = False
     self._write: bool = False
 
@@ -331,9 +333,18 @@ class IOBlock(Block):
     self._read = bool(self.outputs)
     self._write = bool(self._cmd_labels)
 
+    # Under the spawn multiprocessing start method, it is necessary to re-load
+    # the modules from crappy.collection
+    if self._collection_entry is not None:
+      load_collection_class(self._collection_entry, inout_dict)
+
+    # Instantiating the device
+    self._device = inout_dict[self._io_name](**self._inout_kwargs)
+
     # Now opening the device
     self.log(logging.INFO, f"Opening the {type(self._device).__name__} InOut")
     self._device.open()
+    self._device_opened = True
     self.log(logging.INFO, f"{type(self._device).__name__} InOut opened")
 
     # Acquiring data for offsetting the output
@@ -421,32 +432,69 @@ class IOBlock(Block):
     InOut.
     """
 
-    try:
-      # Stopping the stream
-      if self._streamer and self._device is not None and self._stream_started:
-        self.log(logging.INFO, f"Stopping stream on the "
-                               f"{type(self._device).__name__} InOut")
+    # No cleanup to perform is there's no InOut
+    if self._device is None:
+      return
+
+    name = type(self._device).__name__
+    failures: list[Exception | KeyboardInterrupt] = list()
+
+    # Stopping the stream
+    if self._streamer and self._stream_started:
+      self.log(logging.INFO, f"Stopping stream on the {name} InOut")
+      try:
         self._device.stop_stream()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"{name} IOBlock cleanup step: stop stream")
+        failures.append(error)
+      else:
+        self._stream_started = False
 
-      # Setting the exit command
-      if (self._write
-          and self._exit_cmd is not None
-          and self._device is not None):
-        self.log(logging.INFO, f"Sending the exit command to the "
-                               f"{type(self._device).__name__} InOut")
+    # Setting the exit command independently of stream shutdown
+    if (self._device_opened and
+        self._write and
+        self._exit_cmd is not None and
+        not self._exit_cmd_sent):
+      self.log(logging.INFO, f"Sending the exit command to the {name} InOut")
+      try:
         self._device.set_cmd(*self._exit_cmd)
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"{name} IOBlock cleanup step: set exit command")
+        failures.append(error)
+      else:
+        self._exit_cmd_sent = True
 
-    finally:
-      # Closing the device
-      if self._device is not None:
-        self.log(logging.INFO, f"Closing the {type(self._device).__name__} "
-                               f"InOut")
-        self._device.close()
-        self.log(logging.INFO, f"{type(self._device).__name__} InOut closed")
+    # Closing the device even if earlier cleanup operations failed
+    self.log(logging.INFO, f"Closing the {name} InOut")
+    try:
+      self._device.close()
+    except (Exception, KeyboardInterrupt) as error:
+      error.add_note(f"{name} IOBlock cleanup step: close device")
+      failures.append(error)
+    else:
+      self._device = None
+      self._device_opened = False
+      self._stream_started = False
+      self.log(logging.INFO, f"{name} InOut closed")
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others = failures[:index] + failures[index + 1:]
+          raise error from BaseExceptionGroup("Other InOut cleanup failures",
+                                              others)
+    elif failures:
+      raise ExceptionGroup("InOut cleanup failures", failures)
 
   def _read_data(self) -> None:
     """Reads the data or the stream, offsets the timestamp and sends the data
     to downstream Blocks."""
+
+    assert self._device is not None
 
     if self._streamer:
       # Starting the stream if needed
