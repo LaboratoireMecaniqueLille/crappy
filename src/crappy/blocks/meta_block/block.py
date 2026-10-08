@@ -1,17 +1,18 @@
 # coding: utf-8
 
+from __future__ import annotations
 from platform import system
 from multiprocessing import (Process, Value, Barrier, Event, Queue,
                              get_start_method, synchronize, queues,
                              sharedctypes, Manager, managers, Pipe, connection,
                              resource_tracker)
-from threading import BrokenBarrierError, Thread
+from threading import BrokenBarrierError, Thread, Event as ThreadEvent
 from queue import Empty
 import logging
 import logging.handlers
-from time import sleep, time, time_ns
+from time import time, monotonic
 from weakref import WeakSet
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 from collections.abc import Sequence
 from collections import defaultdict
 import subprocess
@@ -25,6 +26,25 @@ from ..._global import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
                         CameraPrepareError, CameraRuntimeError, SchedulerStop,
                         CameraConfigError, CrappyFail, DefinitionError)
+
+
+@runtime_checkable
+class VisionBlockType(Protocol):
+  """Protocol for the extra methods implemented by the
+  :class:`~crappy.blocks.vision.block.VisionBlock`"""
+
+  def request_config(self, source: str) -> Any:
+    """Method for requesting configuration information from an image source
+    Block."""
+
+  def add_config_request_in(self, request) -> None:
+    """Registers a configuration request received from a downstream Block."""
+
+  def add_config_request_out(self, request) -> None:
+    """Registers a configuration request sent to an upstream image source."""
+
+  def set_shared_objects(self) -> None:
+    """Creates and distributes synchronization objects for output images."""
 
 
 class Block(Process, ABC):
@@ -61,7 +81,8 @@ class Block(Process, ABC):
   .. versionchanged:: 2.1.0 removed management of the FT232H USB server
   """
 
-  instances = WeakSet()
+  instances: WeakSet[Block] = WeakSet()
+  _run_blocks: tuple[Block, ...] = tuple()
   names: list[str] = list()
   log_level: int | None = logging.DEBUG
 
@@ -229,6 +250,9 @@ class Block(Process, ABC):
     VisionBlocks, configuration requests are routed to their image sources
     through one-way Pipes before the child Processes start.
 
+    Rejects missing Blocks recorded in the LinkGraph and retains the validated
+    participants until :meth:`~crappy.blocks.meta_block.block.Block.reset`.
+
     Once started with this method, the Blocks will call their
     :meth:`~crappy.blocks.meta_block.block.Block.prepare` method and then be
     blocked by a :obj:`multiprocessing.Barrier`.
@@ -278,6 +302,28 @@ class Block(Process, ABC):
         # Raising will skip all the setup part and keep the existing context
         raise RuntimeError
 
+      # Freeze the current Blocks before allocating resources
+      blocks = tuple(cls.instances)
+      instances_lookup = {instance.name: instance for instance in blocks}
+      graph_names = set(link_graph.nodes)
+      instance_names = set(instances_lookup)
+
+      # Abort in case of inconsistency with the Blocks registered in the graph
+      missing = sorted(graph_names - instance_names)
+      unregistered = sorted(instance_names - graph_names)
+      if missing or unregistered:
+        details = list()
+        # Case when a Block is in the graph but not in the instances
+        if missing:
+          details.append(f"Blocks missing before startup (possibly "
+                         f"garbage-collected): {', '.join(missing)}")
+        # Case when a block is in the instances but not in the graph
+        if unregistered:
+          details.append(f"Blocks absent from the LinkGraph: "
+                         f"{', '.join(unregistered)}")
+        raise GraphStructureError('; '.join(details))
+      cls._run_blocks = blocks
+
       cls.log_level = log_level
 
       # Initializing the logger and displaying the first messages
@@ -288,7 +334,7 @@ class Block(Process, ABC):
       cls.cls_log(logging.INFO, 'Logger configured')
 
       # Setting all the synchronization objects at the class level
-      cls.ready_barrier = Barrier(len(cls.instances) + 1)
+      cls.ready_barrier = Barrier(len(cls._run_blocks) + 1)
       cls.shared_t0 = Value('d', -1.0)
       cls.start_event = Event()
       cls.pause_event = Event()
@@ -304,7 +350,11 @@ class Block(Process, ABC):
 
       # Initializing the objects required for logging
       cls.log_queue = Queue()
-      cls.log_thread = Thread(target=cls._log_target)
+      # Pass log queue explicitly so that the Thread keeps the same queue even
+      # if a new one is created at the class level
+      cls.log_thread = Thread(target=cls._log_target,
+                              args=(cls.log_queue,),
+                              name='crappy.log-reader', daemon=True)
       if get_start_method() != 'fork':
         if cls.log_thread is None:
           raise RuntimeError("The log Thread was not initialized, cannot start"
@@ -313,7 +363,7 @@ class Block(Process, ABC):
         cls.cls_log(logging.INFO, 'Logger thread started')
 
       # Passing the synchronization and logging objects to each Block
-      for instance in cls.instances:
+      for instance in cls._run_blocks:
         instance._ready_barrier = cls.ready_barrier
         instance._instance_t0 = cls.shared_t0
         instance._stop_event = cls.stop_event
@@ -336,33 +386,22 @@ class Block(Process, ABC):
 
       # Build the connection graph of the VisionBlocks and share configuration
       # requests to relevant sources
-      if (cls.instances and
-          any(instance.is_vision_block for instance in cls.instances)):
-
-        # Lookup table to associate unique Block name to actual instance
-        instances_lookup = {instance.name: instance for instance
-                            in cls.instances}
-
-        graph_names = set(link_graph.nodes.keys())
-        instance_names = set(instances_lookup.keys())
-        if graph_names != instance_names:
-          raise GraphStructureError("The names of the Blocks as stored in the "
-                                    "LinkGraph and in the master Block do not "
-                                    "match")
+      if any(instance.is_vision_block for instance in cls._run_blocks):
 
         # Manage config requests for each source-consumer pair
         for source_name in link_graph.img_sources():
           source = instances_lookup[source_name]
+          if not isinstance(source, VisionBlockType):
+            raise TypeError(f"The image source {source_name} does not "
+                            f"implement all the required methods")
           for consumer_name in link_graph.descendants(source_name,
                                                       kind='image'):
             consumer = instances_lookup[consumer_name]
             # If there's a configuration request from the consumer, share it
             # with the source
-            if (hasattr(consumer, 'request_config') and
-                callable(consumer.request_config) and
+            if (isinstance(consumer, VisionBlockType) and
                 (config_request := consumer.request_config(source_name))
                 is not None):
-              config_request: Any
               if config_request.requester != consumer.name:
                 raise ValueError("The name of the config requester doesn't "
                                  "match the name of the downstream Block")
@@ -388,7 +427,7 @@ class Block(Process, ABC):
         # parent. Explicitly tell each Block which unrelated endpoints it must
         # close on startup so that a dead Block can still be detected via EOF
         if get_start_method() == 'fork':
-          for instance in cls.instances:
+          for instance in cls._run_blocks:
             owned_connections = {id(conn) for conn in
                                  config_connections_by_owner[instance.name]}
             instance._config_connections_to_close = [
@@ -402,14 +441,14 @@ class Block(Process, ABC):
                                   "graph nor sharing config requests")
 
       # Initialize the common Manager for image Blocks if needed
-      if (cls.instances and
-          any(instance.is_vision_block for instance in cls.instances)):
+      if any(instance.is_vision_block for instance in cls._run_blocks):
         cls.shared_mgr = Manager()
         cls.cls_log(logging.INFO, 'Created the shared Manager object')
 
         # Making vision Blocks generate their shared synchronization objects
-        for instance in cls.instances:
-          if instance.is_vision_block:
+        for instance in cls._run_blocks:
+          if (instance.is_vision_block and
+              isinstance(instance, VisionBlockType)):
             instance.set_shared_objects()
             cls.cls_log(logging.INFO, f"Set shared image-related objects for "
                                       f"the {instance.name} Block")
@@ -419,13 +458,13 @@ class Block(Process, ABC):
 
       # Under fork, ensures proper management of SharedMemory tracking at the
       # Process-level
-      if (get_start_method() == 'fork' and cls.instances and
-          any(instance.is_vision_block for instance in cls.instances)):
+      if (get_start_method() == 'fork' and
+          any(instance.is_vision_block for instance in cls._run_blocks)):
         resource_tracker.ensure_running()
         cls.cls_log(logging.INFO, 'Shared-memory resource tracker started')
 
       # Starting all the Blocks
-      for instance in cls.instances:
+      for instance in cls._run_blocks:
         instance.start()
         cls.cls_log(logging.INFO, f'Started the {instance.name} Block')
 
@@ -438,6 +477,7 @@ class Block(Process, ABC):
 
       # If there is no specific cleanup to perform, only raising
       if not cleanup:
+        cls._run_blocks = tuple()
         raise
 
       # KeyboardInterrupt is a separate case
@@ -528,7 +568,7 @@ class Block(Process, ABC):
 
       # Renicing all the Blocks
       cls.cls_log(logging.INFO, 'Renicing processes')
-      for inst in cls.instances:
+      for inst in cls._run_blocks:
         # If root is not allowed then the minimum niceness is 0
         niceness = max(inst.niceness, 0 if not allow_root else -20)
 
@@ -638,20 +678,54 @@ class Block(Process, ABC):
 
       cls.launched_all = True
 
-      # The Barrier waits for the main Process to be ready so that the
-      # prepare_all and launch_all methods can be used separately for a finer
-      # grained control
-      cls.cls_log(logging.INFO, 'Waiting for all Blocks to be ready')
+      # There should be a Barrier at that point
       if cls.ready_barrier is None:
         raise RuntimeError("Should wait for the ready Barrier but it doesn't "
                            "exist!")
-      cls.ready_barrier.wait()
+      if cls.raise_event is None:
+        raise RuntimeError("The raise Event should exist before starting the "
+                           "Barrier watchdog!")
+
+      # Set up a watchdog Thread preventing deadlocks at the Barrier
+      watchdog_event = ThreadEvent()
+      watchdog_thread = Thread(target=cls._watchdog_target,
+                               args=(watchdog_event, cls._run_blocks,
+                                     cls.ready_barrier, cls.raise_event),
+                               name='crappy.barrier-watchdog', daemon=True)
+
+      # The Barrier waits for the main Process to be ready so that the
+      # prepare_all and launch_all methods can be used separately for a finer
+      # grained control
+      watchdog_started = False
+      try:
+        watchdog_thread.start()
+        watchdog_started = True
+        cls.cls_log(logging.INFO, 'Waiting for all Blocks to be ready')
+        cls.ready_barrier.wait()
+      finally:
+        # We're being extra cautious here to be able to report a crash
+        try:
+          watchdog_event.set()
+        finally:
+          if watchdog_started:
+            try:
+              watchdog_thread.join(1.0)
+            finally:
+              if watchdog_thread.is_alive():
+                raise RuntimeError("The Barrier watchdog thread didn't stop "
+                                   "as expected")
+
+      # Handle a possible race condition between Barrier being released and the
+      # watchdog Thread crashing
+      if cls.ready_barrier.broken:
+        raise BrokenBarrierError
+
       cls.cls_log(logging.INFO, 'All Blocks ready now')
 
       # Setting t0 and telling all the Blocks to start
       if cls.shared_t0 is None:
         raise RuntimeError("Should set shared_t0 but it doesn't exist!")
-      cls.shared_t0.value = time_ns() / 1e9
+      cls.shared_t0.value = time()
       cls.cls_log(logging.INFO, f'Start time set to {cls.shared_t0.value}s')
       if cls.start_event is None:
         raise RuntimeError("Should set the start Event but it doesn't exist!")
@@ -661,9 +735,10 @@ class Block(Process, ABC):
       # The main Process mustn't finish before all the Blocks are stopped
       cls.cls_log(logging.INFO, 'Main Process done, waiting for all Blocks to '
                                 'finish')
-      for _ in connection.wait([inst.sentinel for inst in cls.instances]):
-        cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
-                                  "other ones to follow")
+      if cls._run_blocks:
+        for _ in connection.wait([inst.sentinel for inst in cls._run_blocks]):
+          cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
+                                    "other ones to follow")
 
     except (BrokenBarrierError, KeyboardInterrupt, Exception) as exc:
 
@@ -718,11 +793,12 @@ class Block(Process, ABC):
 
   @classmethod
   def _cleanup(cls) -> None:
-    """Method called at the very end of every script execution.
+    """Stops every Block, shared Manager, and logging resource independently.
 
-    It first waits for all the Blocks to end, and kills them if they don't stop
-    by themselves. Then, it stops the log_thread and warns the user in case
-    Processes would still be running.
+    It first waits for all the Blocks to end, terminates survivors, and kills
+    those still running after termination. Then, it stops the log_thread and
+    records a failure if Processes or the logging Thread would still be
+    running.
 
     Finally, it raises an exception if needed, in order to stop the script of
     the main Process. This way, any action that could follow the normal
@@ -730,125 +806,350 @@ class Block(Process, ABC):
     Crappy's exception and decides to go on with the script.
     """
 
-    try:
+    failures: list[Exception | KeyboardInterrupt] = list()
+    log_thread_failed = False
 
-      # Setting the stop Event, to indicate all the Blocks to finish
+    try:
       if cls.stop_event is None:
-        cls.cls_log(logging.ERROR, "The stop Event should be set but "
-                                   "doesn't exist!")
+        try:
+          cls.cls_log(logging.ERROR, "The stop Event should be set but "
+                                     "doesn't exist!")
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: log missing stop Event")
+          failures.append(error)
       else:
-        cls.stop_event.set()
-        cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks to '
-                                  'finish')
-      t = time()
+        try:
+          cls.stop_event.set()
+          cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks '
+                                    'to finish')
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: request shutdown")
+          failures.append(error)
+
+      # Called in case any Block would still be held at the Barrier
+      if cls.ready_barrier is not None and not cls.launched_all:
+        try:
+          cls.ready_barrier.abort()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: abort preparation Barrier")
+          failures.append(error)
 
       # Waiting at most 3 seconds for all the Blocks to finish
-      while cls.instances and not all(not inst.is_alive() for inst
-                                      in cls.instances):
-        cls.cls_log(logging.INFO, "All Blocks not stopped yet")
-        sleep(0.5)
+      pending = dict()
+      # First, check which Blocks are still alive
+      for inst in cls._run_blocks:
+        try:
+          if inst.is_alive():
+            pending[inst.sentinel] = inst
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"Block cleanup step: inspect {inst.name}")
+          failures.append(error)
 
-        # After 3 seconds, killing the Blocks that didn't stop
-        if time() - t > 3:
-          cls.cls_log(logging.WARNING, 'All Blocks not stopped, terminating '
-                                       'the living ones')
-          for inst in cls.instances:
-            if inst.is_alive():
-              inst.terminate()
-              cls.cls_log(logging.WARNING, f'Block {inst.name} terminated')
-            else:
-              cls.cls_log(logging.INFO, f'Block {inst.name} done')
-
+      # Check stopped blocks each 0.5s at most for 3 seconds
+      deadline = monotonic() + 3.0
+      while pending and (remaining := deadline - monotonic()) > 0:
+        try:
+          exited = connection.wait(pending, timeout=min(0.5, remaining))
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: wait for Block exits")
+          failures.append(error)
           break
+        # Avoid race condition between sentinel available and Process end
+        for sentinel in exited:
+          inst = pending.pop(sentinel)
+          try:
+            inst.join(timeout=max(0.1, deadline - monotonic()))
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note(f"Block cleanup step: join {inst.name}")
+            failures.append(error)
+
+      # Detect the surviving Blocks
+      survivors = list()
+      for inst in cls._run_blocks:
+        try:
+          alive = inst.is_alive()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"Block cleanup step: check {inst.name}")
+          failures.append(error)
+          alive = True
+        if alive:
+          survivors.append(inst)
+
+      # Terminate every Block that did not stop on its own
+      if survivors:
+        for inst in survivors:
+          try:
+            cls.cls_log(logging.WARNING, f'Terminating Block {inst.name}')
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note(f"Block cleanup step: log termination of "
+                           f"{inst.name}")
+            failures.append(error)
+          try:
+            inst.terminate()
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note(f"Block cleanup step: terminate {inst.name}")
+            failures.append(error)
+
+        # Waiting at most one second for the survivors to terminate
+        deadline = monotonic() + 1.0
+        for inst in survivors:
+          try:
+            inst.join(timeout=max(0.0, deadline - monotonic()))
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note(f"Block cleanup step: join after terminate "
+                           f"{inst.name}")
+            failures.append(error)
+
+        # Detect the Blocks that survived termination
+        living = list()
+        for inst in survivors:
+          try:
+            alive = inst.is_alive()
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note(f"Block cleanup step: check {inst.name}")
+            failures.append(error)
+            alive = True
+          if alive:
+            living.append(inst)
+        survivors = living
+
+        # Kill the remaining survivors
+        if survivors:
+          for inst in survivors:
+            try:
+              cls.cls_log(logging.WARNING, f'Killing Block {inst.name}')
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note(f"Block cleanup step: log killing of {inst.name}")
+              failures.append(error)
+            try:
+              inst.kill()
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note(f"Block cleanup step: kill {inst.name}")
+              failures.append(error)
+
+          # Waiting at most one second for the survivors to get killed
+          deadline = monotonic() + 1.0
+          for inst in survivors:
+            try:
+              inst.join(timeout=max(0.0, deadline - monotonic()))
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note(f"Block cleanup step: join after kill "
+                             f"{inst.name}")
+              failures.append(error)
+
+          # Detect the Blocks that survived killing
+          living = list()
+          for inst in survivors:
+            try:
+              alive = inst.is_alive()
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note(f"Block cleanup step: check {inst.name}")
+              failures.append(error)
+              alive = True
+            if alive:
+              living.append(inst)
+          survivors = living
+
+          # Log the running status of the Blocks
+          if survivors:
+            try:
+              cls.cls_log(logging.ERROR, "Not all Blocks could be stopped "
+                                         "even after killing them")
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note("Block cleanup step: log Block stop status")
+              failures.append(error)
+          else:
+            try:
+              cls.cls_log(logging.INFO, "All Blocks stopped after killing")
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note("Block cleanup step: log Block stop status")
+              failures.append(error)
+        else:
+          try:
+            cls.cls_log(logging.INFO, "All Blocks stopped after termination")
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note("Block cleanup step: log Block stop status")
+            failures.append(error)
+      else:
+        try:
+          cls.cls_log(logging.INFO, 'All Blocks stopped')
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: log Block stop status")
+          failures.append(error)
+
+      # Links own the parent-process copies of the communication endpoints
+      links: set[Link] = set()
+      for inst in cls._run_blocks:
+        # First gather all the existing Links
+        try:
+          for link in (*inst.inputs, *inst.outputs):
+            links.add(link)
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"Block cleanup step: collect Links of {inst.name}")
+          failures.append(error)
+      # Then close all the gathered Links
+      for link in links:
+        try:
+          cls.cls_log(logging.DEBUG, f"Closing Link {link.name!r}")
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"Block cleanup step: log closure of Link "
+                         f"{link.name!r}")
+          failures.append(error)
+        try:
+          link.close()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"Block cleanup step: close Link {link.name!r}")
+          failures.append(error)
 
       # Stopping the shared Manager if required
       if cls.shared_mgr is not None:
-        cls.cls_log(logging.INFO, "Stopping the shared Manager")
-        cls.shared_mgr.shutdown()
+        try:
+          cls.cls_log(logging.INFO, "Stopping the shared Manager")
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: log shared Manager shutdown")
+          failures.append(error)
+        try:
+          cls.shared_mgr.shutdown()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: shut down shared Manager")
+          failures.append(error)
 
-      # Stopping the log thread if required
-      if get_start_method() != 'fork' and cls.log_thread is not None:
-        cls.thread_stop = True
-        cls.log_thread.join(timeout=0.1)
+      # Stop the log Thread and wait for it to finish
+      cls.thread_stop = True
+      if cls.log_thread is not None and cls.log_thread.ident is not None:
+        try:
+          cls.cls_log(logging.INFO, "Stopping the logging Thread")
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: log logging Thread shutdown")
+          failures.append(error)
+        try:
+          cls.log_thread.join(timeout=1.0)
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: join logging Thread")
+          failures.append(error)
 
-      # Warning in case the log thread did not stop correctly
-      if cls.log_thread is not None and cls.log_thread.is_alive():
-        cls.cls_log(logging.WARNING, "The Thread reading the log messages did "
-                                     "not terminate in time !")
+        # If the log Thread is still alive, report it
+        try:
+          if cls.log_thread.is_alive():
+            log_thread_failed = True
+            raise RuntimeError("The Thread reading the log messages did not "
+                               "terminate within one second!")
+        except (Exception, KeyboardInterrupt) as error:
+          # Messages should no longer be sent to a failed Thread
+          log_thread_failed = True
+          error.add_note("Block cleanup step: check logging Thread")
+          failures.append(error)
+
+      # Cancel join thread on the log queue
+      if cls.log_queue is not None:
+        if not log_thread_failed:
+          try:
+            cls.cls_log(logging.DEBUG, "Closing the log Queue")
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note("Block cleanup step: log log Queue closure")
+            failures.append(error)
+        try:
+          cls.log_queue.cancel_join_thread()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: cancel log Queue feeder join")
+          failures.append(error)
+        # Then close the log queue
+        try:
+          cls.log_queue.close()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: close log Queue")
+          failures.append(error)
 
       # Checking whether all Blocks terminated gracefully
-      if cls.instances and any(inst.is_alive() for inst in cls.instances):
-        running = ', '.join(inst.name for inst in cls.instances
-                            if inst.is_alive())
-        cls.cls_log(logging.ERROR, f"Crappy failed to finish gracefully, "
-                                   f"Block(s) {running} still running !")
-        # An Exception is raised in case all the Blocks don't finish gracefully
-        if cls.raise_event is None:
-          cls.cls_log(logging.ERROR, "The raise Event should be set but "
-                                     "doesn't exist!")
-        else:
-          cls.raise_event.set()
-          cls.cls_log(logging.WARNING, 'Set the raise Event because all the '
-                                       'Blocks did not terminate as requested')
-      else:
+      running = list()
+      # First, detect all the instances still running
+      for inst in cls._run_blocks:
+        try:
+          if inst.is_alive():
+            running.append(inst.name)
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"Block cleanup step: final check of {inst.name}")
+          failures.append(error)
+      # Report the Blocks that are still alive
+      if running:
+        error = RuntimeError(f"Blocks still running after shutdown: "
+                             f"{', '.join(running)}")
+        error.add_note("Block cleanup step: verify Block shutdown")
+        failures.append(error)
+      elif not failures:
         cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
                                   'gracefully !\n')
 
-    # Exceptions at that point cannot really be handled, but should still raise
-    # in the main Process
+    # Add any additional exception to the list of exceptions
     except (Exception, KeyboardInterrupt) as exc:
-      # KeyboardInterrupt is a separate case
-      if isinstance(exc, KeyboardInterrupt):
-        cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt while "
-                                     "cleaning up, ignoring it !")
-        # Special Event for the KeyboardInterrupt
-        if cls.kbi_event is None:
-          cls.cls_log(logging.ERROR, "The KBI Event should be set but doesn't "
-                                     "exist!")
-        else:
-          cls.kbi_event.set()
-          cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
-                                       'KeyboardInterrupt while cleaning up')
-      else:
-        # Not much we can do if there's no logger set to report Exception
-        if cls.logger is not None:
-          cls.logger.exception("Caught exception while cleaning up !",
-                               exc_info=exc)
+      failures.append(exc)
 
-        # Any Exception caught in the main Process must stop the script
-        if cls.raise_event is None:
-          cls.cls_log(logging.ERROR, "The raise Event should be set but "
-                                     "doesn't exist!")
-        else:
-          cls.raise_event.set()
-          cls.cls_log(logging.WARNING, 'Set the raise Event after exception '
-                                       'was caught in the main Process while '
-                                       'cleaning up')
-
-    # Deciding whether to raise and stop the main Process, and also resetting
+    # Perform final reporting and error handling here
     finally:
-      # The try/finally is needed to reset Crappy before the exception is
-      # raised but after the class Events are accessed
       try:
+        # Report each cleanup failure
+        for exc in failures:
+          # KeyboardInterrupt is a separate case
+          if isinstance(exc, KeyboardInterrupt):
+            if not log_thread_failed:
+              cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt while "
+                                           "cleaning up, ignoring it !")
+            # Special Event for the KeyboardInterrupt
+            if cls.kbi_event is None:
+              cls.cls_log(logging.ERROR, "The KBI Event should be set but "
+                                         "doesn't exist!")
+            else:
+              cls.kbi_event.set()
+              if not log_thread_failed:
+                cls.cls_log(logging.WARNING, 'Set the KbI Event after '
+                                             'catching KeyboardInterrupt '
+                                             'while cleaning up')
+          else:
+            # If the log Thread is stuck, fall back to printing the error
+            if log_thread_failed:
+              print(f"crappy ERROR: {exc}", file=stderr)
+            elif cls.logger is not None:
+              cls.logger.exception("Caught exception while cleaning up !",
+                                   exc_info=exc)
+
+            # Any Exception caught in the main Process must stop the script
+            if cls.raise_event is None:
+              if not log_thread_failed:
+                cls.cls_log(logging.ERROR, "The raise Event should be set but "
+                                           "doesn't exist!")
+            else:
+              cls.raise_event.set()
+              if not log_thread_failed:
+                cls.cls_log(logging.WARNING, 'Set the raise Event after '
+                                             'exception was caught in the '
+                                             'main Process '
+                                             'while cleaning up')
+
         # Really messed-up states
         if cls.raise_event is None:
-          cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
-                                     "execution, so bad that the raise Event "
-                                     "doesn't even exist, raising CrappyFail!")
+          if not log_thread_failed:
+            cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                       "execution, so bad that the raise "
+                                       "Event doesn't even exist, raising "
+                                       "CrappyFail!")
           raise CrappyFail
         if cls.kbi_event is None:
-          cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
-                                     "execution, so bad that the KBI Event "
-                                     "doesn't even exist, raising CrappyFail!")
+          if not log_thread_failed:
+            cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                       "execution, so bad that the KBI Event "
+                                       "doesn't even exist, raising "
+                                       "CrappyFail!")
           raise CrappyFail
         # Deciding whether to raise or not
         if cls.raise_event.is_set() and not cls.no_raise:
-          cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
-                                     "execution, raising CrappyFail!")
+          if not log_thread_failed:
+            cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                       "execution, raising CrappyFail!")
           raise CrappyFail
         elif cls.kbi_event.is_set() and not cls.no_raise:
-          cls.cls_log(logging.ERROR, "KeyboardInterrupt called while running "
-                                     "Crappy, raising it !")
+          if not log_thread_failed:
+            cls.cls_log(logging.ERROR, "KeyboardInterrupt called while "
+                                       "running Crappy, raising it!")
           raise KeyboardInterrupt("Crappy was stopped using CTRL+C ! To "
                                   "disable this Exception, set the no_raise "
                                   "argument of crappy.start() or "
@@ -959,7 +1260,21 @@ class Block(Process, ABC):
     started yet.
     """
 
+    # If this condition is False, means we likely can't record log messages now
+    try:
+      log_thread_stopped = (cls.log_thread is None or
+                            not cls.log_thread.is_alive())
+    # An unreliable liveness check must not prevent clearing the session
+    except (Exception, KeyboardInterrupt) as exc:
+      log_thread_stopped = False
+      print(f"crappy ERROR while resetting: {exc}", file=stderr)
+
+    # Discard the old logging session before clearing its stop flag
+    cls.log_queue = None
+    cls.log_thread = None
+
     cls.instances = WeakSet()
+    cls._run_blocks = tuple()
     cls.names = list()
     cls.thread_stop = False
     cls.prepared_all = False
@@ -976,10 +1291,8 @@ class Block(Process, ABC):
 
     cls.shared_mgr = None
 
-    cls.log_queue = None
-    cls.log_thread = None
-
-    if cls.logger is not None:
+    # Only log if it has chances to reach the logger
+    if cls.logger is not None and log_thread_stopped:
       cls.cls_log(logging.INFO, 'Crappy was successfully reset')
 
     link_graph.reset()
@@ -1004,24 +1317,68 @@ class Block(Process, ABC):
     cls.logger.log(level=level, msg=msg)
 
   @classmethod
-  def _log_target(cls) -> None:
+  def _log_target(cls, log_queue: queues.Queue) -> None:
     """This method is the target to the Logger Thread.
 
     It reads log messages from a Queue and passes them to the Logger for
     handling.
     """
 
-    if cls.log_queue is None:
+    # Make sure to only read from a single log queue
+    if log_queue is None:
       raise RuntimeError("The log queue doesn't exist!")
 
-    while not cls.thread_stop:
+    while not cls.thread_stop and cls.log_queue is log_queue:
       try:
-        record = cls.log_queue.get(block=True, timeout=0.05)
+        record = log_queue.get(block=True, timeout=0.05)
       except Empty:
         continue
 
+      # Don't log messages if the Thread should stop or a new queue was created
+      if cls.thread_stop or cls.log_queue is not log_queue:
+        return
+
       logger = logging.getLogger(record.name)
       logger.handle(record)
+
+  @classmethod
+  def _watchdog_target(cls,
+                       stop_event: ThreadEvent,
+                       blocks: Sequence[Block],
+                       ready_barrier: synchronize.Barrier,
+                       raise_event: synchronize.Event) -> None:
+    """Aborts startup if a Block exits before the watchdog is disarmed.
+
+    The main Process disarms this Thread after its Barrier wait finishes,
+    before setting the start Event. Explicit references keep the Thread tied
+    to this startup even if cleanup later resets the class attributes.
+    """
+
+    try:
+      sentinels = {block.sentinel: block for block in blocks}
+      while sentinels and not stop_event.is_set():
+        exited = connection.wait(sentinels, timeout=0.1)
+        # If a Block has crashed while preparing
+        if stop_event.is_set() or ready_barrier.broken:
+          return
+        # If a Block has crashed so abruptly it hasn't even set the error flags
+        if exited:
+          raise_event.set()
+          for sentinel in exited:
+            block = sentinels[sentinel]
+            cls.cls_log(logging.ERROR,
+                        f"Block {block.name} (PID {block.pid}) exited before "
+                        f"startup completed (exit code {block.exitcode})")
+          ready_barrier.abort()
+          return
+
+    # A watchdog failure must also release the main Thread's Barrier wait
+    except (Exception,) as exc:
+      if not stop_event.is_set() and not ready_barrier.broken:
+        raise_event.set()
+        if cls.logger is not None:
+          cls.logger.exception("The Barrier watchdog failed", exc_info=exc)
+        ready_barrier.abort()
 
   @staticmethod
   def _stdout_filter(rec: logging.LogRecord) -> bool:
@@ -1052,14 +1409,10 @@ class Block(Process, ABC):
         self.log(logging.INFO, "Block launched")
 
         # Under fork, close configuration Pipe endpoints belonging to other
-        # Blocks before starting any preparation work.
-        try:
-          self.log(logging.DEBUG, "Closing stale Connections this Block "
-                                  "should not own")
-          for conn in self._config_connections_to_close:
-            conn.close()
-        finally:
-          self._config_connections_to_close.clear()
+        # Blocks before starting any preparation work
+        self._close_config_connections()
+        if self._config_connections_to_close:
+          raise RuntimeError("Could not close all inherited config Pipes")
 
         # Running the preliminary actions before the test starts
         self.log(logging.INFO, "Block preparing")
@@ -1103,7 +1456,7 @@ class Block(Process, ABC):
       self.begin()
 
       # Setting the attributes for counting the performance
-      self._last_t = time_ns() / 1e9
+      self._last_t = monotonic()
       self._last_fps = self._last_t
       self._n_loops = 0
 
@@ -1229,14 +1582,23 @@ class Block(Process, ABC):
     # In all cases, trying to properly close the Block
     finally:
       try:
-        self.log(logging.INFO, "Setting the stop Event")
-        if self._stop_event is None:
-          self.log(logging.ERROR, "The stop Event should be set but doesn't "
-                                  "exist!")
-        else:
-          self._stop_event.set()
-        self.log(logging.INFO, "Calling the finish method")
-        self.finish()
+        # Extra cautious here because we absolutely want finish() to be called
+        try:
+          self.log(logging.INFO, "Setting the stop Event")
+          if self._stop_event is None:
+            self.log(logging.ERROR, "The stop Event should be set but doesn't "
+                                    "exist!")
+          else:
+            self._stop_event.set()
+        finally:
+          try:
+            try:
+              self.log(logging.INFO, "Calling the finish method")
+            finally:
+              self.finish()
+          finally:
+            self._close_config_connections()
+        self.log(logging.INFO, f"Block {self.name} done")
       except KeyboardInterrupt:
         self.log(logging.WARNING, "Caught KeyboardInterrupt while finishing, "
                                   "ignoring it")
@@ -1262,6 +1624,25 @@ class Block(Process, ABC):
           self.log(logging.WARNING, 'Set the raise Event after catching an '
                                     'unexpected Exception while finishing')
 
+  def _close_config_connections(self) -> None:
+    """Closes every inherited configuration endpoint"""
+
+    for conn in tuple(self._config_connections_to_close):
+      try:
+        conn.close()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Block cleanup step: close inherited config Pipe")
+        if self._logger is not None:
+          self._logger.exception("Could not close inherited config Pipe",
+                                 exc_info=error)
+        if isinstance(error, KeyboardInterrupt):
+          if self._kbi_event is not None:
+            self._kbi_event.set()
+        elif self._raise_event is not None:
+          self._raise_event.set()
+      else:
+        self._config_connections_to_close.remove(conn)
+
   def main(self) -> None:
     """The main loop of the :meth:`~crappy.blocks.meta_block.block.Block.run`
     method. Repeatedly calls the
@@ -1274,12 +1655,16 @@ class Block(Process, ABC):
     while not self._stop_event.is_set():
       if self._pause_event is None:
         raise RuntimeError("The pause Event doesn't exist, it should")
+      # Record the last time the Block started a loop or had the opportunity to
+      self._last_t = monotonic()
       # Only looping if the Block is not paused
       if not self._pause_event.is_set() or not self.pausable:
         self.log(logging.DEBUG, "Looping")
         self.loop()
       else:
         self.log(logging.DEBUG, "Block currently paused, not calling loop()")
+      # Add the loop that just finished to the loop counter
+      self._n_loops += 1
       # Handling the frequency in all cases to avoid hyperactive Blocks when
       # "paused"
       self.log(logging.DEBUG, "Handling freq")
@@ -1322,9 +1707,7 @@ class Block(Process, ABC):
     interest and this method should always be rewritten.
     """
 
-    self.log(logging.WARNING, f"Loop method not defined, this block does "
-                              f"nothing !")
-    sleep(1)
+    ...
 
   def finish(self) -> None:
     """This method should perform any action required for properly ending the
@@ -1372,26 +1755,17 @@ class Block(Process, ABC):
     possible.
     """
 
-    self._n_loops += 1
-    t = time_ns() / 1e9
-
     # Only handling frequency if requested
     if self.freq is not None:
-
-      # Correcting the error of the sleep function through a recursive approach
-      # The last 2 milliseconds are in free loop
-      while self._last_t + 1 / self.freq - t > 0:
-        t = time_ns() / 1e9
-        remaining = self._last_t + 1 / self.freq - t
-        sleep(max(0., remaining / 2 - 2e-3))
-
-    self._last_t = t
+      next_t = self._last_t + 1 / self.freq
+      assert self._stop_event is not None
+      if self._stop_event.wait(max(0., next_t - monotonic())):
+        return
 
     # Displaying frequency every 2 seconds
     if self.display_freq and self._last_t - self._last_fps > 2:
-      self.log(
-        logging.INFO,
-        f"loops/s: {self._n_loops / (self._last_t - self._last_fps)}")
+      self.log(logging.INFO,
+               f"loops/s: {self._n_loops / (self._last_t - self._last_fps)}")
 
       self._n_loops = 0
       self._last_fps = self._last_t
@@ -1619,6 +1993,9 @@ class Block(Process, ABC):
   def is_vision_block(self, val: bool) -> None:
     if not isinstance(val, bool):
       raise TypeError("is_vision_block must be a boolean")
+    if not isinstance(self, VisionBlockType):
+      raise TypeError(f"The Block {self.name} does not implement all the "
+                      f"required methods of a VisionBlock!")
     self._is_vision_block = val
 
   def add_output(self, link: Link) -> None:

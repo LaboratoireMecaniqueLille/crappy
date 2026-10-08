@@ -159,44 +159,15 @@ class ImageSaver(CameraProcess):
                              f"{self._save_folder}")
       Path.mkdir(self._save_folder, exist_ok=True, parents=True)
 
-  def _get_data(self) -> bool:
-    """Method similar to the one of the parent class, except it also ensures
-    that at most only one out of ``save_period`` images is being saved.
+  def _has_new_image(self) -> bool:
+    """Waits for a frame to save, not for the skipped frames."""
 
-    Returns:
-      :obj:`True` in case a frame was acquired and needs to be handled, or
-      :obj:`False` if no frame was grabbed and nothing should be done.
-    """
-
-    # Acquiring the Lock to avoid conflicts with other CameraProcesses
-    with self._lock:
-
-      # In case there's no frame grabbed yet
-      if 'ImageUniqueID' not in self._data_dict:
-        return False
-
-      # In case the frame in buffer was already handled during a previous loop,
-      if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID']:
-        return False
-
-     # In case it's too early to save the new frame
-      if (self.metadata['ImageUniqueID'] is not None and
-          self._data_dict['ImageUniqueID'] - self.metadata['ImageUniqueID']
-          < self._save_period):
-        return False
-
-      # Copying the metadata
-      self.metadata = self._data_dict.copy()
-
-      self.log(logging.DEBUG, f"Got new image to process with id "
-                              f"{self.metadata['ImageUniqueID']}")
-
-      # Copying the frame
-      np.copyto(self.img,
-                np.frombuffer(self._img_array.get_obj(),
-                              dtype=self._dtype).reshape(self._shape))
-
-    return True
+    assert self._data_dict is not None
+    image_id = self._data_dict.get('ImageUniqueID')
+    previous_id = self.metadata['ImageUniqueID']
+    return (image_id is not None and
+            (previous_id is None or
+             image_id - previous_id >= self._save_period))
 
   def loop(self) -> None:
     """This method grabs the latest frame, writes its metadata to a `.csv` file

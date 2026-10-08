@@ -88,7 +88,7 @@ class TestLifecycle(PyQtConfigTestCase):
     self.assertTrue(config._window_closed)
     self.assertTrue(config._img_in._closed)
     self.assertTrue(config._img_out._closed)
-    self.assertFalse(config._histogram_process.is_alive())
+    self.assertTrue(config._lifecycle._process_closed)
 
   def test_histogram_constructor_failure_closes_created_queues(self) -> None:
     """Qt cleans up partially created resources before lifecycle setup."""
@@ -167,7 +167,7 @@ class TestLifecycle(PyQtConfigTestCase):
     self.assertTrue(config._window_closed)
     self.assertTrue(config._img_in._closed)
     self.assertTrue(config._img_out._closed)
-    self.assertFalse(config._histogram_process.is_alive())
+    self.assertTrue(config._lifecycle._process_closed)
 
   def test_event_keyboard_interrupts_close_silently(self) -> None:
     """Early signal, mouse/resize, and close interrupts take the same path."""

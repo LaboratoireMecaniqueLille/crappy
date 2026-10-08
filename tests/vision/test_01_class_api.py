@@ -6,6 +6,7 @@ import logging
 import numpy as np
 
 import crappy
+from crappy.blocks.meta_block.block import VisionBlockType
 import crappy.blocks.vision.block as block_module
 from crappy.blocks.vision import VisionBlock
 from crappy.blocks.vision.block import ConfigRequest, ImgData, ImgLinkData
@@ -24,6 +25,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
     block = StubVisionBlock()
 
     self.assertIs(crappy.VisionBlock, VisionBlock)
+    self.assertIsInstance(block, VisionBlockType)
     self.assertTrue(block.is_vision_block)
     self.assertEqual(block.freq, 200)
     self.assertFalse(block.display_freq)
@@ -116,14 +118,14 @@ class TestVisionBlockClassAPI(VisionTestBase):
 
     block = StubVisionBlock()
 
-    with patch.object(block_module, 'time', return_value=12.5):
+    with patch.object(block_module, 'monotonic', return_value=12.5):
       block.begin()
     self.assertEqual(block._last_fps_img, 12.5)
 
     block.log = Mock()
     block._last_fps_img = 10.0
     block._fps_count = 2
-    with patch.object(block_module, 'time', return_value=13.0):
+    with patch.object(block_module, 'monotonic', return_value=13.0):
       block._print_freq(img_handled=True)
 
     block.log.assert_called_once_with(
@@ -132,7 +134,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
     self.assertEqual(block._fps_count, 0)
 
     block.log.reset_mock()
-    with patch.object(block_module, 'time', return_value=14.0):
+    with patch.object(block_module, 'monotonic', return_value=14.0):
       block._print_freq(img_handled=False)
     block.log.assert_not_called()
     self.assertEqual(block._fps_count, 0)

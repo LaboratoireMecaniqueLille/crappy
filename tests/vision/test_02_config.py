@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from multiprocessing import Barrier, Event, Pipe
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 from crappy._global import PrepareError
 from crappy.blocks.vision.block import ConfigRequest
@@ -173,6 +173,64 @@ class TestVisionBlockConfiguration(VisionTestBase):
       block.recv_configs()
 
     connection.close.assert_called_once_with()
+
+  def test_finish_closes_unanswered_config_pipes(self) -> None:
+    """Preparation can fail before any configuration response is exchanged."""
+
+    block = StubVisionBlock()
+    incoming, outgoing = Pipe(duplex=False)
+    self.track_connection(incoming)
+    self.track_connection(outgoing)
+    block.add_config_request_in(self.make_request(connection=outgoing))
+    block.add_config_request_out(self.make_request(connection=incoming))
+
+    block.finish()
+    block.finish()
+
+    self.assertTrue(incoming.closed)
+    self.assertTrue(outgoing.closed)
+
+  def test_finish_continues_after_pipe_close_failure(self) -> None:
+    """All remaining endpoints are closed before reporting a failed close."""
+
+    block = StubVisionBlock()
+    operations = Mock()
+    incoming, outgoing = Mock(), Mock()
+    operations.attach_mock(incoming, 'incoming')
+    operations.attach_mock(outgoing, 'outgoing')
+    error = RuntimeError('close failed')
+    outgoing.close.side_effect = error
+    block.add_config_request_in(self.make_request(connection=incoming))
+    block.add_config_request_out(self.make_request(connection=outgoing))
+
+    with self.assertRaises(RuntimeError) as caught:
+      block.finish()
+    self.assertIs(caught.exception, error)
+    self.assertIn('configuration Pipe', error.__notes__[0])
+    self.assertEqual(operations.mock_calls,
+                     [call.incoming.close(), call.outgoing.close()])
+    outgoing.close.side_effect = None
+    block.finish()
+    block.finish()
+    incoming.close.assert_called_once_with()
+    self.assertEqual(outgoing.close.call_count, 2)
+
+  def test_finish_does_not_reclose_exchanged_config_pipes(self) -> None:
+    """Pipes already closed by send/receive are not closed twice."""
+
+    block = StubVisionBlock()
+    self.set_prepare_sync(block)
+    incoming, outgoing = Mock(), Mock()
+    outgoing.poll.return_value = True
+    outgoing.recv.return_value = ('configured',)
+    sent = self.make_request(connection=incoming)
+    block.add_config_request_in(sent)
+    block.add_config_request_out(self.make_request(connection=outgoing))
+    block.send_config(sent, ('configured',))
+    block.recv_configs()
+    block.finish()
+    incoming.close.assert_called_once_with()
+    outgoing.close.assert_called_once_with()
 
 
 if __name__ == '__main__':

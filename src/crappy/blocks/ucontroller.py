@@ -89,6 +89,7 @@ class UController(Block):
     """
 
     self._bus = None
+    self._stop_sent: bool = False
 
     super().__init__()
     self.debug = debug
@@ -195,6 +196,7 @@ class UController(Block):
                          self._baudrate,
                          timeout=0,
                          write_timeout=0)
+      self._stop_sent = False
     except SerialException:
       raise IOError(f"Couldn't connect to the device on the port {self._port}")
 
@@ -373,17 +375,42 @@ class UController(Block):
                       f"failed, it may have been disconnected.")
 
   def finish(self) -> None:
-    """Closes the serial port, and sends a `'stop!'` message to the device."""
+    """Attempts both the stop command and serial-port cleanup."""
 
+    failures: list[Exception | KeyboardInterrupt] = list()
+
+    # First make sure to send the stop message
     if self._bus is not None:
-      # Sending a 'stop!' message to the device
-      self.log(logging.INFO, f"Sending stop command on port {self._port}")
-      try:
-        msg = b'stop!\r\n'
-        self._bus.write(msg)
-        self.log(logging.DEBUG, f"Sent {msg} on the port {self._port}")
-      except SerialException:
-        pass
+      if not self._stop_sent:
+        try:
+          self._bus.write(b"stop!\r\n")
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("UController cleanup step: send stop command")
+          failures.append(error)
+        else:
+          self._stop_sent = True
 
-      self.log(logging.INFO, "Closing the serial connection")
-      self._bus.close()
+      # Then close the serial bus
+      try:
+        self._bus.close()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("UController cleanup step: close serial connection")
+        failures.append(error)
+      else:
+        self._bus = None
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other UController cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("UController cleanup failures", failures)

@@ -54,6 +54,6 @@ class TestHistogram(PyQtConfigTestCase):
     self.assertTrue(complete, 'Timed out waiting for the Qt image and histogram')
     self.assertEqual(config.shape, (100, 100))
     self.assertIsNotNone(config._hist_canvas.pixmap())
-    self.assertFalse(config._histogram_process.is_alive())
+    self.assertTrue(config._lifecycle._process_closed)
     self.assertTrue(config._img_in._closed)
     self.assertTrue(config._img_out._closed)

@@ -5,7 +5,7 @@
 import logging
 from collections.abc import Callable
 from multiprocessing import Queue, current_process
-from time import monotonic, sleep, time
+from time import monotonic, sleep
 import unittest
 from unittest.mock import Mock, patch
 
@@ -115,7 +115,7 @@ class TkinterConfigTestCase(unittest.TestCase):
     histogram_patcher.start()
     self.addCleanup(histogram_patcher.stop)
     self._config._n_loops = 0
-    self._config._last_upd_t = time()
+    self._config._last_upd_t = monotonic()
 
   def _close_configuration(self) -> None:
     """Stops the GUI and its child process, including after a test failure."""
@@ -123,10 +123,9 @@ class TkinterConfigTestCase(unittest.TestCase):
     if self._config is None:
       return
 
-    process = self._config._histogram_process
     self._config.stop()
 
-    self.assertFalse(process.is_alive())
+    self.assertTrue(self._config._lifecycle._process_closed)
 
   def _close_log_queue(self) -> None:
     """Release the logging queue without waiting for its feeder thread."""

@@ -499,15 +499,18 @@ class TestCameraSource(VisionTestBase):
         with self.assertRaises(ValueError):
           source.loop()
 
-  def test_finish_closes_only_physical_camera_then_shared_memory(self) -> None:
+  def test_finish_closes_shared_memory_then_only_physical_camera(self) -> None:
     """Checks physical and generator Camera cleanup ownership."""
 
     physical = self.make_source()
-    physical._camera = RecordingVisionCamera()
+    camera = physical._camera = RecordingVisionCamera()
     with patch.object(camera_module.VisionBlock, 'finish') as inherited:
       physical.finish()
-    self.assertEqual(physical._camera.close_calls, 1)
+    self.assertEqual(camera.close_calls, 1)
+    self.assertIsNone(physical._camera)
     inherited.assert_called_once_with()
+    physical.finish()
+    self.assertEqual(camera.close_calls, 1)
 
     generator = CameraSource(camera='',
                              config=False,
@@ -515,11 +518,66 @@ class TestCameraSource(VisionTestBase):
                              img_shape=(2, 2),
                              img_dtype='float64')
     self.track_block(generator)
-    generator._camera = Mock()
+    dummy = generator._camera = Mock()
     with patch.object(camera_module.VisionBlock, 'finish') as inherited:
       generator.finish()
-    generator._camera.close.assert_not_called()
+    dummy.close.assert_not_called()
+    self.assertIsNone(generator._camera)
     inherited.assert_called_once_with()
+
+  def test_finish_closes_camera_even_after_failed_open(self) -> None:
+    """The driver owns partial open internals; its close is still called."""
+
+    source = self.make_source()
+    self.add_output(source)
+    with patch.object(RecordingVisionCamera, 'open',
+                      side_effect=RuntimeError('open failed')):
+      with self.assertRaises(RuntimeError):
+        source.prepare()
+    camera = source._camera
+    self.assertFalse(source._camera_opened)
+    source.finish()
+    self.assertEqual(camera.close_calls, 1)
+    self.assertIsNone(source._camera)
+
+  def test_finish_reports_memory_and_camera_failures_together(self) -> None:
+    """Inherited cleanup failure cannot prevent hardware close."""
+
+    source = self.make_source()
+    camera = source._camera = Mock()
+    errors = [RuntimeError('memory cleanup'), RuntimeError('camera close')]
+    camera.close.side_effect = errors[1]
+    with patch.object(camera_module.VisionBlock, 'finish',
+                      side_effect=errors[0]) as inherited:
+      with self.assertRaises(ExceptionGroup) as caught:
+        source.finish()
+    self.assertEqual(caught.exception.exceptions, tuple(errors))
+    inherited.assert_called_once_with()
+    camera.close.assert_called_once_with()
+    self.assertIs(source._camera, camera)
+    camera.close.side_effect = None
+    source.finish()
+    source.finish()
+    self.assertEqual(camera.close.call_count, 2)
+
+  def test_finish_preserves_inherited_interrupt_cause(self) -> None:
+    """Nested Block cleanup must not overwrite the earlier failure group."""
+
+    source = self.make_source()
+    camera = source._camera = Mock()
+    interrupt = KeyboardInterrupt('memory interrupt')
+    earlier = ExceptionGroup('memory failures', [ValueError('unlink')])
+    interrupt.__cause__ = earlier
+    error = RuntimeError('camera close')
+    camera.close.side_effect = error
+    with patch.object(camera_module.VisionBlock, 'finish',
+                      side_effect=interrupt):
+      with self.assertRaises(KeyboardInterrupt) as caught:
+        source.finish()
+    self.assertIs(caught.exception, interrupt)
+    self.assertEqual(interrupt.__cause__.exceptions, (earlier, error))
+    camera.close.side_effect = None
+    source.finish()
 
   def test_configure_runs_window_and_updates_output_format(self) -> None:
     """Checks configurator construction, lifecycle, result, shape, and dtype."""

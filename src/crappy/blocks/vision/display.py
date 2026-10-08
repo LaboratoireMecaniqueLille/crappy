@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from typing import Literal
-from time import time
+from time import monotonic
 import numpy as np
 import logging
 from math import ceil, log2
@@ -131,6 +131,7 @@ class ImageDisplayer(VisionBlock):
     # Setting other attributes
     self._ax = None
     self._fig = None
+    self._window_opened: bool = False
     self._last_upd: float = float('-inf')
     self._overlay_buffer: dict[str, Sequence[Overlay | None]] = dict()
     self._last_warn: float = -float('inf')
@@ -194,37 +195,34 @@ class ImageDisplayer(VisionBlock):
         try:
           overlays = tuple(data['overlay'])
         except (Exception,):
-          if time() - self._last_warn > 2:
+          if monotonic() - self._last_warn > 2:
             self.log(logging.WARNING, f"Ignoring invalid overlay data received"
                                       f" from Link {link.name}: expected an "
                                       f"iterable of Overlay objects")
-            self._last_warn = time()
+            self._last_warn = monotonic()
           continue
 
         if not all(overlay is None or isinstance(overlay, Overlay)
                    for overlay in overlays):
-          if time() - self._last_warn > 2:
+          if monotonic() - self._last_warn > 2:
             self.log(logging.WARNING, f"Ignoring invalid overlay data received"
                                       f" from Link {link.name}: expected only "
                                       f"Overlay objects or None placeholders")
-            self._last_warn = time()
+            self._last_warn = monotonic()
           continue
 
         self._overlay_buffer[link.name] = overlays
 
     # Enforce framerate by skipping loops
-    if time() - self._last_upd < 1 / self._framerate:
+    if monotonic() - self._last_upd < 1 / self._framerate:
       self.log(logging.DEBUG, "Too early to loop, to achieve the desired "
                               "framerate")
       # If requested, displays the FPS of the image display
       if self.display_freq:
         self._print_freq(img_handled=False)
       return
-    # Update last received time
-    self._last_upd = time()
-
     # Nothing to do if no new image was received
-    if not (upd_links := self.receive_imgs()):
+    if not (upd_links := self.receive_imgs(timeout=0.1)):
       self.log(logging.DEBUG, "No new image received during this loop")
       # If requested, displays the FPS of the image display
       if self.display_freq:
@@ -232,6 +230,9 @@ class ImageDisplayer(VisionBlock):
       return
     # Get the ImageLink name
     upd_link, = upd_links
+
+    # Record the processing start
+    self._last_upd = monotonic()
 
     # Handles to the received data
     metadata = self.last_received[upd_link].metadata
@@ -280,14 +281,47 @@ class ImageDisplayer(VisionBlock):
   def finish(self) -> None:
     """Closes the display window and releases the input image buffer."""
 
-    # Closing the Displayer window
-    self.log(logging.INFO, "Closing the displayer window")
-    if self._backend == 'cv2':
-      self._finish_cv2()
-    elif self._backend == 'mpl':
-      self._finish_mpl()
+    failures: list[Exception | KeyboardInterrupt] = list()
 
-    super().finish()
+    # Release the parent resources first
+    try:
+      super().finish()
+    except (Exception, KeyboardInterrupt) as error:
+      error.add_note("ImageDisplayer cleanup step: release shared image "
+                     "buffers")
+      failures.append(error)
+
+    if self._window_opened:
+      self.log(logging.INFO, "Closing the displayer window")
+      try:
+        if self._backend == 'cv2':
+          self._finish_cv2()
+        elif self._backend == 'mpl':
+          self._finish_mpl()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"ImageDisplayer cleanup step: close {self._backend} "
+                       f"window {self._title!r}")
+        failures.append(error)
+      else:
+        self._window_opened = False
+        self._fig = None
+        self._ax = None
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other ImageDisplayer cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("ImageDisplayer cleanup failures", failures)
 
   def _prepare_cv2(self) -> None:
     """Creates a resizable OpenCV display window."""
@@ -297,12 +331,14 @@ class ImageDisplayer(VisionBlock):
     except AttributeError:
       flags = cv2.WINDOW_NORMAL
     cv2.namedWindow(self._title, flags)
+    self._window_opened = True
 
   def _prepare_mpl(self) -> None:
     """Enables interactive Matplotlib mode and creates a Figure."""
 
     plt.ion()
     self._fig, self._ax = plt.subplots()
+    self._window_opened = True
 
   def _update_cv2(self, img: np.ndarray) -> None:
     """Downscales an image when needed and displays it with OpenCV.

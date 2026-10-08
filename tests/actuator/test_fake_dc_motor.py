@@ -26,7 +26,7 @@ class TestFakeDCMotor(TestCase):
     """Checks that open resets the simulated motor state."""
 
     with patch.object(fake_dc_motor_module,
-                      'time',
+                      'monotonic',
                       side_effect=[1.0, 2.0]):
       motor = FakeDCMotor(initial_speed=12,
                           initial_pos=3,
@@ -51,7 +51,7 @@ class TestFakeDCMotor(TestCase):
     motor._volt = 0
     motor._t = 0
 
-    with patch.object(fake_dc_motor_module, 'time', return_value=1):
+    with patch.object(fake_dc_motor_module, 'monotonic', return_value=1):
       motor.set_speed(5)
 
     self.assertAlmostEqual(motor._rpm, 60)
@@ -68,7 +68,7 @@ class TestFakeDCMotor(TestCase):
     motor._volt = 3
     motor._t = 0
 
-    with patch.object(fake_dc_motor_module, 'time', return_value=2):
+    with patch.object(fake_dc_motor_module, 'monotonic', return_value=2):
       speed = motor.get_speed()
 
     self.assertAlmostEqual(speed, 29)
@@ -85,7 +85,7 @@ class TestFakeDCMotor(TestCase):
     motor._volt = 0
     motor._t = 0
 
-    with patch.object(fake_dc_motor_module, 'time', return_value=1):
+    with patch.object(fake_dc_motor_module, 'monotonic', return_value=1):
       position = motor.get_position()
 
     self.assertAlmostEqual(position, 11)
@@ -99,7 +99,7 @@ class TestFakeDCMotor(TestCase):
     motor._volt = 0
     motor._t = 0
 
-    with patch.object(fake_dc_motor_module, 'time', return_value=1):
+    with patch.object(fake_dc_motor_module, 'monotonic', return_value=1):
       motor.get_position()
 
     self.assertAlmostEqual(motor._pos, 2)
@@ -114,7 +114,7 @@ class TestFakeDCMotor(TestCase):
     motor._volt = 7
     motor._t = 0
 
-    with patch.object(fake_dc_motor_module, 'time', return_value=0):
+    with patch.object(fake_dc_motor_module, 'monotonic', return_value=0):
       motor.stop()
 
     self.assertEqual(motor._volt, 0)

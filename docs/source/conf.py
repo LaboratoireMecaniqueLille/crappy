@@ -52,6 +52,7 @@ nitpicky = True
 nitpick_ignore = {
     # Python's inventory deliberately does not document these implementations
     ("py:class", "multiprocessing.synchronize.RLock"),
+    ("py:class", "multiprocessing.synchronize.Condition"),
     ("py:class", "multiprocessing.sharedctypes.Synchronized"),
     ("py:class", "multiprocessing.sharedctypes.SynchronizedArray"),
     ("py:class", "multiprocessing.managers.DictProxy"),

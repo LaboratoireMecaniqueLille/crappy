@@ -2,10 +2,14 @@
 
 from time import time
 from typing import Any, Literal
+from numbers import Real
+from math import isfinite
 import logging
 
 from .meta_block import Block
-from ..actuator import actuator_dict, Actuator
+from ..actuator import actuator_dict, Actuator, moved_to_collection
+from .._collection import (CollectionEntry, collection_registry,
+                           load_collection_class)
 
 
 class AutoDriveVideoExtenso(Block):
@@ -57,10 +61,11 @@ class AutoDriveVideoExtenso(Block):
         inversion depends on whether a positive speed will bring the spots
         closer or farther.
       pixel_range: The size of the image (in pixels) along the chosen axis.
+        Must be a strictly positive integer.
 
         .. versionchanged:: 1.5.10 renamed from *range* to *pixel_range*
       max_speed: The absolute maximum speed value that can be sent to the
-        Actuator.
+        Actuator. Must be strictly positive and finite.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -78,6 +83,8 @@ class AutoDriveVideoExtenso(Block):
     """
 
     self._device: Actuator | None = None
+    self._device_opened: bool = False
+    self._device_stopped: bool = False
 
     super().__init__()
     self.labels = ['t(s)', 'diff(pix)']
@@ -85,29 +92,80 @@ class AutoDriveVideoExtenso(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    # Checking that the 'type' key is given
+    match actuator:
+      case dict():
+        pass
+      case _:
+        raise TypeError("actuator must be a dictionary")
+    if not all(isinstance(key, str) for key in actuator):
+      raise TypeError("All actuator dictionary keys must be strings")
     if 'type' not in actuator:
       raise ValueError("The 'type' key must be provided for instantiating the "
                        "Actuator !")
-    self._actuator = actuator
+    match actuator['type']:
+      case str(name) if name.strip():
+        self._actuator_name: str = name
+      case str():
+        raise ValueError("The actuator type must be a non-empty string")
+      case _:
+        raise TypeError("The actuator type must be a non-empty string")
 
-    # Checking that the direction is valid
-    if direction not in ('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+'):
-      raise ValueError("Direction should be in "
-                       "('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+')")
+    self._collection_entry: CollectionEntry | None = None
+    entry = collection_registry.get('Actuator', self._actuator_name)
+    if self._actuator_name not in actuator_dict:
+      if entry is not None:
+        load_collection_class(entry, actuator_dict)
+        self._collection_entry = entry
+      elif self._actuator_name in moved_to_collection:
+        raise NotImplementedError(f"The Actuator {self._actuator_name} was "
+                                  f"moved to crappy.collection. To use it, "
+                                  f"add import crappy.collection at the "
+                                  f"beginning of your script")
+      else:
+        raise ValueError(f"Unknown actuator name: {self._actuator_name}!")
+    elif (entry is not None and
+          actuator_dict[self._actuator_name].__module__ == entry.module):
+      self._collection_entry = entry
 
-    # Checking that the pixel_range is valid
-    if pixel_range <= 0:
-      raise ValueError("Pixel range should be greater than 0")
+    self._actuator_kwargs: dict[str, Any] = {key: value for key, value
+                                             in actuator.items()
+                                             if key != 'type'}
 
-    # Checking that the max_speed is valid
-    if max_speed <= 0:
-      raise ValueError("max_speed should be greater than 0")
+    match direction:
+      case 'X-' | 'X+' | 'Y-' | 'Y+' | 'x-' | 'x+' | 'y-' | 'y+':
+        self._direction: str = direction
+      case str():
+        raise ValueError("Direction should be in "
+                         "('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+')")
+      case _:
+        raise TypeError("direction must be a string")
 
-    self._gain = -gain if '-' in direction else gain
-    self._direction = direction
-    self._pixel_range = pixel_range
-    self._max_speed = max_speed
+    match gain:
+      case Real() if isfinite(gain):
+        self._gain: float = float(-gain if '-' in direction else gain)
+      case Real():
+        raise ValueError("gain must be a finite number")
+      case _:
+        raise TypeError("gain must be a finite number")
+
+    match pixel_range:
+      case bool():
+        raise TypeError("pixel_range must be a strictly positive integer")
+      case int() if pixel_range > 0:
+        self._pixel_range: int = pixel_range
+      case int():
+        raise ValueError("pixel_range must be a strictly positive integer")
+      case _:
+        raise TypeError("pixel_range must be a strictly positive integer")
+
+    match max_speed:
+      case Real() if max_speed > 0 and isfinite(max_speed):
+        self._max_speed: float = float(max_speed)
+      case Real():
+        raise ValueError("max_speed must be a strictly positive, finite "
+                         "number")
+      case _:
+        raise TypeError("max_speed must be a strictly positive, finite number")
 
   def prepare(self) -> None:
     """Checks the consistency of the linking and initializes the 
@@ -121,12 +179,21 @@ class AutoDriveVideoExtenso(Block):
       raise IOError("The AutoDriveVideoExtenso Block can only have one input "
                     "Link !")
 
-    # Opening and initializing the actuator to drive
-    actuator_name = self._actuator.pop('type')
-    self._device = actuator_dict[actuator_name](**self._actuator)
+    # Under the spawn multiprocessing start method, it is necessary to re-load
+    # the modules from crappy.collection
+    if self._collection_entry is not None:
+      load_collection_class(self._collection_entry, actuator_dict)
+
+    # Instantiate the Actuator to drive
+    self._device = actuator_dict[self._actuator_name](**self._actuator_kwargs)
+    self._device_opened = False
+    self._device_stopped = False
+
+    assert self._device is not None
     self.log(logging.INFO, f"Opening the {type(self._device).__name__} "
                            f"actuator")
     self._device.open()
+    self._device_opened = True
     self._device.set_speed(0)
 
   def loop(self) -> None:
@@ -164,10 +231,44 @@ class AutoDriveVideoExtenso(Block):
     """Stops the :class:`~crappy.actuator.meta_actuator.actuator.Actuator` and
     closes it."""
 
-    if self._device is not None:
-      self.log(logging.INFO, f"Stopping the {type(self._device).__name__} "
-                             f"actuator")
-      self._device.stop()
-      self.log(logging.INFO, f"Closing the {type(self._device).__name__} "
-                             f"actuator")
+    if self._device is None:
+      return
+
+    name = type(self._device).__name__
+    failures: list[Exception | KeyboardInterrupt] = list()
+
+    if self._device_opened and not self._device_stopped:
+      self.log(logging.INFO, f"Stopping the {name} actuator")
+      try:
+        self._device.stop()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"AutoDriveVideoExtenso cleanup step: stop {name}")
+        failures.append(error)
+      else:
+        self._device_stopped = True
+
+    self.log(logging.INFO, f"Closing the {name} actuator")
+    try:
       self._device.close()
+    except (Exception, KeyboardInterrupt) as error:
+      error.add_note(f"AutoDriveVideoExtenso cleanup step: close {name}")
+      failures.append(error)
+    else:
+      self._device = None
+      self._device_opened = False
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other AutoDrive cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("AutoDrive cleanup failures", failures)

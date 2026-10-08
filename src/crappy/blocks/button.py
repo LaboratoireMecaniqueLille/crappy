@@ -91,6 +91,11 @@ class Button(Block):
          "previous behavior.\nInstall PyQt6 to use the new Button "
          "interface.\n", UserWarning, stacklevel=2)
 
+    self._root: tk.Tk | None = None
+    self._qt_app: QtWidgets.QApplication | None = None
+    self._qt_window: QtWidgets.QWidget | None = None
+    self._qt_events_processed: bool = False
+
     super().__init__()
     self.freq = freq
     self.display_freq = display_freq
@@ -141,14 +146,11 @@ class Button(Block):
     self._step: int = 0
 
     # Attributes related to tkinter
-    self._root: tk.Tk | None = None
     self._text: tk.StringVar | None = None
     self._label: tk.Label | None = None
     self._button: tk.Button | None = None
 
     # Attributes related to PyQt6
-    self._qt_app: QtWidgets.QApplication | None = None
-    self._qt_window: QtWidgets.QWidget | None = None
     self._qt_label: QtWidgets.QLabel | None = None
     self._qt_button: QtWidgets.QPushButton | None = None
     self._callback_error: BaseException | None = None
@@ -202,20 +204,59 @@ class Button(Block):
     An existing Qt application is left available for its other windows.
     """
 
+    failures: list[Exception | KeyboardInterrupt] = list()
     self.log(logging.INFO, "Closing the GUI")
-    try:
-      if getattr(self, '_root', None) is not None:
-        assert self._root is not None
-        self._root.destroy()
-    except tk.TclError:
-      pass
 
-    if getattr(self, '_qt_window', None) is not None:
-      assert self._qt_window is not None
-      self._qt_window.close()
-    if getattr(self, '_qt_app', None) is not None:
-      assert self._qt_app is not None
-      self._qt_app.processEvents()
+    # Destroy the Tk window
+    if self._root is not None:
+      try:
+        self._root.destroy()
+      except tk.TclError:
+        # Tk may already have destroyed the window
+        self._root = None
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Button cleanup step: destroy Tk window")
+        failures.append(error)
+      else:
+        self._root = None
+
+    # Close the Qt window
+    if self._qt_window is not None:
+      self._qt_events_processed = False
+      try:
+        if not self._qt_window.close():
+          raise RuntimeError("The Button Qt window refused to close")
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Button cleanup step: close Qt window")
+        failures.append(error)
+      else:
+        self._qt_window = None
+
+    # Process the last Qt events
+    if self._qt_app is not None and not self._qt_events_processed:
+      try:
+        self._qt_app.processEvents()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Button cleanup step: process Qt close events")
+        failures.append(error)
+      else:
+        self._qt_events_processed = True
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other Button cleanup failures",
+                                              others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("Button cleanup failures", failures)
 
   def _prepare_tkinter(self) -> None:
     """Creates the tkinter window with a counter above the step button."""

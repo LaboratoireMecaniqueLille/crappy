@@ -113,6 +113,7 @@ class FakeProcess:
     self.terminated = False
     self.killed = False
     self.wait_calls = list()
+    self.stdout = None
 
   def terminate(self) -> None:
     """Records terminate calls."""
@@ -131,6 +132,7 @@ class FakeProcess:
     """Records kill calls."""
 
     self.killed = True
+    self.wait_error = None
 
 
 class FakeReader:
@@ -485,6 +487,8 @@ class TestClientServer(BlockTestBase):
     block._client = client
     block._proc = proc
     block._reader = reader
+    block._reader_started = True
+    block._client_loop_started = True
 
     block.finish()
 
@@ -495,6 +499,9 @@ class TestClientServer(BlockTestBase):
     self.assertFalse(proc.killed)
     self.assertTrue(block._stop_mosquitto)
     self.assertEqual(reader.join_calls, [0.2])
+    block.finish()
+    self.assertEqual(client.loop_stop_calls, 1)
+    self.assertEqual(client.disconnect_calls, 1)
 
   def test_finish_kills_broker_after_timeout(self) -> None:
     """Checks that an unresponsive managed broker is killed."""
@@ -507,7 +514,7 @@ class TestClientServer(BlockTestBase):
     block.finish()
 
     self.assertTrue(proc.terminated)
-    self.assertEqual(proc.wait_calls, [15])
+    self.assertEqual(proc.wait_calls, [15, 1])
     self.assertTrue(proc.killed)
 
   def test_launch_mosquitto_starts_expected_subprocess(self) -> None:

@@ -10,7 +10,8 @@ from collections.abc import Iterable, Sequence
 import logging
 import logging.handlers
 from select import select
-from time import time, sleep
+from time import monotonic
+from math import isfinite
 from platform import system
 from abc import ABC, abstractmethod
 
@@ -63,6 +64,7 @@ class CameraProcess(Process, ABC):
     self._img_array: sharedctypes.SynchronizedArray | None = None
     self._data_dict: managers.DictProxy | None = None
     self._lock: synchronize.RLock | None = None
+    self._condition: synchronize.Condition | None = None
     self._cam_barrier: synchronize.Barrier | None = None
     self._stop_event: synchronize.Event | None = None
     self._shape: tuple[int, int] | tuple[int, int, int] | None = None
@@ -75,15 +77,16 @@ class CameraProcess(Process, ABC):
     self._img0_set = False
 
     # Other attribute for internal use
-    self._last_warn = time()
+    self._last_warn = monotonic()
     self.fps_count = 0
     self._display_freq: bool | None = None
-    self._last_fps = time()
+    self._last_fps = monotonic()
 
   def set_shared(self,
                  array: sharedctypes.SynchronizedArray,
                  data_dict: managers.DictProxy,
                  lock: synchronize.RLock,
+                 condition: synchronize.Condition,
                  barrier: synchronize.Barrier,
                  event: synchronize.Event,
                  shape: tuple[int, int] | tuple[int, int, int],
@@ -105,6 +108,8 @@ class CameraProcess(Process, ABC):
       lock: A :obj:`~multiprocessing.RLock` ensuring that the CameraProcess and
         the Camera Block do not try to access the shared array at the same
         time.
+      condition: A :obj:`~multiprocessing.Condition` using ``lock``, notified
+        after an image is available or shutdown is requested.
       barrier: A :obj:`~multiprocessing.Barrier` ensuring that all the
         CameraProcesses wait for a start signal from the Camera Block before
         starting to run.
@@ -131,9 +136,13 @@ class CameraProcess(Process, ABC):
         displayed while running.
     """
 
+    if condition._lock is not lock:
+      raise ValueError("The image Condition must use the same image lock")
+
     self._img_array = array
     self._data_dict = data_dict
     self._lock = lock
+    self._condition = condition
     self._cam_barrier = barrier
     self._stop_event = event
     self._shape = shape
@@ -192,7 +201,7 @@ class CameraProcess(Process, ABC):
       self._cam_barrier.wait()
       self.log(logging.INFO, "All Camera processes ready now")
 
-      self._last_fps = time()
+      self._last_fps = monotonic()
 
       # Looping forever until told to stop or an exception is raised
       if self._stop_event is None:
@@ -200,16 +209,14 @@ class CameraProcess(Process, ABC):
                            "exist")
       while not self._stop_event.is_set():
         # Only looping if a new image is available
-        if self._get_data():
+        if self._get_data(timeout=0.1):
           self.log(logging.DEBUG, "Running the loop method")
           self.loop()
           self.fps_count += 1
-        else:
-          sleep(0.001)
 
         # Displaying the looping frequency is required
         if self._display_freq:
-          t = time()
+          t = monotonic()
           if t - self._last_fps > 2:
             self.log(logging.INFO, f"Images processed /s: "
                                    f"{self.fps_count / (t - self._last_fps)}")
@@ -270,6 +277,20 @@ class CameraProcess(Process, ABC):
           self.log(logging.ERROR, "Setting the stop event to stop the other "
                                   "Camera processes")
           self._stop_event.set()
+      finally:
+        # This process owns its copy, independently of the parent's endpoint
+        if self._to_draw_conn is not None:
+          try:
+            self._to_draw_conn.close()
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note("CameraProcess cleanup step: close overlay Pipe")
+            if self._logger is not None:
+              self._logger.exception("Could not close the overlay Pipe",
+                                     exc_info=error)
+            if self._stop_event is not None:
+              self._stop_event.set()
+          else:
+            self._to_draw_conn = None
 
   def init(self) -> None:
     """This method should perform any action required for initializing the
@@ -370,9 +391,9 @@ class CameraProcess(Process, ABC):
       if select([], [self._to_draw_conn], [], 0)[1]:
         # Can only check on Linux if a pipe is full
         self._to_draw_conn.send(to_draw)
-      elif time() - self._last_warn > 1:
+      elif monotonic() - self._last_warn > 1:
         # Warning in case the pipe is full
-        self._last_warn = time()
+        self._last_warn = monotonic()
         self.log(logging.WARNING, f"Cannot send the overlay to draw to the "
                                   f"Displayer process, the Pipe is full !")
     else:
@@ -409,33 +430,51 @@ get_config`. The received values should normally be stored for use by
       return
     self._logger.log(level, msg)
 
-  def _get_data(self) -> bool:
+  def _get_data(self, timeout: float = 0.0) -> bool:
     """This method allows to grab the latest available frame.
 
-    It first acquired the :obj:`~multiprocessing.RLock` protecting the shared
+    It first acquires the :obj:`~multiprocessing.RLock` protecting the shared
     :obj:`~multiprocessing.Array` containing the image, then copies the image
     locally and releases the Lock. It also copies the metadata associated to
     the image.
+
+    Args:
+      timeout: Finite, non-negative notification timeout in seconds. A positive
+        value waits for a new frame, stop request, or broken preparation
+        barrier.
 
     Returns:
       :obj:`True` in case a frame was acquired and needs to be handled, or
       :obj:`False` if no frame was grabbed and nothing should be done.
     """
 
-    # Acquiring the Lock to avoid conflicts with other CameraProcesses
+    if not isinstance(timeout, (int, float)):
+      raise TypeError("The image receive timeout must be a number")
+    if not isfinite(timeout) or timeout < 0:
+      raise ValueError("The image receive timeout must be finite and "
+                       "non-negative")
+    if self._data_dict is None:
+      raise RuntimeError("The shared metadata dictionary wasn't initialized")
     if self._lock is None:
       raise RuntimeError("Trying to acquire the Lock but is doesn't exist")
-    with self._lock:
+    if self._condition is None:
+      raise RuntimeError("The image notification Condition wasn't initialized")
+    if self._stop_event is None:
+      raise RuntimeError("The camera stop Event wasn't initialized")
 
-      if self._data_dict is None:
-        raise RuntimeError("The shared metadata dictionary wasn't initialized")
-
-      # In case there's no frame grabbed yet
-      if 'ImageUniqueID' not in self._data_dict:
+    # This Condition uses the reader's existing image lock
+    with self._condition:
+      if timeout > 0:
+        if not self._condition.wait_for(self._image_available,
+                                        timeout=timeout):
+          return False
+      if self._stop_event.is_set():
         return False
+      if self._cam_barrier is not None and self._cam_barrier.broken:
+        raise BrokenBarrierError
 
-      # In case the frame in buffer was already handled during a previous loop
-      if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID']:
+      # A successful wait already checked readiness
+      if timeout == 0 and not self._has_new_image():
         return False
 
       # Copying the metadata
@@ -456,6 +495,20 @@ get_config`. The received values should normally be stored for use by
                               dtype=self._dtype).reshape(self._shape))
 
     return True
+
+  def _image_available(self) -> bool:
+    """Predicate watched by the image Condition."""
+
+    return (self._stop_event.is_set() or
+            (self._cam_barrier is not None and self._cam_barrier.broken) or
+            self._has_new_image())
+
+  def _has_new_image(self) -> bool:
+    """Tests image availability under the image Condition's lock."""
+
+    assert self._data_dict is not None
+    image_id = self._data_dict.get('ImageUniqueID')
+    return image_id is not None and image_id != self.metadata['ImageUniqueID']
 
   def _set_logger(self) -> None:
     """Initializes the :obj:`~logging.Logger` for the CameraProcess.

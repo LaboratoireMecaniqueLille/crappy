@@ -20,6 +20,11 @@ class TrackingActuator:
     """Records constructor kwargs and initializes call state."""
 
     self.kwargs = dict(kwargs)
+    if kwargs.get('constructor_error') is not None:
+      raise kwargs['constructor_error']
+    self.open_error = kwargs.get('open_error')
+    self.stop_error = kwargs.get('stop_error')
+    self.close_error = kwargs.get('close_error')
     self.speed_commands = list()
     self.position_commands = list()
     self.opened = False
@@ -40,6 +45,9 @@ class TrackingActuator:
   def open(self) -> None:
     """Records open calls."""
 
+    self.events.append(('open', self.id))
+    if self.open_error is not None:
+      raise self.open_error
     self.opened = True
 
   def set_speed(self, speed: float) -> None:
@@ -65,14 +73,18 @@ class TrackingActuator:
   def stop(self) -> None:
     """Records stop calls."""
 
-    self.stopped = True
     self.events.append(('stop', self.id))
+    if self.stop_error is not None:
+      raise self.stop_error
+    self.stopped = True
 
   def close(self) -> None:
     """Records close calls."""
 
-    self.closed = True
     self.events.append(('close', self.id))
+    if self.close_error is not None:
+      raise self.close_error
+    self.closed = True
 
 
 class TestMachine(BlockTestBase):
@@ -173,6 +185,38 @@ class TestMachine(BlockTestBase):
     self.assertEqual(block._time_label, 'time')
     self.assertTrue(block._spam)
     self.assertIsNone(block.freq)
+    self.assertEqual(actuator['cmd_label'], 'cmd')
+    self.assertNotIn('shared', actuator)
+
+  def test_constructor_rejects_invalid_argument_types_and_values(self) -> None:
+    """Checks strict guards without inspecting driver-specific kwargs."""
+
+    cases = (
+      ([1], {}, TypeError),
+      ({'type': 'TrackingActuator'}, {}, TypeError),
+      (iter([{'type': 'TrackingActuator'}]), {}, TypeError),
+      ([{'type': 'TrackingActuator'}], {'common': []}, TypeError),
+      ([{'type': 'TrackingActuator'}], {'time_label': ' '}, ValueError),
+      ([{'type': 'TrackingActuator'}], {'time_label': 1}, TypeError),
+      ([{'type': 'TrackingActuator'}], {'spam': 1}, TypeError),
+      ([{'type': []}], {}, TypeError),
+      ([{'type': ' '}], {}, ValueError),
+      ([{'type': 'TrackingActuator', 1: 'value'}], {}, TypeError),
+      ([{'type': 'TrackingActuator', 'mode': None}], {}, TypeError),
+      ([{'type': 'TrackingActuator', 'cmd_label': ''}], {}, ValueError),
+      ([{'type': 'TrackingActuator', 'position_label': 1}], {}, TypeError),
+      ([{'type': 'TrackingActuator', 'speed_label': ' '}], {}, ValueError),
+      ([{'type': 'TrackingActuator', 'speed_cmd_label': []}], {}, TypeError),
+      ([{'type': 'TrackingActuator', 'speed': 'fast'}], {}, TypeError),
+      ([{'type': 'TrackingActuator', 'speed': float('nan')}], {}, ValueError),
+      ([{'type': 'TrackingActuator', 'speed': float('inf')}], {}, ValueError),
+    )
+    with self._actuator_patch():
+      for actuators, kwargs, exception in cases:
+        with self.subTest(actuators=actuators, kwargs=kwargs):
+          with self.assertRaises(exception):
+            Machine(actuators, **kwargs)
+    self.assertEqual(TrackingActuator.instances, [])
 
   def test_prepare_requires_a_link_before_instantiating_actuators(
       self) -> None:
@@ -329,6 +373,8 @@ class TestMachine(BlockTestBase):
       ActuatorInstance(actuator=actuator_1),
       ActuatorInstance(actuator=actuator_2),
     ]
+    for actuator in block._actuators:
+      actuator.opened = True
 
     block.finish()
 
@@ -342,3 +388,124 @@ class TestMachine(BlockTestBase):
     self.assertTrue(actuator_1.closed)
     self.assertTrue(actuator_2.stopped)
     self.assertTrue(actuator_2.closed)
+
+    block.finish()
+    self.assertEqual(len(TrackingActuator.events), 4)
+
+  def test_finish_after_later_constructor_failure_retains_earlier_device(
+      self) -> None:
+    """Checks that incremental construction does not lose opened devices."""
+
+    error = RuntimeError('construction failed')
+    with self._actuator_patch():
+      block = Machine([
+        {'type': 'TrackingActuator'},
+        {'type': 'TrackingActuator', 'constructor_error': error},
+      ])
+      link(TestBlock(), block)
+      with self.assertRaises(RuntimeError) as caught:
+        block.prepare()
+
+    self.assertIs(caught.exception, error)
+    self.assertEqual(len(block._actuators), 1)
+    block.finish()
+    self.assertEqual(TrackingActuator.events,
+                     [('open', 0), ('stop', 0), ('close', 0)])
+
+  def test_finish_after_failed_open_closes_without_stopping_failed_device(
+      self) -> None:
+    """Checks the public driver boundary after partial preparation."""
+
+    error = RuntimeError('open failed')
+    with self._actuator_patch():
+      block = Machine([
+        {'type': 'TrackingActuator'},
+        {'type': 'TrackingActuator', 'open_error': error},
+        {'type': 'TrackingActuator'},
+      ])
+      link(TestBlock(), block)
+      with self.assertRaises(RuntimeError) as caught:
+        block.prepare()
+
+    self.assertIs(caught.exception, error)
+    self.assertEqual(len(TrackingActuator.instances), 2)
+    block.finish()
+    block.finish()
+    self.assertEqual(TrackingActuator.events,
+                     [('open', 0), ('open', 1), ('stop', 0),
+                      ('close', 0), ('close', 1)])
+
+  def test_finish_attempts_every_stop_and_close_before_grouping_failures(
+      self) -> None:
+    """Checks configured release order and per-actuator failure diagnostics."""
+
+    errors = [RuntimeError('first stop'), ValueError('second stop'),
+              OSError('first close'), RuntimeError('second close')]
+    with self._actuator_patch():
+      block = Machine([
+        {'type': 'TrackingActuator', 'cmd_label': 'first',
+         'stop_error': errors[0],
+         'close_error': errors[2]},
+        {'type': 'TrackingActuator', 'cmd_label': 'second',
+         'stop_error': errors[1],
+         'close_error': errors[3]},
+      ])
+      link(TestBlock(), block)
+      block.prepare()
+    TrackingActuator.events.clear()
+
+    with self.assertRaises(ExceptionGroup) as caught:
+      block.finish()
+
+    self.assertEqual(TrackingActuator.events,
+                     [('stop', 0), ('stop', 1), ('close', 0), ('close', 1)])
+    self.assertEqual(caught.exception.exceptions, tuple(errors))
+    for error, step, label in zip(caught.exception.exceptions,
+                                  ('stop actuator', 'stop actuator',
+                                   'close actuator', 'close actuator'),
+                                  ('first', 'second', 'first', 'second')):
+      self.assertIn(step, error.__notes__[0])
+      self.assertIn(f"cmd_label={label!r}", error.__notes__[0])
+      self.assertIsNotNone(error.__traceback__)
+
+  def test_finish_retries_only_failed_closes(self) -> None:
+    """Checks successful stop/close calls are not repeated on a retry."""
+
+    error = OSError('close failed')
+    with self._actuator_patch():
+      block = Machine([{'type': 'TrackingActuator'},
+                       {'type': 'TrackingActuator', 'close_error': error}])
+      link(TestBlock(), block)
+      block.prepare()
+    TrackingActuator.events.clear()
+
+    with self.assertRaises(OSError) as caught:
+      block.finish()
+    self.assertIs(caught.exception, error)
+    TrackingActuator.instances[1].close_error = None
+    block.finish()
+    block.finish()
+
+    self.assertEqual(TrackingActuator.events,
+                     [('stop', 0), ('stop', 1), ('close', 0),
+                      ('close', 1), ('close', 1)])
+
+  def test_finish_preserves_interrupt_and_other_failures(self) -> None:
+    """Checks an interruption is delayed until every device was cleaned up."""
+
+    interrupt = KeyboardInterrupt()
+    error = OSError('close failed')
+    with self._actuator_patch():
+      block = Machine([{'type': 'TrackingActuator', 'stop_error': interrupt},
+                       {'type': 'TrackingActuator', 'close_error': error}])
+      link(TestBlock(), block)
+      block.prepare()
+    TrackingActuator.events.clear()
+
+    with self.assertRaises(KeyboardInterrupt) as caught:
+      block.finish()
+
+    self.assertIs(caught.exception, interrupt)
+    self.assertEqual(interrupt.__cause__.exceptions, (error,))
+    self.assertEqual(TrackingActuator.events,
+                     [('stop', 0), ('stop', 1), ('close', 0), ('close', 1)])

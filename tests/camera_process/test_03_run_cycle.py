@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import crappy.blocks.camera_processes.camera_process as camera_process_module
 
@@ -52,6 +52,21 @@ class TestRunCycle(CameraProcessTestBase):
     self.assertTrue(self._process.finished.is_set())
     self.assertEqual(self._process.loops.value, 0)
 
+  def test_idle_process_stops_without_notification(self) -> None:
+    """The finite receive timeout notices an unnotified stop request."""
+
+    self._process = TestCameraProcess()
+    shared = self.make_shared()
+    self._process.start()
+    self.assertTrue(self._process.initialized.wait(timeout=3.0))
+
+    shared.stop_event.set()
+    self._process.join(timeout=3.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertTrue(self._process.finished.is_set())
+    self.assertFalse(self._process.looped.is_set())
+
   def test_handle_freq(self) -> None:
     """Tests the internal frequency bookkeeping during a run."""
 
@@ -61,7 +76,7 @@ class TestRunCycle(CameraProcessTestBase):
     self.write_image(shared, img)
 
     times = iter((0.0, 3.0))
-    with patch.object(camera_process_module, 'time', side_effect=times):
+    with patch.object(camera_process_module, 'monotonic', side_effect=times):
       self._process.run()
 
     self.assertFalse(shared.barrier.broken)
@@ -149,6 +164,40 @@ class TestRunCycle(CameraProcessTestBase):
     self.assertTrue(self._process.initialized.is_set())
     self.assertFalse(self._process.looped.is_set())
     self.assertTrue(self._process.finished.is_set())
+
+  def test_finish_failure_still_closes_overlay_endpoint(self) -> None:
+    """A failing finish hook cannot skip the process-owned Pipe copy."""
+
+    self._process = TestCameraProcess(raise_in='finish')
+    shared = self.make_shared()
+    shared.stop_event.set()
+    endpoint = Mock()
+    self._process._to_draw_conn = endpoint
+    self._process.run()
+    endpoint.close.assert_called_once_with()
+    self.assertIsNone(self._process._to_draw_conn)
+    self.assertTrue(self._process.finished.is_set())
+
+  def test_overlay_close_failure_is_reported_and_requests_stop(self) -> None:
+    """Pipe cleanup failures retain their context and notify peer processes."""
+
+    self._process = TestCameraProcess()
+    shared = self.make_shared()
+    shared.barrier.abort()
+    endpoint = Mock()
+    error = OSError('overlay close')
+    endpoint.close.side_effect = error
+    self._process._to_draw_conn = endpoint
+    logger = Mock()
+    self._process._logger = logger
+    with patch.object(self._process, '_set_logger'):
+      self._process.run()
+    endpoint.close.assert_called_once_with()
+    self.assertTrue(shared.stop_event.is_set())
+    self.assertTrue(self._process.finished.is_set())
+    self.assertIn('close overlay Pipe', error.__notes__[0])
+    logger.exception.assert_called_once_with('Could not close the overlay Pipe',
+                                            exc_info=error)
 
   def test_keyboard_interrupt(self) -> None:
     """Tests that KeyboardInterrupt exits cleanly through finish."""

@@ -6,7 +6,7 @@ from tkinter.messagebox import showerror
 from platform import system
 from math import ceil
 import numpy as np
-from time import monotonic, time
+from time import monotonic
 import logging
 import locale
 from dataclasses import dataclass
@@ -136,11 +136,13 @@ TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
       raise
 
     self._window_closed: bool = False
-    self._stop_event: synchronize.Event = Event()
-    self._processing_event: synchronize.Event = Event()
+    self._window_destroyed: bool = False
     # A constructor failure must close queues
     created_queues: list[MPQueue] = list()
+    histogram_process: HistogramProcess | None = None
     try:
+      self._stop_event: synchronize.Event = Event()
+      self._processing_event: synchronize.Event = Event()
       self._img_in: MPQueue = Queue(maxsize=0)
       created_queues.append(self._img_in)
       self._img_out: MPQueue = Queue(maxsize=0)
@@ -152,29 +154,66 @@ TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
           img_out=self._img_out,
           log_level=self._log_level,
           log_queue=self._log_queue)
+      histogram_process = self._histogram_process
       self._lifecycle: ConfigurationLifecycle = ConfigurationLifecycle(
           self._stop_event, self._histogram_process,
           (self._img_in, self._img_out), self.log)
-    except BaseException:
-      for queue in created_queues:
+    except BaseException as error:
+      failures: list[BaseException] = [error]
+
+      # Close the histogram process that wasn't started yet
+      if histogram_process is not None:
+        try:
+          histogram_process.close()
+        except (Exception, KeyboardInterrupt) as cleanup_error:
+          cleanup_error.add_note("TkinterCameraConfig rollback step: close "
+                                 "histogram")
+          failures.append(cleanup_error)
+
+      # Close the opened Queues
+      for index, queue in enumerate(created_queues):
+        # First cancel the feeder join
         try:
           queue.cancel_join_thread()
-        except Exception as cleanup_error:
-          self.log(logging.ERROR, "Could not cancel histogram queue thread "
-                                  "join",
-                   exc_info=(type(cleanup_error), cleanup_error,
-                             cleanup_error.__traceback__))
+        except (Exception, KeyboardInterrupt) as cleanup_error:
+          cleanup_error.add_note("TkinterCameraConfig rollback step: cancel "
+                                 f"Queue {index + 1} feeder join")
+          failures.append(cleanup_error)
+        # Then actually close the Queues
         try:
           queue.close()
-        except Exception as cleanup_error:
-          self.log(logging.ERROR, "Could not close histogram queue",
-                   exc_info=(type(cleanup_error), cleanup_error,
-                             cleanup_error.__traceback__))
+        except (Exception, KeyboardInterrupt) as cleanup_error:
+          cleanup_error.add_note("TkinterCameraConfig rollback step: close "
+                                 f"Queue {index + 1}")
+          failures.append(cleanup_error)
+
+      # Then properly close the opened window
       try:
         self.destroy()
       except tk.TclError:
         pass
-      raise
+      except (Exception, KeyboardInterrupt) as cleanup_error:
+        cleanup_error.add_note("TkinterCameraConfig rollback step: destroy "
+                               "window")
+        failures.append(cleanup_error)
+
+      # If there's only one Exception, raise it
+      if len(failures) == 1:
+        raise
+      # Handle the case when a KeyboardInterrupt is among the Exceptions
+      elif any(isinstance(exc, KeyboardInterrupt) for exc in failures):
+        for index, exc in enumerate(failures):
+          if isinstance(exc, KeyboardInterrupt):
+            others = failures[:index] + failures[index + 1:]
+            if exc.__cause__ is not None:
+              others.insert(0, exc.__cause__)
+            raise exc from BaseExceptionGroup("Other TkinterCameraConfig "
+                                              "initialization failures",
+                                              others)
+      # Otherwise just raise all Exceptions at once
+      else:
+        raise BaseExceptionGroup("TkinterCameraConfig initialization failures",
+                                 failures)
 
     # Attributes containing the several images and histograms
     self._pil_img: Image.Image | None = None
@@ -245,7 +284,7 @@ TkinterCameraConfig.start>`. The window can be started only once. A closed
     self._lifecycle.mark_histogram_started()
 
     self._n_loops = 0
-    self._last_upd_t = time()
+    self._last_upd_t = monotonic()
     self._next_acq_t = -float('inf')
 
     # Let Tk's event loop handle the first frame and the first FPS update
@@ -390,39 +429,68 @@ TkinterCameraConfig.stop>`. Pending
     .. versionadded:: 2.0.0
     """
 
-    # If the window is already closed, making sure the resources are released
-    if self._window_closed:
-      self._lifecycle.close_resources()
-      return
-
+    failures: list[Exception | KeyboardInterrupt] = list()
     self._window_closed = True
-    self.log(logging.DEBUG, "Closing camera configuration and releasing "
-                            "histogram resources")
-    try:
-      if self._img_acq_sched_obj is not None:
-        try:
-          self.after_cancel(self._img_acq_sched_obj)
-        except tk.TclError:
-          pass
-      if self._upd_var_sched_obj is not None:
-        try:
-          self.after_cancel(self._upd_var_sched_obj)
-        except tk.TclError:
-          pass
-      if self._shutdown_sched_obj is not None:
-        try:
-          self.after_cancel(self._shutdown_sched_obj)
-        except tk.TclError:
-          pass
 
-    finally:
+    # Cancel every callback independently
+    for scheduled in (self._img_acq_sched_obj, self._upd_var_sched_obj,
+                      self._shutdown_sched_obj):
+      if scheduled is None:
+        continue
+      try:
+        self.after_cancel(scheduled)
+      except tk.TclError:
+        pass
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"TkinterCameraConfig cleanup step: cancel {scheduled}")
+        failures.append(error)
+        continue
+
+      # Set the scheduled objects back to None
+      if self._img_acq_sched_obj == scheduled:
+        self._img_acq_sched_obj = None
+      if self._upd_var_sched_obj == scheduled:
+        self._upd_var_sched_obj = None
+      if self._shutdown_sched_obj == scheduled:
+        self._shutdown_sched_obj = None
+
+    # Destroy the current window
+    if not self._window_destroyed:
       try:
         self.destroy()
       except tk.TclError as error:
+        # An already destroyed Tk window cannot be destroyed again
+        self._window_destroyed = True
         self.log(logging.ERROR, "Cannot destroy the configuration window",
                  exc_info=(type(error), error, error.__traceback__))
-      finally:
-        self._lifecycle.close_resources()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("TkinterCameraConfig cleanup step: destroy window")
+        failures.append(error)
+      else:
+        self._window_destroyed = True
+
+    # Release the histogram process resources
+    try:
+      self._lifecycle.close_resources()
+    except (Exception, KeyboardInterrupt) as error:
+      error.add_note("TkinterCameraConfig cleanup step: release histogram")
+      failures.append(error)
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other TkinterCameraConfig "
+                                              "cleanup failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("TkinterCameraConfig cleanup failures", failures)
 
   def _img_acq_sched(self) -> None:
     """Acquire a frame when due, then schedule the next acquisition."""
@@ -451,10 +519,10 @@ TkinterCameraConfig.stop>`. Pending
       self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
     # Updating the indicators in the GUI
-    elapsed = time() - self._last_upd_t
+    elapsed = monotonic() - self._last_upd_t
     self._display_state.fps = self._n_loops / elapsed if elapsed > 0 else 0.0
     self._n_loops = 0
-    self._last_upd_t = time()
+    self._last_upd_t = monotonic()
     self._sync_indicator_labels()
 
   def _set_layout(self) -> None:

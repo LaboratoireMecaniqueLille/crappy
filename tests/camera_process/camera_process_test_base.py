@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from multiprocessing import (Array, Barrier, Event, Manager, Pipe, Queue,
+from multiprocessing import (Array, Barrier, Condition, Event, Manager, Pipe, Queue,
                              RLock, Value, current_process)
 from multiprocessing.connection import Connection
 from multiprocessing.managers import SyncManager
@@ -25,6 +25,7 @@ class SharedObjects(NamedTuple):
   array: Any
   data_dict: Any
   lock: Any
+  condition: Any
   barrier: Any
   stop_event: Any
   shape: tuple[int, int] | tuple[int, int, int]
@@ -239,6 +240,7 @@ class CameraProcessTestBase(unittest.TestCase):
     array = Array(np.ctypeslib.as_ctypes_type(dtype), int(np.prod(shape)))
     data_dict = self._manager.dict()
     lock = RLock()
+    condition = Condition(lock)
     barrier = Barrier(barrier_parties)
     stop_event = Event()
     log_queue = Queue()
@@ -250,6 +252,7 @@ class CameraProcessTestBase(unittest.TestCase):
     process.set_shared(array=array,
                        data_dict=data_dict,
                        lock=lock,
+                       condition=condition,
                        barrier=barrier,
                        event=stop_event,
                        shape=shape,
@@ -264,6 +267,7 @@ class CameraProcessTestBase(unittest.TestCase):
     return SharedObjects(array=array,
                          data_dict=data_dict,
                          lock=lock,
+                         condition=condition,
                          barrier=barrier,
                          stop_event=stop_event,
                          shape=shape,
@@ -282,11 +286,13 @@ class CameraProcessTestBase(unittest.TestCase):
     if metadata is None:
       metadata = {'ImageUniqueID': 0, 't(s)': 0.0}
 
-    np.copyto(np.frombuffer(shared.array.get_obj(),
-                            dtype=shared.dtype).reshape(shared.shape),
-              img)
-    shared.data_dict.clear()
-    shared.data_dict.update(metadata)
+    with shared.condition:
+      np.copyto(np.frombuffer(shared.array.get_obj(),
+                              dtype=shared.dtype).reshape(shared.shape),
+                img)
+      shared.data_dict.clear()
+      shared.data_dict.update(metadata)
+      shared.condition.notify_all()
 
   def make_pipe(self) -> tuple[Connection, Connection]:
     """Creates a one-way Pipe and tracks both ends for cleanup."""

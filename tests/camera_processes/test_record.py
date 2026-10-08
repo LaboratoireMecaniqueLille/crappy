@@ -4,6 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import csv
 import unittest
+from time import monotonic
 
 import numpy as np
 
@@ -75,6 +76,56 @@ class TestImageSaver(CameraProcessTestBase):
     self.assertTrue(self._process._get_data())
     self.assertEqual(self._process.metadata['ImageUniqueID'], 3)
     np.testing.assert_array_equal(self._process.img, img3)
+
+  def test_condition_wait_ignores_frames_before_save_period(self) -> None:
+    """An ineligible frame must not turn the receive loop into busy polling."""
+
+    self._process = ImageSaver(save_period=3, save_backend='npy')
+    shared = self.make_shared(process=self._process, shape=(2, 2))
+    image = np.ones((2, 2), dtype=np.uint8)
+    self.write_image(shared, image, {'ImageUniqueID': 0, 't(s)': 0.0})
+    self.assertTrue(self._process._get_data(timeout=0.1))
+    self.write_image(shared, image + 1, {'ImageUniqueID': 1, 't(s)': 0.1})
+    started = monotonic()
+
+    self.assertFalse(self._process._get_data(timeout=0.03))
+
+    self.assertGreaterEqual(monotonic() - started, 0.02)
+    self.assertEqual(self._process.metadata['ImageUniqueID'], 0)
+    np.testing.assert_array_equal(self._process.img, image)
+    self.write_image(shared, image + 3, {'ImageUniqueID': 3, 't(s)': 0.3})
+    self.assertTrue(self._process._get_data(timeout=0.1))
+    self.assertEqual(self._process.metadata['ImageUniqueID'], 3)
+
+  def test_real_saver_receives_condition_notifications(self) -> None:
+    """Exercise the timed run loop, publication and save-period predicate."""
+
+    with TemporaryDirectory() as tmp:
+      saved = TestLink()
+      self._process = ImageSaver(save_folder=tmp, save_period=2,
+                                 save_backend='npy', send_msg=True)
+      shared = self.make_shared(process=self._process, shape=(2, 2),
+                                outputs=[saved], barrier_parties=2)
+      self._process.start()
+      shared.barrier.wait(timeout=3.0)
+      image = np.ones((2, 2), dtype=np.uint8)
+
+      try:
+        self.write_image(shared, image, {'ImageUniqueID': 0, 't(s)': 0.0})
+        self.assertTrue(saved.sent.wait(timeout=3.0))
+        saved.sent.clear()
+        self.write_image(shared, image + 1, {'ImageUniqueID': 1, 't(s)': 0.1})
+        self.assertFalse(saved.sent.wait(timeout=0.1))
+        self.write_image(shared, image + 2, {'ImageUniqueID': 2, 't(s)': 0.2})
+        self.assertTrue(saved.sent.wait(timeout=3.0))
+      finally:
+        shared.stop_event.set()
+        with shared.condition:
+          shared.condition.notify_all()
+        self._process.join(timeout=3.0)
+
+      self.assertEqual(self._process.exitcode, 0)
+      self.assertEqual(len(list(Path(tmp).glob('*.npy'))), 2)
 
   def test_loop_saves_npy_metadata_and_optional_message(self) -> None:
     """Checks npy file writing, metadata CSV, and downstream message."""

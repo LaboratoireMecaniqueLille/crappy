@@ -287,7 +287,7 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
       return
 
     # Nothing to do if no new image was received
-    if not (upd_links := self.receive_imgs()):
+    if not (upd_links := self.receive_imgs(timeout=0.1)):
       self.log(logging.DEBUG, "No new image received during this loop")
       # If requested, displays the FPS of the image display
       if self.display_freq:
@@ -348,12 +348,39 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
   def finish(self) -> None:
     """Stops the spot trackers and releases inherited image resources."""
 
-    try:
-      if self._ve is not None:
-        self.log(logging.INFO, "Stopping the spot trackers before returning")
+    failures: list[Exception | KeyboardInterrupt] = list()
+
+    if self._ve is not None:
+      self.log(logging.INFO, "Stopping the spot trackers before returning")
+      try:
         self._ve.stop_tracking()
-    finally:
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("VideoExtenso cleanup step: stop spot trackers")
+        failures.append(error)
+      else:
+        self._ve = None
+
+    try:
       super().finish()
+    except (Exception, KeyboardInterrupt) as error:
+      error.add_note("VideoExtenso cleanup step: release shared image buffers")
+      failures.append(error)
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other VideoExtenso cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("VideoExtenso cleanup failures", failures)
 
   def request_config(self, source: str) -> ConfigRequest:
     """Builds the VideoExtenso configuration request for an image source.

@@ -22,3 +22,4 @@ from .test_scheduler import TestScheduler
 from .test_dic_ve import TestDICVE
 from .test_dis_correl import TestDISCorrel
 from .test_video_extenso import TestVideoExtenso
+from .test_cleanup import TestSoftwareCleanup

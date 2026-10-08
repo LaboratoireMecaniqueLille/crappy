@@ -117,7 +117,7 @@ class TestInOut(TestCase):
 
     inout = SequencedInOutForTest([[10, 1, 3], [11, 3, 5], [12, 4, 6]])
 
-    with patch.object(inout_module, 'time',
+    with patch.object(inout_module, 'monotonic',
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
@@ -130,12 +130,12 @@ class TestInOut(TestCase):
 
     inout = SequencedInOutForTest([[0, 2], [1, 4]])
 
-    with patch.object(inout_module, 'time',
+    with patch.object(inout_module, 'monotonic',
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
     inout.data = [[2, 10], [3, 14]]
-    with patch.object(inout_module, 'time',
+    with patch.object(inout_module, 'monotonic',
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
@@ -150,7 +150,7 @@ class TestInOut(TestCase):
       {'t(s)': 12, 'a': 4, 'b': 6},
     ])
 
-    with patch.object(inout_module, 'time',
+    with patch.object(inout_module, 'monotonic',
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
@@ -163,12 +163,12 @@ class TestInOut(TestCase):
 
     inout = SequencedInOutForTest([{'t(s)': 0, 'a': 1, 'b': 2}])
 
-    with patch.object(inout_module, 'time',
+    with patch.object(inout_module, 'monotonic',
                       side_effect=[0, 0, 0.2]):
       inout.make_zero(0.2)
 
     inout.data = [{'t(s)': 1, 'a': 5}]
-    with patch.object(inout_module, 'time',
+    with patch.object(inout_module, 'monotonic',
                       side_effect=[0, 0, 0.2]):
       inout.make_zero(0.2)
 
@@ -181,7 +181,7 @@ class TestInOut(TestCase):
     logs = list()
     inout.log = lambda level, msg: logs.append((level, msg))
 
-    with patch.object(inout_module, 'time',
+    with patch.object(inout_module, 'monotonic',
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
@@ -197,7 +197,7 @@ class TestInOut(TestCase):
     logs = list()
     inout.log = lambda level, msg: logs.append((level, msg))
 
-    with patch.object(inout_module, 'time',
+    with patch.object(inout_module, 'monotonic',
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 

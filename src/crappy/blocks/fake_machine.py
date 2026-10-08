@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from time import time
+from time import time, monotonic
 import numpy as np
 from typing import Literal
 from collections.abc import Callable
@@ -115,14 +115,14 @@ class FakeMachine(Block):
     # Creating the mechanical variables
     self._current_pos = 0
     self._prev_t = None
-    self._prev_broke_t = time()
+    self._prev_broke_t = monotonic()
     self._plastic_elongation = 0
     self._max_recorded_strain = 0
 
   def begin(self) -> None:
     """Sends a first value that should be 0, plus or minus the noise."""
 
-    self._prev_t = self.t0
+    self._prev_t = monotonic()
     self._send_values()
 
   def loop(self) -> None:
@@ -131,7 +131,7 @@ class FakeMachine(Block):
     is, and finally returns the data."""
 
     # Avoid potential zero division later
-    t = time()
+    t = monotonic()
     delta_t = t - self._prev_t
     if not delta_t > 0:
       return
@@ -159,8 +159,8 @@ class FakeMachine(Block):
 
     # If the max strain is reached, consider that the sample broke
     if self._current_pos / self._l0 > self._max_strain:
-      if time() - self._prev_broke_t > 1:
-        self._prev_broke_t = time()
+      if monotonic() - self._prev_broke_t > 1:
+        self._prev_broke_t = monotonic()
         self.log(logging.WARNING, "Sample broke !")
       self._rigidity = 0
 

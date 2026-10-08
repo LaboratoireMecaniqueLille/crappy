@@ -1,12 +1,14 @@
 # coding: utf-8
 
 from multiprocessing import Barrier, Event, RLock, Value
-from unittest.mock import Mock
+from multiprocessing.shared_memory import SharedMemory
+from unittest.mock import MagicMock, Mock, call, patch
 
 import numpy as np
 
 from crappy._global import LinkDataError, PrepareError
 from crappy.blocks.vision.block import ImgLinkData
+import crappy.blocks.vision.block as block_module
 from crappy.links import ImageLink
 
 from .vision_test_base import StubVisionBlock, VisionTestBase
@@ -236,20 +238,162 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     ready.set()
 
     with self.assertRaises(ValueError):
-      block._get_image_buffer('unused', ready, {})
+      block._get_image_buffer(ImgLinkData(memory_name='unused',
+                                          buffer_ready=ready,
+                                          img_info_dict={}))
 
     waiting = Mock()
     waiting.wait.return_value = False
     block._stop_event.set()
     with self.assertRaises(PrepareError):
-      block._get_image_buffer('unused', waiting,
-                              {'shape': (2, 2), 'dtype': 'uint8'})
+      block._get_image_buffer(ImgLinkData(
+          memory_name='unused', buffer_ready=waiting,
+          img_info_dict={'shape': (2, 2), 'dtype': 'uint8'}))
     waiting.wait.assert_called_once_with(0.5)
 
     block._ready_barrier = None
     with self.assertRaises(ValueError):
-      block._get_image_buffer('unused', waiting,
-                              {'shape': (2, 2), 'dtype': 'uint8'})
+      block._get_image_buffer(ImgLinkData(
+          memory_name='unused', buffer_ready=waiting,
+          img_info_dict={'shape': (2, 2), 'dtype': 'uint8'}))
+
+  def test_finish_releases_output_after_array_creation_failure(self) -> None:
+    """Allocation remains owned even if the Numpy view cannot be created."""
+
+    source = StubVisionBlock(img_shape=(2, 3), img_dtype='uint8')
+    ImageLink(source, StubVisionBlock(), name='failed-output-view')
+    self.make_manager(source)
+    source.set_shared_objects()
+
+    with patch.object(block_module.np, 'ndarray',
+                      side_effect=ValueError('cannot create image view')):
+      with self.assertRaises(ValueError):
+        source.prepare()
+
+    handle = source._out_link_data.img_buffer
+    self.assertIsNotNone(handle)
+    self.assertIsNone(source._out_link_data.npy_buffer)
+    source.finish()
+    self.assertIsNone(handle.buf)
+    with self.assertRaises(FileNotFoundError):
+      SharedMemory(name=handle.name)
+    source.finish()
+
+  def test_finish_closes_attachment_after_array_creation_failure(self) -> None:
+    """A failed view must not leak an attached handle or unlink its source."""
+
+    source, consumer, _ = self.prepare_pair(shape=(2, 2), dtype='uint8')
+    consumer.finish()
+    data = consumer._in_link_data[0]
+    data.img_info_dict['shape'] = (200, 200)
+
+    with self.assertRaises(TypeError):
+      consumer._get_image_buffer(data)
+    handle = data.img_buffer
+    self.assertIsNotNone(handle)
+    consumer.finish()
+    self.assertIsNone(handle.buf)
+    self.assertIsNone(data.img_buffer)
+    attachment = SharedMemory(name=source._out_link_data.memory_name)
+    attachment.close()
+
+  def test_finish_attempts_all_memory_operations_and_notifications(self) -> None:
+    """Failed close/unlink cannot prevent other buffers and readers cleanup."""
+
+    block = StubVisionBlock()
+    operations = Mock()
+    first, second, output = Mock(), Mock(), Mock()
+    for name, handle in (('first', first), ('second', second),
+                         ('output', output)):
+      operations.attach_mock(handle, name)
+    errors = [RuntimeError('second close'), RuntimeError('output close'),
+              RuntimeError('output unlink'), RuntimeError('notify')]
+    second.close.side_effect = errors[0]
+    output.close.side_effect = errors[1]
+    output.unlink.side_effect = errors[2]
+    block._in_link_data = [ImgLinkData(memory_name='first', img_buffer=first),
+                           ImgLinkData(memory_name='second', img_buffer=second)]
+    block._out_link_data = ImgLinkData(memory_name='output', img_buffer=output)
+    condition = MagicMock()
+    condition.notify_all.side_effect = errors[3]
+    block._out_img_conditions = [condition, MagicMock()]
+
+    with self.assertRaises(ExceptionGroup) as caught:
+      block.finish()
+
+    self.assertEqual(caught.exception.exceptions, tuple(errors))
+    for error in errors:
+      self.assertTrue(error.__notes__[0].startswith('VisionBlock cleanup step:'))
+    self.assertEqual(operations.mock_calls,
+                     [call.first.close(), call.second.close(),
+                      call.output.close(), call.output.unlink()])
+    block._out_img_conditions[1].notify_all.assert_called_once_with()
+    first.unlink.assert_not_called()
+    second.unlink.assert_not_called()
+
+    second.close.side_effect = None
+    output.close.side_effect = None
+    output.unlink.side_effect = None
+    condition.notify_all.side_effect = None
+    block.finish()
+    block.finish()
+    self.assertEqual(first.close.call_count, 1)
+    self.assertEqual(second.close.call_count, 2)
+    self.assertEqual(output.close.call_count, 2)
+    self.assertEqual(output.unlink.call_count, 2)
+
+  def test_finish_retries_only_failed_output_operation(self) -> None:
+    """Successful close and successful unlink are independently remembered."""
+
+    for failed in ('close', 'unlink'):
+      with self.subTest(failed=failed):
+        block = StubVisionBlock()
+        handle = Mock()
+        error = RuntimeError(failed)
+        getattr(handle, failed).side_effect = error
+        block._out_link_data = ImgLinkData(img_buffer=handle)
+        with self.assertRaises(RuntimeError) as caught:
+          block.finish()
+        self.assertIs(caught.exception, error)
+        getattr(handle, failed).side_effect = None
+        block.finish()
+        block.finish()
+        self.assertEqual(handle.close.call_count, 2 if failed == 'close' else 1)
+        self.assertEqual(handle.unlink.call_count, 2 if failed == 'unlink' else 1)
+
+  def test_finish_accepts_already_unlinked_output(self) -> None:
+    """Another owner may already have removed the output segment."""
+
+    block = StubVisionBlock()
+    handle = Mock()
+    handle.unlink.side_effect = FileNotFoundError
+    block._out_link_data = ImgLinkData(img_buffer=handle)
+    block.finish()
+    block.finish()
+    handle.close.assert_called_once_with()
+    handle.unlink.assert_called_once_with()
+    self.assertIsNone(block._out_link_data.img_buffer)
+
+  def test_finish_prioritizes_interrupt_after_releasing_other_buffers(self
+                                                                    ) -> None:
+    """The original interrupt keeps the other errors in its cause."""
+
+    block = StubVisionBlock()
+    input_handle, output_handle = Mock(), Mock()
+    interrupt = KeyboardInterrupt('input close interrupted')
+    error = RuntimeError('output close failed')
+    input_handle.close.side_effect = interrupt
+    output_handle.close.side_effect = error
+    block._in_link_data = [ImgLinkData(img_buffer=input_handle)]
+    block._out_link_data = ImgLinkData(img_buffer=output_handle)
+    with self.assertRaises(KeyboardInterrupt) as caught:
+      block.finish()
+    self.assertIs(caught.exception, interrupt)
+    self.assertEqual(interrupt.__cause__.exceptions, (error,))
+    output_handle.unlink.assert_called_once_with()
+    input_handle.close.side_effect = None
+    output_handle.close.side_effect = None
+    block.finish()
 
   def test_get_shared_objects_rejects_incomplete_image_link(self) -> None:
     """Checks the error when an input ImageLink has no buffer bundle."""

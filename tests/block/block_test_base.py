@@ -282,6 +282,7 @@ class BlockTestBase(unittest.TestCase):
 
     # Make sure the Block was properly reset
     self.assertEqual(0, len(Block.instances))
+    self.assertEqual(Block._run_blocks, ())
     self.assertEqual(0, len(Block.names))
 
     self.assertFalse(Block.thread_stop)

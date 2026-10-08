@@ -3,7 +3,9 @@
 from time import time
 from typing import Any
 from collections.abc import Sequence
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
+from numbers import Real
+from math import isfinite
 import logging
 
 from .meta_block import Block
@@ -24,6 +26,11 @@ class ActuatorInstance:
   mode: str = 'speed'
   cmd_label: str = 'cmd'
   speed_cmd_label: str | None = None
+
+  # Lifecycle states
+  opened: bool = field(default=False, init=False)
+  stopped: bool = field(default=False, init=False)
+  closed: bool = field(default=False, init=False)
 
 
 class Machine(Block):
@@ -67,17 +74,17 @@ class Machine(Block):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      actuators: An iterable (like a :obj:`list` or a :obj:`tuple`) of all the
-        :class:`~crappy.actuator.meta_actuator.actuator.Actuator` this Block
-        needs to drive. It contains one :obj:`dict` for every Actuator, with
-        mandatory and optional keys. The keys providing information on how to
-        drive the Actuator are listed below. Any other unrecognized key will be
-        passed to the Actuator as argument when instantiating it.
+      actuators: A non-empty sequence (like a :obj:`list` or a :obj:`tuple`) of
+        all the :class:`~crappy.actuator.meta_actuator.actuator.Actuator` this
+        Block needs to drive. It contains one :obj:`dict` for every Actuator,
+        with mandatory and optional keys. The keys providing information on how
+        to drive the Actuator are listed below. Any other unrecognized key will
+        be passed to the Actuator as argument when instantiating it.
       common: The keys of this :obj:`dict` will be common to all the Actuators.
         If one key conflicts with an existing key for an Actuator, the common 
         one will prevail.
       time_label: If reading speed or position from one or more Actuators, the
-        time information will be carried by this label.
+        time information will be carried by this non-empty string label.
       spam: If :obj:`True`, a command is sent to the Actuators at each loop of
         the Block, else it is sent every time a new command is received.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
@@ -114,7 +121,7 @@ class Machine(Block):
           :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.set_position`
           method of the Actuator. If the ``speed_cmd_label`` key is not
           specified, this speed will remain the same for the entire test. This
-          key is not mandatory.
+          key is not mandatory. When given, it must be finite or :obj:`None`.
         - ``position_label``: If given, the Block will return the value of
           :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.get_position`
           under this label. This key is not mandatory.
@@ -135,37 +142,103 @@ class Machine(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    self._time_label = time_label
-    self._spam = spam
+    match actuators:
+      case ():
+        raise ValueError("No actuator to drive was specified")
+      case (*actuators,) if all(isinstance(actuator, dict)
+                                for actuator in actuators):
+        pass
+      case _:
+        raise TypeError("actuators must be a non-empty sequence of "
+                        "dictionaries")
 
-    # No extra information to add to the main dicts
-    if common is None:
-      common = dict()
+    match common:
+      case None:
+        common = dict()
+      case dict():
+        pass
+      case _:
+        raise TypeError("common must be a dictionary or None")
 
-    # Updating the settings with the common information
-    for actuator in actuators:
-      actuator |= common
+    match time_label:
+      case str() if time_label.strip():
+        self._time_label: str = time_label
+      case str():
+        raise ValueError("time_label must be a non-empty string")
+      case _:
+        raise TypeError("time_label must be a non-empty string")
 
-    # There should be at least one actuator provided
-    if not actuators:
-      raise ValueError("No actuator to drive was specified")
+    match spam:
+      case bool():
+        self._spam: bool = spam
+      case _:
+        raise TypeError("spam must be provided as a boolean")
+
+    # Merge common values into the Actuators dictionaries
+    actuators = [actuator | common for actuator in actuators]
+    if not all(isinstance(key, str) for actuator in actuators
+               for key in actuator):
+      raise TypeError("All actuator dictionary keys must be strings")
 
     # Making sure all the dicts contain the 'type' key
     if not all('type' in dic for dic in actuators):
       raise ValueError("The 'type' key must be provided for all the "
                        "actuators !")
 
-    # Making sure that the provided mode is either speed or position
-    if not all('mode' not in dic or dic['mode'] in ('speed', 'position')
-               for dic in actuators):
-      raise ValueError("The 'mode' key must be either 'speed' or 'position'")
+    # Validate Actuator types and modes
+    for actuator in actuators:
+      match actuator['type']:
+        case str() if actuator['type'].strip():
+          pass
+        case str():
+          raise ValueError("The actuator type must be a non-empty string")
+        case _:
+          raise TypeError("The actuator type must be a non-empty string")
+
+      match actuator.get('mode', 'speed'):
+        case 'speed' | 'position':
+          pass
+        case str():
+          raise ValueError("The 'mode' key must be either 'speed' or "
+                           "'position'")
+        case _:
+          raise TypeError("The 'mode' key must be a string")
+
+      match actuator.get('cmd_label', 'cmd'):
+        case str(label) if label.strip():
+          pass
+        case str():
+          raise ValueError("cmd_label must be a non-empty string")
+        case _:
+          raise TypeError("cmd_label must be a non-empty string")
+
+      for key in ('position_label', 'speed_label', 'speed_cmd_label'):
+        match actuator.get(key):
+          case None:
+            pass
+          case str(label) if label.strip():
+            pass
+          case str():
+            raise ValueError(f"{key} must be a non-empty string or None")
+          case _:
+            raise TypeError(f"{key} must be a non-empty string or None")
+
+      match actuator.get('speed'):
+        case None:
+          pass
+        case Real() as speed if isfinite(speed):
+          actuator['speed'] = float(speed)
+        case Real():
+          raise ValueError("speed must be a finite number or None")
+        case _:
+          raise TypeError("speed must be a finite number or None")
 
     # The names of the possible settings, to avoid typos and reduce verbosity
-    actuator_settings = [field.name for field in fields(ActuatorInstance)
-                         if field.type is not Actuator]
+    actuator_settings = [setting.name for setting in fields(ActuatorInstance)
+                         if setting.init and setting.type is not Actuator]
 
     # The list of all the Actuator types to instantiate
-    self._types = [actuator['type'] for actuator in actuators]
+    self._types: list[str] = [actuator['type'] for actuator in actuators]
 
     # None means that this is an ordinary core or user-defined InOut
     self._collection_entries: list[CollectionEntry] = list()
@@ -233,19 +306,16 @@ class Machine(Block):
     for entry in self._collection_entries:
       load_collection_class(entry, actuator_dict)
 
-    # Instantiating the actuators and storing them
-    self._actuators = [ActuatorInstance(
-      actuator=actuator_dict[type_](**actuator_kw),
-      **setting)
-      for type_, setting, actuator_kw in zip(self._types,
-                                             self._settings,
-                                             self._actuators_kw)]
-
-    # Opening each actuator
-    for actuator in self._actuators:
+    # Instantiate all the Actuators to drive
+    for type_, setting, actuator_kw in zip(self._types, self._settings,
+                                           self._actuators_kw):
+      actuator = ActuatorInstance(actuator=actuator_dict[type_](**actuator_kw),
+                                  **setting)
+      self._actuators.append(actuator)
       self.log(logging.INFO, f"Opening the {type(actuator.actuator).__name__}"
                              f"Actuator")
       actuator.actuator.open()
+      actuator.opened = True
       self.log(logging.INFO, f"Opened the {type(actuator.actuator).__name__}"
                              f"Actuator")
 
@@ -320,19 +390,60 @@ class Machine(Block):
   def finish(self) -> None:
     """Stops and closes all the Actuators to drive.
 
-    This method calls the
-    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.stop` and
-    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.close` method of
-    each Actuator.
+    Calls :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.stop` only
+    for successfully opened Actuators, then attempts
+    :meth:`~crappy.actuator.meta_actuator.actuator.Actuator.close` for every
+    constructed Actuator, including one whose open failed.
     """
 
+    failures: list[Exception | KeyboardInterrupt] = list()
+
+    # Stop every opened actuator
     for actuator in self._actuators:
+      if not actuator.opened or actuator.stopped or actuator.closed:
+        continue
+      name = type(actuator.actuator).__name__
       self.log(logging.INFO, f"Stopping the {type(actuator.actuator).__name__}"
                              f"Actuator")
-      actuator.actuator.stop()
+      try:
+        actuator.actuator.stop()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"Machine cleanup step: stop actuator "
+                       f"({name}, cmd_label={actuator.cmd_label!r})")
+        failures.append(error)
+      else:
+        actuator.stopped = True
+
+    # Close every opened actuator
     for actuator in self._actuators:
+      if actuator.closed:
+        continue
+      name = type(actuator.actuator).__name__
       self.log(logging.INFO, f"Closing the {type(actuator.actuator).__name__}"
                              f"Actuator")
-      actuator.actuator.close()
-      self.log(logging.INFO, f"Closed the {type(actuator.actuator).__name__}"
-                             f"Actuator")
+      try:
+        actuator.actuator.close()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"Machine cleanup step: close actuator "
+                       f"({name}, cmd_label={actuator.cmd_label!r})")
+        failures.append(error)
+      else:
+        actuator.closed = True
+        actuator.opened = False
+        self.log(logging.INFO, f"Closed the {name} Actuator")
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other Machine cleanup failures",
+                                              others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("Machine cleanup failures", failures)

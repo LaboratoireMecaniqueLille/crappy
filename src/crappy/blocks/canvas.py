@@ -318,6 +318,11 @@ class Canvas(Block):
          "previous behavior.\nInstall PyQt6 to use the new Canvas "
          "interface.\n", UserWarning, stacklevel=2)
 
+    self._root: tk.Tk | None = None
+    self._qt_app: QtWidgets.QApplication | None = None
+    self._qt_window: QtWidgets.QMainWindow | None = None
+    self._qt_events_processed: bool = False
+
     super().__init__()
     self.freq = freq
     self.display_freq = display_freq
@@ -393,12 +398,9 @@ class Canvas(Block):
     # Attributes related to tkinter
     self._fig: mpl_figure.Figure | None = None
     self.ax: Axes | None = None
-    self._root: tk.Tk | None = None
     self._tk_canvas: backend_tkagg.FigureCanvasTkAgg | None = None
 
     # Attributes related to PyQt6
-    self._qt_app: QtWidgets.QApplication | None = None
-    self._qt_window: QtWidgets.QMainWindow | None = None
     self.qt_scene: QtWidgets.QGraphicsScene | None = None
     self._qt_view: QtWidgets.QGraphicsView | None = None
     self._qt_view_size: QtCore.QSize | None = None
@@ -460,19 +462,59 @@ class Canvas(Block):
     An existing Qt application is left available for its other windows.
     """
 
-    self.log(logging.INFO, "Closing the drawing window")
-    if getattr(self, '_qt_window', None) is not None:
-      assert self._qt_window is not None
-      self._qt_window.close()
-    if getattr(self, '_qt_app', None) is not None:
-      assert self._qt_app is not None
-      self._qt_app.processEvents()
-    try:
-      if getattr(self, '_root', None) is not None:
-        assert self._root is not None
+    failures: list[Exception | KeyboardInterrupt] = list()
+    self.log(logging.INFO, "Closing the GUI")
+
+    # Destroy the Tk window
+    if self._root is not None:
+      try:
         self._root.destroy()
-    except tk.TclError:
-      pass
+      except tk.TclError:
+        # Tk may already have destroyed the window
+        self._root = None
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Canvas cleanup step: destroy Tk window")
+        failures.append(error)
+      else:
+        self._root = None
+
+    # Close the Qt window
+    if self._qt_window is not None:
+      self._qt_events_processed = False
+      try:
+        if not self._qt_window.close():
+          raise RuntimeError("The Canvas Qt window refused to close")
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Canvas cleanup step: close Qt window")
+        failures.append(error)
+      else:
+        self._qt_window = None
+
+    # Process the last Qt events
+    if self._qt_app is not None and not self._qt_events_processed:
+      try:
+        self._qt_app.processEvents()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Canvas cleanup step: process Qt close events")
+        failures.append(error)
+      else:
+        self._qt_events_processed = True
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other Canvas cleanup failures",
+                                              others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("Canvas cleanup failures", failures)
 
   @staticmethod
   def _validate_element(element: dict[str, Any]) -> None:

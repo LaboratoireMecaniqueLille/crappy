@@ -82,7 +82,8 @@ creating an output file.
 After preparing, every Block waits at a synchronization barrier. If one Block
 fails during preparation, the barrier is released as an error so that the
 others do not wait indefinitely. The test proceeds only after every Block and
-the coordinator are ready.
+the coordinator are ready. Abrupt Block exits are also detected by a temporary
+watchdog thread in the main process, which aborts the barrier.
 
 Crappy then records a common start timestamp, available through
 :attr:`~crappy.blocks.meta_block.block.Block.t0`, and releases the Blocks. This
@@ -126,15 +127,19 @@ whether it stops normally or because an error occurred. A custom Block should
 use this hook to return hardware to a safe state, close devices and network
 connections, flush and close files, and release graphical resources.
 
-``finish`` should tolerate partially completed preparation. For example, check
-that a device was opened before trying to close it. Crappy may forcibly
-terminate a Block that does not respond during shutdown, so software cleanup
-cannot be the only protection for hazardous equipment. Use suitable physical
-safety systems and hardware limits independently of Crappy.
+``finish`` should tolerate partially completed preparation and attempt all
+remaining cleanup steps before reporting failures. Track resources as they are
+acquired: a constructed device may need closing even when its ``open`` failed.
+The driver remains responsible for its own internal resources.
 
-After the Blocks finish, Crappy releases framework-owned resources and resets
-the Block registry and connection graph. A later test in the same Python
-session can then construct a new graph.
+Crappy may forcibly terminate a Block that does not respond during shutdown,
+so software cleanup cannot be the only protection for hazardous equipment.
+Use suitable physical safety systems and hardware limits independently of
+Crappy.
+
+After the Blocks finish, Crappy closes regular Link endpoints, releases
+framework-owned resources, and resets the Block registry and connection graph.
+A later test in the same Python session can then construct a new graph.
 
 Public behavior and implementation details
 ------------------------------------------

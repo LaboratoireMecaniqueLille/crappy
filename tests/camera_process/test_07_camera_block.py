@@ -3,9 +3,10 @@
 from multiprocessing import Barrier, Event, Queue, Value
 from threading import BrokenBarrierError, Thread
 from typing import Any
+from contextlib import ExitStack
 import logging
 import numpy as np
-from unittest.mock import MagicMock, patch, sentinel
+from unittest.mock import MagicMock, Mock, call, patch, sentinel
 from crappy import Block
 from crappy._global import (CameraConfigError, CameraPrepareError,
                             CameraRuntimeError, PrepareError)
@@ -31,12 +32,23 @@ class TrackingCameraProcess(TestCameraProcess):
     self.args = args
     self.kwargs = kwargs
     self._barrier_thread: Thread | None = None
+    self.join_timeouts: list[float | None] = list()
+    self.closed = False
 
   def start(self) -> None:
     """Records that the process would have been started."""
 
     self.started.set()
-    self._barrier_thread = Thread(target=self._cam_barrier.wait, daemon=True)
+
+    def wait_for_camera() -> None:
+      """A partial startup may abort the barrier rather than release it."""
+
+      try:
+        self._cam_barrier.wait()
+      except BrokenBarrierError:
+        pass
+
+    self._barrier_thread = Thread(target=wait_for_camera, daemon=True)
     self._barrier_thread.start()
 
   def is_alive(self) -> bool:
@@ -49,6 +61,18 @@ class TrackingCameraProcess(TestCameraProcess):
 
     self.terminated.set()
     self._alive = False
+
+  def join(self, timeout: float | None = None) -> None:
+    """Waits for the stand-in's barrier thread, not an OS process."""
+
+    self.join_timeouts.append(timeout)
+    if self._barrier_thread is not None:
+      self._barrier_thread.join(timeout)
+
+  def close(self) -> None:
+    """Records release of the process handle."""
+
+    self.closed = True
 
   def set_shared(self, *args, **kwargs) -> None:
     """Records shared object injection and delegates to the parent method."""
@@ -164,6 +188,86 @@ class CameraBlockTestBase(CameraProcessTestBase):
 class TestCameraBlock(CameraBlockTestBase):
   """Tests the contract between CameraProcess and the Camera Block."""
 
+  def test_publication_notifies_independent_helper_conditions(self) -> None:
+    """All helpers are notified only after a complete frame is published."""
+
+    camera = self.make_camera(save_images=True, display_images=True)
+    camera.process_proc = TrackingCameraProcess()
+    camera.prepare()
+    conditions = (camera._save_condition, camera._disp_condition,
+                  camera._proc_condition)
+    locks = (camera._save_lock, camera._disp_lock, camera._proc_lock)
+    self.assertEqual(len({id(condition._lock) for condition in conditions}), 3)
+    notifications = list()
+
+    with ExitStack() as patches:
+      for condition, lock in zip(conditions, locks):
+        self.assertIs(condition._lock, lock)
+        real_notify = condition.notify_all
+
+        def notify(condition=condition, real_notify=real_notify):
+          self.assertTrue(condition._lock._semlock._is_mine())
+          self.assertEqual(camera._metadata['ImageUniqueID'], 0)
+          np.testing.assert_array_equal(
+              camera._img, np.arange(20, dtype=np.uint8).reshape(4, 5))
+          notifications.append(condition)
+          real_notify()
+
+        patches.enter_context(patch.object(condition, 'notify_all',
+                                            side_effect=notify))
+
+      camera.loop()
+
+    self.assertEqual(notifications, list(conditions))
+
+  def test_finish_notifies_helpers_after_stop_flag(self) -> None:
+    """Shutdown wakes readers even if no final frame is published."""
+
+    camera = self.make_camera()
+    camera.prepare()
+    conditions = (camera._save_condition, camera._disp_condition,
+                  camera._proc_condition)
+    notifications = list()
+
+    for condition in conditions:
+      real_notify = condition.notify_all
+
+      def notify(condition=condition, real_notify=real_notify):
+        self.assertTrue(camera._stop_event_cam.is_set())
+        notifications.append(condition)
+        real_notify()
+
+      patcher = patch.object(condition, 'notify_all', side_effect=notify)
+      patcher.start()
+      self.addCleanup(patcher.stop)
+
+    camera.finish()
+
+    self.assertEqual(notifications, list(conditions))
+
+  def test_real_helper_receives_camera_publication(self) -> None:
+    """The Condition notification crosses a real process boundary."""
+
+    self._process = TestCameraProcess()
+    camera = self.make_camera()
+    camera.process_proc = self._process
+    camera.prepare()
+
+    camera.loop()
+    self._process.join(timeout=3.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertEqual(self._process.last_image_id.value, 0)
+    self.assertEqual(self._process.last_image_sum.value,
+                     float(np.sum(np.arange(20, dtype=np.uint8))))
+
+    # The Camera owns this process handle, including its final close().
+    process = self._process
+    camera.finish()
+    self.assertTrue(process._closed)
+    self.assertIsNone(camera.process_proc)
+    self._process = None
+
   def test_prepare_process_proc(self) -> None:
     """Tests how Camera.prepare shares objects with a processing process."""
 
@@ -182,6 +286,7 @@ class TestCameraBlock(CameraBlockTestBase):
     self.assertIs(process._img_array, camera._img_array)
     self.assertIs(process._data_dict, camera._metadata)
     self.assertIs(process._lock, camera._proc_lock)
+    self.assertIs(process._condition, camera._proc_condition)
     self.assertIs(process._cam_barrier, camera._cam_barrier)
     self.assertIs(process._stop_event, camera._stop_event_cam)
     self.assertIsNone(process._to_draw_conn)
@@ -212,6 +317,7 @@ class TestCameraBlock(CameraBlockTestBase):
     self.assertIs(camera._display_proc._to_draw_conn,
                   camera._overlay_conn_out)
     self.assertIs(camera._display_proc._lock, camera._disp_lock)
+    self.assertIs(camera._display_proc._condition, camera._disp_condition)
     self.assertEqual(camera._display_proc._outputs, list())
     self.assertEqual(camera._display_proc._labels, list())
     self.assertEqual(camera._display_proc.backend, 'cv2')
@@ -515,14 +621,24 @@ class TestCameraBlock(CameraBlockTestBase):
         camera.prepare()
 
   def test_loop_writes_shared_frame(self) -> None:
-    """Tests that Camera.loop writes frames for CameraProcess instances."""
+    """Frame timestamps use wall time while acquisition FPS uses monotonic."""
 
-    camera = self.make_camera()
+    camera = self.make_camera(display_freq=True)
     camera.prepare()
+    camera._instance_t0.value = 1000.0
 
-    camera.loop()
+    with (patch.object(camera_module, 'monotonic', side_effect=(10.0, 13.0)),
+          patch.object(camera_module, 'time', return_value=1000.5),
+          patch.object(camera, 'log') as log):
+      camera.begin()
+      camera.loop()
+
+    log.assert_any_call(logging.INFO, f'Acquisition FPS: {1 / 3}')
+    self.assertEqual(camera._last_cam_fps, 13.0)
+    self.assertEqual(camera._fps_count, 0)
 
     self.assertEqual(camera._metadata['ImageUniqueID'], 0)
+    self.assertEqual(camera._metadata['t(s)'], 0.5)
     self.assertIn('DateTimeOriginal', camera._metadata)
     self.assertIn('SubsecTimeOriginal', camera._metadata)
 
@@ -548,16 +664,288 @@ class TestCameraBlock(CameraBlockTestBase):
     camera.process_proc = process
 
     camera.prepare()
+    saver, displayer = camera._save_proc, camera._display_proc
+    event = camera._stop_event_cam
     process._alive = True
-    camera._save_proc._alive = True
-    camera._display_proc._alive = True
+    saver._alive = True
+    displayer._alive = True
 
     camera.finish()
 
-    self.assertTrue(camera._stop_event_cam.is_set())
+    self.assertTrue(event.is_set())
     self.assertTrue(process.terminated.is_set())
-    self.assertTrue(camera._save_proc.terminated.is_set())
-    self.assertTrue(camera._display_proc.terminated.is_set())
+    self.assertTrue(saver.terminated.is_set())
+    self.assertTrue(displayer.terminated.is_set())
     self.assertFalse(process.is_alive())
-    self.assertFalse(camera._save_proc.is_alive())
-    self.assertFalse(camera._display_proc.is_alive())
+    self.assertFalse(saver.is_alive())
+    self.assertFalse(displayer.is_alive())
+    self.assertTrue(all(child.closed for child in (process, saver, displayer)))
+    self.assertEqual(camera._started_processes, [])
+    self.assertIsNone(camera._img_array)
+    self.assertIsNone(camera._manager)
+
+    camera.finish()
+    for child in (process, saver, displayer):
+      self.assertEqual(child.join_timeouts, [0.2, 1])
+
+  def test_finish_before_prepare_closes_only_constructed_processes(self
+                                                                  ) -> None:
+    """Unstarted processes can be closed, but must never be joined."""
+
+    camera = self.make_camera()
+    process = camera.process_proc = TrackingCameraProcess()
+    camera.finish()
+    camera.finish()
+    self.assertTrue(process.closed)
+    self.assertEqual(process.join_timeouts, [])
+    self.assertFalse(process.terminated.is_set())
+    self.assertIsNone(camera.process_proc)
+
+  def test_finish_after_constructor_validation_failure(self) -> None:
+    """Cleanup attributes exist even when argument validation stops init."""
+
+    camera = Camera.__new__(Camera)
+    self._camera_block = camera
+    with self.assertRaises(TypeError):
+      Camera.__init__(camera, camera=123, config=False)
+    Camera.finish(camera)
+    Camera.finish(camera)
+    self.assertEqual(camera._started_processes, [])
+    self.assertIsNone(camera._manager)
+
+  def test_destructor_releases_own_resources_without_subclass_finish(self
+                                                                  ) -> None:
+    """A fallback destructor cannot rely on fully initialized subclass state."""
+
+    camera = self.make_camera()
+    camera._image_generator = None
+    driver = camera._camera = Mock()
+    driver.close.side_effect = RuntimeError('driver close')
+    manager = camera._manager = Mock()
+    logger = camera._logger = Mock()
+    with patch.object(camera, 'finish', side_effect=AssertionError) as finish:
+      camera.__del__()
+    finish.assert_not_called()
+    manager.shutdown.assert_called_once_with()
+    logger.exception.assert_called_once()
+    driver.close.side_effect = None
+    camera.finish()
+
+  def test_finish_after_metadata_initialization_failure(self) -> None:
+    """A successfully started Manager remains owned if dict creation fails."""
+
+    camera = self.make_camera()
+    with patch.object(camera_module, 'Manager') as factory:
+      manager = factory.return_value
+      manager.dict.side_effect = RuntimeError('metadata initialization')
+      with self.assertRaises(RuntimeError):
+        camera.prepare()
+    camera.finish()
+    camera.finish()
+    manager.shutdown.assert_called_once_with()
+    self.assertIsNone(camera._manager)
+
+  def test_finish_after_failed_camera_open_releases_other_resources(self
+                                                                  ) -> None:
+    """Partial driver open still receives close; pipes and manager survive it."""
+
+    driver = Mock()
+    driver.open.side_effect = RuntimeError('open failed')
+    with patch.dict(camera_module.camera_dict, {'CleanupCamera': lambda: driver}):
+      camera = self.make_camera(camera='CleanupCamera', image_generator=None)
+      with self.assertRaises(RuntimeError):
+        camera.prepare()
+    manager = camera._manager
+    pipes = (camera._overlay_conn_out, camera._overlay_conn_in)
+    self.assertFalse(camera._camera_opened)
+    camera.finish()
+    camera.finish()
+    driver.close.assert_called_once_with()
+    self.assertTrue(all(pipe.closed for pipe in pipes))
+    self.assertFalse(manager._process.is_alive())
+    self.assertIsNone(camera._camera)
+
+  def test_finish_after_child_start_failure(self) -> None:
+    """Only successfully started children are joined after partial startup."""
+
+    camera = self.make_camera(save_images=True, display_images=True)
+    process = camera.process_proc = TrackingCameraProcess()
+    with patch.object(TrackingImageSaver, 'start',
+                      side_effect=RuntimeError('saver start failed')):
+      with self.assertRaises(RuntimeError):
+        camera.prepare()
+    saver, displayer = camera._save_proc, camera._display_proc
+    self.assertEqual(camera._started_processes, [process])
+    camera.finish()
+    self.assertEqual(process.join_timeouts, [0.2])
+    self.assertEqual(saver.join_timeouts, [])
+    self.assertEqual(displayer.join_timeouts, [])
+    self.assertTrue(all(child.closed for child in (process, saver, displayer)))
+    self.assertIsNone(camera._manager)
+    self.assertIsNone(camera._img_array)
+
+  def test_finish_attempts_every_resource_after_multiple_failures(self
+                                                                ) -> None:
+    """Failed signalling, joining, hardware close, or pipes cannot stop cleanup."""
+
+    camera = self.make_camera()
+    operations = Mock()
+    event, condition, process, driver, outbound, inbound, manager = (
+        MagicMock() for _ in range(7))
+    process.name = 'processing'
+    process.is_alive.return_value = False
+    for name, resource in (('event', event), ('condition', condition),
+                           ('process', process), ('camera', driver),
+                           ('outbound', outbound), ('inbound', inbound),
+                           ('manager', manager)):
+      operations.attach_mock(resource, name)
+    errors = [RuntimeError(step) for step in
+              ('stop', 'notify', 'join', 'camera close', 'pipe close', 'manager')]
+    event.set.side_effect = errors[0]
+    condition.notify_all.side_effect = errors[1]
+    process.join.side_effect = errors[2]
+    driver.close.side_effect = errors[3]
+    outbound.close.side_effect = errors[4]
+    manager.shutdown.side_effect = errors[5]
+    camera._stop_event_cam = event
+    camera._save_condition = condition
+    camera.process_proc = process
+    camera._started_processes = [process]
+    camera._camera = driver
+    camera._image_generator = None
+    camera._overlay_conn_out = outbound
+    camera._overlay_conn_in = inbound
+    camera._manager = manager
+
+    with self.assertRaises(ExceptionGroup) as caught:
+      camera.finish()
+    self.assertEqual(caught.exception.exceptions, tuple(errors))
+    for error in errors:
+      self.assertTrue(error.__notes__[0].startswith('Camera cleanup step:'))
+    process.close.assert_called_once_with()
+    inbound.close.assert_called_once_with()
+    calls = operations.mock_calls
+    self.assertLess(calls.index(call.process.close()),
+                    calls.index(call.camera.close()))
+    self.assertLess(calls.index(call.camera.close()),
+                    calls.index(call.outbound.close()))
+    self.assertLess(calls.index(call.inbound.close()),
+                    calls.index(call.manager.shutdown()))
+
+    for resource, method in ((event, 'set'), (condition, 'notify_all'),
+                             (process, 'join'), (driver, 'close'),
+                             (outbound, 'close'), (manager, 'shutdown')):
+      getattr(resource, method).side_effect = None
+    camera.finish()
+    camera.finish()
+    process.close.assert_called_once_with()
+    inbound.close.assert_called_once_with()
+    self.assertEqual(driver.close.call_count, 2)
+    self.assertEqual(outbound.close.call_count, 2)
+    self.assertEqual(manager.shutdown.call_count, 2)
+
+  def test_finish_escalates_and_reaps_children_in_attribute_order(self) -> None:
+    """Termination failure still permits kill, join, and handle closure."""
+
+    camera = self.make_camera()
+    operations = Mock()
+    first, second = Mock(), Mock()
+    first.name, second.name = 'first', 'second'
+    operations.attach_mock(first, 'first')
+    operations.attach_mock(second, 'second')
+    first.is_alive.return_value = False
+    second.is_alive.side_effect = [True, True]
+    error = RuntimeError('terminate failed')
+    second.terminate.side_effect = error
+    camera.process_proc, camera._save_proc = first, second
+    camera._started_processes = [first, second]
+    with self.assertRaises(RuntimeError) as caught:
+      camera.finish()
+    self.assertIs(caught.exception, error)
+    self.assertEqual(operations.mock_calls,
+                     [call.first.join(timeout=0.2), call.first.is_alive(),
+                      call.first.close(),
+                      call.second.join(timeout=0.2), call.second.is_alive(),
+                      call.second.terminate(), call.second.join(timeout=1),
+                      call.second.is_alive(), call.second.kill(),
+                      call.second.join(timeout=1), call.second.close()])
+    self.assertEqual(camera._started_processes, [])
+
+  def test_finish_closes_mixed_started_and_unstarted_processes(self) -> None:
+    """Closing one child must not skip others or join an unstarted process."""
+
+    camera = self.make_camera()
+    processing, saver, displayer = Mock(), Mock(), Mock()
+    camera.process_proc = processing
+    camera._save_proc = saver
+    camera._display_proc = displayer
+    camera._started_processes = [processing, displayer]
+    for process, name in ((processing, 'processing'), (saver, 'saver'),
+                           (displayer, 'displayer')):
+      process.name = name
+      process.is_alive.return_value = False
+
+    camera.finish()
+    camera.finish()
+
+    for process in (processing, displayer):
+      process.join.assert_called_once_with(timeout=0.2)
+      process.is_alive.assert_called_once_with()
+    saver.join.assert_not_called()
+    saver.is_alive.assert_not_called()
+    for process in (processing, saver, displayer):
+      process.close.assert_called_once_with()
+      process.terminate.assert_not_called()
+      process.kill.assert_not_called()
+    self.assertEqual(camera._started_processes, [])
+    self.assertIsNone(camera.process_proc)
+    self.assertIsNone(camera._save_proc)
+    self.assertIsNone(camera._display_proc)
+
+  def test_finish_retains_shared_image_until_child_handle_closes(self
+                                                              ) -> None:
+    """An unsuccessful process close is retried without losing its resources."""
+
+    camera = self.make_camera()
+    process = camera.process_proc = Mock()
+    process.name = 'processing'
+    process.is_alive.return_value = False
+    process.close.side_effect = RuntimeError('process close failed')
+    camera._started_processes = [process]
+    camera._img_array = sentinel.image_array
+    camera._img = sentinel.image_view
+    camera._manager = manager = Mock()
+    with self.assertRaises(RuntimeError):
+      camera.finish()
+    self.assertIs(camera._img_array, sentinel.image_array)
+    self.assertIs(camera._img, sentinel.image_view)
+    self.assertIs(camera.process_proc, process)
+    manager.shutdown.assert_called_once_with()
+    process.close.side_effect = None
+    camera.finish()
+    camera.finish()
+    self.assertEqual(process.close.call_count, 2)
+    self.assertIsNone(camera._img_array)
+    self.assertIsNone(camera._img)
+    self.assertIsNone(camera.process_proc)
+
+  def test_finish_preserves_interrupt_and_reports_remaining_errors(self
+                                                                  ) -> None:
+    """KeyboardInterrupt is delayed until pipes and manager have been tried."""
+
+    camera = self.make_camera()
+    camera._image_generator = None
+    driver = camera._camera = Mock()
+    endpoint = camera._overlay_conn_out = Mock()
+    manager = camera._manager = Mock()
+    interrupt, error = KeyboardInterrupt('camera close'), RuntimeError('pipe')
+    driver.close.side_effect = interrupt
+    endpoint.close.side_effect = error
+    with self.assertRaises(KeyboardInterrupt) as caught:
+      camera.finish()
+    self.assertIs(caught.exception, interrupt)
+    self.assertEqual(interrupt.__cause__.exceptions, (error,))
+    manager.shutdown.assert_called_once_with()
+    driver.close.side_effect = None
+    endpoint.close.side_effect = None
+    camera.finish()

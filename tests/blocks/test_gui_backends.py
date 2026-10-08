@@ -150,8 +150,9 @@ class TestGUIBackends(GUIBlockTestBase):
           block._root = tk_window
         block.finish()
         block.finish()
-        self.assertEqual(window.close.call_count, 2)
-        self.assertEqual(application.processEvents.call_count, 2)
+        self.assertEqual(window.close.call_count, 1)
+        self.assertEqual(application.processEvents.call_count, 1)
+        tk_window.destroy.assert_called_once_with()
         application.quit.assert_not_called()
 
   def test_existing_widget_application_is_reused(self) -> None:

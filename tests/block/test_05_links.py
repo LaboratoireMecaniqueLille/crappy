@@ -2,6 +2,7 @@
 
 from crappy import Block
 from crappy._global import LinkDataError
+from crappy.blocks.vision import VisionBlock
 from crappy.links import GraphStructureError, ImageLink, link_graph
 from itertools import chain
 from multiprocessing import Barrier, Event, Value, Queue
@@ -26,26 +27,13 @@ class TestBlockLink(TestBlock):
     self.send((0,))
 
 
-class TestImageBlock(TestBlock):
-  """Minimal image-capable Block independent of the vision Block classes."""
+class TestImageBlock(VisionBlock):
+  """Minimal concrete VisionBlock used for ImageLink registration tests."""
 
-  def __init__(self) -> None:
-    """Initializes ImageLink containers and marks the Block image-capable."""
+  def loop(self) -> None:
+    """Provides the required loop implementation; these tests never run it."""
 
-    super().__init__()
-    self.is_vision_block = True
-    self.img_outputs = list()
-    self.img_inputs = list()
-
-  def add_img_output(self, img_link: ImageLink) -> None:
-    """Registers an outgoing ImageLink."""
-
-    self.img_outputs.append(img_link)
-
-  def add_img_input(self, img_link: ImageLink) -> None:
-    """Registers an incoming ImageLink."""
-
-    self.img_inputs.append(img_link)
+    ...
 
 
 class TestLinks(BlockTestBase):

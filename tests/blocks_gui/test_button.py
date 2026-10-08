@@ -175,15 +175,19 @@ class ButtonTests:
     """Checks that repeated finish calls close the Block's window."""
 
     button, _ = self._prepare_button()
+    window = (button._root if self._backend == 'tkinter'
+              else button._qt_window)
 
     button.finish()
     button.finish()
 
     if self._backend == 'tkinter':
+      self.assertIsNone(button._root)
       with self.assertRaises(TclError):
-        button._root.wm_state()
+        window.wm_state()
     else:
-      self.assertFalse(button._qt_window.isVisible())
+      self.assertIsNone(button._qt_window)
+      self.assertFalse(window.isVisible())
 
 
 class TestButton(ButtonTests, BlockTestBase):

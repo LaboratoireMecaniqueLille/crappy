@@ -142,14 +142,18 @@ class StopButtonTests:
     """Checks that finish closes this Block's window."""
 
     button = self._prepare_stop_button()
+    window = (button._root if self._backend == 'tkinter'
+              else button._qt_window)
 
     button.finish()
 
     if self._backend == 'tkinter':
+      self.assertIsNone(button._root)
       with self.assertRaises(TclError):
-        button._root.wm_state()
+        window.wm_state()
     else:
-      self.assertFalse(button._qt_window.isVisible())
+      self.assertIsNone(button._qt_window)
+      self.assertFalse(window.isVisible())
 
   def test_finish_is_safe_before_prepare(self) -> None:
     """Checks that finish accepts a StopButton without a window."""

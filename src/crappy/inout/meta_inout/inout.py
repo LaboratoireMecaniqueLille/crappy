@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from time import time, sleep
+from time import monotonic, sleep
 from typing import Any
 from collections.abc import Sequence
 import numpy as np
@@ -240,10 +240,10 @@ class InOut:
 
     buf = []
     buf_dict = defaultdict(list)
-    t0 = time()
+    t0 = monotonic()
 
     # Acquiring data for a given delay
-    while time() < t0 + delay:
+    while monotonic() < t0 + delay:
       data = self.get_data()
       if data is not None:
 
