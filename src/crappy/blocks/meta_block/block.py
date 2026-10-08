@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from __future__ import annotations
 from platform import system
 from multiprocessing import (Process, Value, Barrier, Event, Queue,
                              get_start_method, synchronize, queues,
