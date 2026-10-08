@@ -95,8 +95,10 @@ class TestPauseFreq(BlockTestBase):
     self.assertTrue(self._block.looped.is_set())
     self.assertFalse(self._block.finished.is_set())
 
-    # The loop counters should keep increasing while the Block is running.
-    self.assertTrue(self.wait_until(lambda: self._block.loops.value > n_l))
+    # Multiple loops can share a clock tick, so wait for timing to advance too.
+    self.assertTrue(self.wait_until(
+      lambda: self._block.loops.value > n_l and
+              self._block.last_t.value > t))
     self.assertGreater(self._block.last_t.value, t)
     self.assertGreaterEqual(self._block.last_t.value,
                             self._block.last_fps.value)

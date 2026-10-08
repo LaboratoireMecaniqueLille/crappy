@@ -168,8 +168,10 @@ class TestRunParticipants(BlockTestBase):
     """An actually empty graph can complete without an indefinite exit wait."""
 
     Block.prepare_all(log_level=logging.CRITICAL)
-    with patch.object(block_module.connection, 'wait') as wait:
+    # Patch only Block's reference, not Queue's use of the same module.
+    with patch.object(block_module, 'connection',
+                      wraps=block_module.connection) as connection:
       Block.launch_all()
 
-    wait.assert_not_called()
+    connection.wait.assert_not_called()
     self.assertEqual(Block._run_blocks, ())
