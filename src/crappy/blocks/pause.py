@@ -13,6 +13,10 @@ class Pause(Block):
   given pause criteria. If so, the other Blocks are paused until the criteria
   are no longer met.
 
+  Each criterion is evaluated once per loop and initially counts as not met.
+  Insufficient data retains its previous state. The Blocks remain paused while
+  any criterion's cached state is met.
+
   When paused, the other Blocks are still looping but no longer executing any
   code. This feature is mostly useful when human intervention on a test setup
   is required, to ensure that nothing happens during that time.
@@ -50,11 +54,13 @@ class Pause(Block):
         :obj:`~collections.abc.Iterable` (like a :obj:`tuple` or a :obj:`list`)
         containing such objects. Each :obj:`str` or
         :obj:`~collections.abc.Callable` represents one pause criterion. There
-        is no limit to the given number of stop criteria. If a criterion is
+        is no limit to the given number of pause criteria. If a criterion is
         given as an :obj:`~collections.abc.Callable`, it should accept as its
         sole argument the output of the
         :meth:`crappy.blocks.meta_block.block.Block.recv_all_data` method and
-        return :obj:`True` if the criterion is met, and :obj:`False` otherwise.
+        return :obj:`True` if the criterion is met, :obj:`False` if evaluated
+        and not met, or :obj:`None` for insufficient data, retaining its
+        previous state.
         If the criterion is given as a :obj:`str`, it should follow one the
         following syntaxes:
         ::
@@ -64,7 +70,10 @@ class Pause(Block):
 
         With ``<lab>`` and ``<threshold>`` to be replaced respectively with the
         name of a received label and a threshold value. The spaces in the
-        string are ignored.
+        string are ignored. A string criterion is met if any received value
+        satisfies the comparison, absent labels or empty value lists retain
+        its previous state. ``'t(s) > <threshold>'`` compares elapsed time on
+        every loop, even without incoming data.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -82,17 +91,21 @@ class Pause(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    # Handling the case when only one stop condition is given
+    # Handling the case when only one pause condition is given
     if isinstance(criteria, str) or isinstance(criteria, Callable):
       criteria = (criteria,)
     criteria = tuple(criteria)
 
     self._raw_crit: tuple[str |
-                          Callable[[dict[str, list]], bool], ...] = criteria
-    self._criteria: tuple[Callable[[dict[str, list]], bool], ...] | None = None
+                          Callable[[dict[str, list]], bool | None],
+                          ...] = criteria
+    self._criteria: tuple[Callable[[dict[str, list]], bool | None],
+                          ...] | None = None
+    self._criterion_states: list[bool] = list()
 
   def prepare(self) -> None:
-    """Converts all the given criteria to :obj:`~collections.abc.Callable`."""
+    """Converts criteria to callables and resets their cached states to
+    :obj:`False`."""
 
     if not self.inputs:
       raise IOError("No Link pointing towards the Pause Block !")
@@ -100,35 +113,46 @@ class Pause(Block):
     # This operation cannot be performed during __init__ due to limitations of
     # the spawn start method of multiprocessing
     self._criteria = tuple(map(self._parse_criterion, self._raw_crit))
+    self._criterion_states = [False for _ in self._criteria]
 
   def loop(self) -> None:
-    """Receives data from upstream Blocks, checks if this data meets at least
-    one criterion, and puts the other Blocks in pause if that's the case."""
+    """Evaluates every criterion once and pauses while any cached state is
+    :obj:`True`.
+
+    :obj:`None` results retain their previous state. Time criteria are
+    evaluated regardless of the incoming data.
+    """
 
     if not (data := self.recv_all_data()):
       self.log(logging.DEBUG, "No data received during this loop")
 
-    # Pausing only if not paused, and stop criterion is met
-    if (self._criteria and any(crit(data) for crit in self._criteria)
-        and not self._pause_event.is_set()):
+    # Evaluate all the available criteria
+    for index, criterion in enumerate(self._criteria or tuple()):
+      result = criterion(data)
+      if result is not None:
+        self._criterion_states[index] = bool(result)
+
+    should_pause = any(self._criterion_states)
+
+    # Pausing only if not paused, and a pause criterion is met
+    if should_pause and not self._pause_event.is_set():
       self.log(logging.WARNING, "Pause criterion reached, pausing the Blocks!")
       self._pause_event.set()
       return
 
-    if (self._criteria and not any(crit(data) for crit in self._criteria)
-        and self._pause_event.is_set()):
+    if self._criteria and not should_pause and self._pause_event.is_set():
       self.log(logging.WARNING, "Pause criterion no longer satisfied, "
-                                "un-pausing the Blocks !")
+                                "un-pausing the Blocks!")
       self._pause_event.clear()
       return
 
     self.log(logging.DEBUG, "No pausing or un-pausing during this loop")
 
   def _parse_criterion(self,
-                       criterion: str | Callable[[dict[str, list]], bool]
-                       ) -> Callable[[dict[str, list]], bool]:
-    """Parses a Callable or string criterion given as an input by the user, and
-    returns the associated Callable."""
+                       criterion: str | Callable[[dict[str, list]],
+                                                 bool | None]
+                       ) -> Callable[[dict[str, list]], bool | None]:
+    """Returns a criterion callable."""
 
     # If the criterion is already a callable, returning it
     if isinstance(criterion, Callable):
@@ -142,13 +166,12 @@ class Pause(Block):
                                  criterion).groups()
 
       # Return a function that checks if received data is inferior to threshold
-      def cond(data: dict[str, list]) -> bool:
-        """Criterion checking that the label values are below a given
-        threshold."""
+      def cond(data: dict[str, list]) -> bool | None:
+        """Checks for values below the threshold, or None without samples."""
 
-        if var in data:
-          return any((val < float(thresh) for val in data[var]))
-        return False
+        if (val := data.get(var)) is not None and val:
+          return any((val < float(thresh) for val in val))
+        return None
 
       return cond
 
@@ -164,7 +187,7 @@ class Pause(Block):
 
         # Return a function that checks if the given time was reached
         def cond(_: dict[str, list]) -> bool:
-          """Criterion checking if a given delay is expired."""
+          """Checks elapsed time independently of received data."""
 
           return time() - self.t0 > float(thresh)
 
@@ -175,13 +198,12 @@ class Pause(Block):
 
         # Return a function that checks if received data is superior to
         # threshold
-        def cond(data: dict[str, list]) -> bool:
-          """Criterion checking that the label values are above a given
-          threshold."""
+        def cond(data: dict[str, list]) -> bool | None:
+          """Checks for values above the threshold, or None without samples."""
 
-          if var in data:
-            return any((val > float(thresh) for val in data[var]))
-          return False
+          if (val := data.get(var)) is not None and val:
+            return any((val > float(thresh) for val in val))
+          return None
 
         return cond
 
