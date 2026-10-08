@@ -448,7 +448,8 @@ class TestStartupSequence(BlockTestBase):
     Block.stop_event = Event()
     Block.raise_event = Event()
     Block.kbi_event = Event()
-    blocks = (Mock(spec=Block), Mock(spec=Block))
+    blocks = (Mock(spec=Block, inputs=[], outputs=[]),
+              Mock(spec=Block, inputs=[], outputs=[]))
     Block._run_blocks = blocks
     for sentinel, block in enumerate(blocks, start=10):
       block.sentinel = sentinel
@@ -526,7 +527,7 @@ class TestStartupSequence(BlockTestBase):
     Block.stop_event = Event()
     Block.raise_event = Event()
     Block.kbi_event = Event()
-    block = Mock(spec=Block)
+    block = Mock(spec=Block, inputs=[], outputs=[])
     block.sentinel = 10
     block.is_alive.return_value = True
     Block._run_blocks = (block,)
@@ -551,7 +552,8 @@ class TestStartupSequence(BlockTestBase):
     Block.stop_event = Event()
     Block.raise_event = Event()
     Block.kbi_event = Event()
-    blocks = (Mock(spec=Block), Mock(spec=Block))
+    blocks = (Mock(spec=Block, inputs=[], outputs=[]),
+              Mock(spec=Block, inputs=[], outputs=[]))
     Block._run_blocks = blocks
     for sentinel, block in enumerate(blocks, start=10):
       block.sentinel = sentinel
@@ -581,7 +583,8 @@ class TestStartupSequence(BlockTestBase):
     Block.stop_event = Event()
     Block.raise_event = Event()
     Block.kbi_event = Event()
-    blocks = (Mock(spec=Block), Mock(spec=Block))
+    blocks = (Mock(spec=Block, inputs=[], outputs=[]),
+              Mock(spec=Block, inputs=[], outputs=[]))
     Block._run_blocks = blocks
     for sentinel, block in enumerate(blocks, start=10):
       block.sentinel = sentinel
@@ -603,7 +606,7 @@ class TestStartupSequence(BlockTestBase):
     Block.stop_event = Event()
     Block.raise_event = Event()
     Block.kbi_event = Event()
-    block = Mock(spec=Block)
+    block = Mock(spec=Block, inputs=[], outputs=[])
     block.sentinel = 10
     block.is_alive.return_value = True
     block.join.side_effect = lambda *, timeout: setattr(
@@ -625,7 +628,7 @@ class TestStartupSequence(BlockTestBase):
     Block.raise_event = Event()
     Block.kbi_event = Event()
     self._block = TestBlock()
-    started = Mock(spec=Block)
+    started = Mock(spec=Block, inputs=[], outputs=[])
     started.sentinel = 10
     started.is_alive.return_value = True
     started.join.side_effect = lambda *, timeout: setattr(
@@ -647,7 +650,7 @@ class TestStartupSequence(BlockTestBase):
     Block.raise_event = Event()
     Block.kbi_event = Event()
     failure = Block.raise_event
-    block = Mock(spec=Block)
+    block = Mock(spec=Block, inputs=[], outputs=[])
     block.name = 'crappy.still-running'
     block.sentinel = 10
     block.is_alive.return_value = True
@@ -670,7 +673,7 @@ class TestStartupSequence(BlockTestBase):
     Block.stop_event = Event()
     Block.raise_event = Event()
     Block.kbi_event = Event()
-    block = Mock(spec=Block)
+    block = Mock(spec=Block, inputs=[], outputs=[])
     block.sentinel = 10
     block.is_alive.return_value = True
     block.terminate.side_effect = lambda: setattr(

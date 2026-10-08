@@ -2,8 +2,8 @@
 
 import logging
 from io import StringIO
-from multiprocessing import Event
-from queue import Empty, Queue
+from multiprocessing import Event, Queue
+from queue import Empty
 from threading import Event as ThreadEvent, Thread
 from unittest.mock import Mock, patch
 
