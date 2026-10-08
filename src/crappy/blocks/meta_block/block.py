@@ -251,7 +251,7 @@ class Block(Process, ABC):
     through one-way Pipes before the child Processes start.
 
     Rejects missing Blocks recorded in the LinkGraph and retains the validated
-    participants until :meth:`reset`.
+    participants until :meth:`~crappy.blocks.meta_block.block.Block.reset`.
 
     Once started with this method, the Blocks will call their
     :meth:`~crappy.blocks.meta_block.block.Block.prepare` method and then be
