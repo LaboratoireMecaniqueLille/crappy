@@ -79,23 +79,34 @@ class TestPreparationWatchdog(BlockTestBase):
         with self.subTest(exit_code=exit_code, no_raise=no_raise):
           self._block = TestBlockExitPrepare(exit_code)
           peer = TestBlock()
-          Block.prepare_all(log_level=logging.CRITICAL)
-          self._block.join(3.0)
-          self.assertEqual(self._block.exitcode, exit_code)
-          self.assertTrue(peer.prepared.wait(3.0))
+          try:
+            Block.prepare_all(log_level=logging.CRITICAL)
+            # Spawn may take longer to import the test module on CI. The exit
+            # timeout starts only once the child has reached prepare().
+            self.assertTrue(self._block.prepared.wait(15.0),
+                            "The exiting Block did not reach prepare()")
+            self._block.join(3.0)
+            self.assertEqual(self._block.exitcode, exit_code)
+            self.assertTrue(peer.prepared.wait(15.0),
+                            "The peer Block did not reach prepare()")
 
-          if no_raise:
-            self._launch_with_deadline(no_raise=True)
-          else:
-            with self.assertRaises(CrappyFail):
-              self._launch_with_deadline()
+            if no_raise:
+              self._launch_with_deadline(no_raise=True)
+            else:
+              with self.assertRaises(CrappyFail):
+                self._launch_with_deadline()
 
-          peer.join(1.0)
-          self.assertFalse(peer.is_alive())
-          self.assertTrue(peer.finished.is_set())
-          self.assertFalse(peer.begun.is_set())
-          self.assertFalse(self._block.begun.is_set())
-          self.assertFalse(Block.prepared_all)
+            peer.join(1.0)
+            self.assertFalse(peer.is_alive())
+            self.assertTrue(peer.finished.is_set())
+            self.assertFalse(peer.begun.is_set())
+            self.assertFalse(self._block.begun.is_set())
+            self.assertFalse(Block.prepared_all)
+          finally:
+            # subTest continues after failures; clean up before the next case.
+            if Block.prepared_all:
+              Block.no_raise = True
+              Block._cleanup()
 
   def test_killed_while_watchdog_is_running(self) -> None:
     """A kill during preparation breaks the main and peer Barrier waits."""
