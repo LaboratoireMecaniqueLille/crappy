@@ -57,6 +57,9 @@ class HistogramProcess(Process):
     self._processing_event: Event = processing_event
     self._img_in: Queue = img_in
     self._img_out: Queue = img_out
+    self._drained_queues: list[Queue] = list()
+    self._cancelled_queues: list[Queue] = list()
+    self._closed_queues: list[Queue] = list()
 
   def run(self) -> None:
     """Processes histogram requests until shutdown or failure.
@@ -131,10 +134,64 @@ class HistogramProcess(Process):
       self._logger.exception("Histogram processing failed",
                              exc_info=exc)
     finally:
-      self.log(logging.DEBUG, "Empty queues before exiting")
-      self._flush_queue(self._img_in)
-      self._flush_queue(self._img_out)
-      self.log(logging.DEBUG, "Histogram worker finished")
+      self._cleanup_queues()
+
+  def _cleanup_queues(self) -> None:
+    """Drains and releases both worker Queue handles, even after failure."""
+
+    failures: list[Exception | KeyboardInterrupt] = list()
+
+    for index, queue in enumerate((self._img_in, self._img_out)):
+      if (queue not in self._drained_queues and
+          queue not in self._closed_queues):
+
+        # First, flush the Queues
+        try:
+          self._flush_queue(queue)
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"HistogramProcess cleanup step: drain Queue "
+                         f"{index + 1}")
+          failures.append(error)
+        else:
+          self._drained_queues.append(queue)
+
+      # Then, cancel the feeder join
+      if queue not in self._cancelled_queues:
+        try:
+          queue.cancel_join_thread()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"HistogramProcess cleanup step: cancel Queue "
+                         f"{index + 1} feeder join")
+          failures.append(error)
+        else:
+          self._cancelled_queues.append(queue)
+
+      # Then, close the queues
+      if queue not in self._closed_queues:
+        try:
+          queue.close()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"HistogramProcess cleanup step: close Queue "
+                         f"{index + 1}")
+          failures.append(error)
+        else:
+          self._closed_queues.append(queue)
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other HistogramProcess cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("HistogramProcess cleanup failures", failures)
 
   @staticmethod
   def _hist_func(x: np.ndarray,

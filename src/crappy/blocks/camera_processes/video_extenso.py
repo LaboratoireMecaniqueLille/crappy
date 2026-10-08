@@ -215,6 +215,7 @@ class VideoExtensoProcess(CameraProcess):
     if self._ve is not None:
       self.log(logging.INFO, "Stopping the spot trackers before returning")
       self._ve.stop_tracking()
+      self._ve = None
 
   def set_config(self, config: SpotsBoxes, thresh: int) -> None:
     """Stores the initial detection result from

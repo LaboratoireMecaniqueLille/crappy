@@ -38,9 +38,13 @@ class ConfigurationLifecycle:
 
     self._stop_event: synchronize.Event = stop_event
     self._histogram_process: BaseProcess = histogram_process
-    self._queues: tuple[Queue] = tuple(queues)
+    self._queues: tuple[Queue, ...] = tuple(queues)
     self._log: Callable[..., None] = log
     self._histogram_started: bool = False
+    self._process_closed: bool = False
+    self._stop_requested: bool = False
+    self._cancelled_queues: list[Queue] = list()
+    self._closed_queues: list[Queue] = list()
     self._closed: bool = False
     self._failure: BaseException | None = None
     self._failure_traceback: TracebackType | None = None
@@ -105,43 +109,117 @@ class ConfigurationLifecycle:
     it remains alive. Queue cleanup is attempted even if process cleanup fails.
     """
 
-    # Nothing to do if the window was already closed
-    if self._closed:
-      return
-
-    # Request the histogram to stop
+    failures: list[Exception | KeyboardInterrupt] = list()
     self._closed = True
-    self._stop_event.set()
 
-    try:
-      process = self._histogram_process
-      # First, check if the histogram process stopped on its own
-      if self._histogram_started or process.is_alive():
-        process.join(1.0)
-        # If not, try to terminate it
-        if process.is_alive():
-          self._log(logging.WARNING, "The histogram process did not stop "
-                                     "within the timeout, terminating it")
-          process.terminate()
+    # Make sure that the stop event is set at that point
+    if not self._stop_requested:
+      try:
+        self._stop_event.set()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Configuration cleanup step: request histogram stop")
+        failures.append(error)
+      else:
+        self._stop_requested = True
+
+    process = self._histogram_process
+    if not self._process_closed:
+      if self._histogram_started:
+        # Give the histogram process a chance to stop on its own
+        try:
           process.join(1.0)
-        # If still alive, now try to kill it
-        if process.is_alive():
-          self._log(logging.WARNING, "The histogram process did not terminate "
-                                     "within the timeout, killing it")
-          process.kill()
-          process.join()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Configuration cleanup step: join histogram "
+                         "(initial wait)")
+          failures.append(error)
 
-    # Unconditionally clean up the queue resources
-    finally:
-      for queue in self._queues:
+        # Terminate the process if it did not stop
+        try:
+          alive = process.is_alive()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Configuration cleanup step: check histogram")
+          failures.append(error)
+          alive = True
+        if alive:
+          try:
+            process.terminate()
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note("Configuration cleanup step: terminate histogram")
+            failures.append(error)
+
+          # Give the histogram process some time to stop after termination
+          try:
+            process.join(1.0)
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note("Configuration cleanup step: join histogram "
+                           "(after terminate)")
+            failures.append(error)
+
+          # Kill the process if termination did not stop it
+          try:
+            alive = process.is_alive()
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note("Configuration cleanup step: check histogram")
+            failures.append(error)
+            alive = True
+          if alive:
+            try:
+              process.kill()
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note("Configuration cleanup step: kill histogram")
+              failures.append(error)
+
+            # Give the histogram process some time to stop after killing
+            try:
+              process.join(1.0)
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note("Configuration cleanup step: join histogram "
+                             "(after kill)")
+              failures.append(error)
+
+      # Ultimately close the histogram process
+      try:
+        process.close()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Configuration cleanup step: close histogram process")
+        failures.append(error)
+      else:
+        self._process_closed = True
+
+    # Cancel feeder-thread joins before closing each owned Queue
+    for index, queue in enumerate(self._queues):
+      if queue not in self._cancelled_queues:
         try:
           queue.cancel_join_thread()
-        except Exception as exc:
-          self._log(logging.ERROR, "Could not cancel histogram queue thread "
-                                   "join",
-                    exc_info=(type(exc), exc, exc.__traceback__))
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"Configuration cleanup step: cancel Queue "
+                         f"{index + 1} feeder join")
+          failures.append(error)
+        else:
+          self._cancelled_queues.append(queue)
+
+      # Actually close the Queues
+      if queue not in self._closed_queues:
         try:
           queue.close()
-        except Exception as exc:
-          self._log(logging.ERROR, "Could not close histogram queue",
-                    exc_info=(type(exc), exc, exc.__traceback__))
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"Configuration cleanup step: close Queue {index + 1}")
+          failures.append(error)
+        else:
+          self._closed_queues.append(queue)
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other Configuration cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("Configuration cleanup failures", failures)

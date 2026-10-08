@@ -168,6 +168,11 @@ class Grapher(Block):
          "settings.\nInstall pyqtgraph and PyQt6 to use the new, lighter and "
          "faster default Grapher mode.\n", UserWarning, stacklevel=2)
 
+    self._figure: Figure | None = None
+    self._qt_app: QApplication | None = None
+    self._qt_plot: PlotWidget | None = None
+    self._qt_events_processed: bool = False
+
     super().__init__()
     self.niceness = 10
     self.freq = freq
@@ -275,7 +280,6 @@ class Grapher(Block):
     # Attributes related to Matplotlib
     self._ax: Axes | None = None
     self._canvas: FigureCanvasBase | None = None
-    self._figure: Figure | None = None
     self._lines: list[Line2D] = list()
 
     # Attributes related to buffered graph data
@@ -288,8 +292,6 @@ class Grapher(Block):
     self._last_refresh_rate: float = monotonic()
 
     # Attributes related to pyqtgraph
-    self._qt_app: QApplication | None = None
-    self._qt_plot: PlotWidget | None = None
     self._qt_curves: list[PlotDataItem] = list()
     self._qt_clear_shortcut: QShortcut | None = None
 
@@ -418,15 +420,57 @@ class Grapher(Block):
   def finish(self) -> None:
     """Closes the plotting window owned by this Block."""
 
+    failures: list[Exception | KeyboardInterrupt] = list()
+
+    # Close the Qt window
     if self._qt_plot is not None:
       self.log(logging.INFO, "Closing the pyqtgraph window")
-      self._qt_plot.close()
-    if self._qt_app is not None:
-      self._qt_app.processEvents()
+      self._qt_events_processed = False
+      try:
+        if self._qt_plot.close() is False:
+          raise RuntimeError("The Grapher Qt window refused to close")
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Grapher cleanup step: close Qt plot")
+        failures.append(error)
+      else:
+        self._qt_plot = None
 
+    # Process the lasgt Qt events
+    if self._qt_app is not None and not self._qt_events_processed:
+      try:
+        self._qt_app.processEvents()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Grapher cleanup step: process Qt close events")
+        failures.append(error)
+      else:
+        self._qt_events_processed = True
+
+    # Close the matplotlib figure
     if self._figure is not None:
       self.log(logging.INFO, "Closing the matplotlib window")
-      plt.close(self._figure)
+      try:
+        plt.close(self._figure)
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Grapher cleanup step: close Matplotlib figure")
+        failures.append(error)
+      else:
+        self._figure = None
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other Grapher cleanup failures",
+                                              others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("Grapher cleanup failures", failures)
 
   def _prepare_mpl(self) -> None:
     """The path ``prepare`` follows when the selected plotter is Matplotlib"""

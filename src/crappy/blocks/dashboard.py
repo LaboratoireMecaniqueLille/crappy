@@ -135,6 +135,11 @@ class Dashboard(Block):
          "previous behavior.\nInstall PyQt6 to use the new Dashboard "
          "interface.\n", UserWarning, stacklevel=2)
 
+    self._dashboard: DashboardWindow | None = None
+    self._qt_app: QtWidgets.QApplication | None = None
+    self._qt_window: QtWidgets.QWidget | None = None
+    self._qt_events_processed: bool = False
+
     super().__init__()
     self.freq = freq
     self.display_freq = display_freq
@@ -178,12 +183,7 @@ class Dashboard(Block):
       case _:
         raise TypeError("The backend must be either 'tkinter' or 'pyqt'")
 
-    # Attributes related to tkinter
-    self._dashboard: DashboardWindow | None = None
-
     # Attributes related to PyQt6
-    self._qt_app: QtWidgets.QApplication | None = None
-    self._qt_window: QtWidgets.QWidget | None = None
     self._qt_labels: dict[str, QtWidgets.QLabel] = dict()
     self._qt_values: dict[str, QtWidgets.QLabel] = dict()
 
@@ -255,20 +255,59 @@ class Dashboard(Block):
     .. versionadded:: 1.5.7
     """
 
-    self.log(logging.INFO, "Closing the dashboard window")
-    try:
-      if getattr(self, '_dashboard', None) is not None:
-        assert self._dashboard is not None
-        self._dashboard.destroy()
-    except tk.TclError:
-      pass
+    failures: list[Exception | KeyboardInterrupt] = list()
+    self.log(logging.INFO, "Closing the GUI")
 
-    if getattr(self, '_qt_window', None) is not None:
-      assert self._qt_window is not None
-      self._qt_window.close()
-    if getattr(self, '_qt_app', None) is not None:
-      assert self._qt_app is not None
-      self._qt_app.processEvents()
+    # Destroy the Tk window
+    if self._dashboard is not None:
+      try:
+        self._dashboard.destroy()
+      except tk.TclError:
+        # Tk may already have destroyed the window
+        self._dashboard = None
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Dashboard cleanup step: destroy Tk window")
+        failures.append(error)
+      else:
+        self._dashboard = None
+
+    # Close the Qt window
+    if self._qt_window is not None:
+      self._qt_events_processed = False
+      try:
+        if not self._qt_window.close():
+          raise RuntimeError("The Dashboard Qt window refused to close")
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Dashboard cleanup step: close Qt window")
+        failures.append(error)
+      else:
+        self._qt_window = None
+
+    # Process the last Qt events
+    if self._qt_app is not None and not self._qt_events_processed:
+      try:
+        self._qt_app.processEvents()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Dashboard cleanup step: process Qt close events")
+        failures.append(error)
+      else:
+        self._qt_events_processed = True
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other Dashboard cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("Dashboard cleanup failures", failures)
 
   def _prepare_tkinter(self) -> None:
     """Creates the Tkinter window with label names and their latest values."""

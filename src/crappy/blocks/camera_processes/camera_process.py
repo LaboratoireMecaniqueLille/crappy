@@ -277,6 +277,20 @@ class CameraProcess(Process, ABC):
           self.log(logging.ERROR, "Setting the stop event to stop the other "
                                   "Camera processes")
           self._stop_event.set()
+      finally:
+        # This process owns its copy, independently of the parent's endpoint
+        if self._to_draw_conn is not None:
+          try:
+            self._to_draw_conn.close()
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note("CameraProcess cleanup step: close overlay Pipe")
+            if self._logger is not None:
+              self._logger.exception("Could not close the overlay Pipe",
+                                     exc_info=error)
+            if self._stop_event is not None:
+              self._stop_event.set()
+          else:
+            self._to_draw_conn = None
 
   def init(self) -> None:
     """This method should perform any action required for initializing the

@@ -58,6 +58,10 @@ class Displayer(CameraProcess):
 
     # The thread must be initialized later for compatibility with Windows
     self._overlay_thread: Thread | None = None
+    self._overlay_started: bool = False
+    self._window_opened: bool = False
+    self._ax = None
+    self._fig = None
     self._overlay: Iterable[Overlay | None] = list()
     self._stop_thread = False
 
@@ -89,8 +93,6 @@ class Displayer(CameraProcess):
                        "'mpl' !")
 
     # Setting other instance attributes
-    self._ax = None
-    self._fig = None
     self._last_upd = monotonic()
 
   def __del__(self) -> None:
@@ -98,7 +100,7 @@ class Displayer(CameraProcess):
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay` to
     display has stopped, otherwise stopping it."""
 
-    if self._overlay_thread is not None and self._overlay_thread.is_alive():
+    if self._overlay_thread is not None and self._overlay_started:
       self._stop_thread = True
       try:
         self._overlay_thread.join(0.05)
@@ -113,10 +115,11 @@ class Displayer(CameraProcess):
     # Instantiating and starting the Thread for grabbing the Overlays
     self.log(logging.INFO, "Instantiating the thread for getting the Overlays"
                            " to display")
-    self._overlay_thread = Thread(target=self._thread_target)
+    self._overlay_thread = Thread(target=self._thread_target, daemon=True)
     self.log(logging.INFO, "Starting the thread for getting the Overlays to "
                            "display")
     self._overlay_thread.start()
+    self._overlay_started = True
 
     # Preparing the Displayer window
     self.log(logging.INFO, f"Opening the displayer window with the backend "
@@ -195,21 +198,63 @@ class Displayer(CameraProcess):
     """Closes the Displayer window and stops the :obj:`~threading.Thread`
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay`"""
 
-    # Closing the Displayer window
-    self.log(logging.INFO, "Closing the displayer window")
-    if self._backend == 'cv2':
-      self._finish_cv2()
-    elif self._backend == 'mpl':
-      self._finish_mpl()
+    failures: list[Exception | KeyboardInterrupt] = list()
+    self._stop_thread = True
 
-    # Stooping the Thread grabbing the Overlay to draw
-    if self._overlay_thread is not None and self._overlay_thread.is_alive():
-      self._stop_thread = True
+    # Close the display window
+    if self._window_opened:
       try:
-        self._overlay_thread.join(0.05)
-      except RuntimeError:
-        self.log(logging.WARNING, "Thread for receiving the Overlay did not "
-                                  "stop as expected")
+        if self._backend == 'cv2':
+          self._finish_cv2()
+        elif self._backend == 'mpl':
+          self._finish_mpl()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("Displayer cleanup step: close display window")
+        failures.append(error)
+      else:
+        self._window_opened = False
+        self._fig = None
+        self._ax = None
+
+    if self._overlay_thread is not None:
+      if self._overlay_started:
+
+        # Give some time for the overlay thread to finish
+        try:
+          self._overlay_thread.join(0.2)
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Displayer cleanup step: join overlay thread")
+          failures.append(error)
+
+        # Check if the overlay thread is still alive and report it if so
+        try:
+          alive = self._overlay_thread.is_alive()
+          if alive:
+            raise RuntimeError("The overlay thread did not stop in time")
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Displayer cleanup step: check overlay thread")
+          failures.append(error)
+        else:
+          self._overlay_thread = None
+          self._overlay_started = False
+      else:
+        self._overlay_thread = None
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other Displayer cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("Displayer cleanup failures", failures)
 
   def _thread_target(self) -> None:
     """This method is the target to the :obj:`~threading.Thread` in charge of
@@ -227,8 +272,15 @@ class Displayer(CameraProcess):
 
       # Receiving the latest Overlay to draw
       overlay = None
-      while self._to_draw_conn.poll():
-        overlay = self._to_draw_conn.recv()
+      try:
+        while (not self._stop_thread and not self._stop_event.is_set() and
+               self._to_draw_conn.poll()):
+          overlay = self._to_draw_conn.recv()
+      except (EOFError, OSError):
+        # The owning process may close its Pipe during shutdown
+        if not self._stop_thread and not self._stop_event.is_set():
+          raise
+        break
 
       # Saving the received Overlay
       if overlay is not None:
@@ -249,12 +301,14 @@ class Displayer(CameraProcess):
     except AttributeError:
       flags = cv2.WINDOW_NORMAL
     cv2.namedWindow(self._title, flags)
+    self._window_opened = True
 
   def _prepare_mpl(self) -> None:
     """Creates a :mod:`matplotlib` Figure."""
 
     plt.ion()
     self._fig, self._ax = plt.subplots()
+    self._window_opened = True
 
   def _update_cv2(self, img: np.ndarray) -> None:
     """Reshapes the image to a maximum shape of 640x480 and displays it in 

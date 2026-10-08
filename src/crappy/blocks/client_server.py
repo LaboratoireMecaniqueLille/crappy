@@ -222,6 +222,12 @@ class ClientServer(Block):
     self._client: mqtt.Client | None = None
     self._reader: Thread | None = None
     self._proc: Popen | None = None
+    self._reader_started: bool = False
+    self._client_loop_started: bool = False
+    self._client_disconnected: bool = False
+    self._broker_stopped: bool = False
+    self._broker_stdout_closed: bool = False
+    self._stop_mosquitto: bool = False
 
     super().__init__()
     self.niceness = -10
@@ -236,8 +242,6 @@ class ClientServer(Block):
     self._spam = spam
     self._init_output = init_output if init_output is not None else dict()
 
-    self._stop_mosquitto = False
-    
     # These attributes may be set later
     self._topics: list[tuple[str, ...]] | None = None
     self._last_out_val: dict[str, Any] = dict()
@@ -300,8 +304,9 @@ class ClientServer(Block):
                              f"{self._port}")
       self._launch_mosquitto()
       # Creating and starting a Thread reading the stdout of the broker
-      self._reader = Thread(target=self._output_reader)
+      self._reader = Thread(target=self._output_reader, daemon=True)
       self._reader.start()
+      self._reader_started = True
       sleep(2)
       self.log(logging.INFO, "Waiting for Mosquitto to start")
       sleep(2)
@@ -335,6 +340,7 @@ class ClientServer(Block):
 
     self.log(logging.INFO, "Starting the client loop")
     self._client.loop_start()
+    self._client_loop_started = True
 
   def loop(self) -> None:
     """Receives data from the broker and/or sends data to the broker.
@@ -402,33 +408,124 @@ class ClientServer(Block):
             break
 
   def finish(self) -> None:
-    """Disconnects from the broker and stops it."""
+    """Disconnects the client, reaps the broker, and joins its stdout reader.
 
-    # Disconnecting from the broker
+    Cleanup also works after partial preparation.
+    """
+
+    failures: list[Exception | KeyboardInterrupt] = list()
+    self._stop_mosquitto = True
+
     if self._client is not None:
-      self.log(logging.INFO, "Stopping the client loop")
-      self._client.loop_stop()
-      self.log(logging.INFO, "Disconnecting from the broker")
-      self._client.disconnect()
+      # Disconnect first so loop_stop does not wait on an active connection
+      if not self._client_disconnected:
+        try:
+          self._client.disconnect()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("ClientServer cleanup step: disconnect MQTT client")
+          failures.append(error)
+        else:
+          self._client_disconnected = True
 
-    # Stopping the broker
-    if self._broker and self._proc is not None:
+      # Stop the client loop
+      if self._client_loop_started:
+        try:
+          self._client.loop_stop()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("ClientServer cleanup step: stop MQTT loop")
+          failures.append(error)
+        else:
+          self._client_loop_started = False
+      if self._client_disconnected and not self._client_loop_started:
+        self._client = None
+
+    # An existing broker process belongs to this Block, even after failed setup
+    if self._proc is not None and not self._broker_stopped:
       try:
-        self.log(logging.INFO, "Stopping the Mosquitto broker")
         self._proc.terminate()
-        self._proc.wait(timeout=15)
-        self.log(logging.INFO, f"Mosquitto terminated with return code "
-                               f"{self._proc.returncode}")
-        self._stop_mosquitto = True
-        if self._reader is not None:
-          self._reader.join(0.2)
-          if self._reader.is_alive():
-            self.log(logging.WARNING, "Reader thread failed to stop !")
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("ClientServer cleanup step: terminate broker")
+        failures.append(error)
 
+      # Wait for the subprocess to terminate
+      try:
+        self._proc.wait(timeout=15)
       except TimeoutExpired:
-        self.log(logging.WARNING, "Mosquitto did not terminate in time, "
-                                  "killing it")
-        self._proc.kill()
+        pass
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note("ClientServer cleanup step: wait for broker")
+        failures.append(error)
+      else:
+        self._broker_stopped = True
+
+      # Kill the subprocess if it is still alive
+      if not self._broker_stopped:
+        try:
+          self._proc.kill()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("ClientServer cleanup step: kill broker")
+          failures.append(error)
+
+        # Give some time for the subprocess to die
+        try:
+          self._proc.wait(timeout=1)
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("ClientServer cleanup step: reap killed broker")
+          failures.append(error)
+        else:
+          self._broker_stopped = True
+
+    if self._reader is not None:
+      if self._reader_started:
+        # give some time for the reader thread to stop
+        try:
+          self._reader.join(0.2)
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("ClientServer cleanup step: join broker reader")
+          failures.append(error)
+
+        # Report the reader thread failing to stop
+        try:
+          if self._reader.is_alive():
+            raise RuntimeError("The broker reader thread did not stop in time")
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("ClientServer cleanup step: check broker reader")
+          failures.append(error)
+        else:
+          self._reader = None
+          self._reader_started = False
+      else:
+        self._reader = None
+
+    # Closing stdout while its reader holds the stream lock could block
+    if self._proc is not None and self._reader is None:
+      if not self._broker_stdout_closed:
+        try:
+          if self._proc.stdout is not None:
+            self._proc.stdout.close()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("ClientServer cleanup step: close broker stdout")
+          failures.append(error)
+        else:
+          self._broker_stdout_closed = True
+      if self._broker_stopped and self._broker_stdout_closed:
+        self._proc = None
+
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other ClientServer cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("ClientServer cleanup failures", failures)
 
   def _launch_mosquitto(self) -> None:
     """Starts Mosquitto in a subprocess."""
@@ -480,3 +577,4 @@ class ClientServer(Block):
         self.log(logging.INFO, f"Subscribed to topic {topic}")
 
     self._client.loop_start()
+    self._client_loop_started = True

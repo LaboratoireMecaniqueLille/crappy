@@ -107,7 +107,10 @@ class VideoExtensoTool:
     # These attributes will be used later
     self._consecutive_overlaps: int = 0
     self._trackers: list[Tracker] = list()
+    self._started_trackers: list[Tracker] = list()
     self._pipes: list[connection.Connection] = list()
+    self._tracker_pipes: list[connection.Connection] = list()
+    self._tracker_connections: dict[Tracker, connection.Connection] = dict()
 
     # Setting the args
     self._white_spots: bool = white_spots
@@ -132,7 +135,12 @@ class VideoExtensoTool:
     if not hasattr(self, '_trackers') or not hasattr(self, '_pipes'):
       return
 
-    self.stop_tracking()
+    try:
+      self.stop_tracking()
+    except (Exception, KeyboardInterrupt) as error:
+      if self._logger is not None:
+        self._logger.exception("Tracker cleanup failed during destruction",
+                               exc_info=error)
 
   def start_tracking(self) -> None:
     """Creates a
@@ -151,6 +159,9 @@ class VideoExtensoTool:
         continue
 
       inlet, outlet = Pipe()
+      # Retain both endpoints for cleanup later
+      self._pipes.append(inlet)
+      self._tracker_pipes.append(outlet)
       tracker = Tracker(pipe=outlet,
                         logger_name=f"{current_process().name}."
                                     f"{type(self).__name__}",
@@ -159,53 +170,139 @@ class VideoExtensoTool:
                         white_spots=self._white_spots,
                         thresh=None if self._update_thresh else self._thresh,
                         blur=self._blur)
-      self._pipes.append(inlet)
       self._trackers.append(tracker)
+      self._tracker_connections[tracker] = inlet
       tracker.start()
+      self._started_trackers.append(tracker)
+      # The child owns its copy of this endpoint, it's no longer needed here
+      outlet.close()
+      self._tracker_pipes.remove(outlet)
 
   def stop_tracking(self) -> None:
     """Stops all the active 
     :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
     Processes, either gently or by terminating them if they don't stop by
-    themselves."""
+    themselves.
+    """
 
-    try:
-      if any((tracker.is_alive() for tracker in self._trackers)):
-        # First, gently asking the trackers to stop
-        for pipe, tracker in zip(self._pipes, self._trackers):
-          if tracker.is_alive():
-            try:
-              self._send(pipe, ('stop', 'stop', 'stop'))
-            except (BrokenPipeError, EOFError, OSError):
-              pass
+    failures: list[Exception | KeyboardInterrupt] = list()
 
-        for tracker in self._trackers:
+    # Ask every successfully started Tracker to stop before waiting for any
+    for tracker in self._started_trackers:
+      pipe = self._tracker_connections.get(tracker)
+      if pipe is None or pipe not in self._pipes:
+        continue
+      try:
+        alive = tracker.is_alive()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"VideoExtensoTool cleanup step: check {tracker.name}")
+        failures.append(error)
+        alive = True
+      if not alive:
+        continue
+
+      # Send a stop message to the Tracker
+      try:
+        self._send(pipe, ('stop', 'stop', 'stop'))
+      except (BrokenPipeError, EOFError):
+        # An exited Tracker may already have closed its endpoint
+        pass
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"VideoExtensoTool cleanup step: stop {tracker.name}")
+        failures.append(error)
+
+    # Stop and close every Tracker independently
+    for tracker in tuple(self._trackers):
+      name = tracker.name
+      if tracker in self._started_trackers:
+        # Give the child a chance to stop on its own
+        try:
           tracker.join(0.1)
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"VideoExtensoTool cleanup step: join {name} "
+                         "(initial wait)")
+          failures.append(error)
 
-        # If they're not stopping, killing the trackers
-        for tracker in self._trackers:
-          if tracker.is_alive():
-            self._log(logging.WARNING, "Tracker process did not stop properly,"
-                                       " terminating it")
+        # Terminate the child if it did not stop
+        try:
+          alive = tracker.is_alive()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"VideoExtensoTool cleanup step: check {name}")
+          failures.append(error)
+          alive = True
+        if alive:
+          try:
             tracker.terminate()
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note(f"VideoExtensoTool cleanup step: terminate {name}")
+            failures.append(error)
+          try:
+            tracker.join(0.1)
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note(f"VideoExtensoTool cleanup step: join {name} "
+                           "(after terminate)")
+            failures.append(error)
 
-        for tracker in self._trackers:
-          tracker.join(0.1)
+          # Kill the child if termination did not stop it
+          try:
+            alive = tracker.is_alive()
+          except (Exception, KeyboardInterrupt) as error:
+            error.add_note(f"VideoExtensoTool cleanup step: check {name}")
+            failures.append(error)
+            alive = True
+          if alive:
+            try:
+              tracker.kill()
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note(f"VideoExtensoTool cleanup step: kill {name}")
+              failures.append(error)
+            try:
+              tracker.join(0.1)
+            except (Exception, KeyboardInterrupt) as error:
+              error.add_note(f"VideoExtensoTool cleanup step: join {name} "
+                             "(after kill)")
+              failures.append(error)
 
-        # If they're still not stopping, terminating the trackers
-        for tracker in self._trackers:
-          if tracker.is_alive():
-            self._log(logging.WARNING, "Tracker process did not stop properly,"
-                                       " killing it")
-            tracker.kill()
+      # Closing an unstarted Process is valid
+      try:
+        tracker.close()
+      except (Exception, KeyboardInterrupt) as error:
+        error.add_note(f"VideoExtensoTool cleanup step: close process {name}")
+        failures.append(error)
+      else:
+        self._trackers.remove(tracker)
+        self._tracker_connections.pop(tracker, None)
+        if tracker in self._started_trackers:
+          self._started_trackers.remove(tracker)
 
-        for tracker in self._trackers:
-          tracker.join(0.1)
+    # Close the Pipes
+    for role, pipes in (('parent', self._pipes),
+                        ('child', self._tracker_pipes)):
+      for index, pipe in enumerate(tuple(pipes)):
+        try:
+          pipe.close()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note(f"VideoExtensoTool cleanup step: close {role} "
+                         f"Tracker Pipe {index + 1}")
+          failures.append(error)
+        else:
+          pipes.remove(pipe)
 
-    # Always close the pipes in the end
-    finally:
-      for pipe in self._pipes:
-        pipe.close()
+    # If there's only one Exception, raise it
+    if len(failures) == 1:
+      raise failures[0]
+    # Handle the case when a KeyboardInterrupt is among the Exceptions
+    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
+      for index, error in enumerate(failures):
+        if isinstance(error, KeyboardInterrupt):
+          others: list[BaseException] = failures[:index] + failures[index + 1:]
+          if error.__cause__ is not None:
+            others.insert(0, error.__cause__)
+          raise error from BaseExceptionGroup("Other VideoExtensoTool cleanup "
+                                              "failures", others)
+    # Otherwise just raise all Exceptions at once
+    elif failures:
+      raise ExceptionGroup("VideoExtensoTool cleanup failures", failures)
 
   def get_data(self,
                img: np.ndarray
