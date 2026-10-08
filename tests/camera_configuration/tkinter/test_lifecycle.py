@@ -38,7 +38,7 @@ class TestFinish(TkinterConfigTestCase):
       self._config.wm_state()
 
     # The histogram process should have been killed
-    self.assertFalse(self._config._histogram_process.is_alive())
+    self.assertTrue(self._config._lifecycle._process_closed)
 
 
 class TestConfigurationLifecycle(TkinterConfigTestCase):
@@ -50,7 +50,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     self._config.run()
 
     self.assertTrue(self._config._stop_event.is_set())
-    self.assertFalse(self._config._histogram_process.is_alive())
+    self.assertTrue(self._config._lifecycle._process_closed)
     self._config.stop()
 
   def test_shutdown_closes_without_validating_selection(self) -> None:
@@ -67,7 +67,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     validate.assert_not_called()
     finalize.assert_not_called()
     self.assertTrue(self._config._stop_event.is_set())
-    self.assertFalse(self._config._histogram_process.is_alive())
+    self.assertTrue(self._config._lifecycle._process_closed)
     self.assertTrue(self._config._img_in._closed)
     self.assertTrue(self._config._img_out._closed)
     with self.assertRaises(tk.TclError):
@@ -115,7 +115,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
         self._config.run()
 
     self.assertTrue(self._config._stop_event.is_set())
-    self.assertFalse(self._config._histogram_process.is_alive())
+    self.assertTrue(self._config._lifecycle._process_closed)
 
   def test_callback_error_before_run_is_preserved(self) -> None:
     """An early Tk error is logged with its traceback and raised by run()."""
@@ -157,7 +157,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     self.assertTrue(self._config._window_closed)
     self.assertTrue(self._config._img_in._closed)
     self.assertTrue(self._config._img_out._closed)
-    self.assertFalse(self._config._histogram_process.is_alive())
+    self.assertTrue(self._config._lifecycle._process_closed)
 
   def test_wait_keyboard_interrupt_closes_silently(self) -> None:
     """An interrupt outside a Tk callback also cleans up before propagating."""
@@ -174,7 +174,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     self.assertTrue(self._config._window_closed)
     self.assertTrue(self._config._img_in._closed)
     self.assertTrue(self._config._img_out._closed)
-    self.assertFalse(self._config._histogram_process.is_alive())
+    self.assertTrue(self._config._lifecycle._process_closed)
 
   def test_start_failure_cleans_unstarted_process(self) -> None:
     """A failed histogram start still closes its queues and Tk window."""
@@ -236,7 +236,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     self.assertTrue(broken._stop_event.is_set())
     self.assertTrue(broken._img_in._closed)
     self.assertTrue(broken._img_out._closed)
-    self.assertFalse(broken._histogram_process.is_alive())
+    self.assertTrue(broken._lifecycle._process_closed)
     with self.assertRaises(tk.TclError):
       broken.wm_state()
 

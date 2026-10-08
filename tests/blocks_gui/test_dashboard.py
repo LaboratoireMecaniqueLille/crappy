@@ -196,14 +196,18 @@ class DashboardTests:
     """Checks that finish closes the selected backend's window."""
 
     dashboard, _ = self._prepare_dashboard(('a',))
+    window = (dashboard._dashboard if self._backend == 'tkinter'
+              else dashboard._qt_window)
 
     dashboard.finish()
 
     if self._backend == 'tkinter':
+      self.assertIsNone(dashboard._dashboard)
       with self.assertRaises(TclError):
-        dashboard._dashboard.wm_state()
+        window.wm_state()
     else:
-      self.assertFalse(dashboard._qt_window.isVisible())
+      self.assertIsNone(dashboard._qt_window)
+      self.assertFalse(window.isVisible())
 
   def test_finish_is_idempotent(self) -> None:
     """Checks that finish can be called after the window is already gone."""

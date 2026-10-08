@@ -466,10 +466,12 @@ class TestGrapher(BlockTestBase):
     grapher_1, _ = self._prepare_grapher(('x', 'y'))
     grapher_2, _ = self._prepare_grapher(('x', 'y'))
     grapher_module.plt.figure(grapher_2._figure.number)
+    figure_number = grapher_1._figure.number
 
     grapher_1.finish()
 
-    self.assertNotIn(grapher_1._figure.number, grapher_module.plt.get_fignums())
+    self.assertIsNone(grapher_1._figure)
+    self.assertNotIn(figure_number, grapher_module.plt.get_fignums())
     self.assertIn(grapher_2._figure.number, grapher_module.plt.get_fignums())
 
   def test_clear_resets_pyqtgraph_curves_and_resampling_state(self) -> None:

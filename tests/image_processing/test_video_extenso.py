@@ -45,11 +45,13 @@ class FakeTracker:
 
   def __init__(self, alive: bool = True, survive_terminate: bool = False):
     self.alive = alive
+    self.name = f'FakeTracker-{id(self)}'
     self.survive_terminate = survive_terminate
     self.started = False
     self.join_calls = list()
     self.terminated = False
     self.killed = False
+    self.closed = False
 
   def start(self) -> None:
     self.started = True
@@ -68,6 +70,9 @@ class FakeTracker:
   def kill(self) -> None:
     self.killed = True
     self.alive = False
+
+  def close(self) -> None:
+    self.closed = True
 
 
 @dataclass
@@ -173,6 +178,8 @@ class TestVideoExtensoTool(TestCase):
     pipe_2 = FakePipe()
     tool._trackers = [tracker_1, tracker_2]
     tool._pipes = [pipe_1, pipe_2]
+    tool._started_trackers = list(tool._trackers)
+    tool._tracker_connections = dict(zip(tool._trackers, tool._pipes))
     tool._log = lambda *_: None
     tool._send = lambda pipe, value: pipe.send(value)
 
@@ -180,7 +187,7 @@ class TestVideoExtensoTool(TestCase):
 
     self.assertEqual(pipe_1.sent, [('stop', 'stop', 'stop')])
     self.assertEqual(pipe_2.sent, [('stop', 'stop', 'stop')])
-    self.assertEqual(tracker_1.join_calls, [0.1, 0.1, 0.1])
+    self.assertEqual(tracker_1.join_calls, [0.1, 0.1])
     self.assertEqual(tracker_2.join_calls, [0.1, 0.1, 0.1])
     self.assertTrue(tracker_1.terminated)
     self.assertTrue(tracker_2.terminated)
@@ -188,6 +195,67 @@ class TestVideoExtensoTool(TestCase):
     self.assertTrue(tracker_2.killed)
     self.assertTrue(pipe_1.closed)
     self.assertTrue(pipe_2.closed)
+    self.assertTrue(tracker_1.closed)
+    self.assertTrue(tracker_2.closed)
+    tool.stop_tracking()
+    self.assertEqual(tracker_2.join_calls, [0.1, 0.1, 0.1])
+
+  def test_partial_start_retains_both_pipe_endpoints(self) -> None:
+    """A failed Tracker constructor or start cannot lose allocated Pipes."""
+
+    for failed in ('constructor', 'start'):
+      with self.subTest(failed=failed):
+        tool = self._make_tool(self._spots(self._box(10, 20, 10, 20),
+                                           self._box(30, 40, 10, 20)))
+        pipes = [(FakePipe(), FakePipe()), (FakePipe(), FakePipe())]
+        first, second = FakeTracker(alive=False), FakeTracker(alive=False)
+        error = RuntimeError(failed)
+        constructed = [first, error if failed == 'constructor' else second]
+        with (patch.object(ve_module, 'Pipe', side_effect=pipes),
+              patch.object(ve_module, 'Tracker', side_effect=constructed),
+              patch.object(second, 'start', side_effect=error)):
+          with self.assertRaises(RuntimeError) as caught:
+            tool.start_tracking()
+        self.assertIs(caught.exception, error)
+        self.assertEqual(tool._started_trackers, [first])
+        tool.stop_tracking()
+        self.assertEqual(second.join_calls, [])
+        for inlet, outlet in pipes:
+          self.assertTrue(inlet.closed)
+          self.assertTrue(outlet.closed)
+
+  def test_cleanup_failures_do_not_skip_peers_or_break_retry_pairing(
+      self) -> None:
+    """Retrying one Tracker cannot accidentally send stop to another Pipe."""
+
+    tool = self._make_tool(self._spots(self._box(10, 20, 10, 20),
+                                       self._box(30, 40, 10, 20)))
+    first = FakeTracker(survive_terminate=True)
+    second = FakeTracker()
+    inlet, outlet = FakePipe(), FakePipe()
+    tool._trackers = [first, second]
+    tool._started_trackers = [first, second]
+    tool._pipes = [inlet, outlet]
+    tool._tracker_connections = {first: inlet, second: outlet}
+    tool._send = lambda pipe, value: pipe.send(value)
+    errors = (OSError('join'), RuntimeError('terminate'), ValueError('close'))
+    interrupt = KeyboardInterrupt()
+    with (patch.object(first, 'join', side_effect=[errors[0], None, None]),
+          patch.object(first, 'terminate', side_effect=errors[1]),
+          patch.object(first, 'close', side_effect=errors[2]),
+          patch.object(outlet, 'close', side_effect=interrupt)):
+      with self.assertRaises(KeyboardInterrupt) as caught:
+        tool.stop_tracking()
+    self.assertIs(caught.exception, interrupt)
+    self.assertEqual(interrupt.__cause__.exceptions, errors)
+    self.assertTrue(first.killed)
+    self.assertTrue(second.closed)
+    self.assertTrue(inlet.closed)
+    tool.stop_tracking()
+    tool.stop_tracking()
+    self.assertEqual(outlet.sent, [('stop', 'stop', 'stop')])
+    self.assertTrue(outlet.closed)
+    self.assertTrue(first.closed)
 
   def test_get_data_uses_latest_available_tracker_result(self) -> None:
     """Checks send/crop behavior and queued-result draining."""

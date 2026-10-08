@@ -176,36 +176,48 @@ class TestImageDisplayer(VisionTestBase):
 
     displayer = self.make_displayer()
     self.add_image_input(displayer)
-    displayer._prepare_cv2 = Mock()
+
+    def prepare_window() -> None:
+      displayer._window_opened = True
+
+    displayer._prepare_cv2 = Mock(side_effect=prepare_window)
     displayer._finish_cv2 = Mock()
 
     with patch.object(display_module.VisionBlock, 'prepare') as inherited:
       displayer.prepare()
     displayer._prepare_cv2.assert_called_once_with()
     inherited.assert_called_once_with()
+    self.assertTrue(displayer._window_opened)
 
     with patch.object(display_module.VisionBlock, 'finish') as inherited:
       displayer.finish()
     displayer._finish_cv2.assert_called_once_with()
     inherited.assert_called_once_with()
+    self.assertFalse(displayer._window_opened)
 
   def test_prepare_and_finish_dispatch_mpl_backend(self) -> None:
     """Checks the Matplotlib window and inherited buffer lifecycle dispatch."""
 
     displayer = self.make_displayer(backend='mpl')
     self.add_image_input(displayer)
-    displayer._prepare_mpl = Mock()
+
+    def prepare_window() -> None:
+      displayer._window_opened = True
+
+    displayer._prepare_mpl = Mock(side_effect=prepare_window)
     displayer._finish_mpl = Mock()
 
     with patch.object(display_module.VisionBlock, 'prepare') as inherited:
       displayer.prepare()
     displayer._prepare_mpl.assert_called_once_with()
     inherited.assert_called_once_with()
+    self.assertTrue(displayer._window_opened)
 
     with patch.object(display_module.VisionBlock, 'finish') as inherited:
       displayer.finish()
     displayer._finish_mpl.assert_called_once_with()
     inherited.assert_called_once_with()
+    self.assertFalse(displayer._window_opened)
 
   def test_loop_consumes_overlays_before_rate_limit(self) -> None:
     """Checks overlay state remains current even when display is throttled."""

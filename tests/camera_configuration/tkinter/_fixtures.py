@@ -123,10 +123,9 @@ class TkinterConfigTestCase(unittest.TestCase):
     if self._config is None:
       return
 
-    process = self._config._histogram_process
     self._config.stop()
 
-    self.assertFalse(process.is_alive())
+    self.assertTrue(self._config._lifecycle._process_closed)
 
   def _close_log_queue(self) -> None:
     """Release the logging queue without waiting for its feeder thread."""

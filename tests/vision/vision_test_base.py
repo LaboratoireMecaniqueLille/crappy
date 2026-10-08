@@ -73,24 +73,26 @@ class VisionTestBase(BlockTestBase):
 
     for data in getattr(block, '_in_link_data', tuple()):
       data.npy_buffer = None
-      if data.img_buffer is not None:
+      # Fault-injection doubles do not own a real shared-memory handle
+      if isinstance(data.img_buffer, SharedMemory):
         try:
           data.img_buffer.close()
         except (BufferError, OSError):
           pass
-        data.img_buffer = None
+      data.img_buffer = None
 
     data = getattr(block, '_out_link_data', None)
     if data is not None and data.img_buffer is not None:
       data.npy_buffer = None
-      try:
-        data.img_buffer.close()
-      except (BufferError, OSError):
-        pass
-      try:
-        data.img_buffer.unlink()
-      except (FileNotFoundError, OSError):
-        pass
+      if isinstance(data.img_buffer, SharedMemory):
+        try:
+          data.img_buffer.close()
+        except (BufferError, OSError):
+          pass
+        try:
+          data.img_buffer.unlink()
+        except (FileNotFoundError, OSError):
+          pass
       data.img_buffer = None
 
   def tearDown(self) -> None:

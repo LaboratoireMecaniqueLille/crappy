@@ -374,15 +374,15 @@ class TestMachine(BlockTestBase):
       ActuatorInstance(actuator=actuator_2),
     ]
     for actuator in block._actuators:
-      actuator._opened = True
+      actuator.opened = True
 
     block.finish()
 
     self.assertEqual(TrackingActuator.events, [
-      ('stop', actuator_2.id),
       ('stop', actuator_1.id),
-      ('close', actuator_2.id),
+      ('stop', actuator_2.id),
       ('close', actuator_1.id),
+      ('close', actuator_2.id),
     ])
     self.assertTrue(actuator_1.stopped)
     self.assertTrue(actuator_1.closed)
@@ -433,19 +433,21 @@ class TestMachine(BlockTestBase):
     block.finish()
     self.assertEqual(TrackingActuator.events,
                      [('open', 0), ('open', 1), ('stop', 0),
-                      ('close', 1), ('close', 0)])
+                      ('close', 0), ('close', 1)])
 
   def test_finish_attempts_every_stop_and_close_before_grouping_failures(
       self) -> None:
-    """Checks reverse release order and per-actuator failure diagnostics."""
+    """Checks configured release order and per-actuator failure diagnostics."""
 
     errors = [RuntimeError('first stop'), ValueError('second stop'),
               OSError('first close'), RuntimeError('second close')]
     with self._actuator_patch():
       block = Machine([
-        {'type': 'TrackingActuator', 'stop_error': errors[0],
+        {'type': 'TrackingActuator', 'cmd_label': 'first',
+         'stop_error': errors[0],
          'close_error': errors[2]},
-        {'type': 'TrackingActuator', 'stop_error': errors[1],
+        {'type': 'TrackingActuator', 'cmd_label': 'second',
+         'stop_error': errors[1],
          'close_error': errors[3]},
       ])
       link(TestBlock(), block)
@@ -456,13 +458,14 @@ class TestMachine(BlockTestBase):
       block.finish()
 
     self.assertEqual(TrackingActuator.events,
-                     [('stop', 1), ('stop', 0), ('close', 1), ('close', 0)])
-    self.assertEqual(caught.exception.exceptions,
-                     (errors[1], errors[0], errors[3], errors[2]))
-    for error, step in zip(caught.exception.exceptions,
-                           ('stop actuator 2', 'stop actuator 1',
-                            'close actuator 2', 'close actuator 1')):
+                     [('stop', 0), ('stop', 1), ('close', 0), ('close', 1)])
+    self.assertEqual(caught.exception.exceptions, tuple(errors))
+    for error, step, label in zip(caught.exception.exceptions,
+                                  ('stop actuator', 'stop actuator',
+                                   'close actuator', 'close actuator'),
+                                  ('first', 'second', 'first', 'second')):
       self.assertIn(step, error.__notes__[0])
+      self.assertIn(f"cmd_label={label!r}", error.__notes__[0])
       self.assertIsNotNone(error.__traceback__)
 
   def test_finish_retries_only_failed_closes(self) -> None:
@@ -484,8 +487,8 @@ class TestMachine(BlockTestBase):
     block.finish()
 
     self.assertEqual(TrackingActuator.events,
-                     [('stop', 1), ('stop', 0), ('close', 1),
-                      ('close', 0), ('close', 1)])
+                     [('stop', 0), ('stop', 1), ('close', 0),
+                      ('close', 1), ('close', 1)])
 
   def test_finish_preserves_interrupt_and_other_failures(self) -> None:
     """Checks an interruption is delayed until every device was cleaned up."""
@@ -505,4 +508,4 @@ class TestMachine(BlockTestBase):
     self.assertIs(caught.exception, interrupt)
     self.assertEqual(interrupt.__cause__.exceptions, (error,))
     self.assertEqual(TrackingActuator.events,
-                     [('stop', 1), ('stop', 0), ('close', 1), ('close', 0)])
+                     [('stop', 0), ('stop', 1), ('close', 0), ('close', 1)])

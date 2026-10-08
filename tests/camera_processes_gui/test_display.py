@@ -214,6 +214,7 @@ class TestDisplayer(CameraProcessTestBase):
       displayer.init()
       self.assertIsNotNone(displayer._fig)
       self.assertIsNotNone(displayer._ax)
+      figure_number = displayer._fig.number
 
       displayer._overlay = [overlay]
 
@@ -230,7 +231,9 @@ class TestDisplayer(CameraProcessTestBase):
     finally:
       displayer.finish()
 
-    self.assertNotIn(displayer._fig.number, display_module.plt.get_fignums())
+    self.assertIsNone(displayer._fig)
+    self.assertIsNone(displayer._ax)
+    self.assertNotIn(figure_number, display_module.plt.get_fignums())
 
   def test_thread_target_keeps_latest_overlay_message(self) -> None:
     """Checks overlay pipe draining in the Displayer helper thread."""

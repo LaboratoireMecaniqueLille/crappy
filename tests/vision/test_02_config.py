@@ -208,7 +208,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
     self.assertIs(caught.exception, error)
     self.assertIn('configuration Pipe', error.__notes__[0])
     self.assertEqual(operations.mock_calls,
-                     [call.outgoing.close(), call.incoming.close()])
+                     [call.incoming.close(), call.outgoing.close()])
     outgoing.close.side_effect = None
     block.finish()
     block.finish()

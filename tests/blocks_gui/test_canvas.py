@@ -117,14 +117,18 @@ class CanvasTests:
 
     canvas, _ = self._prepare_canvas(title='first')
     other, _ = self._prepare_canvas(title='second')
+    window = (canvas._root if self._backend == 'tkinter'
+              else canvas._qt_window)
     canvas.finish()
     canvas.finish()
     if self._backend == 'tkinter':
+      self.assertIsNone(canvas._root)
       with self.assertRaises(TclError):
-        canvas._root.wm_state()
+        window.wm_state()
       self.assertEqual(other._root.wm_state(), 'withdrawn')
     else:
-      self.assertFalse(canvas._qt_window.isVisible())
+      self.assertIsNone(canvas._qt_window)
+      self.assertFalse(window.isVisible())
       self.assertTrue(other._qt_window.isVisible())
       self.assertIs(canvas._qt_app, other._qt_app)
 
@@ -330,8 +334,10 @@ class TestCanvasPyQt(CanvasTests, BlockTestBase):
           with self.assertRaises(error):
             self._prepare_canvas(image_path=image)
           canvas = self._canvases[-1]
+          window = canvas._qt_window
           canvas.finish()
-          self.assertFalse(canvas._qt_window.isVisible())
+          self.assertIsNone(canvas._qt_window)
+          self.assertFalse(window.isVisible())
 
   def test_closing_window_does_not_stop_the_test(self) -> None:
     """Closing a Canvas does not turn into a global stop request."""

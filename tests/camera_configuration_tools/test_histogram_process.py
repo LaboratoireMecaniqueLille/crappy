@@ -6,6 +6,7 @@ import logging
 from multiprocessing import Event, Queue
 from queue import Empty
 import unittest
+from unittest.mock import Mock
 import numpy as np
 
 from crappy.tool.camera_config.config_tools import HistogramProcess
@@ -38,6 +39,26 @@ class TestHistogramProcess(unittest.TestCase):
     for queue in (self.img_in, self.img_out, self.log_queue):
       queue.cancel_join_thread()
       queue.close()
+
+  def test_queue_failure_does_not_skip_other_queue_or_close(self) -> None:
+    """Every drain, feeder cancellation, and close is attempted before raising."""
+
+    first, second = Mock(), Mock()
+    first.get_nowait.side_effect = OSError('drain')
+    second.get_nowait.side_effect = Empty
+    errors = (first.get_nowait.side_effect, RuntimeError('cancel'))
+    second.cancel_join_thread.side_effect = errors[1]
+    self.process._img_in, self.process._img_out = first, second
+    with self.assertRaises(ExceptionGroup) as caught:
+      self.process._cleanup_queues()
+    self.assertEqual(caught.exception.exceptions, errors)
+    first.close.assert_called_once_with()
+    second.close.assert_called_once_with()
+    second.cancel_join_thread.side_effect = None
+    self.process._cleanup_queues()
+    first.get_nowait.assert_called_once_with()
+    first.close.assert_called_once_with()
+    second.close.assert_called_once_with()
 
   def test_histogram(self) -> None:
     """An actual process emits binary bars and optional auto-range markers."""

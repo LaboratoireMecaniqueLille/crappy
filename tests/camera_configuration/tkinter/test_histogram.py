@@ -91,4 +91,4 @@ class TestNormalRun(TkinterConfigTestCase):
     # Delete the configuration window
     self._config.finish()
 
-    self.assertFalse(self._config._histogram_process.is_alive())
+    self.assertTrue(self._config._lifecycle._process_closed)

@@ -325,7 +325,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     for error in errors:
       self.assertTrue(error.__notes__[0].startswith('VisionBlock cleanup step:'))
     self.assertEqual(operations.mock_calls,
-                     [call.second.close(), call.first.close(),
+                     [call.first.close(), call.second.close(),
                       call.output.close(), call.output.unlink()])
     block._out_img_conditions[1].notify_all.assert_called_once_with()
     first.unlink.assert_not_called()
