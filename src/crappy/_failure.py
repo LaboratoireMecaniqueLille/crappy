@@ -210,16 +210,14 @@ class FailureReport:
       Report retaining the original failure ID, source and diagnostic graph.
 
     Raises:
-      FailureTransportError: The fields or wire format version are invalid.
+      FailureTransportError: The fields or wire format are invalid.
     """
 
     try:
       if type(wire) is not dict:
         raise TypeError("wire must be a dictionary")
-      if set(wire) != {item.name for item in fields(cls)} | {'version'}:
+      if set(wire) != {item.name for item in fields(cls)}:
         raise ValueError("wire must contain exactly the report fields")
-      if type(wire['version']) is not int or wire['version'] != 1:
-        raise ValueError("unsupported failure report wire version")
       if type(wire['nodes']) is not list:
         raise TypeError("wire nodes must be a list")
 
@@ -239,8 +237,7 @@ class FailureReport:
         nodes.append(ExceptionNode(**values))
 
       # Then reconstruct the report
-      values = {name: value for name, value in wire.items()
-                if name != 'version'}
+      values = wire.copy()
       values['nodes'] = tuple(nodes)
       return cls(**values)
 
