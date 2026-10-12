@@ -9,7 +9,7 @@ from typing import Any
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from crappy._exceptions import StopRequested
+from crappy._exceptions import GeneratorStop, ReaderStop, StopRequested
 from crappy._failure import FailureManager
 
 
@@ -77,6 +77,76 @@ class TestFailureManagerCollections(TestCase):
     assert isinstance(group, BaseExceptionGroup)
     self.assertIsInstance(group.exceptions[0], KeyboardInterrupt)
     self.assertIs(group.exceptions[1], error)
+
+  def test_completion_is_scoped_to_its_step(self) -> None:
+    later = Mock()
+    with self.manager.collect('execution'):
+      with self.manager.step('main', completion=(GeneratorStop, ReaderStop)):
+        raise GeneratorStop('finished')
+      with self.manager.step('finish'):
+        later()
+    self.assertEqual(self.manager.snapshot(), ())
+    self.logger.error.assert_not_called()
+    self.logger.warning.assert_called_once_with('main requested completion')
+    later.assert_called_once_with()
+    error = GeneratorStop('unexpected outside main')
+    with self.assertRaises(ExceptionGroup) as caught:
+      with self.manager.collect('cleanup'):
+        with self.manager.step('finish'):
+          raise error
+    self.assertEqual(caught.exception.exceptions, (error,))
+
+  def test_mixed_completion_group_keeps_real_failures_and_metadata(self) -> None:
+    first, interrupt = ValueError('first'), KeyboardInterrupt('interrupt')
+    error = BaseExceptionGroup('outer', [GeneratorStop(),
+        BaseExceptionGroup('nested', [first, ReaderStop(), interrupt])])
+    error.add_note('original note')
+    cause = OSError('cause')
+    error.__cause__ = cause
+    later = Mock()
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      with self.manager.collect('execution'):
+        with self.manager.step('main', completion=(GeneratorStop, ReaderStop)):
+          raise error
+        self.assertEqual(len(self.manager.snapshot()), 1)
+        self.assertEqual(len(self.emitted), 1)
+        with self.manager.step('finish'):
+          later()
+    retained = caught.exception.exceptions[0]
+    self.assertEqual(retained.message, 'outer')
+    self.assertEqual(retained.exceptions[0].exceptions, (first, interrupt))
+    self.assertIs(retained.__cause__, cause)
+    self.assertIn('original note', retained.__notes__)
+    self.logger.warning.assert_called_once_with('main requested completion')
+    later.assert_called_once_with()
+
+  def test_completion_warning_failure_cannot_skip_independent_steps(self) -> None:
+    failure = OSError('completion log')
+    self.logger.warning.side_effect = failure
+    later = Mock()
+    with self.assertRaises(ExceptionGroup) as caught:
+      with self.manager.collect('execution'):
+        with self.manager.step('main', completion=(GeneratorStop,)):
+          raise GeneratorStop()
+        with self.manager.step('finish'):
+          later()
+    self.assertEqual(caught.exception.exceptions, (failure,))
+    self.assertIs(self.manager.snapshot()[0][1], failure)
+    self.logger.warning.assert_called_once()
+    self.logger.error.assert_called_once()
+    later.assert_called_once_with()
+
+  def test_completion_declaration_requires_exception_classes(self) -> None:
+    invalid: tuple[Any, ...] = (None, [GeneratorStop], (object,), (1,))
+    operation = Mock()
+    with self.manager.collect('declarations'):
+      for completion in invalid:
+        with self.subTest(completion=completion):
+          with self.assertRaisesRegex(TypeError, 'Exception classes'):
+            with self.manager.step('main', completion=completion):
+              operation()
+    operation.assert_not_called()
+    self.assertEqual(self.manager.snapshot(), ())
 
   def test_reported_error_can_be_raised_by_local_collection(self) -> None:
     error = ValueError('origin')

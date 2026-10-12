@@ -37,12 +37,14 @@ class TestLogging(CameraProcessTestBase):
     self.assertIs(self._process._log_queue, shared.log_queue)
 
   def test_disable_logging(self) -> None:
-    """Tests that passing None disables logging globally."""
+    """Tests that passing None only disables this process's logger."""
 
     self._process = TestCameraProcess()
     self.make_shared(log_level=None)
 
+    disable = logging.root.manager.disable
     self._process._set_logger()
 
     self.assertIsNotNone(self._process._logger)
-    self.assertGreaterEqual(logging.root.manager.disable, logging.CRITICAL)
+    self.assertTrue(self._process._logger.disabled)
+    self.assertEqual(logging.root.manager.disable, disable)

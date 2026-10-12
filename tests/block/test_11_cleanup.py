@@ -77,7 +77,7 @@ class TestCleanup(BlockTestBase):
           link.close.assert_called_once_with()
           manager.shutdown.assert_called_once_with()
           worker.join.assert_called_once_with(timeout=1.0)
-          queue.cancel_join_thread.assert_called_once_with()
+          queue.cancel_join_thread.assert_not_called()
           queue.close.assert_called_once_with()
 
   def test_cleanup_logs_escalation_and_resource_shutdown(self) -> None:
@@ -129,7 +129,7 @@ class TestCleanup(BlockTestBase):
           link.close.assert_called_once_with()
           manager.shutdown.assert_called_once_with()
           worker.join.assert_called_once_with(timeout=1.0)
-          queue.cancel_join_thread.assert_called_once_with()
+          queue.cancel_join_thread.assert_not_called()
           queue.close.assert_called_once_with()
           self.assertEqual(failure.is_set(), error_type is OSError)
           self.assertEqual(interrupt.is_set(), error_type is KeyboardInterrupt)
@@ -221,7 +221,7 @@ class TestCleanup(BlockTestBase):
     first.kill.assert_called_once_with()
     manager.shutdown.assert_called_once_with()
     worker.join.assert_called_once_with(timeout=1.0)
-    queue.cancel_join_thread.assert_called_once_with()
+    queue.cancel_join_thread.assert_not_called()
     queue.close.assert_called_once_with()
     self.assertTrue(failure.is_set())
     self.assertGreaterEqual(logger.exception.call_count, 3)
@@ -229,13 +229,13 @@ class TestCleanup(BlockTestBase):
     self.assertIsNone(Block.shared_mgr)
 
   def test_stop_and_queue_failures_still_run_other_cleanup(self) -> None:
-    """Failure to signal stop or cancel a feeder cannot skip later steps."""
+    """Failure to signal stop or close a Queue cannot skip later steps."""
 
     self.setup_cleanup()
     manager, queue = Mock(), Mock()
     Block.stop_event = Mock()
     Block.stop_event.set.side_effect = KeyboardInterrupt()
-    queue.cancel_join_thread.side_effect = OSError('cancel')
+    queue.close.side_effect = OSError('close')
     Block.shared_mgr, Block.log_queue = manager, queue
     failure, interrupt = Block.raise_event, Block.kbi_event
     Block.no_raise = True

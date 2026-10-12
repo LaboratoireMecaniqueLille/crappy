@@ -135,6 +135,8 @@ class TestBlock(Block):
     self.last_t = Value('d', -1.0)
     self.last_fps = Value('d', -1.0)
     self.n_loops = Value('i', 0)
+    # Standalone run-cycle tests also need the flag normally set by prepare_all.
+    self._main_entered = Value('b', 0, lock=False)
 
     self.loops = Value('i', 0)
 
@@ -300,6 +302,9 @@ class BlockTestBase(unittest.TestCase):
 
     self.assertIsNone(Block.log_queue)
     self.assertIsNone(Block.log_thread)
+    self.assertIsNone(Block.logger)
+    self.assertIsNone(Block.logger_state)
+    self.assertEqual(Block.log_handlers, [])
 
     self.assertEqual(link_graph._nodes, dict())
     self.assertEqual(link_graph._edges, dict())

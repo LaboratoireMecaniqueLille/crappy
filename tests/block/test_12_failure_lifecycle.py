@@ -349,8 +349,9 @@ class TestFailureLifecycle(BlockTestBase):
     self._block._stop_event = Mock()
     self._block._stop_event.is_set.return_value = True
     with patch.object(self._block, '_set_block_logger'):
-      with self.assertRaises(BaseExceptionGroup) as caught:
-        self._block.run()
+      self._block.run()
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      self._block._failure_manager.raise_if_failed('producer shutdown')
     self.assertEqual(caught.exception.exceptions, (close_error, flush_error))
     queue.close.assert_called_once()
     queue.join_thread.assert_called_once()

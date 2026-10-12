@@ -11,13 +11,21 @@ from unittest.mock import Mock, patch
 from .block_test_base import BlockTestBase, TestBlock
 
 
+class TestBlockStopInBegin(TestBlock):
+  """Requests stop before main, after startup has completed normally."""
+
+  def begin(self) -> None:
+    super().begin()
+    self._stop_event.set()
+
+
 class TestPauseFreq(BlockTestBase):
   """Tests the pause handling and loop-frequency bookkeeping of Blocks."""
 
   def test_stop_event(self) -> None:
     """Tests that an already-set stop Event skips the loop body."""
 
-    self._block = TestBlock()
+    self._block = TestBlockStopInBegin()
     self._block.display_freq = True
 
     self._block._ready_barrier = Barrier(1)
@@ -30,7 +38,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._log_queue = Queue()
 
     self._block._start_event.set()
-    self._block._stop_event.set()
 
     self._block.start()
 
