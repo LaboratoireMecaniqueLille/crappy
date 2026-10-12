@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from crappy import Block
-from crappy._global import T0NotSetError
+from crappy._exceptions import T0NotSetError
 from multiprocessing import Barrier, Event, Value, Queue
 import logging
 

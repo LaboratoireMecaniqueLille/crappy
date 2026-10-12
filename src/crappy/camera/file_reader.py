@@ -7,7 +7,8 @@ from re import fullmatch
 import logging
 
 from .meta_camera import Camera
-from .._global import OptionalModule, ReaderStop
+from .._exceptions import ReaderStop
+from .._global import OptionalModule
 
 try:
   import SimpleITK as Sitk

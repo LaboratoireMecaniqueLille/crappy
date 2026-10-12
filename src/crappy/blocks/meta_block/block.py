@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from dataclasses import replace
 
 from ...links import Link, link_graph, GraphStructureError
-from ..._global import (LinkDataError, StartTimeout, PrepareError,
+from ..._exceptions import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
                         CameraPrepareError, CameraRuntimeError, SchedulerStop,
                         CameraConfigError, CrappyFail, DefinitionError)

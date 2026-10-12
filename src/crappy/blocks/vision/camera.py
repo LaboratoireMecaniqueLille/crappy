@@ -17,7 +17,7 @@ from ...tool.camera_config.pyqt import PyQtCameraConfig
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,
                             load_collection_class)
-from ..._global import CameraConfigError, PrepareError
+from ..._exceptions import CameraConfigError, PrepareError
 
 
 class CameraSource(VisionBlock):

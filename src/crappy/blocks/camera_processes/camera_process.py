@@ -16,7 +16,7 @@ from platform import system
 from abc import ABC, abstractmethod
 
 from ...links import Link
-from ..._global import LinkDataError
+from ..._exceptions import LinkDataError
 from ...tool.camera_config import Overlay
 
 

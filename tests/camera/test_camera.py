@@ -5,7 +5,7 @@ from multiprocessing import current_process
 from unittest import TestCase
 from unittest.mock import patch
 import numpy as np
-from crappy._global import DefinitionError
+from crappy._exceptions import DefinitionError
 from crappy.camera.meta_camera.camera import Camera
 from crappy.camera.meta_camera.camera_setting import (CameraBoolSetting,
                                                       CameraChoiceSetting,

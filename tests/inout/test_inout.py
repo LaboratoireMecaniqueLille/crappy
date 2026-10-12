@@ -7,7 +7,7 @@ from unittest.mock import call, patch
 
 import numpy as np
 
-from crappy._global import DefinitionError
+from crappy._exceptions import DefinitionError
 from crappy.inout.meta_inout import InOut
 import crappy.inout.meta_inout.inout as inout_module
 

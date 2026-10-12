@@ -11,7 +11,7 @@ import unittest
 
 import numpy as np
 
-from crappy._global import LinkDataError
+from crappy._exceptions import LinkDataError
 from crappy.blocks.camera_processes.camera_process import CameraProcess
 
 

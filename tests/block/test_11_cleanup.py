@@ -8,7 +8,7 @@ from threading import Thread
 from unittest.mock import Mock, patch
 
 from crappy import Block
-from crappy._global import CrappyFail
+from crappy._exceptions import CrappyFail
 from crappy.blocks.meta_block import block as block_module
 from crappy.links import Link
 

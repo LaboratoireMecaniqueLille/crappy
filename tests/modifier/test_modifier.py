@@ -5,7 +5,7 @@ from multiprocessing import current_process
 from unittest import TestCase
 
 import crappy.modifier as modifier_package
-from crappy._global import DefinitionError
+from crappy._exceptions import DefinitionError
 from crappy.modifier import Modifier
 
 

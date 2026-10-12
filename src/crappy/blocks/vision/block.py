@@ -17,7 +17,7 @@ from time import monotonic
 
 from ..meta_block import Block
 from ...links import ImageLink
-from ..._global import LinkDataError, PrepareError
+from ..._exceptions import LinkDataError, PrepareError
 from ...tool.camera_config import CameraConfig
 
 

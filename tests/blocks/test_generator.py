@@ -7,7 +7,7 @@ from typing import Any
 from unittest.mock import patch
 
 import crappy.blocks.generator as generator_module
-from crappy._global import GeneratorStop
+from crappy._exceptions import GeneratorStop
 from crappy.blocks.generator import Generator
 from crappy.blocks.generator_path.meta_path import Path
 

@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from crappy import Block
-from crappy._global import CrappyFail
+from crappy._exceptions import CrappyFail
 from crappy.blocks.meta_block import block as block_module
 
 from .block_test_base import BlockTestBase, TestBlock

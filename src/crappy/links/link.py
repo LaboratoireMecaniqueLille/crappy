@@ -12,7 +12,7 @@ from multiprocessing import current_process
 import logging
 
 from .link_graph import link_graph
-from .._global import LinkDataError
+from .._exceptions import LinkDataError
 
 ModifierType = Callable[[dict[str, Any]], [dict[str, Any] | None]]
 

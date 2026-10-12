@@ -6,7 +6,7 @@ from unittest.mock import patch
 from weakref import ref, WeakSet
 
 from crappy import Block
-from crappy._global import CrappyFail
+from crappy._exceptions import CrappyFail
 from crappy.blocks.meta_block import block as block_module
 from crappy.links import GraphStructureError, link_graph
 

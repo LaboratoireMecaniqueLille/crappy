@@ -8,7 +8,7 @@ import logging
 import numpy as np
 
 import crappy.blocks.vision.camera as camera_module
-from crappy._global import CameraConfigError, PrepareError
+from crappy._exceptions import CameraConfigError, PrepareError
 from crappy.blocks.camera import DummyCam
 from crappy.blocks.vision import CameraSource
 from crappy.blocks.vision.block import ConfigRequest

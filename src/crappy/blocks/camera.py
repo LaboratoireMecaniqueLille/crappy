@@ -22,7 +22,7 @@ from ..tool.camera_config.tkinter import TkinterCameraConfig
 from ..tool.camera_config.pyqt import PyQtCameraConfig
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
-from .._global import (CameraPrepareError, CameraRuntimeError,
+from .._exceptions import (CameraPrepareError, CameraRuntimeError,
                        CameraConfigError, PrepareError)
 
 
@@ -1095,11 +1095,11 @@ get_config` is unpacked into
     :class:`~crappy.blocks.camera_processes.CameraProcess` starts.
 
     Exceptions raised by the configuration window are converted to
-    :exc:`~crappy._global.CameraConfigError` after the window is stopped. A
+    :exc:`~crappy._exceptions.CameraConfigError` after the window is stopped. A
     :exc:`KeyboardInterrupt` is instead propagated unchanged after cleanup.
     If another :class:`~crappy.blocks.meta_block.block.Block` fails during
     preparation or a stop is requested, the window closes without validating or
-    exporting an incomplete selection and :exc:`~crappy._global.PrepareError`
+    exporting an incomplete selection and :exc:`~crappy._exceptions.PrepareError`
     is propagated.
 
     It is common to camera-related

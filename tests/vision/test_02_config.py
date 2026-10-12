@@ -3,7 +3,7 @@
 from multiprocessing import Barrier, Event, Pipe
 from unittest.mock import Mock, call
 
-from crappy._global import PrepareError
+from crappy._exceptions import PrepareError
 from crappy.blocks.vision.block import ConfigRequest
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 

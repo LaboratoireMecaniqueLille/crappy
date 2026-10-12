@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from crappy import Block
-from crappy._global import DefinitionError
+from crappy._exceptions import DefinitionError
 from crappy.links import link_graph
 from multiprocessing import Value, Barrier, Event, Queue
 from threading import Thread

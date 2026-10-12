@@ -8,7 +8,7 @@ import logging
 import numpy as np
 from unittest.mock import MagicMock, Mock, call, patch, sentinel
 from crappy import Block
-from crappy._global import (CameraConfigError, CameraPrepareError,
+from crappy._exceptions import (CameraConfigError, CameraPrepareError,
                             CameraRuntimeError, PrepareError)
 from crappy.blocks.camera import Camera
 import crappy.blocks.camera as camera_module

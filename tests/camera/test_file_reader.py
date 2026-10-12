@@ -8,7 +8,8 @@ from unittest.mock import call, patch
 
 import numpy as np
 
-from crappy._global import OptionalModule, ReaderStop
+from crappy._exceptions import ReaderStop
+from crappy._global import OptionalModule
 from crappy.camera.file_reader import FileReader
 import crappy.camera.file_reader as file_reader_module
 

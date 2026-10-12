@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, Mock, call, patch
 
 import numpy as np
 
-from crappy._global import LinkDataError, PrepareError
+from crappy._exceptions import LinkDataError, PrepareError
 from crappy.blocks.vision.block import ImgLinkData
 import crappy.blocks.vision.block as block_module
 from crappy.links import ImageLink

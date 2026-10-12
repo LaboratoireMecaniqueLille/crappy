@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from crappy import Block
-from crappy._global import LinkDataError
+from crappy._exceptions import LinkDataError
 from crappy.blocks.vision import VisionBlock
 from crappy.links import GraphStructureError, ImageLink, link_graph
 from itertools import chain

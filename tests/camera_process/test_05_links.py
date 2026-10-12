@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from crappy._global import LinkDataError
+from crappy._exceptions import LinkDataError
 from crappy.tool.camera_config import Box
 
 from .camera_process_test_base import (CameraProcessTestBase, TestLink,

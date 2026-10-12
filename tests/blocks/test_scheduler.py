@@ -4,7 +4,7 @@ from unittest.mock import patch
 from typing import Any
 
 import crappy.blocks.scheduler as scheduler_module
-from crappy._global import SchedulerStop
+from crappy._exceptions import SchedulerStop
 from crappy.blocks.scheduler import Scheduler
 from crappy.blocks.schedulers import State
 from crappy.blocks.schedulers.conditions import Delay

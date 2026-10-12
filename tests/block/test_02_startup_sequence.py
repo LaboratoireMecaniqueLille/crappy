@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from crappy import Block
-from crappy._global import CrappyFail
+from crappy._exceptions import CrappyFail
 from crappy.blocks.meta_block import block as block_module
 from multiprocessing import synchronize, queues, get_start_method, Event
 from multiprocessing.sharedctypes import Synchronized
