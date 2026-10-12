@@ -1,0 +1,299 @@
+# coding: utf-8
+
+"""Exceptions used for expected stops, remote failures and Process failures."""
+
+from __future__ import annotations
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+  from ._failure import FailureReport
+
+
+class StopRequested(Exception):
+  """Signals that a framework operation was stopped on purpose.
+
+  Not included in the final failure report.
+  """
+
+
+class RemoteFailureMetadata:
+  """Adds the original failure details to a remote fallback Exception.
+
+  Used when the original Exception cannot be restored in this Process.
+  """
+
+  def __init__(self,
+               report: FailureReport,
+               node_index: int,
+               reconstruction_error: str | None = None) -> None:
+    """Stores the report and the selected Exception's details.
+
+    Args:
+      report: Report containing the original Exception's details.
+      node_index: Index of that Exception in report.nodes.
+      reconstruction_error: Explanation of why restoring the original
+        Exception failed. :obj:`None` if no explanation is available.
+    """
+
+    if (type(node_index) is not int or
+        not 0 <= node_index < len(report.nodes)):
+      raise ValueError("node_index must reference a node in the report")
+    if (reconstruction_error is not None and
+        type(reconstruction_error) is not str):
+      raise TypeError("reconstruction_error must be a string or None")
+
+    self.report = report
+    self.node_index = node_index
+    self.node = report.nodes[node_index]
+    self.reconstruction_error = reconstruction_error
+
+    super().__init__(f"{self.node.module}.{self.node.type_name}: "
+                     f"{self.node.message}")
+
+  @staticmethod
+  def from_report(report: FailureReport,
+                  node_index: int,
+                  reconstruction_error: str | None = None
+                  ) -> (RemoteFailure | RemoteKeyboardInterrupt |
+                        RemoteSystemExit | RemoteBaseFailure):
+    """Builds a fallback Exception for one node in the report.
+
+    Uses the original class's base classes to choose the fallback type.
+    ExceptionGroups must be rebuilt from their children instead.
+
+    Args:
+      report: Report containing the original Exception's details.
+      node_index: Index of the Exception to replace. Must not refer to a group.
+      reconstruction_error: Explanation of why restoring the original
+        Exception failed, if available.
+
+    Returns:
+      RemoteFailure, RemoteKeyboardInterrupt, RemoteSystemExit or
+      RemoteBaseFailure.
+    """
+
+    if (type(node_index) is not int or
+        not 0 <= node_index < len(report.nodes)):
+      raise ValueError("node_index must reference a node in the report")
+
+    # Cannot build a single Exception from an ExceptionGroup
+    node = report.nodes[node_index]
+    if (node.group_message is not None or 'builtins.BaseExceptionGroup'
+        in node.mro):
+      raise ValueError("Exception groups must be rebuilt from their children")
+
+    # Select the type of Exception to create based on the MRO of the node
+    if 'builtins.KeyboardInterrupt' in node.mro:
+      error_type = RemoteKeyboardInterrupt
+    elif 'builtins.SystemExit' in node.mro:
+      error_type = RemoteSystemExit
+    elif 'builtins.Exception' in node.mro:
+      error_type = RemoteFailure
+    else:
+      error_type = RemoteBaseFailure
+
+    # Build and return the Exception
+    return error_type(report, node_index, reconstruction_error)
+
+  def __reduce__(self) -> tuple[Any, ...]:
+    """Tells pickle how to restore this Exception's report and attributes."""
+
+    return (type(self),
+            (self.report, self.node_index, self.reconstruction_error),
+            self.__dict__.copy())
+
+
+class RemoteFailure(RemoteFailureMetadata, Exception):
+  """Fallback for an ordinary remote Exception that cannot be restored."""
+
+
+class RemoteKeyboardInterrupt(RemoteFailureMetadata, KeyboardInterrupt):
+  """Fallback for a remote KeyboardInterrupt that cannot be restored."""
+
+
+class RemoteSystemExit(RemoteFailureMetadata, SystemExit):
+  """Fallback for a remote SystemExit that cannot be restored.
+
+  Attributes:
+    code: Original exit code saved in the selected ExceptionNode.
+  """
+
+  def __init__(self,
+               report: FailureReport,
+               node_index: int,
+               reconstruction_error: str | None = None) -> None:
+    """Stores the failure details and the original exit code.
+
+    Args:
+      report: Report containing the original SystemExit's details.
+      node_index: Index of that Exception in report.nodes.
+      reconstruction_error: Explanation of why restoring the original
+        Exception failed, if available.
+    """
+
+    super().__init__(report, node_index, reconstruction_error)
+    self.code = self.node.system_exit_code
+
+
+class RemoteBaseFailure(RemoteFailureMetadata, BaseException):
+  """Fallback for another remote BaseException that cannot be restored."""
+
+
+class ProcessExitError(RuntimeError):
+  """Raised when a Process exits unexpectedly without a reported Exception."""
+
+  def __init__(self,
+               message: str,
+               process_name: str = '',
+               pid: int | None = None,
+               phase: str = '',
+               exitcode: int | None = None) -> None:
+    """Stores details of the unexpected Process exit.
+
+    Args:
+      message: Description of the unexpected exit.
+      process_name: Name of the Process that exited. Empty if unknown.
+      pid: ID of that Process. None if unknown.
+      phase: Last known lifecycle phase. Empty if unknown.
+      exitcode: Process.exitcode value. None if it is not yet available.
+    """
+
+    super().__init__(message)
+    self.process_name = process_name
+    self.pid = pid
+    self.phase = phase
+    self.exitcode = exitcode
+
+
+class ShutdownTimeoutError(TimeoutError):
+  """Raised when a Process does not stop within the allowed time."""
+
+  def __init__(self,
+               message: str,
+               process_name: str = '',
+               pid: int | None = None,
+               phase: str = '',
+               timeout: float | None = None) -> None:
+    """Stores details of the Process that did not stop in time.
+
+    Args:
+      message: Description of the shutdown failure.
+      process_name: Name of the Process that did not stop. Empty if unknown.
+      pid: ID of that Process. None if unknown.
+      phase: Lifecycle phase during shutdown. Empty if unknown.
+      timeout: Time allowed for shutdown, in seconds. None if unknown.
+    """
+
+    super().__init__(message)
+    self.process_name = process_name
+    self.pid = pid
+    self.phase = phase
+    self.timeout = timeout
+
+
+class FailureTransportError(RuntimeError):
+  """Describes an error in handling or transferring a failure report."""
+
+  def __init__(self,
+               message: str,
+               failure_id: str | None = None,
+               process_name: str = '',
+               pid: int | None = None,
+               phase: str = '') -> None:
+    """Stores details of the failure report that could not be handled.
+
+    Args:
+      message: Description of the reporting or transfer error.
+      failure_id: ID of the affected report. None if unknown.
+      process_name: Name of the affected Process. Empty if unknown.
+      pid: ID of that Process. None if unknown.
+      phase: Lifecycle phase of the affected failure. Empty if unknown.
+    """
+
+    super().__init__(message)
+    self.failure_id = failure_id
+    self.process_name = process_name
+    self.pid = pid
+    self.phase = phase
+
+
+class LinkDataError(ValueError):
+  """Exception raised when trying to send a wrong data type through a
+  :class:`~crappy.links.link.Link`."""
+
+
+class StartTimeout(TimeoutError):
+  """Exception raised when the start event takes too long to be set."""
+
+
+class PrepareError(IOError):
+  """Error raised in a :class:`~crappy.blocks.meta_block.block.Block` when
+  waiting for all Blocks to be ready but another Block fails to prepare."""
+
+
+class CameraConfigError(RuntimeError):
+  """Error raised by a :class:`~crappy.tool.camera_config.base.camera_config.\
+CameraConfig` window when encountering an exception."""
+
+
+class CameraPrepareError(RuntimeError):
+  """Error raised by a :class:`~crappy.blocks.Camera` when one of its children
+  processes crashes while preparing."""
+
+
+class CameraRuntimeError(RuntimeError):
+  """Error raised by a :class:`~crappy.blocks.Camera` when one of its children
+  processes crashes while running."""
+
+
+class T0NotSetError(ValueError):
+  """Exception raised when requesting the t0 value when it is not set."""
+
+
+class DefinitionError(NameError):
+  """Raised when defining an object whose name is already registered."""
+
+  def __init__(self, msg: str) -> None:
+    """Stores the definition error's message.
+
+    Args:
+      msg: Message explaining the conflicting definition.
+    """
+
+    super().__init__(msg)
+    self._msg = msg
+
+  def __str__(self) -> str:
+    return self._msg
+
+
+class GeneratorStop(Exception):
+  """Exception raised when a :class:`~crappy.blocks.Generator` Block reaches
+  the end of its :class:`~crappy.blocks.generator_path.meta_path.path.Path`."""
+
+
+class SchedulerStop(Exception):
+  """Exception raised when a :class:`~crappy.blocks.Scheduler` Block reaches
+  its end State."""
+
+
+class ReaderStop(Exception):
+  """Exception raised when a :class:`~crappy.camera.FileReader` Camera has
+  exhausted all the images to read."""
+
+
+class CrappyFail(Exception):
+  """Exception raised when an unexpected Exception is caught in Crappy. Also
+  raised when all the Blocks do not terminate gracefully."""
+
+  def __init__(self) -> None:
+    """Only defined here to set the message to display when raised."""
+
+    super().__init__("This Exception means that an error occurred while "
+                     "running Crappy. Check the Traceback in the terminal for "
+                     "more information")
+
+  def __reduce__(self) -> tuple[Any, ...]:
+    """Ensures correct transfer of this Exception when serializing it."""
+
+    return type(self), (), self.__dict__.copy()
