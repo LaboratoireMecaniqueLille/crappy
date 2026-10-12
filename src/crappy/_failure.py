@@ -6,8 +6,9 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field, fields, replace
-from multiprocessing import current_process
+from multiprocessing import current_process, queues
 from os import getpid
+from queue import Empty
 from threading import RLock, local
 from traceback import TracebackException, format_tb
 from typing import Any
@@ -305,6 +306,71 @@ class FailureManager:
     self._lock = RLock()
     self._collections = _CollectionState()
     self._logger = logging.getLogger('crappy')
+    self._logger_failed = False
+    self._queue: queues.Queue | None = None
+    self._broken_queues: set[queues.Queue] = set()
+
+  def set_queue(self, queue: queues.Queue | None) -> None:
+    """Registers a Queue in which to send reports when an Exception is
+    registered.
+
+    Args:
+      queue: Dedicated Queue received from the immediate owning process.
+        Set to None when reporting has finished, before closing the Queue.
+    """
+
+    with self._lock:
+      self._queue = queue
+
+  def receive(self, incoming: Iterable[queues.Queue]) -> bool:
+    """Receives and forwards one available report from each child Queue.
+
+    Args:
+      incoming: Queues owned by this process, one per child.
+
+    Returns:
+      True if any record was received, including a malformed record.
+    """
+
+    # Receive the pending reports from children's queues
+    received = False
+    for queue in incoming:
+      # Ignore queues know to be broken
+      if queue in self._broken_queues:
+        continue
+      # Try to receive a report from the downstream queue
+      try:
+        payload = queue.get_nowait()
+      except Empty:
+        continue
+      # Remember the broken queues and report the send error
+      except BaseException as error:
+        self._broken_queues.add(queue)
+        self._record_transport_error(error)
+        continue
+
+      # Try to interpret the received information as a FailureReport
+      received = True
+      try:
+        if type(payload) is not bytes:
+          raise TypeError("failure Queue payload must be bytes")
+        report = FailureReport.from_wire(pickle.loads(payload))
+      # If this fails, record the associated Exception
+      except BaseException as error:
+        if (isinstance(error, Exception) and
+            not isinstance(error, FailureTransportError)):
+          failure = FailureTransportError("Invalid failure Queue payload")
+          failure.__cause__ = error
+          error = failure
+        self._record_transport_error(error)
+        continue
+
+      # Pass the received report to the parent Manager, or report any Exception
+      try:
+        self.forward(report)
+      except BaseException as error:
+        self._record_transport_error(error)
+    return received
 
   @contextmanager
   def collect(self, label: str) -> Iterator[None]:
@@ -367,10 +433,10 @@ class FailureManager:
   def capture_exception(self,
                         error: BaseException,
                         phase: str | None = None) -> FailureReport | None:
-    """Stores and logs a new failure, then returns its report.
+    """Stores, logs and sends a new failure, then returns its report.
 
     Already reported Exceptions and StopRequested Exceptions are ignored.
-    If serialization is interrupted or logging fails, the original failure
+    If serialization, logging or sending fails, the original failure
     stays stored alongside that independent error.
 
     Args:
@@ -418,10 +484,9 @@ class FailureManager:
   def forward(self,
               report: FailureReport,
               exception: BaseException | None = None) -> None:
-    """Stores a report from a remote FailureManager and registers the
-    associated Exceptions.
+    """Stores and forwards an existing report and registers its Exceptions.
 
-    Does not log the report again.
+    Does not log again.
 
     Args:
       report: Existing report, with its original ID and source details.
@@ -430,7 +495,7 @@ class FailureManager:
         Otherwise, raise_if_failed() reconstructs it from the report's nodes.
     """
 
-    self._store_report(report, exception)
+    new = self._store_report(report, exception)
 
     # Register the Exceptions if provided
     if exception is not None:
@@ -438,6 +503,10 @@ class FailureManager:
       with self._lock:
         for member in members:
           self._members.setdefault(id(member), (member, report.failure_id))
+
+    # Send the report to upstream Managers
+    if new:
+      self._send(report)
 
   def snapshot(self) -> tuple[tuple[FailureReport, BaseException | None], ...]:
     """Returns stored reports and their Exceptions in recording order.
@@ -971,53 +1040,110 @@ class FailureManager:
       self._reports[report.failure_id] = (report, exception)
       return True
 
+  def _record_transport_error(self, error: BaseException) -> None:
+    """Records an error when receiving reports from children FailureManagers.
+
+    Args:
+      error: Send, receive, or wire-validation error.
+    """
+
+    try:
+      self.capture_exception(error, phase='transport')
+    except BaseException as reporting_error:
+      self._generate_failure_report(reporting_error, phase='reporting',
+                                    serialize=False)
+
   def _report(self, report: FailureReport) -> None:
-    """Logs the full report with the manager's logger.
+    """Logs and sends a failure report.
 
     If logging fails, stores that error and tries stderr before raising it.
     If stderr also fails, keeps and raises both reporting errors.
 
     Args:
-      report: FailureReport to log.
+      report: FailureReport to log and send.
     """
 
+    reports = [report]
+    errors: list[BaseException] = list()
+
     # Try to report the failure with the logger
-    try:
-      self._logger.error(str(report))
-    # If it fails, create a new FailureReport for this new failure
-    except BaseException as reporting_error:
-      BaseException.add_note(reporting_error,
-                             f"Reporting failure {report.failure_id}")
-      infrastructure_report, encoding_errors = self._generate_failure_report(
-          reporting_error, phase='reporting')
-      infrastructure_reports = [infrastructure_report]
-      reporting_errors = [reporting_error, *encoding_errors]
-      # Generate an extra report in case there were exceptions when reporting
-      for encoding_error in encoding_errors:
-        extra_report, _ = self._generate_failure_report(
-            encoding_error, phase='encoding', serialize=False)
-        infrastructure_reports.append(extra_report)
-      # Try to print the original report and the new failure report to stderr
+    if not self._logger_failed:
       try:
-        sys.stderr.write(str(report))
-        for infrastructure_report in infrastructure_reports:
-          if infrastructure_report is not None:
-            sys.stderr.write(str(infrastructure_report))
+        self._logger.error(str(report))
+      # If it fails, create a new FailureReport for this new failure
+      except BaseException as error:
+        self._logger_failed = True
+        BaseException.add_note(error, f"Reporting failure {report.failure_id}")
+        infrastructure_report, encoding_errors = self._generate_failure_report(
+            error, phase='reporting')
+        if infrastructure_report is not None:
+          reports.append(infrastructure_report)
+        errors.extend((error, *encoding_errors))
+        for encoding_error in encoding_errors:
+          extra_report, _ = self._generate_failure_report(
+              encoding_error, phase='encoding', serialize=False)
+          if extra_report is not None:
+            reports.append(extra_report)
+
+    # If the logger is down, we have to log directly on stderr
+    if self._logger_failed:
+      try:
+        for pending in reports:
+          sys.stderr.write(str(pending))
         sys.stderr.flush()
       # If this also fails, generate a new FailureReport for this new failure
-      except BaseException as emergency_error:
-        _, encoding_errors = self._generate_failure_report(
-            emergency_error, phase='reporting')
-        reporting_errors.extend((emergency_error, *encoding_errors))
+      except BaseException as error:
+        infrastructure_report, encoding_errors = self._generate_failure_report(
+            error, phase='reporting')
+        if infrastructure_report is not None:
+          reports.append(infrastructure_report)
+        errors.extend((error, *encoding_errors))
         for encoding_error in encoding_errors:
-          self._generate_failure_report(encoding_error, phase='encoding',
-                                        serialize=False)
-        # Finally raise because we're facing a critical issue here
+          extra_report, _ = self._generate_failure_report(
+              encoding_error, phase='encoding', serialize=False)
+          if extra_report is not None:
+            reports.append(extra_report)
+
+    # In all cases, send the reports upstream
+    for pending in reports:
+      try:
+        self._send(pending)
+      except BaseException as error:
+        errors.append(error)
+    # If we can't send, raise the gathered errors
+    errors = list({id(error): error for error in errors}.values())
+    if len(errors) == 1:
+      raise errors[0]
+    if errors:
+      raise BaseExceptionGroup('Failure reporting failed', errors) from None
+
+  def _send(self, report: FailureReport) -> None:
+    """Sends a failure report to the upstream FailureManager.
+
+    Args:
+      report: Stored report with its original ID and source.
+    """
+
+    with self._lock:
+      queue = self._queue
+    if queue is None:
+      return
+
+    # Encode the report to send and send it in the queue
+    try:
+      payload = pickle.dumps(report.to_wire())
+      queue.put(payload)
+    # If this fails, remember the queue as broken and record the failure
+    except BaseException as error:
+      with self._lock:
+        if self._queue is queue:
+          self._queue = None
+      BaseException.add_note(error, f"Sending failure {report.failure_id}")
+      try:
+        self.capture_exception(error, phase='transport')
+      except BaseException as reporting_error:
         raise BaseExceptionGroup('Failure reporting failed',
-                                 reporting_errors) from None
-      if encoding_errors:
-        raise BaseExceptionGroup('Failure reporting failed',
-                                 reporting_errors) from None
+                                 [error, reporting_error]) from None
       raise
 
   @staticmethod

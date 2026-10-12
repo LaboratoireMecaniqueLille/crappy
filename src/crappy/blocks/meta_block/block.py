@@ -6,7 +6,8 @@ from multiprocessing import (Process, Value, Barrier, Event, Queue,
                              get_start_method, synchronize, queues,
                              sharedctypes, Manager, managers, Pipe, connection,
                              resource_tracker)
-from threading import BrokenBarrierError, Thread, Event as ThreadEvent
+from threading import (BrokenBarrierError, Thread, Event as ThreadEvent,
+                       current_thread)
 from queue import Empty
 import logging
 import logging.handlers
@@ -26,6 +27,7 @@ from ..._exceptions import (LinkDataError, StartTimeout, PrepareError,
                         T0NotSetError, GeneratorStop, ReaderStop,
                         CameraPrepareError, CameraRuntimeError, SchedulerStop,
                         CameraConfigError, CrappyFail, DefinitionError)
+from ..._failure import FailureManager
 
 
 @runtime_checkable
@@ -100,6 +102,12 @@ class Block(Process, ABC):
   thread_stop: bool = False
   no_raise: bool = False
 
+  # Objects used for managing Exception handling
+  run_failure_manager: FailureManager | None = None
+  failure_queues: tuple[queues.Queue, ...] = tuple()
+  failure_thread: Thread | None = None
+  failure_thread_stop: ThreadEvent | None = None
+
   # Used for ImageLinks
   shared_mgr: managers.SyncManager | None = None
 
@@ -148,6 +156,10 @@ class Block(Process, ABC):
     # Configuration Pipe endpoints that this Process inherits under fork but
     # does not own. They are closed as soon as the child Process starts.
     self._config_connections_to_close: list[connection.Connection] = list()
+
+    # Will be set later once the Blocks are starting
+    self._failure_queue: queues.Queue | None = None
+    self._failure_manager: FailureManager | None = None
 
     # The objects for logging will be set later
     self._log_queue: queues.Queue | None = None
@@ -350,6 +362,7 @@ class Block(Process, ABC):
 
       # Initializing the objects required for logging
       cls.log_queue = Queue()
+      cls.run_failure_manager = FailureManager('main', 'bootstrap')
       # Pass log queue explicitly so that the Thread keeps the same queue even
       # if a new one is created at the class level
       cls.log_thread = Thread(target=cls._log_target,
@@ -364,6 +377,8 @@ class Block(Process, ABC):
 
       # Passing the synchronization and logging objects to each Block
       for instance in cls._run_blocks:
+        instance._failure_queue = Queue()
+        cls.failure_queues += (instance._failure_queue,)
         instance._ready_barrier = cls.ready_barrier
         instance._instance_t0 = cls.shared_t0
         instance._stop_event = cls.stop_event
@@ -467,6 +482,14 @@ class Block(Process, ABC):
       for instance in cls._run_blocks:
         instance.start()
         cls.cls_log(logging.INFO, f'Started the {instance.name} Block')
+
+      # Start the Thread that manages Exception communication between Blocks
+      if cls.run_failure_manager is not None and cls.failure_queues:
+        cls.failure_thread_stop = ThreadEvent()
+        cls.failure_thread = Thread(target=cls._failure_target,
+                                    name='crappy.failure-reader',
+                                    daemon=True)
+        cls.failure_thread.start()
 
       # Setting the prepared flag
       cls.prepared_all = True
@@ -736,9 +759,12 @@ class Block(Process, ABC):
       cls.cls_log(logging.INFO, 'Main Process done, waiting for all Blocks to '
                                 'finish')
       if cls._run_blocks:
-        for _ in connection.wait([inst.sentinel for inst in cls._run_blocks]):
-          cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
-                                    "other ones to follow")
+        sentinels = [inst.sentinel for inst in cls._run_blocks]
+        while cls.stop_event is None or not cls.stop_event.is_set():
+          if connection.wait(sentinels, timeout=0.1):
+            cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
+                                      "other ones to follow")
+            break
 
     except (BrokenBarrierError, KeyboardInterrupt, Exception) as exc:
 
@@ -806,10 +832,22 @@ class Block(Process, ABC):
     Crappy's exception and decides to go on with the script.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    failures: list[BaseException] = list()
     log_thread_failed = False
 
     try:
+      # Make sure that the Exception Thread runs for cleanup
+      if (cls.failure_thread is None and cls.failure_queues and
+          cls.run_failure_manager is not None):
+        try:
+          cls.failure_thread_stop = ThreadEvent()
+          cls.failure_thread = Thread(target=cls._failure_target,
+                                      name='crappy.failure-reader', daemon=True)
+          cls.failure_thread.start()
+        except (Exception, KeyboardInterrupt) as error:
+          error.add_note("Block cleanup step: start failure receiver")
+          failures.append(error)
+
       if cls.stop_event is None:
         try:
           cls.cls_log(logging.ERROR, "The stop Event should be set but "
@@ -1012,6 +1050,35 @@ class Block(Process, ABC):
           cls.shared_mgr.shutdown()
         except (Exception, KeyboardInterrupt) as error:
           error.add_note("Block cleanup step: shut down shared Manager")
+          failures.append(error)
+
+      # Stop the Exception Thread
+      if cls.run_failure_manager is not None:
+        try:
+          with cls.run_failure_manager.collect('FailureManager shutdown'):
+            # First, ask the Exception Thread to stop
+            with cls.run_failure_manager.step('request stop'):
+              if cls.failure_thread_stop is not None:
+                cls.failure_thread_stop.set()
+            # Then, wait for it to finish
+            with cls.run_failure_manager.step('join'):
+              if (cls.failure_thread is not None and
+                  cls.failure_thread.ident is not None):
+                cls.failure_thread.join(timeout=1.0)
+                # If it is still alive, report it as an error
+                if cls.failure_thread.is_alive():
+                  raise RuntimeError("The failure receiver did not stop "
+                                     "within one second")
+        except BaseException as error:
+          failures.append(error)
+
+        # Close the Exception Queues
+        try:
+          with cls.run_failure_manager.collect('failure Queue shutdown'):
+            for queue in cls.failure_queues:
+              with cls.run_failure_manager.step('close'):
+                queue.close()
+        except BaseException as error:
           failures.append(error)
 
       # Stop the log Thread and wait for it to finish
@@ -1272,6 +1339,14 @@ class Block(Process, ABC):
     # Discard the old logging session before clearing its stop flag
     cls.log_queue = None
     cls.log_thread = None
+    if cls.failure_thread_stop is not None:
+      cls.failure_thread_stop.set()
+    cls.failure_thread = None
+    cls.failure_thread_stop = None
+    cls.failure_queues = tuple()
+    cls.run_failure_manager = None
+    for instance in cls._run_blocks:
+      instance._failure_queue = None
 
     cls.instances = WeakSet()
     cls._run_blocks = tuple()
@@ -1342,6 +1417,73 @@ class Block(Process, ABC):
       logger.handle(record)
 
   @classmethod
+  def _failure_target(cls) -> None:
+    """Target for the Exception Thread.
+
+    Receives failure reports from Blocks and handles them.
+    """
+
+    # Keep reference to the original objects in case reset() is called
+    manager = cls.run_failure_manager
+    incoming = cls.failure_queues
+    thread_stop = cls.failure_thread_stop
+    stop_event = cls.stop_event
+    raise_event = cls.raise_event
+    ready_barrier = cls.ready_barrier
+    if (cls.run_failure_manager is None or thread_stop is None or
+        cls.failure_thread is not current_thread()):
+      return
+
+    assert manager is not None
+
+    stopping = False
+    try:
+      while not thread_stop.is_set():
+        # Receive incoming failure reports from the FailureManager
+        received = manager.receive(incoming)
+        # As soon as at least one Exception is received, means we have to stop
+        if manager.snapshot() and not stopping:
+          stopping = True
+          # Set the class-level stop flags
+          with manager.collect('failure notification'):
+            with manager.step('request stop'):
+              if stop_event is not None:
+                stop_event.set()
+            with manager.step('set failure flag'):
+              if raise_event is not None:
+                raise_event.set()
+            with manager.step('abort readiness'):
+              if ready_barrier is not None:
+                ready_barrier.abort()
+        # Sleep to lower CPU load
+        if not received:
+          thread_stop.wait(0.05)
+
+      # Flush all the incoming Queues before finishing
+      while manager.receive(incoming):
+        pass
+
+    # If an Exception is encountered, report it and make Blocks stop
+    except BaseException as error:
+      try:
+        manager.capture_exception(error, phase='monitoring')
+      except (BaseException,):
+        pass
+      try:
+        with manager.collect('failure receiver shutdown'):
+          with manager.step('request stop'):
+            if stop_event is not None:
+              stop_event.set()
+          with manager.step('set failure flag'):
+            if raise_event is not None:
+              raise_event.set()
+          with manager.step('abort readiness'):
+            if ready_barrier is not None:
+              ready_barrier.abort()
+      except (BaseException,):
+        pass
+
+  @classmethod
   def _watchdog_target(cls,
                        stop_event: ThreadEvent,
                        blocks: Sequence[Block],
@@ -1401,11 +1543,16 @@ class Block(Process, ABC):
     :obj:`~multiprocessing.Event` to warn all the other Blocks.
     """
 
+    self._failure_manager = FailureManager(self.name, 'bootstrap')
+    if self._failure_queue is not None:
+      self._failure_manager.set_queue(self._failure_queue)
+
     try:
       # Any Exception caught at the beginning should break the Barrier
       try:
         # Initializes the Logger for the Block
         self._set_block_logger()
+        self._failure_manager._logger = self._logger
         self.log(logging.INFO, "Block launched")
 
         # Under fork, close configuration Pipe endpoints belonging to other
@@ -1623,6 +1770,18 @@ class Block(Process, ABC):
           self._raise_event.set()
           self.log(logging.WARNING, 'Set the raise Event after catching an '
                                     'unexpected Exception while finishing')
+
+      # Close the Queue for reporting Exceptions
+      finally:
+        if self._failure_queue is not None:
+          queue = self._failure_queue
+          self._failure_queue = None
+          self._failure_manager.set_queue(None)
+          with self._failure_manager.collect('failure Queue shutdown'):
+            with self._failure_manager.step('close'):
+              queue.close()
+            with self._failure_manager.step('flush'):
+              queue.join_thread()
 
   def _close_config_connections(self) -> None:
     """Closes every inherited configuration endpoint"""
