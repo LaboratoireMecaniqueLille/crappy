@@ -97,6 +97,8 @@ class Block(Process, ABC):
   raise_event: synchronize.Event | None = None
   kbi_event: synchronize.Event | None = None
   logger: logging.Logger | None = None
+  log_handlers: list[logging.Handler] = list()
+  logger_state: tuple[int, bool, bool] | None = None
   log_queue: queues.Queue | None = None
   log_thread: Thread | None = None
   thread_stop: bool = False
@@ -363,6 +365,7 @@ class Block(Process, ABC):
       # Initializing the objects required for logging
       cls.log_queue = Queue()
       cls.run_failure_manager = FailureManager('main', 'bootstrap')
+      cls.run_failure_manager._logger = cls.logger
       # Pass log queue explicitly so that the Thread keeps the same queue even
       # if a new one is created at the class level
       cls.log_thread = Thread(target=cls._log_target,
@@ -1107,7 +1110,7 @@ class Block(Process, ABC):
           error.add_note("Block cleanup step: check logging Thread")
           failures.append(error)
 
-      # Cancel join thread on the log queue
+      # Close the log queue
       if cls.log_queue is not None:
         if not log_thread_failed:
           try:
@@ -1115,12 +1118,6 @@ class Block(Process, ABC):
           except (Exception, KeyboardInterrupt) as error:
             error.add_note("Block cleanup step: log log Queue closure")
             failures.append(error)
-        try:
-          cls.log_queue.cancel_join_thread()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("Block cleanup step: cancel log Queue feeder join")
-          failures.append(error)
-        # Then close the log queue
         try:
           cls.log_queue.close()
         except (Exception, KeyboardInterrupt) as error:
@@ -1224,7 +1221,14 @@ class Block(Process, ABC):
       finally:
         # Always resetting Crappy as the Blocks and synchronization objects
         # won't come in use anymore
-        cls.reset()
+        no_raise = cls.no_raise
+        try:
+          cls.reset()
+        except (Exception, KeyboardInterrupt) as error:
+          if not no_raise:
+            if isinstance(error, KeyboardInterrupt):
+              raise
+            raise CrappyFail from error
 
   @classmethod
   def _set_logger(cls) -> None:
@@ -1234,17 +1238,22 @@ class Block(Process, ABC):
     on stdout and one for the other levels displaying on stderr. It also
     creates a File Logger for saving the log to a log file.
 
-    The levels WARNING and above are always being displayed in the terminal, no
-    matter what the user chooses. Similarly, the INFO log level and above are
-    always being saved to the log file.
+    All handlers respect the requested level. Disabling Crappy logging does
+    not change the logging configuration of the rest of the application.
     """
 
     # Keep the existing logger if already defined
     if cls.logger is not None:
       return
 
+    cls.log_handlers = list()
     # The Logger handling all messages
     crappy_log = logging.getLogger('crappy')
+    cls.logger_state = (crappy_log.level, crappy_log.disabled,
+                        crappy_log.propagate)
+    cls.logger = crappy_log
+    crappy_log.disabled = cls.log_level is None
+    crappy_log.propagate = False
 
     if cls.log_level is not None:
       crappy_log.setLevel(cls.log_level)
@@ -1254,6 +1263,7 @@ class Block(Process, ABC):
       # The two handlers for displaying messages in the console
       stream_handler = logging.StreamHandler(stream=stdout)
       stream_handler_err = logging.StreamHandler(stream=stderr)
+      cls.log_handlers.extend((stream_handler, stream_handler_err))
 
       # Getting the path to Crappy's temporary folder
       if system() in ('Linux', 'Darwin'):
@@ -1273,6 +1283,7 @@ class Block(Process, ABC):
       # This handler writes the log messages to a log file
       if log_path is not None:
         file_handler = logging.FileHandler(log_path / 'logs.txt', mode='w')
+        cls.log_handlers.append(file_handler)
       else:
         file_handler = None
 
@@ -1296,8 +1307,6 @@ class Block(Process, ABC):
       crappy_log.addHandler(stream_handler_err)
       if file_handler is not None:
         crappy_log.addHandler(file_handler)
-
-    cls.logger = crappy_log
 
   @classmethod
   def stop_all(cls) -> None:
@@ -1326,6 +1335,7 @@ class Block(Process, ABC):
     """
 
     # If this condition is False, means we likely can't record log messages now
+    manager = cls.run_failure_manager
     try:
       log_thread_stopped = (cls.log_thread is None or
                             not cls.log_thread.is_alive())
@@ -1345,6 +1355,7 @@ class Block(Process, ABC):
     cls.run_failure_manager = None
     for instance in cls._run_blocks:
       instance._failure_queue = None
+      instance._log_queue = None
 
     cls.instances = WeakSet()
     cls._run_blocks = tuple()
@@ -1364,11 +1375,51 @@ class Block(Process, ABC):
 
     cls.shared_mgr = None
 
-    # Only log if it has chances to reach the logger
-    if cls.logger is not None and log_thread_stopped:
-      cls.cls_log(logging.INFO, 'Crappy was successfully reset')
+    # Just reset the LinkGraph if no logging was set up
+    if cls.logger is None and not cls.log_handlers:
+      cls.logger_state = None
+      link_graph.reset()
+      return
 
-    link_graph.reset()
+    # We need a FailureManager for logging the last Exceptions
+    if manager is None:
+      manager = FailureManager('main', 'logging shutdown')
+      if cls.logger is not None:
+        manager._logger = cls.logger
+
+    # Last cleanup actions for resetting the logging and Exception reporting
+    with manager.collect('logging shutdown'):
+      # Display the final success message
+      with manager.step('reset diagnostic'):
+        if cls.logger is not None and log_thread_stopped:
+          cls.cls_log(logging.INFO, 'Crappy was successfully reset')
+      # Reset the LinkGraph
+      with manager.step('reset graph'):
+        link_graph.reset()
+
+      # Properly close the various loggers that were set up
+      logger = cls.logger
+      handlers = cls.log_handlers
+      cls.log_handlers = list()
+      for handler in handlers:
+        with manager.step('detach handler'):
+          if logger is not None:
+            logger.removeHandler(handler)
+        if log_thread_stopped:
+          with manager.step('flush handler'):
+            handler.flush()
+          with manager.step('close handler'):
+            handler.close()
+
+      # Reset the logger state completely
+      with manager.step('restore logger'):
+        if logger is not None and cls.logger_state is not None:
+          level, disabled, propagate = cls.logger_state
+          logger.setLevel(level)
+          logger.disabled = disabled
+          logger.propagate = propagate
+      cls.logger_state = None
+      cls.logger = None
   
   @classmethod
   def cls_log(cls, level: int, msg: str) -> None:
@@ -1400,19 +1451,74 @@ class Block(Process, ABC):
     # Make sure to only read from a single log queue
     if log_queue is None:
       raise RuntimeError("The log queue doesn't exist!")
+    # Means that Crappy was likely reset without this Thread stopping
+    if cls.log_queue is not log_queue:
+      return
 
-    while not cls.thread_stop and cls.log_queue is log_queue:
+    # Keep first instances in case the Block is reset
+    manager = cls.run_failure_manager
+    handlers = tuple(cls.log_handlers)
+    stop_event = cls.stop_event
+    raise_event = cls.raise_event
+    ready_barrier = cls.ready_barrier
+    # Means that Crappy was likely reset without this Thread stopping
+    if cls.log_queue is not log_queue:
+      return
+
+    # Main loop, simply receive log messages and handle them
+    try:
+      while cls.log_queue is log_queue:
+        try:
+          record = log_queue.get(block=True, timeout=0.05)
+        except Empty:
+          if cls.thread_stop:
+            return
+          continue
+
+        # Drain the current run after stop, but never forward into a new run.
+        if cls.log_queue is not log_queue:
+          return
+        logger = logging.getLogger(record.name)
+        logger.handle(record)
+
+    # Exceptions caught in the logger Thread are reported the regular way
+    except BaseException as error:
+      if manager is None:
+        manager = FailureManager('main', 'logging')
       try:
-        record = log_queue.get(block=True, timeout=0.05)
-      except Empty:
-        continue
+        manager.capture_exception(error, phase='logging')
+      except (BaseException,):
+        pass
 
-      # Don't log messages if the Thread should stop or a new queue was created
-      if cls.thread_stop or cls.log_queue is not log_queue:
-        return
+      # Raise the stop and error flags as soon as the Exception is reported
+      try:
+        with manager.collect('log reader shutdown'):
+          with manager.step('request stop'):
+            if stop_event is not None:
+              stop_event.set()
+          with manager.step('set failure flag'):
+            if raise_event is not None:
+              raise_event.set()
+          with manager.step('abort readiness'):
+            if ready_barrier is not None:
+              ready_barrier.abort()
+      except (BaseException,):
+        pass
 
-      logger = logging.getLogger(record.name)
-      logger.handle(record)
+    # In case reset() left logging in a stale state, close log handlers
+    finally:
+      if cls.log_queue is not log_queue and handlers:
+        if manager is None:
+          manager = FailureManager('main', 'logging shutdown')
+        try:
+          with manager.collect('abandoned log reader shutdown'):
+            for handler in handlers:
+              with manager.step('flush handler'):
+                handler.flush()
+              with manager.step('close handler'):
+                handler.close()
+        except (BaseException,):
+          pass
 
   @classmethod
   def _failure_target(cls) -> None:
