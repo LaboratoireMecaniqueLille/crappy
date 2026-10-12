@@ -1248,8 +1248,6 @@ class Block(Process, ABC):
 
     if cls.log_level is not None:
       crappy_log.setLevel(cls.log_level)
-    else:
-      logging.disable()
 
     # In case there's no logging, no need to configure the handlers
     if cls.log_level is not None:
@@ -1939,10 +1937,9 @@ class Block(Process, ABC):
     logger = logging.getLogger(self.name)
 
     # Adjusting logging to the desired level
+    logger.disabled = self._log_level is None
     if self._log_level is not None:
       logger.setLevel(self._log_level)
-    else:
-      logging.disable()
 
     # On spawn and forkserver, the messages need to be sent through a Queue for
     # logging

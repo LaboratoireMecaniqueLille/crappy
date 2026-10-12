@@ -521,10 +521,9 @@ get_config`. The received values should normally be stored for use by
     logger = logging.getLogger(self.name)
 
     # Disabling logging if requested
+    logger.disabled = self._log_level is None
     if self._log_level is not None:
       logger.setLevel(self._log_level)
-    else:
-      logging.disable()
 
     if self._log_queue is None:
       raise RuntimeError("The logging Queue isn't initialized")
