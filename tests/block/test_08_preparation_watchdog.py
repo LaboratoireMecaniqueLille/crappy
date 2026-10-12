@@ -5,7 +5,7 @@ from multiprocessing import Barrier, Event
 import os
 from threading import Event as ThreadEvent, Thread
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from crappy import Block
 from crappy._exceptions import CrappyFail
@@ -181,10 +181,16 @@ class TestPreparationWatchdog(BlockTestBase):
     self.assertTrue(self._block.prepared.wait(3.0))
     start = Block.start_event
 
-    with patch.object(block_module, 'Thread') as thread:
-      watchdog = thread.return_value
-      watchdog.ident = None
-      watchdog.start.side_effect = RuntimeError('Cannot start watchdog')
+    watchdog = Mock(spec=Thread)
+    watchdog.ident = None
+    watchdog.start.side_effect = RuntimeError('Cannot start watchdog')
+
+    def create_thread(*args, **kwargs):
+      if kwargs.get('name') == 'crappy.barrier-watchdog':
+        return watchdog
+      return Thread(*args, **kwargs)
+
+    with patch.object(block_module, 'Thread', side_effect=create_thread):
       with self.assertRaises(CrappyFail):
         self._launch_with_deadline()
 
@@ -203,10 +209,16 @@ class TestPreparationWatchdog(BlockTestBase):
     self.assertTrue(self._block.prepared.wait(3.0))
     start = Block.start_event
 
-    with patch.object(block_module, 'Thread') as thread:
-      watchdog = thread.return_value
-      watchdog.ident = 1
-      watchdog.is_alive.return_value = True
+    watchdog = Mock(spec=Thread)
+    watchdog.ident = 1
+    watchdog.is_alive.return_value = True
+
+    def create_thread(*args, **kwargs):
+      if kwargs.get('name') == 'crappy.barrier-watchdog':
+        return watchdog
+      return Thread(*args, **kwargs)
+
+    with patch.object(block_module, 'Thread', side_effect=create_thread):
       with self.assertRaises(CrappyFail):
         self._launch_with_deadline()
 

@@ -565,7 +565,7 @@ sys.stdout.buffer.write(pickle.dumps(report.to_wire()))
       self.assertEqual(self.parent.snapshot(), ((received, None),))
       self.assertEqual(received.to_wire(), wire)
     self.assertEqual(received, report)
-    self.assertEqual(wire['version'], 1)
+    self.assertNotIn('version', wire)
     self.assertFalse(hasattr(report, 'version'))
 
   def test_invalid_wire_fields_and_references(self) -> None:
