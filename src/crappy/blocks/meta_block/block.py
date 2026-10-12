@@ -21,12 +21,12 @@ from sys import stdout, stderr, argv
 from pathlib import Path
 from abc import ABC, abstractmethod
 from dataclasses import replace
+from ctypes import c_byte
 
 from ...links import Link, link_graph, GraphStructureError
-from ..._exceptions import (LinkDataError, StartTimeout, PrepareError,
-                        T0NotSetError, GeneratorStop, ReaderStop,
-                        CameraPrepareError, CameraRuntimeError, SchedulerStop,
-                        CameraConfigError, CrappyFail, DefinitionError)
+from ..._exceptions import (LinkDataError, StartTimeout, StopRequested,
+                            T0NotSetError, GeneratorStop, ReaderStop,
+                            SchedulerStop, CrappyFail, DefinitionError)
 from ..._failure import FailureManager
 
 
@@ -154,6 +154,7 @@ class Block(Process, ABC):
     self._stop_event: synchronize.Event | None = None
     self._raise_event: synchronize.Event | None = None
     self._kbi_event: synchronize.Event | None = None
+    self._main_entered: c_byte | None = None
 
     # Configuration Pipe endpoints that this Process inherits under fork but
     # does not own. They are closed as soon as the child Process starts.
@@ -389,6 +390,7 @@ class Block(Process, ABC):
         instance._start_event = cls.start_event
         instance._raise_event = cls.raise_event
         instance._kbi_event = cls.kbi_event
+        instance._main_entered = Value('b', 0, lock=False)
         instance._log_queue = cls.log_queue
         cls.cls_log(logging.INFO, f'Multiprocessing synchronization objects '
                                   f'set for {instance.name} Block')
@@ -845,7 +847,8 @@ class Block(Process, ABC):
         try:
           cls.failure_thread_stop = ThreadEvent()
           cls.failure_thread = Thread(target=cls._failure_target,
-                                      name='crappy.failure-reader', daemon=True)
+                                      name='crappy.failure-reader',
+                                      daemon=True)
           cls.failure_thread.start()
         except (Exception, KeyboardInterrupt) as error:
           error.add_note("Block cleanup step: start failure receiver")
@@ -1356,6 +1359,7 @@ class Block(Process, ABC):
     for instance in cls._run_blocks:
       instance._failure_queue = None
       instance._log_queue = None
+      instance._main_entered = None
 
     cls.instances = WeakSet()
     cls._run_blocks = tuple()
@@ -1534,6 +1538,7 @@ class Block(Process, ABC):
     stop_event = cls.stop_event
     raise_event = cls.raise_event
     ready_barrier = cls.ready_barrier
+    kbi_event = cls.kbi_event
     if (cls.run_failure_manager is None or thread_stop is None or
         cls.failure_thread is not current_thread()):
       return
@@ -1542,30 +1547,55 @@ class Block(Process, ABC):
 
     stopping = False
     try:
-      while not thread_stop.is_set():
+      while True:
         # Receive incoming failure reports from the FailureManager
         received = manager.receive(incoming)
         # As soon as at least one Exception is received, means we have to stop
-        if manager.snapshot() and not stopping:
-          stopping = True
-          # Set the class-level stop flags
+        if reports := manager.snapshot():
           with manager.collect('failure notification'):
-            with manager.step('request stop'):
-              if stop_event is not None:
-                stop_event.set()
-            with manager.step('set failure flag'):
-              if raise_event is not None:
-                raise_event.set()
-            with manager.step('abort readiness'):
-              if ready_barrier is not None:
-                ready_barrier.abort()
-        # Sleep to lower CPU load
-        if not received:
-          thread_stop.wait(0.05)
+            if not stopping:
+              stopping = True
+              with manager.step('request stop'):
+                if stop_event is not None:
+                  stop_event.set()
+              with manager.step('abort readiness'):
+                if ready_barrier is not None:
+                  ready_barrier.abort()
 
-      # Flush all the incoming Queues before finishing
-      while manager.receive(incoming):
-        pass
+            # Determine whether the received Exceptions contain a
+            # KeyboardInterrupt or other Exception types
+            for report, _ in reports:
+              pending = [report.root]
+              seen = set()
+              while pending:
+                index = pending.pop()
+                # Only handle each Exception once
+                if index in seen:
+                  continue
+                seen.add(index)
+                node = report.nodes[index] if index is not None else None
+                # Only inspect Exceptions, not ExceptionGroups
+                if node is not None and node.children:
+                  pending.extend(node.children)
+                # Signal if an KeyboardInterrupt wa observed
+                elif (node is not None and
+                      'builtins.KeyboardInterrupt' in node.mro):
+                  with manager.step('set interrupt flag'):
+                    if kbi_event is not None and not kbi_event.is_set():
+                      kbi_event.set()
+                # signal if a different Exception type was observed
+                else:
+                  with manager.step('set failure flag'):
+                    if raise_event is not None and not raise_event.is_set():
+                      raise_event.set()
+
+        # Only stop when there are no further Exceptions to collect
+        if thread_stop.is_set():
+          if not received:
+            break
+        # Sleep to lower CPU load
+        elif not received:
+          thread_stop.wait(0.05)
 
     # If an Exception is encountered, report it and make Blocks stop
     except BaseException as error:
@@ -1634,7 +1664,7 @@ class Block(Process, ABC):
     return rec.levelno in (logging.DEBUG, logging.INFO)
 
   def run(self) -> None:
-    """The method run by the Blocks when their :obj:`~multiprocessing.Process` 
+    """The method run by the Blocks when their :obj:`~multiprocessing.Process`
     is started.
 
     It first calls :meth:`~crappy.blocks.meta_block.block.Block.prepare`, then
@@ -1642,269 +1672,155 @@ class Block(Process, ABC):
     then calls :meth:`~crappy.blocks.meta_block.block.Block.begin`, then
     :meth:`~crappy.blocks.meta_block.block.Block.main`, and finally
     :meth:`~crappy.blocks.meta_block.block.Block.finish`.
-    
-    If an exception is raised, sets the shared stop 
+
+    If an exception is raised, sets the shared stop
     :obj:`~multiprocessing.Event` to warn all the other Blocks.
     """
 
     self._failure_manager = FailureManager(self.name, 'bootstrap')
-    if self._failure_queue is not None:
-      self._failure_manager.set_queue(self._failure_queue)
-
+    manager = self._failure_manager
+    assert manager is not None
     try:
-      # Any Exception caught at the beginning should break the Barrier
-      try:
-        # Initializes the Logger for the Block
-        self._set_block_logger()
-        self._failure_manager._logger = self._logger
-        self.log(logging.INFO, "Block launched")
+      with manager.collect('Block lifecycle'):
+        with manager.step('execution'):
+          # Start with setting the Exception queue and the logger
+          if self._failure_queue is not None:
+            manager.set_queue(self._failure_queue)
+          self._set_block_logger()
+          if self._logger is not None:
+            manager._logger = self._logger
+          self.log(logging.INFO, "Block launched")
 
-        # Under fork, close configuration Pipe endpoints belonging to other
-        # Blocks before starting any preparation work
-        self._close_config_connections()
-        if self._config_connections_to_close:
-          raise RuntimeError("Could not close all inherited config Pipes")
+          # Close inherited endpoints before running preparation work
+          self._close_config_connections()
 
-        # Running the preliminary actions before the test starts
-        self.log(logging.INFO, "Block preparing")
-        self.prepare()
+          # Prepare the Block
+          manager.phase = 'prepare'
+          self.log(logging.INFO, "Block preparing")
+          self.prepare()
 
-      # If an Exception is raised, warning the other Blocks by breaking the
-      # Barrier
-      except (Exception, KeyboardInterrupt):
-        if self._ready_barrier is None:
-          self.log(logging.ERROR, "The ready Barrier should be aborted but it "
-                                  "doesn't exist!")
-        else:
-          self._ready_barrier.abort()
-          self.log(logging.WARNING, "Broke the Barrier after an Exception was "
-                                    "caught while preparing")
-        raise
-
-      # Waiting for all Blocks to be ready, except if the Barrier was broken
-      try:
-        self.log(logging.INFO, "Waiting for the other Blocks to be ready")
-        if self._ready_barrier is None:
-          raise RuntimeError("Cannot wait for the ready Barrier because it "
-                             "doesn't exist")
-        self._ready_barrier.wait()
-        self.log(logging.INFO, "All Blocks ready now")
-      except BrokenBarrierError:
-        raise PrepareError
-
-      # Waiting for t0 to be set, should take a few milliseconds at most
-      self.log(logging.INFO, "Waiting for the start time to be set")
-      if self._start_event is None:
-        raise RuntimeError("Cannot wait for the start Event because it "
-                           "doesn't exist")
-      if not self._start_event.wait(timeout=1.0):
-        raise StartTimeout
-      else:
-        self.log(logging.INFO, "Start time set, Block starting")
-
-      # Running the first loop
-      self.log(logging.INFO, "Calling begin method")
-      self.begin()
-
-      # Setting the attributes for counting the performance
-      self._last_t = monotonic()
-      self._last_fps = self._last_t
-      self._n_loops = 0
-
-      # Running the main loop until told to stop
-      self.log(logging.INFO, "Entering main loop")
-      self.main()
-      self.log(logging.INFO, "Exiting main loop after stop Event was set")
-
-    # A wrong data type was sent through a Link
-    except LinkDataError:
-      self.log(logging.ERROR, "Tried to send a wrong data type through a Link,"
-                              " stopping !")
-      # Any unexpected Exception should stop the script
-      if self._raise_event is None:
-        self.log(logging.ERROR, "The raise Event should be set but doesn't "
-                                "exist!")
-      else:
-        self._raise_event.set()
-        self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                  'unexpected Exception while running')
-    # An error occurred in another Block while preparing
-    except PrepareError:
-      self.log(logging.ERROR, "Exception raised in another Block while waiting"
-                              " for all Blocks to be ready, stopping")
-    # An error occurred in the CameraConfig window while preparing
-    except CameraConfigError:
-      self.log(logging.ERROR, "Exception raised in a configuration window, "
-                              "stopping")
-      # Any unexpected Exception should stop the script
-      if self._raise_event is None:
-        self.log(logging.ERROR, "The raise Event should be set but doesn't "
-                                "exist!")
-      else:
-        self._raise_event.set()
-        self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                  'unexpected Exception while running')
-    # An error occurred in a Camera process while preparing
-    except CameraPrepareError:
-      self.log(logging.ERROR, "Exception raised in a Camera Process while "
-                              "preparing, stopping")
-      # Any unexpected Exception should stop the script
-      if self._raise_event is None:
-        self.log(logging.ERROR, "The raise Event should be set but doesn't "
-                                "exist!")
-      else:
-        self._raise_event.set()
-        self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                  'unexpected Exception while running')
-      # An error occurred in a Camera Process while running
-    except CameraRuntimeError:
-      self.log(logging.ERROR, "Exception raised in a Camera process while "
-                              "running, stopping")
-      # Any unexpected Exception should stop the script
-      if self._raise_event is None:
-        self.log(logging.ERROR, "The raise Event should be set but doesn't "
-                                "exist!")
-      else:
-        self._raise_event.set()
-        self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                  'unexpected Exception while running')
-    # The start Event took too long to be set
-    except StartTimeout:
-      self.log(logging.ERROR, "Waited too long for start time to be set, "
-                              "aborting !")
-      # Any unexpected Exception should stop the script
-      if self._raise_event is None:
-        self.log(logging.ERROR, "The raise Event should be set but doesn't "
-                                "exist!")
-      else:
-        self._raise_event.set()
-        self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                  'unexpected Exception while running')
-    # Tried to access t0 but it's not set yet
-    except T0NotSetError:
-      self.log(logging.ERROR, "Trying to get the value of t0 when it's not "
-                              "set yet, aborting")
-      # Any unexpected Exception should stop the script
-      if self._raise_event is None:
-        self.log(logging.ERROR, "The raise Event should be set but doesn't "
-                                "exist!")
-      else:
-        self._raise_event.set()
-        self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                  'unexpected Exception while running')
-    # A Generator Block finished its Path
-    except GeneratorStop:
-      self.log(logging.WARNING, f"Generator Path exhausted, stopping the "
-                                f"Block")
-    # A Scheduler Block reached its end State
-    except SchedulerStop:
-      self.log(logging.WARNING, f"Scheduler reached end State, stopping the "
-                                f"Block")
-    # A FileReader Camera object has no more file to read from
-    except ReaderStop:
-      self.log(logging.WARNING, "Exhausted all the images to read from a "
-                                "FileReader Camera, stopping the Block")
-    # The user requested the script to stop
-    except KeyboardInterrupt:
-      self.log(logging.WARNING, f"KeyboardInterrupt caught, stopping")
-      # A KeyboardInterrupt should stop the script and be raised as is
-      if self._kbi_event is None:
-        self.log(logging.ERROR, "The KBI Event should be set but doesn't "
-                                "exist!")
-      else:
-        self._kbi_event.set()
-        self.log(logging.WARNING, 'Set the KbI Event after catching a '
-                                  'KeyboardInterrupt while running')
-    # Another Exception occurred
-    except (Exception,) as exc:
-      # Not much we can do if there's no logger set to report Exception
-      if self._logger is not None:
-        self._logger.exception("Caught Exception while running !",
-                               exc_info=exc)
-      # Any unexpected Exception should stop the script
-      if self._raise_event is None:
-        self.log(logging.ERROR, "The raise Event should be set but doesn't "
-                                "exist!")
-      else:
-        self._raise_event.set()
-        self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                  'unexpected Exception while running')
-
-    # In all cases, trying to properly close the Block
-    finally:
-      try:
-        # Extra cautious here because we absolutely want finish() to be called
-        try:
-          self.log(logging.INFO, "Setting the stop Event")
+          # Wait at the Barrier for all Blocks to be ready
+          manager.phase = 'synchronize'
+          if self._ready_barrier is None:
+            raise RuntimeError("The ready Barrier isn't initialized")
           if self._stop_event is None:
-            self.log(logging.ERROR, "The stop Event should be set but doesn't "
-                                    "exist!")
-          else:
-            self._stop_event.set()
-        finally:
+            raise RuntimeError("The stop Event isn't initialized")
+          if self._stop_event.is_set() or manager.snapshot():
+            raise StopRequested
+          self.log(logging.INFO, "Waiting for the other Blocks to be ready")
           try:
-            try:
-              self.log(logging.INFO, "Calling the finish method")
-            finally:
-              self.finish()
-          finally:
-            self._close_config_connections()
-        self.log(logging.INFO, f"Block {self.name} done")
-      except KeyboardInterrupt:
-        self.log(logging.WARNING, "Caught KeyboardInterrupt while finishing, "
-                                  "ignoring it")
-        # A KeyboardInterrupt should stop the script and be raised as is
-        if self._kbi_event is None:
-          self.log(logging.ERROR, "The KBI Event should be set but doesn't "
-                                  "exist!")
-        else:
-          self._kbi_event.set()
-          self.log(logging.WARNING, 'Set the KbI Event after catching a '
-                                    'KeyboardInterrupt while finishing')
-      except (Exception,) as exc:
-        # Not much we can do if there's no logger set to report Exception
-        if self._logger is not None:
-          self._logger.exception("Caught Exception while finishing !",
-                                 exc_info=exc)
-        # Any unexpected Exception should stop the script
-        if self._raise_event is None:
-          self.log(logging.ERROR, "The raise Event should be set but doesn't "
-                                  "exist!")
-        else:
-          self._raise_event.set()
-          self.log(logging.WARNING, 'Set the raise Event after catching an '
-                                    'unexpected Exception while finishing')
+            self._ready_barrier.wait()
+          except BrokenBarrierError:
+            self.log(logging.WARNING,
+                     "Readiness cancelled by a broken Barrier")
+            raise StopRequested from None
+          self.log(logging.INFO, "All Blocks ready now")
 
-      # Close the Queue for reporting Exceptions
-      finally:
+          # Wait for the start Event to be set, for synchronization
+          manager.phase = 'start'
+          if self._start_event is None:
+            raise RuntimeError("The start Event isn't initialized")
+          if self._stop_event.is_set():
+            raise StopRequested
+          self.log(logging.INFO, "Waiting for the start time to be set")
+          started = self._start_event.wait(timeout=1.0)
+          if self._stop_event.is_set():
+            raise StopRequested
+          if not started:
+            raise StartTimeout
+          self.log(logging.INFO, "Start time set, Block starting")
+
+          # Let the Block begin
+          manager.phase = 'begin'
+          self.log(logging.INFO, "Calling begin method")
+          self.begin()
+
+          # Run the main loops
+          manager.phase = 'main'
+          self._last_t = monotonic()
+          self._last_fps = self._last_t
+          self._n_loops = 0
+          self.log(logging.INFO, "Entering main loop")
+          if self._main_entered is None:
+            raise RuntimeError("The main-entered flag isn't initialized")
+          with manager.step('main',
+                            completion=(GeneratorStop, SchedulerStop,
+                                        ReaderStop)):
+            self._main_entered.value = 1
+            self.main()
+            self.log(logging.INFO,
+                     "Exiting main loop after stop Event was set")
+
+        execution_phase = manager.phase
+        manager.phase = 'framework cleanup'
+        with manager.step('stop diagnostic'):
+          self.log(logging.INFO, "Setting the stop Event")
+        with manager.step('request stop'):
+          if self._stop_event is not None:
+            self._stop_event.set()
+        with manager.step('abort preparation'):
+          if (execution_phase in ('bootstrap', 'prepare', 'synchronize') and
+              self._ready_barrier is not None):
+            self._ready_barrier.abort()
+
+        manager.phase = 'finish'
+        with manager.step('finish diagnostic'):
+          self.log(logging.INFO, "Calling the finish method")
+        with manager.step('finish'):
+          self.finish()
+
+        manager.phase = 'framework cleanup'
+        with manager.step('close inherited config Pipes'):
+          self._close_config_connections()
+        with manager.step('completion diagnostic'):
+          self.log(logging.INFO, f"Block {self.name} done")
+
+        # Disconnect reporting before closing and flushing its public Queue.
+        manager.phase = 'failure Queue shutdown'
         if self._failure_queue is not None:
           queue = self._failure_queue
           self._failure_queue = None
-          self._failure_manager.set_queue(None)
-          with self._failure_manager.collect('failure Queue shutdown'):
-            with self._failure_manager.step('close'):
-              queue.close()
-            with self._failure_manager.step('flush'):
-              queue.join_thread()
+          with manager.step('disconnect'):
+            manager.set_queue(None)
+          with manager.step('close'):
+            queue.close()
+          with manager.step('flush'):
+            queue.join_thread()
+
+        # Keep the legacy flags until coordinator finalization is migrated.
+        manager.phase = 'framework cleanup'
+        for _, error in manager.snapshot():
+          if error is None:
+            continue
+          for member in manager._iter_exception_members(error):
+            if isinstance(member, BaseExceptionGroup):
+              continue
+            if isinstance(member, KeyboardInterrupt):
+              with manager.step('set interrupt flag'):
+                if self._kbi_event is not None:
+                  self._kbi_event.set()
+            else:
+              with manager.step('set failure flag'):
+                if self._raise_event is not None:
+                  self._raise_event.set()
+
+    # These failures are already retained, logged and sent. Do not emit a
+    # second multiprocessing traceback or report the collection's wrapper.
+    except (BaseException,):
+      pass
 
   def _close_config_connections(self) -> None:
-    """Closes every inherited configuration endpoint"""
+    """Closes inherited configuration endpoints, retaining failed ones."""
 
-    for conn in tuple(self._config_connections_to_close):
-      try:
-        conn.close()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Block cleanup step: close inherited config Pipe")
-        if self._logger is not None:
-          self._logger.exception("Could not close inherited config Pipe",
-                                 exc_info=error)
-        if isinstance(error, KeyboardInterrupt):
-          if self._kbi_event is not None:
-            self._kbi_event.set()
-        elif self._raise_event is not None:
-          self._raise_event.set()
-      else:
-        self._config_connections_to_close.remove(conn)
+    if not self._config_connections_to_close:
+      return
+
+    assert self._failure_manager is not None
+    with self._failure_manager.collect('configuration Pipe shutdown'):
+      for conn in tuple(self._config_connections_to_close):
+        with self._failure_manager.step('close inherited config Pipe'):
+          conn.close()
+          self._config_connections_to_close.remove(conn)
 
   def main(self) -> None:
     """The main loop of the :meth:`~crappy.blocks.meta_block.block.Block.run`

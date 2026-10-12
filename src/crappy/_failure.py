@@ -410,7 +410,10 @@ class FailureManager:
       raise group from None
 
   @contextmanager
-  def step(self, label: str) -> Iterator[None]:
+  def step(self,
+           label: str,
+           completion: tuple[type[BaseException], ...] = tuple()
+           ) -> Iterator[None]:
     """Catches failures from one operation and allows the next step to run.
 
     New failures are stored and logged immediately. Must be used inside
@@ -418,17 +421,33 @@ class FailureManager:
 
     Args:
       label: Operation name added to Exception notes.
+      completion: Expected completion signals for this operation, empty by
+        default. Matching group members are removed without losing other
+        failures. A completion request is logged at WARNING.
     """
 
     if not self._collections.stack:
       raise RuntimeError("step() must be used inside collect()")
+    if (not isinstance(completion, tuple) or
+        any(not isinstance(kind, type) or not issubclass(kind, BaseException)
+            for kind in completion)):
+      raise TypeError("completion must be a tuple of Exception classes")
 
     # Store any encountered Exception in the stack, generate a report and
     # report the Exception
     try:
       yield
     except BaseException as error:
-      self._record_context_exception(error, label)
+      # Don't record the Exceptions marked as valid completion
+      retained = (self._filter_exception(error,
+                                         lambda member:
+                                         not isinstance(member, completion))
+                  if completion else error)
+      if retained is not None:
+        self._record_context_exception(retained, label)
+      if retained is not error:
+        with self.step('completion diagnostic'):
+          self._logger.warning(f"{label} requested completion")
 
   def capture_exception(self,
                         error: BaseException,
