@@ -9,6 +9,7 @@ import logging
 import logging.handlers
 
 from ..._failure import FailureManager
+from ..._exceptions import StopRequested
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
 from ...tool.camera_config import Overlay
@@ -200,8 +201,7 @@ class Displayer(CameraProcess):
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay`"""
 
     # Make sure a FailureManager is available and has a logger
-    manager = (getattr(self, '_failure_manager', None) or
-               FailureManager(self.name, 'finish'))
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
     if self._logger is not None:
       manager._logger = self._logger
 
@@ -246,32 +246,52 @@ class Displayer(CameraProcess):
     Overlays.
     """
 
-    # Looping until the entire CameraProcess is told to stop, or the 
-    # _stop_thread flag is raised
-    while not self._stop_event.is_set() and not self._stop_thread:
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'monitoring')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-      # Receiving the latest Overlay to draw
-      overlay = None
-      try:
-        while (not self._stop_thread and not self._stop_event.is_set() and
-               self._to_draw_conn.poll()):
-          overlay = self._to_draw_conn.recv()
-      except (EOFError, OSError):
-        # The owning process may close its Pipe during shutdown
-        if not self._stop_thread and not self._stop_event.is_set():
-          raise
-        break
+    # Keep reference to the original objects in case reset() is called
+    connection = self._to_draw_conn
+    stop = self._stop_event
+    barrier = self._cam_barrier
 
-      # Saving the received Overlay
-      if overlay is not None:
-        self.log(logging.DEBUG, f"Received overlay to display: {overlay}")
-        self._overlay = overlay
+    # Guard run steps with the FailureManager
+    with manager.collect('Overlay reception', raise_on_exit=False):
+      with manager.step('receive overlays'):
+        if connection is None or stop is None:
+          raise RuntimeError("Overlay reception requires a Pipe and stop "
+                             "Event")
+        while not stop.is_set() and not self._stop_thread:
+          # Receiving the latest Overlay to draw
+          overlay = None
+          try:
+            while (not self._stop_thread and not stop.is_set() and
+                   connection.poll()):
+              overlay = connection.recv()
+          except (EOFError, OSError):
+            # The owning process may close its Pipe during shutdown
+            if self._stop_thread or stop.is_set():
+              raise StopRequested from None
+            raise
+          if overlay is not None:
+            self.log(logging.DEBUG, f"Received overlay to display: {overlay}")
+            self._overlay = overlay
 
-      # To avoid spamming the CPU in vain
-      else:
-        sleep(0.001)
+          # To avoid spamming the CPU in vain
+          else:
+            sleep(0.001)
 
-    self.log(logging.INFO, "Thread for receiving the Overlays ended")
+      # Set the error and stop flags
+      self._stop_thread = True
+      with manager.step('request worker stop'):
+        if stop is not None:
+          stop.set()
+      with manager.step('abort worker readiness'):
+        if barrier is not None:
+          barrier.abort()
+      with manager.step('overlay diagnostic'):
+        self.log(logging.INFO, "Thread for receiving the Overlays ended")
 
   def _prepare_cv2(self) -> None:
     """Instantiates the display window of ``cv2``."""
