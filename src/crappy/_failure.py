@@ -543,13 +543,17 @@ class FailureManager:
     with self._lock:
       return tuple(self._reports.values())
 
-  def raise_if_failed(self, message: str) -> None:
+  def raise_if_failed(self,
+                      message: str,
+                      group_by_source: bool = False) -> None:
     """Raises all stored failures together, without logging them again.
 
     Does nothing when no failures are stored.
 
     Args:
       message: Message used for the final ExceptionGroup or BaseExceptionGroup.
+      group_by_source: Group Exceptions by their source Block and phase,
+        preserving their observed order. False raises a flat group.
 
     Raises:
       ValueError: A local-only report has no attached Exception or node graph.
@@ -573,9 +577,25 @@ class FailureManager:
     failures = self.snapshot()
 
     # Generate one ExceptionGroup from all the gathered Exceptions, and raise
-    group = self._make_exception_group(
-        message, (exception for _, exception in failures
-                  if exception is not None))
+    if group_by_source:
+      owners: dict[str, dict[str, list[BaseException]]] = dict()
+      for report, exception in failures:
+        if exception is not None:
+          owners.setdefault(report.block_name, dict()).setdefault(
+              report.phase, list()).append(exception)
+      groups = list()
+      for owner, phases in owners.items():
+        phase_groups = [self._make_exception_group(phase, errors)
+                        for phase, errors in phases.items()]
+        owner_group = self._make_exception_group(
+            owner, (group for group in phase_groups if group is not None))
+        if owner_group is not None:
+          groups.append(owner_group)
+      group = self._make_exception_group(message, groups)
+    else:
+      group = self._make_exception_group(
+          message, (exception for _, exception in failures
+                    if exception is not None))
     if group is not None:
       raise group from None
 
