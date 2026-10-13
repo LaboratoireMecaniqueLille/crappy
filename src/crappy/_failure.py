@@ -306,7 +306,7 @@ class FailureManager:
     self._lock = RLock()
     self._collections = _CollectionState()
     self._logger = logging.getLogger('crappy')
-    self._logger_failed = False
+    self.logger_failed = False
     self._queue: queues.Queue | None = None
     self._broken_queues: set[queues.Queue] = set()
 
@@ -1086,12 +1086,12 @@ class FailureManager:
     errors: list[BaseException] = list()
 
     # Try to report the failure with the logger
-    if not self._logger_failed:
+    if not self.logger_failed:
       try:
         self._logger.error(str(report))
       # If it fails, create a new FailureReport for this new failure
       except BaseException as error:
-        self._logger_failed = True
+        self.logger_failed = True
         BaseException.add_note(error, f"Reporting failure {report.failure_id}")
         infrastructure_report, encoding_errors = self._generate_failure_report(
             error, phase='reporting')
@@ -1105,7 +1105,7 @@ class FailureManager:
             reports.append(extra_report)
 
     # If the logger is down, we have to log directly on stderr
-    if self._logger_failed:
+    if self.logger_failed:
       try:
         for pending in reports:
           sys.stderr.write(str(pending))
