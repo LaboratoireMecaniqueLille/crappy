@@ -504,7 +504,7 @@ class CameraSource(VisionBlock):
     if self.display_freq:
       self._print_freq(img_handled=True)
 
-  def finish(self, _: FailureManager | None) -> None:
+  def finish(self, _: FailureManager | None = None) -> None:
     """Closes the physical :class:`~crappy.camera.meta_camera.camera.Camera`
     and releases shared image resources.
 

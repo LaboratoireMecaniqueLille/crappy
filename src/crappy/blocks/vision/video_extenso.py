@@ -346,7 +346,7 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
     if self.display_freq:
       self._print_freq(img_handled=True)
 
-  def finish(self, _: FailureManager | None) -> None:
+  def finish(self, _: FailureManager | None = None) -> None:
     """Stops the spot trackers and releases inherited image resources."""
 
     # Make sure a FailureManager is available and has a logger
