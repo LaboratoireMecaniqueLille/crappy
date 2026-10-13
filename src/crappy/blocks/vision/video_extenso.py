@@ -3,6 +3,7 @@
 from collections.abc import Mapping, Sequence
 import logging
 
+from ..._failure import FailureManager
 from .block import VisionBlock, ConfigRequest
 from ...tool.image_processing import VideoExtensoTool, LostSpotError
 from ...tool.camera_config.config_tools import SpotsBoxes
@@ -345,42 +346,25 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
     if self.display_freq:
       self._print_freq(img_handled=True)
 
-  def finish(self) -> None:
+  def finish(self, _: FailureManager | None) -> None:
     """Stops the spot trackers and releases inherited image resources."""
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    if self._ve is not None:
-      self.log(logging.INFO, "Stopping the spot trackers before returning")
-      try:
-        self._ve.stop_tracking()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("VideoExtenso cleanup step: stop spot trackers")
-        failures.append(error)
-      else:
-        self._ve = None
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('VideoExtenso cleanup'):
+      if self._ve is not None:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, "Stopping the spot trackers before returning")
+        with manager.step('stop spot trackers'):
+          self._ve.stop_tracking()
+          self._ve = None
 
-    try:
-      super().finish()
-    except (Exception, KeyboardInterrupt) as error:
-      error.add_note("VideoExtenso cleanup step: release shared image buffers")
-      failures.append(error)
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other VideoExtenso cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("VideoExtenso cleanup failures", failures)
+      with manager.step('release shared image buffers'):
+        super().finish(manager=manager)
 
   def request_config(self, source: str) -> ConfigRequest:
     """Builds the VideoExtenso configuration request for an image source.

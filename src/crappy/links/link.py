@@ -13,6 +13,7 @@ import logging
 
 from .link_graph import link_graph
 from .._exceptions import LinkDataError
+from .._failure import FailureManager
 
 ModifierType = Callable[[dict[str, Any]], [dict[str, Any] | None]]
 
@@ -100,58 +101,43 @@ class Link:
     try:
       link_graph.add_edge(self.name, input_block.name, output_block.name,
                           kind='link', allow_parallel=allow_parallel)
-    except Exception:
-      self.close()
-      raise
+    except (BaseException,) as error:
+      manager = FailureManager(self.name, 'initialization')
+      with manager.collect('Link initialization'):
+        manager.record_context_exception(error, 'register edge')
+        with manager.step('close unregistered Link'):
+          self.close(manager=manager)
 
     # Associating the link to the input and output blocks
     input_block.add_output(self)
     output_block.add_input(self)
 
-  def close(self) -> None:
+  def close(self, manager: FailureManager | None = None) -> None:
     """Closes both Pipe endpoints, including when one close fails.
 
     Successful closes are remembered so repeated cleanup only retries failures.
     The framework calls this after the Blocks have finished.
+
+    Args:
+      manager: FailureManager of the owning Process.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    # Make sure a FailureManager is available and has a logger
+    if manager is None:
+      manager = FailureManager(self.name, 'framework cleanup')
+      if self._logger is not None:
+        manager._logger = self._logger
 
-    # Close the input Pipe
-    if not self._in_closed:
-      try:
-        self._in.close()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"Link cleanup step: close input of {self.name!r}")
-        failures.append(error)
-      else:
-        self._in_closed = True
-
-    # Close the output Pipe
-    if not self._out_closed:
-      try:
-        self._out.close()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"Link cleanup step: close output of {self.name!r}")
-        failures.append(error)
-      else:
-        self._out_closed = True
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other Link cleanup failures",
-                                              others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("Link cleanup failures", failures)
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Link cleanup'):
+      if not self._in_closed:
+        with manager.step(f'close input of {self.name!r}'):
+          self._in.close()
+          self._in_closed = True
+      if not self._out_closed:
+        with manager.step(f'close output of {self.name!r}'):
+          self._out.close()
+          self._out_closed = True
 
   def __new__(cls, *args, **kwargs):
     """When instantiating a new Link, increments the Link counter."""

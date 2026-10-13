@@ -15,6 +15,7 @@ from uuid import uuid4
 from math import prod, isfinite
 from time import monotonic
 
+from ..._failure import FailureManager
 from ..meta_block import Block
 from ...links import ImageLink
 from ..._exceptions import LinkDataError, PrepareError
@@ -337,105 +338,79 @@ class VisionBlock(Block, ABC):
 
     self._last_fps_img = monotonic()
 
-  def finish(self) -> None:
+  def finish(self, manager: FailureManager | None = None) -> None:
     """Releases shared-memory resources owned or attached by this Block.
 
     Incoming shared-memory handles are closed without unlinking their
     source-owned segments. The output segment, when present, is both closed and
     unlinked by its owning Block. Unused configuration Pipe endpoints are also
     closed. Failures are reported only after every cleanup has been attempted.
+
+    Args:
+      manager: Manager used for reporting caught Exceptions.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    # Make sure a FailureManager is available and has a logger
+    manager = (manager or self._failure_manager or
+               FailureManager(self.name, 'finish'))
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # Close the SharedMemory objects of incoming ImageLinks
-    for data in self._in_link_data:
-      data.npy_buffer = None
-      if data.img_buffer is None or data.buffer_closed:
-        continue
-      try:
-        data.img_buffer.close()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"VisionBlock cleanup step: close incoming buffer "
-                       f"{data.memory_name!r}")
-        failures.append(error)
-      else:
-        data.buffer_closed = True
-        data.img_buffer = None
-        self.log(logging.INFO, f"Closed incoming shared image buffer "
-                               f"{data.memory_name!r}")
-
-    # Same for the downstream ImageLinks, except we also have to unlink()
-    data = self._out_link_data
-    data.npy_buffer = None
-    if data.img_buffer is not None:
-      if not data.buffer_closed:
-        try:
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('VisionBlock cleanup'):
+      # Close the SharedMemory objects of incoming ImageLinks
+      for data in self._in_link_data:
+        data.npy_buffer = None
+        if data.img_buffer is None or data.buffer_closed:
+          continue
+        with manager.step(f'close incoming buffer {data.memory_name!r}'):
           data.img_buffer.close()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note(f"VisionBlock cleanup step: close outgoing buffer "
-                         f"{data.memory_name!r}")
-          failures.append(error)
-        else:
           data.buffer_closed = True
+          data.img_buffer = None
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.INFO, f"Closed incoming shared image buffer "
+                                   f"{data.memory_name!r}")
 
-      # Unlink is independent of close and must still be attempted on error
-      if not data.buffer_unlinked:
-        try:
-          data.img_buffer.unlink()
-        except FileNotFoundError:
-          data.buffer_unlinked = True
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note(f"VisionBlock cleanup step: unlink outgoing buffer "
-                         f"{data.memory_name!r}")
-          failures.append(error)
-        else:
-          data.buffer_unlinked = True
-      # Case when closing succeeded
-      if data.buffer_closed and data.buffer_unlinked:
-        data.img_buffer = None
-        self.log(logging.INFO, "Closed image buffer shared with downstream "
-                               "Blocks")
+      # Same for the downstream ImageLinks, except we also have to unlink()
+      data = self._out_link_data
+      data.npy_buffer = None
+      if data.img_buffer is not None:
+        if not data.buffer_closed:
+          with manager.step(f'close outgoing buffer {data.memory_name!r}'):
+            data.img_buffer.close()
+            data.buffer_closed = True
 
-    # Wake downstream receivers so they can notice the shared stop/error flags
-    for index, condition in enumerate(self._out_img_conditions):
-      try:
-        with condition:
-          condition.notify_all()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"VisionBlock cleanup step: notify downstream "
-                       f"condition {index + 1}")
-        failures.append(error)
+        # Unlink is independent of close and must still be attempted on error
+        if not data.buffer_unlinked:
+          with manager.step(f'unlink outgoing buffer {data.memory_name!r}'):
+            try:
+              data.img_buffer.unlink()
+            except FileNotFoundError:
+              data.buffer_unlinked = True
+            else:
+              data.buffer_unlinked = True
+        # Case when closing succeeded
+        if data.buffer_closed and data.buffer_unlinked:
+          data.img_buffer = None
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.INFO, "Closed image buffer shared with "
+                                   "downstream Blocks")
 
-    # Requests may remain unanswered when preparation failed early
-    requests = [*self._config_requests_in, *self._config_requests_out]
-    for request in requests:
-      if request.connection is None or request.connection_closed:
-        continue
-      try:
-        request.connection.close()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"VisionBlock cleanup step: close configuration Pipe "
-                       f"from {request.img_source!r} to {request.requester!r}")
-        failures.append(error)
-      else:
-        request.connection_closed = True
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other VisionBlock cleanup "
-                                              "failures", others)
-    # If there's only one Exception, raise it
-    elif failures:
-      raise ExceptionGroup("VisionBlock cleanup failures", failures)
+      # Wake downstream receivers so they can notice the shared stop/error
+      # flags
+      for index, condition in enumerate(self._out_img_conditions):
+        with manager.step(f'notify downstream condition {index + 1}'):
+          with condition:
+            condition.notify_all()
+      # Requests may remain unanswered when preparation failed early
+      requests = [*self._config_requests_in, *self._config_requests_out]
+      for request in requests:
+        if request.connection is None or request.connection_closed:
+          continue
+        with manager.step(f'close configuration Pipe from '
+                          f'{request.img_source!r} to {request.requester!r}'):
+          request.connection.close()
+          request.connection_closed = True
 
   def add_img_output(self, img_link) -> None:
     """Registers an ImageLink through which this Block sends images.
@@ -736,33 +711,35 @@ class VisionBlock(Block, ABC):
         request was declined or no configuration can be provided.
 
     Raises:
-      RuntimeError: If the request has no Pipe endpoint or a required request
-        is answered with :obj:`None`.
+      ExceptionGroup: If the request is invalid, sending fails, or the Pipe
+        cannot be closed.
     """
 
-    try:
-      if request.connection is None:
-        raise RuntimeError("The ConfigRequest is expected to have its "
-                           "Connection set")
-      # Checking if a required request was properly handled
-      if request.required and config is None:
-        raise RuntimeError(f"The request from Block {request.requester} is "
-                           f"flagged as required, yet {request.img_source} "
-                           f"answered with None")
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'prepare')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-      request.connection.send(config)
-      self.log(logging.INFO, f"Sent "
-                             f"{'config' if config is not None else 'None'} "
-                             f"back to Block {request.requester}")
-      request.completed = True
-    except (Exception,):
-      self.log(logging.ERROR, "Couldn't send the config info via the "
-                              "Connection!")
-      raise
-    finally:
-      if request.connection is not None:
-        request.connection.close()
-        request.connection_closed = True
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Vision configuration response'):
+      with manager.step('send response'):
+        if request.connection is None:
+          raise RuntimeError("The ConfigRequest is expected to have its "
+                             "Connection set")
+        if request.required and config is None:
+          raise RuntimeError(f"The request from Block {request.requester} is "
+                             f"flagged as required, yet {request.img_source} "
+                             f"answered with None")
+        request.connection.send(config)
+        request.completed = True
+        with manager.step('response diagnostic'):
+          self.log(logging.INFO, f"Sent "
+                                 f"{'config' if config is not None else 'None'} "
+                                 f"back to Block {request.requester}")
+      with manager.step('close response Pipe'):
+        if request.connection is not None:
+          request.connection.close()
+          request.connection_closed = True
 
   def add_config_request_out(self, request: ConfigRequest) -> None:
     """Registers a configuration request sent to an upstream image source.
@@ -799,8 +776,7 @@ class VisionBlock(Block, ABC):
     Raises:
       ValueError: If the preparation synchronization objects are unavailable.
       RuntimeError: If a request has no Pipe endpoint.
-      PrepareError: If another Block fails, the test stops, or the source Pipe
-        closes without providing a response.
+      ExceptionGroup: If receiving or closing a request fails.
     """
 
     if self._ready_barrier is None:
@@ -809,33 +785,34 @@ class VisionBlock(Block, ABC):
       raise ValueError("The stop Event should be initialized at this point")
 
     configs: dict[str, tuple[Any, ...] | None] = dict()
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'prepare')
+    if self._logger is not None:
+      manager._logger = self._logger
 
     # For each request, wait for the configuration information to arrive
     for request in self._config_requests_out:
       if request.connection is None:
         raise RuntimeError("The ConfigRequest is expected to have a "
                            "Connection set")
-      try:
-        # Wait until config information is received
-        while not request.connection.poll(timeout=0.5):
-          self.log(logging.DEBUG, f"Config from Block {request.img_source} "
-                                  f"not ready yet")
-          # Check if we should give up on waiting for the config
-          if self._ready_barrier.broken or self._stop_event.is_set():
-            raise PrepareError("An exception occurred in another Block, "
-                               "aborting")
-
-        # Receive the configuration information
-        config = request.connection.recv()
-        self.log(logging.DEBUG, f"Received config information from Block "
-                                f"{request.img_source}")
-      # Can happen if the other end of the Pipe is broken
-      except (EOFError, OSError):
-        raise PrepareError("The other end of the Pipe seems to be broken")
-
-      finally:
-        request.connection.close()
-        request.connection_closed = True
+      # Guard cleanup steps with the FailureManager
+      with manager.collect('Vision configuration receive'):
+        with manager.step('receive response'):
+          try:
+            while not request.connection.poll(timeout=0.5):
+              self.log(logging.DEBUG,
+                       f"Config from Block {request.img_source} not ready yet")
+              if self._ready_barrier.broken or self._stop_event.is_set():
+                raise PrepareError("An exception occurred in another Block, "
+                                   "aborting")
+            config = request.connection.recv()
+            self.log(logging.DEBUG, f"Received config information from Block "
+                                    f"{request.img_source}")
+          except (EOFError, OSError):
+            raise PrepareError("The other end of the Pipe seems to be broken")
+        with manager.step('close request Pipe'):
+          request.connection.close()
+          request.connection_closed = True
 
       # Just store the received configuration
       configs[request.img_source] = config

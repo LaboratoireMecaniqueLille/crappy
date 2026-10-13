@@ -1018,7 +1018,7 @@ class Block(Process, ABC):
         with manager.step(f'Link closure diagnostic {link.name!r}'):
           cls.cls_log(logging.DEBUG, f'Closing Link {link.name!r}')
         with manager.step(f'close Link {link.name!r}'):
-          link.close()
+          link.close(manager=manager)
 
       # Stopping the shared Manager if required
       if cls.shared_mgr is not None:

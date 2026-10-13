@@ -13,6 +13,7 @@ import numpy as np
 import os
 from warnings import warn
 
+from .._failure import FailureManager
 from .meta_block import Block
 from .._global import OptionalModule
 
@@ -420,57 +421,36 @@ class Grapher(Block):
   def finish(self) -> None:
     """Closes the plotting window owned by this Block."""
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # Close the Qt window
-    if self._qt_plot is not None:
-      self.log(logging.INFO, "Closing the pyqtgraph window")
-      self._qt_events_processed = False
-      try:
-        if self._qt_plot.close() is False:
-          raise RuntimeError("The Grapher Qt window refused to close")
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Grapher cleanup step: close Qt plot")
-        failures.append(error)
-      else:
-        self._qt_plot = None
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Grapher cleanup'):
+      # Close the Qt window
+      if self._qt_plot is not None:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, "Closing the pyqtgraph window")
+        self._qt_events_processed = False
+        with manager.step('close Qt plot'):
+          if self._qt_plot.close() is False:
+            raise RuntimeError("The Grapher Qt window refused to close")
+          self._qt_plot = None
 
-    # Process the lasgt Qt events
-    if self._qt_app is not None and not self._qt_events_processed:
-      try:
-        self._qt_app.processEvents()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Grapher cleanup step: process Qt close events")
-        failures.append(error)
-      else:
-        self._qt_events_processed = True
+      # Process the last Qt events
+      if self._qt_app is not None and not self._qt_events_processed:
+        with manager.step('process Qt close events'):
+          self._qt_app.processEvents()
+          self._qt_events_processed = True
 
-    # Close the matplotlib figure
-    if self._figure is not None:
-      self.log(logging.INFO, "Closing the matplotlib window")
-      try:
-        plt.close(self._figure)
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Grapher cleanup step: close Matplotlib figure")
-        failures.append(error)
-      else:
-        self._figure = None
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other Grapher cleanup failures",
-                                              others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("Grapher cleanup failures", failures)
+      # Close the matplotlib figure
+      if self._figure is not None:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, "Closing the matplotlib window")
+        with manager.step('close Matplotlib figure'):
+          plt.close(self._figure)
+          self._figure = None
 
   def _prepare_mpl(self) -> None:
     """The path ``prepare`` follows when the selected plotter is Matplotlib"""
@@ -619,13 +599,19 @@ class Grapher(Block):
         else:
           os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
 
-    try:
-      # Qt selects and loads its platform plugin while creating the app
-      self._qt_app = pg.mkQApp("Crappy Grapher")
-    finally:
-      # Restore the process environment even if Qt initialization fails
-      if saved_qt_plugin_path is not None:
-        os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = saved_qt_plugin_path
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'prepare')
+    if self._logger is not None:
+      manager._logger = self._logger
+
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Grapher Qt setup'):
+      with manager.step('create application'):
+        # Qt selects and loads its platform plugin while creating the app
+        self._qt_app = pg.mkQApp("Crappy Grapher")
+      with manager.step('restore Qt plugin path'):
+        if saved_qt_plugin_path is not None:
+          os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = saved_qt_plugin_path
 
   def _on_press_mpl(self, event) -> None:
     """Callback catching the keyboard press events.

@@ -9,6 +9,7 @@ from time import time, strftime, gmtime
 from types import MethodType
 from typing import Any, Literal
 
+from ..._failure import FailureManager
 from .block import VisionBlock
 from ..camera import camera_dict, DummyCam, moved_to_collection
 from ...tool.camera_config import CameraConfig, create_configurator
@@ -503,7 +504,7 @@ class CameraSource(VisionBlock):
     if self.display_freq:
       self._print_freq(img_handled=True)
 
-  def finish(self) -> None:
+  def finish(self, _: FailureManager | None) -> None:
     """Closes the physical :class:`~crappy.camera.meta_camera.camera.Camera`
     and releases shared image resources.
 
@@ -512,45 +513,29 @@ class CameraSource(VisionBlock):
     image-generator mode. Shared memory is released before the Camera.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # Release the shared memory
-    try:
-      super().finish()
-    except (Exception, KeyboardInterrupt) as error:
-      error.add_note("CameraSource cleanup step: release shared image buffers")
-      failures.append(error)
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('CameraSource cleanup'):
+      # Release the shared memory
+      with manager.step('release shared image buffers'):
+        super().finish(manager=manager)
 
-    # Release the Camera resources
-    if self._camera is not None and self._image_generator is None:
-      self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
-      try:
-        self._camera.close()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"CameraSource cleanup step: close {self._camera_name}")
-        failures.append(error)
-      else:
+      # Release the Camera resources
+      if self._camera is not None and self._image_generator is None:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
+        with manager.step(f'close {self._camera_name}'):
+          self._camera.close()
+          self._camera = None
+          self._camera_opened = False
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
+      elif self._camera is not None:
         self._camera = None
-        self._camera_opened = False
-        self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
-    elif self._camera is not None:
-      self._camera = None
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other CameraSource cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("CameraSource cleanup failures", failures)
 
   def configure(self,
                 camera: BaseCam,

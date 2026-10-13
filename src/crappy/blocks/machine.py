@@ -8,6 +8,7 @@ from numbers import Real
 from math import isfinite
 import logging
 
+from .._failure import FailureManager
 from .meta_block import Block
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
@@ -396,54 +397,40 @@ class Machine(Block):
     constructed Actuator, including one whose open failed.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # Stop every opened actuator
-    for actuator in self._actuators:
-      if not actuator.opened or actuator.stopped or actuator.closed:
-        continue
-      name = type(actuator.actuator).__name__
-      self.log(logging.INFO, f"Stopping the {type(actuator.actuator).__name__}"
-                             f"Actuator")
-      try:
-        actuator.actuator.stop()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"Machine cleanup step: stop actuator "
-                       f"({name}, cmd_label={actuator.cmd_label!r})")
-        failures.append(error)
-      else:
-        actuator.stopped = True
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Machine cleanup'):
+      # Stop every opened actuator
+      for actuator in self._actuators:
+        if not actuator.opened or actuator.stopped or actuator.closed:
+          continue
+        name = type(actuator.actuator).__name__
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, f"Stopping the "
+                                 f"{type(actuator.actuator).__name__} "
+                                 f"Actuator")
+        with manager.step(f'stop actuator '
+                          f'({name}, cmd_label={actuator.cmd_label!r})'):
+          actuator.actuator.stop()
+          actuator.stopped = True
 
-    # Close every opened actuator
-    for actuator in self._actuators:
-      if actuator.closed:
-        continue
-      name = type(actuator.actuator).__name__
-      self.log(logging.INFO, f"Closing the {type(actuator.actuator).__name__}"
-                             f"Actuator")
-      try:
-        actuator.actuator.close()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"Machine cleanup step: close actuator "
-                       f"({name}, cmd_label={actuator.cmd_label!r})")
-        failures.append(error)
-      else:
-        actuator.closed = True
-        actuator.opened = False
-        self.log(logging.INFO, f"Closed the {name} Actuator")
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other Machine cleanup failures",
-                                              others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("Machine cleanup failures", failures)
+      # Close every constructed actuator
+      for actuator in self._actuators:
+        if actuator.closed:
+          continue
+        name = type(actuator.actuator).__name__
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO,
+                   f"Closing the {type(actuator.actuator).__name__}"
+                                 f"Actuator")
+        with manager.step(f'close actuator '
+                          f'({name}, cmd_label={actuator.cmd_label!r})'):
+          actuator.actuator.close()
+          actuator.closed = True
+          actuator.opened = False
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.INFO, f"Closed the {name} Actuator")

@@ -8,6 +8,7 @@ from math import ceil, log2
 from itertools import chain
 from collections.abc import Sequence
 
+from ..._failure import FailureManager
 from .block import VisionBlock
 from ..._global import OptionalModule
 from ...tool.camera_config import Overlay
@@ -278,50 +279,31 @@ class ImageDisplayer(VisionBlock):
     if self.display_freq:
       self._print_freq(img_handled=True)
 
-  def finish(self) -> None:
+  def finish(self, _: FailureManager | None) -> None:
     """Closes the display window and releases the input image buffer."""
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # Release the parent resources first
-    try:
-      super().finish()
-    except (Exception, KeyboardInterrupt) as error:
-      error.add_note("ImageDisplayer cleanup step: release shared image "
-                     "buffers")
-      failures.append(error)
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('ImageDisplayer cleanup'):
+      # Release the parent resources first
+      with manager.step('release shared image buffers'):
+        super().finish(manager=manager)
 
-    if self._window_opened:
-      self.log(logging.INFO, "Closing the displayer window")
-      try:
-        if self._backend == 'cv2':
-          self._finish_cv2()
-        elif self._backend == 'mpl':
-          self._finish_mpl()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"ImageDisplayer cleanup step: close {self._backend} "
-                       f"window {self._title!r}")
-        failures.append(error)
-      else:
-        self._window_opened = False
-        self._fig = None
-        self._ax = None
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other ImageDisplayer cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("ImageDisplayer cleanup failures", failures)
+      if self._window_opened:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, "Closing the displayer window")
+        with manager.step(f'close {self._backend} window {self._title!r}'):
+          if self._backend == 'cv2':
+            self._finish_cv2()
+          elif self._backend == 'mpl':
+            self._finish_mpl()
+          self._window_opened = False
+          self._fig = None
+          self._ax = None
 
   def _prepare_cv2(self) -> None:
     """Creates a resizable OpenCV display window."""

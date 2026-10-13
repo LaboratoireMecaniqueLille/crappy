@@ -8,6 +8,7 @@ from time import sleep, monotonic
 import logging
 import logging.handlers
 
+from ..._failure import FailureManager
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
 from ...tool.camera_config import Overlay
@@ -198,63 +199,42 @@ class Displayer(CameraProcess):
     """Closes the Displayer window and stops the :obj:`~threading.Thread`
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay`"""
 
-    failures: list[Exception | KeyboardInterrupt] = list()
-    self._stop_thread = True
+    # Make sure a FailureManager is available and has a logger
+    manager = (getattr(self, '_failure_manager', None) or
+               FailureManager(self.name, 'finish'))
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # Close the display window
-    if self._window_opened:
-      try:
-        if self._backend == 'cv2':
-          self._finish_cv2()
-        elif self._backend == 'mpl':
-          self._finish_mpl()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Displayer cleanup step: close display window")
-        failures.append(error)
-      else:
-        self._window_opened = False
-        self._fig = None
-        self._ax = None
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Displayer cleanup'):
+      self._stop_thread = True
 
-    if self._overlay_thread is not None:
-      if self._overlay_started:
+      # Close the display window
+      if self._window_opened:
+        with manager.step('close display window'):
+          if self._backend == 'cv2':
+            self._finish_cv2()
+          elif self._backend == 'mpl':
+            self._finish_mpl()
+          self._window_opened = False
+          self._fig = None
+          self._ax = None
 
-        # Give some time for the overlay thread to finish
-        try:
-          self._overlay_thread.join(0.2)
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("Displayer cleanup step: join overlay thread")
-          failures.append(error)
+      if self._overlay_thread is not None:
+        if self._overlay_started:
 
-        # Check if the overlay thread is still alive and report it if so
-        try:
-          alive = self._overlay_thread.is_alive()
-          if alive:
-            raise RuntimeError("The overlay thread did not stop in time")
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("Displayer cleanup step: check overlay thread")
-          failures.append(error)
+          # Give some time for the overlay thread to finish
+          with manager.step('join overlay thread'):
+            self._overlay_thread.join(0.2)
+          # Check if the overlay thread is still alive and report it if so
+          with manager.step('check overlay thread'):
+            alive = self._overlay_thread.is_alive()
+            if alive:
+              raise RuntimeError("The overlay thread did not stop in time")
+            self._overlay_thread = None
+            self._overlay_started = False
         else:
           self._overlay_thread = None
-          self._overlay_started = False
-      else:
-        self._overlay_thread = None
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other Displayer cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("Displayer cleanup failures", failures)
 
   def _thread_target(self) -> None:
     """This method is the target to the :obj:`~threading.Thread` in charge of

@@ -5,6 +5,7 @@ from time import time
 from collections.abc import Callable, Sequence
 import logging
 
+from .._failure import FailureManager
 from .meta_block import Block
 from .._global import OptionalModule
 
@@ -377,40 +378,21 @@ class UController(Block):
   def finish(self) -> None:
     """Attempts both the stop command and serial-port cleanup."""
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # First make sure to send the stop message
-    if self._bus is not None:
-      if not self._stop_sent:
-        try:
-          self._bus.write(b"stop!\r\n")
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("UController cleanup step: send stop command")
-          failures.append(error)
-        else:
-          self._stop_sent = True
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('UController cleanup'):
+      # First make sure to send the stop message
+      if self._bus is not None:
+        if not self._stop_sent:
+          with manager.step('send stop command'):
+            self._bus.write(b"stop!\r\n")
+            self._stop_sent = True
 
-      # Then close the serial bus
-      try:
-        self._bus.close()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("UController cleanup step: close serial connection")
-        failures.append(error)
-      else:
-        self._bus = None
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other UController cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("UController cleanup failures", failures)
+        # Then close the serial bus
+        with manager.step('close serial connection'):
+          self._bus.close()
+          self._bus = None

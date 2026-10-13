@@ -12,6 +12,7 @@ from socket import timeout, gaierror
 from itertools import chain
 import logging
 
+from .._failure import FailureManager
 from .meta_block import Block
 from .._global import OptionalModule
 
@@ -413,119 +414,77 @@ class ClientServer(Block):
     Cleanup also works after partial preparation.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
-    self._stop_mosquitto = True
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    if self._client is not None:
-      # Disconnect first so loop_stop does not wait on an active connection
-      if not self._client_disconnected:
-        try:
-          self._client.disconnect()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: disconnect MQTT client")
-          failures.append(error)
-        else:
-          self._client_disconnected = True
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('ClientServer cleanup'):
+      self._stop_mosquitto = True
 
-      # Stop the client loop
-      if self._client_loop_started:
-        try:
-          self._client.loop_stop()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: stop MQTT loop")
-          failures.append(error)
-        else:
-          self._client_loop_started = False
-      if self._client_disconnected and not self._client_loop_started:
-        self._client = None
+      if self._client is not None:
+        # Disconnect first so loop_stop does not wait on an active connection
+        if not self._client_disconnected:
+          with manager.step('disconnect MQTT client'):
+            self._client.disconnect()
+            self._client_disconnected = True
 
-    # An existing broker process belongs to this Block, even after failed setup
-    if self._proc is not None and not self._broker_stopped:
-      try:
-        self._proc.terminate()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("ClientServer cleanup step: terminate broker")
-        failures.append(error)
+        # Stop the client loop
+        if self._client_loop_started:
+          with manager.step('stop MQTT loop'):
+            self._client.loop_stop()
+            self._client_loop_started = False
+        if self._client_disconnected and not self._client_loop_started:
+          self._client = None
 
-      # Wait for the subprocess to terminate
-      try:
-        self._proc.wait(timeout=15)
-      except TimeoutExpired:
-        pass
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("ClientServer cleanup step: wait for broker")
-        failures.append(error)
-      else:
-        self._broker_stopped = True
+      # An existing broker process belongs to this Block, even after failed
+      # setup
+      if self._proc is not None and not self._broker_stopped:
+        with manager.step('terminate broker'):
+          self._proc.terminate()
+        # Wait for the subprocess to terminate
+        with manager.step('wait for broker'):
+          try:
+            self._proc.wait(timeout=15)
+          except TimeoutExpired:
+            pass
+          else:
+            self._broker_stopped = True
 
-      # Kill the subprocess if it is still alive
-      if not self._broker_stopped:
-        try:
-          self._proc.kill()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: kill broker")
-          failures.append(error)
+        # Kill the subprocess if it is still alive
+        if not self._broker_stopped:
+          with manager.step('kill broker'):
+            self._proc.kill()
+          # Give some time for the subprocess to die
+          with manager.step('reap killed broker'):
+            self._proc.wait(timeout=1)
+            self._broker_stopped = True
 
-        # Give some time for the subprocess to die
-        try:
-          self._proc.wait(timeout=1)
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: reap killed broker")
-          failures.append(error)
-        else:
-          self._broker_stopped = True
-
-    if self._reader is not None:
-      if self._reader_started:
-        # give some time for the reader thread to stop
-        try:
-          self._reader.join(0.2)
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: join broker reader")
-          failures.append(error)
-
-        # Report the reader thread failing to stop
-        try:
-          if self._reader.is_alive():
-            raise RuntimeError("The broker reader thread did not stop in time")
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: check broker reader")
-          failures.append(error)
+      if self._reader is not None:
+        if self._reader_started:
+          # give some time for the reader thread to stop
+          with manager.step('join broker reader'):
+            self._reader.join(0.2)
+          # Report the reader thread failing to stop
+          with manager.step('check broker reader'):
+            if self._reader.is_alive():
+              raise RuntimeError("The broker reader thread did not stop in "
+                                 "time")
+            self._reader = None
+            self._reader_started = False
         else:
           self._reader = None
-          self._reader_started = False
-      else:
-        self._reader = None
 
-    # Closing stdout while its reader holds the stream lock could block
-    if self._proc is not None and self._reader is None:
-      if not self._broker_stdout_closed:
-        try:
-          if self._proc.stdout is not None:
-            self._proc.stdout.close()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: close broker stdout")
-          failures.append(error)
-        else:
-          self._broker_stdout_closed = True
-      if self._broker_stopped and self._broker_stdout_closed:
-        self._proc = None
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other ClientServer cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("ClientServer cleanup failures", failures)
+      # Closing stdout while its reader holds the stream lock could block
+      if self._proc is not None and self._reader is None:
+        if not self._broker_stdout_closed:
+          with manager.step('close broker stdout'):
+            if self._proc.stdout is not None:
+              self._proc.stdout.close()
+            self._broker_stdout_closed = True
+        if self._broker_stopped and self._broker_stdout_closed:
+          self._proc = None
 
   def _launch_mosquitto(self) -> None:
     """Starts Mosquitto in a subprocess."""

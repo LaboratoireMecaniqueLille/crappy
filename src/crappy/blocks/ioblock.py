@@ -6,6 +6,7 @@ import logging
 from numbers import Real
 from math import isfinite
 
+from .._failure import FailureManager
 from .meta_block import Block
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
@@ -437,61 +438,43 @@ class IOBlock(Block):
       return
 
     name = type(self._device).__name__
-    failures: list[Exception | KeyboardInterrupt] = list()
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # Stopping the stream
-    if self._streamer and self._stream_started:
-      self.log(logging.INFO, f"Stopping stream on the {name} InOut")
-      try:
-        self._device.stop_stream()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"{name} IOBlock cleanup step: stop stream")
-        failures.append(error)
-      else:
+    # Guard cleanup steps with the FailureManager
+    with manager.collect(f'{name} IOBlock cleanup'):
+      # Stopping the stream
+      if self._streamer and self._stream_started:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, f"Stopping stream on the {name} InOut")
+        with manager.step('stop stream'):
+          self._device.stop_stream()
+          self._stream_started = False
+
+      # Setting the exit command independently of stream shutdown
+      if (self._device_opened and
+          self._write and
+          self._exit_cmd is not None and
+          not self._exit_cmd_sent):
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO,
+                   f"Sending the exit command to the {name} InOut")
+        with manager.step('set exit command'):
+          self._device.set_cmd(*self._exit_cmd)
+          self._exit_cmd_sent = True
+
+      # Closing the device even if earlier cleanup operations failed
+      with manager.step('cleanup diagnostic'):
+        self.log(logging.INFO, f"Closing the {name} InOut")
+      with manager.step('close device'):
+        self._device.close()
+        self._device = None
+        self._device_opened = False
         self._stream_started = False
-
-    # Setting the exit command independently of stream shutdown
-    if (self._device_opened and
-        self._write and
-        self._exit_cmd is not None and
-        not self._exit_cmd_sent):
-      self.log(logging.INFO, f"Sending the exit command to the {name} InOut")
-      try:
-        self._device.set_cmd(*self._exit_cmd)
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"{name} IOBlock cleanup step: set exit command")
-        failures.append(error)
-      else:
-        self._exit_cmd_sent = True
-
-    # Closing the device even if earlier cleanup operations failed
-    self.log(logging.INFO, f"Closing the {name} InOut")
-    try:
-      self._device.close()
-    except (Exception, KeyboardInterrupt) as error:
-      error.add_note(f"{name} IOBlock cleanup step: close device")
-      failures.append(error)
-    else:
-      self._device = None
-      self._device_opened = False
-      self._stream_started = False
-      self.log(logging.INFO, f"{name} InOut closed")
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other InOut cleanup failures",
-                                              others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("InOut cleanup failures", failures)
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, f"{name} InOut closed")
 
   def _read_data(self) -> None:
     """Reads the data or the stream, offsets the timestamp and sends the data
