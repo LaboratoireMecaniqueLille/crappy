@@ -605,61 +605,49 @@ get_config`, or :obj:`None` if the configurator has no data to export.
                self._ready_barrier.broken) or
               (self._stop_event is not None and self._stop_event.is_set()))
 
-    # Instantiating and starting the configuration window
-    try:
-      if self._log_queue is None:
-        raise RuntimeError("Cannot start the configuration window because the "
-                           "log_queue wasn't defined")
-      self.log(logging.DEBUG, f"Starting configuration window of class "
-                              f"{class_name} with camera "
-                              f"{type(camera).__name__}, args {args}, "
-                              f"kwargs {kwargs}")
-      config = create_configurator(config_class, camera, self._config_backend,
-                                   self._log_queue, self._log_level, self.freq,
-                                   self._transform, *args, **kwargs)
-      assert config is not None
-      config.watch_shutdown(shutdown_requested)
-      config.run()
-      if shutdown_requested():
-        raise PrepareError("Camera configuration stopped during preparation")
-      configured_shape = config.shape
-      configured_dtype = config.dtype
-      result = config.get_config()
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'prepare')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # A peer failed during preparation, or the test was asked to stop.
-    except PrepareError:
-      if config is not None:
+    # Guard configuration steps with the FailureManager
+    configured = False
+    with manager.collect('CameraSource configuration'):
+      with manager.step('run configuration window'):
+        if self._log_queue is None:
+          raise RuntimeError("Cannot start the configuration window because "
+                             "the log_queue wasn't defined")
+        self.log(logging.DEBUG, f"Starting configuration window of class "
+                                f"{class_name} with camera "
+                                f"{type(camera).__name__}, args {args}, "
+                                f"kwargs {kwargs}")
+        config = create_configurator(config_class, camera,
+                                     self._config_backend,
+                                     self._log_queue,
+                                     self._log_level,
+                                     self.freq,
+                                     self._transform,
+                                     *args,
+                                     **kwargs)
+        assert config is not None
+        config.watch_shutdown(shutdown_requested)
         try:
+          config.run()
+        except PrepareError:
+          if shutdown_requested():
+            raise StopRequested from None
+          raise
+        if shutdown_requested():
+          raise StopRequested("Camera configuration cancelled")
+        configured_shape = config.shape
+        configured_dtype = config.dtype
+        result = config.get_config()
+        configured = True
+      if config is not None and not configured:
+        with manager.step('stop configuration window'):
           config.stop()
-        except (Exception,) as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not stop the configuration window",
-                                   exc_info=cleanup_error)
-      raise
-    # If an exception is raised in the config window, closing it before raising
-    except (Exception,) as exc:
-      # Not much we can do if there's no logger set to report Exception
-      if self._logger is not None:
-        self._logger.exception("Caught exception in the configuration "
-                               "window!", exc_info=exc)
-      if config is not None:
-        try:
-          config.stop()
-        except (Exception,) as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not stop the configuration window",
-                                   exc_info=cleanup_error)
-      raise CameraConfigError("Camera configuration failed") from exc
-    # Special case of KeyboardInterrupt because it's a non-local exception
-    except KeyboardInterrupt:
-      if config is not None:
-        try:
-          config.stop()
-        except (Exception,) as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not stop the configuration window",
-                                   exc_info=cleanup_error)
-      raise
+    if not configured:
+      raise StopRequested
 
     # Getting the image dtype and shape for setting the shared Array
     if configured_shape is not None:
