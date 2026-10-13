@@ -298,260 +298,196 @@ class Block(Process, ABC):
     config_connections_by_owner: dict[
       str, list[connection.Connection]] = defaultdict(list)
 
-    try:
-      # Making sure that the Block classmethods are called in the right order
-      if cls.prepared_all:
-        cls.cls_log(logging.ERROR,
-                    "The method prepare_all was already called ! This is "
-                    "unexpected, aborting !")
-        # As Crappy was already initialized, it must now be cleaned up
-        cleanup = True
-        # Raising will skip all the setup part and keep the existing context
-        raise RuntimeError
+    # Let the FailureManager catch Exceptions
+    with manager.collect('preparation'):
+      with manager.step('setup'):
+        # Making sure that the Block classmethods are called in the right order
+        if cls.prepared_all:
+          raise RuntimeError("prepare_all was already called")
 
-      if cls.launched_all:
-        cls.cls_log(logging.ERROR, "The launched_all flag is unexpectedly "
-                                   "raised, aborting !")
-        # As Crappy was already initialized, it must now be cleaned up
-        cleanup = True
-        # Raising will skip all the setup part and keep the existing context
-        raise RuntimeError
+        if cls.launched_all:
+          raise RuntimeError("Cannot prepare Blocks after launch_all")
 
-      # Freeze the current Blocks before allocating resources
-      blocks = tuple(cls.instances)
-      instances_lookup = {instance.name: instance for instance in blocks}
-      graph_names = set(link_graph.nodes)
-      instance_names = set(instances_lookup)
+        # Freeze the current Blocks before allocating resources
+        blocks = cls._run_blocks
+        instances_lookup = {instance.name: instance for instance in blocks}
+        graph_names = set(link_graph.nodes)
+        instance_names = set(instances_lookup)
 
-      # Abort in case of inconsistency with the Blocks registered in the graph
-      missing = sorted(graph_names - instance_names)
-      unregistered = sorted(instance_names - graph_names)
-      if missing or unregistered:
-        details = list()
-        # Case when a Block is in the graph but not in the instances
-        if missing:
-          details.append(f"Blocks missing before startup (possibly "
-                         f"garbage-collected): {', '.join(missing)}")
-        # Case when a block is in the instances but not in the graph
-        if unregistered:
-          details.append(f"Blocks absent from the LinkGraph: "
-                         f"{', '.join(unregistered)}")
-        raise GraphStructureError('; '.join(details))
-      cls._run_blocks = blocks
+        # Abort in case of inconsistency with the Blocks registered in graph
+        missing = sorted(graph_names - instance_names)
+        unregistered = sorted(instance_names - graph_names)
+        if missing or unregistered:
+          details = list()
+          # Case when a Block is in the graph but not in the instances
+          if missing:
+            details.append(f"Blocks missing before startup (possibly "
+                           f"garbage-collected): {', '.join(missing)}")
+          # Case when a block is in the instances but not in the graph
+          if unregistered:
+            details.append(f"Blocks absent from the LinkGraph: "
+                           f"{', '.join(unregistered)}")
+          raise GraphStructureError('; '.join(details))
+        cls._run_blocks = blocks
 
-      cls.log_level = log_level
+        # Displaying the first messages
+        cls.cls_log(logging.INFO,
+                    "===================== CRAPPY =====================")
+        cls.cls_log(logging.INFO, f'Starting the script {argv[0]}\n')
+        cls.cls_log(logging.INFO, 'Logger configured')
 
-      # Initializing the logger and displaying the first messages
-      cls._set_logger()
-      cls.cls_log(logging.INFO,
-                  "===================== CRAPPY =====================")
-      cls.cls_log(logging.INFO, f'Starting the script {argv[0]}\n')
-      cls.cls_log(logging.INFO, 'Logger configured')
+        # Setting all the synchronization objects at the class level
+        cls.ready_barrier = Barrier(len(cls._run_blocks) + 1)
+        cls.shared_t0 = Value('d', -1.0)
+        cls.start_event = Event()
+        cls.pause_event = Event()
+        cls.stop_event = Event()
+        cls.raise_event = Event()
+        cls.kbi_event = Event()
+        cls.cls_log(logging.INFO, 'Multiprocessing synchronization objects '
+                                  'set for main process')
 
-      # Setting all the synchronization objects at the class level
-      cls.ready_barrier = Barrier(len(cls._run_blocks) + 1)
-      cls.shared_t0 = Value('d', -1.0)
-      cls.start_event = Event()
-      cls.pause_event = Event()
-      cls.stop_event = Event()
-      cls.raise_event = Event()
-      cls.kbi_event = Event()
-      cls.cls_log(logging.INFO, 'Multiprocessing synchronization objects set '
-                                'for main process')
-
-      # Starting from that point, Crappy has to be cleaned up if anything wrong
-      # happens
-      cleanup = True
-
-      # Initializing the objects required for logging
-      cls.log_queue = Queue()
-      cls.run_failure_manager = FailureManager('main', 'bootstrap')
-      cls.run_failure_manager._logger = cls.logger
-      # Pass log queue explicitly so that the Thread keeps the same queue even
-      # if a new one is created at the class level
-      cls.log_thread = Thread(target=cls._log_target,
-                              args=(cls.log_queue,),
-                              name='crappy.log-reader', daemon=True)
-      if get_start_method() != 'fork':
-        if cls.log_thread is None:
-          raise RuntimeError("The log Thread was not initialized, cannot start"
-                             " it!")
-        cls.log_thread.start()
-        cls.cls_log(logging.INFO, 'Logger thread started')
-
-      # Passing the synchronization and logging objects to each Block
-      for instance in cls._run_blocks:
-        instance._failure_queue = Queue()
-        cls.failure_queues += (instance._failure_queue,)
-        instance._ready_barrier = cls.ready_barrier
-        instance._instance_t0 = cls.shared_t0
-        instance._stop_event = cls.stop_event
-        instance._pause_event = cls.pause_event
-        instance._start_event = cls.start_event
-        instance._raise_event = cls.raise_event
-        instance._kbi_event = cls.kbi_event
-        instance._main_entered = Value('b', 0, lock=False)
-        instance._log_queue = cls.log_queue
-        cls.cls_log(logging.INFO, f'Multiprocessing synchronization objects '
-                                  f'set for {instance.name} Block')
-
-        # Setting the common log level to all the instances
-        if instance._log_level is not None:
-          if cls.log_level is not None:
-            instance._log_level = max(instance._log_level, cls.log_level)
-          else:
-            instance._log_level = None
-        cls.cls_log(logging.INFO, f"Log level set for the {instance.name} "
-                                  f"Block")
-
-      # Build the connection graph of the VisionBlocks and share configuration
-      # requests to relevant sources
-      if any(instance.is_vision_block for instance in cls._run_blocks):
-
-        # Manage config requests for each source-consumer pair
-        for source_name in link_graph.img_sources():
-          source = instances_lookup[source_name]
-          if not isinstance(source, VisionBlockType):
-            raise TypeError(f"The image source {source_name} does not "
-                            f"implement all the required methods")
-          for consumer_name in link_graph.descendants(source_name,
-                                                      kind='image'):
-            consumer = instances_lookup[consumer_name]
-            # If there's a configuration request from the consumer, share it
-            # with the source
-            if (isinstance(consumer, VisionBlockType) and
-                (config_request := consumer.request_config(source_name))
-                is not None):
-              if config_request.requester != consumer.name:
-                raise ValueError("The name of the config requester doesn't "
-                                 "match the name of the downstream Block")
-              if config_request.img_source != source.name:
-                raise ValueError("The name of the image source doesn't match "
-                                 "the name of the upstream Block")
-              # Create a Pipe for sharing config data between Blocks
-              recv_conn, send_conn = Pipe(duplex=False)
-              parent_config_connections.extend((recv_conn, send_conn))
-              config_connections_by_owner[source.name].append(send_conn)
-              config_connections_by_owner[consumer.name].append(recv_conn)
-              # Duplicate the ConfigRequest and assign each an end of the Pipe
-              source_request = replace(config_request, connection=send_conn)
-              consumer_request = replace(config_request,
-                                         connection=recv_conn)
-              cls.cls_log(logging.DEBUG, f"Created config request: "
-                                         f"{config_request}, now sharing it")
-              # Register the request in both the source and the consumer Blocks
-              source.add_config_request_in(source_request)
-              consumer.add_config_request_out(consumer_request)
-
-        # With fork, every child inherits every open file descriptor from the
-        # parent. Explicitly tell each Block which unrelated endpoints it must
-        # close on startup so that a dead Block can still be detected via EOF
-        if get_start_method() == 'fork':
-          for instance in cls._run_blocks:
-            owned_connections = {id(conn) for conn in
-                                 config_connections_by_owner[instance.name]}
-            instance._config_connections_to_close = [
-                conn for conn in parent_config_connections
-                if id(conn) not in owned_connections]
-
-        cls.cls_log(logging.INFO, "Shared configuration requests from consumer"
-                                  " vision Blocks to their sources")
-      else:
-        cls.cls_log(logging.INFO, "No vision Block detected, not building "
-                                  "graph nor sharing config requests")
-
-      # Initialize the common Manager for image Blocks if needed
-      if any(instance.is_vision_block for instance in cls._run_blocks):
-        cls.shared_mgr = Manager()
-        cls.cls_log(logging.INFO, 'Created the shared Manager object')
-
-        # Making vision Blocks generate their shared synchronization objects
-        for instance in cls._run_blocks:
-          if (instance.is_vision_block and
-              isinstance(instance, VisionBlockType)):
-            instance.set_shared_objects()
-            cls.cls_log(logging.INFO, f"Set shared image-related objects for "
-                                      f"the {instance.name} Block")
-      else:
-        cls.cls_log(logging.INFO, "No vision Block detected, not "
-                                  "instantiating a shared Manager")
-
-      # Under fork, ensures proper management of SharedMemory tracking at the
-      # Process-level
-      if (get_start_method() == 'fork' and
-          any(instance.is_vision_block for instance in cls._run_blocks)):
-        resource_tracker.ensure_running()
-        cls.cls_log(logging.INFO, 'Shared-memory resource tracker started')
-
-      # Starting all the Blocks
-      for instance in cls._run_blocks:
-        instance.start()
-        cls.cls_log(logging.INFO, f'Started the {instance.name} Block')
-
-      # Start the Thread that manages Exception communication between Blocks
-      if cls.run_failure_manager is not None and cls.failure_queues:
-        cls.failure_thread_stop = ThreadEvent()
-        cls.failure_thread = Thread(target=cls._failure_target,
-                                    name='crappy.failure-reader',
-                                    daemon=True)
-        cls.failure_thread.start()
-
-      # Setting the prepared flag
-      cls.prepared_all = True
-
-    # At that point the Blocks might be started or not. If started, they are
-    # preparing or waiting at the Barrier
-    except (Exception, KeyboardInterrupt) as exc:
-
-      # If there is no specific cleanup to perform, only raising
-      if not cleanup:
-        cls._run_blocks = tuple()
-        raise
-
-      # KeyboardInterrupt is a separate case
-      if isinstance(exc, KeyboardInterrupt):
-        cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
-                                     "Process while running prepare_all !")
-        # Special Event for the KeyboardInterrupt
-        if cls.kbi_event is None:
-          cls.cls_log(logging.ERROR, "The KBI Event should be set but doesn't "
-                                     "exist!")
-        else:
-          cls.kbi_event.set()
-          cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
-                                       'KeyboardInterrupt in the main Process '
-                                       'in prepare_all')
-      # General case
-      else:
-        # Not much we can do if there's no logger set to report Exception
+        # Initializing the objects required for Blocks to log
+        cls.log_queue = Queue()
         if cls.logger is not None:
-          cls.logger.exception("Caught exception while running prepare_all, "
-                               "aborting", exc_info=exc)
-        # Any Exception caught in the main Process must stop the script
-        if cls.raise_event is None:
-          cls.cls_log(logging.ERROR, "The raise Event should be set but "
-                                     "doesn't exist!")
+          cls.run_failure_manager._logger = cls.logger
+        # Pass log queue explicitly so that the Thread keeps the same queue
+        # even if a new one is created at the class level
+        cls.log_thread = Thread(target=cls._log_target,
+                                args=(cls.log_queue,),
+                                name='crappy.log-reader', daemon=True)
+        if get_start_method() != 'fork':
+          if cls.log_thread is None:
+            raise RuntimeError("The log Thread was not initialized, cannot "
+                               "start it!")
+          cls.log_thread.start()
+          cls.cls_log(logging.INFO, 'Logger thread started')
+
+        # Passing the synchronization and logging objects to each Block
+        for instance in cls._run_blocks:
+          instance._failure_queue = Queue()
+          cls.failure_queues += (instance._failure_queue,)
+          instance._ready_barrier = cls.ready_barrier
+          instance._instance_t0 = cls.shared_t0
+          instance._stop_event = cls.stop_event
+          instance._pause_event = cls.pause_event
+          instance._start_event = cls.start_event
+          instance._raise_event = cls.raise_event
+          instance._kbi_event = cls.kbi_event
+          instance._main_entered = Value('b', 0, lock=False)
+          instance._log_queue = cls.log_queue
+          cls.cls_log(logging.INFO, f'Multiprocessing synchronization objects '
+                                    f'set for {instance.name} Block')
+
+          # Setting the common log level to all the instances
+          if instance._log_level is not None:
+            if cls.log_level is not None:
+              instance._log_level = max(instance._log_level, cls.log_level)
+            else:
+              instance._log_level = None
+          cls.cls_log(logging.INFO, f"Log level set for the {instance.name} "
+                                    f"Block")
+
+        # Build the connection graph of the VisionBlocks and share
+        # configuration requests to relevant sources
+        if any(instance.is_vision_block for instance in cls._run_blocks):
+
+          # Manage config requests for each source-consumer pair
+          for source_name in link_graph.img_sources():
+            source = instances_lookup[source_name]
+            if not isinstance(source, VisionBlockType):
+              raise TypeError(f"The image source {source_name} does not "
+                              f"implement all the required methods")
+            for consumer_name in link_graph.descendants(source_name,
+                                                        kind='image'):
+              consumer = instances_lookup[consumer_name]
+              # If there's a configuration request from the consumer, share it
+              # with the source
+              if (isinstance(consumer, VisionBlockType) and
+                  (config_request := consumer.request_config(source_name))
+                  is not None):
+                if config_request.requester != consumer.name:
+                  raise ValueError("The name of the config requester doesn't "
+                                   "match the name of the downstream Block")
+                if config_request.img_source != source.name:
+                  raise ValueError("The name of the image source doesn't "
+                                   "match the name of the upstream Block")
+                # Create a Pipe for sharing config data between Blocks
+                recv_conn, send_conn = Pipe(duplex=False)
+                parent_config_connections.extend((recv_conn, send_conn))
+                config_connections_by_owner[source.name].append(send_conn)
+                config_connections_by_owner[consumer.name].append(recv_conn)
+                # Duplicate ConfigRequest and assign each an end of the Pipe
+                source_request = replace(config_request, connection=send_conn)
+                consumer_request = replace(config_request,
+                                           connection=recv_conn)
+                cls.cls_log(logging.DEBUG, f"Created config request: "
+                                           f"{config_request}, now sharing it")
+                # Register request in both the source and the consumer Blocks
+                source.add_config_request_in(source_request)
+                consumer.add_config_request_out(consumer_request)
+
+          # With fork, every child inherits every open file descriptor from the
+          # parent. Explicitly tell each Block which endpoints it must close on
+          # startup so that a dead Block can still be detected via EOF
+          if get_start_method() == 'fork':
+            for instance in cls._run_blocks:
+              owned_connections = {id(conn) for conn in
+                                   config_connections_by_owner[instance.name]}
+              instance._config_connections_to_close = [
+                  conn for conn in parent_config_connections
+                  if id(conn) not in owned_connections]
+
+          cls.cls_log(logging.INFO, "Shared configuration requests from "
+                                    "consumer vision Blocks to their sources")
         else:
-          cls.raise_event.set()
-          cls.cls_log(logging.WARNING, 'Set the raise Event after exception '
-                                       'was caught in the main Process in '
-                                       'prepare_all')
-      # Breaking the Barrier to warn other Processes that something went wrong
-      if cls.ready_barrier is None:
-        cls.cls_log(logging.ERROR, "The ready Barrier should be aborted but "
-                                   "doesn't exit!")
-      else:
-        cls.ready_barrier.abort()
-        cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
-                                     "caught in prepare_all")
-      # Need to clean up as some Blocks might already be running
-      cls._cleanup()
+          cls.cls_log(logging.INFO, "No vision Block detected, not building "
+                                    "graph nor sharing config requests")
+
+        # Initialize the common Manager for image Blocks if needed
+        if any(instance.is_vision_block for instance in cls._run_blocks):
+          cls.shared_mgr = Manager()
+          cls.cls_log(logging.INFO, 'Created the shared Manager object')
+
+          # Making vision Blocks generate their shared synchronization objects
+          for instance in cls._run_blocks:
+            if (instance.is_vision_block and
+                isinstance(instance, VisionBlockType)):
+              instance.set_shared_objects()
+              cls.cls_log(logging.INFO, f"Set shared image-related objects "
+                                        f"for the {instance.name} Block")
+        else:
+          cls.cls_log(logging.INFO, "No vision Block detected, not "
+                                    "instantiating a shared Manager")
+
+        # Under fork, ensures proper management of SharedMemory tracking at the
+        # Process-level
+        if (get_start_method() == 'fork' and
+            any(instance.is_vision_block for instance in cls._run_blocks)):
+          resource_tracker.ensure_running()
+          cls.cls_log(logging.INFO, 'Shared-memory resource tracker started')
+
+        # Starting all the Blocks
+        for instance in cls._run_blocks:
+          instance.start()
+          cls.cls_log(logging.INFO, f'Started the {instance.name} Block')
+
+        # Start the Thread that manages Exception communication between Blocks
+        if cls.run_failure_manager is not None and cls.failure_queues:
+          cls.failure_thread_stop = ThreadEvent()
+          cls.failure_thread = Thread(target=cls._failure_target,
+                                      name='crappy.failure-reader',
+                                      daemon=True)
+          cls.failure_thread.start()
+
+        # Setting the prepared flag
+        cls.prepared_all = True
 
     # Close the stale connections between VisionBlocks as this Process should
     # not unnecessarily own them
-    finally:
       for conn in parent_config_connections:
-        conn.close()
+        with manager.step('close parent configuration endpoint'):
+          conn.close()
 
   @classmethod
   def renice_all(cls, allow_root: bool) -> None:
@@ -1494,35 +1430,27 @@ class Block(Process, ABC):
       except (BaseException,):
         pass
 
-      # Raise the stop and error flags as soon as the Exception is reported
-      try:
-        with manager.collect('log reader shutdown'):
-          with manager.step('request stop'):
-            if stop_event is not None:
-              stop_event.set()
-          with manager.step('set failure flag'):
-            if raise_event is not None:
-              raise_event.set()
-          with manager.step('abort readiness'):
-            if ready_barrier is not None:
-              ready_barrier.abort()
-      except (BaseException,):
-        pass
+      # Request shutdown as soon as the Exception is reported.
+      with manager.collect('log reader shutdown', raise_on_exit=False):
+        with manager.step('request stop'):
+          if stop_event is not None:
+            stop_event.set()
+        with manager.step('abort readiness'):
+          if ready_barrier is not None:
+            ready_barrier.abort()
 
     # In case reset() left logging in a stale state, close log handlers
     finally:
       if cls.log_queue is not log_queue and handlers:
         if manager is None:
           manager = FailureManager('main', 'logging shutdown')
-        try:
-          with manager.collect('abandoned log reader shutdown'):
-            for handler in handlers:
-              with manager.step('flush handler'):
-                handler.flush()
-              with manager.step('close handler'):
-                handler.close()
-        except (BaseException,):
-          pass
+        with manager.collect('abandoned log reader shutdown',
+                             raise_on_exit=False):
+          for handler in handlers:
+            with manager.step('flush handler'):
+              handler.flush()
+            with manager.step('close handler'):
+              handler.close()
 
   @classmethod
   def _failure_target(cls) -> None:
@@ -1603,19 +1531,13 @@ class Block(Process, ABC):
         manager.capture_exception(error, phase='monitoring')
       except (BaseException,):
         pass
-      try:
-        with manager.collect('failure receiver shutdown'):
-          with manager.step('request stop'):
-            if stop_event is not None:
-              stop_event.set()
-          with manager.step('set failure flag'):
-            if raise_event is not None:
-              raise_event.set()
-          with manager.step('abort readiness'):
-            if ready_barrier is not None:
-              ready_barrier.abort()
-      except (BaseException,):
-        pass
+      with manager.collect('failure receiver shutdown', raise_on_exit=False):
+        with manager.step('request stop'):
+          if stop_event is not None:
+            stop_event.set()
+        with manager.step('abort readiness'):
+          if ready_barrier is not None:
+            ready_barrier.abort()
 
   @classmethod
   def _watchdog_target(cls,
@@ -1680,134 +1602,111 @@ class Block(Process, ABC):
     self._failure_manager = FailureManager(self.name, 'bootstrap')
     manager = self._failure_manager
     assert manager is not None
-    try:
-      with manager.collect('Block lifecycle'):
-        with manager.step('execution'):
-          # Start with setting the Exception queue and the logger
-          if self._failure_queue is not None:
-            manager.set_queue(self._failure_queue)
-          self._set_block_logger()
-          if self._logger is not None:
-            manager._logger = self._logger
-          self.log(logging.INFO, "Block launched")
-
-          # Close inherited endpoints before running preparation work
-          self._close_config_connections()
-
-          # Prepare the Block
-          manager.phase = 'prepare'
-          self.log(logging.INFO, "Block preparing")
-          self.prepare()
-
-          # Wait at the Barrier for all Blocks to be ready
-          manager.phase = 'synchronize'
-          if self._ready_barrier is None:
-            raise RuntimeError("The ready Barrier isn't initialized")
-          if self._stop_event is None:
-            raise RuntimeError("The stop Event isn't initialized")
-          if self._stop_event.is_set() or manager.snapshot():
-            raise StopRequested
-          self.log(logging.INFO, "Waiting for the other Blocks to be ready")
-          try:
-            self._ready_barrier.wait()
-          except BrokenBarrierError:
-            self.log(logging.WARNING,
-                     "Readiness cancelled by a broken Barrier")
-            raise StopRequested from None
-          self.log(logging.INFO, "All Blocks ready now")
-
-          # Wait for the start Event to be set, for synchronization
-          manager.phase = 'start'
-          if self._start_event is None:
-            raise RuntimeError("The start Event isn't initialized")
-          if self._stop_event.is_set():
-            raise StopRequested
-          self.log(logging.INFO, "Waiting for the start time to be set")
-          started = self._start_event.wait(timeout=1.0)
-          if self._stop_event.is_set():
-            raise StopRequested
-          if not started:
-            raise StartTimeout
-          self.log(logging.INFO, "Start time set, Block starting")
-
-          # Let the Block begin
-          manager.phase = 'begin'
-          self.log(logging.INFO, "Calling begin method")
-          self.begin()
-
-          # Run the main loops
-          manager.phase = 'main'
-          self._last_t = monotonic()
-          self._last_fps = self._last_t
-          self._n_loops = 0
-          self.log(logging.INFO, "Entering main loop")
-          if self._main_entered is None:
-            raise RuntimeError("The main-entered flag isn't initialized")
-          with manager.step('main',
-                            completion=(GeneratorStop, SchedulerStop,
-                                        ReaderStop)):
-            self._main_entered.value = 1
-            self.main()
-            self.log(logging.INFO,
-                     "Exiting main loop after stop Event was set")
-
-        execution_phase = manager.phase
-        manager.phase = 'framework cleanup'
-        with manager.step('stop diagnostic'):
-          self.log(logging.INFO, "Setting the stop Event")
-        with manager.step('request stop'):
-          if self._stop_event is not None:
-            self._stop_event.set()
-        with manager.step('abort preparation'):
-          if (execution_phase in ('bootstrap', 'prepare', 'synchronize') and
-              self._ready_barrier is not None):
-            self._ready_barrier.abort()
-
-        manager.phase = 'finish'
-        with manager.step('finish diagnostic'):
-          self.log(logging.INFO, "Calling the finish method")
-        with manager.step('finish'):
-          self.finish()
-
-        manager.phase = 'framework cleanup'
-        with manager.step('close inherited config Pipes'):
-          self._close_config_connections()
-        with manager.step('completion diagnostic'):
-          self.log(logging.INFO, f"Block {self.name} done")
-
-        # Disconnect reporting before closing and flushing its public Queue.
-        manager.phase = 'failure Queue shutdown'
+    with manager.collect('Block lifecycle', raise_on_exit=False):
+      with manager.step('execution'):
+        # Start with setting the Exception queue and the logger
         if self._failure_queue is not None:
-          queue = self._failure_queue
-          self._failure_queue = None
-          with manager.step('disconnect'):
-            manager.set_queue(None)
-          with manager.step('close'):
-            queue.close()
-          with manager.step('flush'):
-            queue.join_thread()
+          manager.set_queue(self._failure_queue)
+        self._set_block_logger()
+        if self._logger is not None:
+          manager._logger = self._logger
+        self.log(logging.INFO, "Block launched")
 
-        # Keep the legacy flags until coordinator finalization is migrated.
-        manager.phase = 'framework cleanup'
-        for _, error in manager.snapshot():
-          if error is None:
-            continue
-          for member in manager._iter_exception_members(error):
-            if isinstance(member, BaseExceptionGroup):
-              continue
-            if isinstance(member, KeyboardInterrupt):
-              with manager.step('set interrupt flag'):
-                if self._kbi_event is not None:
-                  self._kbi_event.set()
-            else:
-              with manager.step('set failure flag'):
-                if self._raise_event is not None:
-                  self._raise_event.set()
+        # Close inherited endpoints before running preparation work
+        self._close_config_connections()
 
-    # These failures are already retained, logged and sent. Do not emit a
-    # second multiprocessing traceback or report the collection's wrapper.
-    except (BaseException,):
-      pass
+        # Prepare the Block
+        manager.phase = 'prepare'
+        self.log(logging.INFO, "Block preparing")
+        self.prepare()
+
+        # Wait at the Barrier for all Blocks to be ready
+        manager.phase = 'synchronize'
+        if self._ready_barrier is None:
+          raise RuntimeError("The ready Barrier isn't initialized")
+        if self._stop_event is None:
+          raise RuntimeError("The stop Event isn't initialized")
+        if self._stop_event.is_set() or manager.snapshot():
+          raise StopRequested
+        self.log(logging.INFO, "Waiting for the other Blocks to be ready")
+        try:
+          self._ready_barrier.wait()
+        except BrokenBarrierError:
+          self.log(logging.WARNING,
+                   "Readiness cancelled by a broken Barrier")
+          raise StopRequested from None
+        self.log(logging.INFO, "All Blocks ready now")
+
+        # Wait for the start Event to be set, for synchronization
+        manager.phase = 'start'
+        if self._start_event is None:
+          raise RuntimeError("The start Event isn't initialized")
+        if self._stop_event.is_set():
+          raise StopRequested
+        self.log(logging.INFO, "Waiting for the start time to be set")
+        started = self._start_event.wait(timeout=1.0)
+        if self._stop_event.is_set():
+          raise StopRequested
+        if not started:
+          raise StartTimeout
+        self.log(logging.INFO, "Start time set, Block starting")
+
+        # Let the Block begin
+        manager.phase = 'begin'
+        self.log(logging.INFO, "Calling begin method")
+        self.begin()
+
+        # Run the main loops
+        manager.phase = 'main'
+        self._last_t = monotonic()
+        self._last_fps = self._last_t
+        self._n_loops = 0
+        self.log(logging.INFO, "Entering main loop")
+        if self._main_entered is None:
+          raise RuntimeError("The main-entered flag isn't initialized")
+        with manager.step('main',
+                          completion=(GeneratorStop, SchedulerStop,
+                                      ReaderStop)):
+          self._main_entered.value = 1
+          self.main()
+          self.log(logging.INFO,
+                   "Exiting main loop after stop Event was set")
+
+      execution_phase = manager.phase
+      manager.phase = 'framework cleanup'
+      with manager.step('stop diagnostic'):
+        self.log(logging.INFO, "Setting the stop Event")
+      with manager.step('request stop'):
+        if self._stop_event is not None:
+          self._stop_event.set()
+      with manager.step('abort preparation'):
+        if (execution_phase in ('bootstrap', 'prepare', 'synchronize') and
+            self._ready_barrier is not None):
+          self._ready_barrier.abort()
+
+      manager.phase = 'finish'
+      with manager.step('finish diagnostic'):
+        self.log(logging.INFO, "Calling the finish method")
+      with manager.step('finish'):
+        self.finish()
+
+      manager.phase = 'framework cleanup'
+      with manager.step('close inherited config Pipes'):
+        self._close_config_connections()
+      with manager.step('completion diagnostic'):
+        self.log(logging.INFO, f"Block {self.name} done")
+
+      # Disconnect reporting before closing and flushing its public Queue.
+      manager.phase = 'failure Queue shutdown'
+      if self._failure_queue is not None:
+        queue = self._failure_queue
+        self._failure_queue = None
+        with manager.step('disconnect'):
+          manager.set_queue(None)
+        with manager.step('close'):
+          queue.close()
+        with manager.step('flush'):
+          queue.join_thread()
 
   def _close_config_connections(self) -> None:
     """Closes inherited configuration endpoints, retaining failed ones."""

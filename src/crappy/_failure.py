@@ -373,8 +373,10 @@ class FailureManager:
     return received
 
   @contextmanager
-  def collect(self, label: str) -> Iterator[None]:
-    """Collects Exceptions and raises them together when the context exits.
+  def collect(self,
+              label: str,
+              raise_on_exit: bool = True) -> Iterator[None]:
+    """Collects Exceptions, optionally raising them when the context exits.
 
     Use one step() per operation that must be tried independently. An unhandled
     Exception outside step() skips the rest of the context's body. Each
@@ -382,6 +384,8 @@ class FailureManager:
 
     Args:
       label: Collection name added to Exception notes and the group's message.
+      raise_on_exit: Raise this collection's failures as a group on exit.
+        Defaults to True. False retains and reports failures without raising.
     """
 
     if not isinstance(label, str) or not label:
@@ -405,9 +409,10 @@ class FailureManager:
       stack.pop()
 
     # Raise all the caught Exceptions on exit
-    group = self._make_exception_group(f"{label} failures", errors)
-    if group is not None:
-      raise group from None
+    if raise_on_exit:
+      group = self._make_exception_group(f"{label} failures", errors)
+      if group is not None:
+        raise group from None
 
   @contextmanager
   def step(self,
