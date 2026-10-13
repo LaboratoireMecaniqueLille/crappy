@@ -504,8 +504,13 @@ class VisionBlock(Block, ABC):
       # Sending the metadata dictionary
       self.log(logging.DEBUG, f"Writing metadata to shared dict with keys "
                               f"{', '.join(metadata.keys())}")
-      self._out_link_data.metadata_dict.clear()
-      self._out_link_data.metadata_dict.update(metadata)
+      try:
+        self._out_link_data.metadata_dict.clear()
+        self._out_link_data.metadata_dict.update(metadata)
+      except (EOFError, OSError):
+        if self._image_wait_should_stop():
+          raise StopRequested from None
+        raise
       # Sending the actual image
       self.log(logging.DEBUG, "Writing image to shared memory")
       np.copyto(self._out_link_data.npy_buffer, img)
@@ -619,7 +624,13 @@ class VisionBlock(Block, ABC):
                            f"({self.last_received[link.name].img.shape})")
 
         # Retrieve all the information from the input buffer
-        self.last_received[link.name].metadata = data_in.metadata_dict.copy()
+        try:
+          metadata = data_in.metadata_dict.copy()
+        except (EOFError, OSError):
+          if self._image_wait_should_stop():
+            raise StopRequested from None
+          raise
+        self.last_received[link.name].metadata = metadata
         self.log(logging.DEBUG, f"Received metadata dict from link "
                                 f"{link.name}")
         np.copyto(self.last_received[link.name].img, data_in.npy_buffer)
@@ -1010,15 +1021,20 @@ class VisionBlock(Block, ABC):
       raise StopRequested
     self.log(logging.DEBUG, f"Buffer with name {name} ready to be shared")
 
-    if 'shape' not in img_info_dict or 'dtype' not in img_info_dict:
-      raise ValueError("The shared dict containing image information should "
-                       "expose the 'shape' and 'dtype' keys")
+    try:
+      if 'shape' not in img_info_dict or 'dtype' not in img_info_dict:
+        raise ValueError("The shared dict containing image information should "
+                         "expose the 'shape' and 'dtype' keys")
 
-    # Retrieve the shape and dtype from shared information
-    shape, dtype = img_info_dict['shape'], img_info_dict['dtype']
+      # Retrieve the shape and dtype from shared information
+      shape, dtype = img_info_dict['shape'], img_info_dict['dtype']
 
-    # Instantiate the shared memory and the convenience Numpy array buffers
-    img_buffer = SharedMemory(name=name, create=False)
+      # Instantiate the shared memory and the convenience Numpy array buffers
+      img_buffer = SharedMemory(name=name, create=False)
+    except (EOFError, OSError):
+      if self._ready_barrier.broken or self._stop_event.is_set():
+        raise StopRequested from None
+      raise
     data.img_buffer = img_buffer
     data.buffer_closed = False
     npy_buffer = np.ndarray(shape,
