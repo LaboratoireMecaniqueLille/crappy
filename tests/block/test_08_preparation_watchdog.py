@@ -3,15 +3,16 @@
 import logging
 from multiprocessing import Barrier, Event
 import os
-from threading import Event as ThreadEvent, Thread
+from threading import Event as ThreadEvent, Thread, current_thread
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from crappy import Block
-from crappy._exceptions import CrappyFail
+from crappy._failure import FailureManager
+from crappy._exceptions import ProcessExitError
 from crappy.blocks.meta_block import block as block_module
 
-from .block_test_base import BlockTestBase, TestBlock
+from .block_test_base import BlockTestBase, TestBlock, exception_leaves
 
 
 class TestBlockExitPrepare(TestBlock):
@@ -90,11 +91,14 @@ class TestPreparationWatchdog(BlockTestBase):
             self.assertTrue(peer.prepared.wait(15.0),
                             "The peer Block did not reach prepare()")
 
-            if no_raise:
-              self._launch_with_deadline(no_raise=True)
-            else:
-              with self.assertRaises(CrappyFail):
-                self._launch_with_deadline()
+            shared = SimpleNamespace(shutdown=Mock())
+            Block.shared_mgr = shared
+            with self.assertRaises(ExceptionGroup) as caught:
+              self._launch_with_deadline(no_raise=no_raise)
+            failure, = exception_leaves(caught.exception)
+            self.assertIsInstance(failure, ProcessExitError)
+            self.assertEqual(failure.process_name, self._block.name)
+            shared.shutdown.assert_called_once_with()
 
             peer.join(1.0)
             self.assertFalse(peer.is_alive())
@@ -107,6 +111,7 @@ class TestPreparationWatchdog(BlockTestBase):
             if Block.prepared_all:
               Block.no_raise = True
               Block._cleanup()
+              Block.reset()
 
   def test_killed_while_watchdog_is_running(self) -> None:
     """A kill during preparation breaks the main and peer Barrier waits."""
@@ -137,7 +142,7 @@ class TestPreparationWatchdog(BlockTestBase):
     try:
       with patch.object(Block, '_watchdog_target',
                         side_effect=monitored_target):
-        with self.assertRaises(CrappyFail):
+        with self.assertRaises(ExceptionGroup):
           self._launch_with_deadline()
     finally:
       killer.join(3.0)
@@ -191,7 +196,7 @@ class TestPreparationWatchdog(BlockTestBase):
       return Thread(*args, **kwargs)
 
     with patch.object(block_module, 'Thread', side_effect=create_thread):
-      with self.assertRaises(CrappyFail):
+      with self.assertRaises(ExceptionGroup):
         self._launch_with_deadline()
 
       watchdog.join.assert_not_called()
@@ -219,10 +224,10 @@ class TestPreparationWatchdog(BlockTestBase):
       return Thread(*args, **kwargs)
 
     with patch.object(block_module, 'Thread', side_effect=create_thread):
-      with self.assertRaises(CrappyFail):
+      with self.assertRaises(ExceptionGroup):
         self._launch_with_deadline()
 
-      watchdog.join.assert_called_once_with(1.0)
+      watchdog.join.assert_called_once_with(timeout=1.0)
 
     self._block.join(1.0)
     self.assertFalse(start.is_set())
@@ -271,7 +276,7 @@ class TestPreparationWatchdog(BlockTestBase):
     self._block.join(3.0)
     self.assertFalse(self._block.is_alive())
 
-    with self.assertRaises(KeyboardInterrupt):
+    with self.assertRaises(BaseExceptionGroup):
       self._launch_with_deadline()
 
   def test_abort_just_after_barrier_release_prevents_launch(self) -> None:
@@ -281,18 +286,17 @@ class TestPreparationWatchdog(BlockTestBase):
     Block.prepare_all(log_level=logging.CRITICAL)
     self.assertTrue(self._block.prepared.wait(3.0))
     barrier = Block.ready_barrier
-    failure = Block.raise_event
     start = Block.start_event
     wait_for_blocks = barrier.wait
 
     def abort_after_release() -> int:
       result = wait_for_blocks()
-      failure.set()
+      Block.run_failure_manager.capture_exception(ValueError('abort'))
       barrier.abort()
       return result
 
     with patch.object(barrier, 'wait', side_effect=abort_after_release):
-      with self.assertRaises(CrappyFail):
+      with self.assertRaises(ExceptionGroup):
         self._launch_with_deadline()
 
     self.assertFalse(start.is_set())
@@ -304,7 +308,7 @@ class TestPreparationWatchdog(BlockTestBase):
     stop = ThreadEvent()
     barrier = Barrier(1)
     failure = Event()
-    block = SimpleNamespace(sentinel=17)
+    block = SimpleNamespace(sentinel=17, name='test process')
 
     def stop_and_report_exit(*args, **kwargs) -> list[int]:
       stop.set()
@@ -312,7 +316,12 @@ class TestPreparationWatchdog(BlockTestBase):
 
     with patch.object(block_module.connection, 'wait',
                       side_effect=stop_and_report_exit):
-      Block._watchdog_target(stop, (block,), barrier, failure)
+      Block.watchdog_stop, Block.ready_barrier = stop, barrier
+      Block._run_blocks = (block,)
+      Block.watchdog_thread = current_thread()
+      Block.run_failure_manager = FailureManager('main', 'synchronize')
+      Block.run_failure_manager._logger = Mock()
+      Block._watchdog_target()
 
     self.assertFalse(failure.is_set())
     self.assertFalse(barrier.broken)
@@ -326,10 +335,15 @@ class TestPreparationWatchdog(BlockTestBase):
     Block.stop_event.set()
     barrier = Barrier(1)
     failure = Event()
-    block = SimpleNamespace(sentinel=17)
+    block = SimpleNamespace(sentinel=17, name='test process')
 
     with patch.object(block_module.connection, 'wait') as wait:
-      Block._watchdog_target(stop, (block,), barrier, failure)
+      Block.watchdog_stop, Block.ready_barrier = stop, barrier
+      Block._run_blocks = (block,)
+      Block.watchdog_thread = current_thread()
+      Block.run_failure_manager = FailureManager('main', 'synchronize')
+      Block.run_failure_manager._logger = Mock()
+      Block._watchdog_target()
 
     wait.assert_not_called()
     self.assertFalse(failure.is_set())
@@ -341,11 +355,16 @@ class TestPreparationWatchdog(BlockTestBase):
     stop = ThreadEvent()
     barrier = Barrier(1)
     failure = Event()
-    block = SimpleNamespace(sentinel=17)
+    block = SimpleNamespace(sentinel=17, name='test process')
 
     with patch.object(block_module.connection, 'wait',
                       side_effect=OSError('Invalid sentinel')):
-      Block._watchdog_target(stop, (block,), barrier, failure)
+      Block.watchdog_stop, Block.ready_barrier = stop, barrier
+      Block._run_blocks = (block,)
+      Block.watchdog_thread = current_thread()
+      Block.run_failure_manager = FailureManager('main', 'synchronize')
+      Block.run_failure_manager._logger = Mock()
+      Block._watchdog_target()
 
-    self.assertTrue(failure.is_set())
+    self.assertTrue(Block.run_failure_manager.snapshot())
     self.assertTrue(barrier.broken)

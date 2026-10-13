@@ -46,8 +46,7 @@ class TestPauseFreq(BlockTestBase):
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertFalse(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertFalse(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())

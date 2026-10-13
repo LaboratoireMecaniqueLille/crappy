@@ -15,11 +15,11 @@ from unittest.mock import Mock, patch
 from weakref import ref
 
 from crappy import Block
-from crappy._exceptions import CrappyFail
+from crappy._exceptions import ShutdownTimeoutError
 from crappy._failure import FailureManager
 from crappy.blocks.meta_block import block as block_module
 
-from .block_test_base import BlockTestBase, TestBlock
+from .block_test_base import BlockTestBase, TestBlock, exception_leaves
 
 
 class TestBlockFailureProducer(TestBlock):
@@ -143,7 +143,7 @@ class TestFailureLifecycle(BlockTestBase):
     self.assertIsNone(manager.snapshot()[0][1])
     Block.no_raise = True
     self._block.release_finish.set()
-    Block._cleanup()
+    Block._finalize_run()
     self.assertFalse(thread.is_alive())
     self.assertEqual(len(manager.snapshot()), 1)
 
@@ -189,7 +189,7 @@ class TestFailureLifecycle(BlockTestBase):
 
     with patch.object(TestBlock, 'start', start_block), \
          patch.object(block_module, 'Thread', side_effect=create_thread):
-      with self.assertRaises(CrappyFail):
+      with self.assertRaises(ExceptionGroup):
         Block.prepare_all(log_level=logging.CRITICAL)
     self.assertEqual(len(queue_refs), 2)
     self.assertFalse(other.is_alive())
@@ -236,11 +236,11 @@ class TestFailureLifecycle(BlockTestBase):
       Block._failure_target()
     self.assertEqual(manager.snapshot()[0][0].phase, 'monitoring')
     stop.set.assert_called_once()
-    failed.set.assert_called_once()
+    failed.set.assert_not_called()
     barrier.abort.assert_called_once()
 
   def test_notification_failures_do_not_skip_other_stop_operations(self):
-    """A failed stop signal does not skip the failure flag or Barrier."""
+    """A failed stop signal does not skip the Barrier abort."""
 
     manager = FailureManager('main', 'bootstrap')
     manager._logger = Mock()
@@ -255,7 +255,7 @@ class TestFailureLifecycle(BlockTestBase):
     Block.ready_barrier = barrier
     Block._failure_target()
     self.assertEqual(len(manager.snapshot()), 2)
-    failed.set.assert_called()
+    failed.set.assert_not_called()
     barrier.abort.assert_called()
 
   def test_blocked_receiver_is_abandoned_without_touching_a_new_run(self):
@@ -285,7 +285,8 @@ class TestFailureLifecycle(BlockTestBase):
     self.addCleanup(release.set)
     Block.no_raise = True
     started = monotonic()
-    Block._cleanup()
+    with self.assertRaises(ExceptionGroup):
+      Block._finalize_run()
     self.assertLess(monotonic() - started, 3)
     self.assertTrue(thread.is_alive())
     self.assertTrue(any('failure receiver did not stop' in
@@ -326,7 +327,10 @@ class TestFailureLifecycle(BlockTestBase):
     self._block = TestBlockBlockedFailureFlush()
     Block.prepare_all(log_level=logging.CRITICAL)
     started = monotonic()
-    Block.launch_all()
+    with self.assertRaises(ExceptionGroup) as caught:
+      Block.launch_all()
+    self.assertTrue(any(isinstance(error, ShutdownTimeoutError)
+                        for error in exception_leaves(caught.exception)))
     self.assertLess(monotonic() - started, 5)
     self.assertTrue(self._block.flush_entered.is_set())
     self.assertFalse(self._block.is_alive())

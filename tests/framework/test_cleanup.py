@@ -57,6 +57,131 @@ class TestFailureManagerCollections(TestCase):
     self.assertEqual(caught.exception.message, 'custom label failures')
     self.assertEqual(caught.exception.exceptions, (error,))
 
+  def test_nonraising_body_failure_is_reported_and_skips_remaining_body(self):
+    error = ValueError('body')
+    skipped, after = Mock(), Mock()
+    with self.manager.collect('deferred', raise_on_exit=False):
+      raise error
+      skipped()
+    after()
+    skipped.assert_not_called()
+    after.assert_called_once_with()
+    self.assertEqual(self.manager.snapshot()[0][1], error)
+    self.assertIn('deferred step: body', error.__notes__)
+    self.assertEqual(self.manager._collections.stack, [])
+    self.logger.error.assert_called_once()
+    with self.assertRaises(ExceptionGroup) as caught:
+      self.manager.raise_if_failed('final')
+    self.assertEqual(caught.exception.exceptions, (error,))
+    self.logger.error.assert_called_once()
+
+  def test_nonraising_steps_retain_groups_interrupts_and_independent_failures(self):
+    first, interrupt, exit_error = (ValueError('first'),
+                                   KeyboardInterrupt('interrupt'), SystemExit(2))
+    nested = BaseExceptionGroup('nested', [first, interrupt])
+    cause = OSError('cause')
+    nested.__cause__ = cause
+    nested.add_note('original note')
+    later = Mock()
+    with self.manager.collect('deferred', raise_on_exit=False):
+      with self.manager.step('group'):
+        raise nested
+      self.assertEqual(len(self.emitted), 1)
+      with self.manager.step('exit'):
+        raise exit_error
+      with self.manager.step('later'):
+        later()
+    later.assert_called_once_with()
+    self.assertEqual(tuple(error for _, error in self.manager.snapshot()),
+                     (nested, exit_error))
+    self.assertEqual(self.manager._collections.stack, [])
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      self.manager.raise_if_failed('final')
+    self.assertEqual(caught.exception.exceptions, (nested, exit_error))
+    self.assertIs(nested.__cause__, cause)
+    self.assertIn('original note', nested.__notes__)
+    self.assertEqual(len(self.emitted), 2)
+
+  def test_nonraising_body_failure_preserves_previous_step_failures(self):
+    first, body = OSError('step'), ValueError('body')
+    skipped = Mock()
+    with self.manager.collect('deferred', raise_on_exit=False):
+      with self.manager.step('close'):
+        raise first
+      raise body
+      skipped()
+    skipped.assert_not_called()
+    with self.assertRaises(ExceptionGroup) as caught:
+      self.manager.raise_if_failed('final')
+    self.assertEqual(caught.exception.exceptions, (first, body))
+    self.assertEqual(len(self.emitted), 2)
+
+  def test_nonraising_reporting_failures_do_not_skip_independent_steps(self):
+    origin, logging_error, transport = (ValueError('origin'), OSError('logger'),
+                                       SystemExit(3))
+    self.logger.error.side_effect = logging_error
+    queue = Mock(spec_set=('put',))
+    queue.put.side_effect = transport
+    self.manager.set_queue(queue)
+    later = Mock()
+    with patch('crappy._failure.sys.stderr', StringIO()):
+      with self.manager.collect('deferred', raise_on_exit=False):
+        with self.manager.step('origin'):
+          raise origin
+        with self.manager.step('later'):
+          later()
+    later.assert_called_once_with()
+    self.logger.error.assert_called_once()
+    queue.put.assert_called_once()
+    self.assertEqual(self.manager._collections.stack, [])
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      self.manager.raise_if_failed('final')
+    members = tuple(self.manager._iter_exception_members(caught.exception))
+    for error in (origin, logging_error, transport):
+      self.assertIn(error, members)
+
+  def test_nonraising_inner_collection_defers_only_its_own_failures(self):
+    first, deferred, last = (OSError('first'), KeyboardInterrupt('inner'),
+                            ValueError('last'))
+    with self.assertRaises(ExceptionGroup) as caught:
+      with self.manager.collect('outer'):
+        with self.manager.step('first'):
+          raise first
+        with self.manager.collect('inner', raise_on_exit=False):
+          raise deferred
+        self.assertEqual(len(self.manager._collections.stack), 1)
+        with self.manager.step('last'):
+          raise last
+    self.assertEqual(caught.exception.exceptions, (first, last))
+    self.assertEqual(self.manager._collections.stack, [])
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      self.manager.raise_if_failed('final')
+    self.assertEqual(caught.exception.exceptions, (first, deferred, last))
+    self.assertEqual(len(self.emitted), 3)
+
+  def test_mixed_raising_modes_are_isolated_between_threads(self):
+    errors = [OSError(f'worker-{index}') for index in range(8)]
+    barrier = Barrier(8)
+
+    def collect(index):
+      try:
+        with self.manager.collect(f'worker-{index}', raise_on_exit=bool(index % 2)):
+          barrier.wait(timeout=5)
+          with self.manager.step('close'):
+            raise errors[index]
+          barrier.wait(timeout=5)
+      except ExceptionGroup as caught:
+        return caught.exceptions
+      return None
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+      results = list(executor.map(collect, range(8)))
+    for index, result in enumerate(results):
+      self.assertEqual(result, (errors[index],) if index % 2 else None)
+    self.assertEqual(len(self.manager.snapshot()), 8)
+    self.assertEqual(len(self.emitted), 8)
+    self.assertEqual(self.manager._collections.stack, [])
+
   def test_cancellation_is_not_success_or_a_retained_failure(self) -> None:
     succeeded = False
     with self.manager.collect('cancelled close'):

@@ -517,7 +517,7 @@ class TestLinks(BlockTestBase):
     Block.reset()
 
   def test_link_data_error(self) -> None:
-    """Tests that a Link data conversion error sets the shared raise Event."""
+    """Tests that a Link data conversion error sets the failure Queue."""
 
     self._block = TestBlockLink(stop=False)
 
@@ -567,8 +567,7 @@ class TestLinks(BlockTestBase):
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertTrue(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertTrue(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())

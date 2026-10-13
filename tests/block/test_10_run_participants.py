@@ -6,11 +6,10 @@ from unittest.mock import patch
 from weakref import ref, WeakSet
 
 from crappy import Block
-from crappy._exceptions import CrappyFail
 from crappy.blocks.meta_block import block as block_module
 from crappy.links import GraphStructureError, link_graph
 
-from .block_test_base import BlockTestBase, TestBlock, link
+from .block_test_base import BlockTestBase, TestBlock, link, exception_leaves
 
 
 class TestRunParticipants(BlockTestBase):
@@ -33,17 +32,18 @@ class TestRunParticipants(BlockTestBase):
     with patch.object(Block, '_set_logger') as set_logger, \
          patch.object(block_module, 'Barrier') as barrier, \
          patch.object(TestBlock, 'start') as start:
-      with self.assertRaises(GraphStructureError) as raised:
+      with self.assertRaises(ExceptionGroup) as raised:
         Block.prepare_all(log_level=logging.CRITICAL)
 
-    self.assertIn(', '.join(missing_names), str(raised.exception))
-    self.assertIn('possibly garbage-collected', str(raised.exception))
-    set_logger.assert_not_called()
+    self.assertIsInstance(exception_leaves(raised.exception)[0], GraphStructureError)
+    self.assertIn(', '.join(missing_names), str(exception_leaves(raised.exception)[0]))
+    self.assertIn('possibly garbage-collected', str(exception_leaves(raised.exception)[0]))
+    set_logger.assert_called_once_with()
     barrier.assert_not_called()
     start.assert_not_called()
     self.assertFalse(Block.prepared_all)
     self.assertEqual(Block._run_blocks, ())
-    self.assertTrue(set(missing_names) <= set(link_graph.nodes))
+    self.assertFalse(link_graph.nodes)
 
   def test_all_blocks_lost_is_not_an_empty_experiment(self) -> None:
     """Validation must also run when the WeakSet is completely empty."""
@@ -55,10 +55,11 @@ class TestRunParticipants(BlockTestBase):
     self.assertIsNone(block_ref())
     self.assertFalse(Block.instances)
 
-    with self.assertRaises(GraphStructureError) as raised:
+    with self.assertRaises(ExceptionGroup) as raised:
       Block.prepare_all(log_level=logging.CRITICAL)
 
-    self.assertIn(name, str(raised.exception))
+    self.assertIsInstance(exception_leaves(raised.exception)[0], GraphStructureError)
+    self.assertIn(name, str(exception_leaves(raised.exception)[0]))
     self.assertIsNone(Block.ready_barrier)
     self.assertEqual(Block._run_blocks, ())
 
@@ -68,11 +69,12 @@ class TestRunParticipants(BlockTestBase):
     self._block = TestBlock()
     link_graph.nodes.pop(self._block.name)
 
-    with self.assertRaises(GraphStructureError) as raised:
+    with self.assertRaises(ExceptionGroup) as raised:
       Block.prepare_all(log_level=logging.CRITICAL)
 
-    self.assertIn('absent from the LinkGraph', str(raised.exception))
-    self.assertIn(self._block.name, str(raised.exception))
+    self.assertIsInstance(exception_leaves(raised.exception)[0], GraphStructureError)
+    self.assertIn('absent from the LinkGraph', str(exception_leaves(raised.exception)[0]))
+    self.assertIn(self._block.name, str(exception_leaves(raised.exception)[0]))
     self.assertIsNone(Block.ready_barrier)
 
   def test_snapshot_retains_blocks_until_reset(self) -> None:
@@ -101,7 +103,7 @@ class TestRunParticipants(BlockTestBase):
     self.assertIs(block_ref()._ready_barrier, Block.ready_barrier)
     start.assert_called_once_with()
 
-    Block._cleanup()
+    Block._finalize_run()
     collect()
     self.assertEqual(Block._run_blocks, ())
     self.assertIsNone(block_ref())
@@ -117,9 +119,10 @@ class TestRunParticipants(BlockTestBase):
       raise RuntimeError('Logger setup failed')
 
     with patch.object(Block, '_set_logger', side_effect=fail_setup):
-      with self.assertRaisesRegex(RuntimeError, 'Logger setup failed'):
+      with self.assertRaises(ExceptionGroup) as caught:
         Block.prepare_all(log_level=logging.CRITICAL)
 
+    self.assertIn('Logger setup failed', str(exception_leaves(caught.exception)[0]))
     collect()
     self.assertEqual(Block._run_blocks, ())
     self.assertIsNone(block_ref())
@@ -131,7 +134,7 @@ class TestRunParticipants(BlockTestBase):
     self._block = TestBlock()
     with patch.object(TestBlock, 'start',
                       side_effect=RuntimeError('Process start failed')):
-      with self.assertRaises(CrappyFail):
+      with self.assertRaises(ExceptionGroup):
         Block.prepare_all(log_level=logging.CRITICAL)
 
     self.assertEqual(Block._run_blocks, ())
@@ -159,7 +162,7 @@ class TestRunParticipants(BlockTestBase):
                       side_effect=wait_for_blocks):
       Block.launch_all()
 
-    self.assertIs(watchdog.call_args.args[1], blocks)
+    watchdog.assert_called_once_with()
     self.assertTrue(self._block.looped.is_set())
     self.assertFalse(self._block.is_alive())
     self.assertEqual(Block._run_blocks, ())

@@ -9,7 +9,19 @@ import logging
 from time import monotonic, sleep
 from typing import Callable
 import unittest
-from multiprocessing import Event, Value
+from multiprocessing import Event, Value, Queue
+from unittest.mock import Mock
+
+from crappy._failure import FailureManager
+
+
+def exception_leaves(error: BaseException) -> tuple[BaseException, ...]:
+  """Returns group leaves for assertions without traversing causes."""
+
+  if isinstance(error, BaseExceptionGroup):
+    return tuple(leaf for member in error.exceptions
+                 for leaf in exception_leaves(member))
+  return (error,)
 
 
 class TestLink(Link):
@@ -137,6 +149,7 @@ class TestBlock(Block):
     self.n_loops = Value('i', 0)
     # Standalone run-cycle tests also need the flag normally set by prepare_all.
     self._main_entered = Value('b', 0, lock=False)
+    self._failure_queue = Queue()
 
     self.loops = Value('i', 0)
 
@@ -229,6 +242,22 @@ class BlockTestBase(unittest.TestCase):
       logging.disable(disable)
 
     self.addCleanup(restore_logging)
+    self._received_failures = dict()
+
+  def failures(self, block: TestBlock) -> tuple[BaseException, ...]:
+    """Receives standalone child reports instead of consulting legacy flags."""
+
+    manager = block._failure_manager
+    if manager is None:
+      manager = self._received_failures.setdefault(
+          block, FailureManager('main', 'main'))
+      manager._logger = Mock()
+      manager.receive((block._failure_queue,))
+    try:
+      manager.raise_if_failed('test failures')
+    except BaseExceptionGroup as errors:
+      return exception_leaves(errors)
+    return ()
 
   def wait_until(self,
                  predicate: Callable[[], bool],
@@ -280,6 +309,8 @@ class BlockTestBase(unittest.TestCase):
       self.assertFalse(any(inst.is_alive() for inst in Block.instances))
 
     finally:
+      if self._block is not None and self._block._failure_queue is not None:
+        self._block._failure_queue.close()
       Block.reset()
 
     # Make sure the Block was properly reset

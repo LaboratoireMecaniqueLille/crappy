@@ -82,7 +82,12 @@ def _exercise_phase_context(method: str) -> None:
     manager, entered = Block.run_failure_manager, block._main_entered
     assert manager is not None and entered is not None
     assert not hasattr(entered, 'get_lock')
-    Block.launch_all(no_raise=True)
+    try:
+      Block.launch_all(no_raise=True)
+    except ExceptionGroup:
+      assert phase in ('prepare', 'begin')
+    else:
+      assert phase not in ('prepare', 'begin')
     assert block.exitcode == 0, block.exitcode
     assert block.finished.is_set()
     assert entered.value == (phase not in ('prepare', 'begin'))
@@ -90,7 +95,8 @@ def _exercise_phase_context(method: str) -> None:
     expected = [expected_phase] if phase == 'finish' else [expected_phase, 'finish']
     assert [report.phase for report, _ in manager.snapshot()] == expected
     assert block._main_entered is None
-    assert all(error is None for _, error in manager.snapshot())
+    assert all((error is None) == (phase not in ('prepare', 'begin'))
+               for _, error in manager.snapshot())
     try:
       manager.raise_if_failed('remote hook failures')
     except ExceptionGroup as errors:
@@ -200,8 +206,11 @@ class TestPhaseCapture(BlockTestBase):
     self.assertEqual([report.phase for report, _ in manager.snapshot()],
                      ['prepare', 'framework cleanup', 'finish',
                       'framework cleanup'])
-    self.assertTrue(block._raise_event.is_set())
-    self.assertTrue(block._kbi_event.is_set())
+
+    self.assertTrue(manager.snapshot())
+
+    self.assertTrue(any(isinstance(error, KeyboardInterrupt)
+                        for error in self.failures(block)))
     self.assertEqual(block._config_connections_to_close, [connection])
     connection.close.assert_called_once_with()
 
@@ -236,16 +245,21 @@ class TestPhaseCapture(BlockTestBase):
     self.assertIn('original note', retained.__notes__)
     self.assertNotIn('StopRequested', report.formatted_traceback)
     self.assertNotIn('GeneratorStop', report.formatted_traceback)
-    self.assertTrue(block._raise_event.is_set())
-    self.assertTrue(block._kbi_event.is_set())
+
+    self.assertTrue(manager.snapshot())
+
+    self.assertTrue(any(isinstance(error, KeyboardInterrupt)
+                        for error in self.failures(block)))
 
   def test_interrupt_cause_is_not_an_independent_interrupt(self):
     error = ValueError('failure')
     error.__cause__ = KeyboardInterrupt('cause only')
     block = self.setup_block(TestBlockHookFailure(error=error))
-    self.run_block(block)
-    self.assertTrue(block._raise_event.is_set())
-    self.assertFalse(block._kbi_event.is_set())
+    manager = self.run_block(block)
+
+    self.assertTrue(manager.snapshot())
+    self.assertFalse(any(isinstance(error, KeyboardInterrupt)
+                         for error in self.failures(block)))
 
   def test_normal_completion_is_only_consumed_in_main(self):
     for completion in (GeneratorStop, SchedulerStop, ReaderStop):
@@ -255,7 +269,7 @@ class TestPhaseCapture(BlockTestBase):
           block = self.setup_block(TestBlockHookFailure(phase, error))
           manager = self.run_block(block)
           self.assertEqual(len(manager.snapshot()), phase != 'main')
-          self.assertEqual(block._raise_event.is_set(), phase != 'main')
+          self.assertEqual(bool(manager.snapshot()), phase != 'main')
           if phase == 'main':
             block._logger.warning.assert_called_once_with(
                 'main requested completion')
@@ -388,7 +402,11 @@ class TestPhaseCapture(BlockTestBase):
         releaser = Thread(target=release_after_receipt)
         releaser.start()
         try:
-          Block.launch_all(no_raise=True)
+          if phase == 'prepare':
+            with self.assertRaises(ExceptionGroup):
+              Block.launch_all(no_raise=True)
+          else:
+            Block.launch_all(no_raise=True)
         finally:
           block.release_finish.set()
           releaser.join(3)

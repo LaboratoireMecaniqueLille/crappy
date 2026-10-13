@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from crappy import Block
-from crappy._exceptions import CrappyFail
 from crappy.blocks.meta_block import block as block_module
 from multiprocessing import synchronize, queues, get_start_method, Event
 from multiprocessing.sharedctypes import Synchronized
@@ -74,7 +73,7 @@ class TestStartupSequence(BlockTestBase):
 
     self.assertTrue(self._block.stop_event.wait(3.0))
 
-    with self.assertRaises(CrappyFail):
+    with self.assertRaises(ExceptionGroup):
       Block.prepare_all(log_level=logging.CRITICAL)
 
   def test_prepare_all_launched(self) -> None:
@@ -94,7 +93,7 @@ class TestStartupSequence(BlockTestBase):
     Block.prepared_all = False
     Block.launched_all = True
 
-    with self.assertRaises(CrappyFail):
+    with self.assertRaises(ExceptionGroup):
       Block.prepare_all(log_level=logging.CRITICAL)
 
   def test_prepare_all_setup(self) -> None:
@@ -128,10 +127,7 @@ class TestStartupSequence(BlockTestBase):
     # Logging should also be configured at the class level
     self.assertIsInstance(Block.log_queue, queues.Queue)
     self.assertIsInstance(Block.log_thread, Thread)
-    if get_start_method() != 'fork':
-      self.assertTrue(Block.log_thread.is_alive())
-    else:
-      self.assertFalse(Block.log_thread.is_alive())
+    self.assertEqual(Block.log_thread.is_alive(), get_start_method() != 'fork')
 
     # The Block instance must reference the exact same shared objects
     for cls, inst in zip((Block.stop_event, Block.start_event,
@@ -197,7 +193,7 @@ class TestStartupSequence(BlockTestBase):
 
     self._block = TestBlock()
 
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(ExceptionGroup):
       Block.renice_all(allow_root=False)
 
     Block.reset()
@@ -218,7 +214,7 @@ class TestStartupSequence(BlockTestBase):
 
     Block.launched_all = True
 
-    with self.assertRaises(CrappyFail):
+    with self.assertRaises(ExceptionGroup):
       Block.renice_all(allow_root=False)
 
   def test_launch_all(self) -> None:
@@ -239,7 +235,7 @@ class TestStartupSequence(BlockTestBase):
 
     self._block = TestBlock()
 
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(ExceptionGroup):
       Block.launch_all()
 
     Block.reset()
@@ -255,7 +251,7 @@ class TestStartupSequence(BlockTestBase):
 
     Block.launched_all = True
 
-    with self.assertRaises(CrappyFail):
+    with self.assertRaises(ExceptionGroup):
       Block.launch_all()
 
   def test_stop_all(self) -> None:
@@ -315,81 +311,22 @@ class TestStartupSequence(BlockTestBase):
 
     queue.get.assert_called_once_with(block=True, timeout=0.05)
 
-  def test_cleanup(self) -> None:
-    """Tests the different raise/no-raise combinations of _cleanup."""
+  def test_cleanup_collects_without_resetting_or_raising(self) -> None:
+    """Cleanup keeps the run context available for finalization."""
 
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
-    Block.no_raise = False
     Block._set_logger()
-
+    Block._ensure_failure_manager()
+    manager = Block.run_failure_manager
+    error = ValueError('origin')
+    manager.capture_exception(error)
     Block._cleanup()
-
-    Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
-    Block.no_raise = False
-    Block._set_logger()
-
-    Block.raise_event.set()
-
-    with self.assertRaises(CrappyFail):
-      Block._cleanup()
-
-    Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
-    Block.no_raise = True
-    Block._set_logger()
-
-    Block.raise_event.set()
-
-    Block._cleanup()
-
-    Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
-    Block.no_raise = False
-    Block._set_logger()
-
-    Block.kbi_event.set()
-
-    with self.assertRaises(KeyboardInterrupt):
-      Block._cleanup()
-
-    Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
-    Block.no_raise = True
-    Block._set_logger()
-
-    Block.kbi_event.set()
-
-    Block._cleanup()
-
-    Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
-    Block.no_raise = False
-    Block._set_logger()
-
-    Block.raise_event.set()
-    Block.kbi_event.set()
-
-    with self.assertRaises(CrappyFail):
-      Block._cleanup()
-
-    Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
-    Block.no_raise = True
-    Block._set_logger()
-
-    Block.raise_event.set()
-    Block.kbi_event.set()
-
-    Block._cleanup()
+    self.assertIs(Block.run_failure_manager, manager)
+    self.assertIsNotNone(Block.stop_event)
+    self.assertTrue(Block.stop_event.is_set())
+    with self.assertRaises(ExceptionGroup):
+      Block._finalize_run()
+    self.assertIsNone(Block.run_failure_manager)
 
   def test_block_not_responding(self) -> None:
     """Tests that cleanup terminates a Block that does not stop by itself."""
@@ -432,7 +369,7 @@ class TestStartupSequence(BlockTestBase):
                       side_effect=accelerated_wait), \
          patch.object(self._block, 'terminate',
                       wraps=self._block.terminate) as terminate:
-      with self.assertRaises(CrappyFail):
+      with self.assertRaises(ExceptionGroup):
         Block.launch_all()
 
       terminate.assert_called_once()
@@ -513,7 +450,7 @@ class TestStartupSequence(BlockTestBase):
           patch.object(self._block, 'terminate',
                        wraps=self._block.terminate) as terminate,
           patch.object(self._block, 'kill', wraps=self._block.kill) as kill,
-          self.assertRaises(CrappyFail)):
+          self.assertRaises(ExceptionGroup)):
       Block.launch_all()
 
     terminate.assert_called_once()
@@ -649,7 +586,6 @@ class TestStartupSequence(BlockTestBase):
     Block.stop_event = Event()
     Block.raise_event = Event()
     Block.kbi_event = Event()
-    failure = Block.raise_event
     block = Mock(spec=Block, inputs=[], outputs=[])
     block.name = 'crappy.still-running'
     block.sentinel = 10
@@ -658,14 +594,13 @@ class TestStartupSequence(BlockTestBase):
 
     with patch.object(block_module, 'monotonic', return_value=0.0), \
          patch.object(block_module.connection, 'wait', return_value=[10]):
-      with self.assertRaises(CrappyFail):
-        Block._cleanup()
+      Block._cleanup()
 
     self.assertEqual(block.join.call_args_list,
                      [call(timeout=3.0), call(timeout=1.0), call(timeout=1.0)])
     block.terminate.assert_called_once()
     block.kill.assert_called_once()
-    self.assertTrue(failure.is_set())
+    self.assertTrue(Block.run_failure_manager.snapshot())
 
   def test_cleanup_caps_wait_at_remaining_deadline(self) -> None:
     """The last sentinel wait must use only the remaining shutdown budget."""

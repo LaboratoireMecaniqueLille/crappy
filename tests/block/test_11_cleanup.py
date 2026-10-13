@@ -1,6 +1,6 @@
 # coding: utf-8
 
-"""Critical framework cleanup steps without new ExceptionGroup handling."""
+"""Independent framework cleanup and grouped public finalization."""
 
 import logging
 from multiprocessing import Event
@@ -8,11 +8,10 @@ from threading import Thread
 from unittest.mock import Mock, patch
 
 from crappy import Block
-from crappy._exceptions import CrappyFail
 from crappy.blocks.meta_block import block as block_module
 from crappy.links import Link
 
-from .block_test_base import BlockTestBase, TestBlock
+from .block_test_base import BlockTestBase, TestBlock, exception_leaves
 
 
 class TestCleanup(BlockTestBase):
@@ -20,10 +19,13 @@ class TestCleanup(BlockTestBase):
 
   @staticmethod
   def setup_cleanup() -> None:
+    Block.reset()
     Block.stop_event = Event()
     Block.raise_event = Event()
     Block.kbi_event = Event()
     Block.logger = Mock()
+    Block._ensure_failure_manager()
+    Block.run_failure_manager._logger = Block.logger
 
   def setup_cleanup_resources(self) -> tuple[Mock, ...]:
     """Create owned resources and a Block requiring shutdown escalation."""
@@ -73,7 +75,7 @@ class TestCleanup(BlockTestBase):
           with patch.object(block_module.connection, 'wait', return_value=[1]):
             Block._cleanup()
 
-          self.assertIn('log Block stop status', error.__notes__[0])
+          self.assertIn('Block shutdown diagnostic', error.__notes__[0])
           link.close.assert_called_once_with()
           manager.shutdown.assert_called_once_with()
           worker.join.assert_called_once_with(timeout=1.0)
@@ -112,7 +114,6 @@ class TestCleanup(BlockTestBase):
       for error_type in (OSError, KeyboardInterrupt):
         with self.subTest(message=message, error=error_type.__name__):
           process, link, manager, queue, worker = self.setup_cleanup_resources()
-          failure, interrupt = Block.raise_event, Block.kbi_event
           error = error_type('progress log')
 
           def fail_log(*, level, msg) -> None:
@@ -131,35 +132,23 @@ class TestCleanup(BlockTestBase):
           worker.join.assert_called_once_with(timeout=1.0)
           queue.cancel_join_thread.assert_not_called()
           queue.close.assert_called_once_with()
-          self.assertEqual(failure.is_set(), error_type is OSError)
-          self.assertEqual(interrupt.is_set(), error_type is KeyboardInterrupt)
+          self.assertIn(error, [actual for _, actual in
+                                Block.run_failure_manager.snapshot()])
           self.assertTrue(error.__notes__[0].startswith('Block cleanup step:'))
 
-  def test_missing_stop_event_logging_failure_does_not_skip_resources(
+  def test_partial_startup_without_stop_event_still_releases_resources(
       self) -> None:
-    """A partial startup still releases resources if its error log fails."""
+    """A missing Event is normal before synchronization objects are allocated."""
 
-    for error_type in (OSError, KeyboardInterrupt):
-      with self.subTest(error=error_type.__name__):
-        process, link, manager, queue, worker = self.setup_cleanup_resources()
-        Block.stop_event = None
-        error = error_type('missing event log')
-
-        def fail_log(*, level, msg) -> None:
-          if msg == "The stop Event should be set but doesn't exist!":
-            raise error
-
-        Block.logger.log.side_effect = fail_log
-        Block.no_raise = True
-        with patch.object(block_module.connection, 'wait', return_value=[1]):
-          Block._cleanup()
-
-        self.assertIn('log missing stop Event', error.__notes__[0])
-        process.kill.assert_called_once_with()
-        link.close.assert_called_once_with()
-        manager.shutdown.assert_called_once_with()
-        worker.join.assert_called_once_with(timeout=1.0)
-        queue.close.assert_called_once_with()
+    process, link, manager, queue, worker = self.setup_cleanup_resources()
+    Block.stop_event = None
+    with patch.object(block_module.connection, 'wait', return_value=[1]):
+      Block._cleanup()
+    process.kill.assert_called_once_with()
+    link.close.assert_called_once_with()
+    manager.shutdown.assert_called_once_with()
+    worker.join.assert_called_once_with(timeout=1.0)
+    queue.close.assert_called_once_with()
 
   def test_finish_announcement_failure_cannot_skip_finish(self) -> None:
     """A failed finish log cannot skip the hook or inherited Pipe cleanup."""
@@ -184,8 +173,7 @@ class TestCleanup(BlockTestBase):
 
         finish.assert_called_once_with()
         self.assertEqual(close.call_count, 2)
-        self.assertEqual(block._kbi_event.is_set(),
-                         error_type is KeyboardInterrupt)
+        self.assertIn(error, self.failures(block))
 
   def test_process_failures_do_not_skip_peers_manager_thread_or_queue(
       self) -> None:
@@ -211,11 +199,11 @@ class TestCleanup(BlockTestBase):
     worker.is_alive.return_value = False
     manager.shutdown.side_effect = RuntimeError('manager')
     Block.shared_mgr, Block.log_queue, Block.log_thread = manager, queue, worker
-    failure, logger = Block.raise_event, Block.logger
+    logger = Block.logger
 
     with patch.object(block_module.connection, 'wait', return_value=[0, 1]):
-      with self.assertRaises(CrappyFail):
-        Block._cleanup()
+      with self.assertRaises(ExceptionGroup):
+        Block._finalize_run()
 
     second.terminate.assert_called_once_with()
     first.kill.assert_called_once_with()
@@ -223,8 +211,8 @@ class TestCleanup(BlockTestBase):
     worker.join.assert_called_once_with(timeout=1.0)
     queue.cancel_join_thread.assert_not_called()
     queue.close.assert_called_once_with()
-    self.assertTrue(failure.is_set())
-    self.assertGreaterEqual(logger.exception.call_count, 3)
+    self.assertTrue(logger.error.call_count)
+    self.assertGreaterEqual(logger.error.call_count, 3)
     self.assertEqual(Block._run_blocks, ())
     self.assertIsNone(Block.shared_mgr)
 
@@ -237,13 +225,13 @@ class TestCleanup(BlockTestBase):
     Block.stop_event.set.side_effect = KeyboardInterrupt()
     queue.close.side_effect = OSError('close')
     Block.shared_mgr, Block.log_queue = manager, queue
-    failure, interrupt = Block.raise_event, Block.kbi_event
     Block.no_raise = True
     Block._cleanup()
     manager.shutdown.assert_called_once_with()
     queue.close.assert_called_once_with()
-    self.assertTrue(failure.is_set())
-    self.assertTrue(interrupt.is_set())
+    self.assertEqual([type(error) for _, error in
+                      Block.run_failure_manager.snapshot()],
+                     [KeyboardInterrupt, OSError])
 
   def test_cleanup_closes_each_link_once_and_still_stops_manager(self) -> None:
     """A Link appearing on both Blocks is cleaned up once, independently."""
@@ -256,10 +244,10 @@ class TestCleanup(BlockTestBase):
     Block.shared_mgr = manager
     Block._run_blocks = (source, target)
     with patch.object(link, 'close', side_effect=OSError('link')) as close:
-      with self.assertRaises(CrappyFail):
-        Block._cleanup()
+      Block._cleanup()
     close.assert_called_once_with()
     manager.shutdown.assert_called_once_with()
+    self.assertTrue(Block.run_failure_manager.snapshot())
 
   def test_reporting_failure_still_resets_runtime(self) -> None:
     """An unavailable error reporter must not prevent the final reset."""
@@ -269,10 +257,10 @@ class TestCleanup(BlockTestBase):
     Block.shared_mgr, Block.log_queue = manager, queue
     manager.shutdown.side_effect = RuntimeError('shutdown')
     error = OSError('reporting')
-    Block.logger.exception.side_effect = error
-    with self.assertRaises(OSError) as caught:
-      Block._cleanup()
-    self.assertIs(caught.exception, error)
+    Block.logger.error.side_effect = error
+    with self.assertRaises(ExceptionGroup) as caught:
+      Block._finalize_run()
+    self.assertIn(error, exception_leaves(caught.exception))
     queue.close.assert_called_once_with()
     self.assertIsNone(Block.shared_mgr)
     self.assertIsNone(Block.log_queue)
@@ -290,7 +278,7 @@ class TestCleanup(BlockTestBase):
           patch.object(block, 'finish') as finish):
       block.run()
     finish.assert_called_once_with()
-    self.assertTrue(block._raise_event.is_set())
+    self.assertTrue(self.failures(block))
 
   def test_inherited_pipe_failure_does_not_skip_peers_or_final_retry(
       self) -> None:

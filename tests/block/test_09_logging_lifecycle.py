@@ -13,7 +13,6 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from crappy import Block
-from crappy._exceptions import CrappyFail
 from crappy._failure import FailureManager
 from crappy.blocks.meta_block import block as block_module
 from crappy.blocks.camera_processes.camera_process import CameraProcess
@@ -41,7 +40,7 @@ class TestBlockLoggingProducer(TestBlock):
 
   def finish(self) -> None:
     # Enough data to require the queue reader to keep running while the
-    # producer exits and multiprocessing flushes its normal log feeder.
+    # producer exits under spawn/forkserver. Fork logs through inherited sinks.
     for index in range(100):
       self.log(logging.ERROR, f'finished-record-{index:03d} ' + 'x' * 2048)
     super().finish()
@@ -73,11 +72,17 @@ def _exercise_logging_context(method: str) -> None:
       Block.prepare_all(log_level=level)
       manager = Block.run_failure_manager
       thread = Block.log_thread
+      failure_thread = Block.failure_thread
+      assert thread.is_alive() == (method != 'fork')
+      assert (thread.ident is None) == (method == 'fork')
+      assert failure_thread is not None and failure_thread.is_alive()
       handlers = tuple(Block.log_handlers)
       Block.launch_all(no_raise=True)
       assert block.finished.is_set()
       assert block.exitcode == 0, block.exitcode
       assert not thread.is_alive()
+      assert (thread.ident is None) == (method == 'fork')
+      assert not failure_thread.is_alive()
       assert block._log_queue is None
       assert Block.logger is None and not Block.log_handlers
       assert logger.handlers == [application_handler], logger.handlers
@@ -131,10 +136,13 @@ class TestLoggingLifecycle(BlockTestBase):
 
   @staticmethod
   def _setup_cleanup() -> None:
+    Block.reset()
     Block.stop_event = Event()
     Block.raise_event = Event()
     Block.kbi_event = Event()
     Block.logger = Mock(spec=logging.Logger)
+    Block._ensure_failure_manager()
+    Block.run_failure_manager._logger = Block.logger
 
   def test_missing_queue_is_silent(self) -> None:
     """There is nothing to forward when the queue has been removed."""
@@ -202,7 +210,7 @@ class TestLoggingLifecycle(BlockTestBase):
       Block._log_target(queue)
 
     queue.get.assert_called_once_with(block=True, timeout=0.05)
-    get_logger.assert_not_called()
+    get_logger.return_value.handle.assert_not_called()
 
   def test_replaced_queue_discards_record(self) -> None:
     """An old worker must neither forward old data nor read the new queue."""
@@ -310,7 +318,7 @@ class TestLoggingLifecycle(BlockTestBase):
       with self.subTest(failing=failing):
         self._setup_cleanup()
         if failing:
-          Block.raise_event.set()
+          Block.run_failure_manager.capture_exception(ValueError('origin'))
         Block.log_queue = Queue()
         worker = Thread(target=Block._log_target, args=(Block.log_queue,),
                          daemon=True)
@@ -318,10 +326,10 @@ class TestLoggingLifecycle(BlockTestBase):
         worker.start()
         try:
           if failing:
-            with self.assertRaises(CrappyFail):
-              Block._cleanup()
+            with self.assertRaises(ExceptionGroup):
+              Block._finalize_run()
           else:
-            Block._cleanup()
+            Block._finalize_run()
           self.assertFalse(worker.is_alive())
         finally:
           Block.log_queue = None
@@ -355,7 +363,7 @@ class TestLoggingLifecycle(BlockTestBase):
       try:
         self.assertTrue(handling.wait(1.0))
         releaser.start()
-        Block._cleanup()
+        Block._finalize_run()
         self.assertFalse(worker.is_alive())
       finally:
         release.set()
@@ -369,7 +377,6 @@ class TestLoggingLifecycle(BlockTestBase):
     for no_raise in (False, True):
       with self.subTest(no_raise=no_raise):
         self._setup_cleanup()
-        failure = Block.raise_event
         logger = Block.logger
         worker = Mock(spec=Thread)
         worker.ident = 1
@@ -380,17 +387,14 @@ class TestLoggingLifecycle(BlockTestBase):
         Block.no_raise = no_raise
 
         errors = StringIO()
-        with patch.object(block_module, 'stderr', errors):
-          if no_raise:
-            Block._cleanup()
-          else:
-            with self.assertRaises(CrappyFail):
-              Block._cleanup()
+        with patch('crappy._failure.sys.stderr', errors):
+          with self.assertRaises(ExceptionGroup):
+            Block._finalize_run()
 
         worker.join.assert_called_once_with(timeout=1.0)
-        self.assertTrue(failure.is_set())
+        self.assertIsNone(Block.run_failure_manager)
         logger.exception.assert_not_called()
-        self.assertIn('did not terminate', errors.getvalue())
+        self.assertIn('did not stop', errors.getvalue())
         self.assertFalse(any('terminated gracefully' in call.kwargs['msg']
                              for call in logger.log.call_args_list))
 
@@ -433,9 +437,9 @@ class TestLoggingLifecycle(BlockTestBase):
     try:
       self.assertTrue(handling.wait(1.0))
       guard.start()
-      with patch.object(block_module, 'stderr', errors):
-        with self.assertRaises(CrappyFail):
-          Block._cleanup()
+      with patch('crappy._failure.sys.stderr', errors):
+        with self.assertRaises(ExceptionGroup):
+          Block._finalize_run()
     finally:
       completed.set()
       release.set()
@@ -445,7 +449,7 @@ class TestLoggingLifecycle(BlockTestBase):
 
     self.assertFalse(timed_out.is_set(), "Cleanup blocked on the log handler")
     self.assertFalse(worker.is_alive())
-    self.assertIn('did not terminate', errors.getvalue())
+    self.assertIn('did not stop', errors.getvalue())
 
   def test_earlier_cleanup_failure_still_stops_thread(self) -> None:
     """Manager exceptions or interrupts must not skip logger shutdown."""
@@ -462,23 +466,30 @@ class TestLoggingLifecycle(BlockTestBase):
         Block.shared_mgr = Mock()
         Block.shared_mgr.shutdown.side_effect = error
 
-        expected = (KeyboardInterrupt if isinstance(error, KeyboardInterrupt)
-                    else CrappyFail)
+        expected = (BaseExceptionGroup if isinstance(error, KeyboardInterrupt)
+                    else ExceptionGroup)
         with self.assertRaises(expected):
-          Block._cleanup()
+          Block._finalize_run()
 
         worker.join.assert_called_once_with(timeout=1.0)
 
-  def test_cleanup_skips_unstarted_thread(self) -> None:
-    """With fork the logging Thread is created but never started."""
+  def test_cleanup_starts_unstarted_log_thread_only_for_queued_logging(self):
+    """Partial startup keeps fork's inherited logging route unchanged."""
 
-    self._setup_cleanup()
-    worker = Mock(spec=Thread)
-    worker.ident = None
-    Block.log_thread = worker
-    Block._cleanup()
-
-    worker.join.assert_not_called()
+    for method in ('fork', 'spawn', 'forkserver'):
+      with self.subTest(method=method):
+        self._setup_cleanup()
+        worker = Mock(spec=Thread)
+        worker.ident = None
+        worker.is_alive.return_value = False
+        Block.log_thread = worker
+        with patch.object(block_module, 'get_start_method', return_value=method):
+          Block._finalize_run()
+        if method == 'fork':
+          worker.start.assert_not_called()
+        else:
+          worker.start.assert_called_once_with()
+        worker.join.assert_not_called()
 
   def test_logging_off_is_scoped_and_restored(self) -> None:
     """Crappy opt-out does not suppress an independent application logger."""
@@ -549,7 +560,7 @@ class TestLoggingLifecycle(BlockTestBase):
         self.assertEqual(manager.snapshot()[0][0].phase, 'logging')
         manager._logger.error.assert_called_once()
         self.assertTrue(Block.stop_event.is_set())
-        self.assertTrue(Block.raise_event.is_set())
+        self.assertFalse(Block.raise_event.is_set())
         Block.ready_barrier.abort.assert_called_once_with()
 
   def test_broken_reader_logger_cannot_skip_stop_signals(self) -> None:
@@ -576,7 +587,7 @@ class TestLoggingLifecycle(BlockTestBase):
     with patch('crappy._failure.sys.stderr', StringIO()) as errors:
       Block._log_target(queue)
     self.assertTrue(Block.stop_event.is_set())
-    self.assertTrue(Block.raise_event.is_set())
+    self.assertFalse(Block.raise_event.is_set())
     self.assertTrue(manager.snapshot())
     self.assertIn('broken handler', errors.getvalue())
     self.assertLessEqual(handler.handle.call_count, 2)
@@ -595,11 +606,8 @@ class TestLoggingLifecycle(BlockTestBase):
         first.flush.side_effect = OSError('flush failed')
         first.close.side_effect = ValueError('close failed')
         Block.log_handlers = [first, second]
-        if no_raise:
-          Block._cleanup()
-        else:
-          with self.assertRaises(CrappyFail):
-            Block._cleanup()
+        with self.assertRaises(ExceptionGroup):
+          Block._finalize_run()
         first.close.assert_called_once_with()
         second.flush.assert_called_once_with()
         second.close.assert_called_once_with()
