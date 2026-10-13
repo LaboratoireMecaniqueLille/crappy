@@ -10,6 +10,7 @@ import numbers
 import os
 from warnings import warn
 
+from .._failure import FailureManager
 from .meta_block import Block
 from .._global import OptionalModule
 
@@ -255,59 +256,40 @@ class Dashboard(Block):
     .. versionadded:: 1.5.7
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
-    self.log(logging.INFO, "Closing the GUI")
+    # Make sure a FailureManager is available and has a logger
+    manager = self._failure_manager or FailureManager(self.name, 'finish')
+    if self._logger is not None:
+      manager._logger = self._logger
 
-    # Destroy the Tk window
-    if self._dashboard is not None:
-      try:
-        self._dashboard.destroy()
-      except tk.TclError:
-        # Tk may already have destroyed the window
-        self._dashboard = None
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Dashboard cleanup step: destroy Tk window")
-        failures.append(error)
-      else:
-        self._dashboard = None
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Dashboard cleanup'):
+      with manager.step('cleanup diagnostic'):
+        self.log(logging.INFO, "Closing the GUI")
 
-    # Close the Qt window
-    if self._qt_window is not None:
-      self._qt_events_processed = False
-      try:
-        if not self._qt_window.close():
-          raise RuntimeError("The Dashboard Qt window refused to close")
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Dashboard cleanup step: close Qt window")
-        failures.append(error)
-      else:
-        self._qt_window = None
+      # Destroy the Tk window
+      if self._dashboard is not None:
+        with manager.step('destroy Tk window'):
+          try:
+            self._dashboard.destroy()
+          except tk.TclError:
+            # Tk may already have destroyed the window
+            self._dashboard = None
+          else:
+            self._dashboard = None
 
-    # Process the last Qt events
-    if self._qt_app is not None and not self._qt_events_processed:
-      try:
-        self._qt_app.processEvents()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Dashboard cleanup step: process Qt close events")
-        failures.append(error)
-      else:
-        self._qt_events_processed = True
+      # Close the Qt window
+      if self._qt_window is not None:
+        self._qt_events_processed = False
+        with manager.step('close Qt window'):
+          if not self._qt_window.close():
+            raise RuntimeError("The Dashboard Qt window refused to close")
+          self._qt_window = None
 
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other Dashboard cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("Dashboard cleanup failures", failures)
+      # Process the last Qt events
+      if self._qt_app is not None and not self._qt_events_processed:
+        with manager.step('process Qt close events'):
+          self._qt_app.processEvents()
+          self._qt_events_processed = True
 
   def _prepare_tkinter(self) -> None:
     """Creates the Tkinter window with label names and their latest values."""
@@ -322,7 +304,7 @@ class Dashboard(Block):
     The two columns, font, and spacing match the Tkinter layout.
     """
 
-    self._qt_app = self._get_application()
+    self._qt_app = self._get_application(self._failure_manager)
     self._qt_window = QtWidgets.QWidget()
     assert self._qt_window is not None
     self._qt_window.setWindowTitle('Dashboard')
@@ -356,7 +338,8 @@ class Dashboard(Block):
     self._qt_app.processEvents()
 
   @staticmethod
-  def _get_application() -> QtWidgets.QApplication:
+  def _get_application(manager: FailureManager | None = None
+                       ) -> QtWidgets.QApplication:
     """Reuses a Qt widget application or creates one for this Block.
 
     OpenCV's bundled Qt plugin path is excluded during application creation,
@@ -369,22 +352,28 @@ class Dashboard(Block):
         raise RuntimeError("A non-widget Qt application already exists")
       return app
 
+    manager = manager or FailureManager('Qt application', 'prepare')
     original = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH')
-    if original is not None:
-      paths = original.split(os.pathsep)
-      filtered = [path for path in paths if
-                  tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
-                  ('cv2', 'qt', 'plugins')]
-      if filtered != paths:
-        if filtered:
-          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.pathsep.join(filtered)
-        else:
-          os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
-
-    numeric_locale = locale.setlocale(locale.LC_NUMERIC)
-    try:
-      return QtWidgets.QApplication([])
-    finally:
-      locale.setlocale(locale.LC_NUMERIC, numeric_locale)
-      if original is not None:
-        os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+    numeric_locale = None
+    with manager.collect('Qt application setup'):
+      with manager.step('create application'):
+        numeric_locale = locale.setlocale(locale.LC_NUMERIC)
+        if original is not None:
+          paths = original.split(os.pathsep)
+          filtered = [path for path in paths if
+                      tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
+                      ('cv2', 'qt', 'plugins')]
+          if filtered != paths:
+            if filtered:
+              os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = (
+                  os.pathsep.join(filtered))
+            else:
+              os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
+        app = QtWidgets.QApplication([])
+      with manager.step('restore numeric locale'):
+        if numeric_locale is not None:
+          locale.setlocale(locale.LC_NUMERIC, numeric_locale)
+      with manager.step('restore Qt plugin path'):
+        if original is not None:
+          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+    return app
