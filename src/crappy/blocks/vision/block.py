@@ -18,7 +18,7 @@ from time import monotonic
 from ..._failure import FailureManager
 from ..meta_block import Block
 from ...links import ImageLink
-from ..._exceptions import LinkDataError, PrepareError
+from ..._exceptions import LinkDataError, StopRequested
 from ...tool.camera_config import CameraConfig
 
 
@@ -272,7 +272,7 @@ class VisionBlock(Block, ABC):
         ImageLink has no shared-buffer information.
       ValueError: If output shape or dtype information is missing or invalid,
         or if shared synchronization and buffer objects are inconsistent.
-      PrepareError: If another Block fails while this Block waits for an
+      StopRequested: If another Block fails while this Block waits for an
         upstream image buffer.
     """
 
@@ -733,9 +733,9 @@ class VisionBlock(Block, ABC):
         request.connection.send(config)
         request.completed = True
         with manager.step('response diagnostic'):
-          self.log(logging.INFO, f"Sent "
-                                 f"{'config' if config is not None else 'None'} "
-                                 f"back to Block {request.requester}")
+          self.log(logging.INFO,
+                   f"Sent {'config' if config is not None else 'None'} back "
+                   f"to Block {request.requester}")
       with manager.step('close response Pipe'):
         if request.connection is not None:
           request.connection.close()
@@ -795,24 +795,34 @@ class VisionBlock(Block, ABC):
       if request.connection is None:
         raise RuntimeError("The ConfigRequest is expected to have a "
                            "Connection set")
+      received = False
       # Guard cleanup steps with the FailureManager
       with manager.collect('Vision configuration receive'):
         with manager.step('receive response'):
           try:
+            if self._ready_barrier.broken or self._stop_event.is_set():
+              raise StopRequested
             while not request.connection.poll(timeout=0.5):
               self.log(logging.DEBUG,
                        f"Config from Block {request.img_source} not ready yet")
               if self._ready_barrier.broken or self._stop_event.is_set():
-                raise PrepareError("An exception occurred in another Block, "
-                                   "aborting")
+                raise StopRequested
+            if self._ready_barrier.broken or self._stop_event.is_set():
+              raise StopRequested
             config = request.connection.recv()
+            received = True
             self.log(logging.DEBUG, f"Received config information from Block "
                                     f"{request.img_source}")
           except (EOFError, OSError):
-            raise PrepareError("The other end of the Pipe seems to be broken")
+            if self._ready_barrier.broken or self._stop_event.is_set():
+              raise StopRequested from None
+            raise
         with manager.step('close request Pipe'):
           request.connection.close()
           request.connection_closed = True
+
+      if not received:
+        raise StopRequested
 
       # Just store the received configuration
       configs[request.img_source] = config
@@ -972,7 +982,7 @@ class VisionBlock(Block, ABC):
     Raises:
       ValueError: If preparation synchronization objects or image format
         entries are unavailable.
-      PrepareError: If another Block fails or the test stops while waiting for
+      StopRequested: If another Block fails or the test stops while waiting for
         the source buffer.
     """
 
@@ -995,7 +1005,9 @@ class VisionBlock(Block, ABC):
     while not buffer_ready.wait(0.5):
       self.log(logging.DEBUG, f"Buffers with name {name} not ready yet")
       if self._ready_barrier.broken or self._stop_event.is_set():
-        raise PrepareError("An exception occurred in another Block, aborting")
+        raise StopRequested
+    if self._ready_barrier.broken or self._stop_event.is_set():
+      raise StopRequested
     self.log(logging.DEBUG, f"Buffer with name {name} ready to be shared")
 
     if 'shape' not in img_info_dict or 'dtype' not in img_info_dict:

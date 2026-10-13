@@ -18,7 +18,7 @@ from ...tool.camera_config.pyqt import PyQtCameraConfig
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,
                             load_collection_class)
-from ..._exceptions import CameraConfigError, PrepareError
+from ..._exceptions import PrepareError, StopRequested
 
 
 class CameraSource(VisionBlock):
@@ -270,9 +270,9 @@ class CameraSource(VisionBlock):
         unavailable or a required configuration request cannot be handled.
       ValueError: If preparation synchronization objects or the final image
         format are unavailable.
-      PrepareError: If another :class:`~crappy.blocks.meta_block.block.Block`
+      StopRequested: If another :class:`~crappy.blocks.meta_block.block.Block`
         fails while configurations are running.
-      CameraConfigError: If an interactive configuration window fails.
+      ExceptionGroup: If interactive configuration or its cleanup fails.
     """
 
     # Ensuring Link consistency
@@ -348,8 +348,7 @@ class CameraSource(VisionBlock):
 
             # First check if we should proceed with the configurations
             if self._ready_barrier.broken or self._stop_event.is_set():
-              raise PrepareError("An exception occurred in another Block, "
-                                 "aborting")
+              raise StopRequested
 
             self.log(logging.DEBUG, f"Starting configure request from Block "
                                     f"{request.requester}")
@@ -573,11 +572,11 @@ get_config`, or :obj:`None` if the configurator has no data to export.
         :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
         subclass.
       ValueError: If the mapping has no class for the selected backend.
-      RuntimeError: If the logging queue has not been initialized.
-      CameraConfigError: If the configuration window fails.
-      PrepareError: If the :class:`~crappy.blocks.meta_block.block.Block` must
+      ExceptionGroup: If the logging queue is unavailable, configuration
+        fails, or its cleanup fails.
+      StopRequested: If the :class:`~crappy.blocks.meta_block.block.Block` must
         stop while configuration is running.
-      KeyboardInterrupt: If configuration is interrupted by the user.
+      BaseExceptionGroup: If configuration is interrupted by the user.
     """
 
     # Preliminary general checks
@@ -695,8 +694,8 @@ get_config`, or :obj:`None` if the configurator has no data to export.
     Raises:
       RuntimeError: If the :class:`~crappy.camera.meta_camera.camera.Camera`
         has not been initialized.
-      CameraConfigError: If the configuration window fails.
-      KeyboardInterrupt: If configuration is interrupted by the user.
+      ExceptionGroup: If configuration or its cleanup fails.
+      BaseExceptionGroup: If configuration is interrupted by the user.
     """
 
     if self._camera is None:
