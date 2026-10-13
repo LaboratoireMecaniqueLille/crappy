@@ -403,7 +403,7 @@ class FailureManager:
       # Store any encountered Exception in the stack, generate a report and
       # report the Exception
       except BaseException as error:
-        self._record_context_exception(error, 'body')
+        self.record_context_exception(error, 'body')
     # Reset the stack to its original state
     finally:
       stack.pop()
@@ -449,7 +449,7 @@ class FailureManager:
                                          not isinstance(member, completion))
                   if completion else error)
       if retained is not None:
-        self._record_context_exception(retained, label)
+        self.record_context_exception(retained, label)
       if retained is not error:
         with self.step('completion diagnostic'):
           self._logger.warning(f"{label} requested completion")
@@ -609,7 +609,7 @@ class FailureManager:
       self._members.clear()
       self._reports.clear()
 
-  def _record_context_exception(self, error: BaseException, step: str) -> None:
+  def record_context_exception(self, error: BaseException, step: str) -> None:
     """Stores and logs an Exception caught inside collect().
 
     Logging failures are also kept in the current collection.
