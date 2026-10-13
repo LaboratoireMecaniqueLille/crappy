@@ -16,6 +16,7 @@ from crappy.camera import Camera as BaseCamera
 from crappy.tool.camera_config import CameraConfig
 
 from .vision_test_base import VisionTestBase
+from tests.block.block_test_base import exception_leaves
 
 
 class RecordingVisionCamera(BaseCamera):
@@ -246,7 +247,7 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(camera.open_calls,
                      [{'trigger': 'Hdw after config', 'serial': 'abc'}])
     self.assertEqual(camera.trigger, 'Hardware')
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_prepare_builds_image_generator_camera(self) -> None:
     """Checks synthetic settings, ROI setup, and generated acquisition."""
@@ -269,7 +270,7 @@ class TestCameraSource(VisionTestBase):
     self.assertIn('Eyy', source._camera.settings)
     self.assertIn(source._camera.roi_width_name, source._camera.settings)
     generator.assert_called_once_with(0, 0)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
     timestamp, image = source._camera.get_image()
     self.assertIsInstance(timestamp, float)
@@ -297,7 +298,7 @@ class TestCameraSource(VisionTestBase):
       source.prepare()
 
     default_config.assert_called_once_with()
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_prepare_runs_and_answers_specialized_configurations(self) -> None:
     """Checks ordered downstream configurators and their responses."""
@@ -324,7 +325,7 @@ class TestCameraSource(VisionTestBase):
     second.connection.close.assert_called_once_with()
     self.assertTrue(first.completed)
     self.assertTrue(second.completed)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_prepare_declines_optional_requests_when_config_is_disabled(self
                                                                       ) -> None:
@@ -340,7 +341,7 @@ class TestCameraSource(VisionTestBase):
     request.connection.send.assert_called_once_with(None)
     request.connection.close.assert_called_once_with()
     self.assertTrue(request.completed)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_prepare_disallowed_downstream_config_uses_default_and_declines(self
                                                                           ) -> None:
@@ -508,7 +509,7 @@ class TestCameraSource(VisionTestBase):
       physical.finish()
     self.assertEqual(camera.close_calls, 1)
     self.assertIsNone(physical._camera)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
     physical.finish()
     self.assertEqual(camera.close_calls, 1)
 
@@ -523,7 +524,7 @@ class TestCameraSource(VisionTestBase):
       generator.finish()
     dummy.close.assert_not_called()
     self.assertIsNone(generator._camera)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_finish_closes_camera_even_after_failed_open(self) -> None:
     """The driver owns partial open internals; its close is still called."""
@@ -552,7 +553,7 @@ class TestCameraSource(VisionTestBase):
       with self.assertRaises(ExceptionGroup) as caught:
         source.finish()
     self.assertEqual(caught.exception.exceptions, tuple(errors))
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
     camera.close.assert_called_once_with()
     self.assertIs(source._camera, camera)
     camera.close.side_effect = None
@@ -572,10 +573,11 @@ class TestCameraSource(VisionTestBase):
     camera.close.side_effect = error
     with patch.object(camera_module.VisionBlock, 'finish',
                       side_effect=interrupt):
-      with self.assertRaises(KeyboardInterrupt) as caught:
+      with self.assertRaises(BaseExceptionGroup) as caught:
         source.finish()
-    self.assertIs(caught.exception, interrupt)
-    self.assertEqual(interrupt.__cause__.exceptions, (earlier, error))
+    self.assertIn(interrupt, exception_leaves(caught.exception))
+    self.assertIs(interrupt.__cause__, earlier)
+    self.assertEqual(exception_leaves(caught.exception), (interrupt, error))
     camera.close.side_effect = None
     source.finish()
 

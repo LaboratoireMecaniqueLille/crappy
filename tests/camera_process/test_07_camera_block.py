@@ -15,6 +15,7 @@ import crappy.blocks.camera as camera_module
 
 from .camera_process_test_base import (CameraProcessTestBase,
                                        TestCameraProcess, TestLink)
+from tests.block.block_test_base import exception_leaves
 
 
 class TrackingCameraProcess(TestCameraProcess):
@@ -727,7 +728,8 @@ class TestCameraBlock(CameraBlockTestBase):
       camera.__del__()
     finish.assert_not_called()
     manager.shutdown.assert_called_once_with()
-    logger.exception.assert_called_once()
+    logger.error.assert_called_once()
+    logger.exception.assert_not_called()
     driver.close.side_effect = None
     camera.finish()
 
@@ -859,9 +861,9 @@ class TestCameraBlock(CameraBlockTestBase):
     second.terminate.side_effect = error
     camera.process_proc, camera._save_proc = first, second
     camera._started_processes = [first, second]
-    with self.assertRaises(RuntimeError) as caught:
+    with self.assertRaises(ExceptionGroup) as caught:
       camera.finish()
-    self.assertIs(caught.exception, error)
+    self.assertEqual(exception_leaves(caught.exception), (error,))
     self.assertEqual(operations.mock_calls,
                      [call.first.join(timeout=0.2), call.first.is_alive(),
                       call.first.close(),
@@ -915,8 +917,10 @@ class TestCameraBlock(CameraBlockTestBase):
     camera._img_array = sentinel.image_array
     camera._img = sentinel.image_view
     camera._manager = manager = Mock()
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(ExceptionGroup) as caught:
       camera.finish()
+    self.assertIsInstance(exception_leaves(caught.exception)[0],
+                          RuntimeError)
     self.assertIs(camera._img_array, sentinel.image_array)
     self.assertIs(camera._img, sentinel.image_view)
     self.assertIs(camera.process_proc, process)
@@ -941,10 +945,11 @@ class TestCameraBlock(CameraBlockTestBase):
     interrupt, error = KeyboardInterrupt('camera close'), RuntimeError('pipe')
     driver.close.side_effect = interrupt
     endpoint.close.side_effect = error
-    with self.assertRaises(KeyboardInterrupt) as caught:
+    with self.assertRaises(BaseExceptionGroup) as caught:
       camera.finish()
-    self.assertIs(caught.exception, interrupt)
-    self.assertEqual(interrupt.__cause__.exceptions, (error,))
+    self.assertIn(interrupt, exception_leaves(caught.exception))
+    self.assertEqual(exception_leaves(caught.exception), (interrupt, error))
+    self.assertIsNone(interrupt.__cause__)
     manager.shutdown.assert_called_once_with()
     driver.close.side_effect = None
     endpoint.close.side_effect = None

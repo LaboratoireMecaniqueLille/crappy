@@ -12,6 +12,7 @@ import crappy.blocks.vision.block as block_module
 from crappy.links import ImageLink
 
 from .vision_test_base import StubVisionBlock, VisionTestBase
+from tests.block.block_test_base import exception_leaves
 
 
 class TestVisionBlockSharedMemory(VisionTestBase):
@@ -352,9 +353,9 @@ class TestVisionBlockSharedMemory(VisionTestBase):
         error = RuntimeError(failed)
         getattr(handle, failed).side_effect = error
         block._out_link_data = ImgLinkData(img_buffer=handle)
-        with self.assertRaises(RuntimeError) as caught:
+        with self.assertRaises(ExceptionGroup) as caught:
           block.finish()
-        self.assertIs(caught.exception, error)
+        self.assertEqual(exception_leaves(caught.exception), (error,))
         getattr(handle, failed).side_effect = None
         block.finish()
         block.finish()
@@ -374,9 +375,9 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     handle.unlink.assert_called_once_with()
     self.assertIsNone(block._out_link_data.img_buffer)
 
-  def test_finish_prioritizes_interrupt_after_releasing_other_buffers(self
+  def test_finish_retains_interrupt_after_releasing_other_buffers(self
                                                                     ) -> None:
-    """The original interrupt keeps the other errors in its cause."""
+    """Interrupts and other failures are retained as independent members."""
 
     block = StubVisionBlock()
     input_handle, output_handle = Mock(), Mock()
@@ -386,10 +387,11 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     output_handle.close.side_effect = error
     block._in_link_data = [ImgLinkData(img_buffer=input_handle)]
     block._out_link_data = ImgLinkData(img_buffer=output_handle)
-    with self.assertRaises(KeyboardInterrupt) as caught:
+    with self.assertRaises(BaseExceptionGroup) as caught:
       block.finish()
-    self.assertIs(caught.exception, interrupt)
-    self.assertEqual(interrupt.__cause__.exceptions, (error,))
+    self.assertIn(interrupt, exception_leaves(caught.exception))
+    self.assertEqual(exception_leaves(caught.exception), (interrupt, error))
+    self.assertIsNone(interrupt.__cause__)
     output_handle.unlink.assert_called_once_with()
     input_handle.close.side_effect = None
     output_handle.close.side_effect = None

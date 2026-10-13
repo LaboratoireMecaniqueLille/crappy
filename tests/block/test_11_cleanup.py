@@ -76,7 +76,7 @@ class TestCleanup(BlockTestBase):
             Block._cleanup()
 
           self.assertIn('Block shutdown diagnostic', error.__notes__[0])
-          link.close.assert_called_once_with()
+          link.close.assert_called_once_with(manager=Block.run_failure_manager)
           manager.shutdown.assert_called_once_with()
           worker.join.assert_called_once_with(timeout=1.0)
           queue.cancel_join_thread.assert_not_called()
@@ -127,7 +127,7 @@ class TestCleanup(BlockTestBase):
 
           process.terminate.assert_called_once_with()
           process.kill.assert_called_once_with()
-          link.close.assert_called_once_with()
+          link.close.assert_called_once_with(manager=Block.run_failure_manager)
           manager.shutdown.assert_called_once_with()
           worker.join.assert_called_once_with(timeout=1.0)
           queue.cancel_join_thread.assert_not_called()
@@ -145,7 +145,7 @@ class TestCleanup(BlockTestBase):
     with patch.object(block_module.connection, 'wait', return_value=[1]):
       Block._cleanup()
     process.kill.assert_called_once_with()
-    link.close.assert_called_once_with()
+    link.close.assert_called_once_with(manager=Block.run_failure_manager)
     manager.shutdown.assert_called_once_with()
     worker.join.assert_called_once_with(timeout=1.0)
     queue.close.assert_called_once_with()
@@ -245,7 +245,7 @@ class TestCleanup(BlockTestBase):
     Block._run_blocks = (source, target)
     with patch.object(link, 'close', side_effect=OSError('link')) as close:
       Block._cleanup()
-    close.assert_called_once_with()
+    close.assert_called_once_with(manager=Block.run_failure_manager)
     manager.shutdown.assert_called_once_with()
     self.assertTrue(Block.run_failure_manager.snapshot())
 

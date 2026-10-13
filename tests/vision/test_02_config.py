@@ -1,13 +1,15 @@
 # coding: utf-8
 
 from multiprocessing import Barrier, Event, Pipe
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
 
 from crappy._exceptions import PrepareError
+from crappy._failure import FailureManager
 from crappy.blocks.vision.block import ConfigRequest
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
 from .vision_test_base import StubVisionBlock, VisionTestBase
+from tests.block.block_test_base import exception_leaves
 
 
 class TestVisionBlockConfiguration(VisionTestBase):
@@ -90,8 +92,9 @@ class TestVisionBlockConfiguration(VisionTestBase):
     self.track_connection(send_conn)
     request = self.make_request(connection=send_conn, required=True)
 
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(ExceptionGroup) as caught:
       block.send_config(request, None)
+    self.assertIsInstance(caught.exception.exceptions[0], RuntimeError)
 
     self.assertFalse(request.completed)
     self.assertTrue(send_conn.closed)
@@ -104,8 +107,9 @@ class TestVisionBlockConfiguration(VisionTestBase):
     connection.send.side_effect = OSError('broken pipe')
     request = self.make_request(connection=connection)
 
-    with self.assertRaises(OSError):
+    with self.assertRaises(ExceptionGroup) as caught:
       block.send_config(request, ('configured',))
+    self.assertIsInstance(caught.exception.exceptions[0], OSError)
 
     self.assertFalse(request.completed)
     connection.close.assert_called_once_with()
@@ -153,8 +157,9 @@ class TestVisionBlockConfiguration(VisionTestBase):
     connection.poll.return_value = False
     block.add_config_request_out(self.make_request(connection=connection))
 
-    with self.assertRaises(PrepareError):
+    with self.assertRaises(ExceptionGroup) as caught:
       block.recv_configs()
+    self.assertIsInstance(caught.exception.exceptions[0], PrepareError)
 
     connection.poll.assert_called_once_with(timeout=0.5)
     connection.close.assert_called_once_with()
@@ -169,9 +174,55 @@ class TestVisionBlockConfiguration(VisionTestBase):
     connection.recv.side_effect = EOFError
     block.add_config_request_out(self.make_request(connection=connection))
 
-    with self.assertRaises(PrepareError):
+    with self.assertRaises(ExceptionGroup) as caught:
       block.recv_configs()
+    self.assertIsInstance(caught.exception.exceptions[0], PrepareError)
 
+    connection.close.assert_called_once_with()
+
+  def test_exchange_failure_keeps_pipe_close_interrupt(self) -> None:
+    """Request cleanup retains its failure alongside the exchange failure."""
+
+    for send in (True, False):
+      with self.subTest(send=send):
+        block = StubVisionBlock()
+        self.set_prepare_sync(block)
+        manager = FailureManager(block.name, 'prepare')
+        block._failure_manager = manager
+        manager._logger = Mock()
+        connection = Mock()
+        origin, cleanup = ValueError('exchange'), KeyboardInterrupt('close')
+        connection.send.side_effect = connection.recv.side_effect = origin
+        connection.poll.return_value = True
+        connection.close.side_effect = cleanup
+        request = self.make_request(connection=connection)
+        with self.assertRaises(BaseExceptionGroup) as caught:
+          if send:
+            block.send_config(request, ('configured',))
+          else:
+            block.add_config_request_out(request)
+            block.recv_configs()
+        self.assertEqual(exception_leaves(caught.exception), (origin, cleanup))
+        self.assertFalse(request.completed)
+        self.assertFalse(request.connection_closed)
+        connection.close.assert_called_once_with()
+        self.assertEqual(manager._logger.error.call_count, 2)
+        connection.close.side_effect = None
+        block.finish()
+
+  def test_send_diagnostic_failure_keeps_completed_flag(self) -> None:
+    """A sent response stays completed even if its success log fails."""
+
+    block = StubVisionBlock()
+    connection = Mock()
+    request = self.make_request(connection=connection)
+    error = OSError('diagnostic')
+    with patch.object(block, 'log', side_effect=error):
+      with self.assertRaises(ExceptionGroup) as caught:
+        block.send_config(request, ('configured',))
+    self.assertEqual(exception_leaves(caught.exception), (error,))
+    self.assertTrue(request.completed)
+    self.assertTrue(request.connection_closed)
     connection.close.assert_called_once_with()
 
   def test_finish_closes_unanswered_config_pipes(self) -> None:
@@ -203,9 +254,9 @@ class TestVisionBlockConfiguration(VisionTestBase):
     block.add_config_request_in(self.make_request(connection=incoming))
     block.add_config_request_out(self.make_request(connection=outgoing))
 
-    with self.assertRaises(RuntimeError) as caught:
+    with self.assertRaises(ExceptionGroup) as caught:
       block.finish()
-    self.assertIs(caught.exception, error)
+    self.assertEqual(caught.exception.exceptions, (error,))
     self.assertIn('configuration Pipe', error.__notes__[0])
     self.assertEqual(operations.mock_calls,
                      [call.incoming.close(), call.outgoing.close()])

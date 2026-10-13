@@ -8,6 +8,7 @@ from crappy.blocks.auto_drive_video_extenso import AutoDriveVideoExtenso
 import crappy.blocks.auto_drive_video_extenso as auto_drive_module
 
 from ..block import BlockTestBase, TestBlock, link
+from tests.block.block_test_base import exception_leaves
 
 
 class TrackingAutoDriveActuator:
@@ -392,15 +393,15 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     device = TrackingAutoDriveActuator.instances[-1]
     device.calls.clear()
 
-    with self.assertRaises(OSError) as caught:
+    with self.assertRaises(ExceptionGroup) as caught:
       block.finish()
-    self.assertIs(caught.exception, error)
+    self.assertEqual(exception_leaves(caught.exception), (error,))
     device.close_error = None
     block.finish()
     block.finish()
     self.assertEqual(device.calls, ['stop', 'close', 'close'])
 
-  def test_finish_preserves_interrupt_with_close_failure_as_cause(self) -> None:
+  def test_finish_preserves_interrupt_and_close_failure(self) -> None:
     """Checks interrupted stop still closes and retains its close failure."""
 
     interrupt = KeyboardInterrupt()
@@ -414,10 +415,11 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     device = TrackingAutoDriveActuator.instances[-1]
     device.calls.clear()
 
-    with self.assertRaises(KeyboardInterrupt) as caught:
+    with self.assertRaises(BaseExceptionGroup) as caught:
       block.finish()
-    self.assertIs(caught.exception, interrupt)
+    self.assertIn(interrupt, exception_leaves(caught.exception))
     self.assertEqual(device.calls, ['stop', 'close'])
-    self.assertEqual(interrupt.__cause__.exceptions, (error,))
+    self.assertEqual(exception_leaves(caught.exception), (interrupt, error))
+    self.assertIsNone(interrupt.__cause__)
     device.stop_error = device.close_error = None
     block.finish()

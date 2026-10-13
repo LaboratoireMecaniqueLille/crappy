@@ -16,8 +16,10 @@ import crappy.blocks.canvas as canvas_module
 import crappy.blocks.dashboard as dashboard_module
 import crappy.blocks.stop_button as stop_button_module
 from crappy._global import OptionalModule
+from crappy._failure import FailureManager
 
 from ..block import BlockTestBase, TestBlock, link
+from tests.block.block_test_base import exception_leaves
 
 
 GUI_BLOCKS = (
@@ -220,9 +222,11 @@ class TestGUIBackends(GUIBlockTestBase):
               core.QCoreApplication.instance.return_value = None
               widgets.QApplication.side_effect = create_application
               if fails:
-                with self.assertRaisesRegex(RuntimeError,
-                                            'application failed'):
+                with self.assertRaises(ExceptionGroup) as caught:
                   block_type._get_application()
+                failure, = exception_leaves(caught.exception)
+                self.assertIsInstance(failure, RuntimeError)
+                self.assertEqual(str(failure), 'application failed')
               else:
                 self.assertIs(block_type._get_application(),
                               sentinel.application)
@@ -231,6 +235,50 @@ class TestGUIBackends(GUIBlockTestBase):
                                (locale.LC_NUMERIC,))
               self.assertEqual(setlocale.call_args_list[-1].args,
                                (locale.LC_NUMERIC, 'original'))
+
+  def test_application_failure_retains_locale_restore_interrupt(self) -> None:
+    """Locale restoration cannot hide setup or skip environment restoration."""
+
+    variable = 'QT_QPA_PLATFORM_PLUGIN_PATH'
+    original = os.path.join('camera', 'cv2', 'qt', 'plugins')
+    for block_type, module, _ in GUI_BLOCKS:
+      with self.subTest(block=block_type.__name__):
+        origin = ValueError('application')
+        cleanup = KeyboardInterrupt('locale')
+        manager = FailureManager(block_type.__name__, 'prepare')
+        manager._logger = Mock()
+        with (patch.dict(os.environ, {variable: original}),
+              patch.object(module, 'QtCore') as core,
+              patch.object(module, 'QtWidgets') as widgets,
+              patch.object(module.locale, 'setlocale',
+                           side_effect=['original', cleanup])):
+          core.QCoreApplication.instance.return_value = None
+          widgets.QApplication.side_effect = origin
+          with self.assertRaises(BaseExceptionGroup) as caught:
+            block_type._get_application(manager)
+          self.assertEqual(exception_leaves(caught.exception),
+                           (origin, cleanup))
+          self.assertEqual(os.environ.get(variable), original)
+          self.assertEqual(manager._logger.error.call_count, 2)
+          self.assertEqual(len(manager.snapshot()), 2)
+
+  def test_canvas_painter_failure_retains_end_failure(self) -> None:
+    """Painter shutdown is attempted even when drawing the gradient fails."""
+
+    block = canvas_module.Canvas('background.png')
+    manager = block._failure_manager = FailureManager(block.name, 'prepare')
+    manager._logger = Mock()
+    origin, cleanup = ValueError('paint'), SystemExit('painter end')
+    with (patch.object(canvas_module, 'QtGui') as gui,
+          patch.object(canvas_module, 'QtWidgets') as widgets):
+      painter = gui.QPainter.return_value
+      painter.fillRect.side_effect, painter.end.side_effect = origin, cleanup
+      with self.assertRaises(BaseExceptionGroup) as caught:
+        block._add_qt_color_bar(Mock())
+    self.assertEqual(exception_leaves(caught.exception), (origin, cleanup))
+    painter.end.assert_called_once_with()
+    widgets.QLabel.assert_not_called()
+    self.assertEqual(manager._logger.error.call_count, 2)
 
   def test_qt_callback_errors_are_retained_and_raised_by_loop(self) -> None:
     """Qt signal handlers must not let exceptions abort the interpreter."""

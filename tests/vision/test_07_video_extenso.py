@@ -230,7 +230,7 @@ class TestVideoExtensoProcessor(VisionTestBase):
       'border': 9,
       'blur': 3,
     })
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
     self.assertEqual(tool.start_calls, 1)
 
   def test_prepare_rejects_missing_ambiguous_or_malformed_config(self) -> None:
@@ -390,15 +390,16 @@ class TestVideoExtensoProcessor(VisionTestBase):
     with patch.object(video_extenso_module.VisionBlock, 'finish') as inherited:
       processor.finish()
     self.assertEqual(tool.stop_calls, 1)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
     self.assertIsNone(processor._ve)
 
     tool.raise_on_stop = True
     processor._ve = tool
     with patch.object(video_extenso_module.VisionBlock, 'finish') as inherited:
-      with self.assertRaises(RuntimeError):
+      with self.assertRaises(ExceptionGroup) as caught:
         processor.finish()
-    inherited.assert_called_once_with()
+      self.assertIsInstance(caught.exception.exceptions[0], RuntimeError)
+    inherited.assert_called_once()
 
   def test_finish_reports_tracker_and_memory_errors_together(self) -> None:
     """Neither local nor inherited cleanup failures overwrite the other."""

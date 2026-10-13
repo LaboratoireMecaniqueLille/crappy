@@ -194,10 +194,10 @@ class TestFailureManagerCollections(TestCase):
     error = OSError('real')
     with self.assertRaises(BaseExceptionGroup) as caught:
       with self.manager.collect('mixed close'):
-        self.manager._record_context_exception(
-            BaseExceptionGroup('mixed', [StopRequested(),
-                                         KeyboardInterrupt(), error]),
-            'mixed operation')
+        self.manager.record_context_exception(
+          BaseExceptionGroup('mixed', [StopRequested(),
+                                       KeyboardInterrupt(), error]),
+          'mixed operation')
     group = caught.exception.exceptions[0]
     assert isinstance(group, BaseExceptionGroup)
     self.assertIsInstance(group.exceptions[0], KeyboardInterrupt)
@@ -278,7 +278,7 @@ class TestFailureManagerCollections(TestCase):
     self.manager.capture_exception(error)
     with self.assertRaises(ExceptionGroup) as caught:
       with self.manager.collect('rollback'):
-        self.manager._record_context_exception(error, 'initialization')
+        self.manager.record_context_exception(error, 'initialization')
     self.assertEqual(caught.exception.exceptions, (error,))
     self.assertEqual(len(self.emitted), 1)
     self.assertEqual(len(self.manager.snapshot()), 1)
@@ -324,10 +324,10 @@ class TestFailureManagerCollections(TestCase):
     old, new = ValueError('old'), ValueError('new')
     with self.assertRaises(ExceptionGroup) as caught:
       with self.manager.collect('finish'):
-        self.manager._record_context_exception(old, 'first')
-        self.manager._record_context_exception(
-            ExceptionGroup('later', [old, new]), 'later')
-        self.manager._record_context_exception(old, 'again')
+        self.manager.record_context_exception(old, 'first')
+        self.manager.record_context_exception(
+          ExceptionGroup('later', [old, new]), 'later')
+        self.manager.record_context_exception(old, 'again')
     self.assertIs(caught.exception.exceptions[0], old)
     later = caught.exception.exceptions[1]
     assert isinstance(later, BaseExceptionGroup)
@@ -368,7 +368,7 @@ class TestFailureManagerCollections(TestCase):
     origin, rollback = ValueError('initialize'), OSError('rollback')
     with self.assertRaises(ExceptionGroup) as caught:
       with self.manager.collect('constructor'):
-        self.manager._record_context_exception(origin, 'initialization')
+        self.manager.record_context_exception(origin, 'initialization')
         with self.manager.step('rollback'):
           Mock(side_effect=rollback)()
     self.assertEqual(caught.exception.exceptions, (origin, rollback))
@@ -420,8 +420,7 @@ class TestFailureManagerCollections(TestCase):
         try:
           operation()
         except OSError as error_caught:
-          self.manager._record_context_exception(error_caught,
-                                                 'close resource')
+          self.manager.record_context_exception(error_caught, 'close resource')
         else:
           closed = True
     self.assertFalse(closed)
@@ -436,8 +435,8 @@ class TestFailureManagerCollections(TestCase):
           try:
             Mock(side_effect=error)()
           except OSError as error_caught:
-            self.manager._record_context_exception(error_caught,
-                                                   'specific close handling')
+            self.manager.record_context_exception(error_caught,
+                                                  'specific close handling')
             raise
     self.assertEqual(caught.exception.exceptions, (error,))
     with self.assertRaises(ExceptionGroup):
@@ -523,8 +522,8 @@ class TestFailureManagerCollections(TestCase):
           operation()
       operation.assert_not_called()
       with self.assertRaisesRegex(RuntimeError, 'inside collect'):
-        self.manager._record_context_exception(OSError('outside collection'),
-                                               'close')
+        self.manager.record_context_exception(OSError('outside collection'),
+                                              'close')
       with self.manager.collect('worker'):
         self.assertIs(self.manager._collections.stack, stack)
         self.assertEqual(len(stack), 1)
@@ -627,7 +626,7 @@ class TestFailureManagerCollections(TestCase):
         operation()
     operation.assert_not_called()
     with self.assertRaisesRegex(RuntimeError, 'inside collect'):
-      self.manager._record_context_exception(OSError('close'), 'close')
+      self.manager.record_context_exception(OSError('close'), 'close')
     self.assertEqual(self.manager.snapshot(), ())
 
   def test_collection_requires_a_nonempty_label(self) -> None:

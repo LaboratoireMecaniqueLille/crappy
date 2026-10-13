@@ -7,7 +7,7 @@ from crappy.links import GraphStructureError, ImageLink, link_graph
 from itertools import chain
 from multiprocessing import Barrier, Event, Value, Queue
 
-from .block_test_base import BlockTestBase, TestBlock, link
+from .block_test_base import BlockTestBase, TestBlock, exception_leaves, link
 
 
 class TestBlockLink(TestBlock):
@@ -78,8 +78,10 @@ class TestLinks(BlockTestBase):
 
     link(source, target, name='first')
 
-    with self.assertRaises(GraphStructureError):
+    with self.assertRaises(ExceptionGroup) as caught:
       link(source, target, name='rejected')
+    failure, = exception_leaves(caught.exception)
+    self.assertIsInstance(failure, GraphStructureError)
 
     self.assertEqual(len(source.outputs), 1)
     self.assertEqual(len(target.inputs), 1)
@@ -100,8 +102,10 @@ class TestLinks(BlockTestBase):
 
     link(first, second, name='shared-name')
 
-    with self.assertRaises(GraphStructureError):
+    with self.assertRaises(ExceptionGroup) as caught:
       link(first, third, name='shared-name')
+    failure, = exception_leaves(caught.exception)
+    self.assertIsInstance(failure, GraphStructureError)
 
     self.assertEqual(len(first.outputs), 1)
     self.assertEqual(len(second.inputs), 1)

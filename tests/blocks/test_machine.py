@@ -8,6 +8,7 @@ from crappy.blocks.machine import ActuatorInstance, Machine
 import crappy.blocks.machine as machine_module
 
 from ..block import BlockTestBase, TestBlock, link
+from tests.block.block_test_base import exception_leaves
 
 
 class TrackingActuator:
@@ -479,9 +480,9 @@ class TestMachine(BlockTestBase):
       block.prepare()
     TrackingActuator.events.clear()
 
-    with self.assertRaises(OSError) as caught:
+    with self.assertRaises(ExceptionGroup) as caught:
       block.finish()
-    self.assertIs(caught.exception, error)
+    self.assertEqual(exception_leaves(caught.exception), (error,))
     TrackingActuator.instances[1].close_error = None
     block.finish()
     block.finish()
@@ -502,10 +503,11 @@ class TestMachine(BlockTestBase):
       block.prepare()
     TrackingActuator.events.clear()
 
-    with self.assertRaises(KeyboardInterrupt) as caught:
+    with self.assertRaises(BaseExceptionGroup) as caught:
       block.finish()
 
-    self.assertIs(caught.exception, interrupt)
-    self.assertEqual(interrupt.__cause__.exceptions, (error,))
+    self.assertIn(interrupt, exception_leaves(caught.exception))
+    self.assertEqual(exception_leaves(caught.exception), (interrupt, error))
+    self.assertIsNone(interrupt.__cause__)
     self.assertEqual(TrackingActuator.events,
                      [('stop', 0), ('stop', 1), ('close', 0), ('close', 1)])

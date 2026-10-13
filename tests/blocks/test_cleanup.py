@@ -11,9 +11,12 @@ from crappy.blocks.camera_processes.display import Displayer
 from crappy.blocks.client_server import ClientServer
 from crappy.blocks.grapher import Grapher
 from crappy.blocks.ucontroller import UController
+from crappy._failure import FailureManager
 from crappy.links import Link
+from crappy.links import link_graph
 
 from .test_gui_backends import GUI_BLOCKS, GUIBlockTestBase
+from tests.block.block_test_base import exception_leaves
 from ..block import TestBlock
 
 
@@ -54,7 +57,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
         app.quit.assert_not_called()
 
   def test_gui_interrupt_retains_its_cause_and_other_failures(self) -> None:
-    """Interrupt priority cannot hide another failed cleanup step."""
+    """Interrupts remain group members without changing their causes."""
 
     block_type, _, args = GUI_BLOCKS[0]
     block = block_type(*args)
@@ -65,10 +68,11 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     window.close.side_effect = interrupt
     app.processEvents.side_effect = error
     block._qt_window, block._qt_app = window, app
-    with self.assertRaises(KeyboardInterrupt) as caught:
+    with self.assertRaises(BaseExceptionGroup) as caught:
       block.finish()
-    self.assertIs(caught.exception, interrupt)
-    self.assertEqual(interrupt.__cause__.exceptions, (cause, error))
+    self.assertIn(interrupt, exception_leaves(caught.exception))
+    self.assertIs(interrupt.__cause__, cause)
+    self.assertEqual(exception_leaves(caught.exception), (interrupt, error))
 
   def test_gui_refused_close_retains_window_and_reprocesses_events(self
                                                                  ) -> None:
@@ -80,8 +84,12 @@ class TestSoftwareCleanup(GUIBlockTestBase):
         window, app = Mock(), Mock()
         window.close.return_value = False
         block._qt_window, block._qt_app = window, app
-        with self.assertRaisesRegex(RuntimeError, 'refused to close'):
+        with self.assertRaises(ExceptionGroup) as caught:
           block.finish()
+        self.assertIsInstance(exception_leaves(caught.exception)[0],
+                              RuntimeError)
+        self.assertRegex(str(exception_leaves(caught.exception)[0]),
+                         'refused to close')
         self.assertIs(block._qt_window, window)
         app.processEvents.assert_called_once_with()
         window.close.return_value = True
@@ -101,9 +109,9 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     error = RuntimeError('Qt close')
     window.close.side_effect = error
     with patch.object(grapher_module, 'plt') as plt:
-      with self.assertRaises(RuntimeError) as caught:
+      with self.assertRaises(ExceptionGroup) as caught:
         block.finish()
-      self.assertIs(caught.exception, error)
+      self.assertEqual(exception_leaves(caught.exception), (error,))
       plt.close.assert_called_once_with(figure)
       app.processEvents.assert_called_once_with()
       window.close.side_effect = None
@@ -166,8 +174,11 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     block._proc, block._reader = proc, reader
     block._reader_started = True
     reader.is_alive.return_value = True
-    with self.assertRaisesRegex(RuntimeError, 'reader thread'):
+    with self.assertRaises(ExceptionGroup) as caught:
       block.finish()
+    self.assertIsInstance(exception_leaves(caught.exception)[0],
+                          RuntimeError)
+    self.assertRegex(str(exception_leaves(caught.exception)[0]), 'reader thread')
     proc.stdout.close.assert_not_called()
     reader.is_alive.return_value = False
     block.finish()
@@ -186,10 +197,12 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     window_error, interrupt = OSError('window'), KeyboardInterrupt()
     thread.join.side_effect = interrupt
     with patch.object(process, '_finish_cv2', side_effect=window_error):
-      with self.assertRaises(KeyboardInterrupt) as caught:
+      with self.assertRaises(BaseExceptionGroup) as caught:
         process.finish()
-    self.assertIs(caught.exception, interrupt)
-    self.assertEqual(interrupt.__cause__.exceptions, (window_error,))
+    self.assertIn(interrupt, exception_leaves(caught.exception))
+    self.assertEqual(exception_leaves(caught.exception),
+                     (window_error, interrupt))
+    self.assertIsNone(interrupt.__cause__)
     self.assertTrue(process._stop_thread)
     self.assertIsNone(process._overlay_thread)
     with patch.object(process, '_finish_cv2') as close:
@@ -240,12 +253,128 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     link._in, link._out = inlet, outlet
     error = OSError('input close')
     inlet.close.side_effect = error
-    with self.assertRaises(OSError) as caught:
+    with self.assertRaises(ExceptionGroup) as caught:
       link.close()
-    self.assertIs(caught.exception, error)
+    self.assertEqual(exception_leaves(caught.exception), (error,))
     outlet.close.assert_called_once_with()
     inlet.close.side_effect = None
     link.close()
     link.close()
     self.assertEqual(inlet.close.call_count, 2)
     outlet.close.assert_called_once_with()
+
+  def test_owned_cleanup_reports_without_outer_duplicate(self) -> None:
+    """The Block lifecycle and its cleanup share one reporting history."""
+
+    for block_type, _, args in GUI_BLOCKS:
+      with self.subTest(block=block_type.__name__):
+        block = block_type(*args)
+        manager = block._failure_manager = FailureManager(block.name, 'finish')
+        manager._logger = Mock()
+        block._logger = manager._logger
+        queue = Mock()
+        manager.set_queue(queue)
+        window, app = Mock(), Mock()
+        first, interrupt, last = (OSError('first close'), KeyboardInterrupt(),
+                                  ValueError('events'))
+        nested = BaseExceptionGroup('original nested group',
+                                     [first, interrupt])
+        cause = RuntimeError('original cause')
+        nested.__cause__ = cause
+        nested.add_note('original note')
+        window.close.side_effect = nested
+
+        def fail_events() -> None:
+          manager._logger.error.assert_called_once()
+          queue.put.assert_called_once()
+          raise last
+
+        app.processEvents.side_effect = fail_events
+        block._qt_window, block._qt_app = window, app
+        with self.assertRaises(BaseExceptionGroup) as caught:
+          with manager.collect('Block lifecycle'):
+            with manager.step('finish'):
+              block.finish()
+        self.assertEqual(exception_leaves(caught.exception),
+                         (first, interrupt, last))
+        self.assertIs(nested.__cause__, cause)
+        self.assertIn('original note', nested.__notes__)
+        self.assertEqual(len(manager.snapshot()), 2)
+        self.assertEqual(manager._logger.error.call_count, 2)
+        self.assertEqual(queue.put.call_count, 2)
+        window.close.side_effect = app.processEvents.side_effect = None
+        block.finish()
+        block.finish()
+        self.assertEqual(len(manager.snapshot()), 2)
+        self.assertEqual(manager._logger.error.call_count, 2)
+
+  def test_failed_cleanup_diagnostic_does_not_skip_resources(self) -> None:
+    """A failed progress log cannot prevent independent resource releases."""
+
+    for block_type, _, args in GUI_BLOCKS:
+      with self.subTest(block=block_type.__name__):
+        block = block_type(*args)
+        window, app = Mock(), Mock()
+        block._qt_window, block._qt_app = window, app
+        error = OSError('progress log')
+        with patch.object(block, 'log', side_effect=error):
+          with self.assertRaises(ExceptionGroup) as caught:
+            block.finish()
+        self.assertEqual(exception_leaves(caught.exception), (error,))
+        window.close.assert_called_once_with()
+        app.processEvents.assert_called_once_with()
+        self.assertIsNone(block._qt_window)
+
+  def test_link_rollback_preserves_origin_and_endpoint_failures(self) -> None:
+    """Failed registration cannot be replaced by its failed rollback."""
+
+    source, target = TestBlock(), TestBlock()
+    origin, inlet_error, interrupt = (ValueError('registration'),
+                                      OSError('input close'),
+                                      KeyboardInterrupt())
+    cause = RuntimeError('original cause')
+    origin.__cause__ = cause
+    inlet, outlet = Mock(), Mock()
+    inlet.close.side_effect, outlet.close.side_effect = inlet_error, interrupt
+    manager = FailureManager('link rollback', 'initialization')
+    manager._logger = Mock()
+    with (patch('crappy.links.link.Pipe', return_value=(inlet, outlet)),
+          patch.object(link_graph, 'add_edge', side_effect=origin),
+          patch('crappy.links.link.FailureManager', return_value=manager)):
+      with self.assertRaises(BaseExceptionGroup) as caught:
+        Link(source, target)
+    self.assertEqual(exception_leaves(caught.exception),
+                     (origin, inlet_error, interrupt))
+    self.assertIs(origin.__cause__, cause)
+    inlet.close.assert_called_once_with()
+    outlet.close.assert_called_once_with()
+    self.assertEqual(len(manager.snapshot()), 3)
+    self.assertEqual(manager._logger.error.call_count, 3)
+    self.assertEqual(source.outputs, [])
+    self.assertEqual(target.inputs, [])
+
+  def test_link_cleanup_shares_coordinator_history(self) -> None:
+    """The coordinator retains each endpoint failure, not another wrapper."""
+
+    source, target = TestBlock(), TestBlock()
+    link = Link(source, target)
+    link.close()
+    inlet, outlet = Mock(), Mock()
+    link._in, link._out = inlet, outlet
+    link._in_closed = link._out_closed = False
+    errors = (OSError('input close'), KeyboardInterrupt('output close'))
+    inlet.close.side_effect, outlet.close.side_effect = errors
+    manager = FailureManager('main', 'framework cleanup')
+    manager._logger = Mock()
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      with manager.collect('Block cleanup'):
+        with manager.step('close Link'):
+          link.close(manager=manager)
+    self.assertEqual(exception_leaves(caught.exception), errors)
+    self.assertEqual(len(manager.snapshot()), 2)
+    self.assertEqual(manager._logger.error.call_count, 2)
+    inlet.close.side_effect = outlet.close.side_effect = None
+    link.close(manager=manager)
+    link.close(manager=manager)
+    self.assertEqual(inlet.close.call_count, 2)
+    self.assertEqual(outlet.close.call_count, 2)
