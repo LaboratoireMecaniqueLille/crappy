@@ -315,6 +315,219 @@ class Block(Process, ABC):
     cls._finalize_run()
 
   @classmethod
+  def renice_all(cls, allow_root: bool) -> None:
+    """On Linux and macOS, renices the :obj:`~multiprocessing.Process`
+    associated with the Blocks.
+
+    On Windows, does nothing.
+
+    If an error is caught, performs an extensive cleanup to ensure everything
+    stops as expected.
+
+    Args:
+      allow_root: If set to :obj:`True`, tries to renice the Processes with
+        sudo privilege in Linux. It requires the Python script to be run with
+        sudo privilege, otherwise it has no effect.
+
+        .. versionchanged:: 2.0.0 renamed from *high_prio* to *allow_root*
+    """
+
+    # Make sure that the Exception Manager is running
+    cls._ensure_failure_manager()
+    manager = cls.run_failure_manager
+    assert manager is not None
+
+    # Guard with the FailureManager to catch any Exception
+    with manager.collect('renice_all', raise_on_exit=False):
+      cls._renice_all(allow_root)
+      return
+    # Only runs when an Exception is caught
+    cls._finalize_run()
+
+  @classmethod
+  def launch_all(cls, no_raise: bool = False) -> None:
+    """The final method being called by the main
+    :obj:`~multiprocessing.Process` running a script with Crappy.
+
+    It unlocks all the Blocks by releasing the synchronization
+    :obj:`~multiprocessing.Barrier`, sets the shared t0
+    :obj:`~multiprocessing.Value`, and then waits for all the Blocks to finish.
+
+    In case an exception is raised, sets the stop :obj:`~multiprocessing.Event`
+    for warning the Blocks, waits for the Blocks to finish, and if they don't,
+    terminates them.
+
+    Args:
+      no_raise: When set to :obj:`False`, the Exceptions encountered during
+        Crappy's execution, as well as the :exc:`KeyboardInterrupt`, will raise
+        an Exception right before Crappy returns. This is meant to prevent the
+        execution of code that would come after Crappy, in case Crappy does not
+        terminate as expected. This behavior can be disabled by setting this
+        argument to :obj:`True`.
+
+    .. versionremoved:: 2.0.0 *t0*, *verbose* and *bg* arguments
+    """
+
+    # Make sure that the Exception Manager is running
+    cls.no_raise = no_raise
+    cls._ensure_failure_manager()
+    manager = cls.run_failure_manager
+    assert manager is not None
+
+    # Guard with the FailureManager to catch any Exception
+    with manager.collect('launch_all', raise_on_exit=False):
+      cls._launch_all()
+    cls._finalize_run()
+
+  @classmethod
+  def stop_all(cls) -> None:
+    """Method for stopping all the Blocks by setting the stop
+    :obj:`~multiprocessing.Event`.
+
+    .. versionremoved:: 2.0.0 *verbose* argument
+    """
+
+    if cls.stop_event is not None:
+      # Make sure that the Exception Manager is running
+      manager = cls.run_failure_manager
+      if manager is None:
+        manager = FailureManager('main', 'stop')
+        if cls.logger is not None:
+          manager._logger = cls.logger
+
+      # Guard with the FailureManager to catch any Exception
+      with manager.collect('stop_all'):
+        with manager.step('request stop'):
+          cls.stop_event.set()
+        with manager.step('stop diagnostic'):
+          cls.cls_log(logging.INFO, 'Stop event set after a call to stop(), '
+                                    'all Blocks should now finish')
+
+  @classmethod
+  def reset(cls) -> None:
+    """Resets Crappy by emptying the :obj:`~weakref.WeakSet` containing
+    references to all the Blocks, clearing the
+    :class:`~crappy.links.LinkGraph`, and resetting the synchronization
+    objects.
+
+    This method is called at the very end of the
+    :meth:`~crappy.blocks.meta_block.block.Block._cleanup` method, but can also
+    be called to "revert" the instantiation of Blocks while Crappy isn't
+    started yet.
+    """
+
+    # Make sure that the Exception Manager is running
+    manager = cls.run_failure_manager
+    if manager is None:
+      manager = FailureManager('main', 'logging shutdown')
+      if cls.logger is not None:
+        manager._logger = cls.logger
+    manager.phase = 'logging shutdown'
+
+    with manager.collect('reset'):
+      # First, check the status of the log Thread
+      log_thread_stopped = False
+      logger_failed = manager.logger_failed
+      manager.logger_failed = True
+      with manager.step('check logging Thread'):
+        log_thread_stopped = (cls.log_thread is None or
+                              not cls.log_thread.is_alive())
+        if log_thread_stopped:
+          manager.logger_failed = logger_failed
+
+      # Request the Exception thread to stop
+      with manager.step('stop failure receiver'):
+        if cls.failure_thread_stop is not None:
+          cls.failure_thread_stop.set()
+      # Also make sure that the watchdog Thread stops
+      with manager.step('stop watchdog'):
+        if cls.watchdog_stop is not None:
+          cls.watchdog_stop.set()
+
+      # Discard the class attributes that ar no longer used
+      cls.log_queue = None
+      cls.log_thread = None
+      cls.failure_thread = None
+      cls.failure_thread_stop = None
+      cls.failure_queues = tuple()
+      cls.watchdog_thread = None
+      cls.watchdog_stop = None
+      cls.early_exits = set()
+      cls.run_failure_manager = None
+      # Also discard the corresponding instance attributes
+      for instance in cls._run_blocks:
+        with manager.step(f'release run state of {instance.name}'):
+          instance._failure_queue = None
+          instance._log_queue = None
+          instance._main_entered = None
+      cls.instances = WeakSet()
+      cls._run_blocks = tuple()
+      cls.names = list()
+      cls.thread_stop = False
+      cls.prepared_all = False
+      cls.launched_all = False
+      cls.no_raise = False
+      cls.shared_t0 = None
+      cls.ready_barrier = None
+      cls.start_event = None
+      cls.pause_event = None
+      cls.stop_event = None
+      cls.raise_event = None
+      cls.kbi_event = None
+      cls.shared_mgr = None
+
+      # Display the final success message
+      with manager.step('reset diagnostic'):
+        if cls.logger is not None and not manager.logger_failed:
+          cls.cls_log(logging.INFO, 'Crappy was successfully reset')
+      # Reset the LinkGraph
+      with manager.step('reset graph'):
+        link_graph.reset()
+
+      # Properly close the various loggers that were set up
+      logger = cls.logger
+      handlers = cls.log_handlers
+      cls.log_handlers = list()
+      for handler in handlers:
+        with manager.step('detach handler'):
+          if logger is not None:
+            logger.removeHandler(handler)
+        if log_thread_stopped:
+          with manager.step('flush handler'):
+            handler.flush()
+          with manager.step('close handler'):
+            handler.close()
+
+      # Reset the logger state completely
+      with manager.step('restore logger'):
+        if logger is not None and cls.logger_state is not None:
+          level, disabled, propagate = cls.logger_state
+          logger.setLevel(level)
+          logger.disabled = disabled
+          logger.propagate = propagate
+      cls.logger_state = None
+      cls.logger = None
+
+  @classmethod
+  def cls_log(cls, level: int, msg: str) -> None:
+    """Logs a class-level message through Crappy's main logger.
+
+    This method is the class-level counterpart of :meth:`log` for code
+    coordinating all Blocks. It silently returns before the main logger is
+    configured.
+
+    Args:
+      level: Logging level for the message.
+      msg: Message to record.
+
+    .. versionadded:: 2.0.0
+    """
+
+    if cls.logger is None:
+      return
+    cls.logger.log(level=level, msg=msg)
+
+  @classmethod
   def _ensure_failure_manager(cls) -> None:
     """Ensures that one failure manager is running wherever needed."""
 
@@ -540,36 +753,6 @@ class Block(Process, ABC):
           conn.close()
 
   @classmethod
-  def renice_all(cls, allow_root: bool) -> None:
-    """On Linux and macOS, renices the :obj:`~multiprocessing.Process` 
-    associated with the Blocks.
-
-    On Windows, does nothing.
-
-    If an error is caught, performs an extensive cleanup to ensure everything
-    stops as expected.
-
-    Args:
-      allow_root: If set to :obj:`True`, tries to renice the Processes with 
-        sudo privilege in Linux. It requires the Python script to be run with 
-        sudo privilege, otherwise it has no effect.
-
-        .. versionchanged:: 2.0.0 renamed from *high_prio* to *allow_root*
-    """
-
-    # Make sure that the Exception Manager is running
-    cls._ensure_failure_manager()
-    manager = cls.run_failure_manager
-    assert manager is not None
-
-    # Guard with the FailureManager to catch any Exception
-    with manager.collect('renice_all', raise_on_exit=False):
-      cls._renice_all(allow_root)
-      return
-    # Only runs when an Exception is caught
-    cls._finalize_run()
-
-  @classmethod
   def _renice_all(cls, allow_root: bool) -> None:
     """Runs the niceness commands for the prepared Blocks."""
 
@@ -603,41 +786,6 @@ class Block(Process, ABC):
         cls.cls_log(logging.INFO,
                     f"Reniced process {instance.name} with PID {instance.pid} "
                     f"to niceness {niceness}")
-
-  @classmethod
-  def launch_all(cls, no_raise: bool = False) -> None:
-    """The final method being called by the main
-    :obj:`~multiprocessing.Process` running a script with Crappy.
-
-    It unlocks all the Blocks by releasing the synchronization
-    :obj:`~multiprocessing.Barrier`, sets the shared t0
-    :obj:`~multiprocessing.Value`, and then waits for all the Blocks to finish.
-
-    In case an exception is raised, sets the stop :obj:`~multiprocessing.Event`
-    for warning the Blocks, waits for the Blocks to finish, and if they don't,
-    terminates them.
-
-    Args:
-      no_raise: When set to :obj:`False`, the Exceptions encountered during
-        Crappy's execution, as well as the :exc:`KeyboardInterrupt`, will raise
-        an Exception right before Crappy returns. This is meant to prevent the
-        execution of code that would come after Crappy, in case Crappy does not
-        terminate as expected. This behavior can be disabled by setting this
-        argument to :obj:`True`.
-    
-    .. versionremoved:: 2.0.0 *t0*, *verbose* and *bg* arguments
-    """
-
-    # Make sure that the Exception Manager is running
-    cls.no_raise = no_raise
-    cls._ensure_failure_manager()
-    manager = cls.run_failure_manager
-    assert manager is not None
-
-    # Guard with the FailureManager to catch any Exception
-    with manager.collect('launch_all', raise_on_exit=False):
-      cls._launch_all()
-    cls._finalize_run()
 
   @classmethod
   def _launch_all(cls) -> None:
@@ -1053,154 +1201,6 @@ class Block(Process, ABC):
       crappy_log.addHandler(stream_handler_err)
       if file_handler is not None:
         crappy_log.addHandler(file_handler)
-
-  @classmethod
-  def stop_all(cls) -> None:
-    """Method for stopping all the Blocks by setting the stop
-    :obj:`~multiprocessing.Event`.
-    
-    .. versionremoved:: 2.0.0 *verbose* argument
-    """
-
-    if cls.stop_event is not None:
-      # Make sure that the Exception Manager is running
-      manager = cls.run_failure_manager
-      if manager is None:
-        manager = FailureManager('main', 'stop')
-        if cls.logger is not None:
-          manager._logger = cls.logger
-
-      # Guard with the FailureManager to catch any Exception
-      with manager.collect('stop_all'):
-        with manager.step('request stop'):
-          cls.stop_event.set()
-        with manager.step('stop diagnostic'):
-          cls.cls_log(logging.INFO, 'Stop event set after a call to stop(), '
-                                    'all Blocks should now finish')
-
-  @classmethod
-  def reset(cls) -> None:
-    """Resets Crappy by emptying the :obj:`~weakref.WeakSet` containing
-    references to all the Blocks, clearing the
-    :class:`~crappy.links.LinkGraph`, and resetting the synchronization
-    objects.
-
-    This method is called at the very end of the
-    :meth:`~crappy.blocks.meta_block.block.Block._cleanup` method, but can also
-    be called to "revert" the instantiation of Blocks while Crappy isn't
-    started yet.
-    """
-
-    # Make sure that the Exception Manager is running
-    manager = cls.run_failure_manager
-    if manager is None:
-      manager = FailureManager('main', 'logging shutdown')
-      if cls.logger is not None:
-        manager._logger = cls.logger
-    manager.phase = 'logging shutdown'
-
-    with manager.collect('reset'):
-      # First, check the status of the log Thread
-      log_thread_stopped = False
-      logger_failed = manager.logger_failed
-      manager.logger_failed = True
-      with manager.step('check logging Thread'):
-        log_thread_stopped = (cls.log_thread is None or
-                              not cls.log_thread.is_alive())
-        if log_thread_stopped:
-          manager.logger_failed = logger_failed
-
-      # Request the Exception thread to stop
-      with manager.step('stop failure receiver'):
-        if cls.failure_thread_stop is not None:
-          cls.failure_thread_stop.set()
-      # Also make sure that the watchdog Thread stops
-      with manager.step('stop watchdog'):
-        if cls.watchdog_stop is not None:
-          cls.watchdog_stop.set()
-
-      # Discard the class attributes that ar no longer used
-      cls.log_queue = None
-      cls.log_thread = None
-      cls.failure_thread = None
-      cls.failure_thread_stop = None
-      cls.failure_queues = tuple()
-      cls.watchdog_thread = None
-      cls.watchdog_stop = None
-      cls.early_exits = set()
-      cls.run_failure_manager = None
-      # Also discard the corresponding instance attributes
-      for instance in cls._run_blocks:
-        with manager.step(f'release run state of {instance.name}'):
-          instance._failure_queue = None
-          instance._log_queue = None
-          instance._main_entered = None
-      cls.instances = WeakSet()
-      cls._run_blocks = tuple()
-      cls.names = list()
-      cls.thread_stop = False
-      cls.prepared_all = False
-      cls.launched_all = False
-      cls.no_raise = False
-      cls.shared_t0 = None
-      cls.ready_barrier = None
-      cls.start_event = None
-      cls.pause_event = None
-      cls.stop_event = None
-      cls.raise_event = None
-      cls.kbi_event = None
-      cls.shared_mgr = None
-
-      # Display the final success message
-      with manager.step('reset diagnostic'):
-        if cls.logger is not None and not manager.logger_failed:
-          cls.cls_log(logging.INFO, 'Crappy was successfully reset')
-      # Reset the LinkGraph
-      with manager.step('reset graph'):
-        link_graph.reset()
-
-      # Properly close the various loggers that were set up
-      logger = cls.logger
-      handlers = cls.log_handlers
-      cls.log_handlers = list()
-      for handler in handlers:
-        with manager.step('detach handler'):
-          if logger is not None:
-            logger.removeHandler(handler)
-        if log_thread_stopped:
-          with manager.step('flush handler'):
-            handler.flush()
-          with manager.step('close handler'):
-            handler.close()
-
-      # Reset the logger state completely
-      with manager.step('restore logger'):
-        if logger is not None and cls.logger_state is not None:
-          level, disabled, propagate = cls.logger_state
-          logger.setLevel(level)
-          logger.disabled = disabled
-          logger.propagate = propagate
-      cls.logger_state = None
-      cls.logger = None
-  
-  @classmethod
-  def cls_log(cls, level: int, msg: str) -> None:
-    """Logs a class-level message through Crappy's main logger.
-    
-    This method is the class-level counterpart of :meth:`log` for code
-    coordinating all Blocks. It silently returns before the main logger is
-    configured.
-
-    Args:
-      level: Logging level for the message.
-      msg: Message to record.
-    
-    .. versionadded:: 2.0.0
-    """
-    
-    if cls.logger is None:
-      return
-    cls.logger.log(level=level, msg=msg)
 
   @classmethod
   def _log_target(cls, log_queue: queues.Queue) -> None:
