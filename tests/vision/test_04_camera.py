@@ -8,7 +8,7 @@ import logging
 import numpy as np
 
 import crappy.blocks.vision.camera as camera_module
-from crappy._exceptions import CameraConfigError, PrepareError
+from crappy._exceptions import StopRequested
 from crappy.blocks.camera import DummyCam
 from crappy.blocks.vision import CameraSource
 from crappy.blocks.vision.block import ConfigRequest
@@ -387,7 +387,7 @@ class TestCameraSource(VisionTestBase):
     source._stop_event.set()
     self.request(source)
 
-    with self.assertRaises(PrepareError):
+    with self.assertRaises(StopRequested):
       source.prepare()
 
   def test_loop_waits_for_software_trigger(self) -> None:
@@ -636,7 +636,7 @@ class TestCameraSource(VisionTestBase):
 
         source._ready_barrier.abort()
 
-    with self.assertRaises(PrepareError):
+    with self.assertRaises(StopRequested):
       source.configure(camera, WatchedConfig)
 
     config = WatchedConfig.instances[-1]
@@ -698,20 +698,20 @@ class TestCameraSource(VisionTestBase):
     camera = RecordingVisionCamera()
 
     RecordingConfig.raise_in = 'start'
-    with self.assertRaises(CameraConfigError) as raised:
+    with self.assertRaises(ExceptionGroup) as raised:
       source.configure(camera, RecordingConfig)
-    self.assertIsInstance(raised.exception.__cause__, ValueError)
+    self.assertIsInstance(exception_leaves(raised.exception)[0], ValueError)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
     RecordingConfig.raise_in = 'keyboard'
-    with self.assertRaises(KeyboardInterrupt):
+    with self.assertRaises(BaseExceptionGroup):
       source.configure(camera, RecordingConfig)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
     RecordingConfig.raise_in = 'result'
-    with self.assertRaises(CameraConfigError) as raised:
+    with self.assertRaises(ExceptionGroup) as raised:
       source.configure(camera, RecordingConfig)
-    self.assertIsInstance(raised.exception.__cause__, ValueError)
+    self.assertIsInstance(exception_leaves(raised.exception)[0], ValueError)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
   def test_configure_preserves_failure_when_cleanup_fails(self) -> None:
@@ -735,10 +735,10 @@ class TestCameraSource(VisionTestBase):
         self.stop_calls += 1
         raise RuntimeError('cleanup failed')
 
-    with self.assertRaises(CameraConfigError) as raised:
+    with self.assertRaises(ExceptionGroup) as raised:
       source.configure(RecordingVisionCamera(), FailingStopConfig)
 
-    self.assertIs(raised.exception.__cause__, failure)
+    self.assertIs(exception_leaves(raised.exception)[0], failure)
     self.assertEqual(FailingStopConfig.instances[-1].stop_calls, 1)
 
   def test_configure_reports_missing_log_queue_as_runtime_error(self) -> None:
@@ -746,8 +746,9 @@ class TestCameraSource(VisionTestBase):
 
     source = self.make_source()
 
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(ExceptionGroup) as caught:
       source.configure(RecordingVisionCamera(), RecordingConfig)
+    self.assertIsInstance(exception_leaves(caught.exception)[0], RuntimeError)
 
   def test_default_configuration_uses_base_configurator(self) -> None:
     """Checks the generic configuration helper."""

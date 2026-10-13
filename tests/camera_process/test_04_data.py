@@ -1,9 +1,11 @@
 # coding: utf-8
 
 import numpy as np
-from threading import BrokenBarrierError, Event as ThreadEvent, Thread
+from threading import Event as ThreadEvent, Thread
 from time import monotonic
 from unittest.mock import MagicMock, patch
+
+from crappy._exceptions import StopRequested
 
 from .camera_process_test_base import CameraProcessTestBase, TestCameraProcess
 
@@ -174,7 +176,7 @@ class TestData(CameraProcessTestBase):
     self.assertFalse(thread.is_alive())
     self.assertEqual(results, [])
     self.assertEqual(len(errors), 1)
-    self.assertIsInstance(errors[0], BrokenBarrierError)
+    self.assertIsInstance(errors[0], StopRequested)
 
   def test_stop_takes_priority_over_pending_frame(self) -> None:
     self._process = TestCameraProcess()
@@ -203,10 +205,10 @@ class TestData(CameraProcessTestBase):
     self._process = TestCameraProcess()
     shared = self.make_shared()
 
-    with (patch.object(shared.condition, 'wait_for',
-                       side_effect=OSError('condition failure')),
-          self.assertRaisesRegex(OSError, 'condition failure')):
+    error = OSError('condition failure')
+    with patch.object(shared.condition, 'wait_for', side_effect=error):
       self._process.run()
+    self.assertIs(self._process._failure_manager.snapshot()[0][1], error)
 
     self.assertTrue(shared.stop_event.is_set())
     self.assertTrue(self._process.finished.is_set())

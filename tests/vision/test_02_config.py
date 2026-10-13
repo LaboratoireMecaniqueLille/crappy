@@ -3,7 +3,7 @@
 from multiprocessing import Barrier, Event, Pipe
 from unittest.mock import Mock, call, patch
 
-from crappy._exceptions import PrepareError
+from crappy._exceptions import StopRequested
 from crappy._failure import FailureManager
 from crappy.blocks.vision.block import ConfigRequest
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
@@ -157,14 +157,13 @@ class TestVisionBlockConfiguration(VisionTestBase):
     connection.poll.return_value = False
     block.add_config_request_out(self.make_request(connection=connection))
 
-    with self.assertRaises(ExceptionGroup) as caught:
+    with self.assertRaises(StopRequested):
       block.recv_configs()
-    self.assertIsInstance(caught.exception.exceptions[0], PrepareError)
 
-    connection.poll.assert_called_once_with(timeout=0.5)
+    connection.poll.assert_not_called()
     connection.close.assert_called_once_with()
 
-  def test_recv_configs_converts_broken_pipe_to_prepare_error(self) -> None:
+  def test_recv_configs_preserves_active_pipe_error(self) -> None:
     """Checks the error reported when a source exits without responding."""
 
     block = StubVisionBlock()
@@ -176,7 +175,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
 
     with self.assertRaises(ExceptionGroup) as caught:
       block.recv_configs()
-    self.assertIsInstance(caught.exception.exceptions[0], PrepareError)
+    self.assertIsInstance(caught.exception.exceptions[0], EOFError)
 
     connection.close.assert_called_once_with()
 
@@ -209,6 +208,53 @@ class TestVisionBlockConfiguration(VisionTestBase):
         self.assertEqual(manager._logger.error.call_count, 2)
         connection.close.side_effect = None
         block.finish()
+
+  def test_cancelled_receive_still_reports_real_cleanup_failure(self) -> None:
+    """Cancellation never hides a failure while closing its endpoint."""
+
+    block = StubVisionBlock()
+    self.set_prepare_sync(block)
+    block._stop_event.set()
+    connection = Mock()
+    error = KeyboardInterrupt('close request')
+    connection.close.side_effect = error
+    request = self.make_request(connection=connection)
+    block.add_config_request_out(request)
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      block.recv_configs()
+    self.assertEqual(exception_leaves(caught.exception), (error,))
+    connection.poll.assert_not_called()
+    connection.close.assert_called_once()
+    self.assertFalse(request.connection_closed)
+    connection.close.side_effect = None
+
+  def test_receive_classifies_eof_only_after_explicit_shutdown(self) -> None:
+    """Active EOF is real; EOF concurrent with a stop request is cancellation."""
+
+    for stopped in (False, True):
+      with self.subTest(stopped=stopped):
+        block = StubVisionBlock()
+        self.set_prepare_sync(block)
+        connection = Mock()
+        connection.poll.return_value = True
+        error = EOFError('source connection')
+
+        def receive():
+          if stopped:
+            block._stop_event.set()
+          raise error
+
+        connection.recv.side_effect = receive
+        request = self.make_request(connection=connection)
+        block.add_config_request_out(request)
+        if stopped:
+          with self.assertRaises(StopRequested):
+            block.recv_configs()
+        else:
+          with self.assertRaises(ExceptionGroup) as caught:
+            block.recv_configs()
+          self.assertEqual(exception_leaves(caught.exception), (error,))
+        self.assertTrue(request.connection_closed)
 
   def test_send_diagnostic_failure_keeps_completed_flag(self) -> None:
     """A sent response stays completed even if its success log fails."""

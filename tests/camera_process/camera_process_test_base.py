@@ -8,10 +8,12 @@ import multiprocessing.queues
 from typing import Any, NamedTuple
 import logging
 import unittest
+from unittest.mock import Mock
 
 import numpy as np
 
 from crappy._exceptions import LinkDataError
+from crappy._failure import FailureManager
 from crappy.blocks.camera_processes.camera_process import CameraProcess
 
 
@@ -34,6 +36,7 @@ class SharedObjects(NamedTuple):
   outputs: list[Any]
   labels: list[str] | None
   log_queue: Any
+  failure_queue: Any
 
 
 class TestLink:
@@ -109,17 +112,6 @@ class TestCameraProcess(CameraProcess):
 
     if self._stop_on_loop:
       self._stop_event.set()
-
-  def run(self) -> None:
-    """Convert deliberate fixture errors into a quiet non-zero child exit."""
-
-    try:
-      super().run()
-    except ExpectedProcessError:
-      # multiprocessing prints an uncaught traceback to stderr. The tests only
-      # require a failed exit status here; unexpected exception types still
-      # propagate normally and remain visible.
-      raise SystemExit(1)
 
   def finish(self) -> None:
     """Records that finish was reached."""
@@ -245,6 +237,8 @@ class CameraProcessTestBase(unittest.TestCase):
     stop_event = Event()
     log_queue = Queue()
     self._queues.append(log_queue)
+    failure_queue = Queue()
+    self._queues.append(failure_queue)
 
     if outputs is None:
       outputs = list()
@@ -261,6 +255,7 @@ class CameraProcessTestBase(unittest.TestCase):
                        outputs=outputs,
                        labels=labels,
                        log_queue=log_queue,
+                       failure_queue=failure_queue,
                        log_level=log_level,
                        display_freq=display_freq)
 
@@ -275,7 +270,17 @@ class CameraProcessTestBase(unittest.TestCase):
                          to_draw_conn=to_draw_conn,
                          outputs=outputs,
                          labels=labels,
-                         log_queue=log_queue)
+                         log_queue=log_queue,
+                         failure_queue=failure_queue)
+
+  def receive_failures(self, shared: SharedObjects) -> FailureManager:
+    """Drains flushed child reports without logging their receipt."""
+
+    manager = FailureManager('test owner', 'main')
+    manager._logger = Mock()
+    while manager.receive((shared.failure_queue,)):
+      pass
+    return manager
 
   def write_image(self,
                   shared: SharedObjects,

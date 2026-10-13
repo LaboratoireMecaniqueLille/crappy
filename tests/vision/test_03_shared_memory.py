@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, Mock, call, patch
 
 import numpy as np
 
-from crappy._exceptions import LinkDataError, PrepareError
+from crappy._exceptions import LinkDataError, StopRequested
 from crappy.blocks.vision.block import ImgLinkData
 import crappy.blocks.vision.block as block_module
 from crappy.links import ImageLink
@@ -230,6 +230,45 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     with self.assertRaises(ValueError):
       consumer.receive_imgs()
 
+  def test_ready_buffer_is_not_attached_after_stop(self) -> None:
+    """Readiness racing with cancellation cannot attach an obsolete buffer."""
+
+    block = StubVisionBlock()
+    self.set_prepare_sync(block)
+    ready = Event()
+    ready.set()
+    block._stop_event.set()
+    data = ImgLinkData(memory_name='cancelled', buffer_ready=ready,
+                       img_info_dict={'shape': (2, 2), 'dtype': 'uint8'})
+    with (patch.object(block_module, 'SharedMemory') as memory,
+          self.assertRaises(StopRequested)):
+      block._get_image_buffer(data)
+    memory.assert_not_called()
+    self.assertIsNone(data.img_buffer)
+
+  def test_metadata_transport_failure_requires_explicit_stop_to_cancel(self
+                                                                       ) -> None:
+    """Broken proxies retain their original error unless shutdown is underway."""
+
+    source, consumer, link = self.prepare_pair()
+    source.send_img({'ImageUniqueID': 0, 't(s)': 0.0},
+                    np.ones((2, 3), dtype=np.uint16))
+    data = consumer._in_link_data[0]
+    for stopped in (False, True):
+      with self.subTest(stopped=stopped):
+        proxy = data.metadata_dict = Mock()
+        error = EOFError('metadata transport')
+
+        def read_metadata():
+          if stopped:
+            consumer._stop_event.set()
+          raise error
+
+        proxy.copy.side_effect = read_metadata
+        with self.assertRaises(StopRequested if stopped else EOFError):
+          consumer.receive_imgs()
+        self.assertEqual(consumer.last_received[link.name].id, -1)
+
   def test_get_image_buffer_validates_info_and_notices_abort(self) -> None:
     """Checks attachment validation and interruption while waiting."""
 
@@ -246,7 +285,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     waiting = Mock()
     waiting.wait.return_value = False
     block._stop_event.set()
-    with self.assertRaises(PrepareError):
+    with self.assertRaises(StopRequested):
       block._get_image_buffer(ImgLinkData(
           memory_name='unused', buffer_ready=waiting,
           img_info_dict={'shape': (2, 2), 'dtype': 'uint8'}))
