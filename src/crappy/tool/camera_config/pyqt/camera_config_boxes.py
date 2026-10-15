@@ -8,6 +8,7 @@ import numpy as np
 
 from ..base import CameraConfigBoxes
 from ....camera.meta_camera import Camera
+from ...._failure import FailureManager
 from .camera_config import PyQtCameraConfig
 
 
@@ -28,7 +29,8 @@ CameraConfigBoxes` hooks determine how a completed box is used. This class
                log_queue: MPQueue,
                log_level: int | None,
                max_freq: float | None,
-               transform: Callable[[np.ndarray], np.ndarray] | None) -> None:
+               transform: Callable[[np.ndarray], np.ndarray] | None,
+               failure_manager: FailureManager) -> None:
     """Initializes box-selection state and the camera window.
 
     Args:
@@ -43,6 +45,8 @@ CameraConfigBoxes` hooks determine how a completed box is used. This class
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
+      failure_manager: FailureManager for reporting Exceptions.
     """
 
-    super().__init__(camera, log_queue, log_level, max_freq, transform)
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager)

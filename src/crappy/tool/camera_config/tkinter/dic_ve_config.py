@@ -10,6 +10,7 @@ from .camera_config_boxes import TkinterCameraConfigBoxes
 from ..base import DICVEConfig
 from ..config_tools import SpotsBoxes
 from ....camera.meta_camera import Camera
+from ...._failure import FailureManager
 from ....camera.meta_camera.camera_setting import CameraScaleSetting
 
 
@@ -35,6 +36,7 @@ class TkinterDICVEConfig(DICVEConfig, TkinterCameraConfigBoxes):
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
+               failure_manager: FailureManager,
                patches: SpotsBoxes) -> None:
     """Builds the window with the provided tracking-patch collection.
 
@@ -59,6 +61,7 @@ class TkinterDICVEConfig(DICVEConfig, TkinterCameraConfigBoxes):
 
         .. versionadded:: 2.1.0
 
+      failure_manager: FailureManager for reporting Exceptions.
       patches: :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`
         collection to display and update in place. The same collection is
         returned by
@@ -68,6 +71,7 @@ DICVEConfig.get_config>` after validation.
 
     self._patch_size: CameraScaleSetting | None = None
 
-    super().__init__(camera, log_queue, log_level, max_freq, transform)
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager)
 
     self._spots: SpotsBoxes = patches

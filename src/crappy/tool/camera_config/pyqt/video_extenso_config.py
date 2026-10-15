@@ -9,6 +9,7 @@ import numpy as np
 from ..base import VideoExtensoConfig
 from ..config_tools import SpotsDetector
 from ....camera.meta_camera import Camera
+from ...._failure import FailureManager
 from .camera_config_boxes import PyQtCameraConfigBoxes
 
 
@@ -34,6 +35,7 @@ VideoExtensoConfig`.
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
+               failure_manager: FailureManager,
                white_spots: bool,
                num_spots: int | None,
                min_area: int,
@@ -55,6 +57,7 @@ VideoExtensoConfig`.
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
+      failure_manager: FailureManager for reporting Exceptions.
       white_spots: :obj:`True` for light spots on a dark background,
         :obj:`False` for dark spots on a light background.
       num_spots: Required number of spots from 1 to 4, or :obj:`None` to accept
@@ -71,12 +74,21 @@ VideoExtensoConfig`.
         used during initial detection.
     """
 
-    super().__init__(camera, log_queue, log_level, max_freq, transform)
-    self._detector = SpotsDetector(white_spots=white_spots,
-                                   num_spots=num_spots,
-                                   min_area=min_area,
-                                   blur=blur,
-                                   update_thresh=update_thresh,
-                                   safe_mode=safe_mode,
-                                   border=border)
-    self._spots = self._detector.spots
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager)
+
+    try:
+      self._detector = SpotsDetector(white_spots=white_spots,
+                                     num_spots=num_spots,
+                                     min_area=min_area,
+                                     blur=blur,
+                                     update_thresh=update_thresh,
+                                     safe_mode=safe_mode,
+                                     border=border)
+      self._spots = self._detector.spots
+    except BaseException as error:
+      with self._failure_manager.collect('Spot detector initialization'):
+        self._failure_manager.record_context_exception(error,
+                                                       'create detector')
+        with self._failure_manager.step('stop partial configuration'):
+          self.stop()
