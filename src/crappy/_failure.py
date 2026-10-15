@@ -523,7 +523,7 @@ class FailureManager:
 
     # Register the Exceptions if provided
     if exception is not None:
-      members = tuple(self._iter_exception_members(exception))
+      members = tuple(self.iter_exception_members(exception))
       with self._lock:
         for member in members:
           self._members.setdefault(id(member), (member, report.failure_id))
@@ -630,6 +630,34 @@ class FailureManager:
       except BaseException as reporting_error:
         self._add_to_stack(reporting_error, f"report failure from {step}")
 
+  @staticmethod
+  def iter_exception_members(error: BaseException) -> Iterator[BaseException]:
+    """Yields an Exception and its group members, visiting each object once.
+
+    Visits the parent before its children, in group order.
+    Does not visit causes or contexts.
+
+    Args:
+      error: Exception or ExceptionGroup to visit.
+    """
+
+    if not isinstance(error, BaseException):
+      raise TypeError("error must be a BaseException")
+
+    pending = [error]
+    seen: set[int] = set()
+    while pending:
+      member = pending.pop()
+      # Skip Exceptions already encountered
+      if id(member) in seen:
+        continue
+      seen.add(id(member))
+      # Yield the current Exception
+      yield member
+      # Add its children Exceptions to the list of Exception to handle
+      if isinstance(member, BaseExceptionGroup):
+        pending.extend(reversed(member.exceptions))
+
   def _add_to_stack(self,
                     error: BaseException,
                     step: str) -> BaseException | None:
@@ -671,7 +699,7 @@ class FailureManager:
     # children as seen
     errors.append(error)
     seen.update((id(member), member)
-                for member in self._iter_exception_members(error))
+                for member in self.iter_exception_members(error))
     return error
 
   def _generate_failure_report(self,
@@ -999,7 +1027,7 @@ class FailureManager:
       Exception remains.
     """
 
-    members = tuple(self._iter_exception_members(error))
+    members = tuple(self.iter_exception_members(error))
 
     # Protect with a lock to avoid concurrent Exception registrations
     with self._lock:
@@ -1189,34 +1217,6 @@ class FailureManager:
         raise BaseExceptionGroup('Failure reporting failed',
                                  [error, reporting_error]) from None
       raise
-
-  @staticmethod
-  def _iter_exception_members(error: BaseException) -> Iterator[BaseException]:
-    """Yields an Exception and its group members, visiting each object once.
-
-    Visits the parent before its children, in group order.
-    Does not visit causes or contexts.
-
-    Args:
-      error: Exception or ExceptionGroup to visit.
-    """
-
-    if not isinstance(error, BaseException):
-      raise TypeError("error must be a BaseException")
-
-    pending = [error]
-    seen: set[int] = set()
-    while pending:
-      member = pending.pop()
-      # Skip Exceptions already encountered
-      if id(member) in seen:
-        continue
-      seen.add(id(member))
-      # Yield the current Exception
-      yield member
-      # Add its children Exceptions to the list of Exception to handle
-      if isinstance(member, BaseExceptionGroup):
-        pending.extend(reversed(member.exceptions))
 
   @staticmethod
   def _derive_group(group: BaseExceptionGroup,
