@@ -13,6 +13,7 @@ from itertools import chain
 import logging
 
 from .._failure import FailureManager
+from .._exceptions import ProcessExitError, StopRequested, ShutdownTimeoutError
 from .meta_block import Block
 from .._global import OptionalModule
 
@@ -26,7 +27,7 @@ TopicsType = Sequence[str | Sequence[str]]
 
 class ClientServer(Block):
   """This Block can exchange data on a local network using the MQTT protocol.
-  
+
   It communicates with an MQTT broker, from which it can receive data by
   subscribing to topics, and to which it can send data by publishing in topics.
   This Block can also manage the execution of a Mosquitto broker, so that the
@@ -469,8 +470,10 @@ class ClientServer(Block):
           # Report the reader thread failing to stop
           with manager.step('check broker reader'):
             if self._reader.is_alive():
-              raise RuntimeError("The broker reader thread did not stop in "
-                                 "time")
+              raise ShutdownTimeoutError("The broker reader thread did not "
+                                         "stop",
+                                         phase='monitoring',
+                                         timeout=0.2)
             self._reader = None
             self._reader_started = False
         else:
@@ -499,13 +502,55 @@ class ClientServer(Block):
   def _output_reader(self) -> None:
     """Reads the output strings from Mosquitto's subprocess."""
 
-    while not self._stop_mosquitto:
-      for line in iter(self._proc.stdout.readline, b''):
-        self.log(logging.INFO, f"[Mosquitto] {line.decode()}")
-        if 'Error: Address already in use' in line.decode():
-          self.log(logging.WARNING, "Mosquitto is already running on this "
-                                    "port !")
-      sleep(0.1)
+    # Make sure the FailureManager and the logger are configured
+    if self._failure_manager is None:
+      self._failure_manager = FailureManager(self.name, 'monitoring')
+    manager = self._failure_manager
+    if self._logger is not None:
+      manager._logger = self._logger
+    process = self._proc
+    stop = self._stop_event
+
+    # Guard Exceptions with the FailureManager
+    with manager.collect('Broker output reception', raise_on_exit=False):
+      with manager.step('read broker output'):
+        if process is None or process.stdout is None:
+          raise RuntimeError("The broker output stream is unavailable")
+        # Read the output strings from the subprocess
+        while (not self._stop_mosquitto and
+               (stop is None or not stop.is_set())):
+          try:
+            line = process.stdout.readline()
+          except (EOFError, OSError):
+            if self._stop_mosquitto or (stop is not None and stop.is_set()):
+              raise StopRequested from None
+            raise
+          # Stop when told to
+          if not line:
+            if self._stop_mosquitto or (stop is not None and stop.is_set()):
+              break
+            # If the subprocess exited with an error code, report it
+            code = process.poll()
+            raise ProcessExitError(f"Mosquitto broker exited unexpectedly "
+                                   f"({code})",
+                                   process_name='Mosquitto',
+                                   pid=process.pid,
+                                   phase='main',
+                                   exitcode=code)
+          text = line.decode()
+          self.log(logging.INFO, f"[Mosquitto] {text}")
+          if 'Error: Address already in use' in text:
+            self.log(logging.WARNING, "Mosquitto is already running on this "
+                                      "port")
+      # Stop as soon as an error report is received
+      if manager.snapshot():
+        with manager.step('request broker failure shutdown'):
+          if stop is not None:
+            stop.set()
+        with manager.step('abort broker preparation'):
+          if (self._ready_barrier is not None and
+              (self._start_event is None or not self._start_event.is_set())):
+            self._ready_barrier.abort()
 
   def _on_message(self, _, __, message) -> None:
     """Buffers the received data.
@@ -515,25 +560,34 @@ class ClientServer(Block):
     """
 
     try:
-      self.log(logging.DEBUG, f"Received message from the broker: {message}")
-      for data_points in zip(*loads(message.payload)):
-        self._buffer_output[literal_eval(message.topic)].put_nowait(
-          list(data_points))
-    except UnpicklingError:
-      self.log(logging.WARNING, f"Received message caused UnpicklingError, "
-                                f"ignoring it: {message}")
+      try:
+        self.log(logging.DEBUG, f"Received message from the broker: {message}")
+        for data_points in zip(*loads(message.payload)):
+          self._buffer_output[literal_eval(message.topic)].put_nowait(
+            list(data_points))
+      except UnpicklingError:
+        self.log(logging.WARNING, f"Received message caused UnpicklingError, "
+                                  f"ignoring it: {message}")
+    except BaseException as error:
+      self._record_callback_failure(error)
 
   def _on_connect(self, _, __, ___, rc: Any) -> None:
     """Automatically subscribes to the topics when connecting to the broker."""
 
-    self.log(logging.INFO, f"Connected to the broker with return code {rc}")
+    try:
+      if rc != 0:
+        raise ConnectionRefusedError(f"MQTT connection refused (return code "
+                                     f"{rc})")
+      self.log(logging.INFO, f"Connected to the broker with return code {rc}")
 
-    # Subscribing on connect, so that it automatically resubscribes when
-    # reconnecting after a connection loss
-    if self._topics is not None:
-      for topic in self._topics:
-        self._client.subscribe(topic=str(topic), qos=0)
-        self.log(logging.INFO, f"Subscribed to topic {topic}")
+      # Subscribing on connect, so that it automatically resubscribes when
+      # reconnecting after a connection loss
+      if self._topics is not None:
+        for topic in self._topics:
+          self._client.subscribe(topic=str(topic), qos=0)
+          self.log(logging.INFO, f"Subscribed to topic {topic}")
 
-    self._client.loop_start()
-    self._client_loop_started = True
+      self._client.loop_start()
+      self._client_loop_started = True
+    except BaseException as error:
+      self._record_callback_failure(error)
