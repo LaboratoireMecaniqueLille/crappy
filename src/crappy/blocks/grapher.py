@@ -463,6 +463,7 @@ class Grapher(Block):
     # Create the figure and the subplot
     self._figure = plt.figure(figsize=self._window_size)
     self._canvas = self._figure.canvas
+    self._canvas.callbacks.exception_handler = self._record_callback_failure
     self._ax = self._figure.add_subplot(111)
     self._canvas.mpl_connect('key_press_event', self._on_press_mpl)
     self._ax.set_title('(Press c to clear the graph)',
@@ -643,18 +644,21 @@ class Grapher(Block):
     When called, resets the display by emptying the data buffers.
     """
 
-    for curve in self._qt_curves:
-      curve.clear()
-    self._data = [[deque(maxlen=self._length), deque(maxlen=self._length)]
-                  for _ in self._graph_labels]
-    self._buf = [[[], []] for _ in self._graph_labels]
-    self._factor = [1 for _ in self._graph_labels]
-    self._counter = [0 for _ in self._graph_labels]
+    try:
+      for curve in self._qt_curves:
+        curve.clear()
+      self._data = [[deque(maxlen=self._length), deque(maxlen=self._length)]
+                    for _ in self._graph_labels]
+      self._buf = [[[], []] for _ in self._graph_labels]
+      self._factor = [1 for _ in self._graph_labels]
+      self._counter = [0 for _ in self._graph_labels]
 
-    # Request a new rendering of the plot
-    self._qt_app.processEvents()
+      # Request a new rendering of the plot
+      self._qt_app.processEvents()
 
-    self.log(logging.INFO, "Cleared the pyqtgraph window")
+      self.log(logging.INFO, "Cleared the pyqtgraph window")
+    except BaseException as error:
+      self._record_callback_failure(error)
 
   def _print_freq(self, refreshed: bool) -> None:
     """Periodically logs the achieved refresh frequency.

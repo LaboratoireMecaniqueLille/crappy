@@ -154,7 +154,6 @@ class Button(Block):
     # Attributes related to PyQt6
     self._qt_label: QtWidgets.QLabel | None = None
     self._qt_button: QtWidgets.QPushButton | None = None
-    self._callback_error: BaseException | None = None
 
   def prepare(self) -> None:
     """Creates the graphical interface and sets its layout and callbacks."""
@@ -191,9 +190,9 @@ class Button(Block):
     else:
       assert self._qt_app is not None
       self._qt_app.processEvents()
-      if self._callback_error is not None:
-        raise self._callback_error
 
+    if self._failure_manager is not None:
+      self._failure_manager.raise_if_failed('GUI callback failures')
     self.log(logging.DEBUG, "GUI updated")
 
     if self._spam:
@@ -244,6 +243,7 @@ class Button(Block):
     """Creates the tkinter window with a counter above the step button."""
 
     self._root = tk.Tk()
+    self._root.report_callback_exception = self._report_tk_callback_exception
     assert self._root is not None
     self._root.title("Button block")
     self._root.resizable(False, False)
@@ -355,7 +355,7 @@ class Button(Block):
       self._qt_label.setText(text)
 
   def _next_step_pyqt(self, _checked: bool = False) -> None:
-    """Retains Qt callback failures for the Block's loop to raise.
+    """Reports Qt callback failures through the Block's manager.
 
     Letting an exception escape a Qt signal callback can abort the process.
     """
@@ -363,9 +363,12 @@ class Button(Block):
     try:
       self._next_step()
     except BaseException as error:
-      self._callback_error = error
-      assert self._qt_button is not None
-      self._qt_button.setEnabled(False)
+      self._record_callback_failure(error)
+      with self._failure_manager.collect('GUI callback cleanup',
+                                         raise_on_exit=False):
+        with self._failure_manager.step('disable button'):
+          if self._qt_button is not None:
+            self._qt_button.setEnabled(False)
 
   def _next_step(self) -> None:
     """Increments the step counter and sends the corresponding signal."""

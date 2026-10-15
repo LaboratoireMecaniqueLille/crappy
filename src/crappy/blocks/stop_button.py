@@ -94,7 +94,6 @@ class StopButton(Block):
     # Attributes related to PyQt6
     self._qt_label: QtWidgets.QLabel | None = None
     self._qt_button: QtWidgets.QPushButton | None = None
-    self._callback_error: BaseException | None = None
 
   def prepare(self) -> None:
     """Creates the graphical interface and sets its layout and callbacks."""
@@ -123,9 +122,9 @@ class StopButton(Block):
     else:
       assert self._qt_app is not None
       self._qt_app.processEvents()
-      if self._callback_error is not None:
-        raise self._callback_error
 
+    if self._failure_manager is not None:
+      self._failure_manager.raise_if_failed('GUI callback failures')
     self.log(logging.DEBUG, "GUI updated")
 
   def finish(self) -> None:
@@ -173,6 +172,7 @@ class StopButton(Block):
     """Creates the Tkinter window with a message above the stop button."""
 
     self._root = tk.Tk()
+    self._root.report_callback_exception = self._report_tk_callback_exception
     assert self._root is not None
     self._root.title("Stop Button Block")
     self._root.resizable(False, False)
@@ -270,7 +270,7 @@ class StopButton(Block):
     return app
 
   def _clicked_pyqt(self, _checked: bool = False) -> None:
-    """Retains Qt callback failures for the Block's loop to raise.
+    """Reports Qt callback failures through the Block's manager.
 
     Letting an exception escape a Qt signal callback can abort the process.
     """
@@ -278,9 +278,12 @@ class StopButton(Block):
     try:
       self._clicked()
     except BaseException as error:
-      self._callback_error = error
-      assert self._qt_button is not None
-      self._qt_button.setEnabled(False)
+      self._record_callback_failure(error)
+      with self._failure_manager.collect('GUI callback cleanup',
+                                         raise_on_exit=False):
+        with self._failure_manager.step('disable button'):
+          if self._qt_button is not None:
+            self._qt_button.setEnabled(False)
 
   def _clicked(self) -> None:
     """When the stop button is clicked, stops the test."""

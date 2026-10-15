@@ -551,6 +551,7 @@ class Canvas(Block):
     """Creates the Tkinter drawing window."""
 
     self._root = tk.Tk()
+    self._root.report_callback_exception = self._report_tk_callback_exception
     assert self._root is not None
     self._root.title(self._title)
 

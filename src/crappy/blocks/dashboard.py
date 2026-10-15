@@ -296,6 +296,8 @@ class Dashboard(Block):
 
     self._dashboard = DashboardWindow(self._dash_labels)
     assert self._dashboard is not None
+    self._dashboard.report_callback_exception = (
+      self._report_tk_callback_exception)
     self._dashboard.update()
 
   def _prepare_pyqt(self) -> None:

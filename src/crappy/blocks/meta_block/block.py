@@ -1500,6 +1500,36 @@ class Block(Process, ABC):
         with manager.step('flush'):
           queue.join_thread()
 
+  def _record_callback_failure(self, error: BaseException) -> None:
+    """Reports a failure caught by a callback from an external library.
+
+    Args:
+      error: Original callback exception, including exception groups.
+    """
+
+    # Make sure that a FailureManager and a logger are available
+    if self._failure_manager is None:
+      self._failure_manager = FailureManager(self.name, 'callback')
+    manager = self._failure_manager
+    if self._logger is not None:
+      manager._logger = self._logger
+
+    # Record the Exception and stop the test
+    with manager.collect('Block callback', raise_on_exit=False):
+      manager.record_context_exception(error, 'callback')
+      with manager.step('request callback shutdown'):
+        if self._stop_event is not None:
+          self._stop_event.set()
+      with manager.step('abort callback preparation'):
+        if (self._ready_barrier is not None and
+            (self._start_event is None or not self._start_event.is_set())):
+          self._ready_barrier.abort()
+
+  def _report_tk_callback_exception(self, _, error, traceback) -> None:
+    """Reports a failure caught by a callback from Tk."""
+
+    self._record_callback_failure(error.with_traceback(traceback))
+
   def _close_config_connections(self) -> None:
     """Closes inherited configuration endpoints, retaining failed ones."""
 
