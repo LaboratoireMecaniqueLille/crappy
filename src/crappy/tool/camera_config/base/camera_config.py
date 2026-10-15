@@ -21,6 +21,7 @@ from ._configuration_lifecycle import ExceptionInfo
 from ....camera.meta_camera import Camera
 from ....camera.meta_camera.camera_setting import CameraSetting
 from ...._global import OptionalModule
+from ...._failure import FailureManager
 
 try:
   from PIL import Image
@@ -70,6 +71,7 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
+               failure_manager: FailureManager,
                *_,
                **__) -> None:
     """Initializes the shared models without starting acquisition.
@@ -86,6 +88,7 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
+      failure_manager: FailureManager for reporting Exceptions.
     """
 
     # Logging must be available during GUI and local settings initialization
@@ -93,8 +96,18 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
     self._log_queue: Queue = log_queue
     self._log_level: int | None = log_level
 
+    # Configure the logger and the FailureManager
+    self._logger = logging.getLogger(
+        f'{current_process().name}.{type(self).__name__}')
+    self._logger.disabled = log_level is None
+    if log_level is not None:
+      self._logger.setLevel(log_level)
+    self._failure_manager: FailureManager = failure_manager
+    self._failure_manager._logger = self._logger
+
     # Continue through the MRO so the selected GUI backend creates its window
     super().__init__()
+    self._window_created = True
 
     self._camera: Camera = camera
 
@@ -130,8 +143,7 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
 
     GUI implementations must release resources before returning or raising.
     Callback failures must propagate after the event loop ends.
-    :exc:`KeyboardInterrupt` must propagate after cleanup without an error
-    dialog or error log.
+    Failures, including user interrupts, propagate as groups after cleanup.
     """
 
     ...

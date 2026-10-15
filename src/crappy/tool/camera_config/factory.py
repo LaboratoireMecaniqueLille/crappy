@@ -9,6 +9,7 @@ import numpy as np
 
 from .base import CameraConfig
 from ...camera.meta_camera import Camera
+from ..._failure import FailureManager
 
 
 def create_configurator(configurator: type[CameraConfig] |
@@ -19,6 +20,7 @@ def create_configurator(configurator: type[CameraConfig] |
                         log_level: int | None,
                         max_freq: float | None,
                         transform: Callable[[np.ndarray], np.ndarray] | None,
+                        failure_manager: FailureManager,
                         *args: Any,
                         **kwargs: Any) -> CameraConfig:
   """Instantiates a configuration class from an explicit given type or a
@@ -47,6 +49,8 @@ def create_configurator(configurator: type[CameraConfig] |
     transform: :obj:`~collections.abc.Callable` applied to acquired images
       before preview conversion and image-format reporting, or :obj:`None` to
       leave them unchanged.
+    failure_manager: Manager passed to the configuration window for reporting
+      failures, or :obj:`None` to create a local manager.
     *args: Additional positional arguments passed to the selected class.
     **kwargs: Additional keyword arguments passed to the selected class.
 
@@ -64,4 +68,4 @@ run>` to start configuration.
   selected = (configurator[config_backend]
               if isinstance(configurator, Mapping) else configurator)
   return selected(camera, log_queue, log_level, max_freq, transform,
-                  *args, **kwargs)
+                  failure_manager, *args, **kwargs)
