@@ -18,7 +18,7 @@ from ...tool.camera_config.pyqt import PyQtCameraConfig
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,
                             load_collection_class)
-from ..._exceptions import PrepareError, StopRequested
+from ..._exceptions import StopRequested
 
 
 class CameraSource(VisionBlock):
@@ -606,7 +606,8 @@ get_config`, or :obj:`None` if the configurator has no data to export.
               (self._stop_event is not None and self._stop_event.is_set()))
 
     # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'prepare')
+    assert self._failure_manager is not None
+    manager = self._failure_manager
     if self._logger is not None:
       manager._logger = self._logger
 
@@ -621,22 +622,19 @@ get_config`, or :obj:`None` if the configurator has no data to export.
                                 f"{class_name} with camera "
                                 f"{type(camera).__name__}, args {args}, "
                                 f"kwargs {kwargs}")
-        config = create_configurator(config_class, camera,
+        config = create_configurator(config_class,
+                                     camera,
                                      self._config_backend,
                                      self._log_queue,
                                      self._log_level,
                                      self.freq,
                                      self._transform,
+                                     manager,
                                      *args,
                                      **kwargs)
         assert config is not None
         config.watch_shutdown(shutdown_requested)
-        try:
-          config.run()
-        except PrepareError:
-          if shutdown_requested():
-            raise StopRequested from None
-          raise
+        config.run()
         if shutdown_requested():
           raise StopRequested("Camera configuration cancelled")
         configured_shape = config.shape

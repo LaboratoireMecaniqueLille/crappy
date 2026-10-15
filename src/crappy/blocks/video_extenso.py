@@ -435,6 +435,7 @@ VideoExtensoConfig.get_config` exports only the selected spots and detection
       raise RuntimeError("At that point the log_queue should be set but it "
                          "isn't")
 
+    assert self._failure_manager is not None
     return create_configurator(self.configurator,
                                self._camera,
                                self._config_backend,
@@ -442,6 +443,7 @@ VideoExtensoConfig.get_config` exports only the selected spots and detection
                                self._log_level,
                                self.freq,
                                self._transform,
+                               self._failure_manager,
                                white_spots=self._white_spots,
                                num_spots=self._num_spots,
                                min_area=self._min_area,

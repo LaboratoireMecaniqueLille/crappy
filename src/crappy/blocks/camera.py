@@ -24,7 +24,7 @@ from ..tool.camera_config.tkinter import TkinterCameraConfig
 from ..tool.camera_config.pyqt import PyQtCameraConfig
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
-from .._exceptions import (PrepareError, StopRequested, ProcessExitError,
+from .._exceptions import (StopRequested, ProcessExitError,
                            ShutdownTimeoutError)
 
 
@@ -1222,7 +1222,8 @@ get_config` is unpacked into
               (self._stop_event is not None and self._stop_event.is_set()))
 
     # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'prepare')
+    assert self._failure_manager is not None
+    manager = self._failure_manager
     if self._logger is not None:
       manager._logger = self._logger
     configured = False
@@ -1233,12 +1234,7 @@ get_config` is unpacked into
         config = self._configure()
         assert config is not None
         config.watch_shutdown(shutdown_requested)
-        try:
-          config.run()
-        except PrepareError:
-          if shutdown_requested():
-            raise StopRequested from None
-          raise
+        config.run()
         if shutdown_requested():
           raise StopRequested("Camera configuration cancelled")
         configured_shape = config.shape
@@ -1282,10 +1278,12 @@ get_config` output must match the processing
     if self._log_queue is None:
       raise RuntimeError("The logging Queue was never initialized")
 
+    assert self._failure_manager is not None
     return create_configurator(self.configurator,
                                self._camera,
                                self._config_backend,
                                self._log_queue,
                                self._log_level,
                                self.freq,
-                               self._transform)
+                               self._transform,
+                               self._failure_manager)

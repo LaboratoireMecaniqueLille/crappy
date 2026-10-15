@@ -5,6 +5,7 @@ import logging.handlers
 from time import sleep
 
 from .camera_process import CameraProcess
+from ..._failure import FailureManager
 from ...tool.image_processing import VideoExtensoTool, LostSpotError
 from ...tool.camera_config import SpotsBoxes
 
@@ -142,7 +143,10 @@ class VideoExtensoProcess(CameraProcess):
                                 update_thresh=self._update_thresh,
                                 safe_mode=self._safe_mode,
                                 border=self._border,
-                                blur=self._blur)
+                                blur=self._blur,
+                                failure_manager=self._failure_manager,
+                                stop_event=self._stop_event,
+                                raise_on_lost_spot=self._raise_on_lost_spot)
 
     self.log(logging.INFO, "Starting the VideoExtenso spot tracker "
                            "processes")
@@ -175,32 +179,30 @@ class VideoExtensoProcess(CameraProcess):
           raise RuntimeError("The image isn't initialized")
         
         # Sending the results to the downstream Blocks
-        if (data := self._ve.get_data(self.img)) is not None:
+        data = self._ve.get_data(self.img)
+        if isinstance(data, str):
+          raise LostSpotError(data)
+        if data is not None:
           self.send([self.metadata['t(s)'], self.metadata, *data])
 
         # Sending the detected spots to the Displayer for display
         self.send_to_draw(self._ve.spots)
 
       # In case the spots were just lost
-      except LostSpotError:
-        if self._ve is None:
-          self.log(logging.ERROR, "Trying to stop the spot Trackers but they "
-                                  "are not initialized")
-        else:
-          self.log(logging.INFO, "Spots lost, stopping the spot trackers")
-          self._ve.stop_tracking()
-        # Raising if specified by the user
-        if self._raise_on_lost_spot:
-          self.log(logging.ERROR, "Spots lost, stopping the VideoExtenso "
-                                  "process")
-          raise
+      except LostSpotError as error:
+        manager = self._failure_manager or FailureManager(self.name, 'main')
+        with manager.collect('Lost spot shutdown'):
+          if self._raise_on_lost_spot:
+            manager.record_context_exception(error, 'lost spot')
+          with manager.step('stop spot trackers'):
+            if self._ve is not None:
+              self._ve.stop_tracking()
         # Otherwise, simply setting a flag so that no additional
         # processing is performed
-        else:
-          self._lost_spots = True
-          self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
-                                    "idle until the test ends")
-          self.send_to_draw(list())
+        self._lost_spots = True
+        self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
+                                  "idle until the test ends")
+        self.send_to_draw(list())
     
     # If the spots were lost, avoid spamming the CPU in vain
     else:

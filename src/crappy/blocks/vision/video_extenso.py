@@ -256,7 +256,10 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
                                 update_thresh=self._update_thresh,
                                 safe_mode=self._safe_mode,
                                 border=self._border,
-                                blur=self._blur)
+                                blur=self._blur,
+                                failure_manager=self._failure_manager,
+                                stop_event=self._stop_event,
+                                raise_on_lost_spot=self._raise_on_lost_spot)
 
     # Mandatory otherwise the Block won't run
     super().prepare()
@@ -312,35 +315,33 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
         raise RuntimeError("The VideoExtensoTool isn't initialized")
 
       # Sending the results to the downstream Blocks, including the overlay
-      if (data := self._ve.get_data(img)) is not None:
+      data = self._ve.get_data(img)
+      if isinstance(data, str):
+        raise LostSpotError(data)
+      if data is not None:
         self.send([metadata['t(s)'], metadata, *data, self._ve.spots])
 
         # Save the last data points for the case when spots are lost
         self._last_data = data
 
     # In case the spots were just lost
-    except LostSpotError:
-      if self._ve is None:
-        self.log(logging.ERROR, "Trying to stop the spot Trackers but they "
-                                "are not initialized")
-      else:
-        self.log(logging.INFO, "Spots lost, stopping the spot trackers")
-        self._ve.stop_tracking()
-      # Raising if specified by the user
-      if self._raise_on_lost_spot:
-        self.log(logging.ERROR, "Spots lost, stopping the VideoExtenso "
-                                "process")
-        raise
+    except LostSpotError as error:
+      manager = self._failure_manager or FailureManager(self.name, 'main')
+      with manager.collect('Lost spot shutdown'):
+        if self._raise_on_lost_spot:
+          manager.record_context_exception(error, 'lost spot')
+        with manager.step('stop spot trackers'):
+          if self._ve is not None:
+            self._ve.stop_tracking()
       # Otherwise, simply setting a flag so that no additional
       # processing is performed
-      else:
-        self._lost_spots = True
-        self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
-                                  "idle until the test ends")
-        # Send a message with the last data points and no overlay for stopping
-        # the display of the overlay
-        if self._last_data is not None:
-          self.send([metadata['t(s)'], metadata, *self._last_data, list()])
+      self._lost_spots = True
+      self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
+                                "idle until the test ends")
+      # Send a message with the last data points and no overlay for stopping
+      # the display of the overlay
+      if self._last_data is not None:
+        self.send([metadata['t(s)'], metadata, *self._last_data, list()])
 
     # If requested, displays the FPS of the image display
     if self.display_freq:
