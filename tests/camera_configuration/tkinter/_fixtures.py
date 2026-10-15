@@ -3,6 +3,7 @@
 """Resources and deterministic update helpers for Tkinter window tests."""
 
 import logging
+from crappy._failure import FailureManager
 from collections.abc import Callable
 from multiprocessing import Queue, current_process
 from time import monotonic, sleep
@@ -90,8 +91,9 @@ class TkinterConfigTestCase(unittest.TestCase):
   def customSetUp(self) -> None:
     """Instantiates the configuration window and starts it."""
 
-    self._config = TkinterCameraConfig(self._camera, self._log_queue,
-                                       self._log_level, self._freq, None)
+    self._config = TkinterCameraConfig(
+        self._camera, self._log_queue, self._log_level, self._freq, None,
+        FailureManager('test configuration', 'configuration'))
 
     self._config._testing = True
     self.start_configuration()

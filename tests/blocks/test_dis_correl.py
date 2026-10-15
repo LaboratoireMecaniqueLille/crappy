@@ -3,6 +3,7 @@
 from unittest.mock import patch, sentinel
 
 import numpy as np
+from crappy._failure import FailureManager
 
 from crappy.blocks.camera import Camera
 from crappy.blocks.dis_correl import DISCorrel
@@ -201,6 +202,7 @@ class TestDISCorrel(CameraWrapperTestBase):
                       transform=transform,
                       config_backend='tkinter',
                       **self.camera_kwargs(config=True))
+    block._failure_manager = FailureManager(block.name, 'prepare')
     block._camera = sentinel.camera
     block._log_queue = sentinel.log_queue
     block._log_level = 30
@@ -217,4 +219,5 @@ class TestDISCorrel(CameraWrapperTestBase):
                                      'pyqt': dis_correl_module.PyQtDISCorrelConfig},
                                     sentinel.camera, 'tkinter',
                                     sentinel.log_queue, 30, 123.0, transform,
+                                    block._failure_manager,
                                     patch=sentinel.box)

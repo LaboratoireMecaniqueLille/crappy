@@ -8,6 +8,7 @@ import logging
 import numpy as np
 from unittest.mock import MagicMock, Mock, call, patch, sentinel
 from crappy import Block
+from crappy._failure import FailureManager
 from crappy._exceptions import StopRequested, ShutdownTimeoutError
 from crappy.blocks.camera import Camera
 import crappy.blocks.camera as camera_module
@@ -175,6 +176,8 @@ class CameraBlockTestBase(CameraProcessTestBase):
     defaults.update(kwargs)
 
     self._camera_block = block_type(**defaults)
+    self._camera_block._failure_manager = FailureManager(
+        self._camera_block.name, 'prepare')
     self._camera_block._log_level = logging.CRITICAL
     self._camera_block._log_queue = Queue()
     self._queues.append(self._camera_block._log_queue)
@@ -454,7 +457,8 @@ class TestCameraBlock(CameraBlockTestBase):
                                      'pyqt': camera_module.PyQtCameraConfig},
                                     sentinel.camera, 'tkinter',
                                     camera._log_queue, camera._log_level,
-                                    camera.freq, transform)
+                                    camera.freq, transform,
+                                    camera._failure_manager)
 
   def test_config_backend_is_consumed_before_camera_kwargs(self) -> None:
     """A GUI selector cannot accidentally reach Camera.open()."""

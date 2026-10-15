@@ -15,9 +15,10 @@ from crappy._exceptions import ProcessExitError, StopRequested
 from crappy._failure import FailureManager
 from crappy import Block
 from crappy.blocks.camera import Camera
-from crappy.blocks.camera_processes import Displayer
-from crappy.blocks.vision import CameraSource
+from crappy.blocks.camera_processes import Displayer, VideoExtensoProcess
+from crappy.blocks.vision import CameraSource, VideoExtensoProcessor
 from crappy.links import ImageLink
+from crappy.tool.camera_config import CameraConfig
 import crappy.blocks.camera as camera_module
 
 from .camera_process_test_base import CameraProcessTestBase, TestCameraProcess
@@ -103,6 +104,102 @@ class ReportingSource(CameraSource):
   def loop(self) -> None:
     super().loop()
     raise OSError('Vision acquisition')
+
+
+class HeadlessHistogramConfig(CameraConfig):
+  """Exercises configuration ownership without a GUI event loop."""
+
+  def __init__(self, camera, log_queue, log_level, max_freq, transform,
+               failure_manager):
+    from multiprocessing import Event
+    from crappy.tool.camera_config.base import ConfigurationLifecycle
+    from crappy.tool.camera_config.config_tools import HistogramProcess
+
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager)
+    self.stop_event = Event()
+    self.processing_event = Event()
+    self.img_in, self.img_out, self.failure_queue = Queue(), Queue(), Queue()
+    self.worker = HistogramProcess(
+        self.stop_event, self.processing_event, self.img_in, self.img_out,
+        self._log_level, self._log_queue, failure_queue=self.failure_queue,
+        block_name=self._failure_manager.block_name,
+        owner_path=f'{self._failure_manager.owner_path}.HistogramProcess')
+    self._lifecycle = ConfigurationLifecycle(
+        self.stop_event, self.worker, (self.img_in, self.img_out),
+        self._failure_manager, self.failure_queue)
+
+  def watch_shutdown(self, requested):
+    self.shutdown_requested = requested
+
+  def run(self):
+    self.worker.start()
+    self._lifecycle.mark_histogram_started()
+    self.img_in.put(('invalid histogram request',))
+    deadline = monotonic() + 5
+    while not self._lifecycle.failed and monotonic() < deadline:
+      sleep(0.01)
+    if not self._lifecycle.failed:
+      raise RuntimeError('test timed out waiting for histogram failure')
+    self.stop()
+    self._lifecycle.raise_if_failed()
+
+  def stop(self):
+    self._lifecycle.close_resources()
+
+
+class HistogramCamera(Camera):
+  configurator = HeadlessHistogramConfig
+
+  def __init__(self):
+    super().__init__('unused', config=True, config_backend='tkinter',
+                     image_generator=_image_generator, img_shape=(4, 5),
+                     img_dtype='uint8', debug=None)
+
+
+def _tracking_spots():
+  from crappy.tool.camera_config import SpotsBoxes, Box
+  spots = SpotsBoxes()
+  spots[0] = Box(x_start=0, x_end=4, y_start=0, y_end=4,
+                 x_centroid=2, y_centroid=2)
+  spots.save_length()
+  return spots
+
+
+class NestedTrackerProcess(VideoExtensoProcess):
+  def init(self):
+    from tests.image_processing.test_video_extenso import FaultTracker
+    from crappy.tool.image_processing.video_extenso import video_extenso
+    self.set_config(_tracking_spots(), 128)
+    with patch.object(video_extenso, 'Tracker', FaultTracker):
+      super().init()
+
+
+class TrackerCamera(Camera):
+  def __init__(self):
+    super().__init__('unused', config=False, config_backend='tkinter',
+                     image_generator=_image_generator, img_shape=(4, 5),
+                     img_dtype='uint8', debug=None)
+    self.labels = ['t(s)', 'meta', 'Coo', 'Eyy', 'Exx']
+
+  def prepare(self):
+    self.process_proc = NestedTrackerProcess(
+        False, 1, 1, None, False, False, 0, True)
+    super().prepare()
+
+
+class NestedVisionTracker(VideoExtensoProcessor):
+  def request_config(self, source):
+    return None
+
+  def recv_configs(self):
+    return {'source': (_tracking_spots(), 128)}
+
+  def prepare(self):
+    from tests.image_processing.test_video_extenso import FaultTracker
+    from crappy.tool.image_processing.video_extenso import video_extenso
+    with patch.object(video_extenso, 'Tracker', FaultTracker):
+      super().prepare()
 
 
 class TestCameraReporting(CameraBlockTestBase):
@@ -262,6 +359,17 @@ class TestCameraReporting(CameraBlockTestBase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
+  def test_nested_configuration_and_trackers_reach_public_boundary(self):
+    for method in get_all_start_methods():
+      with self.subTest(method=method):
+        script = ('from tests.camera_process.test_08_reporting import '
+                  f'_exercise_nested_context; _exercise_nested_context({method!r})')
+        result = subprocess.run([sys.executable, '-c', script], text=True,
+                                capture_output=True, timeout=60)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+
 def _exercise_context(method: str) -> None:
   """Runs worker ownership checks in an isolated multiprocessing context."""
 
@@ -416,3 +524,34 @@ class TestReportingBoundaries(CameraProcessTestBase):
                      (origin, stop_error))
     self.assertTrue(worker._cam_barrier.broken)
     self.assertTrue(worker._stop_thread)
+
+
+def _exercise_nested_context(method):
+  """Checks all nested report channels through start_all(), with logging off."""
+
+  from multiprocessing import set_start_method
+  set_start_method(method)
+  for kind in ('histogram', 'legacy tracker', 'vision tracker'):
+    if kind == 'histogram':
+      source = HistogramCamera()
+    elif kind == 'legacy tracker':
+      source = TrackerCamera()
+    else:
+      source = CameraSource('unused', config=False, config_backend='tkinter',
+                            image_generator=_image_generator, img_shape=(4, 5),
+                            img_dtype='uint8', debug=None)
+      processor = NestedVisionTracker(debug=None, blur=None)
+      ImageLink(source, processor)
+    try:
+      Block.start_all(log_level=None)
+    except BaseExceptionGroup as error:
+      leaves = exception_leaves(error)
+      expected = (ValueError,) if kind == 'histogram' else (
+          ValueError, KeyboardInterrupt)
+      assert tuple(type(leaf) for leaf in leaves) == expected, error
+      if kind != 'histogram':
+        assert isinstance(leaves[0].__cause__, KeyError)
+    else:
+      raise AssertionError('Nested worker failure did not reach start_all()')
+    assert source.exitcode == 0, source.exitcode
+    assert not Block.instances

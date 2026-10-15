@@ -294,11 +294,11 @@ class TestGUIBackends(GUIBlockTestBase):
           block._qt_button = Mock()
           with patch.object(block, callback, side_effect=error):
             getattr(block, handler)(False)
-          self.assertIs(block._callback_error, error)
+          self.assertIs(block._failure_manager.snapshot()[0][1], error)
           block._qt_button.setEnabled.assert_called_once_with(False)
-          with self.assertRaises(type(error)) as raised:
+          with self.assertRaises(BaseExceptionGroup) as raised:
             block.loop()
-          self.assertIs(raised.exception, error)
+          self.assertEqual(exception_leaves(raised.exception), (error,))
           block._qt_app.processEvents.assert_called_once_with()
 
   def test_button_counter_and_sending_do_not_depend_on_tk_variables(

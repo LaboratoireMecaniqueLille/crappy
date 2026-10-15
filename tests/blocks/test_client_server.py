@@ -542,3 +542,87 @@ class TestClientServer(BlockTestBase):
       with self.assertRaisesRegex(FileNotFoundError,
                                   "Mosquitto is not installed"):
         block._launch_mosquitto()
+
+
+class TestClientServerFailureCallbacks(BlockTestBase):
+  """Unexpected reader and MQTT faults are retained instead of escaping Threads."""
+
+  def make_client_server(self):
+    from multiprocessing import Barrier, Event
+    from unittest.mock import Mock
+    from crappy._failure import FailureManager
+
+    block = ClientServer(topics=['value'])
+    block._failure_manager = FailureManager(block.name, 'main')
+    block._logger = block._failure_manager._logger = Mock()
+    block._stop_event = Event()
+    block._ready_barrier = Barrier(1)
+    block._start_event = Event()
+    self._block = block
+    return block
+
+  def test_message_and_subscribe_failures_keep_all_original_errors(self):
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+    from tests.block.block_test_base import exception_leaves
+
+    block = self.make_client_server()
+    message_error = OSError('message buffer')
+    subscribe_error = KeyboardInterrupt('subscribe')
+    output = Mock()
+    output.put_nowait.side_effect = message_error
+    block._buffer_output = {('value',): output}
+    block._on_message(None, None, SimpleNamespace(
+        payload=dumps([[1]]), topic="('value',)"))
+    block._client = Mock()
+    block._client.subscribe.side_effect = subscribe_error
+    block._on_connect(None, None, None, 0)
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      block._failure_manager.raise_if_failed('MQTT callbacks')
+    self.assertEqual(exception_leaves(caught.exception),
+                     (message_error, subscribe_error))
+    self.assertTrue(block._stop_event.is_set())
+    self.assertTrue(block._ready_barrier.broken)
+    self.assertEqual(block._logger.error.call_count, 2)
+    block._client.subscribe.side_effect = None
+
+  def test_broker_hard_exit_and_intentional_eof_are_distinguished(self):
+    from unittest.mock import Mock
+    from crappy._exceptions import ProcessExitError
+
+    for stopped in (False, True):
+      with self.subTest(stopped=stopped):
+        block = self.make_client_server()
+        broker = block._proc = Mock()
+        broker.pid = 123
+        broker.stdout.readline.return_value = b''
+        broker.poll.return_value = 7
+        if stopped:
+          block._stop_event.set()
+        block._output_reader()
+        failures = block._failure_manager.snapshot()
+        if stopped:
+          self.assertEqual(failures, ())
+        else:
+          self.assertEqual(len(failures), 1)
+          error = failures[0][1]
+          self.assertIsInstance(error, ProcessExitError)
+          self.assertEqual((error.process_name, error.pid, error.exitcode),
+                           ('Mosquitto', 123, 7))
+          self.assertTrue(block._stop_event.is_set())
+          self.assertTrue(block._ready_barrier.broken)
+        block._proc = None
+
+  def test_reader_error_is_retained_without_default_thread_traceback(self):
+    from unittest.mock import Mock
+
+    block = self.make_client_server()
+    broker = block._proc = Mock()
+    broker.stdout.readline.return_value = bytes([255])
+    block._output_reader()
+    retained = block._failure_manager.snapshot()[0][1]
+    self.assertIsInstance(retained, UnicodeDecodeError)
+    self.assertTrue(block._stop_event.is_set())
+    self.assertTrue(block._ready_barrier.broken)
+    block._logger.error.assert_called_once()
+    block._proc = None

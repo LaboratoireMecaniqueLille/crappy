@@ -12,6 +12,7 @@ from crappy.blocks.client_server import ClientServer
 from crappy.blocks.grapher import Grapher
 from crappy.blocks.ucontroller import UController
 from crappy._failure import FailureManager
+from crappy._exceptions import ShutdownTimeoutError
 from crappy.links import Link
 from crappy.links import link_graph
 
@@ -177,7 +178,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     with self.assertRaises(ExceptionGroup) as caught:
       block.finish()
     self.assertIsInstance(exception_leaves(caught.exception)[0],
-                          RuntimeError)
+                          ShutdownTimeoutError)
     self.assertRegex(str(exception_leaves(caught.exception)[0]), 'reader thread')
     proc.stdout.close.assert_not_called()
     reader.is_alive.return_value = False

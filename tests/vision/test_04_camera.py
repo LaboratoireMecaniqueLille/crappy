@@ -9,6 +9,7 @@ import numpy as np
 
 import crappy.blocks.vision.camera as camera_module
 from crappy._exceptions import StopRequested
+from crappy._failure import FailureManager
 from crappy.blocks.camera import DummyCam
 from crappy.blocks.vision import CameraSource
 from crappy.blocks.vision.block import ConfigRequest
@@ -64,10 +65,11 @@ class RecordingConfig(CameraConfig):
   raise_in: str | None = None
 
   def __init__(self, camera, log_queue, log_level, max_freq, transform,
-               *args, **kwargs) -> None:
+               failure_manager, *args, **kwargs) -> None:
     """Records constructor arguments without initializing Tk."""
 
-    super().__init__(camera, log_queue, log_level, max_freq, transform)
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager=failure_manager)
     self.constructor_args = (camera, log_queue, log_level, max_freq,
                              transform, args, kwargs)
     self.shape = type(self).shape_value
@@ -136,6 +138,7 @@ class TestCameraSource(VisionTestBase):
     }
     options.update(kwargs)
     source = source_type(**options)
+    source._failure_manager = FailureManager(source.name, 'prepare')
     self.track_block(source)
     return source
 
@@ -589,6 +592,7 @@ class TestCameraSource(VisionTestBase):
                               img_shape=(1, 1),
                               img_dtype='uint8',
                               freq=123)
+    source._failure_manager = FailureManager(source.name, 'configuration')
     source._log_queue = sentinel.log_queue
     source._log_level = logging.WARNING
     camera = RecordingVisionCamera()
@@ -600,9 +604,12 @@ class TestCameraSource(VisionTestBase):
 
     config = RecordingConfig.instances[-1]
     self.assertEqual(factory.call_args.args[2], 'pyqt')
+    self.assertIs(factory.call_args.args[7],
+                  source._failure_manager)
     self.assertEqual(config.constructor_args,
                      (camera, sentinel.log_queue, logging.WARNING, 123,
                       transform, ('argument',), {'option': sentinel.option}))
+    self.assertIs(config._failure_manager, source._failure_manager)
     self.assertEqual(config.run_calls, 1)
     self.assertEqual(config.stop_calls, 0)
     self.assertEqual(result, ('configured',))

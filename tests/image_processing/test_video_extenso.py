@@ -1,10 +1,14 @@
 # coding: utf-8
 
 from dataclasses import dataclass
+from multiprocessing import Event
 from unittest import TestCase
 from unittest.mock import patch
 
 import numpy as np
+
+from crappy._exceptions import ProcessExitError, ShutdownTimeoutError
+from tests.block.block_test_base import exception_leaves
 
 import crappy.tool.image_processing.video_extenso.tracker as tracker_module
 import crappy.tool.image_processing.video_extenso.video_extenso as ve_module
@@ -28,6 +32,14 @@ class FakePipe:
       raise self.send_error
     self.sent.append(value)
 
+  def send_bytes(self, payload) -> None:
+    from pickle import loads
+    self.send(loads(payload))
+
+  def recv_bytes(self):
+    from pickle import dumps
+    return dumps(self.recv())
+
   def poll(self, timeout=None) -> bool:
     return bool(self.responses)
 
@@ -45,6 +57,8 @@ class FakeTracker:
 
   def __init__(self, alive: bool = True, survive_terminate: bool = False):
     self.alive = alive
+    self.pid = None
+    self.exitcode = None if alive else 0
     self.name = f'FakeTracker-{id(self)}'
     self.survive_terminate = survive_terminate
     self.started = False
@@ -124,7 +138,15 @@ class TestVideoExtensoTool(TestCase):
     kwargs.setdefault('safe_mode', False)
     kwargs.setdefault('border', 5)
     kwargs.setdefault('blur', 5)
-    return VideoExtensoTool(spots, **kwargs)
+    tool = VideoExtensoTool(spots, **kwargs)
+
+    def release() -> None:
+      with tool._failure_manager.collect('test resources', raise_on_exit=False):
+        with tool._failure_manager.step('stop fake trackers'):
+          VideoExtensoTool.stop_tracking(tool)
+
+    self.addCleanup(release)
+    return tool
 
   def test_destructor_accepts_partially_initialized_instance(self) -> None:
     """Tests cleanup after construction fails before attributes are set."""
@@ -165,6 +187,8 @@ class TestVideoExtensoTool(TestCase):
     self.assertTrue(all(tracker.started for tracker in created))
     self.assertIsNone(created[0].kwargs['thresh'])
     self.assertTrue(created[0].kwargs['white_spots'])
+    self.assertTrue(all(tracker.kwargs['stop_event'] is tool._tracking_stop
+                        for tracker in created))
 
   def test_stop_tracking_stops_joins_kills_and_closes(self) -> None:
     """Checks tracker shutdown and pipe cleanup."""
@@ -176,19 +200,22 @@ class TestVideoExtensoTool(TestCase):
     tracker_2 = FakeTracker(alive=True, survive_terminate=True)
     pipe_1 = FakePipe()
     pipe_2 = FakePipe()
+    tool._tracking_stop = Event()
     tool._trackers = [tracker_1, tracker_2]
-    tool._pipes = [pipe_1, pipe_2]
     tool._started_trackers = list(tool._trackers)
-    tool._tracker_connections = dict(zip(tool._trackers, tool._pipes))
+    tool._pipes = [pipe_1, pipe_2]
     tool._log = lambda *_: None
-    tool._send = lambda pipe, value: pipe.send(value)
 
-    tool.stop_tracking()
+    with self.assertRaises(ExceptionGroup) as caught:
+      tool.stop_tracking()
+    self.assertTrue(all(isinstance(error, ShutdownTimeoutError)
+                        for error in exception_leaves(caught.exception)))
 
-    self.assertEqual(pipe_1.sent, [('stop', 'stop', 'stop')])
-    self.assertEqual(pipe_2.sent, [('stop', 'stop', 'stop')])
-    self.assertEqual(tracker_1.join_calls, [0.1, 0.1])
-    self.assertEqual(tracker_2.join_calls, [0.1, 0.1, 0.1])
+    self.assertTrue(tool._tracking_stop.is_set())
+    self.assertEqual(pipe_1.sent, [])
+    self.assertEqual(pipe_2.sent, [])
+    self.assertEqual(tracker_1.join_calls, [1.0, 1.0])
+    self.assertEqual(tracker_2.join_calls, [1.0, 1.0, 1.0])
     self.assertTrue(tracker_1.terminated)
     self.assertTrue(tracker_2.terminated)
     self.assertFalse(tracker_1.killed)
@@ -198,7 +225,7 @@ class TestVideoExtensoTool(TestCase):
     self.assertTrue(tracker_1.closed)
     self.assertTrue(tracker_2.closed)
     tool.stop_tracking()
-    self.assertEqual(tracker_2.join_calls, [0.1, 0.1, 0.1])
+    self.assertEqual(tracker_2.join_calls, [1.0, 1.0, 1.0])
 
   def test_partial_start_retains_both_pipe_endpoints(self) -> None:
     """A failed Tracker constructor or start cannot lose allocated Pipes."""
@@ -224,36 +251,41 @@ class TestVideoExtensoTool(TestCase):
           self.assertTrue(inlet.closed)
           self.assertTrue(outlet.closed)
 
-  def test_cleanup_failures_do_not_skip_peers_or_break_retry_pairing(
+  def test_cleanup_failures_do_not_skip_peers_or_prevent_retry(
       self) -> None:
-    """Retrying one Tracker cannot accidentally send stop to another Pipe."""
+    """Each tracker and Pipe is released independently, including on retry."""
 
     tool = self._make_tool(self._spots(self._box(10, 20, 10, 20),
                                        self._box(30, 40, 10, 20)))
     first = FakeTracker(survive_terminate=True)
     second = FakeTracker()
     inlet, outlet = FakePipe(), FakePipe()
+    tool._tracking_stop = Event()
     tool._trackers = [first, second]
     tool._started_trackers = [first, second]
     tool._pipes = [inlet, outlet]
-    tool._tracker_connections = {first: inlet, second: outlet}
-    tool._send = lambda pipe, value: pipe.send(value)
     errors = (OSError('join'), RuntimeError('terminate'), ValueError('close'))
     interrupt = KeyboardInterrupt()
     with (patch.object(first, 'join', side_effect=[errors[0], None, None]),
           patch.object(first, 'terminate', side_effect=errors[1]),
           patch.object(first, 'close', side_effect=errors[2]),
           patch.object(outlet, 'close', side_effect=interrupt)):
-      with self.assertRaises(KeyboardInterrupt) as caught:
+      with self.assertRaises(BaseExceptionGroup) as caught:
         tool.stop_tracking()
-    self.assertIs(caught.exception, interrupt)
-    self.assertEqual(interrupt.__cause__.exceptions, errors)
+    leaves = exception_leaves(caught.exception)
+    for error in (*errors, interrupt):
+      self.assertIn(error, leaves)
+    self.assertEqual(sum(isinstance(error, ShutdownTimeoutError)
+                         for error in leaves), 2)
+    self.assertIsNone(interrupt.__cause__)
     self.assertTrue(first.killed)
     self.assertTrue(second.closed)
     self.assertTrue(inlet.closed)
     tool.stop_tracking()
     tool.stop_tracking()
-    self.assertEqual(outlet.sent, [('stop', 'stop', 'stop')])
+    self.assertTrue(tool._tracking_stop.is_set())
+    self.assertEqual(inlet.sent, [])
+    self.assertEqual(outlet.sent, [])
     self.assertTrue(outlet.closed)
     self.assertTrue(first.closed)
 
@@ -270,6 +302,7 @@ class TestVideoExtensoTool(TestCase):
     pipe_2 = FakePipe([second_box])
     tool._pipes = [pipe_1, pipe_2]
     tool._trackers = [FakeTracker(), FakeTracker()]
+    tool._started_trackers = list(tool._trackers)
     sent = list()
 
     def send(pipe, value) -> None:
@@ -298,6 +331,7 @@ class TestVideoExtensoTool(TestCase):
     tool = self._make_tool(spots, border=0)
     tool._pipes = [FakePipe()]
     tool._trackers = [FakeTracker()]
+    tool._started_trackers = list(tool._trackers)
     tool._send = lambda *_: None
 
     self.assertEqual(tool.get_data(np.zeros((40, 40), dtype=np.uint8)),
@@ -305,25 +339,26 @@ class TestVideoExtensoTool(TestCase):
     self.assertIs(tool.spots.spot_1, first_box)
     tool._trackers.clear()
 
-  def test_get_data_raises_when_tracker_returns_error(self) -> None:
-    """Checks propagation of tracker-side failures."""
+  def test_get_data_returns_tracker_lost_spot_reason(self) -> None:
+    """Checks a tracker loss reason survives draining earlier positions."""
 
     spots = self._spots(self._box(10, 20, 10, 20))
     tool = self._make_tool(spots)
-    tool._pipes = [FakePipe(['stop'])]
+    reason = 'The selected spot left the frame'
+    tool._pipes = [FakePipe([self._box(11, 21, 10, 20), reason])]
     tool._trackers = [FakeTracker()]
+    tool._started_trackers = list(tool._trackers)
     tool._send = lambda *_: None
     tool._log = lambda *_: None
     stopped = list()
     tool.stop_tracking = lambda: stopped.append(True)
 
-    with self.assertRaises(LostSpotError):
-      tool.get_data(np.zeros((40, 40), dtype=np.uint8))
+    self.assertEqual(tool.get_data(np.zeros((40, 40), dtype=np.uint8)), reason)
 
-    self.assertEqual(stopped, [True])
+    self.assertEqual(stopped, [])
     tool._trackers.clear()
 
-  def test_safe_mode_overlap_raises(self) -> None:
+  def test_safe_mode_overlap_returns_lost_spot(self) -> None:
     """Checks overlap handling in safe mode."""
 
     spots = self._spots(self._box(10, 20, 10, 20),
@@ -333,15 +368,16 @@ class TestVideoExtensoTool(TestCase):
     overlap_2 = self._box(20, 35, 20, 35)
     tool._pipes = [FakePipe([overlap_1]), FakePipe([overlap_2])]
     tool._trackers = [FakeTracker(), FakeTracker()]
+    tool._started_trackers = list(tool._trackers)
     tool._send = lambda *_: None
     tool._log = lambda *_: None
     stopped = list()
     tool.stop_tracking = lambda: stopped.append(True)
 
-    with self.assertRaises(LostSpotError):
-      tool.get_data(np.zeros((50, 50), dtype=np.uint8))
+    self.assertEqual(tool.get_data(np.zeros((50, 50), dtype=np.uint8)),
+                     'Overlapping spots detected in safe mode')
 
-    self.assertEqual(stopped, [True])
+    self.assertEqual(stopped, [])
     tool._trackers.clear()
 
   def test_get_data_rejects_missing_trackers(self) -> None:
@@ -356,17 +392,18 @@ class TestVideoExtensoTool(TestCase):
     """Checks a queued loss report is read before checking liveness."""
 
     tool = self._make_tool(self._spots(self._box(10, 20, 10, 20)))
-    tool._pipes = [FakePipe(['stop'], send_error=BrokenPipeError)]
+    reason = 'The selected spot was lost'
+    tool._pipes = [FakePipe([reason], send_error=BrokenPipeError)]
     tool._trackers = [FakeTracker(alive=False)]
+    tool._started_trackers = list(tool._trackers)
     tool._send = lambda pipe, value: pipe.send(value)
     tool._log = lambda *_: None
     stopped = list()
     tool.stop_tracking = lambda: stopped.append(True)
 
-    with self.assertRaises(LostSpotError):
-      tool.get_data(np.zeros((40, 40), dtype=np.uint8))
+    self.assertEqual(tool.get_data(np.zeros((40, 40), dtype=np.uint8)), reason)
 
-    self.assertEqual(stopped, [True])
+    self.assertEqual(stopped, [])
 
   def test_get_data_rejects_dead_tracker_without_loss_report(self) -> None:
     """Checks an unexpectedly dead Tracker cannot return stale data."""
@@ -374,11 +411,12 @@ class TestVideoExtensoTool(TestCase):
     tool = self._make_tool(self._spots(self._box(10, 20, 10, 20)))
     tool._pipes = [FakePipe([None], recv_error=EOFError)]
     tool._trackers = [FakeTracker(alive=False)]
+    tool._started_trackers = list(tool._trackers)
     tool._send = lambda *_: None
     stopped = list()
     tool.stop_tracking = lambda: stopped.append(True)
 
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(ExceptionGroup) as caught:
       tool.get_data(np.zeros((40, 40), dtype=np.uint8))
 
     self.assertEqual(stopped, [True])
@@ -391,10 +429,9 @@ class TestVideoExtensoTool(TestCase):
     tool = self._make_tool(self._spots(initial_box))
     tool._pipes = [FakePipe([final_box])]
     tool._trackers = [FakeTracker(alive=False)]
+    tool._started_trackers = list(tool._trackers)
     tool._send = lambda *_: None
-    tool.stop_tracking = lambda: None
-
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(ExceptionGroup) as caught:
       tool.get_data(np.zeros((40, 40), dtype=np.uint8))
 
     self.assertIs(tool.spots.spot_1, final_box)
@@ -453,7 +490,21 @@ class TestTracker(TestCase):
     kwargs.setdefault('logger_name', 'test')
     kwargs.setdefault('log_level', None)
     kwargs.setdefault('log_queue', None)
+    kwargs.setdefault('stop_event', Event())
     return Tracker(**kwargs)
+
+  def test_run_stops_on_event_without_a_pipe_message(self) -> None:
+    """An idle tracker notices the Event without any control packet."""
+
+    pipe = FakePipe()
+    stop = Event()
+    tracker = self._make_tracker(pipe=pipe, stop_event=stop)
+    with patch.object(pipe, 'poll', side_effect=lambda _: stop.set() or False):
+      tracker.run()
+
+    self.assertTrue(pipe.closed)
+    self.assertEqual(pipe.sent, [])
+    self.assertEqual(tracker._failure_manager.snapshot(), ())
 
   def test_get_name_returns_unique_names(self) -> None:
     """Checks process name allocation."""
@@ -512,6 +563,21 @@ class TestTracker(TestCase):
       with self.assertRaises(LostSpotError):
         tracker._evaluate(0, 0, img)
 
+  def test_run_sends_only_reason_for_tolerated_lost_spot(self) -> None:
+    """Checks explicit and fallback diagnostics stay ordinary data strings."""
+
+    for reason in ('The selected spot left the frame', ''):
+      with self.subTest(reason=reason):
+        pipe = FakePipe([(0, 0, np.zeros((20, 20), dtype=np.uint8))])
+        tracker = self._make_tracker(pipe=pipe)
+        with patch.object(tracker, '_evaluate',
+                          side_effect=LostSpotError(reason)):
+          tracker.run()
+
+        self.assertEqual(pipe.sent, [reason or 'The selected spot was lost'])
+        self.assertTrue(pipe.closed)
+        self.assertEqual(tracker._failure_manager.snapshot(), ())
+
   def test_send_wrapper_on_linux(self) -> None:
     """Checks non-blocking child-to-parent send behavior on Linux."""
 
@@ -535,3 +601,225 @@ class TestTracker(TestCase):
 
     self.assertEqual(pipe.sent, ['value'])
     self.assertEqual(len(logs), 1)
+
+
+class FaultTracker(Tracker):
+  """A real tracker injecting either an expected loss or an actual failure."""
+
+  def __init__(self, *args, fault='error', peer_ready=None, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.fault = fault
+    self.peer_ready = peer_ready
+
+  def _evaluate(self, x_start, y_start, img):
+    if self.peer_ready is not None and not self.peer_ready.wait(5):
+      raise RuntimeError('test peer did not start')
+    if self.fault == 'healthy':
+      return super()._evaluate(x_start, y_start, img)
+    if self.fault == 'exit':
+      import os
+      os._exit(9)
+    if self.fault == 'loss':
+      raise LostSpotError('expected spot loss')
+    original = ValueError('tracker programming error')
+    original.__cause__ = KeyError('original cause')
+    original.add_note('original tracker note')
+    raise BaseExceptionGroup('tracker errors', [original, KeyboardInterrupt()])
+
+
+class ReadyTracker(Tracker):
+  """Signals that a healthy peer has processed its first frame."""
+
+  def __init__(self, *args, peer_ready, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.peer_ready = peer_ready
+
+  def _evaluate(self, x_start, y_start, img):
+    self.peer_ready.set()
+    return super()._evaluate(x_start, y_start, img)
+
+
+class TestTrackerReporting(TestCase):
+  """Checks real tracker failures independently of normal spot loss."""
+
+  def make_tool(self, fault, raise_on_lost_spot=False, with_peer=False):
+    from multiprocessing import Event
+    from functools import partial
+    from crappy._failure import FailureManager
+
+    spots = SpotsBoxes()
+    spots[0] = Box(x_start=5, x_end=15, y_start=5, y_end=15,
+                   x_centroid=10, y_centroid=10)
+    if with_peer:
+      spots[1] = Box(x_start=16, x_end=19, y_start=5, y_end=15,
+                     x_centroid=17.5, y_centroid=10)
+    spots.save_length()
+    self.manager = FailureManager('test tracker owner', 'main')
+    self.stop = Event()
+    tool = VideoExtensoTool(
+        spots, thresh=128, log_level=None, log_queue=None, white_spots=False,
+        update_thresh=False, safe_mode=False, border=0, blur=None,
+        failure_manager=self.manager, stop_event=self.stop,
+        raise_on_lost_spot=raise_on_lost_spot)
+    from unittest.mock import Mock
+    self.manager._logger = Mock()
+
+    def release():
+      with self.manager.collect('test cleanup', raise_on_exit=False):
+        with self.manager.step('release real trackers'):
+          tool.stop_tracking()
+
+    self.addCleanup(release)
+    if with_peer:
+      peer_ready = Event()
+      created = []
+
+      def make_tracker(**kwargs):
+        if created:
+          tracker = ReadyTracker(peer_ready=peer_ready, **kwargs)
+        else:
+          tracker = FaultTracker(fault=fault, peer_ready=peer_ready, **kwargs)
+        created.append(tracker)
+        return tracker
+
+      factory = make_tracker
+    else:
+      factory = partial(FaultTracker, fault=fault)
+    with patch.object(ve_module, 'Tracker', factory):
+      tool.start_tracking()
+    return tool
+
+  def request_until_failure(self, tool):
+    from time import monotonic, sleep
+    deadline = monotonic() + 5
+    while monotonic() < deadline:
+      try:
+        result = tool.get_data(np.zeros((20, 20), dtype=np.uint8))
+      except BaseExceptionGroup as error:
+        return error
+      if isinstance(result, str):
+        return result
+      sleep(0.01)
+    self.fail('Tracker did not return its result or failure')
+
+  def test_programming_failure_is_not_misclassified_as_lost_spot(self):
+    tool = self.make_tool('error')
+    error = self.request_until_failure(tool)
+    self.assertIsInstance(error, BaseExceptionGroup)
+    leaves = exception_leaves(error)
+    self.assertEqual(tuple(type(leaf) for leaf in leaves),
+                     (ValueError, KeyboardInterrupt))
+    self.assertIsInstance(leaves[0].__cause__, KeyError)
+    self.assertIn('original tracker note', leaves[0].__notes__)
+    tool.stop_tracking()
+    self.assertEqual(len(self.manager.snapshot()), 1)
+    report = self.manager.snapshot()[0][0]
+    self.assertEqual(report.block_name, 'test tracker owner')
+    self.assertEqual(report.phase, 'tracking')
+    self.manager._logger.error.assert_not_called()
+    self.assertTrue(self.stop.is_set())
+    self.assertIsNone(tool._failure_thread)
+    self.assertEqual(tool._failure_queues, [])
+
+  def test_lost_spot_is_a_normal_result_and_not_a_failure_report(self):
+    tool = self.make_tool('loss')
+    result = self.request_until_failure(tool)
+    self.assertEqual(result, 'expected spot loss')
+    tool.stop_tracking()
+    self.assertFalse(self.stop.is_set())
+    self.assertEqual(self.manager.snapshot(), ())
+    self.manager._logger.error.assert_not_called()
+
+  def test_hard_exit_retains_the_process_identity(self):
+    tool = self.make_tool('exit')
+    tracker = tool._trackers[0]
+    name, pid = tracker.name, tracker.pid
+    error = self.request_until_failure(tool)
+    self.assertIsInstance(error, ExceptionGroup)
+    failure, = exception_leaves(error)
+    self.assertIsInstance(failure, ProcessExitError)
+    self.assertEqual((failure.process_name, failure.pid, failure.exitcode),
+                     (name, pid, 9))
+    self.assertEqual(len(self.manager.snapshot()), 1)
+    tool.stop_tracking()
+    self.assertEqual(len(self.manager.snapshot()), 1)
+
+  def test_fatal_lost_spot_retains_original_tracker_ownership(self):
+    tool = self.make_tool('loss', raise_on_lost_spot=True)
+    tracker = tool._trackers[0]
+    name, pid = tracker.name, tracker.pid
+    failure = self.request_until_failure(tool)
+    self.assertIsInstance(failure, ExceptionGroup)
+    error, = exception_leaves(failure)
+    self.assertIsInstance(error, LostSpotError)
+    self.assertEqual(str(error), 'expected spot loss')
+    report = self.manager.snapshot()[0][0]
+    self.assertEqual((report.process_name, report.pid), (name, pid))
+    self.assertIn('raise LostSpotError', report.formatted_traceback)
+    tool.stop_tracking()
+    self.assertEqual(len(self.manager.snapshot()), 1)
+    self.manager._logger.error.assert_not_called()
+
+  def test_one_dead_tracker_does_not_skip_healthy_peer_shutdown(self):
+    tool = self.make_tool('exit', with_peer=True)
+    healthy = tool._trackers[1]
+    failure = self.request_until_failure(tool)
+    error, = exception_leaves(failure)
+    self.assertIsInstance(error, ProcessExitError)
+    tool.stop_tracking()
+    self.assertEqual(tool._trackers, [])
+    self.assertEqual(tool._started_trackers, [])
+    self.assertEqual(tool._pipes, [])
+    self.assertEqual(tool._failure_queues, [])
+    self.assertIsNone(tool._failure_thread)
+    self.assertEqual(len(self.manager.snapshot()), 1)
+
+  def test_healthy_tracker_stops_without_a_pipe_message(self):
+    """A real idle tracker exits through its Event, not the image Pipe."""
+
+    tool = self.make_tool('healthy')
+    pipe = tool._pipes[0]
+    tool._send(pipe, (5, 5, np.zeros((10, 10), dtype=np.uint8)))
+    self.assertTrue(pipe.poll(5), 'Tracker did not process its first frame')
+    self.assertIsInstance(pipe.recv(), Box)
+
+    with patch.object(tool, '_send') as send:
+      tool.stop_tracking()
+
+    send.assert_not_called()
+    self.assertTrue(tool._tracking_stop.is_set())
+    self.assertFalse(self.stop.is_set())
+    self.assertEqual(self.manager.snapshot(), ())
+    self.assertEqual(tool._trackers, [])
+    self.assertEqual(tool._failure_queues, [])
+    self.assertIsNone(tool._failure_thread)
+
+  def test_reporting_in_available_start_methods(self):
+    from multiprocessing import get_all_start_methods
+    import subprocess
+    import sys
+
+    for method in get_all_start_methods():
+      with self.subTest(method=method):
+        script = ('from tests.image_processing.test_video_extenso import '
+                  f'exercise_tracker_context; exercise_tracker_context({method!r})')
+        result = subprocess.run([sys.executable, '-c', script], text=True,
+                                capture_output=True, timeout=45)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+def exercise_tracker_context(method):
+  """Runs real error, lost-spot and crash cases without sharing global state."""
+
+  from multiprocessing import set_start_method
+  import unittest
+  set_start_method(method)
+  names = ('test_programming_failure_is_not_misclassified_as_lost_spot',
+           'test_lost_spot_is_a_normal_result_and_not_a_failure_report',
+           'test_fatal_lost_spot_retains_original_tracker_ownership',
+           'test_one_dead_tracker_does_not_skip_healthy_peer_shutdown',
+           'test_healthy_tracker_stops_without_a_pipe_message',
+           'test_hard_exit_retains_the_process_identity')
+  suite = unittest.TestSuite(TestTrackerReporting(name) for name in names)
+  if not unittest.TextTestRunner().run(suite).wasSuccessful():
+    raise SystemExit(1)

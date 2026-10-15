@@ -136,7 +136,7 @@ class TestFailureManagerCollections(TestCase):
     self.assertEqual(self.manager._collections.stack, [])
     with self.assertRaises(BaseExceptionGroup) as caught:
       self.manager.raise_if_failed('final')
-    members = tuple(self.manager._iter_exception_members(caught.exception))
+    members = tuple(self.manager.iter_exception_members(caught.exception))
     for error in (origin, logging_error, transport):
       self.assertIn(error, members)
 

@@ -3,6 +3,8 @@
 """Hardware-free Cameras shared by the base and backend tests."""
 
 from time import time
+from contextlib import contextmanager
+from tests.block.block_test_base import exception_leaves
 from typing import Any
 import numpy as np
 
@@ -181,3 +183,14 @@ class FakeTestCameraParams(Camera):
 
     self._choice_getter_called = True
     return self.settings['choice_setting']._value_no_getter
+
+
+@contextmanager
+def assert_failure(test, kind, pattern):
+  """Checks a grouped lifecycle failure without losing its original type."""
+
+  with test.assertRaises(BaseExceptionGroup) as caught:
+    yield caught
+  leaves = exception_leaves(caught.exception)
+  test.assertIsInstance(leaves[0], kind)
+  test.assertRegex(str(leaves[0]), pattern)

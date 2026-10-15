@@ -75,7 +75,7 @@ class TestExceptionGroups(TestCase):
       caught['interrupt'] = errors
     for key, error in (('value', value), ('io', io), ('interrupt', interrupt)):
       self.assertIn(error,
-                    tuple(self.manager._iter_exception_members(caught[key])))
+                    tuple(self.manager.iter_exception_members(caught[key])))
 
   def test_cancellation_only_group_disappears(self) -> None:
     nested = ExceptionGroup('nested', [StopRequested()])
@@ -151,7 +151,7 @@ class TestExceptionGroups(TestCase):
     error = ValueError('shared')
     error.__cause__ = OSError('cause')
     group = ExceptionGroup('outer', [error, ExceptionGroup('inner', [error])])
-    members = tuple(self.manager._iter_exception_members(group))
+    members = tuple(self.manager.iter_exception_members(group))
     self.assertEqual(sum(member is error for member in members), 1)
     self.assertNotIn(error.__cause__, members)
     self.assertIs(self.manager._filter_exception(group, lambda member: True),

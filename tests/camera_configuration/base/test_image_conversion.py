@@ -4,6 +4,7 @@
 
 from itertools import product
 import unittest
+from crappy._failure import FailureManager
 from unittest.mock import sentinel
 import numpy as np
 
@@ -13,8 +14,9 @@ from ._fixtures import RecordingCore
 
 class TestImageConversion(unittest.TestCase):
   def setUp(self) -> None:
-    self.config = RecordingCore(DummyCamera(), sentinel.log_queue,
-                                None, None, None)
+    self.config = RecordingCore(
+        DummyCamera(), sentinel.log_queue, None, None, None,
+        FailureManager('test configuration', 'configuration'))
 
   def test_channel_layout_and_bit_depth_conversion(self) -> None:
     """Normalize gray, gray-alpha, BGR, and BGRA inputs to gray or RGB."""

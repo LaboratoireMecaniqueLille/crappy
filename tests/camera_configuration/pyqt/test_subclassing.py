@@ -3,6 +3,8 @@
 """Cooperative initialization of custom Qt backends and shared base classes."""
 
 from crappy.tool.camera_config import SpotsBoxes
+from crappy._failure import FailureManager
+from crappy.tool.camera_config.factory import create_configurator
 from crappy.tool.camera_config.base import CameraConfig, DICVEConfig
 from crappy.tool.camera_config.pyqt import PyQtCameraConfig, PyQtCameraConfigBoxes
 from ._fixtures import PyQtConfigTestCase
@@ -18,10 +20,10 @@ class TestSubclassing(PyQtConfigTestCase):
     self.assertIsInstance(self.make_config(CustomQt), CustomQt)
 
   def test_constructor_extra_argument_contract(self) -> None:
-    """The generic window ignores extras, while box-window signatures are strict."""
+    """The generic window ignores extras after the required manager slot."""
 
-    self.assertIsInstance(self.make_config(PyQtCameraConfig, 'ignored'),
-                          PyQtCameraConfig)
+    config = self.make_config(PyQtCameraConfig, 'ignored')
+    self.assertIsInstance(config._failure_manager, FailureManager)
     with self.assertRaises(TypeError):
       self.make_config(PyQtCameraConfigBoxes, 'unexpected')
 
@@ -54,7 +56,13 @@ class TestSubclassing(PyQtConfigTestCase):
 
     for configurator in (Combined, CoreFirst):
       with self.subTest(configurator=configurator.__name__):
-        config = self.make_config(configurator, SpotsBoxes())
+        manager = FailureManager('owner', 'configuration')
+        config = create_configurator(
+            configurator, self.camera, 'pyqt', self.log_queue, None, 30, None,
+            manager, SpotsBoxes())
+        self.configs.append(config)
+        self.assertIs(config._failure_manager, manager)
+        self.assertIs(config._lifecycle.manager, manager)
         self.assertEqual(config.core_calls, 1)
         self.assertEqual(config.backend_calls, 1)
         config._is_on_image(0, 0)

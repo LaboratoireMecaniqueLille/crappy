@@ -7,6 +7,8 @@ from importlib.util import find_spec
 import unittest
 from unittest.mock import patch
 
+from crappy._failure import FailureManager
+
 from ._fixtures import (TkinterConfigTestCase, FakeTestCameraSimple,
                         FakeTestCameraSpots)
 from crappy.tool.camera_config.tkinter import (TkinterCameraConfigBoxes,
@@ -32,8 +34,9 @@ class TestDrawBox(TkinterConfigTestCase):
     """Used for instantiating the special configuration interface and for
     adding bindings, otherwise the test wouldn't work."""
 
-    self._config = TkinterCameraConfigBoxes(self._camera, self._log_queue,
-                                            self._log_level, self._freq, None)
+    self._config = TkinterCameraConfigBoxes(
+        self._camera, self._log_queue, self._log_level, self._freq, None,
+        FailureManager('test configuration', 'configuration'))
 
     self._config._img_canvas.bind('<ButtonPress-1>', self._config._start_box)
     self._config._img_canvas.bind('<B1-Motion>', self._config._extend_box)
@@ -107,9 +110,9 @@ class TestDICVE(TkinterConfigTestCase):
     """Used for instantiating the special configuration interface and for
     setting a smaller patch size value for the tests."""
 
-    self._config = TkinterDICVEConfig(self._camera, self._log_queue,
-                                      self._log_level, self._freq, None,
-                                      SpotsBoxes())
+    self._config = TkinterDICVEConfig(
+        self._camera, self._log_queue, self._log_level, self._freq, None,
+        FailureManager('test configuration', 'configuration'), SpotsBoxes())
 
     self._config._testing = True
     self._config._patch_size.value = 20
@@ -228,9 +231,9 @@ class TestDISCorrel(TkinterConfigTestCase):
   def customSetUp(self) -> None:
     """Used for instantiating the special configuration interface."""
 
-    self._config = TkinterDISCorrelConfig(self._camera, self._log_queue,
-                                          self._log_level, self._freq, None,
-                                          Box())
+    self._config = TkinterDISCorrelConfig(
+        self._camera, self._log_queue, self._log_level, self._freq, None,
+        FailureManager('test configuration', 'configuration'), Box())
 
     self._config._testing = True
     self.start_configuration()
@@ -346,16 +349,11 @@ class TestVideoExtenso(TkinterConfigTestCase):
   def customSetUp(self) -> None:
     """Used for instantiating the special configuration interface."""
 
-    self._config = TkinterVideoExtensoConfig(self._camera, self._log_queue,
-                                             self._log_level, self._freq,
-                                             None,
-                                             white_spots=False,
-                                             num_spots=None,
-                                             min_area=150,
-                                             blur=5,
-                                             update_thresh=False,
-                                             safe_mode=False,
-                                             border=5)
+    self._config = TkinterVideoExtensoConfig(
+        self._camera, self._log_queue, self._log_level, self._freq, None,
+        FailureManager('test configuration', 'configuration'),
+        white_spots=False, num_spots=None, min_area=150, blur=5,
+        update_thresh=False, safe_mode=False, border=5)
 
     self._config._testing = True
     self.start_configuration()

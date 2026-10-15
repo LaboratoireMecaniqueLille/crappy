@@ -10,6 +10,7 @@ from unittest.mock import Mock
 import numpy as np
 
 from crappy.tool.camera_config.pyqt import PyQtCameraConfig
+from crappy._failure import FailureManager
 from .._fixtures import DummyCamera
 
 
@@ -40,7 +41,9 @@ class PyQtConfigTestCase(unittest.TestCase):
                   histogram_process: bool = False):
     """Construct a window directly; backend selection belongs to Block tests."""
 
-    config = configurator(self.camera, self.log_queue, None, 30, None, *args)
+    manager = FailureManager('test configuration', 'configuration')
+    config = configurator(self.camera, self.log_queue, None, 30, None,
+                          manager, *args)
     if not histogram_process:
       # Only the end-to-end histogram test needs to spawn an actual worker
       # Spec the class to avoid reading an unstarted process's sentinel property
