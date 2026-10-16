@@ -154,8 +154,8 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     with self.assertRaises(ExceptionGroup) as caught:
       block.finish()
     self.assertEqual(caught.exception.exceptions, errors)
-    proc.wait.assert_called_once_with(timeout=15)
-    reader.join.assert_called_once_with(0.2)
+    proc.wait.assert_called_once_with(timeout=2.0)
+    reader.join.assert_called_once_with(0.5)
     self.assertTrue(block._stop_mosquitto)
     client.disconnect.side_effect = None
     client.loop_stop.side_effect = None

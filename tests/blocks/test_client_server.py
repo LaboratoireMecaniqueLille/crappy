@@ -499,10 +499,10 @@ class TestClientServer(BlockTestBase):
     self.assertEqual(client.loop_stop_calls, 1)
     self.assertEqual(client.disconnect_calls, 1)
     self.assertTrue(proc.terminated)
-    self.assertEqual(proc.wait_calls, [15])
+    self.assertEqual(proc.wait_calls, [2.0])
     self.assertFalse(proc.killed)
     self.assertTrue(block._stop_mosquitto)
-    self.assertEqual(reader.join_calls, [0.2])
+    self.assertEqual(reader.join_calls, [0.5])
     block.finish()
     self.assertEqual(client.loop_stop_calls, 1)
     self.assertEqual(client.disconnect_calls, 1)
@@ -511,14 +511,14 @@ class TestClientServer(BlockTestBase):
     """Checks that an unresponsive managed broker is killed."""
 
     proc = FakeProcess(wait_error=TimeoutExpired(cmd='mosquitto',
-                                                 timeout=15))
+                                                 timeout=2.0))
     block = with_failure_manager(ClientServer(broker=True))
     block._proc = proc
 
     block.finish()
 
     self.assertTrue(proc.terminated)
-    self.assertEqual(proc.wait_calls, [15, 1])
+    self.assertEqual(proc.wait_calls, [2.0, 0.5])
     self.assertTrue(proc.killed)
 
   def test_launch_mosquitto_starts_expected_subprocess(self) -> None:

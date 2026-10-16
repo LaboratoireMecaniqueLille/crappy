@@ -323,7 +323,21 @@ class TestFailureLifecycle(BlockTestBase):
     self._block = TestBlockBlockedFailureFlush()
     Block.prepare_all(log_level=logging.CRITICAL)
     started = monotonic()
-    with self.assertRaises(ExceptionGroup) as caught:
+    def accelerated_time():
+      return started + 100 * (monotonic() - started)
+
+    real_wait = block_module.connection.wait
+
+    def accelerated_wait(objects, timeout=None):
+      scaled = (timeout / 100
+                if timeout is not None and isinstance(objects, dict)
+                else timeout)
+      return real_wait(objects, timeout=scaled)
+
+    with (patch.object(block_module, 'monotonic', side_effect=accelerated_time),
+          patch.object(block_module.connection, 'wait',
+                       side_effect=accelerated_wait),
+          self.assertRaises(ExceptionGroup) as caught):
       Block.launch_all()
     self.assertTrue(any(isinstance(error, ShutdownTimeoutError)
                         for error in exception_leaves(caught.exception)))

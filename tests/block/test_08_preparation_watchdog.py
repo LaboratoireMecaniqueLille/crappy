@@ -227,7 +227,7 @@ class TestPreparationWatchdog(BlockTestBase):
       with self.assertRaises(ExceptionGroup):
         self._launch_with_deadline()
 
-      watchdog.join.assert_called_once_with(timeout=1.0)
+      watchdog.join.assert_called_once_with(timeout=0.5)
 
     self._block.join(1.0)
     self.assertFalse(start.is_set())

@@ -182,6 +182,15 @@ class TestHistogramReporting(unittest.TestCase):
       sleep(0.01)
     self.assertTrue(self.lifecycle.failed)
 
+  def test_stop_during_worker_startup(self):
+    """An early window close leaves time for a cold histogram worker to exit."""
+
+    self.start_worker()
+    self.lifecycle.close_resources()
+    self.assertEqual(self.manager.snapshot(), ())
+    self.assertTrue(self.lifecycle._process_closed)
+    self.assertIsNone(self.lifecycle._receiver)
+
   def test_calculation_failure_reaches_configuration_without_duplicate_exit(self):
     from tests.block.block_test_base import exception_leaves
 
@@ -257,7 +266,8 @@ def exercise_histogram_context(method):
 
   from multiprocessing import set_start_method
   set_start_method(method)
-  names = ('test_calculation_failure_reaches_configuration_without_duplicate_exit',
+  names = ('test_stop_during_worker_startup',
+           'test_calculation_failure_reaches_configuration_without_duplicate_exit',
            'test_hard_exit_is_synthesized_after_draining',
            'test_large_cleanup_report_is_flushed_before_receiver_shutdown')
   suite = unittest.TestSuite(TestHistogramReporting(name) for name in names)

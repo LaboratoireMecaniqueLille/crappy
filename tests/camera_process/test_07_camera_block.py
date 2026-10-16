@@ -5,6 +5,7 @@ from threading import BrokenBarrierError, Thread
 from typing import Any
 from contextlib import ExitStack
 import logging
+from time import sleep
 import numpy as np
 from unittest.mock import MagicMock, Mock, call, patch, sentinel
 from crappy import Block
@@ -16,6 +17,14 @@ import crappy.blocks.camera as camera_module
 from .camera_process_test_base import (CameraProcessTestBase,
                                        TestCameraProcess, TestLink)
 from tests.block.block_test_base import exception_leaves, with_failure_manager
+
+
+class SlowFinishingCameraProcess(TestCameraProcess):
+  """Simulates a worker finishing nested cleanup after the old one-second cap."""
+
+  def finish(self) -> None:
+    sleep(1.2)
+    super().finish()
 
 
 class TrackingCameraProcess(TestCameraProcess):
@@ -633,10 +642,11 @@ class TestCameraBlock(CameraBlockTestBase):
     camera.prepare()
     camera._instance_t0.value = 1000.0
 
-    with (patch.object(camera_module, 'monotonic', side_effect=(10.0, 13.0)),
+    with (patch.object(camera_module, 'monotonic', return_value=10.0) as clock,
           patch.object(camera_module, 'time', return_value=1000.5),
           patch.object(camera, 'log') as log):
       camera.begin()
+      clock.return_value = 13.0
       camera.loop()
 
     log.assert_any_call(logging.INFO, f'Acquisition FPS: {1 / 3}')
@@ -676,7 +686,8 @@ class TestCameraBlock(CameraBlockTestBase):
     saver._alive = True
     displayer._alive = True
 
-    with self.assertRaises(ExceptionGroup) as caught:
+    with (patch.object(camera_module, 'monotonic', return_value=0.0),
+          self.assertRaises(ExceptionGroup) as caught):
       camera.finish()
     self.assertTrue(all(isinstance(error, ShutdownTimeoutError)
                         for error in exception_leaves(caught.exception)))
@@ -694,9 +705,10 @@ class TestCameraBlock(CameraBlockTestBase):
     self.assertIsNone(camera._img_array)
     self.assertIsNone(camera._manager)
 
-    camera.finish()
+    with patch.object(camera_module, 'monotonic', return_value=0.0):
+      camera.finish()
     for child in (process, saver, displayer):
-      self.assertEqual(child.join_timeouts, [1.0, 1])
+      self.assertEqual(child.join_timeouts, [5.0, 0.5])
 
   def test_finish_before_prepare_closes_only_constructed_processes(self
                                                                   ) -> None:
@@ -788,8 +800,9 @@ class TestCameraBlock(CameraBlockTestBase):
         camera.prepare()
     saver, displayer = camera._save_proc, camera._display_proc
     self.assertEqual(camera._started_processes, [process])
-    camera.finish()
-    self.assertEqual(process.join_timeouts, [1.0])
+    with patch.object(camera_module, 'monotonic', return_value=0.0):
+      camera.finish()
+    self.assertEqual(process.join_timeouts, [5.0])
     self.assertEqual(saver.join_timeouts, [])
     self.assertEqual(displayer.join_timeouts, [])
     self.assertTrue(all(child.closed for child in (process, saver, displayer)))
@@ -856,6 +869,62 @@ class TestCameraBlock(CameraBlockTestBase):
     self.assertEqual(outbound.close.call_count, 2)
     self.assertEqual(manager.shutdown.call_count, 2)
 
+  def test_finish_shares_each_deadline_across_children(self) -> None:
+    """Three stuck workers consume one budget per shutdown stage."""
+
+    camera = self.make_camera()
+    processes = [Mock(name=f'worker-{index}') for index in range(3)]
+    camera.process_proc, camera._save_proc, camera._display_proc = processes
+    camera._started_processes = list(processes)
+    clock = [0.0]
+
+    def join(*, timeout):
+      clock[0] += timeout
+
+    for index, process in enumerate(processes):
+      process.name = f'worker-{index}'
+      process.is_alive.return_value = True
+      process.join.side_effect = join
+
+    with (patch.object(camera_module, 'monotonic', side_effect=lambda: clock[0]),
+          self.assertRaises(ExceptionGroup) as caught):
+      camera.finish()
+
+    self.assertEqual(clock[0], 6.0)
+    self.assertEqual([error.timeout for error in
+                      exception_leaves(caught.exception)], [5.0, 5.0, 5.0])
+    for process, expected in zip(processes,
+                                 ((5.0, 0.5, 0.5), (0.0, 0.0, 0.0),
+                                  (0.0, 0.0, 0.0))):
+      self.assertEqual([call.kwargs['timeout']
+                        for call in process.join.call_args_list],
+                       list(expected))
+      process.terminate.assert_called_once_with()
+      process.kill.assert_called_once_with()
+      process.close.assert_called_once_with()
+
+  def test_worker_nested_cleanup_can_take_more_than_one_second(self) -> None:
+    """The Camera must not terminate a worker still cleaning up its children."""
+
+    camera = self.make_camera()
+    worker = SlowFinishingCameraProcess()
+    camera.process_proc = worker
+    camera.prepare()
+    exitcodes = []
+    real_close = worker.close
+
+    def close():
+      exitcodes.append(worker.exitcode)
+      real_close()
+
+    with patch.object(worker, 'close', side_effect=close):
+      camera.finish()
+
+    self.assertTrue(worker.finished.is_set())
+    self.assertEqual(exitcodes, [0])
+    self.assertEqual(camera._started_processes, [])
+    self.assertEqual(camera._failure_manager.snapshot(), ())
+
   def test_finish_escalates_and_reaps_children_in_attribute_order(self) -> None:
     """Termination failure still permits kill, join, and handle closure."""
 
@@ -871,18 +940,19 @@ class TestCameraBlock(CameraBlockTestBase):
     second.terminate.side_effect = error
     camera.process_proc, camera._save_proc = first, second
     camera._started_processes = [first, second]
-    with self.assertRaises(ExceptionGroup) as caught:
+    with (patch.object(camera_module, 'monotonic', return_value=0.0),
+          self.assertRaises(ExceptionGroup) as caught):
       camera.finish()
     leaves = exception_leaves(caught.exception)
     self.assertIsInstance(leaves[0], ShutdownTimeoutError)
     self.assertIs(leaves[1], error)
     self.assertEqual(operations.mock_calls,
-                     [call.first.join(timeout=1.0), call.first.is_alive(),
-                      call.first.close(),
-                      call.second.join(timeout=1.0), call.second.is_alive(),
-                      call.second.terminate(), call.second.join(timeout=1),
+                     [call.first.join(timeout=5.0), call.second.join(timeout=5.0),
+                      call.first.is_alive(), call.second.is_alive(),
+                      call.second.terminate(), call.second.join(timeout=0.5),
                       call.second.is_alive(), call.second.kill(),
-                      call.second.join(timeout=1), call.second.close()])
+                      call.second.join(timeout=0.5), call.first.close(),
+                      call.second.close()])
     self.assertEqual(camera._started_processes, [])
 
   def test_finish_closes_mixed_started_and_unstarted_processes(self) -> None:
@@ -899,11 +969,12 @@ class TestCameraBlock(CameraBlockTestBase):
       process.name = name
       process.is_alive.return_value = False
 
-    camera.finish()
-    camera.finish()
+    with patch.object(camera_module, 'monotonic', return_value=0.0):
+      camera.finish()
+      camera.finish()
 
     for process in (processing, displayer):
-      process.join.assert_called_once_with(timeout=1.0)
+      process.join.assert_called_once_with(timeout=5.0)
       process.is_alive.assert_called_once_with()
     saver.join.assert_not_called()
     saver.is_alive.assert_not_called()

@@ -231,7 +231,8 @@ class TestVideoExtensoTool(TestCase):
     tool._pipes = [pipe_1, pipe_2]
     tool._log = lambda *_: None
 
-    with self.assertRaises(ExceptionGroup) as caught:
+    with (patch.object(ve_module, 'monotonic', return_value=0.0),
+          self.assertRaises(ExceptionGroup) as caught):
       tool.stop_tracking()
     self.assertTrue(all(isinstance(error, ShutdownTimeoutError)
                         for error in exception_leaves(caught.exception)))
@@ -239,8 +240,8 @@ class TestVideoExtensoTool(TestCase):
     self.assertTrue(tool._tracking_stop.is_set())
     self.assertEqual(pipe_1.sent, [])
     self.assertEqual(pipe_2.sent, [])
-    self.assertEqual(tracker_1.join_calls, [1.0, 1.0])
-    self.assertEqual(tracker_2.join_calls, [1.0, 1.0, 1.0])
+    self.assertEqual(tracker_1.join_calls, [3.0, 0.5])
+    self.assertEqual(tracker_2.join_calls, [3.0, 0.5, 0.5])
     self.assertTrue(tracker_1.terminated)
     self.assertTrue(tracker_2.terminated)
     self.assertFalse(tracker_1.killed)
@@ -250,7 +251,36 @@ class TestVideoExtensoTool(TestCase):
     self.assertTrue(tracker_1.closed)
     self.assertTrue(tracker_2.closed)
     tool.stop_tracking()
-    self.assertEqual(tracker_2.join_calls, [1.0, 1.0, 1.0])
+    self.assertEqual(tracker_2.join_calls, [3.0, 0.5, 0.5])
+
+  def test_shutdown_deadlines_are_shared_by_all_trackers(self) -> None:
+    """Four stuck trackers cannot multiply the enclosing worker's wait."""
+
+    tool = self._make_tool(SpotsBoxes())
+    trackers = [FakeTracker(survive_terminate=True) for _ in range(4)]
+    tool._trackers = list(trackers)
+    tool._started_trackers = list(trackers)
+    clock = [0.0]
+
+    def join(tracker, timeout):
+      tracker.join_calls.append(timeout)
+      clock[0] += timeout
+
+    for tracker in trackers:
+      tracker.join = lambda timeout, tracker=tracker: join(tracker, timeout)
+
+    with (patch.object(ve_module, 'monotonic', side_effect=lambda: clock[0]),
+          self.assertRaises(ExceptionGroup) as caught):
+      tool.stop_tracking()
+
+    self.assertEqual(clock[0], 4.0)
+    self.assertEqual([error.timeout for error in
+                      exception_leaves(caught.exception)], [3.0] * 4)
+    self.assertEqual(trackers[0].join_calls, [3.0, 0.5, 0.5])
+    for tracker in trackers[1:]:
+      self.assertEqual(tracker.join_calls, [0.0, 0.0, 0.0])
+    self.assertTrue(all(tracker.terminated and tracker.killed and tracker.closed
+                        for tracker in trackers))
 
   def test_partial_start_retains_both_pipe_endpoints(self) -> None:
     """A failed Tracker constructor or start cannot lose allocated Pipes."""
@@ -729,6 +759,15 @@ class TestTrackerReporting(TestCase):
       sleep(0.01)
     self.fail('Tracker did not return its result or failure')
 
+  def test_stop_during_worker_startup(self):
+    """Cold tracker imports must not turn an immediate stop into a failure."""
+
+    tool = self.make_tool('healthy', with_peer=True)
+    tool.stop_tracking()
+    self.assertEqual(self.manager.snapshot(), ())
+    self.assertEqual(tool._trackers, [])
+    self.assertIsNone(tool._failure_thread)
+
   def test_programming_failure_is_not_misclassified_as_lost_spot(self):
     tool = self.make_tool('error')
     error = self.request_until_failure(tool)
@@ -841,7 +880,8 @@ def exercise_tracker_context(method):
   from multiprocessing import set_start_method
   import unittest
   set_start_method(method)
-  names = ('test_programming_failure_is_not_misclassified_as_lost_spot',
+  names = ('test_stop_during_worker_startup',
+           'test_programming_failure_is_not_misclassified_as_lost_spot',
            'test_lost_spot_is_a_normal_result_and_not_a_failure_report',
            'test_fatal_lost_spot_retains_original_tracker_ownership',
            'test_one_dead_tracker_does_not_skip_healthy_peer_shutdown',

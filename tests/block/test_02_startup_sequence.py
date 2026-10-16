@@ -24,7 +24,7 @@ class TestBlockNoResponse(TestBlock):
     """Sleeps long enough for the cleanup code to have to intervene."""
 
     self.looped.set()
-    sleep(10)
+    sleep(30)
 
 
 class TestBlockRaise(TestBlock):
@@ -346,8 +346,8 @@ class TestStartupSequence(BlockTestBase):
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
-    # Exercise the three-second forced-termination path without making the
-    # unit test spend three wall-clock seconds in it.
+    # Exercise the ten-second grace period without waiting that long
+    # in wall-clock time.
     cleanup_start = monotonic()
 
     def accelerated_time() -> float:
@@ -406,7 +406,7 @@ class TestStartupSequence(BlockTestBase):
 
     self.assertEqual(observed, [({10, 11}, 0.5), ({11}, 0.5)])
     for block in blocks:
-      block.join.assert_called_once_with(timeout=3.0)
+      block.join.assert_called_once_with(timeout=10.0)
       block.terminate.assert_not_called()
       block.kill.assert_not_called()
 
@@ -475,7 +475,7 @@ class TestStartupSequence(BlockTestBase):
     block.terminate.assert_called_once()
     block.kill.assert_not_called()
     self.assertEqual(block.join.call_args_list,
-                     [call(timeout=3.0), call(timeout=1.0)])
+                     [call(timeout=10.0), call(timeout=0.5)])
 
   def test_cleanup_escalation_shares_deadlines(self) -> None:
     """Termination and kill stages each have one budget for all Blocks."""
@@ -492,12 +492,12 @@ class TestStartupSequence(BlockTestBase):
 
     with (patch.object(block_module, 'monotonic',
                        side_effect=(0.0, 0.0, 0.0, 0.0,
-                                    3.0, 3.1, 3.8, 4.0, 4.4, 4.9)),
+                                    10.0, 10.1, 10.4, 10.5, 10.7, 10.95)),
           patch.object(block_module.connection, 'wait', return_value=[10, 11])):
       Block._cleanup()
 
     for block, terminate_timeout, kill_timeout in zip(blocks,
-                                                     (0.9, 0.2), (0.6, 0.1)):
+                                                     (0.4, 0.1), (0.3, 0.05)):
       block.terminate.assert_called_once()
       block.kill.assert_called_once()
       self.assertEqual(block.join.call_count, 3)
@@ -524,8 +524,8 @@ class TestStartupSequence(BlockTestBase):
          patch.object(block_module.connection, 'wait', return_value=[10, 11]):
       Block._cleanup()
 
-    blocks[0].join.assert_called_once_with(timeout=2.0)
-    blocks[1].join.assert_called_once_with(timeout=1.0)
+    blocks[0].join.assert_called_once_with(timeout=9.0)
+    blocks[1].join.assert_called_once_with(timeout=8.0)
 
   def test_cleanup_join_stays_positive_at_deadline(self) -> None:
     """A sentinel ready at the deadline still needs more than join(0)."""
@@ -539,7 +539,7 @@ class TestStartupSequence(BlockTestBase):
     Block._run_blocks = (block,)
 
     with patch.object(block_module, 'monotonic',
-                      side_effect=(0.0, 2.9, 3.0)), \
+                      side_effect=(0.0, 9.9, 10.0)), \
          patch.object(block_module.connection, 'wait', return_value=[10]):
       Block._cleanup()
 
@@ -563,7 +563,7 @@ class TestStartupSequence(BlockTestBase):
          patch.object(self._block, 'join') as unstarted_join:
       Block._cleanup()
 
-    started.join.assert_called_once_with(timeout=3.0)
+    started.join.assert_called_once_with(timeout=10.0)
     unstarted_join.assert_not_called()
 
   def test_cleanup_join_does_not_hide_a_still_running_block(self) -> None:
@@ -581,7 +581,7 @@ class TestStartupSequence(BlockTestBase):
       Block._cleanup()
 
     self.assertEqual(block.join.call_args_list,
-                     [call(timeout=3.0), call(timeout=1.0), call(timeout=1.0)])
+                     [call(timeout=10.0), call(timeout=0.5), call(timeout=0.5)])
     block.terminate.assert_called_once()
     block.kill.assert_called_once()
     self.assertTrue(Block.run_failure_manager.snapshot())
@@ -598,7 +598,7 @@ class TestStartupSequence(BlockTestBase):
     Block._run_blocks = (block,)
 
     with patch.object(block_module, 'monotonic',
-                      side_effect=(0.0, 0.0, 2.8, 3.0, 3.0, 3.0)), \
+                      side_effect=(0.0, 0.0, 9.8, 10.0, 10.0, 10.0)), \
          patch.object(block_module.connection, 'wait',
                       return_value=[]) as wait:
       Block._cleanup()

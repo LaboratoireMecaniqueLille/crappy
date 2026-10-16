@@ -192,7 +192,7 @@ class TestConfigurationLifecycle(unittest.TestCase):
     process.kill.assert_called_once_with()
     process.close.assert_called_once_with()
     self.assertEqual([call.args for call in process.join.call_args_list],
-                     [(2.0,), (1.0,), (1.0,)])
+                     [(2.0,), (0.5,), (0.5,)])
     for queue in queues:
       self.assertEqual((queue.cancel_calls, queue.close_calls), (1, 1))
     lifecycle.close_resources()
