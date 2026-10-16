@@ -25,6 +25,7 @@ class TestClassAPI(CameraProcessTestBase):
                      f"{current_process().name}.TestCameraProcess")
     self.assertEqual(self._process._system, system())
 
+    self.assertFalse(hasattr(self._process, '_failure_manager'))
     self.assertIsNone(self._process._log_queue)
     self.assertIsNone(self._process._logger)
     self.assertIsNone(self._process._log_level)

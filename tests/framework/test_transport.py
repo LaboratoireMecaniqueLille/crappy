@@ -160,7 +160,10 @@ class TestFailureTransport(TestCase):
     self.assertTrue(self.parent.receive((self.incoming,)))
     self.assertEqual(self.parent.snapshot(), ((report, None),))
     self.parent.forward(report)
-    self.parent.forward(report, ValueError('restored'))
+    self.parent.forward(report)
+    with self.assertRaises(ExceptionGroup) as caught:
+      self.parent.raise_if_failed('parent failures')
+    self.assertIs(type(caught.exception.exceptions[0]), ValueError)
     self.assertEqual(self.outgoing.qsize(), 1)
     self.assertTrue(self.root.receive((self.outgoing,)))
     self.assertEqual(self.root.snapshot(), ((report, None),))
@@ -186,7 +189,7 @@ class TestFailureTransport(TestCase):
     self.assertIs(caught.exception, error)
     while self.parent.receive((self.incoming,)):
       pass
-    self.assertEqual([report.exception_type
+    self.assertEqual([report.nodes[0].type_name
                       for report, _ in self.parent.snapshot()],
                      ['ValueError', 'OSError'])
     self.parent._logger.error.assert_not_called()

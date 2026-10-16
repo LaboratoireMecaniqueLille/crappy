@@ -72,7 +72,7 @@ def _exercise_block_context(method):
   manager, queue, thread = (Block.run_failure_manager,
                             block._failure_queue, Block.failure_thread)
   assert manager is not None and queue is not None and thread is not None
-  assert block._failure_manager is None
+  assert not hasattr(block, '_failure_manager')
   assert thread.is_alive()
   Block.launch_all(no_raise=True)
   assert block.finished.is_set()
@@ -111,7 +111,7 @@ class TestFailureLifecycle(BlockTestBase):
                               Block.failure_thread)
     assert manager is not None and queue is not None and thread is not None
     queue_ref = ref(queue)
-    self.assertIsNone(self._block._failure_manager)
+    self.assertFalse(hasattr(self._block, '_failure_manager'))
     self.assertEqual(Block.failure_queues, (queue,))
     self.assertTrue(thread.is_alive())
     Block.launch_all()
@@ -228,15 +228,13 @@ class TestFailureLifecycle(BlockTestBase):
     Block.run_failure_manager = manager
     Block.failure_thread_stop = ThreadEvent()
     Block.failure_thread = current_thread()
-    stop, failed, barrier = Mock(), Mock(), Mock()
+    stop, barrier = Mock(), Mock()
     Block.stop_event = stop
-    Block.raise_event = failed
     Block.ready_barrier = barrier
     with patch.object(manager, 'receive', side_effect=RuntimeError('monitor')):
       Block._failure_target()
     self.assertEqual(manager.snapshot()[0][0].phase, 'monitoring')
     stop.set.assert_called_once()
-    failed.set.assert_not_called()
     barrier.abort.assert_called_once()
 
   def test_notification_failures_do_not_skip_other_stop_operations(self):
@@ -275,8 +273,6 @@ class TestFailureLifecycle(BlockTestBase):
     Block.run_failure_manager = manager
     Block.failure_queues = (queue,)
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     Block.failure_thread_stop = ThreadEvent()
     Block.failure_thread = Thread(target=Block._failure_target, daemon=True)
     thread = Block.failure_thread
@@ -290,7 +286,7 @@ class TestFailureLifecycle(BlockTestBase):
     self.assertLess(monotonic() - started, 3)
     self.assertTrue(thread.is_alive())
     self.assertTrue(any('failure receiver did not stop' in
-                        report.exception_message
+                        report.nodes[0].message
                         for report, _ in manager.snapshot()))
     queue.close.assert_called_once()
     self._block = TestBlock()
@@ -376,8 +372,6 @@ class TestFailureLifecycle(BlockTestBase):
     Block.failure_thread = Mock(spec=Thread)
     Block.failure_thread.ident = None
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     Block.no_raise = True
     Block._cleanup()
     failed.close.assert_called_once()

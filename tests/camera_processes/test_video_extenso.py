@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from unittest.mock import patch
+from multiprocessing import Event
 import logging
 
 import numpy as np
@@ -65,8 +66,7 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
     spots.save_length()
     return spots
 
-  @staticmethod
-  def _make_process(**kwargs) -> VideoExtensoProcess:
+  def _make_process(self, **kwargs) -> VideoExtensoProcess:
     """Creates a process with the public Block's default options."""
 
     defaults = {
@@ -80,11 +80,15 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
       'raise_on_lost_spot': True,
     }
     defaults.update(kwargs)
-    return VideoExtensoProcess(**defaults)
+    process = VideoExtensoProcess(**defaults)
+    self.set_test_logger(process)
+    process._stop_event = Event()
+    return process
 
   def setUp(self) -> None:
     """Resets the fake tool registry."""
 
+    super().setUp()
     DummyVideoExtensoTool.instances.clear()
 
   def _init_process(self,

@@ -118,8 +118,7 @@ class TestStartupSequence(BlockTestBase):
     self.assertIsInstance(Block.shared_t0, Synchronized)
     self.assertEqual(Block.shared_t0.value, -1.0)
 
-    for event in (Block.stop_event, Block.start_event, Block.pause_event,
-                  Block.raise_event, Block.kbi_event):
+    for event in (Block.stop_event, Block.start_event, Block.pause_event):
       with self.subTest(event=event):
         self.assertIsNotNone(event)
         self.assertFalse(event.is_set())
@@ -131,12 +130,10 @@ class TestStartupSequence(BlockTestBase):
 
     # The Block instance must reference the exact same shared objects
     for cls, inst in zip((Block.stop_event, Block.start_event,
-                          Block.pause_event, Block.raise_event,
-                          Block.kbi_event, Block.ready_barrier,
+                          Block.pause_event, Block.ready_barrier,
                           Block.shared_t0, Block.log_queue),
                          (self._block._stop_event, self._block._start_event,
-                          self._block._pause_event, self._block._raise_event,
-                          self._block._kbi_event, self._block._ready_barrier,
+                          self._block._pause_event, self._block._ready_barrier,
                           self._block._instance_t0, self._block._log_queue)):
       self.assertIs(inst, cls)
 
@@ -306,6 +303,7 @@ class TestStartupSequence(BlockTestBase):
       raise Empty
 
     queue.get.side_effect = reset_while_reading
+    Block._ensure_failure_manager()
     Block.log_queue = queue
     Block._log_target(queue)
 
@@ -383,8 +381,6 @@ class TestStartupSequence(BlockTestBase):
     """Ready Blocks are reaped without ending the wait for their peers."""
 
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     blocks = (Mock(spec=Block, inputs=[], outputs=[]),
               Mock(spec=Block, inputs=[], outputs=[]))
     Block._run_blocks = blocks
@@ -462,8 +458,6 @@ class TestStartupSequence(BlockTestBase):
     """Give terminate() time to complete before considering kill()."""
 
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     block = Mock(spec=Block, inputs=[], outputs=[])
     block.sentinel = 10
     block.is_alive.return_value = True
@@ -487,8 +481,6 @@ class TestStartupSequence(BlockTestBase):
     """Termination and kill stages each have one budget for all Blocks."""
 
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     blocks = (Mock(spec=Block, inputs=[], outputs=[]),
               Mock(spec=Block, inputs=[], outputs=[]))
     Block._run_blocks = blocks
@@ -518,8 +510,6 @@ class TestStartupSequence(BlockTestBase):
     """Reaping multiple ready Blocks must not restart the shutdown budget."""
 
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     blocks = (Mock(spec=Block, inputs=[], outputs=[]),
               Mock(spec=Block, inputs=[], outputs=[]))
     Block._run_blocks = blocks
@@ -541,8 +531,6 @@ class TestStartupSequence(BlockTestBase):
     """A sentinel ready at the deadline still needs more than join(0)."""
 
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     block = Mock(spec=Block, inputs=[], outputs=[])
     block.sentinel = 10
     block.is_alive.return_value = True
@@ -562,8 +550,6 @@ class TestStartupSequence(BlockTestBase):
     """Partial startup must not access an unstarted Block's sentinel or join."""
 
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     self._block = TestBlock()
     started = Mock(spec=Block, inputs=[], outputs=[])
     started.sentinel = 10
@@ -584,8 +570,6 @@ class TestStartupSequence(BlockTestBase):
     """Joining is not itself proof that the Block actually stopped."""
 
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     block = Mock(spec=Block, inputs=[], outputs=[])
     block.name = 'crappy.still-running'
     block.sentinel = 10
@@ -606,8 +590,6 @@ class TestStartupSequence(BlockTestBase):
     """The last sentinel wait must use only the remaining shutdown budget."""
 
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     block = Mock(spec=Block, inputs=[], outputs=[])
     block.sentinel = 10
     block.is_alive.return_value = True

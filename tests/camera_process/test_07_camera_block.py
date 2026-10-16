@@ -15,7 +15,7 @@ import crappy.blocks.camera as camera_module
 
 from .camera_process_test_base import (CameraProcessTestBase,
                                        TestCameraProcess, TestLink)
-from tests.block.block_test_base import exception_leaves
+from tests.block.block_test_base import exception_leaves, with_failure_manager
 
 
 class TrackingCameraProcess(TestCameraProcess):
@@ -178,6 +178,7 @@ class CameraBlockTestBase(CameraProcessTestBase):
     self._camera_block = block_type(**defaults)
     self._camera_block._failure_manager = FailureManager(
         self._camera_block.name, 'prepare')
+    self._camera_block._failure_manager._logger = Mock()
     self._camera_block._log_level = logging.CRITICAL
     self._camera_block._log_queue = Queue()
     self._queues.append(self._camera_block._log_queue)
@@ -717,6 +718,7 @@ class TestCameraBlock(CameraBlockTestBase):
     self._camera_block = camera
     with self.assertRaises(TypeError):
       Camera.__init__(camera, camera=123, config=False)
+    with_failure_manager(camera)
     Camera.finish(camera)
     Camera.finish(camera)
     self.assertEqual(camera._started_processes, [])
@@ -731,7 +733,7 @@ class TestCameraBlock(CameraBlockTestBase):
     driver = camera._camera = Mock()
     driver.close.side_effect = RuntimeError('driver close')
     manager = camera._manager = Mock()
-    logger = camera._logger = Mock()
+    logger = camera._failure_manager._logger
     with patch.object(camera, 'finish', side_effect=AssertionError) as finish:
       camera.__del__()
     finish.assert_not_called()

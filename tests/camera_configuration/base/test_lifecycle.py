@@ -7,10 +7,11 @@ import logging
 from importlib import import_module
 from multiprocessing import Event
 from types import SimpleNamespace
+from queue import Empty
 from unittest.mock import Mock, patch
 
 from crappy.tool.camera_config.base._configuration_lifecycle import (
-  ConfigurationLifecycle, ExceptionInfo)
+  ConfigurationLifecycle)
 from crappy.tool.camera_config.pyqt import PyQtCameraConfig
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
@@ -24,6 +25,9 @@ class _Queue:
   def __init__(self) -> None:
     self.cancel_calls = 0
     self.close_calls = 0
+
+  def get_nowait(self):
+    raise Empty
 
   def cancel_join_thread(self) -> None:
     self.cancel_calls += 1
@@ -63,11 +67,24 @@ class _Process:
 
 
 class TestConfigurationLifecycle(unittest.TestCase):
+  def _report_callback_failure(self, lifecycle, error, stop):
+    """Exercises the Tk callback entry point without creating a window."""
+
+    window = SimpleNamespace(_failure_manager=lifecycle.manager,
+                             _window_destroyed=False, stop=stop)
+    with patch('crappy.tool.camera_config.tkinter.camera_config.showerror'):
+      TkinterCameraConfig.report_callback_exception(
+          window, type(error), error, error.__traceback__)
+    return window
+
   def test_requires_owner_manager(self) -> None:
     """The resource owner must supply the same manager as its configurator."""
 
     with self.assertRaisesRegex(TypeError, 'manager'):
       ConfigurationLifecycle(Event(), _Process(), ())
+    with self.assertRaisesRegex(TypeError, 'failure_queue'):
+      ConfigurationLifecycle(Event(), _Process(), (_Queue(), _Queue()),
+                             FailureManager('configuration', 'configuration'))
 
   def test_constructor_rollback_attempts_all_acquired_resources(self) -> None:
     """Early constructor failure and a cleanup interrupt retain all errors."""
@@ -120,7 +137,8 @@ class TestConfigurationLifecycle(unittest.TestCase):
     manager = FailureManager('test configuration', 'configuration')
     manager._logger = Mock()
     manager._logger.error.side_effect = messages.append
-    lifecycle = ConfigurationLifecycle(stop_event, process, queues, manager)
+    lifecycle = ConfigurationLifecycle(stop_event, process, queues,
+                                        manager, _Queue())
     return lifecycle, stop_event, queues, messages
 
   def test_unstarted_process_cleanup_is_idempotent(self) -> None:
@@ -133,6 +151,7 @@ class TestConfigurationLifecycle(unittest.TestCase):
 
     self.assertTrue(stop_event.is_set())
     self.assertTrue(lifecycle.closed)
+    self.assertEqual(lifecycle._failure_queue.close_calls, 1)
     self.assertEqual(process.join_calls, 0)
     self.assertEqual(process.close_calls, 1)
     for queue in queues:
@@ -265,15 +284,13 @@ class TestConfigurationLifecycle(unittest.TestCase):
     except ValueError as error:
       original = error
       original_traceback = error.__traceback__
-      lifecycle.record_callback_failure(error, original_traceback)
+      window = self._report_callback_failure(lifecycle, error, Mock())
 
-    close_calls = []
-    lifecycle.request_close(lambda: close_calls.append(True))
+    window.stop.assert_called_once_with()
     with self.assertRaises(ExceptionGroup) as raised:
-      lifecycle.raise_if_failed()
+      lifecycle.manager.raise_if_failed('configuration failures')
 
     self.assertEqual(exception_leaves(raised.exception), (original,))
-    self.assertEqual(close_calls, [True])
     self.assertEqual(len(messages), 1)
     self.assertIn('bad callback', messages[0])
     self.assertIs(lifecycle.manager.snapshot()[0][1], original)
@@ -289,10 +306,13 @@ class TestConfigurationLifecycle(unittest.TestCase):
 
       raise RuntimeError('close failed')
 
-    lifecycle.request_close(fail_close)
+    original = ValueError('callback failed')
+    self._report_callback_failure(lifecycle, original,
+                                  Mock(side_effect=fail_close))
 
-    self.assertEqual(len(messages), 1)
-    error = lifecycle.manager.snapshot()[0][1]
+    self.assertEqual(len(messages), 2)
+    self.assertIs(lifecycle.manager.snapshot()[0][1], original)
+    error = lifecycle.manager.snapshot()[1][1]
     self.assertIsInstance(error, RuntimeError)
     self.assertIsNotNone(error.__traceback__)
 
@@ -301,10 +321,12 @@ class TestConfigurationLifecycle(unittest.TestCase):
 
     lifecycle, _, _, messages = self.make_lifecycle(_Process())
     interrupt = KeyboardInterrupt()
-    lifecycle.record_callback_failure(interrupt, None)
+    stop = Mock()
+    self._report_callback_failure(lifecycle, interrupt, stop)
+    stop.assert_called_once_with()
 
     with self.assertRaises(BaseExceptionGroup) as raised:
-      lifecycle.raise_if_failed()
+      lifecycle.manager.raise_if_failed('configuration failures')
 
     self.assertEqual(exception_leaves(raised.exception), (interrupt,))
     self.assertEqual(len(messages), 1)
@@ -340,11 +362,12 @@ class TestConfigurationLifecycle(unittest.TestCase):
                                OSError('window close'))
     first.__cause__ = cause
     grouped = BaseExceptionGroup('callbacks', [first, second])
-    lifecycle.record_callback_failure(grouped, None)
-    lifecycle.request_close(Mock(side_effect=cleanup))
-    lifecycle.record_callback_failure(grouped, None)
+    stop = Mock(side_effect=cleanup)
+    self._report_callback_failure(lifecycle, grouped, stop)
+    self._report_callback_failure(lifecycle, grouped, stop)
+    self.assertEqual(stop.call_count, 2)
     with self.assertRaises(BaseExceptionGroup) as caught:
-      lifecycle.raise_if_failed()
+      lifecycle.manager.raise_if_failed('configuration failures')
     self.assertEqual(exception_leaves(caught.exception), (first, second, cleanup))
     self.assertIs(first.__cause__, cause)
     self.assertIsNone(second.__cause__)
@@ -353,8 +376,10 @@ class TestConfigurationLifecycle(unittest.TestCase):
   def test_cancel_request_is_not_a_callback_incident(self):
     from crappy._exceptions import StopRequested
     lifecycle, _, _, messages = self.make_lifecycle(_Process())
-    lifecycle.record_callback_failure(StopRequested(), None)
-    lifecycle.raise_if_failed()
+    stop = Mock()
+    self._report_callback_failure(lifecycle, StopRequested(), stop)
+    stop.assert_called_once_with()
+    lifecycle.manager.raise_if_failed('configuration failures')
     self.assertEqual(lifecycle.manager.snapshot(), ())
     self.assertEqual(messages, [])
 

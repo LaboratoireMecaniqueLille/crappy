@@ -21,8 +21,6 @@ class TestCleanup(BlockTestBase):
   def setup_cleanup() -> None:
     Block.reset()
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     Block.logger = Mock()
     Block._ensure_failure_manager()
     Block.run_failure_manager._logger = Block.logger
@@ -156,8 +154,7 @@ class TestCleanup(BlockTestBase):
     for error_type in (OSError, KeyboardInterrupt):
       with self.subTest(error=error_type.__name__):
         block = TestBlock()
-        block._stop_event, block._raise_event, block._kbi_event = (
-          Event(), Event(), Event())
+        block._stop_event = Event()
         error = error_type('finish log')
 
         def fail_log(level, msg) -> None:
@@ -239,7 +236,7 @@ class TestCleanup(BlockTestBase):
     self.setup_cleanup()
     source, target = TestBlock(), TestBlock()
     link = Link(source, target)
-    self.addCleanup(link.close)
+    self.addCleanup(link.close, Block.run_failure_manager)
     manager = Mock()
     Block.shared_mgr = manager
     Block._run_blocks = (source, target)
@@ -272,7 +269,6 @@ class TestCleanup(BlockTestBase):
     block = TestBlock()
     block._stop_event = Mock()
     block._stop_event.set.side_effect = OSError('stop event')
-    block._raise_event, block._kbi_event = Event(), Event()
     with (patch.object(block, '_set_block_logger'),
           patch.object(block, 'prepare', side_effect=ValueError('prepare')),
           patch.object(block, 'finish') as finish):
@@ -286,7 +282,6 @@ class TestCleanup(BlockTestBase):
 
     block = TestBlock()
     block._stop_event = Event()
-    block._raise_event, block._kbi_event = Event(), Event()
     first, second = Mock(), Mock()
     first.close.side_effect = [OSError('close'), None]
     block._config_connections_to_close = [first, second]

@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.block.block_test_base import with_failure_manager
+
 from multiprocessing import Event
 from threading import Event as ThreadEvent, Thread
 from time import monotonic
@@ -34,9 +36,10 @@ class TestImageConditions(VisionTestBase):
   def prepare_graph(self, source_count=1, consumer_count=1):
     """Prepares real shared buffers for a small fan-in/fan-out graph."""
 
-    sources = [StubVisionBlock(img_shape=(2, 3), img_dtype='uint8')
+    sources = [with_failure_manager(StubVisionBlock(
+        img_shape=(2, 3), img_dtype='uint8'))
                for _ in range(source_count)]
-    consumers = [StubVisionBlock() for _ in range(consumer_count)]
+    consumers = [with_failure_manager(StubVisionBlock()) for _ in range(consumer_count)]
     links = [[ImageLink(source, consumer,
                         name=f'images-{source.name}-{consumer.name}')
               for consumer in consumers]
@@ -164,18 +167,15 @@ class TestImageConditions(VisionTestBase):
     self.assertGreaterEqual(monotonic() - started, 0.02)
     self.assertLess(monotonic() - started, 1.0)
 
-  def test_stop_and_error_flags_wake_without_copying(self) -> None:
-    for flag in ('stop', 'error', 'barrier'):
+  def test_stop_and_broken_barrier_wake_without_copying(self) -> None:
+    for flag in ('stop', 'barrier'):
       with self.subTest(flag=flag):
         _, consumers, _ = self.prepare_graph()
         consumer = consumers[0]
-        consumer._raise_event = Event()
         thread, _, results, errors = self.start_receive(consumer)
 
         if flag == 'stop':
           consumer._stop_event.set()
-        elif flag == 'error':
-          consumer._raise_event.set()
         else:
           consumer._ready_barrier.abort()
         with consumer.img_condition:

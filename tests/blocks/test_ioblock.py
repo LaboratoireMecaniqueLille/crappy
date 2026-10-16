@@ -11,7 +11,7 @@ from crappy.blocks.ioblock import IOBlock
 from crappy.inout.meta_inout import InOut
 
 from ..block import BlockTestBase, TestBlock, link
-from tests.block.block_test_base import exception_leaves
+from tests.block.block_test_base import exception_leaves, with_failure_manager
 
 
 InOut.classes.pop('IOBlockTestInOut', None)
@@ -110,13 +110,14 @@ class TestIOBlock(BlockTestBase):
   def setUp(self) -> None:
     """Clears fake InOut instances before each test."""
 
+    super().setUp()
     IOBlockTestInOut.reset()
 
   def _make_block(self, **kwargs) -> IOBlock:
     """Creates an IOBlock ready for direct loop calls."""
 
     kwargs.setdefault('freq', None)
-    block = IOBlock('IOBlockTestInOut', **kwargs)
+    block = with_failure_manager(IOBlock('IOBlockTestInOut', **kwargs))
     block._instance_t0 = Value('d', self._t0)
     return block
 
@@ -197,12 +198,12 @@ class TestIOBlock(BlockTestBase):
     """Checks unknown names and collection drivers that are not registered."""
 
     with self.assertRaises(ValueError):
-      IOBlock('MissingInOut')
+      with_failure_manager(IOBlock('MissingInOut'))
 
     with patch.object(ioblock_module, 'moved_to_collection',
                       ('UnimportedCollectionInOut',)):
       with self.assertRaises(NotImplementedError):
-        IOBlock('UnimportedCollectionInOut')
+        with_failure_manager(IOBlock('UnimportedCollectionInOut'))
 
   def test_prepare_requires_links_and_command_labels(self) -> None:
     """Checks prepare-time Link layout validation."""

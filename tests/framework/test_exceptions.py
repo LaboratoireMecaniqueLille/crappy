@@ -25,9 +25,7 @@ class TestFrameworkExceptions(TestCase):
     self.report = FailureReport(
         failure_id='a' * 32, block_name='Block-1', owner_path='Block-1.worker',
         process_name='worker', pid=123, phase='main',
-        exception_module=self.node.module, exception_type=self.node.type_name,
-        exception_message=self.node.message,
-        formatted_traceback='complete diagnostic', nodes=(self.node,), root=0)
+        formatted_traceback='complete diagnostic', nodes=(self.node,))
 
   def test_fallback_metadata_round_trips_with_ancestry_and_notes(self) -> None:
     reason = 'original object could not be reconstructed'
@@ -68,7 +66,8 @@ class TestFrameworkExceptions(TestCase):
                             'builtins.BaseException', 'builtins.object'),
                        system_exit_code=code)
         report = replace(self.report, nodes=(node,))
-        original = RemoteFailureMetadata.from_report(report, 0)
+        original = RemoteFailureMetadata.from_report(
+            report, 0, 'original unavailable')
         self.assertIsInstance(original, SystemExit)
         restored = pickle.loads(pickle.dumps(original))
         assert isinstance(restored, SystemExit)
@@ -85,10 +84,9 @@ class TestFrameworkExceptions(TestCase):
     # The actual local class cannot be pickled, but its ancestry remains data.
     with self.assertRaises((AttributeError, pickle.PicklingError)):
       pickle.dumps(UserCancelled())
-    report = replace(self.report, exception_module=node.module,
-                     exception_type=node.type_name,
-                     exception_message=node.message, nodes=(node,))
-    error = RemoteFailureMetadata.from_report(report, 0)
+    report = replace(self.report, nodes=(node,))
+    error = RemoteFailureMetadata.from_report(
+            report, 0, 'original unavailable')
     caught = []
     try:
       raise BaseExceptionGroup('run', [error])
@@ -124,6 +122,24 @@ class TestFrameworkExceptions(TestCase):
     with self.assertRaises(TypeError):
       RemoteFailure(self.report, 0, invalid_reason)  # type: ignore[arg-type]
 
+  def test_fallback_requires_a_text_reconstruction_reason(self) -> None:
+    for factory in (RemoteFailure, RemoteFailureMetadata.from_report):
+      with self.subTest(factory=factory):
+        with self.assertRaises(TypeError):
+          factory(self.report, 0)
+        with self.assertRaises(TypeError):
+          factory(self.report, 0, None)
+
+  def test_process_exit_requires_all_origin_fields(self) -> None:
+    fields = dict(message='worker exit', process_name='worker', pid=123,
+                  phase='main', exitcode=9)
+    for name in fields:
+      with self.subTest(missing=name):
+        arguments = dict(fields)
+        arguments.pop(name)
+        with self.assertRaises(TypeError):
+          ProcessExitError(**arguments)
+
   def test_fallback_selects_the_failed_leaf_not_the_report_root(self) -> None:
     root = ExceptionNode('builtins', 'ExceptionGroup', 'group',
                          tuple(f'{base.__module__}.{base.__qualname__}'
@@ -132,10 +148,7 @@ class TestFrameworkExceptions(TestCase):
     sibling = ExceptionNode('builtins', 'ValueError', 'sibling',
                             tuple(f'{base.__module__}.{base.__qualname__}'
                                   for base in ValueError.__mro__))
-    report = replace(self.report, exception_module=root.module,
-                     exception_type=root.type_name,
-                     exception_message=root.message,
-                     nodes=(root, sibling, self.node), root=0)
+    report = replace(self.report, nodes=(root, sibling, self.node))
     original = RemoteFailureMetadata.from_report(
         report, 2, 'local exception type unavailable')
     self.assertIs(original.node, self.node)
@@ -150,17 +163,16 @@ class TestFrameworkExceptions(TestCase):
       with self.subTest(group_message=group_node.group_message):
         group_report = replace(report, nodes=(group_node, sibling, self.node))
         with self.assertRaisesRegex(ValueError, 'rebuilt from their children'):
-          RemoteFailureMetadata.from_report(group_report, 0)
+          RemoteFailureMetadata.from_report(group_report, 0, 'group')
 
   def test_fallback_requires_a_valid_report_node_index(self) -> None:
     for index in (-1, 1, True):
       with self.subTest(index=index):
         for factory in (RemoteFailure, RemoteFailureMetadata.from_report):
           with self.assertRaises(ValueError):
-            factory(self.report, index)
-    with self.assertRaises(ValueError):
-      RemoteFailureMetadata.from_report(
-          replace(self.report, nodes=(), root=None), 0)
+            factory(self.report, index, 'original unavailable')
+    with self.assertRaises(TypeError):
+      replace(self.report, nodes=())
 
   def test_report_dataclasses_round_trip_without_live_objects(self) -> None:
     node = replace(self.node, cause=0, context=0,
@@ -179,11 +191,10 @@ class TestFrameworkExceptions(TestCase):
         original_type.__module__, original_type.__qualname__, 'error',
         tuple(f'{base.__module__}.{base.__qualname__}'
               for base in original_type.__mro__))
-    report = replace(self.report, exception_module=node.module,
-                     exception_type=node.type_name,
-                     exception_message=node.message, nodes=(node,))
-    self.assertIs(type(RemoteFailureMetadata.from_report(report, 0)),
-                  RemoteFailure)
+    report = replace(self.report, nodes=(node,))
+    restored = RemoteFailureMetadata.from_report(
+        report, 0, 'original unavailable')
+    self.assertIs(type(restored), RemoteFailure)
 
   def test_multiple_inheritance_keeps_interruption_semantics(self) -> None:
     fallbacks = ((KeyboardInterrupt, RemoteKeyboardInterrupt),
@@ -197,8 +208,9 @@ class TestFrameworkExceptions(TestCase):
         self.assertLess(mro.index('builtins.Exception'),
                         mro.index(f'builtins.{special_base.__qualname__}'))
         report = replace(self.report, nodes=(replace(self.node, mro=mro),))
-        self.assertIs(type(RemoteFailureMetadata.from_report(report, 0)),
-                      expected)
+        restored = RemoteFailureMetadata.from_report(
+            report, 0, 'original unavailable')
+        self.assertIs(type(restored), expected)
 
   def test_ancestry_can_include_non_exception_mixins(self) -> None:
     class Mixin:
@@ -211,5 +223,6 @@ class TestFrameworkExceptions(TestCase):
     self.assertGreater(mro.index(f'{Mixin.__module__}.{Mixin.__qualname__}'),
                        mro.index('builtins.BaseException'))
     report = replace(self.report, nodes=(replace(self.node, mro=mro),))
-    self.assertIs(type(RemoteFailureMetadata.from_report(report, 0)),
+    self.assertIs(type(RemoteFailureMetadata.from_report(
+            report, 0, 'original unavailable')),
                   RemoteFailure)

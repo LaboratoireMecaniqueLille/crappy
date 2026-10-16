@@ -115,8 +115,7 @@ class TestPhaseCapture(BlockTestBase):
     block = self._block
     block._ready_barrier = Barrier(1)
     block._start_event, block._stop_event = Event(), Event()
-    block._pause_event, block._raise_event, block._kbi_event = (
-        Event(), Event(), Event())
+    block._pause_event = Event()
     block._start_event.set()
     block._logger = Mock(spec=logging.Logger)
     self.incoming = Queue()

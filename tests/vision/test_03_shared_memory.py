@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.block.block_test_base import with_failure_manager
+
 from multiprocessing import Barrier, Event, RLock, Value
 from multiprocessing.shared_memory import SharedMemory
 from unittest.mock import MagicMock, Mock, call, patch
@@ -24,8 +26,8 @@ class TestVisionBlockSharedMemory(VisionTestBase):
                    ) -> tuple[StubVisionBlock, StubVisionBlock, ImageLink]:
     """Creates and prepares a source/consumer pair with real shared memory."""
 
-    source = StubVisionBlock(img_shape=shape, img_dtype=dtype)
-    consumer = StubVisionBlock()
+    source = with_failure_manager(StubVisionBlock(img_shape=shape, img_dtype=dtype))
+    consumer = with_failure_manager(StubVisionBlock())
     link = ImageLink(source, consumer, name='prepared-image')
     self.make_manager(source)
     self.set_prepare_sync(consumer)
@@ -38,7 +40,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_set_shared_objects_is_noop_without_outputs(self) -> None:
     """Checks that sink VisionBlocks do not require a Manager."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
 
     block.set_shared_objects()
 
@@ -47,8 +49,8 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_set_shared_objects_requires_manager_and_populates_link(self) -> None:
     """Checks publication of a complete synchronization-object bundle."""
 
-    source = StubVisionBlock(img_shape=(2, 3), img_dtype='uint8')
-    consumer = StubVisionBlock()
+    source = with_failure_manager(StubVisionBlock(img_shape=(2, 3), img_dtype='uint8'))
+    consumer = with_failure_manager(StubVisionBlock())
     link = ImageLink(source, consumer, name='shared-objects')
 
     with self.assertRaises(ValueError):
@@ -75,9 +77,9 @@ class TestVisionBlockSharedMemory(VisionTestBase):
       self) -> None:
     """Checks long user-facing names cannot exceed the macOS SHM limit."""
 
-    source = StubVisionBlock(img_shape=(2, 3), img_dtype='uint8')
+    source = with_failure_manager(StubVisionBlock(img_shape=(2, 3), img_dtype='uint8'))
     source.name = 'source-' + 'x' * 100
-    consumer = StubVisionBlock()
+    consumer = with_failure_manager(StubVisionBlock())
     link = ImageLink(source, consumer, name='images-' + 'y' * 100)
     self.make_manager(source)
     source.log = Mock()
@@ -97,7 +99,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_prepare_validates_output_format_and_shared_state(self) -> None:
     """Checks failures before allocation of an invalid output buffer."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     block.img_outputs.append(object())
 
     with self.assertRaises(ValueError):
@@ -152,9 +154,9 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_one_source_buffer_can_feed_multiple_consumers(self) -> None:
     """Checks that every outgoing ImageLink receives the same buffer bundle."""
 
-    source = StubVisionBlock(img_shape=(2, 2), img_dtype='uint8')
-    first = StubVisionBlock()
-    second = StubVisionBlock()
+    source = with_failure_manager(StubVisionBlock(img_shape=(2, 2), img_dtype='uint8'))
+    first = with_failure_manager(StubVisionBlock())
+    second = with_failure_manager(StubVisionBlock())
     first_link = ImageLink(source, first, name='first-consumer')
     second_link = ImageLink(source, second, name='second-consumer')
     self.make_manager(source)
@@ -198,14 +200,14 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     with self.assertRaises(ValueError):
       source.send_img(metadata, np.zeros((1, 4), dtype=np.uint8))
 
-    unprepared = StubVisionBlock()
+    unprepared = with_failure_manager(StubVisionBlock())
     with self.assertRaises(ValueError):
       unprepared.send_img(metadata, image)
 
   def test_receive_imgs_detects_inconsistent_buffers(self) -> None:
     """Checks consumer-side initialization and dtype/shape validation."""
 
-    consumer = StubVisionBlock()
+    consumer = with_failure_manager(StubVisionBlock())
     link = Mock(name='image-link')
     link.name = 'manual-image'
     consumer.add_img_input(link)
@@ -233,7 +235,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_ready_buffer_is_not_attached_after_stop(self) -> None:
     """Readiness racing with cancellation cannot attach an obsolete buffer."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     self.set_prepare_sync(block)
     ready = Event()
     ready.set()
@@ -272,7 +274,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_get_image_buffer_validates_info_and_notices_abort(self) -> None:
     """Checks attachment validation and interruption while waiting."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     self.set_prepare_sync(block)
     ready = Event()
     ready.set()
@@ -300,8 +302,9 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_finish_releases_output_after_array_creation_failure(self) -> None:
     """Allocation remains owned even if the Numpy view cannot be created."""
 
-    source = StubVisionBlock(img_shape=(2, 3), img_dtype='uint8')
-    ImageLink(source, StubVisionBlock(), name='failed-output-view')
+    source = with_failure_manager(StubVisionBlock(img_shape=(2, 3), img_dtype='uint8'))
+    target = with_failure_manager(StubVisionBlock())
+    ImageLink(source, target, name='failed-output-view')
     self.make_manager(source)
     source.set_shared_objects()
 
@@ -340,7 +343,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_finish_attempts_all_memory_operations_and_notifications(self) -> None:
     """Failed close/unlink cannot prevent other buffers and readers cleanup."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     operations = Mock()
     first, second, output = Mock(), Mock(), Mock()
     for name, handle in (('first', first), ('second', second),
@@ -387,7 +390,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
 
     for failed in ('close', 'unlink'):
       with self.subTest(failed=failed):
-        block = StubVisionBlock()
+        block = with_failure_manager(StubVisionBlock())
         handle = Mock()
         error = RuntimeError(failed)
         getattr(handle, failed).side_effect = error
@@ -404,7 +407,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_finish_accepts_already_unlinked_output(self) -> None:
     """Another owner may already have removed the output segment."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     handle = Mock()
     handle.unlink.side_effect = FileNotFoundError
     block._out_link_data = ImgLinkData(img_buffer=handle)
@@ -418,7 +421,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
                                                                     ) -> None:
     """Interrupts and other failures are retained as independent members."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     input_handle, output_handle = Mock(), Mock()
     interrupt = KeyboardInterrupt('input close interrupted')
     error = RuntimeError('output close failed')
@@ -439,7 +442,7 @@ class TestVisionBlockSharedMemory(VisionTestBase):
   def test_get_shared_objects_rejects_incomplete_image_link(self) -> None:
     """Checks the error when an input ImageLink has no buffer bundle."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     link = Mock()
     link.name = 'incomplete-image'
     link.get_buffers.return_value = None

@@ -258,16 +258,16 @@ class TestCoordinator(BlockTestBase):
     nested.add_note('original note')
     nested.__cause__ = OSError('original cause')
     first_report = source.capture_exception(nested)
-    manager.forward(first_report, nested)
+    manager.forward(first_report)
     local = RuntimeError('coordinator')
     manager.capture_exception(local)
     finish = OSError('finish')
     finish_report = source.capture_exception(finish, phase='finish')
-    manager.forward(finish_report, finish)
-    manager.forward(first_report, nested)
+    manager.forward(finish_report)
+    manager.forward(first_report)
     second_main = TypeError('later main')
     later_report = source.capture_exception(second_main)
-    manager.forward(later_report, second_main)
+    manager.forward(later_report)
     logged = manager._logger.error.call_count
     with self.assertRaises(BaseExceptionGroup) as caught:
       Block._finalize_run()
@@ -277,10 +277,14 @@ class TestCoordinator(BlockTestBase):
     worker = root.exceptions[0]
     self.assertEqual([group.message for group in worker.exceptions],
                      ['main', 'finish'])
-    self.assertEqual(worker.exceptions[0].exceptions, (nested, second_main))
-    self.assertIs(worker.exceptions[0].exceptions[0], nested)
-    self.assertIn('original note', nested.__notes__)
-    self.assertIsInstance(nested.__cause__, OSError)
+    restored, restored_later = worker.exceptions[0].exceptions
+    self.assertIs(type(restored), BaseExceptionGroup)
+    self.assertEqual(tuple(type(leaf) for leaf in restored.exceptions),
+                     (ValueError, KeyboardInterrupt))
+    self.assertEqual(str(restored_later), str(second_main))
+    self.assertIn('original note', restored.__notes__)
+    self.assertIsInstance(restored.__cause__, OSError)
+    self.assertEqual(str(worker.exceptions[1].exceptions[0]), str(finish))
     self.assertEqual(manager._logger.error.call_count, logged)
 
   def test_shared_manager_cleanup_uses_only_public_shutdown(self):

@@ -3,6 +3,7 @@
 """The histogram worker is GUI-independent and belongs with the config tools."""
 
 import logging
+from inspect import signature, Parameter
 from multiprocessing import Event, Queue
 from queue import Empty
 import unittest
@@ -20,9 +21,12 @@ class TestHistogramProcess(unittest.TestCase):
     self.img_in = Queue()
     self.img_out = Queue()
     self.log_queue = Queue()
+    self.failure_queue = Queue()
     self.process = HistogramProcess(self.stop_event, self.processing_event,
                                     self.img_in, self.img_out,
-                                    logging.CRITICAL, self.log_queue)
+                                    logging.CRITICAL, self.log_queue,
+                                    self.failure_queue, 'test configuration',
+                                    'test configuration.HistogramProcess')
     self.addCleanup(self.close_resources)
 
   def close_resources(self) -> None:
@@ -37,9 +41,17 @@ class TestHistogramProcess(unittest.TestCase):
       if self.process.is_alive():
         self.process.kill()
         self.process.join(2.0)
-    for queue in (self.img_in, self.img_out, self.log_queue):
+    for queue in (self.img_in, self.img_out, self.log_queue,
+                  self.failure_queue):
       queue.cancel_join_thread()
       queue.close()
+
+  def test_reporting_dependencies_are_required(self) -> None:
+    for name in ('log_level', 'log_queue', 'failure_queue',
+                 'block_name', 'owner_path'):
+      with self.subTest(argument=name):
+        self.assertIs(signature(HistogramProcess).parameters[name].default,
+                      Parameter.empty)
 
   def test_queue_failure_does_not_skip_other_queue_or_close(self) -> None:
     """Every drain, feeder cancellation, and close is attempted before raising."""
@@ -51,14 +63,13 @@ class TestHistogramProcess(unittest.TestCase):
     second.cancel_join_thread.side_effect = errors[1]
     self.process._img_in, self.process._img_out = first, second
     self.process._failure_manager = FailureManager(self.process.name, 'finish')
+    self.process._failure_manager._logger = Mock()
     with self.assertRaises(ExceptionGroup) as caught:
       self.process._cleanup_queues()
     self.assertEqual(caught.exception.exceptions, errors)
-    first.close.assert_called_once_with()
-    second.close.assert_called_once_with()
-    second.cancel_join_thread.side_effect = None
-    self.process._cleanup_queues()
     first.get_nowait.assert_called_once_with()
+    first.cancel_join_thread.assert_called_once_with()
+    second.cancel_join_thread.assert_called_once_with()
     first.close.assert_called_once_with()
     second.close.assert_called_once_with()
 
@@ -68,6 +79,37 @@ class TestHistogramProcess(unittest.TestCase):
     self.assertFalse(self.process.is_alive())
     self.assertFalse(self.stop_event.is_set())
     self.assertFalse(self.processing_event.is_set())
+    with self.assertRaises(Empty):
+      self.img_in.get_nowait()
+    with self.assertRaises(Empty):
+      self.img_out.get_nowait()
+
+    self.process.start()
+    self.assertTrue(self.process.is_alive())
+
+    for auto_range in (False, True):
+      with self.subTest(auto_range=auto_range):
+        self.img_in.put((np.full((32, 32), 128, dtype=np.uint8),
+                         auto_range, 40, 200))
+        try:
+          histogram = self.img_out.get(timeout=5.0)
+        except Empty:
+          self.fail(f'No histogram received; worker exit code: {self.process.exitcode}')
+        self.assertEqual(histogram.shape, (80, 512))
+        self.assertEqual(histogram.dtype, np.dtype('uint8'))
+        self.assertTrue(np.all(histogram[:, 256:258] == 0))
+        if auto_range:
+          self.assertTrue(np.all(histogram[:, 80] == 127))
+          self.assertTrue(np.all(histogram[:, 400] == 127))
+          self.assertEqual(set(np.unique(histogram)), {0, 127, 255})
+        else:
+          self.assertEqual(set(np.unique(histogram)), {0, 255})
+
+    self.stop_event.set()
+    self.process.join(2.0)
+    self.assertFalse(self.process.is_alive())
+    self.assertFalse(self.processing_event.is_set())
+    self.assertEqual(self.process.exitcode, 0)
     with self.assertRaises(Empty):
       self.img_in.get_nowait()
     with self.assertRaises(Empty):
@@ -148,7 +190,7 @@ class TestHistogramReporting(unittest.TestCase):
     self.wait_for_failure()
     self.lifecycle.close_resources()
     with self.assertRaises(ExceptionGroup) as caught:
-      self.lifecycle.raise_if_failed()
+      self.manager.raise_if_failed('configuration failures')
     leaves = exception_leaves(caught.exception)
     self.assertEqual(len(leaves), 1)
     self.assertIsInstance(leaves[0], ValueError)
@@ -187,7 +229,7 @@ class TestHistogramReporting(unittest.TestCase):
     self.wait_for_failure()
     self.lifecycle.close_resources()
     with self.assertRaises(ExceptionGroup) as caught:
-      self.lifecycle.raise_if_failed()
+      self.manager.raise_if_failed('configuration failures')
     leaves = exception_leaves(caught.exception)
     self.assertEqual(tuple(type(error) for error in leaves), (ValueError, OSError))
     self.assertGreater(len(str(leaves[1])), 256_000)
@@ -221,33 +263,3 @@ def exercise_histogram_context(method):
   suite = unittest.TestSuite(TestHistogramReporting(name) for name in names)
   if not unittest.TextTestRunner().run(suite).wasSuccessful():
     raise SystemExit(1)
-    self.process.start()
-    self.assertTrue(self.process.is_alive())
-
-    for auto_range in (False, True):
-      with self.subTest(auto_range=auto_range):
-        self.img_in.put((np.full((32, 32), 128, dtype=np.uint8),
-                         auto_range, 40, 200))
-        try:
-          histogram = self.img_out.get(timeout=5.0)
-        except Empty:
-          self.fail(f'No histogram received; worker exit code: {self.process.exitcode}')
-        self.assertEqual(histogram.shape, (80, 512))
-        self.assertEqual(histogram.dtype, np.dtype('uint8'))
-        self.assertTrue(np.all(histogram[:, 256:258] == 0))
-        if auto_range:
-          self.assertTrue(np.all(histogram[:, 80] == 127))
-          self.assertTrue(np.all(histogram[:, 400] == 127))
-          self.assertEqual(set(np.unique(histogram)), {0, 127, 255})
-        else:
-          self.assertEqual(set(np.unique(histogram)), {0, 255})
-
-    self.stop_event.set()
-    self.process.join(2.0)
-    self.assertFalse(self.process.is_alive())
-    self.assertFalse(self.processing_event.is_set())
-    self.assertEqual(self.process.exitcode, 0)
-    with self.assertRaises(Empty):
-      self.img_in.get_nowait()
-    with self.assertRaises(Empty):
-      self.img_out.get_nowait()

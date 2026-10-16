@@ -3,7 +3,6 @@
 from unittest.mock import Mock, patch
 
 import crappy.blocks.vision.display as display_module
-import crappy.blocks.vision.block as block_module
 from crappy._failure import FailureManager
 from crappy.blocks.vision import ImageDisplayer
 from crappy.blocks.vision.block import ImgLinkData
@@ -98,7 +97,7 @@ class TestImageDisplayerCleanup(VisionTestBase):
       self.assertEqual(close.call_count, 2)
     self.assertFalse(displayer._window_opened)
 
-  def test_standalone_parent_cleanup_uses_the_same_manager(self) -> None:
+  def test_parent_cleanup_uses_the_owned_manager(self) -> None:
     """Delegating cleanup must not allocate another reporting owner."""
 
     displayer = self.make_displayer('cv2')
@@ -107,17 +106,12 @@ class TestImageDisplayerCleanup(VisionTestBase):
     displayer._in_link_data = [ImgLinkData(img_buffer=handle)]
     first, last = OSError('buffer close'), KeyboardInterrupt('window close')
     handle.close.side_effect = first
-    manager = FailureManager(displayer.name, 'finish')
-    manager._logger = Mock()
-    displayer._logger = manager._logger
-    with (patch.object(display_module, 'FailureManager', return_value=manager),
-          patch.object(block_module, 'FailureManager') as inherited_factory,
-          patch.object(displayer, '_finish_cv2', side_effect=last) as close):
+    manager = displayer._failure_manager
+    with patch.object(displayer, '_finish_cv2', side_effect=last) as close:
       with self.assertRaises(BaseExceptionGroup) as caught:
         displayer.finish()
       self.assertEqual(caught.exception.exceptions[0].exceptions, (first,))
       self.assertIs(caught.exception.exceptions[1], last)
-      inherited_factory.assert_not_called()
       self.assertEqual(len(manager.snapshot()), 2)
       self.assertEqual(manager._logger.error.call_count, 2)
       handle.close.side_effect = close.side_effect = None
@@ -126,4 +120,4 @@ class TestImageDisplayerCleanup(VisionTestBase):
       self.assertEqual(handle.close.call_count, 2)
       self.assertEqual(close.call_count, 2)
       self.assertEqual(manager._logger.error.call_count, 2)
-    self.assertIsNone(displayer._failure_manager)
+    self.assertIs(displayer._failure_manager, manager)

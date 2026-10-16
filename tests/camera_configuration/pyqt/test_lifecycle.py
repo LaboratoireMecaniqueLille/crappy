@@ -170,7 +170,7 @@ class TestLifecycle(PyQtConfigTestCase):
     interrupt = KeyboardInterrupt()
     config._update_img = Mock(side_effect=interrupt)
     with (patch.object(pyqt_config.QMessageBox, 'critical') as dialog,
-          patch.object(config._logger, 'error') as log):
+          patch.object(config._failure_manager._logger, 'error') as log):
       with self.assertRaises(BaseExceptionGroup) as raised:
         config.run()
 
@@ -194,7 +194,7 @@ class TestLifecycle(PyQtConfigTestCase):
         config = self.make_config()
         interrupt = KeyboardInterrupt()
         with (patch.object(pyqt_config.QMessageBox, 'critical') as dialog,
-              patch.object(config._logger, 'error') as log):
+              patch.object(config._failure_manager._logger, 'error') as log):
           if path == 'signal':
             config._guard(Mock(side_effect=interrupt))()
           elif path == 'event_filter':
@@ -223,7 +223,7 @@ class TestLifecycle(PyQtConfigTestCase):
     config = self.make_config()
     with (patch.object(config, 'start', side_effect=KeyboardInterrupt),
           patch.object(pyqt_config.QMessageBox, 'critical') as dialog,
-          patch.object(config._logger, 'error') as log):
+          patch.object(config._failure_manager._logger, 'error') as log):
       with self.assertRaises(BaseExceptionGroup):
         config.run()
 

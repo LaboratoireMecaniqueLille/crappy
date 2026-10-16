@@ -17,7 +17,7 @@ from crappy.links import Link
 from crappy.links import link_graph
 
 from .test_gui_backends import GUI_BLOCKS, GUIBlockTestBase
-from tests.block.block_test_base import exception_leaves
+from tests.block.block_test_base import exception_leaves, with_failure_manager
 from ..block import TestBlock
 
 
@@ -29,7 +29,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
 
     for block_type, _, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
-        block = block_type(*args)
+        block = with_failure_manager(block_type(*args))
         tk_window, qt_window, app = Mock(), Mock(), Mock()
         errors = (RuntimeError('Tk close'), OSError('Qt close'),
                   ValueError('Qt events'))
@@ -61,7 +61,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     """Interrupts remain group members without changing their causes."""
 
     block_type, _, args = GUI_BLOCKS[0]
-    block = block_type(*args)
+    block = with_failure_manager(block_type(*args))
     window, app = Mock(), Mock()
     interrupt, error = KeyboardInterrupt(), OSError('events')
     cause = RuntimeError('earlier failure')
@@ -81,7 +81,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
 
     for block_type, _, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
-        block = block_type(*args)
+        block = with_failure_manager(block_type(*args))
         window, app = Mock(), Mock()
         window.close.return_value = False
         block._qt_window, block._qt_app = window, app
@@ -104,7 +104,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     """A Qt close cannot skip event processing or Matplotlib cleanup."""
 
     with patch.object(grapher_module, 'warn'):
-      block = Grapher(('x', 'y'), plotter='mpl', backend='TkAgg')
+      block = with_failure_manager(Grapher(('x', 'y'), plotter='mpl', backend='TkAgg'))
     window, app, figure = Mock(), Mock(), Mock()
     block._qt_plot, block._qt_app, block._figure = window, app, figure
     error = RuntimeError('Qt close')
@@ -123,7 +123,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
   def test_displayer_pipe_close_during_shutdown_ends_receiver(self) -> None:
     """Closing the overlay endpoint cannot leave a noisy receiver thread."""
 
-    process = Displayer('cleanup', 10, backend='cv2')
+    process = with_failure_manager(Displayer('cleanup', 10, backend='cv2'))
     process._stop_event = Event()
     process._to_draw_conn = Mock()
 
@@ -139,7 +139,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
   def test_client_failures_do_not_skip_broker_or_stdout(self) -> None:
     """MQTT errors cannot prevent broker reaping and stdout cleanup."""
 
-    block = ClientServer(broker=True)
+    block = with_failure_manager(ClientServer(broker=True))
     client, proc, stream, reader = Mock(), Mock(), Mock(), Mock()
     proc.stdout = stream
     reader.is_alive.return_value = False
@@ -170,7 +170,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
   def test_live_broker_reader_keeps_stdout_until_retry(self) -> None:
     """Closing a stream held by a live reader must not block shutdown."""
 
-    block = ClientServer(broker=True)
+    block = with_failure_manager(ClientServer(broker=True))
     proc, reader = Mock(), Mock()
     block._proc, block._reader = proc, reader
     block._reader_started = True
@@ -190,7 +190,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
   def test_displayer_joins_thread_after_window_failure(self) -> None:
     """A failing display backend cannot skip overlay-thread cleanup."""
 
-    process = Displayer('cleanup', 10, backend='cv2')
+    process = with_failure_manager(Displayer('cleanup', 10, backend='cv2'))
     thread = Mock(spec=Thread)
     thread.is_alive.return_value = False
     process._overlay_thread = thread
@@ -214,7 +214,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
   def test_displayer_does_not_join_a_failed_thread_start(self) -> None:
     """A Thread object is not evidence that start() succeeded."""
 
-    process = Displayer('cleanup', 10, backend='cv2')
+    process = with_failure_manager(Displayer('cleanup', 10, backend='cv2'))
     error = RuntimeError('thread start')
     thread = Mock(spec=Thread)
     thread.start.side_effect = error
@@ -228,7 +228,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
   def test_ucontroller_closes_bus_after_stop_write_failure(self) -> None:
     """A protocol error cannot prevent releasing the serial connection."""
 
-    block = UController()
+    block = with_failure_manager(UController())
     bus = Mock()
     block._bus = bus
     errors = (RuntimeError('write'), OSError('close'))
@@ -248,6 +248,10 @@ class TestSoftwareCleanup(GUIBlockTestBase):
 
     source, target = TestBlock(), TestBlock()
     link = Link(source, target)
+    with self.assertRaises(TypeError):
+      link.close()
+    manager = FailureManager('link owner', 'finish')
+    manager._logger = Mock()
     link._in.close()
     link._out.close()
     inlet, outlet = Mock(), Mock()
@@ -255,12 +259,12 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     error = OSError('input close')
     inlet.close.side_effect = error
     with self.assertRaises(ExceptionGroup) as caught:
-      link.close()
+      link.close(manager)
     self.assertEqual(exception_leaves(caught.exception), (error,))
     outlet.close.assert_called_once_with()
     inlet.close.side_effect = None
-    link.close()
-    link.close()
+    link.close(manager)
+    link.close(manager)
     self.assertEqual(inlet.close.call_count, 2)
     outlet.close.assert_called_once_with()
 
@@ -269,7 +273,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
 
     for block_type, _, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
-        block = block_type(*args)
+        block = with_failure_manager(block_type(*args))
         manager = block._failure_manager = FailureManager(block.name, 'finish')
         manager._logger = Mock()
         block._logger = manager._logger
@@ -314,7 +318,7 @@ class TestSoftwareCleanup(GUIBlockTestBase):
 
     for block_type, _, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
-        block = block_type(*args)
+        block = with_failure_manager(block_type(*args))
         window, app = Mock(), Mock()
         block._qt_window, block._qt_app = window, app
         error = OSError('progress log')
@@ -358,15 +362,15 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     """The coordinator retains each endpoint failure, not another wrapper."""
 
     source, target = TestBlock(), TestBlock()
+    manager = FailureManager('main', 'framework cleanup')
+    manager._logger = Mock()
     link = Link(source, target)
-    link.close()
+    link.close(manager)
     inlet, outlet = Mock(), Mock()
     link._in, link._out = inlet, outlet
     link._in_closed = link._out_closed = False
     errors = (OSError('input close'), KeyboardInterrupt('output close'))
     inlet.close.side_effect, outlet.close.side_effect = errors
-    manager = FailureManager('main', 'framework cleanup')
-    manager._logger = Mock()
     with self.assertRaises(BaseExceptionGroup) as caught:
       with manager.collect('Block cleanup'):
         with manager.step('close Link'):

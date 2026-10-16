@@ -16,6 +16,12 @@ class TestClassAPI(BlockTestBase):
   independently of the full multiprocessing startup sequence.
   """
 
+  def test_failure_state_is_created_by_run(self) -> None:
+    block = TestBlock()
+    self.assertFalse(hasattr(block, '_failure_manager'))
+    for name in ('raise_event', 'kbi_event', '_raise_event', '_kbi_event'):
+      self.assertFalse(hasattr(block, name))
+
   def test_init_subclass(self) -> None:
     """Tests that subclass registration rejects duplicate class names."""
 
@@ -84,8 +90,6 @@ class TestClassAPI(BlockTestBase):
     Block.start_event = Event()
     Block.pause_event = Event()
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     Block.log_queue = Queue()
     Block.log_thread = Thread(target=Block._log_target,
                               args=(Block.log_queue,))

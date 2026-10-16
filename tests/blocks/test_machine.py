@@ -8,7 +8,7 @@ from crappy.blocks.machine import ActuatorInstance, Machine
 import crappy.blocks.machine as machine_module
 
 from ..block import BlockTestBase, TestBlock, link
-from tests.block.block_test_base import exception_leaves
+from tests.block.block_test_base import exception_leaves, with_failure_manager
 
 
 class TrackingActuator:
@@ -96,6 +96,7 @@ class TestMachine(BlockTestBase):
   def setUp(self) -> None:
     """Resets fake actuator state before each test."""
 
+    super().setUp()
     TrackingActuator.reset()
 
   @staticmethod
@@ -156,7 +157,7 @@ class TestMachine(BlockTestBase):
       for actuators, exception in cases:
         with self.subTest(actuators=actuators):
           with self.assertRaises(exception):
-            Machine(actuators)
+            with_failure_manager(Machine(actuators))
 
   def test_constructor_splits_machine_settings_from_actuator_kwargs(
       self) -> None:
@@ -171,11 +172,11 @@ class TestMachine(BlockTestBase):
     common = {'cmd_label': 'common_cmd', 'shared': 2}
 
     with self._actuator_patch():
-      block = Machine([actuator],
+      block = with_failure_manager(Machine([actuator],
                       common=common,
                       time_label='time',
                       spam=True,
-                      freq=None)
+                      freq=None))
 
     self.assertEqual(block._types, ['TrackingActuator'])
     self.assertEqual(block._settings, [{
@@ -216,7 +217,7 @@ class TestMachine(BlockTestBase):
       for actuators, kwargs, exception in cases:
         with self.subTest(actuators=actuators, kwargs=kwargs):
           with self.assertRaises(exception):
-            Machine(actuators, **kwargs)
+            with_failure_manager(Machine(actuators, **kwargs))
     self.assertEqual(TrackingActuator.instances, [])
 
   def test_prepare_requires_a_link_before_instantiating_actuators(
@@ -224,7 +225,7 @@ class TestMachine(BlockTestBase):
     """Checks link validation happens before Actuator construction."""
 
     with self._actuator_patch():
-      block = Machine([{'type': 'TrackingActuator'}])
+      block = with_failure_manager(Machine([{'type': 'TrackingActuator'}]))
 
       with self.assertRaises(IOError):
         block.prepare()
@@ -236,10 +237,10 @@ class TestMachine(BlockTestBase):
 
     source = TestBlock()
     with self._actuator_patch():
-      block = Machine([
+      block = with_failure_manager(Machine([
         {'type': 'TrackingActuator', 'custom': 1},
         {'type': 'TrackingActuator', 'custom': 2},
-      ])
+      ]))
       link(source, block)
       block.prepare()
 
@@ -253,7 +254,7 @@ class TestMachine(BlockTestBase):
     """Checks speed-mode command forwarding and spam flag usage."""
 
     with self._actuator_patch():
-      block = Machine([{'type': 'TrackingActuator'}], spam=False)
+      block = with_failure_manager(Machine([{'type': 'TrackingActuator'}], spam=False))
     actuator = TrackingActuator()
     block._actuators = [
       ActuatorInstance(actuator=actuator,
@@ -272,7 +273,7 @@ class TestMachine(BlockTestBase):
     """Checks position mode with a runtime speed command label."""
 
     with self._actuator_patch():
-      block = Machine([{'type': 'TrackingActuator'}], spam=True)
+      block = with_failure_manager(Machine([{'type': 'TrackingActuator'}], spam=True))
     actuator = TrackingActuator()
     block._actuators = [
       ActuatorInstance(actuator=actuator,
@@ -297,7 +298,7 @@ class TestMachine(BlockTestBase):
     """Checks that unrelated input data does not command actuators."""
 
     with self._actuator_patch():
-      block = Machine([{'type': 'TrackingActuator'}])
+      block = with_failure_manager(Machine([{'type': 'TrackingActuator'}]))
     actuator = TrackingActuator()
     block._actuators = [
       ActuatorInstance(actuator=actuator,
@@ -315,7 +316,8 @@ class TestMachine(BlockTestBase):
     """Checks position/speed acquisition and output payload formatting."""
 
     with self._actuator_patch():
-      block = Machine([{'type': 'TrackingActuator'}], time_label='time')
+      block = with_failure_manager(Machine(
+          [{'type': 'TrackingActuator'}], time_label='time'))
     self._set_t0(block)
     actuator_1 = TrackingActuator(position_to_return=2.5,
                                   speed_to_return=7.5)
@@ -347,7 +349,7 @@ class TestMachine(BlockTestBase):
     """Checks that empty readouts do not emit downstream data."""
 
     with self._actuator_patch():
-      block = Machine([{'type': 'TrackingActuator'}])
+      block = with_failure_manager(Machine([{'type': 'TrackingActuator'}]))
     self._set_t0(block)
     actuator = TrackingActuator(position_to_return=None,
                                 speed_to_return=None)
@@ -367,7 +369,7 @@ class TestMachine(BlockTestBase):
     """Checks finish order across several actuators."""
 
     with self._actuator_patch():
-      block = Machine([{'type': 'TrackingActuator'}])
+      block = with_failure_manager(Machine([{'type': 'TrackingActuator'}]))
     actuator_1 = TrackingActuator()
     actuator_2 = TrackingActuator()
     block._actuators = [
@@ -399,10 +401,10 @@ class TestMachine(BlockTestBase):
 
     error = RuntimeError('construction failed')
     with self._actuator_patch():
-      block = Machine([
+      block = with_failure_manager(Machine([
         {'type': 'TrackingActuator'},
         {'type': 'TrackingActuator', 'constructor_error': error},
-      ])
+      ]))
       link(TestBlock(), block)
       with self.assertRaises(RuntimeError) as caught:
         block.prepare()
@@ -419,11 +421,11 @@ class TestMachine(BlockTestBase):
 
     error = RuntimeError('open failed')
     with self._actuator_patch():
-      block = Machine([
+      block = with_failure_manager(Machine([
         {'type': 'TrackingActuator'},
         {'type': 'TrackingActuator', 'open_error': error},
         {'type': 'TrackingActuator'},
-      ])
+      ]))
       link(TestBlock(), block)
       with self.assertRaises(RuntimeError) as caught:
         block.prepare()
@@ -443,14 +445,14 @@ class TestMachine(BlockTestBase):
     errors = [RuntimeError('first stop'), ValueError('second stop'),
               OSError('first close'), RuntimeError('second close')]
     with self._actuator_patch():
-      block = Machine([
+      block = with_failure_manager(Machine([
         {'type': 'TrackingActuator', 'cmd_label': 'first',
          'stop_error': errors[0],
          'close_error': errors[2]},
         {'type': 'TrackingActuator', 'cmd_label': 'second',
          'stop_error': errors[1],
          'close_error': errors[3]},
-      ])
+      ]))
       link(TestBlock(), block)
       block.prepare()
     TrackingActuator.events.clear()
@@ -474,8 +476,8 @@ class TestMachine(BlockTestBase):
 
     error = OSError('close failed')
     with self._actuator_patch():
-      block = Machine([{'type': 'TrackingActuator'},
-                       {'type': 'TrackingActuator', 'close_error': error}])
+      block = with_failure_manager(Machine([{'type': 'TrackingActuator'},
+                       {'type': 'TrackingActuator', 'close_error': error}]))
       link(TestBlock(), block)
       block.prepare()
     TrackingActuator.events.clear()
@@ -497,8 +499,8 @@ class TestMachine(BlockTestBase):
     interrupt = KeyboardInterrupt()
     error = OSError('close failed')
     with self._actuator_patch():
-      block = Machine([{'type': 'TrackingActuator', 'stop_error': interrupt},
-                       {'type': 'TrackingActuator', 'close_error': error}])
+      block = with_failure_manager(Machine([{'type': 'TrackingActuator', 'stop_error': interrupt},
+                       {'type': 'TrackingActuator', 'close_error': error}]))
       link(TestBlock(), block)
       block.prepare()
     TrackingActuator.events.clear()

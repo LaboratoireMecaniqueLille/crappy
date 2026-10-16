@@ -82,6 +82,7 @@ class TestCameraConfig(unittest.TestCase):
     """Initialization and rollback failures enter owner history only once."""
 
     manager = FailureManager('owner', 'configuration')
+    manager._logger = Mock()
     original = ValueError('initialization failed')
     cleanup = OSError('rollback failed')
 
@@ -114,19 +115,23 @@ class TestCameraConfig(unittest.TestCase):
           DummyCamera(), sentinel.log_queue, None, 30, None, self.manager)
 
   def test_logging_is_shared_without_a_gui(self) -> None:
-    """The core records normal messages and explicit exception information."""
+    """Normal logs stay local; failures keep the logger supplied by the owner."""
 
+    owner_logger = self.manager._logger = Mock()
     core = RecordingCore(
         DummyCamera(), sentinel.log_queue, None, 30, None, self.manager)
-    error = ValueError('frame')
-    exc_info = (ValueError, error, None)
+    self.assertIs(self.manager._logger, owner_logger)
     self.assertEqual(core._logger.name,
                      f'{current_process().name}.RecordingCore')
     logger = core._logger = Mock()
     core.log(logging.INFO, 'preview')
-    core.log(logging.ERROR, 'frame', exc_info=exc_info)
     logger.log.assert_called_once_with(logging.INFO, 'preview')
-    logger.exception.assert_called_once_with('frame', exc_info=exc_info)
+    logger.exception.assert_not_called()
+    with self.assertRaises(TypeError):
+      core.log(logging.ERROR, 'frame', exc_info=True)
+    self.manager.capture_exception(ValueError('frame'))
+    owner_logger.error.assert_called_once()
+    logger.exception.assert_not_called()
 
   def test_initializes_settings_and_image_state(self) -> None:
     """The backend-neutral model can be constructed on its own."""

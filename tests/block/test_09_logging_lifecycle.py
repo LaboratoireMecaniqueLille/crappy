@@ -129,6 +129,11 @@ def _exercise_logging_context(method: str) -> None:
 class TestLoggingLifecycle(BlockTestBase):
   """Checks logger shutdown, queue removal, and session isolation."""
 
+  def setUp(self) -> None:
+    super().setUp()
+    Block._ensure_failure_manager()
+    Block.run_failure_manager._logger = Mock()
+
   @staticmethod
   def _record(message: str = 'test') -> logging.LogRecord:
     return logging.LogRecord('crappy.test', logging.INFO, __file__, 0,
@@ -138,8 +143,6 @@ class TestLoggingLifecycle(BlockTestBase):
   def _setup_cleanup() -> None:
     Block.reset()
     Block.stop_event = Event()
-    Block.raise_event = Event()
-    Block.kbi_event = Event()
     Block.logger = Mock(spec=logging.Logger)
     Block._ensure_failure_manager()
     Block.run_failure_manager._logger = Block.logger
@@ -155,11 +158,11 @@ class TestLoggingLifecycle(BlockTestBase):
     queue.get.assert_not_called()
     get_logger.assert_not_called()
 
-  def test_invalid_queue_argument_raises(self) -> None:
-    """Passing None to the worker is an invalid call, unlike queue removal."""
+  def test_queue_argument_is_required(self) -> None:
+    """The worker receives its startup Queue explicitly."""
 
-    with self.assertRaisesRegex(RuntimeError, "The log queue doesn't exist"):
-      Block._log_target(None)
+    with self.assertRaises(TypeError):
+      Block._log_target()
 
   def test_stop_flag_drains_available_records(self) -> None:
     """Stopping consumes buffered records before the first empty read."""
@@ -277,6 +280,7 @@ class TestLoggingLifecycle(BlockTestBase):
         self.assertTrue(reading.wait(1.0))
         Block.reset()
         Block.log_queue = new_queue
+        Block._ensure_failure_manager()
         Block._log_target(new_queue)
         # Reproduce a restarted session's cleared stop flag while the old
         # worker is still finishing a read from the previous session.
@@ -545,7 +549,7 @@ class TestLoggingLifecycle(BlockTestBase):
         manager = FailureManager('main', 'bootstrap')
         manager._logger = Mock()
         Block.run_failure_manager = manager
-        Block.stop_event, Block.raise_event = Event(), Event()
+        Block.stop_event = Event()
         Block.ready_barrier = Mock()
         queue = Mock()
         Block.log_queue = queue
@@ -560,7 +564,6 @@ class TestLoggingLifecycle(BlockTestBase):
         self.assertEqual(manager.snapshot()[0][0].phase, 'logging')
         manager._logger.error.assert_called_once()
         self.assertTrue(Block.stop_event.is_set())
-        self.assertFalse(Block.raise_event.is_set())
         Block.ready_barrier.abort.assert_called_once_with()
 
   def test_broken_reader_logger_cannot_skip_stop_signals(self) -> None:
@@ -577,7 +580,7 @@ class TestLoggingLifecycle(BlockTestBase):
     self.addCleanup(logger.removeHandler, handler)
     manager._logger = logger
     Block.run_failure_manager = manager
-    Block.stop_event, Block.raise_event = Event(), Event()
+    Block.stop_event = Event()
     Block.ready_barrier = Mock()
     record = self._record()
     record.name = logger.name
@@ -587,7 +590,6 @@ class TestLoggingLifecycle(BlockTestBase):
     with patch('crappy._failure.sys.stderr', StringIO()) as errors:
       Block._log_target(queue)
     self.assertTrue(Block.stop_event.is_set())
-    self.assertFalse(Block.raise_event.is_set())
     self.assertTrue(manager.snapshot())
     self.assertIn('broken handler', errors.getvalue())
     self.assertLessEqual(handler.handle.call_count, 2)

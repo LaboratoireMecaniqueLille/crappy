@@ -142,7 +142,7 @@ class HeadlessHistogramConfig(CameraConfig):
     if not self._lifecycle.failed:
       raise RuntimeError('test timed out waiting for histogram failure')
     self.stop()
-    self._lifecycle.raise_if_failed()
+    self._failure_manager.raise_if_failed('configuration failures')
 
   def stop(self):
     self._lifecycle.close_resources()
@@ -274,7 +274,7 @@ class TestCameraReporting(CameraBlockTestBase):
       self.assertEqual(report.block_name, camera.name)
       self.assertEqual(report.process_name, name)
       self.assertEqual(report.pid, pid)
-      self.assertEqual(report.owner_path, f'{camera.name}.{name}')
+      self.assertEqual(report.owner_path, name)
       self.assertEqual(report.phase, 'finish' if large_finish else phase)
       manager._logger.error.assert_not_called()
     with self.assertRaises(BaseExceptionGroup) as caught:

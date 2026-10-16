@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.block.block_test_base import with_failure_manager
+
 from unittest.mock import Mock, patch
 import logging
 
@@ -23,6 +25,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
     """Checks the public alias and state established by the constructor."""
 
     block = StubVisionBlock()
+    self.assertFalse(hasattr(block, '_failure_manager'))
 
     self.assertIs(crappy.VisionBlock, VisionBlock)
     self.assertIsInstance(block, VisionBlockType)
@@ -44,7 +47,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
                          ((2, 3, 4), 'float32'),
                          (None, None)):
       with self.subTest(shape=shape, dtype=dtype):
-        block = StubVisionBlock(img_shape=shape, img_dtype=dtype)
+        block = with_failure_manager(StubVisionBlock(img_shape=shape, img_dtype=dtype))
         self.assertEqual(block._img_shape, shape)
         self.assertEqual(block._img_dtype, dtype)
 
@@ -54,12 +57,12 @@ class TestVisionBlockClassAPI(VisionTestBase):
     for shape in ([2, 3], (2,), (2, 3, 4, 5), (2, '3')):
       with self.subTest(shape=shape):
         with self.assertRaises((TypeError, ValueError)):
-          StubVisionBlock(img_shape=shape)
+          with_failure_manager(StubVisionBlock(img_shape=shape))
 
     for dtype in ('', 1, object()):
       with self.subTest(dtype=dtype):
         with self.assertRaises((TypeError, ValueError)):
-          StubVisionBlock(img_dtype=dtype)
+          with_failure_manager(StubVisionBlock(img_dtype=dtype))
 
   def test_constructor_rejects_non_positive_image_dimensions(self) -> None:
     """Checks the documented strictly-positive dimension constraint."""
@@ -67,13 +70,13 @@ class TestVisionBlockClassAPI(VisionTestBase):
     for shape in ((0, 3), (-1, 3)):
       with self.subTest(shape=shape):
         with self.assertRaises(ValueError):
-          StubVisionBlock(img_shape=shape)
+          with_failure_manager(StubVisionBlock(img_shape=shape))
 
   def test_constructor_rejects_unknown_numpy_dtype(self) -> None:
     """Checks dtype names are accepted by NumPy before being stored."""
 
     with self.assertRaises((TypeError, ValueError)):
-      StubVisionBlock(img_dtype='not-a-real-numpy-dtype')
+      with_failure_manager(StubVisionBlock(img_dtype='not-a-real-numpy-dtype'))
 
   def test_config_request_validates_boolean_state(self) -> None:
     """Checks mutable ConfigRequest flags and their defaults."""
@@ -102,8 +105,8 @@ class TestVisionBlockClassAPI(VisionTestBase):
   def test_image_link_registration_initializes_receive_state(self) -> None:
     """Checks VisionBlock-specific state installed by an ImageLink."""
 
-    source = StubVisionBlock()
-    consumer = StubVisionBlock()
+    source = with_failure_manager(StubVisionBlock())
+    consumer = with_failure_manager(StubVisionBlock())
     link = ImageLink(source, consumer, name='vision-core-image')
 
     self.assertEqual(source.img_outputs, [link])
@@ -116,7 +119,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
   def test_begin_and_frequency_counter(self) -> None:
     """Checks handled-image frequency timing and counter reset."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
 
     with patch.object(block_module, 'monotonic', return_value=12.5):
       block.begin()
@@ -142,7 +145,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
   def test_finish_closes_inputs_and_unlinks_owned_output(self) -> None:
     """Checks ownership rules when releasing shared-memory handles."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     incoming = Mock()
     outgoing = Mock()
     block._in_link_data = [ImgLinkData(img_buffer=incoming)]

@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import logging
+from inspect import signature, Parameter
 from unittest.mock import MagicMock
 import numpy as np
 
@@ -11,6 +12,12 @@ from .camera_process_test_base import (CameraProcessTestBase, TestLink,
 class TestSharedObjects(CameraProcessTestBase):
   """Tests sharing Camera-owned multiprocessing objects."""
 
+  def test_reporting_dependencies_are_required(self) -> None:
+    parameters = signature(TestCameraProcess.set_shared).parameters
+    for name in ('failure_queue', 'block_name'):
+      with self.subTest(argument=name):
+        self.assertIs(parameters[name].default, Parameter.empty)
+
   def test_condition_is_accepted_without_private_lock_inspection(self) -> None:
     """A caller-supplied Condition needs only its public interface."""
 
@@ -18,6 +25,7 @@ class TestSharedObjects(CameraProcessTestBase):
     shared = self.make_shared()
     arguments = shared._asdict()
     arguments['event'] = arguments.pop('stop_event')
+    arguments['block_name'] = 'test Camera'
     condition = MagicMock(spec_set=('wait_for', 'notify_all',
                                     '__enter__', '__exit__'))
     arguments['condition'] = condition
@@ -52,6 +60,8 @@ class TestSharedObjects(CameraProcessTestBase):
     self.assertIs(self._process._outputs, outputs)
     self.assertIs(self._process._labels, labels)
     self.assertIs(self._process._log_queue, shared.log_queue)
+    self.assertIs(self._process._failure_queue, shared.failure_queue)
+    self.assertEqual(self._process._block_name, 'test Camera')
     self.assertEqual(self._process._log_level, logging.ERROR)
     self.assertTrue(self._process._display_freq)
 

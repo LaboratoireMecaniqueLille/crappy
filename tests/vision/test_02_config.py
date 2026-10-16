@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.block.block_test_base import with_failure_manager
+
 from multiprocessing import Barrier, Event, Pipe
 from unittest.mock import Mock, call, patch
 
@@ -32,7 +34,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_request_registration_validates_type_and_connection(self) -> None:
     """Checks validation for incoming and outgoing request lists."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
 
     for method in (block.add_config_request_in,
                    block.add_config_request_out):
@@ -53,7 +55,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_prepare_rejects_unanswered_incoming_request(self) -> None:
     """Checks that a source cannot prepare with a pending response."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     request = self.make_request(connection=Mock())
     block.add_config_request_in(request)
 
@@ -66,7 +68,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_send_config_sends_marks_complete_and_closes(self) -> None:
     """Checks successful required and optional configuration responses."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
 
     for required, value in ((True, ('configured',)), (False, None)):
       with self.subTest(required=required):
@@ -86,7 +88,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_send_config_rejects_none_for_required_request(self) -> None:
     """Checks that declining a required request fails and closes its Pipe."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     recv_conn, send_conn = Pipe(duplex=False)
     self.track_connection(recv_conn)
     self.track_connection(send_conn)
@@ -102,7 +104,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_send_config_closes_connection_when_send_fails(self) -> None:
     """Checks cleanup when serializing or sending a response fails."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     connection = Mock()
     connection.send.side_effect = OSError('broken pipe')
     request = self.make_request(connection=connection)
@@ -117,7 +119,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_recv_configs_collects_all_responses_and_closes(self) -> None:
     """Checks receiving configurations from multiple image sources."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     self.set_prepare_sync(block)
 
     for source, value in (('first', (1,)), ('second', None)):
@@ -137,7 +139,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_recv_configs_validates_startup_synchronization(self) -> None:
     """Checks the required preparation Barrier and stop Event."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
 
     with self.assertRaises(ValueError):
       block.recv_configs()
@@ -149,7 +151,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_recv_configs_stops_when_preparation_is_aborted(self) -> None:
     """Checks that waiting requests notice another Block's failure."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     block._ready_barrier = Barrier(1)
     block._stop_event = Event()
     block._stop_event.set()
@@ -166,7 +168,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_recv_configs_preserves_active_pipe_error(self) -> None:
     """Checks the error reported when a source exits without responding."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     self.set_prepare_sync(block)
     connection = Mock()
     connection.poll.return_value = True
@@ -184,7 +186,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
 
     for send in (True, False):
       with self.subTest(send=send):
-        block = StubVisionBlock()
+        block = with_failure_manager(StubVisionBlock())
         self.set_prepare_sync(block)
         manager = FailureManager(block.name, 'prepare')
         block._failure_manager = manager
@@ -212,7 +214,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_cancelled_receive_still_reports_real_cleanup_failure(self) -> None:
     """Cancellation never hides a failure while closing its endpoint."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     self.set_prepare_sync(block)
     block._stop_event.set()
     connection = Mock()
@@ -233,7 +235,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
 
     for stopped in (False, True):
       with self.subTest(stopped=stopped):
-        block = StubVisionBlock()
+        block = with_failure_manager(StubVisionBlock())
         self.set_prepare_sync(block)
         connection = Mock()
         connection.poll.return_value = True
@@ -259,7 +261,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_send_diagnostic_failure_keeps_completed_flag(self) -> None:
     """A sent response stays completed even if its success log fails."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     connection = Mock()
     request = self.make_request(connection=connection)
     error = OSError('diagnostic')
@@ -274,7 +276,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_finish_closes_unanswered_config_pipes(self) -> None:
     """Preparation can fail before any configuration response is exchanged."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     incoming, outgoing = Pipe(duplex=False)
     self.track_connection(incoming)
     self.track_connection(outgoing)
@@ -290,7 +292,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_finish_continues_after_pipe_close_failure(self) -> None:
     """All remaining endpoints are closed before reporting a failed close."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     operations = Mock()
     incoming, outgoing = Mock(), Mock()
     operations.attach_mock(incoming, 'incoming')
@@ -315,7 +317,7 @@ class TestVisionBlockConfiguration(VisionTestBase):
   def test_finish_does_not_reclose_exchanged_config_pipes(self) -> None:
     """Pipes already closed by send/receive are not closed twice."""
 
-    block = StubVisionBlock()
+    block = with_failure_manager(StubVisionBlock())
     self.set_prepare_sync(block)
     incoming, outgoing = Mock(), Mock()
     outgoing.poll.return_value = True

@@ -8,7 +8,7 @@ from crappy.blocks.auto_drive_video_extenso import AutoDriveVideoExtenso
 import crappy.blocks.auto_drive_video_extenso as auto_drive_module
 
 from ..block import BlockTestBase, TestBlock, link
-from tests.block.block_test_base import exception_leaves
+from tests.block.block_test_base import exception_leaves, with_failure_manager
 
 
 class TrackingAutoDriveActuator:
@@ -80,6 +80,7 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
   def setUp(self) -> None:
     """Resets fake actuator state before each test."""
 
+    super().setUp()
     TrackingAutoDriveActuator.reset()
 
   @staticmethod
@@ -126,7 +127,7 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     """Checks labels, frequency options, and direction sign handling."""
 
     with self._actuator_patch():
-      positive = AutoDriveVideoExtenso(
+      positive = with_failure_manager(AutoDriveVideoExtenso(
         {'type': 'TrackingAutoDriveActuator'},
         gain=3,
         direction='X+',
@@ -134,11 +135,11 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
         max_speed=5,
         freq=None,
         display_freq=True,
-        debug=True)
-      negative = AutoDriveVideoExtenso(
+        debug=True))
+      negative = with_failure_manager(AutoDriveVideoExtenso(
         {'type': 'TrackingAutoDriveActuator'},
         gain=3,
-        direction='y-')
+        direction='y-'))
 
     self.assertEqual(positive.labels, ['t(s)', 'diff(pix)'])
     self.assertEqual(positive._gain, 3)
@@ -178,20 +179,22 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
       for actuator, kwargs, exception in cases:
         with self.subTest(actuator=actuator, kwargs=kwargs):
           with self.assertRaises(exception):
-            AutoDriveVideoExtenso(actuator, **kwargs)
+            with_failure_manager(AutoDriveVideoExtenso(actuator, **kwargs))
 
   def test_prepare_requires_exactly_one_input_link(self) -> None:
     """Checks AutoDriveVideoExtenso input link validation."""
 
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator'})
+      block = with_failure_manager(AutoDriveVideoExtenso(
+          {'type': 'TrackingAutoDriveActuator'}))
 
       with self.assertRaises(IOError):
         block.prepare()
 
       source_1 = TestBlock()
       source_2 = TestBlock()
-      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator'})
+      block = with_failure_manager(AutoDriveVideoExtenso(
+          {'type': 'TrackingAutoDriveActuator'}))
       link(source_1, block)
       link(source_2, block)
 
@@ -205,10 +208,10 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
 
     source = TestBlock()
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso({
+      block = with_failure_manager(AutoDriveVideoExtenso({
         'type': 'TrackingAutoDriveActuator',
         'custom': 1,
-      })
+      }))
       link(source, block)
       block.prepare()
 
@@ -223,7 +226,8 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     """Checks that missing input data does not command the actuator."""
 
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator'})
+      block = with_failure_manager(AutoDriveVideoExtenso(
+          {'type': 'TrackingAutoDriveActuator'}))
     actuator = TrackingAutoDriveActuator()
     block._device = actuator
     sent = self._capture_send(block)
@@ -239,12 +243,12 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     """Checks X-axis center error, speed clamp, and emitted payload."""
 
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso(
+      block = with_failure_manager(AutoDriveVideoExtenso(
         {'type': 'TrackingAutoDriveActuator'},
         gain=10,
         direction='X+',
         pixel_range=100,
-        max_speed=50)
+        max_speed=50))
     self._set_t0(block)
     actuator = TrackingAutoDriveActuator()
     block._device = actuator
@@ -263,12 +267,12 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     """Checks Y-axis center error and inverted direction sign."""
 
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso(
+      block = with_failure_manager(AutoDriveVideoExtenso(
         {'type': 'TrackingAutoDriveActuator'},
         gain=2,
         direction='Y-',
         pixel_range=100,
-        max_speed=100)
+        max_speed=100))
     self._set_t0(block)
     actuator = TrackingAutoDriveActuator()
     block._device = actuator
@@ -287,7 +291,8 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     """Checks that malformed upstream payloads fail explicitly."""
 
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator'})
+      block = with_failure_manager(AutoDriveVideoExtenso(
+          {'type': 'TrackingAutoDriveActuator'}))
     block._device = TrackingAutoDriveActuator()
     self._set_received(block, {'other': []})
 
@@ -298,7 +303,8 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     """Checks actuator cleanup at the end of the test."""
 
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator'})
+      block = with_failure_manager(AutoDriveVideoExtenso(
+          {'type': 'TrackingAutoDriveActuator'}))
     actuator = TrackingAutoDriveActuator()
     block._device = actuator
     block._device_opened = True
@@ -314,7 +320,8 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     """Checks finish before prepare remains harmless."""
 
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator'})
+      block = with_failure_manager(AutoDriveVideoExtenso(
+          {'type': 'TrackingAutoDriveActuator'}))
 
     block.finish()
 
@@ -325,7 +332,7 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
 
     options = {'type': 'TrackingAutoDriveActuator', 'custom': 1}
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso(options)
+      block = with_failure_manager(AutoDriveVideoExtenso(options))
       link(TestBlock(), block)
       block.prepare()
     self.assertEqual(options,
@@ -339,8 +346,8 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
       with self.subTest(step=step), self._actuator_patch():
         TrackingAutoDriveActuator.reset()
         error = RuntimeError(f'{step} failed')
-        block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
-                                      step: error})
+        block = with_failure_manager(AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
+                                      step: error}))
         link(TestBlock(), block)
         with self.assertRaises(RuntimeError) as caught:
           block.prepare()
@@ -363,9 +370,9 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     stop_error = RuntimeError('stop failed')
     close_error = OSError('close failed')
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
+      block = with_failure_manager(AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
                                     'stop_error': stop_error,
-                                    'close_error': close_error})
+                                    'close_error': close_error}))
       link(TestBlock(), block)
       block.prepare()
     device = TrackingAutoDriveActuator.instances[-1]
@@ -386,8 +393,8 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
 
     error = OSError('close failed')
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
-                                    'close_error': error})
+      block = with_failure_manager(AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
+                                    'close_error': error}))
       link(TestBlock(), block)
       block.prepare()
     device = TrackingAutoDriveActuator.instances[-1]
@@ -407,9 +414,9 @@ class TestAutoDriveVideoExtenso(BlockTestBase):
     interrupt = KeyboardInterrupt()
     error = OSError('close failed')
     with self._actuator_patch():
-      block = AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
+      block = with_failure_manager(AutoDriveVideoExtenso({'type': 'TrackingAutoDriveActuator',
                                     'stop_error': interrupt,
-                                    'close_error': error})
+                                    'close_error': error}))
       link(TestBlock(), block)
       block.prepare()
     device = TrackingAutoDriveActuator.instances[-1]

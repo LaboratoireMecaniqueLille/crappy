@@ -102,7 +102,7 @@ class TestRunCycle(CameraProcessTestBase):
     self.assertEqual(self._process.exitcode, 0)
     reports = self.receive_failures(shared).snapshot()
     self.assertEqual(len(reports), 1)
-    self.assertEqual(reports[0][0].exception_type,
+    self.assertEqual(reports[0][0].nodes[0].type_name,
                      'ExpectedProcessError')
     self.assertTrue(shared.barrier.broken)
     self.assertTrue(shared.stop_event.is_set())
@@ -125,7 +125,7 @@ class TestRunCycle(CameraProcessTestBase):
     self.assertEqual(self._process.exitcode, 0)
     reports = self.receive_failures(shared).snapshot()
     self.assertEqual(len(reports), 1)
-    self.assertEqual(reports[0][0].exception_type,
+    self.assertEqual(reports[0][0].nodes[0].type_name,
                      'ExpectedProcessError')
     self.assertFalse(shared.barrier.broken)
     self.assertTrue(shared.stop_event.is_set())

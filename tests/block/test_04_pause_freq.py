@@ -31,8 +31,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -73,8 +71,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -127,8 +123,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = pause
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -175,8 +169,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = pause
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -225,8 +217,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = pause
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -266,8 +256,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = pause
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()

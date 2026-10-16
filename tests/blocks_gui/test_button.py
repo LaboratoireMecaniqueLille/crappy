@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.block.block_test_base import exception_leaves, with_failure_manager
+
 from multiprocessing import Value
 from tkinter import TclError
 from unittest.mock import patch
@@ -35,7 +37,7 @@ class ButtonTests:
     """Creates a linked Button and prepares its GUI."""
 
     kwargs.setdefault('backend', self._backend)
-    button = Button(**kwargs)
+    button = with_failure_manager(Button(**kwargs))
     button._instance_t0 = Value('d', self._t0)
     sink = TestBlock()
     link(button, sink)
@@ -64,13 +66,13 @@ class ButtonTests:
     """Checks that invalid labels are rejected early."""
 
     with self.assertRaises(TypeError):
-      Button(time_label=1)
+      with_failure_manager(Button(time_label=1))
 
     with self.assertRaises(TypeError):
-      Button(label=1)
+      with_failure_manager(Button(label=1))
 
     with self.assertRaises(ValueError):
-      Button(time_label='same', label='same')
+      with_failure_manager(Button(time_label='same', label='same'))
 
     self.assertEqual(Button(time_label='time', label='trigger').labels,
                      ['time', 'trigger'])
@@ -78,7 +80,7 @@ class ButtonTests:
   def test_prepare_requires_output_link(self) -> None:
     """Checks that a Button without output Links fails early."""
 
-    button = Button()
+    button = with_failure_manager(Button())
 
     with self.assertRaises(IOError):
       button.prepare()
@@ -216,10 +218,12 @@ class TestButtonPyQt(ButtonTests, BlockTestBase):
     error = RuntimeError('send failed')
     with patch.object(button, 'send', side_effect=error):
       button._qt_button.click()
-    self.assertIs(button._callback_error, error)
+    self.assertIs(button._failure_manager.snapshot()[0][1], error)
     self.assertFalse(button._qt_button.isEnabled())
-    with self.assertRaisesRegex(RuntimeError, 'send failed'):
+    with self.assertRaises(ExceptionGroup) as caught:
       button.loop()
+    self.assertEqual(exception_leaves(caught.exception), (error,))
+    self.assertFalse(hasattr(button, '_callback_error'))
 
   def test_closing_window_does_not_stop_spam_or_other_windows(self) -> None:
     """Closing this window is not a request to stop the running test."""

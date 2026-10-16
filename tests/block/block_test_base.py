@@ -15,6 +15,14 @@ from unittest.mock import Mock
 from crappy._failure import FailureManager
 
 
+def with_failure_manager(component: Any) -> Any:
+  """Installs run-owned state for tests that call lifecycle hooks directly."""
+
+  component._failure_manager = FailureManager(component.name, 'main')
+  component._failure_manager._logger = Mock()
+  return component
+
+
 def exception_leaves(error: BaseException) -> tuple[BaseException, ...]:
   """Returns group leaves for assertions without traversing causes."""
 
@@ -247,12 +255,13 @@ class BlockTestBase(unittest.TestCase):
   def failures(self, block: TestBlock) -> tuple[BaseException, ...]:
     """Receives standalone child reports instead of consulting legacy flags."""
 
-    manager = block._failure_manager
-    if manager is None:
+    if block.pid is not None:
       manager = self._received_failures.setdefault(
           block, FailureManager('main', 'main'))
       manager._logger = Mock()
       manager.receive((block._failure_queue,))
+    else:
+      manager = block._failure_manager
     try:
       manager.raise_if_failed('test failures')
     except BaseExceptionGroup as errors:
@@ -328,8 +337,6 @@ class BlockTestBase(unittest.TestCase):
     self.assertIsNone(Block.start_event)
     self.assertIsNone(Block.pause_event)
     self.assertIsNone(Block.stop_event)
-    self.assertIsNone(Block.raise_event)
-    self.assertIsNone(Block.kbi_event)
 
     self.assertIsNone(Block.log_queue)
     self.assertIsNone(Block.log_thread)

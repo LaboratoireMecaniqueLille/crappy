@@ -44,13 +44,13 @@ class TestFailureManager(TestCase):
     self.assertEqual(UUID(hex=report.failure_id).hex, report.failure_id)
     for field in ('block_name', 'owner_path', 'process_name', 'pid', 'phase'):
       self.assertEqual(getattr(report, field), getattr(self.manager, field))
-    self.assertEqual(report.exception_module, 'builtins')
-    self.assertEqual(report.exception_type, 'ValueError')
-    self.assertEqual(report.exception_message, 'original')
+    self.assertEqual(report.nodes[0].module, 'builtins')
+    self.assertEqual(report.nodes[0].type_name, 'ValueError')
+    self.assertEqual(report.nodes[0].message, 'original')
     self.assertIn('Traceback', report.formatted_traceback)
     self.assertIn('original note', report.formatted_traceback)
     self.assertEqual(len(report.nodes), 1)
-    self.assertEqual(report.root, 0)
+    self.assertFalse(hasattr(report, 'root'))
     self.assertEqual(report.nodes[0].notes, ('original note',))
     self.assertIs(self.manager.snapshot()[0][1], error)
     self.assertIsNotNone(error.__traceback__)
@@ -65,9 +65,10 @@ class TestFailureManager(TestCase):
         failure_id='0123456789abcdef0123456789abcdef',
         block_name='Block-1', owner_path='Block-1.worker',
         process_name='worker', pid=123, phase='finish',
-        exception_module='builtins', exception_type='ValueError',
-        exception_message='first line\nsecond line',
-        formatted_traceback=diagnostic)
+        formatted_traceback=diagnostic,
+        nodes=(ExceptionNode('builtins', 'ValueError', 'first line\nsecond line',
+                             tuple(f'{base.__module__}.{base.__qualname__}'
+                                   for base in ValueError.__mro__)),))
     self.assertEqual(
         str(report),
         'Failure 0123456789abcdef0123456789abcdef: Block Block-1, '
@@ -80,7 +81,7 @@ class TestFailureManager(TestCase):
     report = self.manager.capture_exception(error)
     assert report is not None
     self.assertIsNone(self.manager.capture_exception(error))
-    self.assertIsNone(self.manager.forward(report, error))
+    self.assertIsNone(self.manager.forward(report))
     self.assertEqual(self.emitted, [str(report)])
     with self.assertRaises(ExceptionGroup) as caught:
       self.manager.raise_if_failed('summary')
@@ -158,14 +159,21 @@ class TestFailureManager(TestCase):
   def test_forward_retains_original_origin_id_and_identity(self) -> None:
     report = self.manager.capture_exception(ValueError('worker'))
     assert report is not None
-    restored = ValueError('worker')
     parent_records = []
     parent = FailureManager('parent', 'finish')
+    with self.assertRaises(TypeError):
+      parent.forward(report, ValueError('late attachment'))
     with patch.object(parent, '_logger') as logger:
       logger.error.side_effect = parent_records.append
-      self.assertIsNone(parent.forward(report, restored))
+      self.assertIsNone(parent.forward(report))
+      self.assertEqual(parent.snapshot(), ((report, None),))
+      with self.assertRaises(ExceptionGroup) as caught:
+        parent.raise_if_failed('summary')
+      restored, = caught.exception.exceptions
+      self.assertIs(type(restored), ValueError)
+      self.assertEqual(str(restored), 'worker')
       self.assertIsNone(parent.capture_exception(restored))
-      self.assertIsNone(parent.forward(report, restored))
+      self.assertIsNone(parent.forward(report))
     self.assertEqual(parent_records, [])
     self.assertIs(parent.snapshot()[0][0], report)
     self.assertIs(parent.snapshot()[0][1], restored)
@@ -183,17 +191,17 @@ class TestFailureManager(TestCase):
   def test_materialize_forwarded_report_without_reemission(self) -> None:
     report = self.manager.capture_exception(ValueError('original'))
     assert report is not None
-    report = replace(report, nodes=(), root=None)
     parent = FailureManager('parent', 'finish')
     with patch.object(parent, '_logger') as logger:
       self.assertIsNone(parent.forward(report))
-      with self.assertRaisesRegex(ValueError, 'reconstructed'):
-        parent.raise_if_failed('summary')
-      restored = ValueError('restored')
-      self.assertIsNone(parent.forward(report, restored))
       with self.assertRaises(ExceptionGroup) as caught:
         parent.raise_if_failed('summary')
-      self.assertEqual(caught.exception.exceptions, (restored,))
+      restored, = caught.exception.exceptions
+      self.assertIs(type(restored), ValueError)
+      self.assertEqual(str(restored), 'original')
+      with self.assertRaises(ExceptionGroup) as repeated:
+        parent.raise_if_failed('summary')
+      self.assertEqual(repeated.exception.exceptions, (restored,))
       self.assertIsNone(parent.capture_exception(restored))
       logger.error.assert_not_called()
 
@@ -215,8 +223,8 @@ class TestFailureManager(TestCase):
   def test_broken_string_formatter_does_not_lose_type(self) -> None:
     report = self.manager.capture_exception(_BadMessage())
     assert report is not None
-    self.assertEqual(report.exception_type, '_BadMessage')
-    self.assertIn('message unavailable', report.exception_message)
+    self.assertEqual(report.nodes[0].type_name, '_BadMessage')
+    self.assertIn('message unavailable', report.nodes[0].message)
     self.assertIn('_BadMessage', report.formatted_traceback)
 
   def test_sink_failure_does_not_erase_the_origin(self) -> None:
@@ -289,17 +297,18 @@ class TestFailureManager(TestCase):
     report = self.manager.capture_exception(ValueError('worker'))
     assert report is not None
     parent = FailureManager('parent', 'finish')
-    restored = ValueError('worker')
     with patch.object(parent, '_logger') as logger:
       logger.error.side_effect = OSError('parent sink')
       with patch('crappy._failure.sys.stderr') as emergency:
         emergency.write.side_effect = RuntimeError('stderr')
-        self.assertIsNone(parent.forward(report, restored))
-        self.assertIsNone(parent.forward(report, restored))
-        self.assertIsNone(parent.capture_exception(restored))
+        self.assertIsNone(parent.forward(report))
+        self.assertIsNone(parent.forward(report))
         with self.assertRaises(ExceptionGroup) as caught:
           parent.raise_if_failed('summary')
-        self.assertEqual(caught.exception.exceptions, (restored,))
+        restored, = caught.exception.exceptions
+        self.assertIs(type(restored), ValueError)
+        self.assertEqual(str(restored), 'worker')
+        self.assertIsNone(parent.capture_exception(restored))
         emergency.write.assert_not_called()
         emergency.flush.assert_not_called()
       logger.error.assert_not_called()
@@ -319,18 +328,23 @@ class TestFailureManager(TestCase):
         self.assertIsNone(parent.forward(report))
         self.assertIsNone(root.forward(parent.snapshot()[0][0]))
         self.assertIsNone(parent.forward(report))
-        self.assertIsNone(root.forward(report, error))
-        self.assertIsNone(root.capture_exception(error))
+        self.assertIsNone(root.forward(report))
         parent_report = parent.capture_exception(parent_error)
         assert parent_report is not None
-        self.assertIsNone(root.forward(parent_report, parent_error))
+        self.assertIsNone(root.forward(parent_report))
         with self.assertRaises(BaseExceptionGroup) as caught:
           root.raise_if_failed('summary')
-        self.assertEqual(caught.exception.exceptions, (error, parent_error))
+        restored, restored_parent = caught.exception.exceptions
+        self.assertIs(type(restored), BaseExceptionGroup)
+        self.assertEqual(tuple(type(leaf) for leaf in restored.exceptions),
+                         (KeyboardInterrupt, OSError))
+        self.assertEqual(str(restored_parent), str(parent_error))
+        self.assertIsNone(root.capture_exception(restored))
+        self.assertIsNone(root.capture_exception(restored_parent))
         root_logger.error.assert_not_called()
       parent_logger.error.assert_called_once_with(str(parent_report))
-    self.assertEqual(root.snapshot(), ((report, error),
-                                       (parent_report, parent_error)))
+    self.assertEqual(root.snapshot(), ((report, restored),
+                                       (parent_report, restored_parent)))
     self.assertEqual(self.emitted, [str(report)])
 
   def test_failed_capture_rolls_back_claim(self) -> None:
@@ -373,30 +387,33 @@ class TestFailureManager(TestCase):
       logger.error.side_effect = inspect_from_another_thread
       manager.capture_exception(origin)
 
-  def test_snapshot_remains_stable_after_capture_and_clear(self) -> None:
+  def test_snapshot_remains_stable_after_later_capture(self) -> None:
     error = ValueError('original')
     report = self.manager.capture_exception(error)
     assert report is not None
     snapshot = self.manager.snapshot()
     self.manager.capture_exception(OSError('later'))
-    self.manager.clear()
     self.assertEqual(snapshot, ((report, error),))
-    self.assertEqual(self.manager.snapshot(), ())
+    self.assertEqual(len(self.manager.snapshot()), 2)
     self.assertEqual(len(self.emitted), 2)
 
-  def test_session_clear_releases_claims_and_history(self) -> None:
+  def test_new_manager_has_independent_claims_and_history(self) -> None:
     error = ValueError('session')
     self.manager.capture_exception(error)
-    self.manager.clear()
-    self.assertEqual(self.manager.snapshot(), ())
-    self.assertIsNotNone(self.manager.capture_exception(error))
-    self.assertEqual(len(self.emitted), 2)
+    manager = FailureManager('Block-1', 'main')
+    with patch.object(manager, '_logger') as logger:
+      self.assertEqual(manager.snapshot(), ())
+      self.assertIsNotNone(manager.capture_exception(error))
+      logger.error.assert_called_once()
+    self.assertEqual(len(self.emitted), 1)
+    self.assertEqual(len(self.manager.snapshot()), 1)
+    self.assertFalse(hasattr(manager, 'clear'))
 
   def test_graph_schema_keeps_local_indexes_not_incident_ids(self) -> None:
     error = ExceptionGroup('group', [ValueError('leaf')])
     report = self.manager.capture_exception(error)
     assert report is not None
-    report = replace(report, root=0, nodes=(
+    report = replace(report, nodes=(
         ExceptionNode('builtins', 'ExceptionGroup', 'group',
                       tuple(f'{base.__module__}.{base.__qualname__}'
                             for base in ExceptionGroup.__mro__),
@@ -408,7 +425,7 @@ class TestFailureManager(TestCase):
     self.assertEqual(report.nodes[0].children, (1,))
     self.assertEqual(report.nodes[1].cause, 1)
     with self.assertRaises(FrozenInstanceError):
-      setattr(report, 'root', 1)
+      setattr(report, 'nodes', ())
 
   def test_schema_rejects_mutable_or_non_diagnostic_values(self) -> None:
     node = ExceptionNode('builtins', 'ValueError', 'leaf',
@@ -422,9 +439,7 @@ class TestFailureManager(TestCase):
     report = self.manager.capture_exception(ValueError())
     assert report is not None
     with self.assertRaises(ValueError):
-      replace(report, root=1, nodes=(node,))
-    with self.assertRaises(ValueError):
-      replace(report, root=0, nodes=(replace(node, cause=1),))
+      replace(report, nodes=(replace(node, cause=1),))
     for failure_id in ('not-a-uuid', report.failure_id.upper()):
       with self.subTest(failure_id=failure_id):
         with self.assertRaises(ValueError):
@@ -473,24 +488,26 @@ class TestFailureManager(TestCase):
   def test_report_rejects_incomplete_or_mutable_graphs(self) -> None:
     report = self.manager.capture_exception(ValueError('origin'))
     assert report is not None
-    report = replace(report, nodes=(), root=None)
-    node = ExceptionNode('builtins', 'ValueError', 'origin',
-                         tuple(f'{base.__module__}.{base.__qualname__}'
-                               for base in ValueError.__mro__))
-    for fields in ({'root': 0}, {'nodes': (node,)},
-                   {'nodes': (node,), 'root': True}):
-      with self.subTest(fields=fields):
-        with self.assertRaises(ValueError):
-          replace(report, **fields)
-    invalid_nodes: tuple[Any, ...] = ([node], (ValueError('not a node'),))
+    node = report.nodes[0]
+    invalid_nodes: tuple[Any, ...] = ((), [node], (ValueError('not a node'),))
     for nodes in invalid_nodes:
       with self.subTest(nodes=nodes):
         with self.assertRaises(TypeError):
-          replace(report, nodes=nodes, root=0)
+          replace(report, nodes=nodes)
+    self.assertIs(signature(FailureReport).parameters['nodes'].default,
+                  signature(FailureReport).empty)
+    for name in ('root', 'exception_module', 'exception_type',
+                 'exception_message'):
+      self.assertFalse(hasattr(report, name))
+      self.assertNotIn(name, report.to_wire())
+      with self.assertRaises(TypeError):
+        replace(report, **{name: None})
 
   def test_mro_is_required_immutable_diagnostic_data(self) -> None:
     self.assertIs(signature(ExceptionNode).parameters['mro'].default,
                   signature(ExceptionNode).empty)
+    with self.assertRaises(TypeError):
+      ExceptionNode('builtins', 'ValueError', 'origin')
     node = ExceptionNode('builtins', 'ValueError', 'origin',
                          tuple(f'{base.__module__}.{base.__qualname__}'
                                for base in ValueError.__mro__))
@@ -534,14 +551,16 @@ class TestFailureManager(TestCase):
       self.assertEqual(sum(leaf is error for leaf in leaves), 1)
     self.assertEqual(len(self.emitted), 8)
 
-  def test_session_clear_releases_strong_exception_references(self) -> None:
+  def test_manager_lifetime_releases_strong_exception_references(self) -> None:
+    manager = FailureManager('Block-1', 'main')
+    manager._logger = Mock()
     error = _BadMessage()
     reference = ref(error)
     error.__cause__ = error
-    self.manager.capture_exception(error)
+    manager.capture_exception(error)
     del error
     gc.collect()
     self.assertIsNotNone(reference())
-    self.manager.clear()
+    del manager
     gc.collect()
     self.assertIsNone(reference())

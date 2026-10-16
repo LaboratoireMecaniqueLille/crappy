@@ -10,7 +10,7 @@ import sys
 from threading import Lock
 from typing import Any
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from crappy import _exceptions, _global
 from crappy._collection import CollectionEntry, CollectionUnavailableError
@@ -148,11 +148,17 @@ class TestExceptionCodec(TestCase):
   def setUp(self) -> None:
     """Observe source-only logging and final-owner reconstruction."""
 
+    self._reset_managers()
+
+  def _reset_managers(self) -> None:
+    """Creates independent owners for each process-lifetime scenario."""
+
     self.source = FailureManager('Camera', 'main', owner_path='Camera.worker')
     self.parent = FailureManager('coordinator', 'finish')
-    self.source_logger = patch.object(self.source, '_logger').start()
-    self.parent_logger = patch.object(self.parent, '_logger').start()
-    self.addCleanup(patch.stopall)
+    self.source_logger = Mock()
+    self.parent_logger = Mock()
+    self.source._logger = self.source_logger
+    self.parent._logger = self.parent_logger
 
   def round_trip(self, error: BaseException) -> tuple[FailureReport, Any]:
     """Transfer built-in wire values and materialize at the final owner."""
@@ -200,8 +206,7 @@ class TestExceptionCodec(TestCase):
                   SystemExit(False),
                   BaseException('custom termination')):
       with self.subTest(error=repr(error)):
-        self.source.clear()
-        self.parent.clear()
+        self._reset_managers()
         report, restored = self.round_trip(error)
         self.assertIs(type(restored), type(error))
         self.assertEqual(restored.args, error.args)
@@ -215,8 +220,7 @@ class TestExceptionCodec(TestCase):
                            (SystemExit, RemoteSystemExit),
                            (BaseException, RemoteBaseFailure)):
       with self.subTest(base=base):
-        self.source.clear()
-        self.parent.clear()
+        self._reset_managers()
 
         class LocalError(base):
           """An Exception type unavailable to pickle outside this method."""
@@ -252,8 +256,7 @@ class TestExceptionCodec(TestCase):
     for error in (_FailingLoads('loads'), _WrongType('type'),
                   _WrongAncestry('ancestry')):
       with self.subTest(error=type(error)):
-        self.source.clear()
-        self.parent.clear()
+        self._reset_managers()
         report, restored = self.round_trip(error)
         self.assertIsNotNone(report.nodes[0].original_bytes)
         self.assertIsNone(report.nodes[0].serialization_error)
@@ -332,8 +335,7 @@ class TestExceptionCodec(TestCase):
   def test_custom_group_failure_degrades_only_that_group(self) -> None:
     for group_type in (_BrokenGroup, _BrokenGroupLoads, _BrokenRestoredGroup):
       with self.subTest(group=group_type):
-        self.source.clear()
-        self.parent.clear()
+        self._reset_managers()
         _, restored = self.round_trip(group_type(
             'custom', [ValueError('first'), OSError('second')], 'tag'))
         self.assertIs(type(restored), ExceptionGroup)
@@ -506,8 +508,7 @@ class TestExceptionCodec(TestCase):
   def test_simple_exit_code_survives_metadata_only_fallback(self) -> None:
     for code in (9, 'message', False, None, Lock()):
       with self.subTest(code=code):
-        self.source.clear()
-        self.parent.clear()
+        self._reset_managers()
         error = SystemExit(code)
         setattr(error, 'lock', Lock())
         report, restored = self.round_trip(error)

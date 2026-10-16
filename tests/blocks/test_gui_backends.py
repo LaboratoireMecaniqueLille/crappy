@@ -20,7 +20,7 @@ from crappy._exceptions import OptionalDependencyError
 from crappy._failure import FailureManager
 
 from ..block import BlockTestBase, TestBlock, link
-from tests.block.block_test_base import exception_leaves
+from tests.block.block_test_base import exception_leaves, with_failure_manager
 
 
 GUI_BLOCKS = (
@@ -66,7 +66,7 @@ class TestGUIBackends(GUIBlockTestBase):
                 patch.object(block_type, '_prepare_pyqt') as pyqt,
                 patch.object(block_type, '_prepare_tkinter') as tkinter):
             kwargs = {} if backend is None else {'backend': backend}
-            block = block_type(*args, **kwargs)
+            block = with_failure_manager(block_type(*args, **kwargs))
             selected = (block.backend
                         if isinstance(block, canvas_module.Canvas)
                         else block._backend)
@@ -84,7 +84,7 @@ class TestGUIBackends(GUIBlockTestBase):
         with self.subTest(block=block_type.__name__, backend=backend):
           error = ValueError if isinstance(backend, str) else TypeError
           with self.assertRaises(error):
-            block_type(*args, backend=backend)
+            with_failure_manager(block_type(*args, backend=backend))
 
   def test_prepare_dispatches_only_to_the_selected_backend(self) -> None:
     """Tk preparation never initializes Qt, and vice versa."""
@@ -92,7 +92,7 @@ class TestGUIBackends(GUIBlockTestBase):
     for block_type, _, args in GUI_BLOCKS:
       for backend in ('pyqt', 'tkinter'):
         with self.subTest(block=block_type.__name__, backend=backend):
-          block = block_type(*args, backend=backend)
+          block = with_failure_manager(block_type(*args, backend=backend))
           self._connect(block)
           with (patch.object(block, '_prepare_pyqt') as pyqt,
                 patch.object(block, '_prepare_tkinter') as tkinter):
@@ -114,7 +114,7 @@ class TestGUIBackends(GUIBlockTestBase):
             continue
           with self.subTest(block=block_type.__name__, backend=backend,
                             invalid=invalid):
-            block = block_type(*args, backend=backend)
+            block = with_failure_manager(block_type(*args, backend=backend))
             if invalid == 'forbidden':
               self._connect(block)
               if block_type in (button_module.Button,
@@ -139,7 +139,7 @@ class TestGUIBackends(GUIBlockTestBase):
 
     for block_type, module, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
-        block = block_type(*args)
+        block = with_failure_manager(block_type(*args))
         block.finish()
         block.finish()
         window, application = Mock(), Mock()
@@ -166,7 +166,7 @@ class TestGUIBackends(GUIBlockTestBase):
 
     existing = Application()
     original = os.path.join('camera', 'cv2', 'qt', 'plugins')
-    for block_type, module, _ in GUI_BLOCKS:
+    for block_type, module, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
         with (patch.dict(os.environ,
                          {'QT_QPA_PLATFORM_PLUGIN_PATH': original}),
@@ -174,13 +174,14 @@ class TestGUIBackends(GUIBlockTestBase):
               patch.object(module, 'QtWidgets',
                            SimpleNamespace(QApplication=Application))):
           core.QCoreApplication.instance.return_value = existing
-          self.assertIs(block_type._get_application(), existing)
+          block = with_failure_manager(block_type(*args))
+          self.assertIs(block._get_application(), existing)
           self.assertEqual(os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'], original)
 
   def test_non_widget_application_is_rejected(self) -> None:
     """A QCoreApplication cannot be reused for GUI widgets."""
 
-    for block_type, module, _ in GUI_BLOCKS:
+    for block_type, module, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
         with (patch.object(module, 'QtCore') as core,
               patch.object(module, 'QtWidgets',
@@ -188,7 +189,7 @@ class TestGUIBackends(GUIBlockTestBase):
           core.QCoreApplication.instance.return_value = sentinel.core_app
           with self.assertRaisesRegex(RuntimeError,
                                       'non-widget Qt application'):
-            block_type._get_application()
+            with_failure_manager(block_type(*args))._get_application()
 
   def test_application_creation_restores_plugin_path_and_numeric_locale(
       self) -> None:
@@ -199,7 +200,7 @@ class TestGUIBackends(GUIBlockTestBase):
     unrelated = os.path.join('application', 'plugins')
     cases = ((None, None), (opencv, None), (unrelated, unrelated),
              (os.pathsep.join((opencv, unrelated, opencv)), unrelated))
-    for block_type, module, _ in GUI_BLOCKS:
+    for block_type, module, args in GUI_BLOCKS:
       for original, expected in cases:
         for fails in (False, True):
           with self.subTest(block=block_type.__name__, path=original,
@@ -224,13 +225,13 @@ class TestGUIBackends(GUIBlockTestBase):
               widgets.QApplication.side_effect = create_application
               if fails:
                 with self.assertRaises(ExceptionGroup) as caught:
-                  block_type._get_application()
+                  with_failure_manager(block_type(*args))._get_application()
                 failure, = exception_leaves(caught.exception)
                 self.assertIsInstance(failure, RuntimeError)
                 self.assertEqual(str(failure), 'application failed')
               else:
-                self.assertIs(block_type._get_application(),
-                              sentinel.application)
+                block = with_failure_manager(block_type(*args))
+                self.assertIs(block._get_application(), sentinel.application)
               self.assertEqual(os.environ.get(variable), original)
               self.assertEqual(setlocale.call_args_list[0].args,
                                (locale.LC_NUMERIC,))
@@ -242,12 +243,14 @@ class TestGUIBackends(GUIBlockTestBase):
 
     variable = 'QT_QPA_PLATFORM_PLUGIN_PATH'
     original = os.path.join('camera', 'cv2', 'qt', 'plugins')
-    for block_type, module, _ in GUI_BLOCKS:
+    for block_type, module, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
         origin = ValueError('application')
         cleanup = KeyboardInterrupt('locale')
         manager = FailureManager(block_type.__name__, 'prepare')
         manager._logger = Mock()
+        block = block_type(*args)
+        block._failure_manager = manager
         with (patch.dict(os.environ, {variable: original}),
               patch.object(module, 'QtCore') as core,
               patch.object(module, 'QtWidgets') as widgets,
@@ -256,7 +259,7 @@ class TestGUIBackends(GUIBlockTestBase):
           core.QCoreApplication.instance.return_value = None
           widgets.QApplication.side_effect = origin
           with self.assertRaises(BaseExceptionGroup) as caught:
-            block_type._get_application(manager)
+            block._get_application()
           self.assertEqual(exception_leaves(caught.exception),
                            (origin, cleanup))
           self.assertEqual(os.environ.get(variable), original)
@@ -290,7 +293,7 @@ class TestGUIBackends(GUIBlockTestBase):
       for error in (RuntimeError('callback failed'), KeyboardInterrupt()):
         with self.subTest(block=block_type.__name__,
                           error=type(error).__name__):
-          block = block_type()
+          block = with_failure_manager(block_type())
           block._qt_app = Mock()
           block._qt_button = Mock()
           with patch.object(block, callback, side_effect=error):
@@ -361,7 +364,8 @@ class TestGUIBackends(GUIBlockTestBase):
             assert 'PyQt6' in str(error), error
           else:
             raise AssertionError('Missing PyQt6 was not reported')
-          qt.finish()
+          from tests.block.block_test_base import with_failure_manager
+          with_failure_manager(qt).finish()
         assert not any(name.startswith(('PyQt6', 'matplotlib', 'pyqtgraph'))
                        for name in sys.modules)
     ''')
@@ -372,11 +376,11 @@ class TestGUIBackends(GUIBlockTestBase):
   def test_missing_qt_placeholder_has_a_clear_error(self) -> None:
     """Missing Qt reports the optional package, not an AttributeError."""
 
-    for block_type, module, _ in GUI_BLOCKS:
+    for block_type, module, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
         with patch.object(module, 'QtCore', OptionalModule('PyQt6.QtCore')):
           with self.assertRaisesRegex(OptionalDependencyError, 'PyQt6'):
-            block_type._get_application()
+            with_failure_manager(block_type(*args))._get_application()
 
 
 class TestGUIArguments(GUIBlockTestBase):

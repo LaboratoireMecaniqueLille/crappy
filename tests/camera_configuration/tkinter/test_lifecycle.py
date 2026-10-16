@@ -131,7 +131,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     try:
       raise ValueError('early callback failed')
     except ValueError as error:
-      logger = self._config._logger
+      logger = self._config._failure_manager._logger
       assert logger is not None
       with patch.object(logger, 'error') as exception_log:
         self._config.report_callback_exception(type(error), error,
@@ -154,7 +154,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
 
     self._config.after(0, cancel)
     with (patch.object(camera_config_module, 'showerror') as dialog,
-          patch.object(self._config._logger, 'error') as log):
+          patch.object(self._config._failure_manager._logger, 'error') as log):
       with self.assertRaises(BaseExceptionGroup) as raised:
         self._config.run()
 
@@ -172,7 +172,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     with (patch.object(self._config, 'wait_window',
                        side_effect=KeyboardInterrupt),
           patch.object(camera_config_module, 'showerror') as dialog,
-          patch.object(self._config._logger, 'error') as log):
+          patch.object(self._config._failure_manager._logger, 'error') as log):
       with self.assertRaises(BaseExceptionGroup):
         self._config.run()
 
@@ -200,7 +200,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
   def test_destroy_failure_uses_exception_logging(self) -> None:
     """A Tk destruction error is recorded without skipping resource cleanup."""
 
-    logger = self._config._logger
+    logger = self._config._failure_manager._logger
     assert logger is not None
     destroy = self._config.destroy
 

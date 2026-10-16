@@ -204,6 +204,7 @@ class TestVideoExtensoProcessor(VisionTestBase):
                                     border=9,
                                     blur=3)
     self.add_image_input(processor)
+    self.set_prepare_sync(processor)
     configured = self.spots((2, 3, 4, 5))
     processor.recv_configs = Mock(return_value={
       'camera': (configured, 123),

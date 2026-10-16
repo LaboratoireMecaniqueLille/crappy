@@ -1,12 +1,14 @@
 # coding: utf-8
 
 from dataclasses import dataclass
+from inspect import signature, Parameter
 from multiprocessing import Event
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import numpy as np
 
+from crappy._failure import FailureManager
 from crappy._exceptions import ProcessExitError, ShutdownTimeoutError
 from tests.block.block_test_base import exception_leaves
 
@@ -138,6 +140,10 @@ class TestVideoExtensoTool(TestCase):
     kwargs.setdefault('safe_mode', False)
     kwargs.setdefault('border', 5)
     kwargs.setdefault('blur', 5)
+    manager = FailureManager('test VideoExtensoTool', 'main')
+    manager._logger = Mock()
+    kwargs.setdefault('failure_manager', manager)
+    kwargs.setdefault('stop_event', Event())
     tool = VideoExtensoTool(spots, **kwargs)
 
     def release() -> None:
@@ -147,6 +153,25 @@ class TestVideoExtensoTool(TestCase):
 
     self.addCleanup(release)
     return tool
+
+  def test_reporting_dependencies_are_required(self) -> None:
+    for factory, names in (
+        (VideoExtensoTool, ('failure_manager', 'stop_event')),
+        (Tracker, ('failure_queue', 'block_name'))):
+      for name in names:
+        with self.subTest(factory=factory, argument=name):
+          self.assertIs(signature(factory).parameters[name].default,
+                        Parameter.empty)
+
+  def test_tool_keeps_owner_manager_logger_and_stop_event(self) -> None:
+    manager = FailureManager('owner', 'main')
+    logger = manager._logger = Mock()
+    stop = Event()
+    tool = self._make_tool(SpotsBoxes(), failure_manager=manager,
+                           stop_event=stop)
+    self.assertIs(tool._failure_manager, manager)
+    self.assertIs(manager._logger, logger)
+    self.assertIs(tool._owner_stop, stop)
 
   def test_destructor_accepts_partially_initialized_instance(self) -> None:
     """Tests cleanup after construction fails before attributes are set."""
@@ -491,6 +516,8 @@ class TestTracker(TestCase):
     kwargs.setdefault('log_level', None)
     kwargs.setdefault('log_queue', None)
     kwargs.setdefault('stop_event', Event())
+    kwargs.setdefault('failure_queue', Mock())
+    kwargs.setdefault('block_name', 'test tracker owner')
     return Tracker(**kwargs)
 
   def test_run_stops_on_event_without_a_pipe_message(self) -> None:

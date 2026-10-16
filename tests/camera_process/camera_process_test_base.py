@@ -256,6 +256,7 @@ class CameraProcessTestBase(unittest.TestCase):
                        labels=labels,
                        log_queue=log_queue,
                        failure_queue=failure_queue,
+                       block_name='test Camera',
                        log_level=log_level,
                        display_freq=display_freq)
 
@@ -315,3 +316,6 @@ class CameraProcessTestBase(unittest.TestCase):
     logger = logging.getLogger(process.name)
     logger.setLevel(logging.CRITICAL)
     process._logger = logger
+    process._failure_manager = FailureManager('test Camera', 'main',
+                                              owner_path=process.name)
+    process._failure_manager._logger = logger
