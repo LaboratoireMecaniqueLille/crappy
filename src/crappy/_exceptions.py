@@ -16,6 +16,45 @@ class StopRequested(Exception):
   """
 
 
+class OptionalDependencyError(ImportError):
+  """An optional dependency could not be loaded.
+
+  The original import failure is attached as the cause. The dependency may be
+  installed but unusable, for example because one of its dependencies is absent
+  or a compiled extension cannot be loaded.
+  """
+
+  def __init__(self,
+               import_name: str,
+               install_name: str | None = None,
+               message: str | None = None) -> None:
+    """Stores information on the import failure.
+
+    Args:
+      import_name: Python module or requested dependency name.
+      install_name: Package name used for installation, if known.
+      message: Additional guidance for the requested functionality.
+    """
+
+    self.import_name: str = import_name
+    self.install_name: str | None = install_name
+    self.message: str | None = message
+    diagnostic = f"Optional dependency {import_name!r} could not be loaded."
+    if install_name is not None:
+      diagnostic += (f" Check the installation of {install_name!r} and its "
+                     f"dependencies.")
+    if message is not None:
+      diagnostic += f"\n{message}"
+
+    super().__init__(diagnostic, name=import_name)
+
+  def __reduce__(self) -> tuple[Any, ...]:
+    """Helper for good serialization of this Exception."""
+
+    return (type(self), (self.import_name, self.install_name, self.message),
+            self.__dict__.copy())
+
+
 class RemoteFailureMetadata:
   """Adds the original failure details to a remote fallback Exception.
 
