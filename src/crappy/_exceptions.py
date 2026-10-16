@@ -64,22 +64,21 @@ class RemoteFailureMetadata:
   def __init__(self,
                report: FailureReport,
                node_index: int,
-               reconstruction_error: str | None = None) -> None:
+               reconstruction_error: str) -> None:
     """Stores the report and the selected Exception's details.
 
     Args:
       report: Report containing the original Exception's details.
       node_index: Index of that Exception in report.nodes.
       reconstruction_error: Explanation of why restoring the original
-        Exception failed. :obj:`None` if no explanation is available.
+        Exception failed.
     """
 
     if (type(node_index) is not int or
         not 0 <= node_index < len(report.nodes)):
       raise ValueError("node_index must reference a node in the report")
-    if (reconstruction_error is not None and
-        type(reconstruction_error) is not str):
-      raise TypeError("reconstruction_error must be a string or None")
+    if type(reconstruction_error) is not str:
+      raise TypeError("reconstruction_error must be a string")
 
     self.report = report
     self.node_index = node_index
@@ -92,7 +91,7 @@ class RemoteFailureMetadata:
   @staticmethod
   def from_report(report: FailureReport,
                   node_index: int,
-                  reconstruction_error: str | None = None
+                  reconstruction_error: str
                   ) -> (RemoteFailure | RemoteKeyboardInterrupt |
                         RemoteSystemExit | RemoteBaseFailure):
     """Builds a fallback Exception for one node in the report.
@@ -104,7 +103,7 @@ class RemoteFailureMetadata:
       report: Report containing the original Exception's details.
       node_index: Index of the Exception to replace. Must not refer to a group.
       reconstruction_error: Explanation of why restoring the original
-        Exception failed, if available.
+        Exception failed.
 
     Returns:
       RemoteFailure, RemoteKeyboardInterrupt, RemoteSystemExit or
@@ -160,14 +159,14 @@ class RemoteSystemExit(RemoteFailureMetadata, SystemExit):
   def __init__(self,
                report: FailureReport,
                node_index: int,
-               reconstruction_error: str | None = None) -> None:
+               reconstruction_error: str) -> None:
     """Stores the failure details and the original exit code.
 
     Args:
       report: Report containing the original SystemExit's details.
       node_index: Index of that Exception in report.nodes.
       reconstruction_error: Explanation of why restoring the original
-        Exception failed, if available.
+        Exception failed.
     """
 
     super().__init__(report, node_index, reconstruction_error)
@@ -183,17 +182,17 @@ class ProcessExitError(RuntimeError):
 
   def __init__(self,
                message: str,
-               process_name: str = '',
-               pid: int | None = None,
-               phase: str = '',
-               exitcode: int | None = None) -> None:
+               process_name: str,
+               pid: int | None,
+               phase: str,
+               exitcode: int | None) -> None:
     """Stores details of the unexpected Process exit.
 
     Args:
       message: Description of the unexpected exit.
-      process_name: Name of the Process that exited. Empty if unknown.
+      process_name: Name of the Process that exited.
       pid: ID of that Process. None if unknown.
-      phase: Last known lifecycle phase. Empty if unknown.
+      phase: Last known lifecycle phase.
       exitcode: Process.exitcode value. None if it is not yet available.
     """
 
@@ -202,6 +201,12 @@ class ProcessExitError(RuntimeError):
     self.pid = pid
     self.phase = phase
     self.exitcode = exitcode
+
+  def __reduce__(self) -> tuple[Any, ...]:
+    """Helper for good serialization of this Exception."""
+
+    return (type(self), (self.args[0], self.process_name, self.pid, self.phase,
+                         self.exitcode), self.__dict__.copy())
 
 
 class ShutdownTimeoutError(TimeoutError):

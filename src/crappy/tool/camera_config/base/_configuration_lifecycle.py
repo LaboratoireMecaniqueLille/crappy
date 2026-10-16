@@ -2,17 +2,13 @@
 
 """GUI-independent resources and failures for camera configuration sessions."""
 
-from collections.abc import Callable, Iterable
 from multiprocessing import synchronize
 from multiprocessing.process import BaseProcess
 from multiprocessing.queues import Queue
 from threading import Thread, Event as ThreadEvent
-from types import TracebackType
 
 from ...._failure import FailureManager
 from ...._exceptions import ProcessExitError, ShutdownTimeoutError
-
-ExceptionInfo = tuple[type[BaseException], BaseException, TracebackType | None]
 
 
 class ConfigurationLifecycle:
@@ -23,9 +19,9 @@ class ConfigurationLifecycle:
   def __init__(self,
                stop_event: synchronize.Event,
                histogram_process: BaseProcess,
-               queues: Iterable[Queue],
+               queues: tuple[Queue, Queue],
                manager: FailureManager,
-               failure_queue: Queue | None = None) -> None:
+               failure_queue: Queue) -> None:
     """Initializes the resources and state for one configuration session.
 
     Args:
@@ -38,19 +34,18 @@ class ConfigurationLifecycle:
       queues: Queues communicating with the histogram process and that need to
         be closed when exiting the configuration window.
       manager: Configuration's manager, received from the owner of this class.
-      failure_queue: Dedicated Queue for histogram failures, or None when
-        no reporting worker is attached.
+      failure_queue: Dedicated Queue for histogram failures.
     """
 
     # Objects shared by all configuration backends
     self.manager: FailureManager = manager
     self._stop_event: synchronize.Event = stop_event
     self._histogram_process: BaseProcess = histogram_process
-    self._queues: tuple[Queue, ...] = tuple(queues)
-    self._failure_queue: Queue | None = failure_queue
+    self._queues: tuple[Queue, Queue] = queues
+    self._failure_queue: Queue = failure_queue
     self._receiver: Thread | None = None
-    self._receiver_stop: ThreadEvent | None = None
-    self._histogram_identity: tuple[str, int | None] | None = None
+    self._receiver_stop: ThreadEvent = ThreadEvent()
+    self._histogram_identity: tuple[str, int | None]
     self._unexpected_exit: tuple[str, int | None, int] | None = None
     self._histogram_started: bool = False
     self._process_closed: bool = False
@@ -77,14 +72,12 @@ class ConfigurationLifecycle:
 
     self._histogram_started = True
     # Create and start the Thread for receiving failures from the Worker
-    if self._failure_queue is not None:
-      self._histogram_identity = (self._histogram_process.name,
-                                  self._histogram_process.pid)
-      self._receiver_stop = ThreadEvent()
-      self._receiver = Thread(target=self._receive_failures,
-                              name='histogram.failure-reader',
-                              daemon=True)
-      self._receiver.start()
+    self._histogram_identity = (self._histogram_process.name,
+                                self._histogram_process.pid)
+    self._receiver = Thread(target=self._receive_failures,
+                            name='histogram.failure-reader',
+                            daemon=True)
+    self._receiver.start()
 
   def _receive_failures(self) -> None:
     """Receives failure reports from the reporting Thread."""
@@ -95,9 +88,6 @@ class ConfigurationLifecycle:
     stop = self._receiver_stop
     process = self._histogram_process
     identity = self._histogram_identity
-
-    if queue is None or stop is None:
-      return
 
     # Guard Exceptions with a FailureManager
     with manager.collect('Histogram reception', raise_on_exit=False):
@@ -113,47 +103,13 @@ class ConfigurationLifecycle:
               if self._closed:
                 continue
               raise
-            if isinstance(code, int) and identity is not None:
+            if isinstance(code, int):
               self._unexpected_exit = (*identity, code)
           # Only stop once there are no more reports to receive
           if stop.is_set() and not received:
             break
           if not received:
             stop.wait(0.05)
-
-  def record_callback_failure(self,
-                              error: BaseException,
-                              traceback: TracebackType | None) -> None:
-    """Retains and reports a callback failure.
-
-    Args:
-      error: Exception raised by a callback.
-      traceback: Original callback traceback, or :obj:`None` if unavailable.
-    """
-
-    if traceback is not None:
-      error = error.with_traceback(traceback)
-    with self.manager.collect('Configuration callback', raise_on_exit=False):
-      self.manager.record_context_exception(error, 'callback')
-
-  def raise_if_failed(self) -> None:
-    """Raises all retained failures."""
-
-    self.manager.raise_if_failed('Configuration failures')
-
-  def request_close(self, close: Callable[[], None]) -> None:
-    """Asks a GUI backend to close after retaining a callback failure.
-
-    Errors from closing are logged without replacing the original failure.
-
-    Args:
-      close: Backend method that closes the window without validation.
-    """
-
-    with self.manager.collect('Configuration close request',
-                              raise_on_exit=False):
-      with self.manager.step('close window'):
-        close()
 
   def close_resources(self) -> None:
     """Stops the histogram and drains its reports before releasing Queues."""
@@ -220,8 +176,7 @@ class ConfigurationLifecycle:
 
       # Stop the Thread receiving Exceptions from the histogram Process
       with manager.step('stop histogram receiver'):
-        if self._receiver_stop is not None:
-          self._receiver_stop.set()
+        self._receiver_stop.set()
       # Give the Thread one second to stop
       with manager.step('join histogram receiver'):
         if self._receiver is not None and self._receiver.ident is not None:
@@ -233,10 +188,10 @@ class ConfigurationLifecycle:
           self._receiver = None
 
       # Close the Queue carrying Exceptions
-      if self._failure_queue is not None:
+      if self._failure_queue not in self._closed_queues:
         with manager.step('close histogram failure Queue'):
           self._failure_queue.close()
-          self._failure_queue = None
+          self._closed_queues.append(self._failure_queue)
 
       # Record and report an unexpected exit code
       if exit_info is not None and not terminated:

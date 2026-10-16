@@ -5,7 +5,7 @@
 from __future__ import annotations
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass, field, fields, replace
+from dataclasses import dataclass, fields, replace
 from multiprocessing import current_process, queues
 from os import getpid
 from queue import Empty
@@ -54,7 +54,7 @@ class ExceptionNode:
   module: str
   type_name: str
   message: str
-  mro: tuple[str, ...] = field()
+  mro: tuple[str, ...]
   notes: tuple[str, ...] = tuple()
   formatted_stack: str = ''
   children: tuple[int, ...] = tuple()
@@ -87,7 +87,7 @@ class ExceptionNode:
       raise TypeError("children must be an immutable tuple of node indexes")
     if any(type(child) is not int or child < 0 for child in self.children):
       raise ValueError("children must contain non-negative integer indexes")
-    for reference in (*self.children, self.cause, self.context):
+    for reference in (self.cause, self.context):
       if (reference is not None and
           (type(reference) is not int or reference < 0)):
         raise ValueError("node references must be non-negative integers")
@@ -120,14 +120,10 @@ class FailureReport:
     pid: ID of the Process where the failure happened.
     phase: Lifecycle phase where the failure happened, such as prepare,
       main or finish.
-    exception_module: Module of the top-level Exception's class.
-    exception_type: Class name of the top-level Exception.
-    exception_message: Message of the top-level Exception.
     formatted_traceback: Full traceback text, including group members,
       exception chains and notes.
-    nodes: Exception descriptions used for transfer between Processes.
-      Empty when the report only stores local diagnostics.
-    root: Index of the top-level Exception in nodes. None when nodes is empty.
+    nodes: Non-empty diagnostic graph used for transfer between Processes.
+      The first node describes the top-level Exception.
   """
 
   failure_id: str
@@ -136,12 +132,8 @@ class FailureReport:
   process_name: str
   pid: int
   phase: str
-  exception_module: str
-  exception_type: str
-  exception_message: str
   formatted_traceback: str
-  nodes: tuple[ExceptionNode, ...] = tuple()
-  root: int | None = None
+  nodes: tuple[ExceptionNode, ...]
 
   def __post_init__(self) -> None:
     """Checks the field values and references to Exception nodes."""
@@ -155,18 +147,11 @@ class FailureReport:
         raise ValueError(f"{name} must be a non-empty string")
     if type(self.pid) is not int or self.pid <= 0:
       raise ValueError("pid must be a positive integer")
-    for name in ('exception_module', 'exception_type', 'exception_message',
-                 'formatted_traceback'):
-      if type(getattr(self, name)) is not str:
-        raise TypeError(f"{name} must be a string")
-    if (type(self.nodes) is not tuple or
+    if type(self.formatted_traceback) is not str:
+      raise TypeError("formatted_traceback must be a string")
+    if (type(self.nodes) is not tuple or not self.nodes or
         any(not isinstance(node, ExceptionNode) for node in self.nodes)):
-      raise TypeError("nodes must be an immutable tuple of ExceptionNodes")
-    if self.nodes:
-      if type(self.root) is not int or not 0 <= self.root < len(self.nodes):
-        raise ValueError("root must reference a node in the report")
-    elif self.root is not None:
-      raise ValueError("a root index requires exception nodes")
+      raise TypeError("nodes must be a non-empty tuple of ExceptionNodes")
     for node in self.nodes:
       for reference in (*node.children, node.cause, node.context):
         if reference is not None and reference >= len(self.nodes):
@@ -398,12 +383,11 @@ class FailureManager:
     stack.append((label, errors, seen))
 
     try:
-      try:
-        yield
-      # Store any encountered Exception in the stack, generate a report and
-      # report the Exception
-      except BaseException as error:
-        self.record_context_exception(error, 'body')
+      yield
+    # Store any encountered Exception in the stack, generate a report and
+    # report the Exception
+    except BaseException as error:
+      self.record_context_exception(error, 'body')
     # Reset the stack to its original state
     finally:
       stack.pop()
@@ -505,31 +489,16 @@ class FailureManager:
     # Return the failure report
     return report
 
-  def forward(self,
-              report: FailureReport,
-              exception: BaseException | None = None) -> None:
-    """Stores and forwards an existing report and registers its Exceptions.
+  def forward(self, report: FailureReport) -> None:
+    """Stores and forwards a received report without reconstructing it.
 
     Does not log again.
 
     Args:
       report: Existing report, with its original ID and source details.
-      exception: Associated Exception or ExceptionGroup, if available.
-        Can be provided later by calling forward() again with the same report.
-        Otherwise, raise_if_failed() reconstructs it from the report's nodes.
     """
 
-    new = self._store_report(report, exception)
-
-    # Register the Exceptions if provided
-    if exception is not None:
-      members = tuple(self.iter_exception_members(exception))
-      with self._lock:
-        for member in members:
-          self._members.setdefault(id(member), (member, report.failure_id))
-
-    # Send the report to upstream Managers
-    if new:
+    if self._store_report(report, None):
       self._send(report)
 
   def snapshot(self) -> tuple[tuple[FailureReport, BaseException | None], ...]:
@@ -556,7 +525,6 @@ class FailureManager:
         preserving their observed order. False raises a flat group.
 
     Raises:
-      ValueError: A local-only report has no attached Exception or node graph.
       FailureTransportError: A received graph has invalid group containment.
       BaseExceptionGroup: The stored failures, including any interruptions.
     """
@@ -566,7 +534,7 @@ class FailureManager:
     for report, exception in failures:
       if exception is None:
         exception, decoding_errors = self._decode_exception(report)
-        self.forward(report, exception)
+        self._store_report(report, exception)
         # If there were errors while reconstructing, they should be reported
         for decoding_error in decoding_errors:
           try:
@@ -598,16 +566,6 @@ class FailureManager:
                     if exception is not None))
     if group is not None:
       raise group from None
-
-  def clear(self) -> None:
-    """Removes stored reports and releases references to their Exceptions.
-
-    Call only after failure collection has stopped.
-    """
-
-    with self._lock:
-      self._members.clear()
-      self._reports.clear()
 
   def record_context_exception(self, error: BaseException, step: str) -> None:
     """Stores and logs an Exception caught inside collect().
@@ -680,13 +638,9 @@ class FailureManager:
 
     # Only store truly unexpected Exceptions
     label, errors, seen = stack[-1]
-    error = self._strip_cancellations(error)
-    if error is None:
-      return None
-
-    # Only add new Exceptions to the encountered Exceptions
-    error = self._filter_exception(error,
-                                   lambda member: id(member) not in seen)
+    error = self._filter_exception(
+        error, lambda member: not isinstance(member, StopRequested) and
+        id(member) not in seen)
     if error is None:
       return None
 
@@ -743,12 +697,8 @@ class FailureManager:
                              process_name=self.process_name,
                              pid=self.pid,
                              phase=self.phase if phase is None else phase,
-                             exception_module=nodes[0].module,
-                             exception_type=nodes[0].type_name,
-                             exception_message=nodes[0].message,
                              formatted_traceback=diagnostic,
-                             nodes=nodes,
-                             root=0)
+                             nodes=nodes)
       self._store_report(report, error)
     # If it fails, un-register the Exception and re-raise it
     except BaseException:
@@ -880,12 +830,8 @@ class FailureManager:
       reconstruction.
 
     Raises:
-      ValueError: The report contains no encoded graph.
       FailureTransportError: Group containment is cyclic or inconsistent.
     """
-
-    if not report.nodes or report.root is None:
-      raise ValueError("Reports must be reconstructed before aggregation")
 
     # Validate report structure before invoking any reconstruction code
     order = list()
@@ -978,8 +924,8 @@ class FailureManager:
 
       # Reconstruct a single Exception
       elif original is None:
-        original = RemoteFailureMetadata.from_report(report, index, reason)
         reason = reason or 'No original Exception payload'
+        original = RemoteFailureMetadata.from_report(report, index, reason)
 
       # Replace metadata from pickle with the diagnostic snapshot
       original.__traceback__ = None
@@ -1008,7 +954,7 @@ class FailureManager:
                               if node.context is not None else None)
       original.__suppress_context__ = node.suppress_context
 
-    return restored[report.root], tuple(decoding_errors)
+    return restored[0], tuple(decoding_errors)
 
   def _register_exception(self,
                           error: BaseException,
@@ -1067,7 +1013,7 @@ class FailureManager:
 
   def _store_report(self,
                     report: FailureReport,
-                    exception: BaseException | None = None) -> bool:
+                    exception: BaseException | None) -> bool:
     """Stores a report without adding the same failure ID twice.
 
     An Exception can be attached later if it was missing from the first call.
@@ -1088,6 +1034,8 @@ class FailureManager:
       raise TypeError("report must be a FailureReport")
     if exception is not None and not isinstance(exception, BaseException):
       raise TypeError("exception must be a BaseException or None")
+    members = (tuple(self.iter_exception_members(exception))
+               if exception is not None else ())
 
     # Protect with a lock to avoid concurrent FailureReport registrations
     with self._lock:
@@ -1103,14 +1051,14 @@ class FailureManager:
                                       process_name=report.process_name,
                                       pid=report.pid,
                                       phase=report.phase)
-        # Case when the existing report wasn't attached to an Exception
-        if previous_exception is None and exception is not None:
-          self._reports[report.failure_id] = (report, exception)
-        return False
+        if previous_exception is not None:
+          return False
 
-      # If there was no previous report, just store the provided one
+      # Retain newly captured or decoded Exceptions and their identities.
       self._reports[report.failure_id] = (report, exception)
-      return True
+      for member in members:
+        self._members.setdefault(id(member), (member, report.failure_id))
+      return previous is None
 
   def _record_transport_error(self, error: BaseException) -> None:
     """Records an error when receiving reports from children FailureManagers.

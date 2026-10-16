@@ -17,7 +17,6 @@ import numpy as np
 from ..config_tools.zoom import Zoom
 from ._display_state import DisplayGeometry, DisplayState
 from ._setting_manager import SettingManager
-from ._configuration_lifecycle import ExceptionInfo
 from ....camera.meta_camera import Camera
 from ....camera.meta_camera.camera_setting import CameraSetting
 from ...._global import OptionalModule
@@ -92,7 +91,6 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
     """
 
     # Logging must be available during GUI and local settings initialization
-    self._logger: logging.Logger | None = None
     self._log_queue: Queue = log_queue
     self._log_level: int | None = log_level
 
@@ -103,7 +101,6 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
     if log_level is not None:
       self._logger.setLevel(log_level)
     self._failure_manager: FailureManager = failure_manager
-    self._failure_manager._logger = self._logger
 
     # Continue through the MRO so the selected GUI backend creates its window
     super().__init__()
@@ -176,32 +173,18 @@ camera_config.base.camera_config.CameraConfig.run>` executes. A :obj:`True`
 
     ...
 
-  def log(self,
-          level: int,
-          msg: str,
-          exc_info: ExceptionInfo | None = None) -> None:
+  def log(self, level: int, msg: str) -> None:
     """Records a message using the owning process's logging configuration.
 
-    The logger is created on first use and named after the process and concrete
-    configurator class. This method does not install logging handlers.
+    The logger is named after the process and concrete configurator class.
+    This method does not install logging handlers.
 
     Args:
       level: Logging level of the message.
       msg: Message to record.
-      exc_info: Exception type, instance, and traceback to log at error level.
-        An explicit :obj:`tuple` preserves callback tracebacks outside their
-        original exception handler. :obj:`None` records a normal message at
-        level.
     """
 
-    if self._logger is None:
-      self._logger = logging.getLogger(
-        f"{current_process().name}.{type(self).__name__}")
-
-    if exc_info is None:
-      self._logger.log(level, msg)
-    else:
-      self._logger.exception(msg, exc_info=exc_info)
+    self._logger.log(level, msg)
 
   def _create_local_settings(self) -> tuple[CameraSetting, ...]:
     """Creates settings owned by the configurator rather than the

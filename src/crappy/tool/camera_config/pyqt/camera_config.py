@@ -306,13 +306,13 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
   def _record_callback_failure(self, error: BaseException) -> None:
     """Reports a callback failure and asks the window to close.
 
-    The lifecycle retains the original traceback for :meth:`run` to raise
+    The manager retains the original traceback for :meth:`run` to raise
     after the Qt event loop has stopped. Keyboard interrupts close silently.
     """
 
-    self._lifecycle.record_callback_failure(error, error.__traceback__)
-    with self._failure_manager.collect('Configuration error dialog',
+    with self._failure_manager.collect('Configuration callback',
                                        raise_on_exit=False):
+      self._failure_manager.record_context_exception(error, 'callback')
       with self._failure_manager.step('show error'):
         if (not self._window_destroyed and
             not any(isinstance(member, KeyboardInterrupt)
@@ -320,7 +320,8 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
                     self._failure_manager.iter_exception_members(error))):
           QMessageBox.critical(self, 'Error!',
                                f'{type(error).__name__}\n{error}')
-    self._lifecycle.request_close(self.stop)
+      with self._failure_manager.step('close configuration'):
+        self.stop()
 
   def run(self) -> None:
     """Runs configuration until user close, failure, or
@@ -359,7 +360,7 @@ PyQtCameraConfig.watch_shutdown>` bypasses selection validation.
       self._running = False
       with manager.step('stop configuration'):
         self.stop()
-    self._lifecycle.raise_if_failed()
+    manager.raise_if_failed('Configuration failures')
     if self._cancelled:
       raise StopRequested
 

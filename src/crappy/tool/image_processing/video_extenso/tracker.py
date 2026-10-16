@@ -3,7 +3,6 @@
 from multiprocessing import Process, get_start_method
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
-from threading import Event
 
 import numpy as np
 from time import monotonic
@@ -55,11 +54,11 @@ class Tracker(Process):
                log_level: int | None,
                log_queue: Queue,
                stop_event: synchronize.Event,
+               failure_queue: Queue,
+               block_name: str,
                white_spots: bool = False,
                thresh: int | None = None,
                blur: int | None = 5,
-               failure_queue: Queue | None = None,
-               block_name: str | None = None,
                raise_on_lost_spot: bool = False) -> None:
     """Sets the arguments.
 
@@ -100,10 +99,10 @@ class Tracker(Process):
       raise ValueError("blur must be a positive odd integer, or None")
 
     # Attributes for failure handling and report
-    self._failure_queue: Queue | None = failure_queue
-    self._failure_manager: FailureManager | None = None
+    self._failure_queue: Queue = failure_queue
+    self._failure_manager: FailureManager
     self._stop_event: synchronize.Event = stop_event
-    self._block_name: str = block_name or logger_name
+    self._block_name: str = block_name
     self._raise_on_lost_spot: bool = raise_on_lost_spot
 
     self._pipe = pipe
@@ -153,8 +152,7 @@ class Tracker(Process):
     with manager.collect('Tracker lifecycle', raise_on_exit=False):
       with manager.step('execution'):
         # Start with configuring the FailureManager and logger
-        if self._failure_queue is not None:
-          manager.set_queue(self._failure_queue)
+        manager.set_queue(self._failure_queue)
         self._set_logger()
         if self._logger is not None:
           manager._logger = self._logger
@@ -191,15 +189,12 @@ class Tracker(Process):
       with manager.step('close tracking Pipe'):
         self._pipe.close()
       manager.phase = 'failure Queue shutdown'
-      if self._failure_queue is not None:
-        queue = self._failure_queue
-        self._failure_queue = None
-        with manager.step('disconnect'):
-          manager.set_queue(None)
-        with manager.step('close'):
-          queue.close()
-        with manager.step('flush'):
-          queue.join_thread()
+      with manager.step('disconnect'):
+        manager.set_queue(None)
+      with manager.step('close'):
+        self._failure_queue.close()
+      with manager.step('flush'):
+        self._failure_queue.join_thread()
 
   def _evaluate(self, x_start: int, y_start: int, img: np.ndarray) -> Box:
     """Takes a sub-image, applies a threshold on it and tries to detect the new

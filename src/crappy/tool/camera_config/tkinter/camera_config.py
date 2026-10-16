@@ -310,7 +310,7 @@ TkinterCameraConfig.watch_shutdown>` bypasses selection validation.
       # Once we're done running, stop the window and raise any Exception
       with manager.step('stop configuration'):
         self.stop()
-    self._lifecycle.raise_if_failed()
+    manager.raise_if_failed('Configuration failures')
     if self._cancelled:
       raise StopRequested
 
@@ -362,16 +362,18 @@ TkinterCameraConfig.watch_shutdown>` bypasses selection validation.
     .. versionadded:: 2.0.0
     """
 
-    self._lifecycle.record_callback_failure(val, tb)
-    with self._failure_manager.collect('Configuration error dialog',
+    with self._failure_manager.collect('Configuration callback',
                                        raise_on_exit=False):
+      self._failure_manager.record_context_exception(val.with_traceback(tb),
+                                                     'callback')
       with self._failure_manager.step('show error'):
         if (not self._window_destroyed and
             not any(isinstance(member, KeyboardInterrupt)
                     for member in
                     self._failure_manager.iter_exception_members(val))):
           showerror("Error!", message=f"{exc.__name__}\n{val}")
-    self._lifecycle.request_close(self.stop)
+      with self._failure_manager.step('close configuration'):
+        self.stop()
 
   def finish(self) -> None:
     """Validates and finalizes a user-requested close.

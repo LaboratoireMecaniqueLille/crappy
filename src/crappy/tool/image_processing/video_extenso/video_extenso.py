@@ -53,8 +53,8 @@ class VideoExtensoTool:
                safe_mode: bool,
                border: int,
                blur: int | None,
-               failure_manager: FailureManager | None = None,
-               stop_event: synchronize.Event | None = None,
+               failure_manager: FailureManager,
+               stop_event: synchronize.Event,
                raise_on_lost_spot: bool = False) -> None:
     """Sets the arguments and the other instance attributes.
 
@@ -111,7 +111,7 @@ class VideoExtensoTool:
         :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
         and not used in this class.
       failure_manager: Manager passed to the configuration window for reporting
-        failures, or :obj:`None` to create a local manager.
+        failures.
       stop_event: Event for requesting shutdown.
       raise_on_lost_spot: Whether to report a lost spot as a failure or to
         silently ignore it.
@@ -125,12 +125,10 @@ class VideoExtensoTool:
     self._logger.disabled = log_level is None
     if log_level is not None:
       self._logger.setLevel(log_level)
-    self._failure_manager = failure_manager or FailureManager(
-        current_process().name, 'tracking', owner_path=name)
-    self._failure_manager._logger = self._logger
+    self._failure_manager = failure_manager
 
     # Attributes for handling and reporting failures
-    self._owner_stop: synchronize.Event | None = stop_event
+    self._owner_stop: synchronize.Event = stop_event
     self._raise_on_lost_spot: bool = raise_on_lost_spot
     self._failure_queues: list[Queue] = list()
     self._failure_thread: Thread | None = None
@@ -236,7 +234,7 @@ class VideoExtensoTool:
     """
 
     manager = self._failure_manager
-    with (manager.collect('VideoExtensoTool cleanup')):
+    with manager.collect('VideoExtensoTool cleanup'):
       with manager.step('start report receiver'):
         if (self._failure_queues and
             (self._failure_thread is None or
@@ -376,7 +374,7 @@ class VideoExtensoTool:
 
     manager = self._failure_manager
     manager.raise_if_failed('Tracking failures')
-    if self._owner_stop is not None and self._owner_stop.is_set():
+    if self._owner_stop.is_set():
       raise StopRequested
 
     spots = [(i, spot) for i, spot in enumerate(self.spots)
@@ -523,19 +521,11 @@ class VideoExtensoTool:
   def _log(self, level: int, msg: str) -> None:
     """Wrapper for recording log messages.
 
-    Also instantiates the :obj:`~logging.Logger` on the first message.
-
     Args:
       level: The logging level of the message, as an :obj:`int`.
-      msg: The message to lof, as a :obj:`str`.
+      msg: The message to log, as a :obj:`str`.
     """
 
-    if self._logger is None:
-      self._logger = logging.getLogger(
-        f"{current_process().name}.{type(self).__name__}")
-
-    if self._logger is None:
-      raise RuntimeError("The logger was never instantiated!")
     self._logger.log(level, msg)
 
   def _send(self,
@@ -583,8 +573,7 @@ class VideoExtensoTool:
               if tracking_stop is not None:
                 tracking_stop.set()
             with manager.step('request owner stop'):
-              if owner_stop is not None:
-                owner_stop.set()
+              owner_stop.set()
             notified = True
           # Only stop once there are no more reports to receive
           if stop.is_set() and not received:

@@ -82,10 +82,9 @@ class CameraProcess(Process, ABC):
     self.fps_count = 0
     self._display_freq: bool | None = None
     self._last_fps = monotonic()
-    self._failure_queue: queues.Queue | None = None
-    self._failure_manager: FailureManager | None = None
-    self._block_name: str | None = None
-    self._owner_path: str | None = None
+    self._failure_queue: queues.Queue
+    self._failure_manager: FailureManager
+    self._block_name: str
 
   def set_shared(self,
                  array: sharedctypes.SynchronizedArray,
@@ -100,10 +99,10 @@ class CameraProcess(Process, ABC):
                  outputs: list[Link],
                  labels: Sequence[str] | None,
                  log_queue: queues.Queue,
+                 failure_queue: queues.Queue,
+                 block_name: str,
                  log_level: int | None = 20,
-                 display_freq: bool = False,
-                 failure_queue: queues.Queue | None = None,
-                 block_name: str | None = None) -> None:
+                 display_freq: bool = False) -> None:
     """Method allowing the :class:`~crappy.blocks.Camera` Block to share
     :mod:`multiprocessing` synchronization objects with this class.
     
@@ -142,8 +141,7 @@ class CameraProcess(Process, ABC):
       display_freq: If :obj:`True`, the looping frequency of this class will be
         displayed while running.
       failure_queue: Queue for reporting failures to the owning Camera Block.
-      block_name: Name of the parent Camera Block, or this worker for
-        standalone use.
+      block_name: Name of the parent Camera Block.
     """
 
     self._img_array = array
@@ -163,9 +161,7 @@ class CameraProcess(Process, ABC):
     self._log_level = log_level
     self._display_freq = display_freq
     self._failure_queue = failure_queue
-    self._block_name = block_name or self.name
-    self._owner_path = (f'{block_name}.{self.name}' if block_name
-                        else self.name)
+    self._block_name = block_name
 
     self.img = np.empty(shape=shape, dtype=dtype)
 
@@ -185,17 +181,16 @@ class CameraProcess(Process, ABC):
     """
 
     # Make sure a FailureManager is available and has a logger
-    self._failure_manager = FailureManager(
-        self._block_name or self.name, 'bootstrap',
-        owner_path=self._owner_path or self.name)
+    self._failure_manager = FailureManager(self._block_name,
+                                           'bootstrap',
+                                           owner_path=self.name)
     manager = self._failure_manager
 
     # Guard run steps with the FailureManager
     with manager.collect('CameraProcess lifecycle', raise_on_exit=False):
       with manager.step('execution'):
         # Make sure that the FailureManager and the logger are configured
-        if self._failure_queue is not None:
-          manager.set_queue(self._failure_queue)
+        manager.set_queue(self._failure_queue)
         self._set_logger()
         if self._logger is not None:
           manager._logger = self._logger
@@ -268,15 +263,12 @@ class CameraProcess(Process, ABC):
 
       # Close the opened Queues
       manager.phase = 'failure Queue shutdown'
-      if self._failure_queue is not None:
-        queue = self._failure_queue
-        self._failure_queue = None
-        with manager.step('disconnect'):
-          manager.set_queue(None)
-        with manager.step('close'):
-          queue.close()
-        with manager.step('flush'):
-          queue.join_thread()
+      with manager.step('disconnect'):
+        manager.set_queue(None)
+      with manager.step('close'):
+        self._failure_queue.close()
+      with manager.step('flush'):
+        self._failure_queue.join_thread()
 
   def init(self) -> None:
     """This method should perform any action required for initializing the

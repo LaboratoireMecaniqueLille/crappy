@@ -50,7 +50,7 @@ def create_configurator(configurator: type[CameraConfig] |
       before preview conversion and image-format reporting, or :obj:`None` to
       leave them unchanged.
     failure_manager: Manager passed to the configuration window for reporting
-      failures, or :obj:`None` to create a local manager.
+      failures.
     *args: Additional positional arguments passed to the selected class.
     **kwargs: Additional keyword arguments passed to the selected class.
 
