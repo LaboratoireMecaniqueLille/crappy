@@ -52,7 +52,7 @@ class TestOptionalImports(unittest.TestCase):
         try:
           PyQtCameraConfig(NoHardwareCamera(), None, None, None, None,
                           FailureManager('test configuration', 'configuration'))
-        except RuntimeError as error:
+        except ImportError as error:
           assert 'PyQt6' in str(error), error
         else:
           raise AssertionError('Missing PyQt6 should be reported on use')

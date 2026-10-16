@@ -43,6 +43,16 @@ class _InterruptingLoads(Exception):
     return _interrupt_loading, ()
 
 
+def _interrupt_loading_group():
+  raise BaseExceptionGroup('reconstruction interrupted',
+                           [ValueError('decoder'), KeyboardInterrupt()])
+
+
+class _GroupedInterruptingLoads(Exception):
+  def __reduce__(self):
+    return _interrupt_loading_group, ()
+
+
 class _WrongType(Exception):
   def __reduce__(self):
     return ValueError, ('different type',)
@@ -105,6 +115,12 @@ class _BrokenRestoredGroup(_TaggedGroup):
 class _EncodingInterrupt(Exception):
   def __reduce__(self):
     raise KeyboardInterrupt('interrupted serialization')
+
+
+class _GroupedEncodingInterrupt(Exception):
+  def __reduce__(self):
+    raise BaseExceptionGroup('serialization interrupted',
+                             [ValueError('encoder'), KeyboardInterrupt()])
 
 
 class _SingletonError(Exception):
@@ -260,6 +276,20 @@ class TestExceptionCodec(TestCase):
     with self.assertRaises(BaseExceptionGroup) as repeated:
       self.parent.raise_if_failed('summary')
     self.assertEqual(repeated.exception.exceptions, (origin, interruption))
+    self.parent_logger.error.assert_called_once()
+
+  def test_grouped_reconstruction_interrupt_preserves_the_remote_origin(self):
+    report = self.source.capture_exception(_GroupedInterruptingLoads('origin'))
+    self.parent.forward(FailureReport.from_wire(report.to_wire()))
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      self.parent.raise_if_failed('summary')
+    origin, interruption = caught.exception.exceptions
+    self.assertIs(type(origin), RemoteFailure)
+    self.assertIs(type(interruption), BaseExceptionGroup)
+    self.assertEqual(tuple(type(child) for child in interruption.exceptions),
+                     (ValueError, KeyboardInterrupt))
+    self.assertEqual(self.parent.snapshot()[1][0].phase, 'decoding')
+    self.assertEqual(len(self.parent.snapshot()), 2)
     self.parent_logger.error.assert_called_once()
 
   def test_decoder_and_logger_failures_keep_the_remote_origin(self) -> None:
@@ -429,6 +459,21 @@ class TestExceptionCodec(TestCase):
     with self.assertRaises(BaseExceptionGroup) as summary:
       self.source.raise_if_failed('summary')
     self.assertEqual(summary.exception.exceptions, (error, caught.exception))
+
+  def test_grouped_encoding_interrupt_preserves_the_origin(self) -> None:
+    origin = _GroupedEncodingInterrupt('origin')
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      self.source.capture_exception(origin)
+    history = self.source.snapshot()
+    self.assertEqual(len(history), 2)
+    self.assertIs(history[0][1], origin)
+    self.assertIs(history[1][1], caught.exception)
+    self.assertEqual(history[1][0].phase, 'encoding')
+    self.assertEqual(tuple(type(child) for child in caught.exception.exceptions),
+                     (ValueError, KeyboardInterrupt))
+    with self.assertRaises(BaseExceptionGroup) as summary:
+      self.source.raise_if_failed('summary')
+    self.assertEqual(summary.exception.exceptions, (origin, caught.exception))
 
   def test_logger_encoding_interrupt_does_not_shadow_the_origin(self) -> None:
     origin = ValueError('origin')
@@ -603,23 +648,28 @@ sys.stdout.buffer.write(pickle.dumps(report.to_wire()))
         self.parent.raise_if_failed('summary')
 
   def test_shared_exceptions_moved_without_global_aliases(self) -> None:
-    names = ('LinkDataError', 'StartTimeout', 'PrepareError',
-             'CameraConfigError', 'CameraPrepareError', 'CameraRuntimeError',
-             'T0NotSetError',
+    names = ('LinkDataError', 'StartTimeout', 'T0NotSetError',
              'DefinitionError', 'GeneratorStop', 'SchedulerStop', 'ReaderStop',
-             'CrappyFail')
+             'OptionalDependencyError')
     for name in names:
       with self.subTest(name=name):
         error_type = getattr(_exceptions, name)
         self.assertEqual(error_type.__module__, 'crappy._exceptions')
         self.assertFalse(hasattr(_global, name))
-        error = error_type() if name == 'CrappyFail' else error_type('message')
+        error = error_type('message')
         error.add_note('retained note')
         restored = pickle.loads(pickle.dumps(error))
         self.assertIs(type(restored), error_type)
         self.assertEqual(str(restored), str(error))
         self.assertEqual(restored.__notes__, ['retained note'])
     self.assertEqual(DefinitionError('message').args, ('message',))
+
+  def test_obsolete_propagation_wrappers_have_no_aliases(self) -> None:
+    for name in ('CrappyFail', 'PrepareError', 'CameraConfigError',
+                 'CameraPrepareError', 'CameraRuntimeError'):
+      with self.subTest(name=name):
+        self.assertFalse(hasattr(_exceptions, name))
+        self.assertFalse(hasattr(_global, name))
 
   def test_collection_entry_and_import_cause_round_trip(self) -> None:
     entry = CollectionEntry('Device', 'InOut', 'collection.device')

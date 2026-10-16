@@ -9,6 +9,7 @@ from subprocess import TimeoutExpired
 from typing import Any
 from unittest.mock import patch
 from crappy._global import OptionalModule
+from crappy._exceptions import OptionalDependencyError
 from crappy.blocks.client_server import ClientServer
 import crappy.blocks.client_server as client_server_module
 
@@ -323,8 +324,9 @@ class TestClientServer(BlockTestBase):
 
     with patch.object(client_server_module,
                       'mqtt',
-                      OptionalModule("paho-mqtt")):
-      with self.assertRaisesRegex(RuntimeError, "Missing module: paho-mqtt"):
+                      OptionalModule('paho.mqtt.client',
+                                     install_name='paho-mqtt')):
+      with self.assertRaisesRegex(OptionalDependencyError, 'paho.mqtt.client'):
         block.prepare()
 
   def test_on_message_buffers_all_data_points(self) -> None:

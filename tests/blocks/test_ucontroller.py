@@ -5,6 +5,7 @@ from struct import pack
 from typing import Any
 from unittest.mock import patch
 from crappy._global import OptionalModule
+from crappy._exceptions import OptionalDependencyError
 import crappy.blocks.ucontroller as ucontroller_module
 
 from ..block import BlockTestBase, TestBlock, link
@@ -408,8 +409,8 @@ class TestUController(BlockTestBase):
     link(ctrl, TestBlock())
 
     with patch.multiple(ucontroller_module,
-                        Serial=OptionalModule("pyserial"),
+                        Serial=OptionalModule('serial', install_name='pyserial'),
                         SerialException=MissingSerialException):
       self.assertIsNot(ucontroller_module.SerialException, Exception)
-      with self.assertRaisesRegex(RuntimeError, "Missing module: pyserial"):
+      with self.assertRaisesRegex(OptionalDependencyError, 'serial'):
         ctrl.prepare()

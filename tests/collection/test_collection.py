@@ -142,6 +142,21 @@ class TestCollectionLoader(TestCase):
     self.assertIs(raised.exception.__cause__, cause)
     self.assertIn('missing dependency', str(raised.exception))
 
+  def test_grouped_import_failures_retain_their_cause(self) -> None:
+    cause = ExceptionGroup('import errors', [ImportError('ABI'), ValueError('bug')])
+    with patch.object(collection_module, 'import_module', side_effect=cause):
+      with self.assertRaises(CollectionUnavailableError) as caught:
+        load_collection_class(self.entry, {})
+    self.assertIs(caught.exception.cause, cause)
+
+  def test_import_interrupt_groups_propagate_unchanged(self) -> None:
+    cause = BaseExceptionGroup('import errors',
+                               [ImportError('ABI'), KeyboardInterrupt()])
+    with patch.object(collection_module, 'import_module', side_effect=cause):
+      with self.assertRaises(BaseExceptionGroup) as caught:
+        load_collection_class(self.entry, {})
+    self.assertIs(caught.exception, cause)
+
   def test_missing_or_wrong_registration_is_rejected(self) -> None:
     """Checks post-import validation of the class registry."""
 

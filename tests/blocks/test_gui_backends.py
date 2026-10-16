@@ -16,6 +16,7 @@ import crappy.blocks.canvas as canvas_module
 import crappy.blocks.dashboard as dashboard_module
 import crappy.blocks.stop_button as stop_button_module
 from crappy._global import OptionalModule
+from crappy._exceptions import OptionalDependencyError
 from crappy._failure import FailureManager
 
 from ..block import BlockTestBase, TestBlock, link
@@ -356,7 +357,7 @@ class TestGUIBackends(GUIBlockTestBase):
             link(Peer(), qt)
           try:
             qt.prepare()
-          except RuntimeError as error:
+          except ImportError as error:
             assert 'PyQt6' in str(error), error
           else:
             raise AssertionError('Missing PyQt6 was not reported')
@@ -374,7 +375,7 @@ class TestGUIBackends(GUIBlockTestBase):
     for block_type, module, _ in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
         with patch.object(module, 'QtCore', OptionalModule('PyQt6.QtCore')):
-          with self.assertRaisesRegex(RuntimeError, 'Missing module: PyQt6'):
+          with self.assertRaisesRegex(OptionalDependencyError, 'PyQt6'):
             block_type._get_application()
 
 

@@ -12,9 +12,8 @@ from time import monotonic, sleep
 from unittest.mock import Mock, patch
 
 from crappy import Block
-from crappy._exceptions import (CameraConfigError, CameraPrepareError,
-                                CameraRuntimeError, GeneratorStop, LinkDataError,
-                                PrepareError, ReaderStop, SchedulerStop,
+from crappy._exceptions import (GeneratorStop, LinkDataError,
+                                ReaderStop, SchedulerStop,
                                 StartTimeout, StopRequested, T0NotSetError)
 from crappy._failure import FailureManager
 
@@ -337,9 +336,8 @@ class TestPhaseCapture(BlockTestBase):
     self.assertFalse(block.begun.is_set())
     self.assertEqual(block._main_entered.value, 0)
 
-  def test_former_special_cases_keep_their_actual_errors(self):
-    errors = (LinkDataError, CameraConfigError, CameraPrepareError,
-              CameraRuntimeError, PrepareError, T0NotSetError,
+  def test_framework_errors_keep_their_actual_types(self):
+    errors = (LinkDataError, StartTimeout, T0NotSetError,
               KeyboardInterrupt, SystemExit)
     for error_type in errors:
       with self.subTest(error=error_type.__name__):
