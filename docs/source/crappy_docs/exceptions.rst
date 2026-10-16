@@ -47,6 +47,7 @@ available failure details when the original exception type cannot be restored.
 .. autoexception:: crappy._exceptions.T0NotSetError
 
 .. autoclass:: crappy.OptionalModule
+   :members: resolve, is_available
    :special-members: __init__, __getattr__, __call__
 
 .. autoclass:: crappy._failure.ExceptionNode

@@ -63,15 +63,38 @@ class OptionalModule:
     self._lazy: bool = lazy_import
     self._module: ModuleType | None = None
 
-  def _resolve(self) -> ModuleType:
-    """Loads the dependency or explains why it could not be loaded.
+  def is_available(self) -> bool:
+    """Checks whether the dependency can be loaded.
+
+    Lazy dependencies are imported and successful imports are cached. Import
+    failures return :obj:`False` and can be retried on a later check or use.
+    Other initialization errors and interruptions propagate unchanged.
+    Non-lazy placeholders return :obj:`False` without importing anything.
+
+    Returns:
+      Whether the dependency could be loaded.
+
+    .. versionadded:: 2.2.0
+    """
+
+    try:
+      self.resolve()
+    except _exceptions.OptionalDependencyError:
+      return False
+    return True
+
+  def resolve(self) -> ModuleType:
+    """Loads the dependency and returns the cached module.
+
+    Failed lazy imports can be retried by a later call. Non-lazy placeholders
+    report the dependency as unavailable without trying to import it.
 
     Returns:
       Imported module.
 
     Raises:
       ~crappy._exceptions.OptionalDependencyError: The dependency is
-      unavailable.
+        unavailable. Its original import error is retained as the cause.
 
     .. versionadded:: 2.2.0
     """
@@ -117,7 +140,7 @@ class OptionalModule:
       AttributeError: The loaded module has no such attribute.
     """
 
-    return getattr(self._resolve(), attr)
+    return getattr(self.resolve(), attr)
 
   def __call__(self, *args: Any, **kwargs: Any) -> Any:
     """Calls the loaded dependency if it is callable.
@@ -135,7 +158,7 @@ class OptionalModule:
       TypeError: The loaded dependency is not callable.
     """
 
-    return self._resolve()(*args, **kwargs)
+    return self.resolve()(*args, **kwargs)
 
 
 # Data aliases
