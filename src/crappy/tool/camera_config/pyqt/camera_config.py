@@ -32,8 +32,8 @@ from ...._exceptions import StopRequested
 
 try:
   from PIL import Image
-except (ModuleNotFoundError, ImportError):
-  Image = OptionalModule('pillow')
+except (ModuleNotFoundError, ImportError) as error:
+  Image = OptionalModule("PIL", install_name="Pillow", cause=error)
 
 try:
   from PyQt6.QtCore import QEvent, QEventLoop, Qt, QTimer, QCoreApplication
@@ -42,12 +42,12 @@ try:
                                QGroupBox, QHBoxLayout, QLabel, QMessageBox,
                                QPushButton, QRadioButton, QScrollArea,
                                QSizePolicy, QSlider, QVBoxLayout, QWidget)
-except (ModuleNotFoundError, ImportError):
+except (ModuleNotFoundError, ImportError) as error:
   QEvent = QEventLoop = Qt = QTimer = QCloseEvent = QImage = QPalette = \
     QPixmap = QApplication = QButtonGroup = QCheckBox = QFrame = QGroupBox = \
     QHBoxLayout = QLabel = QMessageBox = QPushButton = QRadioButton = \
     QScrollArea = QSizePolicy = QSlider = QVBoxLayout = QCoreApplication = \
-    OptionalModule('PyQt6')
+    OptionalModule('PyQt6', cause=error)
   # A base class must be a type, even when Qt is unavailable
   QWidget = object
 

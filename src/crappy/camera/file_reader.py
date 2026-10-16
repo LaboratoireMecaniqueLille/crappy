@@ -12,12 +12,12 @@ from .._global import OptionalModule
 
 try:
   import SimpleITK as Sitk
-except (ModuleNotFoundError, ImportError):
-  Sitk = OptionalModule("SimpleITK")
+except (ModuleNotFoundError, ImportError) as error:
+  Sitk = OptionalModule("SimpleITK", cause=error)
 try:
   import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+except (ModuleNotFoundError, ImportError) as error:
+  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
 
 
 class FileReader(Camera):

@@ -17,11 +17,9 @@ try:
   import pycuda.compiler
   import pycuda.gpuarray as gpuarray
   import pycuda.reduction
-except (ImportError, ModuleNotFoundError):
-  pycuda = OptionalModule("pycuda",
-                          "PyCUDA and CUDA are necessary to use GPUCorrel")
-  gpuarray = OptionalModule("pycuda",
-                            "PyCUDA and CUDA are necessary to use GPUCorrel")
+except (ImportError, ModuleNotFoundError) as error:
+  pycuda = OptionalModule("pycuda", cause=error)
+  gpuarray = OptionalModule("pycuda", cause=error)
 
 
 def interp_nearest(arr: np.ndarray, ny: int, nx: int) -> np.ndarray:

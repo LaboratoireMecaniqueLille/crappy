@@ -10,8 +10,8 @@ from .._global import OptionalModule
 
 try:
   from graphviz import Digraph
-except (ModuleNotFoundError, ImportError):
-  Digraph = OptionalModule("graphviz")
+except (ModuleNotFoundError, ImportError) as error:
+  Digraph = OptionalModule("graphviz", cause=error)
 
 
 @dataclass

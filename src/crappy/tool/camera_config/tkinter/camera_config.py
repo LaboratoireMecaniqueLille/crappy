@@ -28,9 +28,9 @@ from ...._exceptions import StopRequested
 
 try:
   from PIL import ImageTk, Image
-except (ModuleNotFoundError, ImportError):
-  ImageTk = OptionalModule("pillow")
-  Image = OptionalModule("pillow")
+except (ModuleNotFoundError, ImportError) as error:
+  ImageTk = OptionalModule("PIL", install_name="Pillow", cause=error)
+  Image = OptionalModule("PIL", install_name="Pillow", cause=error)
 
 if TYPE_CHECKING:
   from PIL import Image, ImageTk

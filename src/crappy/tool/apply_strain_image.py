@@ -6,8 +6,8 @@ from .._global import OptionalModule
 
 try:
   import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule('opencv-python')
+except (ModuleNotFoundError, ImportError) as error:
+  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
 
 
 class ApplyStrainToImage:

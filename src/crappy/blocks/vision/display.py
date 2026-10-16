@@ -9,6 +9,7 @@ from itertools import chain
 from collections.abc import Sequence
 
 from ..._failure import FailureManager
+from ..._exceptions import OptionalDependencyError
 from .block import VisionBlock
 from ..._global import OptionalModule
 from ...tool.camera_config import Overlay
@@ -17,8 +18,8 @@ plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
 try:
   import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+except (ModuleNotFoundError, ImportError) as error:
+  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
 
 
 class ImageDisplayer(VisionBlock):
@@ -120,10 +121,10 @@ class ImageDisplayer(VisionBlock):
         try:
           _ = plt.Figure
           self._backend: str = 'mpl'
-        except RuntimeError:
+        except OptionalDependencyError as error:
           raise ModuleNotFoundError("Neither opencv-python nor matplotlib "
                                     "could be imported, no backend found for "
-                                    "displaying the images")
+                                    "displaying the images") from error
     elif backend in ('cv2', 'mpl'):
       self._backend: str = backend
     else:

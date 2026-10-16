@@ -19,8 +19,9 @@ from .._global import OptionalModule
 
 try:
   import paho.mqtt.client as mqtt
-except (ModuleNotFoundError, ImportError):
-  mqtt = OptionalModule("paho-mqtt")
+except (ModuleNotFoundError, ImportError) as error:
+  mqtt = OptionalModule("paho.mqtt.client", install_name="paho-mqtt",
+                        cause=error)
 
 TopicsType = Sequence[str | Sequence[str]]
 

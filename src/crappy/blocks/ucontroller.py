@@ -12,8 +12,8 @@ from .._global import OptionalModule
 try:
   from serial import Serial
   from serial.serialutil import SerialException
-except (ModuleNotFoundError, ImportError):
-  Serial = OptionalModule("pyserial")
+except (ModuleNotFoundError, ImportError) as error:
+  Serial = OptionalModule("serial", install_name="pyserial", cause=error)
 
   class SerialException(Exception):
     """Fallback exception used when pyserial is not installed."""

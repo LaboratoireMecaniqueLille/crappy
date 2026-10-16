@@ -13,8 +13,8 @@ from ..._global import OptionalModule
 try:
   import pycuda.tools
   import pycuda.driver
-except (ModuleNotFoundError, ImportError):
-  pycuda = OptionalModule("pycuda")
+except (ModuleNotFoundError, ImportError) as error:
+  pycuda = OptionalModule("pycuda", cause=error)
 
 
 class GPUVEProcess(CameraProcess):

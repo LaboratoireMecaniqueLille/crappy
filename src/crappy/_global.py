@@ -137,10 +137,11 @@ class resources:
                    flags=0)
 
   # In case the module opencv-python is missing
-  except (ModuleNotFoundError, ImportError):
-    speckle = OptionalModule('opencv-python')
-    ve_markers = OptionalModule('opencv-python')
-    pad = OptionalModule('opencv-python')
+  except (ModuleNotFoundError, ImportError) as error:
+    speckle = OptionalModule('cv2', cause=error, install_name='opencv-python')
+    ve_markers = OptionalModule('cv2', cause=error,
+                                install_name='opencv-python')
+    pad = OptionalModule('cv2', cause=error, install_name='opencv-python')
 
   # Also getting the paths to the images
   ref_pad = (importlib.resources.files('crappy') / 'tool' / 'data' /

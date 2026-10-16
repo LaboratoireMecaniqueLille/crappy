@@ -25,8 +25,8 @@ from ...._failure import FailureManager
 
 try:
   from PIL import Image
-except (ModuleNotFoundError, ImportError):
-  Image = OptionalModule("pillow")
+except (ModuleNotFoundError, ImportError) as error:
+  Image = OptionalModule("PIL", install_name="Pillow", cause=error)
 
 
 @dataclass(frozen=True)
