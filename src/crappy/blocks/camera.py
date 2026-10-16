@@ -1020,54 +1020,68 @@ class Camera(Block):
             self._proc_condition.notify_all()
           self._proc_condition = None
 
+      processes = tuple(process for process in
+                        (self.process_proc, self._save_proc, self._display_proc)
+                        if process is not None)
+      started = [process for process in processes
+                 if process in self._started_processes]
       forced = set()
       exits = list()
-      # Close every existing process, but only join successfully started
-      # children
-      for process in (self.process_proc, self._save_proc, self._display_proc):
-        if process is None:
-          continue
+
+      # The deadline covers termination of all the Processes together
+      deadline = monotonic() + 5.0
+      for process in started:
+        with manager.step(f'join {process.name}'):
+          process.join(timeout=max(0.0, deadline - monotonic()))
+
+      # Check which Processes are still alive after 3 seconds
+      survivors = list()
+      for process in started:
         name = process.name
+        alive = True
+        with manager.step(f'check whether {name} stopped'):
+          alive = process.is_alive()
+        if alive:
+          with manager.step(f'shutdown deadline for {name}'):
+            raise ShutdownTimeoutError(f"Camera worker {name} did not "
+                                       f"finish within 5 seconds",
+                                       process_name=name,
+                                       pid=process.pid,
+                                       phase='framework cleanup',
+                                       timeout=5.0)
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.WARNING, f"Camera process {name} not stopped, "
+                                      f"terminating it")
+          with manager.step(f'terminate {name}'):
+            process.terminate()
+            forced.add(process)
+          survivors.append(process)
 
-        # Only join the Process if it has started
-        if process in self._started_processes:
-          with manager.step(f'join {name}'):
-            process.join(timeout=1.0)
-          # Check if the Process has stopped as requested
-          alive = True
-          with manager.step(f'check whether {name} stopped'):
-            alive = process.is_alive()
-          # Terminating Processes that are still alive
-          if alive:
-            with manager.step(f'shutdown deadline for {name}'):
-              raise ShutdownTimeoutError(f"Camera worker {name} did not "
-                                         f"finish within 1 second",
-                                         process_name=name,
-                                         pid=process.pid,
-                                         phase='framework cleanup',
-                                         timeout=1.0)
-            with manager.step('cleanup diagnostic'):
-              self.log(logging.WARNING, f"Camera process {name} not stopped, "
-                                        f"terminating it")
-            with manager.step(f'terminate {name}'):
-              process.terminate()
-              forced.add(process)
-            # Waiting for the terminated Process to stop
-            with manager.step(f'join terminated {name}'):
-              process.join(timeout=1)
-            # Check if the Process is still alive
-            alive = True
-            with manager.step(f'check terminated {name}'):
-              alive = process.is_alive()
-            # If the Process is still alive, killing it
-            if alive:
-              with manager.step(f'kill {name}'):
-                process.kill()
-                forced.add(process)
-              # Waiting for the terminated Process to stop
-              with manager.step(f'join killed {name}'):
-                process.join(timeout=1)
+      # Give all survivors 0.5 seconds to terminate, and kill survivors
+      deadline = monotonic() + 0.5
+      killed = list()
+      for process in survivors:
+        name = process.name
+        with manager.step(f'join terminated {name}'):
+          process.join(timeout=max(0.0, deadline - monotonic()))
+        alive = True
+        with manager.step(f'check terminated {name}'):
+          alive = process.is_alive()
+        if alive:
+          with manager.step(f'kill {name}'):
+            process.kill()
+            forced.add(process)
+          killed.append(process)
 
+      # Give all surviving Processes 0.5 seconds to get killed
+      deadline = monotonic() + 0.5
+      for process in killed:
+        with manager.step(f'join killed {process.name}'):
+          process.join(timeout=max(0.0, deadline - monotonic()))
+
+      # Close handles only after every process has had its shutdown attempt.
+      for process in processes:
+        name = process.name
         # Detect Processes that hard-crashed
         with manager.step(f'observe exit of {name}'):
           code = process.exitcode
@@ -1138,10 +1152,10 @@ class Camera(Block):
       with manager.step('join worker receiver'):
         if (self._worker_failure_thread is not None and
             self._worker_failure_thread.ident is not None):
-          self._worker_failure_thread.join(timeout=1.0)
+          self._worker_failure_thread.join(timeout=0.5)
           if self._worker_failure_thread.is_alive():
             raise ShutdownTimeoutError("The camera failure receiver did not "
-                                       "stop", phase='monitoring', timeout=1.0)
+                                       "stop", phase='monitoring', timeout=0.5)
           self._worker_failure_thread = None
 
       # Close the Queues carrying the Exceptions between Processes

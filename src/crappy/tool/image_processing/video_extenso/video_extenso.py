@@ -251,53 +251,69 @@ class VideoExtensoTool:
         if self._tracking_stop is not None:
           self._tracking_stop.set()
 
+      trackers = tuple(self._trackers)
+      started = [tracker for tracker in trackers
+                 if tracker in self._started_trackers]
+      forced = set()
       exits = list()
-      for tracker in tuple(self._trackers):
-        name = tracker.name
-        terminated = False
-        # Give each Tracker one second to stop
-        if tracker in self._started_trackers:
-          with manager.step(f'join {name}'):
-            tracker.join(1.0)
-          alive = True
 
-          # Check if the Trackers are still alive
-          with manager.step(f'check {name}'):
-            alive = tracker.is_alive()
-          # Report them if that's the case
-          if alive:
-            with manager.step(f'shutdown deadline for {name}'):
-              raise ShutdownTimeoutError(f"Tracker {name} did not stop within "
-                                         f"1 second",
-                                         process_name=name,
-                                         pid=tracker.pid,
-                                         phase='tracker cleanup',
-                                         timeout=1.0)
-            # Still try to terminate the live Trackers
-            with manager.step(f'terminate {name}'):
-              tracker.terminate()
-              terminated = True
-            # Give the terminated Trackers one second to stop
-            with manager.step(f'join terminated {name}'):
-              tracker.join(1.0)
-            alive = True
-            # Check if the terminated Trackers are still alive
-            with manager.step(f'check terminated {name}'):
-              alive = tracker.is_alive()
-            # Still try to kill the live Trackers
-            if alive:
-              with manager.step(f'kill {name}'):
-                tracker.kill()
-                terminated = True
-              # Give the killed Trackers one second to stop
-              with manager.step(f'join killed {name}'):
-                tracker.join(1.0)
-          # Check the exit status of all the monitored Trackers
+      # The deadline covers termination of all the Workers together
+      deadline = monotonic() + 3.0
+      for tracker in started:
+        with manager.step(f'join {tracker.name}'):
+          tracker.join(max(0.0, deadline - monotonic()))
+
+      # Check which Workers are still alive after 3 seconds
+      survivors = list()
+      for tracker in started:
+        name = tracker.name
+        alive = True
+        with manager.step(f'check {name}'):
+          alive = tracker.is_alive()
+        if alive:
+          with manager.step(f'shutdown deadline for {name}'):
+            raise ShutdownTimeoutError(f"Tracker {name} did not stop within "
+                                       f"3 seconds",
+                                       process_name=name,
+                                       pid=tracker.pid,
+                                       phase='tracker cleanup',
+                                       timeout=3.0)
+          with manager.step(f'terminate {name}'):
+            tracker.terminate()
+            forced.add(tracker)
+          survivors.append(tracker)
+
+      # Give all surviving Workers 0.5 seconds to terminate, and kill survivors
+      deadline = monotonic() + 0.5
+      killed = list()
+      for tracker in survivors:
+        name = tracker.name
+        with manager.step(f'join terminated {name}'):
+          tracker.join(max(0.0, deadline - monotonic()))
+        alive = True
+        with manager.step(f'check terminated {name}'):
+          alive = tracker.is_alive()
+        if alive:
+          with manager.step(f'kill {name}'):
+            tracker.kill()
+            forced.add(tracker)
+          killed.append(tracker)
+
+      # Give all surviving Workers 0.5 seconds to get killed
+      deadline = monotonic() + 0.5
+      for tracker in killed:
+        with manager.step(f'join killed {tracker.name}'):
+          tracker.join(max(0.0, deadline - monotonic()))
+
+      for tracker in trackers:
+        name = tracker.name
+        if tracker in self._started_trackers:
           with manager.step(f'observe exit of {name}'):
             code = tracker.exitcode
             if isinstance(code, int):
               exits.append((name, tracker.pid, code,
-                            tracker in self._unexpected_exits, terminated))
+                            tracker in self._unexpected_exits,
+                            tracker in forced))
         # Properly close all the monitored Trackers
         with manager.step(f'close process {name}'):
           tracker.close()
@@ -320,10 +336,10 @@ class VideoExtensoTool:
       with manager.step('join tracker receiver'):
         if (self._failure_thread is not None and
             self._failure_thread.ident is not None):
-          self._failure_thread.join(1.0)
+          self._failure_thread.join(0.5)
           if self._failure_thread.is_alive():
             raise ShutdownTimeoutError("Tracker failure receiver did not stop",
-                                       phase='monitoring', timeout=1.0)
+                                       phase='monitoring', timeout=0.5)
           self._failure_thread = None
 
       # Close all the opened Queues
