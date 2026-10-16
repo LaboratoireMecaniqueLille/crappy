@@ -484,14 +484,20 @@ get_config`. The received values should normally be stored for use by
     return True
 
   def _image_available(self) -> bool:
-    """Predicate watched by the image Condition."""
+    """Predicate watched by the image Condition.
+
+    .. versionadded:: 2.2.0
+    """
 
     return (self._stop_event.is_set() or
             (self._cam_barrier is not None and self._cam_barrier.broken) or
             self._has_new_image())
 
   def _has_new_image(self) -> bool:
-    """Tests image availability under the image Condition's lock."""
+    """Tests image availability under the image Condition's lock.
+
+    .. versionadded:: 2.2.0
+    """
 
     assert self._data_dict is not None
     image_id = self._data_dict.get('ImageUniqueID')

@@ -35,7 +35,10 @@ from ..._failure import FailureManager
 @runtime_checkable
 class VisionBlockType(Protocol):
   """Protocol for the extra methods implemented by the
-  :class:`~crappy.blocks.vision.block.VisionBlock`"""
+  :class:`~crappy.blocks.vision.block.VisionBlock`
+
+  .. versionadded:: 2.2.0
+  """
 
   def request_config(self, source: str) -> Any:
     """Method for requesting configuration information from an image source
@@ -502,6 +505,8 @@ class Block(Process, ABC):
     Returns:
       :class:`~crappy._failure.FailureManager` for failures from the main
       process and its Blocks.
+
+    .. versionadded:: 2.2.0
     """
 
     if cls.run_failure_manager is None:
@@ -512,7 +517,10 @@ class Block(Process, ABC):
 
   @classmethod
   def _prepare_all(cls, log_level: int | None) -> None:
-    """Allocates the resources and starts the Blocks."""
+    """Allocates the resources and starts the Blocks.
+
+    .. versionadded:: 2.2.0
+    """
 
     # Make sure that the Exception Manager is running
     manager = cls.run_failure_manager
@@ -719,7 +727,10 @@ class Block(Process, ABC):
 
   @classmethod
   def _renice_all(cls, allow_root: bool) -> None:
-    """Runs the niceness commands for the prepared Blocks."""
+    """Runs the niceness commands for the prepared Blocks.
+
+    .. versionadded:: 2.2.0
+    """
 
     # Make sure that the Exception Manager is running
     manager = cls.run_failure_manager
@@ -754,7 +765,10 @@ class Block(Process, ABC):
 
   @classmethod
   def _launch_all(cls) -> None:
-    """Synchronizes startup and uses the existing process-exit wait."""
+    """Synchronizes startup and uses the existing process-exit wait.
+
+    .. versionadded:: 2.2.0
+    """
 
     # Make sure that the Exception Manager is running
     manager = cls.run_failure_manager
@@ -1063,7 +1077,10 @@ class Block(Process, ABC):
 
   @classmethod
   def _finalize_run(cls) -> None:
-    """Cleans up, resets independently, then raises the run failures."""
+    """Cleans up, resets independently, then raises the run failures.
+
+    .. versionadded:: 2.2.0
+    """
 
     # Make sure that the Exception Manager is running
     manager = cls._ensure_failure_manager()
@@ -1226,7 +1243,10 @@ class Block(Process, ABC):
 
   @classmethod
   def _failure_target(cls) -> None:
-    """Receives Block failures and requests coordinated shutdown."""
+    """Receives Block failures and requests coordinated shutdown.
+
+    .. versionadded:: 2.2.0
+    """
 
     # Keep reference to the original objects in case reset() is called
     manager = cls.run_failure_manager
@@ -1281,7 +1301,10 @@ class Block(Process, ABC):
 
   @classmethod
   def _watchdog_target(cls) -> None:
-    """Aborts startup if a Block exits before the watchdog is disarmed."""
+    """Aborts startup if a Block exits before the watchdog is disarmed.
+
+    .. versionadded:: 2.2.0
+    """
 
     # Keep references to these objects even if the Block is reset
     manager = cls.run_failure_manager
@@ -1451,6 +1474,8 @@ class Block(Process, ABC):
 
     Args:
       error: Exception or :exc:`BaseExceptionGroup` caught by the callback.
+
+    .. versionadded:: 2.2.0
     """
 
     manager = self._failure_manager
@@ -1476,12 +1501,17 @@ class Block(Process, ABC):
       _: Exception class supplied by Tk.
       error: Exception raised by the callback.
       traceback: Call stack supplied by Tk, or :obj:`None` if unavailable.
+
+    .. versionadded:: 2.2.0
     """
 
     self._record_callback_failure(error.with_traceback(traceback))
 
   def _close_config_connections(self) -> None:
-    """Closes inherited configuration endpoints, retaining failed ones."""
+    """Closes inherited configuration endpoints, retaining failed ones.
+
+    .. versionadded:: 2.2.0
+    """
 
     if not self._config_connections_to_close:
       return

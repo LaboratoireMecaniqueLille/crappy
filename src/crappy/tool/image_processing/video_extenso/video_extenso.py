@@ -575,7 +575,10 @@ class VideoExtensoTool:
       conn.send_bytes(dumps(val))
 
   def _receive_failures(self) -> None:
-    """Receives tracker failures and requests the owning Block to stop."""
+    """Receives tracker failures and requests the owning Block to stop.
+
+    .. versionadded:: 2.2.0
+    """
 
     # Keep references in case the class is reset
     manager = self._failure_manager

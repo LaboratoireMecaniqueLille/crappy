@@ -120,6 +120,8 @@ class Link:
 
     Args:
       manager: FailureManager of the owning Process.
+
+    .. versionadded:: 2.2.0
     """
 
     # Guard cleanup steps with the FailureManager

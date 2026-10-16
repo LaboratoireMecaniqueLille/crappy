@@ -767,7 +767,10 @@ class Camera(Block):
       raise StopRequested from None
 
   def _worker_failure_target(self) -> None:
-    """Receives worker failures and requests Camera shutdown."""
+    """Receives worker failures and requests Camera shutdown.
+
+    .. versionadded:: 2.2.0
+    """
 
     # Keep reference to the original objects in case reset() is called
     manager = self._failure_manager

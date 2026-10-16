@@ -77,7 +77,10 @@ class ImageLink:
   @property
   def img_condition(self) -> synchronize.Condition:
     """Condition notified by this ImageLink's source when it has a new
-    image."""
+    image.
+
+    .. versionadded:: 2.2.0
+    """
 
     return self._img_condition
 

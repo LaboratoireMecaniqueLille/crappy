@@ -160,7 +160,10 @@ class ImageSaver(CameraProcess):
       Path.mkdir(self._save_folder, exist_ok=True, parents=True)
 
   def _has_new_image(self) -> bool:
-    """Waits for a frame to save, not for the skipped frames."""
+    """Waits for a frame to save, not for the skipped frames.
+
+    .. versionadded:: 2.2.0
+    """
 
     assert self._data_dict is not None
     image_id = self._data_dict.get('ImageUniqueID')

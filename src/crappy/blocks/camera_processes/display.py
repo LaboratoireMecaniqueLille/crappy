@@ -156,7 +156,10 @@ class Displayer(CameraProcess):
     return received
 
   def _has_new_image(self) -> bool:
-    """Includes the display rate limit in the Condition's predicate."""
+    """Includes the display rate limit in the Condition's predicate.
+
+    .. versionadded:: 2.2.0
+    """
 
     return (super()._has_new_image() and
             monotonic() - self._last_upd >= 1 / self._framerate)

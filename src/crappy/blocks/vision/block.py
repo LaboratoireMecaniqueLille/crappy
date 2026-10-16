@@ -637,7 +637,10 @@ class VisionBlock(Block, ABC):
     return updated
 
   def _image_available(self) -> bool:
-    """Predicate watched by the image Condition."""
+    """Predicate watched by the image Condition.
+
+    .. versionadded:: 2.2.0
+    """
 
     if self._image_wait_should_stop():
       return True
@@ -649,7 +652,10 @@ class VisionBlock(Block, ABC):
     return False
 
   def _image_wait_should_stop(self) -> bool:
-    """Checks the existing lifecycle flags without holding an image lock."""
+    """Checks the existing lifecycle flags without holding an image lock.
+
+    .. versionadded:: 2.2.0
+    """
 
     return ((self._stop_event is not None and self._stop_event.is_set()) or
             (self._ready_barrier is not None and self._ready_barrier.broken))

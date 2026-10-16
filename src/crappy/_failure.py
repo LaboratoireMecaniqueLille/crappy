@@ -241,6 +241,8 @@ class _CollectionState(local):
   Attributes:
     stack: Collections currently active in this thread, from outermost
       to innermost.
+
+  .. versionadded:: 2.2.0
   """
 
   stack: list[tuple[str, list[BaseException], dict[int, BaseException]]]

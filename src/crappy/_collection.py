@@ -60,12 +60,18 @@ class CollectionUnavailableError(RuntimeError):
 
   @property
   def cause(self) -> BaseException | None:
-    """Returns the import cause."""
+    """Returns the import cause.
+
+    .. versionchanged:: 2.2.0 this attribute is now read-only.
+    """
 
     return self.__cause__
 
   def __reduce__(self) -> tuple[Any, ...]:
-    """Ensures correct transfer of this Exception when serializing it."""
+    """Ensures correct transfer of this Exception when serializing it.
+
+    .. versionadded:: 2.2.0
+    """
 
     return type(self), (self.entry, self.cause), self.__dict__.copy()
 

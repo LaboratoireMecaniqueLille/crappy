@@ -72,6 +72,8 @@ class OptionalModule:
     Raises:
       ~crappy._exceptions.OptionalDependencyError: The dependency is
       unavailable.
+
+    .. versionadded:: 2.2.0
     """
 
     # A non-lazy OptionalModule must fail when resolved
@@ -91,7 +93,10 @@ class OptionalModule:
     return self._module
 
   def _raise_unavailable(self) -> NoReturn:
-    """Raises an OptionalDependencyError while preserving the context."""
+    """Raises an OptionalDependencyError while preserving the context.
+
+    .. versionadded:: 2.2.0
+    """
 
     raise _exceptions.OptionalDependencyError(self._name,
                                               self._install_name,

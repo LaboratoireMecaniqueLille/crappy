@@ -180,7 +180,10 @@ class HistogramProcess(Process):
         self._failure_queue.join_thread()
 
   def _cleanup_queues(self) -> None:
-    """Drains and releases both worker Queue handles, even after failure."""
+    """Drains and releases both worker Queue handles, even after failure.
+
+    .. versionadded:: 2.2.0
+    """
 
     manager = self._failure_manager
 
