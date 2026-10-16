@@ -59,7 +59,10 @@ class TkinterDISCorrelConfig(DISCorrelConfig, TkinterCameraConfigBoxes):
         leave them unchanged.
 
         .. versionadded:: 2.1.0
-      failure_manager: FailureManager for reporting Exceptions.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
       patch: :class:`~crappy.tool.camera_config.config_tools.Box` to display
         and update in place. The same
         :class:`~crappy.tool.camera_config.config_tools.Box` is returned by

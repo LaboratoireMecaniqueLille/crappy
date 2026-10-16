@@ -767,10 +767,7 @@ class Camera(Block):
       raise StopRequested from None
 
   def _worker_failure_target(self) -> None:
-    """Target for the Exception Thread.
-
-    Receives failure reports from Processes and handles them.
-    """
+    """Receives worker failures and requests Camera shutdown."""
 
     # Keep reference to the original objects in case reset() is called
     manager = self._failure_manager

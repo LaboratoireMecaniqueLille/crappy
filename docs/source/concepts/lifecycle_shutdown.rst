@@ -112,12 +112,70 @@ naturally, the user presses :kbd:`Control-c`, or an error interrupts normal
 execution. Crappy shares the stop request with every Block so that they can
 leave their loops.
 
-An unexpected exception in one Block is recorded and causes the whole test to
-stop. By default, Crappy raises an exception in the main script after cleanup.
-The ``no_raise`` option of :ref:`crappy.start()
-<crappy_docs/aliases:crappy.start()>` can suppress that final exception, but it
-does not make the failed test successful. Use it only when the calling program
-handles the failure state explicitly.
+An unexpected exception in one Block is reported and causes the whole test to
+stop. After cleanup, Crappy raises the failures together in the main script,
+even if there is only one. The group identifies the Block and stage of each
+failure. If both normal work and cleanup stages fail, both failures are
+reported. An invalid argument or missing import before the run can still raise
+an ordinary exception.
+
+.. versionchanged:: 2.2.0
+   Lifecycle failures are raised as an :exc:`ExceptionGroup`, or a
+   :exc:`BaseExceptionGroup` if they include an interruption such as
+   :exc:`KeyboardInterrupt`.
+
+Use ``except*`` to handle selected exception types inside the group:
+
+.. code-block:: python
+
+   try:
+       crappy.start()
+   except* ValueError as errors:
+       print('Invalid values:', errors)
+   except* KeyboardInterrupt:
+       print('Test interrupted')
+
+Any failures not handled by these clauses still raise. An ordinary
+``except KeyboardInterrupt`` does not catch an interrupt inside a group.
+Likewise, ``except Exception`` does not catch a :exc:`BaseExceptionGroup`
+containing an interrupt.
+
+.. _lifecycle-no-raise:
+
+When ``no_raise`` applies
++++++++++++++++++++++++++
+
+With ``no_raise=True``, :ref:`crappy.start()
+<crappy_docs/aliases:crappy.start()>` suppresses the final group only if every
+participating Block has entered its
+:meth:`~crappy.blocks.meta_block.block.Block.main` method. For the usual
+lifecycle, this means that every ``begin()`` returned successfully. A failure
+in the first ``loop()`` is therefore a runtime failure.
+
+Failures during setup, preparation, synchronization or ``begin()`` still raise,
+even with ``no_raise=True``. Once every Block has entered ``main()``, the option
+also suppresses interruptions and cleanup failures. Reporting and cleanup still
+take place, and suppressing the final group does not make the test successful.
+
+.. versionchanged:: 2.2.0
+   Suppression requires every participating Block to have entered ``main()``.
+
+Logging and failures from workers
++++++++++++++++++++++++++++++++++
+
+Crappy logs a failure where it occurs. Passing it through parent components
+and raising the final group do not log it again. If the final group is not
+caught, Python will still display its traceback in the terminal.
+
+Logging settings can hide error messages without removing failures from the
+final group. In particular, disabling logging does not suppress raising.
+
+For failures from another process, Crappy preserves the original exception
+type when possible, with the original stack shown in exception notes. If a
+custom exception cannot be restored, a replacement such as
+:exc:`~crappy._exceptions.RemoteFailure` retains its message, location and
+traceback. An abrupt process exit without a reported exception is described by
+:exc:`~crappy._exceptions.ProcessExitError`.
 
 Cleanup belongs in ``finish``
 -----------------------------
@@ -145,10 +203,9 @@ Public behavior and implementation details
 ------------------------------------------
 
 The lifecycle hooks and their order are the public model custom Blocks should
-follow. The synchronization primitives, worker implementation, cleanup
-timeouts, and operating-system start methods are implementation details. They
-are documented in the :doc:`../architecture` guide because they may change
-without altering the lifecycle above.
+follow. The synchronization objects, worker implementation, cleanup timeouts,
+and operating-system start methods may change without altering the lifecycle
+above. The :doc:`../architecture` guide gives a high-level overview.
 
 API reference
 -------------

@@ -45,7 +45,10 @@ CameraConfigBoxes` hooks determine how a completed box is used. This class
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
-      failure_manager: FailureManager for reporting Exceptions.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
     """
 
     super().__init__(camera, log_queue, log_level, max_freq, transform,

@@ -14,7 +14,7 @@ from multiprocessing import Event, Queue, synchronize
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
 from types import TracebackType
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from collections.abc import Callable, Iterable
 
 from ..base import CameraConfig, ConfigurationLifecycle
@@ -95,8 +95,8 @@ TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
                failure_manager: FailureManager,
-               *_,
-               **__) -> None:
+               *_: Any,
+               **__: Any) -> None:
     """Builds the window and histogram resources without starting acquisition.
 
     Args:
@@ -119,7 +119,12 @@ TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
         leave them unchanged.
 
         .. versionadded:: 2.1.0
-      failure_manager: FailureManager for reporting Exceptions.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
+      *_: Additional positional arguments, unused by this base window.
+      **__: Additional keyword arguments, unused by this base window.
     """
 
     # Attributes for handling lifecycle and Exception reports
@@ -355,9 +360,15 @@ TkinterCameraConfig.watch_shutdown>` bypasses selection validation.
                                 exc: type[BaseException],
                                 val: BaseException,
                                 tb: TracebackType | None) -> None:
-    """Retain a Tk callback failure, show it, and close the window safely.
+    """Reports a callback failure and closes the configuration window.
 
-    Keyboard interrupts close silently and are re-raised by :meth:`run`.
+    The failure is raised after the window closes. Interruptions do not open
+    an error dialog.
+
+    Args:
+      exc: Class of the exception supplied by Tk.
+      val: Exception raised by the callback.
+      tb: Original traceback, or :obj:`None` if unavailable.
 
     .. versionadded:: 2.0.0
     """

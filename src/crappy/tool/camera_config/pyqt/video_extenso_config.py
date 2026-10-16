@@ -57,7 +57,10 @@ VideoExtensoConfig`.
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
-      failure_manager: FailureManager for reporting Exceptions.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
       white_spots: :obj:`True` for light spots on a dark background,
         :obj:`False` for dark spots on a light background.
       num_spots: Required number of spots from 1 to 4, or :obj:`None` to accept

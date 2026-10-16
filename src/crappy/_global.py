@@ -1,6 +1,7 @@
 # coding:utf-8
 
 from typing import NoReturn, Any
+from types import ModuleType
 from importlib import import_module
 import webbrowser
 import importlib.resources
@@ -37,19 +38,22 @@ class OptionalModule:
                lazy_import: bool = False,
                cause: ImportError | None = None,
                install_name: str | None = None) -> None:
-    """Sets the arguments.
+    """Describes an optional dependency and how it should be loaded.
 
     Args:
       module_name: Python import name, such as ``cv2`` or ``PIL``.
-      message: Additional guidance displayed if the dependency cannot load.
-      lazy_import: If :obj:`True`, the module won't be imported directly even
-        if it is installed. Instead, it will be imported only when necessary.
-        Allows reducing the import time, especially on Windows.
+      message: Extra guidance shown if the dependency cannot load. :obj:`None`
+        adds no extra message.
+      lazy_import: If :obj:`True`, try to load the dependency when it is first
+        used. If :obj:`False`, using this placeholder reports the dependency
+        as unavailable.
 
         .. versionadded:: 2.0.0
-      cause: Original failure from an import, if available.
-      install_name: Installation package name when different from the import
-        name, such as ``opencv-python`` or ``Pillow``.
+      cause: Original import error, or :obj:`None` if unavailable.
+      install_name: Installation package name, such as ``opencv-python`` or
+        ``Pillow``. :obj:`None` uses the first part of ``module_name``.
+
+    .. versionchanged:: 2.2.0
     """
 
     self._name: str = module_name
@@ -57,10 +61,18 @@ class OptionalModule:
     self._cause: ImportError | None = cause
     self._install_name: str = install_name or module_name.split('.')[0]
     self._lazy: bool = lazy_import
-    self._module = None
+    self._module: ModuleType | None = None
 
-  def _resolve(self) -> Any:
-    """Imports a lazy dependency or reports why its import failed."""
+  def _resolve(self) -> ModuleType:
+    """Loads the dependency or explains why it could not be loaded.
+
+    Returns:
+      Imported module.
+
+    Raises:
+      ~crappy._exceptions.OptionalDependencyError: The dependency is
+      unavailable.
+    """
 
     # A non-lazy OptionalModule must fail when resolved
     if not self._lazy:
@@ -86,22 +98,36 @@ class OptionalModule:
                                               self._msg) from self._cause
 
   def __getattr__(self, attr: str) -> Any:
-    """Method normally raising an exception indicating that the module is
-    missing.
+    """Returns an attribute from a lazily loaded dependency.
 
-    In case the ``lazy_import`` argument was set to :obj:`True`, still tries to
-    get the desired attribute and raises the exception only if the module is
-    missing.
+    Args:
+      attr: Name of the requested attribute.
+
+    Returns:
+      Attribute from the imported module.
+
+    Raises:
+      ~crappy._exceptions.OptionalDependencyError: The dependency is
+        unavailable.
+      AttributeError: The loaded module has no such attribute.
     """
 
     return getattr(self._resolve(), attr)
 
   def __call__(self, *args: Any, **kwargs: Any) -> Any:
-    """Method raising an exception indicating that the module is missing.
+    """Calls the loaded dependency if it is callable.
 
-    In case the ``lazy_import`` argument was set to :obj:`True`, still tries to
-    call the desired method and raises the exception only if the module is
-    missing.
+    Args:
+      *args: Positional arguments passed to the callable.
+      **kwargs: Keyword arguments passed to the callable.
+
+    Returns:
+      Object returned by the callable.
+
+    Raises:
+      ~crappy._exceptions.OptionalDependencyError: The dependency is u
+        navailable.
+      TypeError: The loaded dependency is not callable.
     """
 
     return self._resolve()(*args, **kwargs)

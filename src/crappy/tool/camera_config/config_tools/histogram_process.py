@@ -51,10 +51,16 @@ class HistogramProcess(Process):
         logging.
       log_queue: Crappy logging queue, used with spawn and forkserver start
         methods to forward records to the main process.
-      failure_queue: Queue reporting failures to the configuration window.
-      block_name: Name of the parent Block.
-      owner_path: Name showing which Block or worker is being managed by the
-        FailureManager.
+      failure_queue: :obj:`~multiprocessing.Queue` for reporting failures to
+        the configuration window.
+
+        .. versionadded:: 2.2.0
+      block_name: Name of the parent Block, shown in failure reports.
+
+        .. versionadded:: 2.2.0
+      owner_path: Name identifying this worker within its parent Block.
+
+        .. versionadded:: 2.2.0
     """
 
     self._logger: logging.Logger | None = None

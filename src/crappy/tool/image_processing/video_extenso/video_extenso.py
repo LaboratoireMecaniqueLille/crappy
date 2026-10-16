@@ -65,7 +65,7 @@ class VideoExtensoTool:
 
         .. versionadded:: 2.0.0
       thresh: The grey level value of the threshold to use for discriminating
-        spots from the background, as an :obj:int`. Passed to the
+        spots from the background, as an :obj:`int`. Passed to the
         :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
         and not used in this class.
 
@@ -110,11 +110,17 @@ class VideoExtensoTool:
         takes a bit more time compared to no blurring. Passed to the 
         :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
         and not used in this class.
-      failure_manager: Manager passed to the configuration window for reporting
-        failures.
-      stop_event: Event for requesting shutdown.
-      raise_on_lost_spot: Whether to report a lost spot as a failure or to
-        silently ignore it.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
+      stop_event: :obj:`~multiprocessing.Event` to set when a failure requires
+        the owning Block to stop.
+
+        .. versionadded:: 2.2.0
+      raise_on_lost_spot: If :obj:`True`, report a lost spot as a failure.
+        If :obj:`False`, return a reason string from :meth:`get_data` so the
+        caller can decide how to respond.
 
     .. versionremoved:: 2.0.0 *num_spots* and *min_area* arguments
     """
@@ -159,7 +165,7 @@ class VideoExtensoTool:
     self._system: str = system()
 
   def __del__(self) -> None:
-    """Security to ensure there are no zombie processes left when exiting."""
+    """Tries to stop tracking when the tool is discarded."""
 
     # Case of partly initialized object
     if not hasattr(self, '_trackers') or not hasattr(self, '_pipes'):
@@ -172,12 +178,11 @@ class VideoExtensoTool:
         self.stop_tracking()
 
   def start_tracking(self) -> None:
-    """Creates a
-    :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
-    Process for each detected spot, and starts it.
+    """Starts tracking the selected spots.
 
-    Also creates a :obj:`multiprocessing.Pipe` for each spot to communicate 
-    with the Tracker process.
+    Raises:
+      AttributeError: No spots were selected.
+      RuntimeError: Tracking has already started.
     """
 
     if self.spots.empty():
@@ -227,10 +232,13 @@ class VideoExtensoTool:
       self._failure_thread.start()
 
   def stop_tracking(self) -> None:
-    """Stops all the active 
-    :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
-    Processes through their shared Event, terminating them if they don't stop
-    by themselves.
+    """Stops tracking and releases its resources.
+
+    Processes that do not stop in time are forcibly stopped. Cleanup failures
+    are reported together after all cleanup operations have been attempted.
+
+    Raises:
+      BaseExceptionGroup: Failures encountered while stopping.
     """
 
     manager = self._failure_manager
@@ -567,7 +575,7 @@ class VideoExtensoTool:
       conn.send_bytes(dumps(val))
 
   def _receive_failures(self) -> None:
-    """Thread target for receiving Tracker reports."""
+    """Receives tracker failures and requests the owning Block to stop."""
 
     # Keep references in case the class is reset
     manager = self._failure_manager

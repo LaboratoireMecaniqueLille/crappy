@@ -140,8 +140,13 @@ class CameraProcess(Process, ABC):
         :obj:`int`.
       display_freq: If :obj:`True`, the looping frequency of this class will be
         displayed while running.
-      failure_queue: Queue for reporting failures to the owning Camera Block.
-      block_name: Name of the parent Camera Block.
+      failure_queue: :obj:`~multiprocessing.Queue` for reporting failures to
+        the owning Camera Block.
+
+        .. versionadded:: 2.2.0
+      block_name: Name of the parent Camera Block, shown in failure reports.
+
+        .. versionadded:: 2.2.0
     """
 
     self._img_array = array
@@ -300,14 +305,18 @@ class CameraProcess(Process, ABC):
     ...
 
   def finish(self) -> None:
-    """This method should perform any action required for properly exiting the
-    CameraProcess.
+    """Closes resources used by this image-processing worker.
 
-    It is meant to be overwritten by children classes, at is otherwise does not
-    perform any action.
+    Override this method when processing opens resources that need closing.
+    Allow for :meth:`init` having failed partway through. Crappy reports
+    failures from this method alongside earlier processing failures.
 
-    It is the last method called before the :obj:`~multiprocessing.Process`
-    ends, and at that point no more images are being acquired.
+    For several independent cleanup operations, use
+    :meth:`~crappy._failure.FailureManager.collect` and
+    :meth:`~crappy._failure.FailureManager.step` on ``self._failure_manager``.
+
+    .. versionchanged:: 2.2.0
+       Cleanup failures are reported through the owning Camera Block.
     """
 
     ...

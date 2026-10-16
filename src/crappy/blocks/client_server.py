@@ -544,11 +544,16 @@ class ClientServer(Block):
               (self._start_event is None or not self._start_event.is_set())):
             self._ready_barrier.abort()
 
-  def _on_message(self, _, __, message) -> None:
-    """Buffers the received data.
+  def _on_message(self, _: Any, __: Any, message: Any) -> None:
+    """Stores incoming MQTT data in the matching topic's buffer.
 
-    The received message consists in a list of lists of values. Data is placed
-    in the right buffer according to the topic, in the form of lists of values.
+    Invalid pickle data produces a warning and is ignored. Unexpected failures
+    are reported and request the test to stop.
+
+    Args:
+      _: MQTT client supplied by the library.
+      __: User data supplied by the library.
+      message: MQTT message with a topic and a pickled payload.
     """
 
     try:
@@ -563,8 +568,18 @@ class ClientServer(Block):
     except BaseException as error:
       self._record_callback_failure(error)
 
-  def _on_connect(self, _, __, ___, rc: Any) -> None:
-    """Automatically subscribes to the topics when connecting to the broker."""
+  def _on_connect(self, _: Any, __: Any, ___: Any, rc: Any) -> None:
+    """Subscribes to the requested MQTT topics after connecting.
+
+    A refused connection is reported as a failure and requests the test to
+    stop.
+
+    Args:
+      _: MQTT client supplied by the library.
+      __: User data supplied by the library.
+      ___: Connection flags supplied by the library.
+      rc: Connection result code. Zero means the connection succeeded.
+    """
 
     try:
       if rc != 0:

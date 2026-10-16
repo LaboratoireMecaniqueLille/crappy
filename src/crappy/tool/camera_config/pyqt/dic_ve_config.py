@@ -50,7 +50,10 @@ class PyQtDICVEConfig(DICVEConfig, PyQtCameraConfigBoxes):
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
-      failure_manager: FailureManager for reporting Exceptions.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
       patches: :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`
         collection to display and update in place. The same collection is
         returned by

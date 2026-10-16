@@ -123,7 +123,8 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
                failure_manager: FailureManager,
-               *_, **__) -> None:
+               *_: Any,
+               **__: Any) -> None:
     """Builds the window and histogram resources without starting acquisition.
 
     Args:
@@ -138,7 +139,12 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
-      failure_manager: FailureManager for reporting Exceptions.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
+      *_: Additional positional arguments, unused by this base window.
+      **__: Additional keyword arguments, unused by this base window.
     """
 
     # Attributes for handling lifecycle and Exception reports
@@ -289,10 +295,14 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
         os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
 
   def _guard(self, callback: Callable[..., Any]) -> Callable[..., None]:
-    """Wraps a Qt callback so failures can be raised after the event loop.
+    """Makes a callback report failures and close the configuration window.
 
     Args:
-      callback: The function connected to a Qt signal.
+      callback: Function to call when the Qt signal is received.
+
+    Returns:
+      Callable accepting the signal's arguments. A caught failure is reported
+      and raised after the window closes.
     """
 
     def guarded(*args: Any) -> None:
@@ -304,10 +314,13 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
     return guarded
 
   def _record_callback_failure(self, error: BaseException) -> None:
-    """Reports a callback failure and asks the window to close.
+    """Reports a callback failure and closes the configuration window.
 
-    The manager retains the original traceback for :meth:`run` to raise
-    after the Qt event loop has stopped. Keyboard interrupts close silently.
+    The failure is raised after the window closes. Interruptions do not open
+    an error dialog.
+
+    Args:
+      error: Exception or :exc:`BaseExceptionGroup` caught by the callback.
     """
 
     with self._failure_manager.collect('Configuration callback',

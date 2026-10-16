@@ -58,7 +58,10 @@ CameraConfigBoxes` hooks determine how a completed box is used. This class
         leave them unchanged.
 
         .. versionadded:: 2.1.0
-      failure_manager: FailureManager for reporting Exceptions.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
     """
 
     super().__init__(camera, log_queue, log_level, max_freq, transform,

@@ -12,28 +12,33 @@ if TYPE_CHECKING:
 class StopRequested(Exception):
   """Signals that a framework operation was stopped on purpose.
 
-  Not included in the final failure report.
+  This is a normal stop, not a failure in the final exception group.
+
+  .. versionadded:: 2.2.0
   """
 
 
 class OptionalDependencyError(ImportError):
   """An optional dependency could not be loaded.
 
-  The original import failure is attached as the cause. The dependency may be
-  installed but unusable, for example because one of its dependencies is absent
-  or a compiled extension cannot be loaded.
+  The original import error is available as the cause. The dependency may be
+  installed but unusable, for example because a required library is missing.
+
+  .. versionadded:: 2.2.0
   """
 
   def __init__(self,
                import_name: str,
                install_name: str | None = None,
                message: str | None = None) -> None:
-    """Stores information on the import failure.
+    """Describes a dependency that could not be loaded.
 
     Args:
-      import_name: Python module or requested dependency name.
-      install_name: Package name used for installation, if known.
-      message: Additional guidance for the requested functionality.
+      import_name: Python module or dependency requested by the code.
+      install_name: Package name to suggest for installation. :obj:`None` omits
+        installation guidance.
+      message: Extra guidance shown with the error. :obj:`None` adds no extra
+        message.
     """
 
     self.import_name: str = import_name
@@ -48,17 +53,31 @@ class OptionalDependencyError(ImportError):
 
     super().__init__(diagnostic, name=import_name)
 
-  def __reduce__(self) -> tuple[Any, ...]:
-    """Helper for good serialization of this Exception."""
+  def __reduce__(self) -> tuple[type, tuple[Any, ...], dict[str, Any]]:
+    """Describes how to save and restore this exception.
+
+    Returns:
+      Exception class, constructor arguments, and saved attributes.
+    """
 
     return (type(self), (self.import_name, self.install_name, self.message),
             self.__dict__.copy())
 
 
 class RemoteFailureMetadata:
-  """Adds the original failure details to a remote fallback Exception.
+  """Provides the original details of a failure from another process.
 
-  Used when the original Exception cannot be restored in this Process.
+  These details remain available when the original exception type cannot
+  be restored.
+
+  Attributes:
+    report: :class:`~crappy._failure.FailureReport` describing the failure.
+    node_index: Position of this exception in the report's ``nodes``.
+    node: :class:`~crappy._failure.ExceptionNode` describing this exception.
+    reconstruction_error: Explanation of why the original exception
+      could not be restored.
+
+  .. versionadded:: 2.2.0
   """
 
   def __init__(self,
@@ -94,20 +113,23 @@ class RemoteFailureMetadata:
                   reconstruction_error: str
                   ) -> (RemoteFailure | RemoteKeyboardInterrupt |
                         RemoteSystemExit | RemoteBaseFailure):
-    """Builds a fallback Exception for one node in the report.
-
-    Uses the original class's base classes to choose the fallback type.
-    ExceptionGroups must be rebuilt from their children instead.
+    """Creates a replacement for an exception from another process.
 
     Args:
-      report: Report containing the original Exception's details.
-      node_index: Index of the Exception to replace. Must not refer to a group.
-      reconstruction_error: Explanation of why restoring the original
-        Exception failed.
+      report: :class:`~crappy._failure.FailureReport` describing the failure.
+      node_index: Position of the exception to replace in the report's
+        ``nodes``. This must describe an individual exception, not a group.
+      reconstruction_error: Explanation of why the original exception
+        could not be restored.
 
     Returns:
-      RemoteFailure, RemoteKeyboardInterrupt, RemoteSystemExit or
-      RemoteBaseFailure.
+      :exc:`RemoteKeyboardInterrupt` for an interrupt,
+      :exc:`RemoteSystemExit` for an exit request, :exc:`RemoteFailure` for an
+      ordinary exception, or :exc:`RemoteBaseFailure` for another
+      :exc:`BaseException`.
+
+    Raises:
+      ValueError: The position is invalid or describes an exception group.
     """
 
     if (type(node_index) is not int or
@@ -133,8 +155,12 @@ class RemoteFailureMetadata:
     # Build and return the Exception
     return error_type(report, node_index, reconstruction_error)
 
-  def __reduce__(self) -> tuple[Any, ...]:
-    """Tells pickle how to restore this Exception's report and attributes."""
+  def __reduce__(self) -> tuple[type, tuple[Any, ...], dict[str, Any]]:
+    """Describes how to save and restore the original failure details.
+
+    Returns:
+      Exception class, constructor arguments, and saved attributes.
+    """
 
     return (type(self),
             (self.report, self.node_index, self.reconstruction_error),
@@ -142,18 +168,32 @@ class RemoteFailureMetadata:
 
 
 class RemoteFailure(RemoteFailureMetadata, Exception):
-  """Fallback for an ordinary remote Exception that cannot be restored."""
+  """Replaces an ordinary exception whose original type cannot be restored.
+
+  Original failure details are available through
+  :class:`RemoteFailureMetadata`.
+
+  .. versionadded:: 2.2.0
+  """
 
 
 class RemoteKeyboardInterrupt(RemoteFailureMetadata, KeyboardInterrupt):
-  """Fallback for a remote KeyboardInterrupt that cannot be restored."""
+  """Replaces a :exc:`KeyboardInterrupt` from another process.
+
+  Still matches ``except* KeyboardInterrupt`` when its original type cannot
+  be restored.
+
+  .. versionadded:: 2.2.0
+  """
 
 
 class RemoteSystemExit(RemoteFailureMetadata, SystemExit):
-  """Fallback for a remote SystemExit that cannot be restored.
+  """Replaces a :exc:`SystemExit` from another process.
 
   Attributes:
-    code: Original exit code saved in the selected ExceptionNode.
+    code: Original exit code, or :obj:`None` if it could not be retained.
+
+  .. versionadded:: 2.2.0
   """
 
   def __init__(self,
@@ -174,11 +214,21 @@ class RemoteSystemExit(RemoteFailureMetadata, SystemExit):
 
 
 class RemoteBaseFailure(RemoteFailureMetadata, BaseException):
-  """Fallback for another remote BaseException that cannot be restored."""
+  """Replaces another :exc:`BaseException` from another process.
+
+  Use :class:`RemoteFailureMetadata` to read the original failure details.
+
+  .. versionadded:: 2.2.0
+  """
 
 
 class ProcessExitError(RuntimeError):
-  """Raised when a Process exits unexpectedly without a reported Exception."""
+  """Reports a process that exited unexpectedly.
+
+  Used when the process outcome is not explained by a reported exception.
+
+  .. versionadded:: 2.2.0
+  """
 
   def __init__(self,
                message: str,
@@ -186,14 +236,16 @@ class ProcessExitError(RuntimeError):
                pid: int | None,
                phase: str,
                exitcode: int | None) -> None:
-    """Stores details of the unexpected Process exit.
+    """Describes the process that exited unexpectedly.
 
     Args:
       message: Description of the unexpected exit.
-      process_name: Name of the Process that exited.
-      pid: ID of that Process. None if unknown.
-      phase: Last known lifecycle phase.
-      exitcode: Process.exitcode value. None if it is not yet available.
+      process_name: Name of the process that exited.
+      pid: Process ID, or :obj:`None` if unknown.
+      phase: Last known stage, such as ``prepare`` or ``main``.
+      exitcode: Process exit status: zero for a normal exit, a positive value
+        for an error, or a negative signal number on POSIX.
+        :obj:`None` means the status is not available.
     """
 
     super().__init__(message)
@@ -202,15 +254,22 @@ class ProcessExitError(RuntimeError):
     self.phase = phase
     self.exitcode = exitcode
 
-  def __reduce__(self) -> tuple[Any, ...]:
-    """Helper for good serialization of this Exception."""
+  def __reduce__(self) -> tuple[type, tuple[Any, ...], dict[str, Any]]:
+    """Describes how to save and restore this exception.
+
+    Returns:
+      Exception class, constructor arguments, and saved attributes.
+    """
 
     return (type(self), (self.args[0], self.process_name, self.pid, self.phase,
                          self.exitcode), self.__dict__.copy())
 
 
 class ShutdownTimeoutError(TimeoutError):
-  """Raised when a Process does not stop within the allowed time."""
+  """Reports a process or thread that did not stop within the allowed time.
+
+  .. versionadded:: 2.2.0
+  """
 
   def __init__(self,
                message: str,
@@ -218,14 +277,15 @@ class ShutdownTimeoutError(TimeoutError):
                pid: int | None = None,
                phase: str = '',
                timeout: float | None = None) -> None:
-    """Stores details of the Process that did not stop in time.
+    """Describes a shutdown that took too long.
 
     Args:
       message: Description of the shutdown failure.
-      process_name: Name of the Process that did not stop. Empty if unknown.
-      pid: ID of that Process. None if unknown.
-      phase: Lifecycle phase during shutdown. Empty if unknown.
-      timeout: Time allowed for shutdown, in seconds. None if unknown.
+      process_name: Name of the affected process. Empty if unknown.
+      pid: Process ID, or :obj:`None` if unknown.
+      phase: Stage during shutdown. Empty if unknown.
+      timeout: Time allowed for shutdown in seconds.
+        :obj:`None` means the allowance is unknown.
     """
 
     super().__init__(message)
@@ -236,7 +296,10 @@ class ShutdownTimeoutError(TimeoutError):
 
 
 class FailureTransportError(RuntimeError):
-  """Describes an error in handling or transferring a failure report."""
+  """Reports a problem sending, receiving or reading a failure report.
+
+  .. versionadded:: 2.2.0
+  """
 
   def __init__(self,
                message: str,
@@ -244,14 +307,14 @@ class FailureTransportError(RuntimeError):
                process_name: str = '',
                pid: int | None = None,
                phase: str = '') -> None:
-    """Stores details of the failure report that could not be handled.
+    """Describes a problem handling a failure report.
 
     Args:
-      message: Description of the reporting or transfer error.
-      failure_id: ID of the affected report. None if unknown.
-      process_name: Name of the affected Process. Empty if unknown.
-      pid: ID of that Process. None if unknown.
-      phase: Lifecycle phase of the affected failure. Empty if unknown.
+      message: Description of the reporting error.
+      failure_id: Affected report's identifier, or :obj:`None` if unknown.
+      process_name: Name of the affected process. Empty if unknown.
+      pid: Process ID, or :obj:`None` if unknown.
+      phase: Stage of the affected failure. Empty if unknown.
     """
 
     super().__init__(message)
@@ -288,6 +351,12 @@ class DefinitionError(NameError):
     self._msg = msg
 
   def __str__(self) -> str:
+    """Returns the explanation of the conflicting definition.
+
+    Returns:
+      Error message supplied when the exception was created.
+    """
+
     return self._msg
 
 

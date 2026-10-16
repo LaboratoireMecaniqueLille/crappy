@@ -72,7 +72,10 @@ VideoExtensoConfig`.
         leave them unchanged.
 
         .. versionadded:: 2.1.0
-      failure_manager: FailureManager for reporting Exceptions.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
       white_spots: :obj:`True` for light spots on a dark background,
         :obj:`False` for dark spots on a light background.
       num_spots: Required number of spots from 1 to 4, or :obj:`None` to accept
@@ -90,7 +93,6 @@ VideoExtensoConfig`.
 
     .. versionchanged:: 1.5.10 renamed *ve* argument to *video_extenso*
     .. versionremoved:: 2.0.0 *video_extenso* argument
-
     """
 
     super().__init__(camera, log_queue, log_level, max_freq, transform,

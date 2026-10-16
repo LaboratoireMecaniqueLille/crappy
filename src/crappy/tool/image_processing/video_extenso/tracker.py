@@ -79,10 +79,14 @@ class Tracker(Process):
         the spot from the background. If not given (:obj:`None`), a new
         threshold is recalculated for each new subframe. Spots are less likely
         to be lost with an adaptive threshold, but it takes a bit more time.
-      failure_queue: Queue for reporting unexpected failures.
+      failure_queue: :obj:`~multiprocessing.Queue` for reporting failures to
+        the parent component.
+
+        .. versionadded:: 2.2.0
       block_name: Name of the parent Block.
-      raise_on_lost_spot: Whether to report a lost spot as a failure or to
-        silently ignore it.
+      raise_on_lost_spot: If :obj:`True`, report :exc:`LostSpotError` as a
+        failure and request stop. If :obj:`False`, return its reason to the
+        caller without reporting a failure.
       blur: If not :obj:`None`, the subframe is first blurred before trying to
         detect the spot. This argument gives the size of the kernel to use for
         blurring. Better results are obtained with blurring, but it takes a bit

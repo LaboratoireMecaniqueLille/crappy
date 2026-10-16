@@ -14,6 +14,8 @@ from ...._exceptions import ProcessExitError, ShutdownTimeoutError
 class ConfigurationLifecycle:
   """Owns GUI-independent resources and failures for a camera configuration
   session.
+
+  .. versionadded:: 2.2.0
   """
 
   def __init__(self,
@@ -33,7 +35,8 @@ class ConfigurationLifecycle:
         window.
       queues: Queues communicating with the histogram process and that need to
         be closed when exiting the configuration window.
-      manager: Configuration's manager, received from the owner of this class.
+      manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
       failure_queue: Dedicated Queue for histogram failures.
     """
 
@@ -56,13 +59,22 @@ class ConfigurationLifecycle:
 
   @property
   def closed(self) -> bool:
-    """Whether resource cleanup has already begun."""
+    """Whether cleanup of the configuration window has begun.
+
+    Returns:
+      :obj:`True` after cleanup has been requested.
+    """
 
     return self._closed
 
   @property
   def failed(self) -> bool:
-    """Whether the GUI Thread should close after a worker failure."""
+    """Whether a failure requires the configuration window to close.
+
+    Returns:
+      :obj:`True` if a failure was reported or the histogram exited
+      unexpectedly.
+    """
 
     return bool(self.manager.snapshot() or self._unexpected_exit is not None)
 

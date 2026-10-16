@@ -71,8 +71,8 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
                failure_manager: FailureManager,
-               *_,
-               **__) -> None:
+               *_: Any,
+               **__: Any) -> None:
     """Initializes the shared models without starting acquisition.
 
     Args:
@@ -87,7 +87,12 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
-      failure_manager: FailureManager for reporting Exceptions.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
+      *_: Additional positional arguments, unused by this base window.
+      **__: Additional keyword arguments, unused by this base window.
     """
 
     # Logging must be available during GUI and local settings initialization

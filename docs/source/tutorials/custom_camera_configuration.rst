@@ -12,7 +12,7 @@ or PyQt6 window.
 Prerequisites
 -------------
 
-- Use Crappy 2.1.0 or later.
+- Use Crappy 2.2.0 or later.
 - Complete :doc:`image_pipeline` and be comfortable creating a Python subclass.
 - Install PyQt6, Pillow, and Matplotlib with the interpreter running the
   example:
@@ -133,6 +133,12 @@ call ``self.title('Laboratory Camera setup')`` after the parent's
 ``_set_layout()``. Use the corresponding backend subclass for other widget or
 input-binding changes. If overriding ``__init__()``, forward its arguments to
 ``super().__init__()`` and create widgets only after that call returns.
+
+The constructor now requires a
+:class:`~crappy._failure.FailureManager` immediately after ``transform``.
+Forward the supplied ``failure_manager`` to the parent, the owning Block
+provides it. Let callback exceptions raise normally so Crappy can report them
+and close the window.
 
 Extend a specialized selection
 ------------------------------

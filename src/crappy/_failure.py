@@ -23,32 +23,32 @@ from ._exceptions import (FailureTransportError, RemoteFailureMetadata,
 
 @dataclass(frozen=True, slots=True)
 class ExceptionNode:
-  """Stores one Exception's details so they can be sent to another Process.
+  """Describes one exception in a :class:`FailureReport`.
 
-  Other Exceptions are referenced by their index in FailureReport.nodes.
+  Args:
+    module: Module defining the original exception class.
+    type_name: Name of the original class, including enclosing class names.
+    message: Original exception's message.
+    mro: Full names of the original class and its base classes.
+    notes: Additional messages attached to the exception.
+    formatted_stack: Original call stack as readable text.
+    children: Positions of this group's members in the report's ``nodes``.
+      Empty for an individual exception.
+    group_message: Group's message, or :obj:`None` for an individual exception.
+    cause: Position of the exception given with ``raise ... from ...``,
+      or :obj:`None` if absent.
+    context: Position of the exception being handled when this one occurred,
+      or :obj:`None` if absent.
+    suppress_context: If :obj:`True`, hide the context when displaying the
+      traceback. An explicit cause is still displayed.
+    original_bytes: Saved exception data for restoring its original type,
+      or :obj:`None` if unavailable.
+    serialization_error: Reason the original exception could not be saved,
+      or :obj:`None` if it was saved.
+    system_exit_code: Original :exc:`SystemExit` code when it is an integer,
+      string, boolean or :obj:`None`. Other values are not retained here.
 
-  Attributes:
-    module: Module where the original Exception class is defined.
-    type_name: Class name, including any enclosing function or class names.
-    message: Text returned by str() on the original Exception.
-    mro: Full names of the original class and its base classes, in
-      Python's lookup order.
-    notes: Messages added with Exception.add_note().
-    formatted_stack: Stack frames for this Exception, as formatted text.
-    children: Indexes of a group's direct members, in their original order.
-      Empty for an Exception that is not a group.
-    group_message: Message used to create the group. None for a non-group
-      Exception.
-    cause: Index of the Exception set with raise ... from ..., if any.
-    context: Index of the Exception being handled when this one was raised,
-      if any.
-    suppress_context: Whether to hide context when displaying the traceback.
-      An explicit cause is still displayed.
-    original_bytes: Original leaf or custom group prototype saved with pickle,
-      if available.
-    serialization_error: Explanation of why pickling failed, if it failed.
-    system_exit_code: Original SystemExit.code when it is an integer, string,
-      boolean or None. Other values are not stored here.
+  .. versionadded:: 2.2.0
   """
 
   module: str
@@ -109,21 +109,23 @@ class ExceptionNode:
 
 @dataclass(frozen=True, slots=True)
 class FailureReport:
-  """Stores details of an Exception or ExceptionGroup and where it happened.
+  """Describes a failure and where it happened.
 
-  Attributes:
-    failure_id: UUID written as 32 lowercase hexadecimal characters.
-      Kept unchanged when the report is forwarded.
+  Args:
+    failure_id: Unique identifier written as 32 lowercase hexadecimal
+      characters, kept when the report is forwarded.
     block_name: Name of the Block or component that owns the failure.
-    owner_path: Name showing which Block or worker failed.
-    process_name: Name of the Process where the failure happened.
-    pid: ID of the Process where the failure happened.
-    phase: Lifecycle phase where the failure happened, such as prepare,
-      main or finish.
-    formatted_traceback: Full traceback text, including group members,
-      exception chains and notes.
-    nodes: Non-empty diagnostic graph used for transfer between Processes.
-      The first node describes the top-level Exception.
+    owner_path: Name identifying the Block and any nested worker.
+    process_name: Name of the process where the failure happened.
+    pid: ID of the process where the failure happened.
+    phase: Stage where the failure happened, such as ``prepare``, ``main``
+      or ``finish``.
+    formatted_traceback: Complete traceback text, including grouped exceptions,
+      causes and notes.
+    nodes: Non-empty tuple of :class:`ExceptionNode` objects describing the
+      exceptions. The first describes the top-level exception or group.
+
+  .. versionadded:: 2.2.0
   """
 
   failure_id: str
@@ -158,7 +160,11 @@ class FailureReport:
           raise ValueError("node reference is outside the report")
 
   def __str__(self) -> str:
-    """Returns the source details followed by the full traceback."""
+    """Returns the failure's location and complete traceback.
+
+    Returns:
+      Readable failure description.
+    """
 
     return (f"Failure {self.failure_id}: Block {self.block_name}, "
             f"owner {self.owner_path}, process {self.process_name} "
@@ -166,13 +172,10 @@ class FailureReport:
             f"{self.formatted_traceback}")
 
   def to_wire(self) -> dict[str, Any]:
-    """Returns a report containing only built-in values.
-
-    Original Exceptions are already serialized in the nodes. This conversion
-    does not run their pickle hooks again.
+    """Returns the report as a dictionary suitable for sending.
 
     Returns:
-      Dictionary suitable for transfer between Processes.
+      Dictionary containing the report's details.
     """
 
     wire = {item.name: getattr(self, item.name) for item in fields(self)}
@@ -187,16 +190,16 @@ class FailureReport:
 
   @classmethod
   def from_wire(cls, wire: dict[str, Any]) -> FailureReport:
-    """Validates and restores a report without reconstructing Exceptions.
+    """Restores a report from its dictionary representation.
 
     Args:
-      wire: Built-in dictionary returned by to_wire().
+      wire: Dictionary returned by :meth:`to_wire`.
 
     Returns:
-      Report retaining the original failure ID, source and diagnostic graph.
+      :class:`FailureReport` with the original identifier and failure details.
 
     Raises:
-      FailureTransportError: The fields or wire format are invalid.
+      ~crappy._exceptions.FailureTransportError: The report's data is invalid.
     """
 
     try:
@@ -233,11 +236,11 @@ class FailureReport:
 
 
 class _CollectionState(local):
-  """Stores a separate collection stack for each thread.
+  """Keeps each thread's active failure collections.
 
   Attributes:
-    stack: Active collect() contexts, from outermost to innermost.
-      Each entry holds its label, its failures and its already-seen Exceptions.
+    stack: Collections currently active in this thread, from outermost
+      to innermost.
   """
 
   stack: list[tuple[str, list[BaseException], dict[int, BaseException]]]
@@ -249,28 +252,35 @@ class _CollectionState(local):
 
 
 class FailureManager:
-  """Catches, stores, logs and groups failures for one Process.
+  """Records failures, reports them, and raises them together.
 
-  capture_exception() records and logs a new failure right away. collect()
-  raises the failures from its own context when it exits. Use step() for each
-  operation that must run even if an earlier one fails. raise_if_failed()
-  raises all the failures kept by the manager.
+  Use :meth:`capture_exception` to report a failure immediately. For cleanup,
+  use :meth:`collect` with a :meth:`step` around each operation that should
+  be attempted even if another fails. Use :meth:`raise_if_failed` to raise all
+  recorded failures.
+
+  Attributes:
+    block_name: Name of the Block or component whose failures are recorded.
+    owner_path: Name identifying the Block and any nested worker.
+    process_name: Name of the process using this manager.
+    pid: ID of the process using this manager.
+    phase: Current stage, used for new reports unless another is specified.
+
+  .. versionadded:: 2.2.0
   """
 
   def __init__(self,
                block_name: str,
                phase: str,
                owner_path: str | None = None) -> None:
-    """Creates an empty manager for the current Process.
-
-    The Process name and PID are read from the current Process.
+    """Creates a manager for the current process.
 
     Args:
-      block_name: Name of the Block or component that owns the failures.
-      phase: Default phase for new reports, such as prepare, main or finish.
-        Can be updated as execution moves to another phase.
-      owner_path: Name showing which Block or worker is being managed. Uses
-        block_name when None.
+      block_name: Name of the Block or component whose failures are recorded.
+      phase: Initial stage for new reports, such as ``prepare``, ``main``
+        or ``finish``. Update ``phase`` as execution progresses.
+      owner_path: Name identifying the Block and any nested worker.
+        :obj:`None` uses ``block_name``.
     """
 
     if owner_path is None:
@@ -296,25 +306,26 @@ class FailureManager:
     self._broken_queues: set[queues.Queue] = set()
 
   def set_queue(self, queue: queues.Queue | None) -> None:
-    """Registers a Queue in which to send reports when an Exception is
-    registered.
+    """Chooses where to send new and forwarded failure reports.
 
     Args:
-      queue: Dedicated Queue received from the immediate owning process.
-        Set to None when reporting has finished, before closing the Queue.
+      queue: :class:`~multiprocessing.Queue` supplied by the parent component.
+        :obj:`None` keeps reports locally without sending them.
     """
 
     with self._lock:
       self._queue = queue
 
   def receive(self, incoming: Iterable[queues.Queue]) -> bool:
-    """Receives and forwards one available report from each child Queue.
+    """Receives one available failure report from each child queue.
 
     Args:
-      incoming: Queues owned by this process, one per child.
+      incoming: :class:`Queues <multiprocessing.Queue>` carrying reports from
+        child processes.
 
     Returns:
-      True if any record was received, including a malformed record.
+      :obj:`True` if data was received, including invalid data.
+      :obj:`False` if none was available.
     """
 
     # Receive the pending reports from children's queues
@@ -361,16 +372,23 @@ class FailureManager:
   def collect(self,
               label: str,
               raise_on_exit: bool = True) -> Iterator[None]:
-    """Collects Exceptions, optionally raising them when the context exits.
+    """Collects failures while a group of operations is attempted.
 
-    Use one step() per operation that must be tried independently. An unhandled
-    Exception outside step() skips the rest of the context's body. Each
-    collection has its own list. All failures also stay in the manager.
+    Put each independent operation inside :meth:`step` so later operations
+    are still attempted if an earlier one fails. An exception outside a step
+    skips the rest of the collection's body.
 
     Args:
-      label: Collection name added to Exception notes and the group's message.
-      raise_on_exit: Raise this collection's failures as a group on exit.
-        Defaults to True. False retains and reports failures without raising.
+      label: Description added to the collected failures.
+      raise_on_exit: If :obj:`True`, raise this collection's failures together
+        when leaving the context. If :obj:`False`, report and retain them
+        without raising here.
+
+    Returns:
+      Context manager to use in a ``with`` statement.
+
+    Raises:
+      BaseExceptionGroup: This collection's failures, if raising is enabled.
     """
 
     if not isinstance(label, str) or not label:
@@ -403,16 +421,23 @@ class FailureManager:
            label: str,
            completion: tuple[type[BaseException], ...] = tuple()
            ) -> Iterator[None]:
-    """Catches failures from one operation and allows the next step to run.
+    """Reports a failed operation and lets the next cleanup step run.
 
-    New failures are stored and logged immediately. Must be used inside
-    collect().
+    Use inside :meth:`collect`. New failures are recorded and logged
+    immediately.
 
     Args:
-      label: Operation name added to Exception notes.
-      completion: Expected completion signals for this operation, empty by
-        default. Matching group members are removed without losing other
-        failures. A completion request is logged at WARNING.
+      label: Description of the operation, added to exception notes.
+      completion: Exception classes that mean this operation finished normally.
+        Matching exceptions produce a warning rather than a failure. Other
+        exceptions in the same group are still reported. The default empty
+        tuple treats no exceptions as normal completion.
+
+    Returns:
+      Context manager to use in a ``with`` statement.
+
+    Raises:
+      RuntimeError: The step is not inside :meth:`collect`.
     """
 
     if not self._collections.stack:
@@ -441,18 +466,19 @@ class FailureManager:
   def capture_exception(self,
                         error: BaseException,
                         phase: str | None = None) -> FailureReport | None:
-    """Stores, logs and sends a new failure, then returns its report.
+    """Records and reports a new failure immediately.
 
-    Already reported Exceptions and StopRequested Exceptions are ignored.
-    If serialization, logging or sending fails, the original failure
-    stays stored alongside that independent error.
+    Previously reported exceptions and :exc:`~crappy._exceptions.StopRequested`
+    are ignored. If reporting fails, the original failure and the reporting
+    error are both retained.
 
     Args:
-      error: Exception or ExceptionGroup to record.
-      phase: Phase for this report. Uses the manager's current phase when None.
+      error: Exception or :exc:`BaseExceptionGroup` to report.
+      phase: Stage for this report. :obj:`None` uses the manager's current
+        stage.
 
     Returns:
-      New FailureReport, or None if no new failure remains.
+      New :class:`FailureReport`, or :obj:`None` if there is no new failure.
     """
 
     # Generate a failure report for the captured Exception
@@ -490,23 +516,23 @@ class FailureManager:
     return report
 
   def forward(self, report: FailureReport) -> None:
-    """Stores and forwards a received report without reconstructing it.
-
-    Does not log again.
+    """Records a received report and sends it on without logging it again.
 
     Args:
-      report: Existing report, with its original ID and source details.
+      report: :class:`FailureReport` received from a child component.
+        Receiving the same report again does not create another failure.
     """
 
     if self._store_report(report, None):
       self._send(report)
 
   def snapshot(self) -> tuple[tuple[FailureReport, BaseException | None], ...]:
-    """Returns stored reports and their Exceptions in recording order.
+    """Returns the recorded reports and their exceptions.
 
     Returns:
-      Tuple of (report, exception) pairs. An Exception is None until it has
-      been attached to its report. The Exceptions themselves are not copied.
+      Tuple of ``(report, exception)`` pairs in recording order. Each report is
+      a :class:`FailureReport`. A received report's exception may be
+      :obj:`None` until :meth:`raise_if_failed` restores it.
     """
 
     with self._lock:
@@ -515,18 +541,19 @@ class FailureManager:
   def raise_if_failed(self,
                       message: str,
                       group_by_source: bool = False) -> None:
-    """Raises all stored failures together, without logging them again.
+    """Raises all recorded failures together without logging them again.
 
-    Does nothing when no failures are stored.
+    Returns normally if no failures have been recorded.
 
     Args:
-      message: Message used for the final ExceptionGroup or BaseExceptionGroup.
-      group_by_source: Group Exceptions by their source Block and phase,
-        preserving their observed order. False raises a flat group.
+      message: Description used for the resulting exception group.
+      group_by_source: If :obj:`True`, arrange failures under their Block
+        and stage. If :obj:`False`, place each reported failure directly in
+        the resulting group. Existing nested groups are preserved.
 
     Raises:
-      FailureTransportError: A received graph has invalid group containment.
-      BaseExceptionGroup: The stored failures, including any interruptions.
+      ~crappy._exceptions.FailureTransportError: A received report is invalid.
+      BaseExceptionGroup: Recorded failures, including interruptions.
     """
 
     failures = self.snapshot()
@@ -568,13 +595,11 @@ class FailureManager:
       raise group from None
 
   def record_context_exception(self, error: BaseException, step: str) -> None:
-    """Stores and logs an Exception caught inside collect().
-
-    Logging failures are also kept in the current collection.
+    """Reports a caught exception as part of the current collection.
 
     Args:
-      error: Exception or ExceptionGroup caught by the operation.
-      step: Operation name added to Exception notes.
+      error: Exception or :exc:`BaseExceptionGroup` caught by the operation.
+      step: Description of the operation, added to exception notes.
     """
 
     # Add the caught Exception to the local stack if relevant
@@ -590,13 +615,16 @@ class FailureManager:
 
   @staticmethod
   def iter_exception_members(error: BaseException) -> Iterator[BaseException]:
-    """Yields an Exception and its group members, visiting each object once.
+    """Yields an exception and the members of any groups it contains.
 
-    Visits the parent before its children, in group order.
-    Does not visit causes or contexts.
+    Each exception is yielded once, with a group before its members.
+    Causes and contexts are not included.
 
     Args:
-      error: Exception or ExceptionGroup to visit.
+      error: Exception or :exc:`BaseExceptionGroup` to examine.
+
+    Yields:
+      Individual exceptions and exception groups.
     """
 
     if not isinstance(error, BaseException):
@@ -662,18 +690,21 @@ class FailureManager:
                                serialize: bool = True
                                ) -> tuple[FailureReport | None,
                                           tuple[BaseException, ...]]:
-    """Creates and stores a report for new failures, without logging it.
+    """Creates and records a report for new failures without logging it.
 
-    Ignores StopRequested and Exceptions already registered by this manager.
+    Ignores :exc:`~crappy._exceptions.StopRequested` and exceptions already
+    reported by this manager.
 
     Args:
-      error: Exception or ExceptionGroup to record.
-      phase: Phase for this report. Uses the manager's current phase when None.
-      serialize: Convert the report to a shareable format.
+      error: Exception or :exc:`BaseExceptionGroup` to record.
+      phase: Stage for this report. :obj:`None` uses the manager's current
+        stage.
+      serialize: If :obj:`True`, save data for restoring original exception
+        types. If :obj:`False`, retain readable details only.
 
     Returns:
-      New report, or None if no new failure remains, and any interruptions
-      encountered during optional serialization.
+      New :class:`FailureReport`, or :obj:`None` if there is no new failure,
+      followed by a tuple of interruptions encountered while saving it.
     """
 
     # Only handle truly unexpected Exceptions
@@ -712,14 +743,16 @@ class FailureManager:
                         serialize: bool
                         ) -> tuple[tuple[ExceptionNode, ...],
                                    tuple[BaseException, ...]]:
-    """Snapshots an Exception graph before attempting optional pickling.
+    """Describes an exception, its group members and its causes.
 
     Args:
-      error: Exception or group to describe.
-      serialize: Whether to convert data to a shareable format.
+      error: Exception or :exc:`BaseExceptionGroup` to describe.
+      serialize: If :obj:`True`, also save data for restoring original
+        exception types. If :obj:`False`, retain readable details only.
 
     Returns:
-      Immutable diagnostic nodes and any interruption from serialization.
+      Tuple of :class:`ExceptionNode` objects and a tuple of any interruptions
+      encountered while saving the exceptions.
     """
 
     members: list[BaseException] = list()
@@ -818,19 +851,20 @@ class FailureManager:
   def _decode_exception(self,
                         report: FailureReport
                         ) -> tuple[BaseException, tuple[BaseException, ...]]:
-    """Decodes a serialized Exception report, restoring its original structure.
+    """Restores the exceptions described by a report.
 
-    Nodes whose reconstruction fails receive a fallback.
+    Uses a replacement exception when the original type cannot be restored.
 
     Args:
-      report: Received report containing a complete diagnostic graph.
+      report: :class:`FailureReport` received from another process.
 
     Returns:
-      Reconstructed root Exception or group, and any interruptions from
-      reconstruction.
+      Restored exception or group, and a tuple of interruptions encountered
+      while restoring it.
 
     Raises:
-      FailureTransportError: Group containment is cyclic or inconsistent.
+      ~crappy._exceptions.FailureTransportError: The report's groups are
+      invalid.
     """
 
     # Validate report structure before invoking any reconstruction code
@@ -959,18 +993,18 @@ class FailureManager:
   def _register_exception(self,
                           error: BaseException,
                           failure_id: str) -> BaseException | None:
-    """Registers new Exceptions so they are not reported again.
+    """Marks new exceptions as reported.
 
-    The check uses Exception objects, not their types or messages.
-    A lock prevents two threads from registering the same Exception twice.
+    Repeated reports are recognized by the exception object, not its message
+    or type.
 
     Args:
-      error: Exception or ExceptionGroup whose members should be checked.
-      failure_id: Report ID assigned to the newly registered Exceptions.
+      error: Exception or :exc:`BaseExceptionGroup` to check.
+      failure_id: Report identifier to associate with new exceptions.
 
     Returns:
-      Newly registered Exception or group, or None if no new individual
-      Exception remains.
+      New exceptions, preserving their group structure, or :obj:`None`
+      if all individual exceptions were already reported.
     """
 
     members = tuple(self.iter_exception_members(error))
@@ -1064,7 +1098,7 @@ class FailureManager:
     """Records an error when receiving reports from children FailureManagers.
 
     Args:
-      error: Send, receive, or wire-validation error.
+      error: Error encountered while sending, receiving or reading a report.
     """
 
     try:
@@ -1138,7 +1172,7 @@ class FailureManager:
       raise BaseExceptionGroup('Failure reporting failed', errors) from None
 
   def _send(self, report: FailureReport) -> None:
-    """Sends a failure report to the upstream FailureManager.
+    """Sends a failure report to the parent component.
 
     Args:
       report: Stored report with its original ID and source.
@@ -1315,10 +1349,13 @@ class FailureManager:
 
   @staticmethod
   def _safe_message(error: BaseException) -> str:
-    """Returns the Exception's message, or a short replacement if str() fails.
+    """Returns an exception's message even if it cannot be displayed normally.
 
     Args:
-      error: Exception whose message should be read.
+      error: Exception whose message is needed.
+
+    Returns:
+      Message text, or a short explanation if reading the message failed.
     """
 
     try:
@@ -1327,14 +1364,17 @@ class FailureManager:
       return f"<message unavailable: {type(formatting_error).__name__}>"
 
   def _format_exception(self, error: BaseException) -> str:
-    """Returns the traceback text as Python would display it in a terminal.
+    """Returns an exception's complete traceback as readable text.
 
-    Includes group members, exception chains and notes. Does not include local
-    variable values. If formatting fails, lists the Exception types and
-    messages instead.
+    Includes grouped exceptions, causes and notes, but no local variable
+    values.
 
     Args:
-      error: Exception or ExceptionGroup to format.
+      error: Exception or :exc:`BaseExceptionGroup` to describe.
+
+    Returns:
+      Complete traceback text, or the available failure details if the
+      traceback cannot be displayed.
     """
 
     # Use the convenience function of Python for building the Traceback

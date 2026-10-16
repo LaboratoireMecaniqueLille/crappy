@@ -13,6 +13,7 @@ import logging
 import logging.handlers
 from time import time, monotonic
 from weakref import WeakSet
+from types import TracebackType
 from typing import Any, Protocol, runtime_checkable
 from collections.abc import Sequence
 from collections import defaultdict
@@ -211,45 +212,41 @@ class Block(Process, ABC):
                 allow_root: bool = False,
                 log_level: int | None = logging.DEBUG,
                 no_raise: bool = False) -> None:
-    """Method for starting a script with Crappy.
+    """Runs the Blocks and waits until the test and cleanup finish.
 
-    It sets the synchronization objects for all the Blocks, renices the
-    corresponding :obj:`~multiprocessing.Process` and starts the Blocks.
-
-    The call to this method is blocking until Crappy finishes.
-
-    Note:
-      It is possible to have a finer grained control of the start of a Crappy
-      script with the methods
-      :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`,
-      :meth:`~crappy.blocks.meta_block.block.Block.renice_all` and
-      :meth:`~crappy.blocks.meta_block.block.Block.launch_all`.
+    Use :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`,
+    :meth:`~crappy.blocks.meta_block.block.Block.renice_all` and
+    :meth:`~crappy.blocks.meta_block.block.Block.launch_all`
+    separately when the script needs control between startup stages.
 
     Args:
-      allow_root: If set to :obj:`True`, tries to renice the Processes with
-        sudo privilege in Linux. It requires the Python script to be run
-        with sudo privilege, otherwise it has no effect.
+      allow_root: If :obj:`True`, allow priority adjustment with sudo on
+        Linux. The script must already have the required privileges.
 
         .. versionchanged:: 2.0.0 renamed from *high_prio* to *allow_root*
-      log_level: The maximum logging level that will be handled by Crappy. By
-        default, it is set to the lowest level (:obj:`~logging.DEBUG`) so that
-        all messages are handled. If set to a higher level, the levels
-        specified for each Block with the ``debug`` argument may be ignored. If
-        set to :obj:`None`, logging is totally disabled. Refer to the
-        documentation of the :mod:`logging` module for information on the
-        possible levels.
+      log_level: Minimum severity of Crappy log messages, such as
+        :obj:`logging.DEBUG` or :obj:`logging.WARNING`.
+        :obj:`None` disables Crappy logging, not failure collection.
 
         .. versionadded:: 2.0.0
-      no_raise: When set to :obj:`False`, the Exceptions encountered during
-        Crappy's execution, as well as the :exc:`KeyboardInterrupt`, will raise
-        an Exception right before Crappy returns. This is meant to prevent the
-        execution of code that would come after Crappy, in case Crappy does not
-        terminate as expected. This behavior can be disabled by setting this
-        argument to :obj:`True`.
+      no_raise: If :obj:`True`, suppress the final failure group only after
+        every participating Block has entered
+        :meth:`~crappy.blocks.meta_block.block.Block.main`. Failures in setup,
+        preparation or :meth:`~crappy.blocks.meta_block.block.Block.begin`
+        still raise. Once all Blocks have entered ``main()``, suppression
+        includes interruptions and cleanup failures, but reporting and cleanup
+        still take place. See :ref:`lifecycle-no-raise`.
 
         .. versionadded:: 2.0.0
+
+    Raises:
+      BaseExceptionGroup: Failures recorded during the run, unless
+        ``no_raise`` applies. Ordinary failures form an :exc:`ExceptionGroup`,
+        interruptions may require a :exc:`BaseExceptionGroup`.
 
     .. versionremoved:: 2.0.0 *t0*, *verbose*, *bg* arguments
+    .. versionchanged:: 2.2.0
+       Raises failures together after cleanup, including single failures.
     """
 
     # Make sure that the Exception Manager is running
@@ -265,35 +262,26 @@ class Block(Process, ABC):
 
   @classmethod
   def prepare_all(cls, log_level: int | None = logging.DEBUG) -> None:
-    """Creates the synchronization objects, shares them with the Blocks, and
-    starts the :obj:`~multiprocessing.Process` associated to the Blocks.
+    """Prepares all Blocks for a later call to
+    :meth:`~crappy.blocks.meta_block.block.Block.launch_all`.
 
-    Also initializes the :obj:`~logging.Logger` for the Crappy script. For
-    VisionBlocks, configuration requests are routed to their image sources
-    through one-way Pipes before the child Processes start.
-
-    Rejects missing Blocks recorded in the LinkGraph and retains the validated
-    participants until :meth:`~crappy.blocks.meta_block.block.Block.reset`.
-
-    Once started with this method, the Blocks will call their
-    :meth:`~crappy.blocks.meta_block.block.Block.prepare` method and then be
-    blocked by a :obj:`multiprocessing.Barrier`.
-
-    If an error is caught at a moment when the Blocks might already be running,
-    performs an extensive cleanup to ensure everything stops as expected.
+    Starts the Blocks and their
+    :meth:`~crappy.blocks.meta_block.block.Block.prepare` methods. They wait
+    for :meth:`~crappy.blocks.meta_block.block.Block.launch_all` before
+    beginning the test. If this call fails, Crappy cleans up the partially
+    prepared run before raising its failures.
 
     Args:
-      log_level: The maximum logging level that will be handled by Crappy. By
-        default, it is set to the lowest level (:obj:`~logging.DEBUG`) so that 
-        all messages are handled. If set to a higher level, the levels 
-        specified for each Block with the ``debug`` argument may be ignored. If 
-        set to :obj:`None`, logging is totally disabled. Refer to the 
-        documentation of the :mod:`logging` module for information on the 
-        possible levels.
+      log_level: Minimum severity of Crappy log messages.
+        :obj:`None` disables Crappy logging, not failure collection.
 
         .. versionadded:: 2.0.0
 
+    Raises:
+      BaseExceptionGroup: Failures encountered while preparing or cleaning up.
+
     .. versionremoved:: 2.0.0 *verbose* argument
+    .. versionchanged:: 2.2.0 raises recorded failures together after cleanup
     """
 
     # Make sure that the Exception Manager is running
@@ -308,20 +296,22 @@ class Block(Process, ABC):
 
   @classmethod
   def renice_all(cls, allow_root: bool) -> None:
-    """On Linux and macOS, renices the :obj:`~multiprocessing.Process`
-    associated with the Blocks.
+    """Adjusts Block process priorities on Linux and macOS.
 
-    On Windows, does nothing.
-
-    If an error is caught, performs an extensive cleanup to ensure everything
-    stops as expected.
+    Does nothing on Windows. A refused priority change produces a warning.
+    An exception while performing this operation stops and cleans up the run.
 
     Args:
-      allow_root: If set to :obj:`True`, tries to renice the Processes with
-        sudo privilege in Linux. It requires the Python script to be run with
-        sudo privilege, otherwise it has no effect.
+      allow_root: If :obj:`True`, allow priority adjustment with sudo on
+        Linux. The script must already have the required privileges.
 
         .. versionchanged:: 2.0.0 renamed from *high_prio* to *allow_root*
+
+    Raises:
+      BaseExceptionGroup: Failures encountered during this call or its cleanup.
+
+    .. versionchanged:: 2.2.0
+       Raises recorded failures together after cleanup.
     """
 
     # Make sure that the Exception Manager is running
@@ -336,26 +326,26 @@ class Block(Process, ABC):
 
   @classmethod
   def launch_all(cls, no_raise: bool = False) -> None:
-    """The final method being called by the main
-    :obj:`~multiprocessing.Process` running a script with Crappy.
+    """Starts prepared Blocks and waits until the test and cleanup finish.
 
-    It unlocks all the Blocks by releasing the synchronization
-    :obj:`~multiprocessing.Barrier`, sets the shared t0
-    :obj:`~multiprocessing.Value`, and then waits for all the Blocks to finish.
-
-    In case an exception is raised, sets the stop :obj:`~multiprocessing.Event`
-    for warning the Blocks, waits for the Blocks to finish, and if they don't,
-    terminates them.
+    Call after :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`. All
+    Blocks receive a common start time.
 
     Args:
-      no_raise: When set to :obj:`False`, the Exceptions encountered during
-        Crappy's execution, as well as the :exc:`KeyboardInterrupt`, will raise
-        an Exception right before Crappy returns. This is meant to prevent the
-        execution of code that would come after Crappy, in case Crappy does not
-        terminate as expected. This behavior can be disabled by setting this
-        argument to :obj:`True`.
+      no_raise: If :obj:`True`, suppress the final failure group only after
+        every participating Block has entered
+        :meth:`~crappy.blocks.meta_block.block.Block.main`. Failures in setup,
+        preparation or :meth:`~crappy.blocks.meta_block.block.Block.begin`
+        still raise. Reporting and cleanup always take place. See
+        :ref:`lifecycle-no-raise`.
+
+    Raises:
+      BaseExceptionGroup: Recorded failures, unless ``no_raise`` applies.
 
     .. versionremoved:: 2.0.0 *t0*, *verbose* and *bg* arguments
+    .. versionchanged:: 2.2.0
+       Raises failures together after cleanup. Suppression requires every
+       participating Block to have entered ``main()``.
     """
 
     # Make sure that the Exception Manager is running
@@ -507,7 +497,12 @@ class Block(Process, ABC):
 
   @classmethod
   def _ensure_failure_manager(cls) -> FailureManager:
-    """Ensures that one failure manager is running wherever needed."""
+    """Returns the failure manager for the current run.
+
+    Returns:
+      :class:`~crappy._failure.FailureManager` for failures from the main
+      process and its Blocks.
+    """
 
     if cls.run_failure_manager is None:
       cls.run_failure_manager = FailureManager('main', 'bootstrap')
@@ -1231,10 +1226,7 @@ class Block(Process, ABC):
 
   @classmethod
   def _failure_target(cls) -> None:
-    """Target for the Exception Thread.
-
-    Receives failure reports from Blocks and handles them.
-    """
+    """Receives Block failures and requests coordinated shutdown."""
 
     # Keep reference to the original objects in case reset() is called
     manager = cls.run_failure_manager
@@ -1455,10 +1447,10 @@ class Block(Process, ABC):
           queue.join_thread()
 
   def _record_callback_failure(self, error: BaseException) -> None:
-    """Reports a failure caught by a callback from an external library.
+    """Reports a callback failure and requests the test to stop.
 
     Args:
-      error: Original callback exception, including exception groups.
+      error: Exception or :exc:`BaseExceptionGroup` caught by the callback.
     """
 
     manager = self._failure_manager
@@ -1474,8 +1466,17 @@ class Block(Process, ABC):
             (self._start_event is None or not self._start_event.is_set())):
           self._ready_barrier.abort()
 
-  def _report_tk_callback_exception(self, _, error, traceback) -> None:
-    """Reports a failure caught by a callback from Tk."""
+  def _report_tk_callback_exception(self,
+                                    _: type[BaseException],
+                                    error: BaseException,
+                                    traceback: TracebackType | None) -> None:
+    """Reports a failed Tk callback and requests the test to stop.
+
+    Args:
+      _: Exception class supplied by Tk.
+      error: Exception raised by the callback.
+      traceback: Call stack supplied by Tk, or :obj:`None` if unavailable.
+    """
 
     self._record_callback_failure(error.with_traceback(traceback))
 
@@ -1558,15 +1559,20 @@ class Block(Process, ABC):
     ...
 
   def finish(self) -> None:
-    """This method should perform any action required for properly ending the
-    test.
+    """Closes the resources used by this Block when the test ends.
 
-    For example, it can close a file or disconnect from a network. It is also
-    fine for this method not to be overriden if no particular action needs to
-    be performed.
+    Override this method to close files, devices or connections. Allow for
+    :meth:`~crappy.blocks.meta_block.block.Block.prepare` having failed before
+    setup was complete. This method is normally called after an error too, but
+    cannot run if the process is forcibly stopped.
 
-    Note that this method will normally be called even in case an error occurs,
-    although that cannot be guaranteed.
+    For several independent cleanup operations, use
+    :meth:`~crappy._failure.FailureManager.collect` and
+    :meth:`~crappy._failure.FailureManager.step` on ``self._failure_manager``
+    so one failed close does not skip the others.
+
+    .. versionchanged:: 2.2.0
+       Cleanup failures are kept alongside failures from earlier stages.
     """
 
     ...
