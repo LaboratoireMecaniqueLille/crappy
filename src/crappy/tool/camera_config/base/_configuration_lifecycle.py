@@ -48,7 +48,6 @@ class ConfigurationLifecycle:
     self._failure_queue: Queue = failure_queue
     self._receiver: Thread | None = None
     self._receiver_stop: ThreadEvent = ThreadEvent()
-    self._histogram_identity: tuple[str, int | None]
     self._unexpected_exit: tuple[str, int | None, int] | None = None
     self._histogram_started: bool = False
     self._process_closed: bool = False
@@ -76,6 +75,13 @@ class ConfigurationLifecycle:
       unexpectedly.
     """
 
+    # Only check Process state from the main Thread
+    if (self._histogram_started and not self._closed and
+        self._unexpected_exit is None):
+      process = self._histogram_process
+      code = process.exitcode
+      if isinstance(code, int):
+        self._unexpected_exit = (process.name, process.pid, code)
     return bool(self.manager.snapshot() or self._unexpected_exit is not None)
 
   def mark_histogram_started(self) -> None:
@@ -84,22 +90,18 @@ class ConfigurationLifecycle:
 
     self._histogram_started = True
     # Create and start the Thread for receiving failures from the Worker
-    self._histogram_identity = (self._histogram_process.name,
-                                self._histogram_process.pid)
     self._receiver = Thread(target=self._receive_failures,
                             name='histogram.failure-reader',
                             daemon=True)
     self._receiver.start()
 
   def _receive_failures(self) -> None:
-    """Receives failure reports from the reporting Thread."""
+    """Receives histogram failures for the configuration window."""
 
     # Guard Exceptions with a FailureManager
     manager = self.manager
     queue = self._failure_queue
     stop = self._receiver_stop
-    process = self._histogram_process
-    identity = self._histogram_identity
 
     # Guard Exceptions with a FailureManager
     with manager.collect('Histogram reception', raise_on_exit=False):
@@ -107,16 +109,6 @@ class ConfigurationLifecycle:
         # Receive reports from the Worker
         while True:
           received = manager.receive((queue,))
-          if not self._closed and self._unexpected_exit is None:
-            # Check if the Worker stopped abruptly
-            try:
-              code = process.exitcode
-            except ValueError:
-              if self._closed:
-                continue
-              raise
-            if isinstance(code, int):
-              self._unexpected_exit = (*identity, code)
           # Only stop once there are no more reports to receive
           if stop.is_set() and not received:
             break

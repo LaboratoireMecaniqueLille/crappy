@@ -537,7 +537,8 @@ def _exercise_nested_context(method):
 
   from multiprocessing import set_start_method
   set_start_method(method)
-  for kind in ('histogram', 'legacy tracker', 'vision tracker'):
+  # Repeat the fast-exit case to expose races between status checks and cleanup.
+  for kind in ('histogram',) * 5 + ('legacy tracker', 'vision tracker'):
     if kind == 'histogram':
       source = HistogramCamera()
     elif kind == 'legacy tracker':

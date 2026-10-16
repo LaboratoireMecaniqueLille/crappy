@@ -8,7 +8,8 @@ from importlib import import_module
 from multiprocessing import Event
 from types import SimpleNamespace
 from queue import Empty
-from unittest.mock import Mock, patch
+from threading import Event as ThreadEvent, current_thread
+from unittest.mock import Mock, PropertyMock, patch
 
 from crappy.tool.camera_config.base._configuration_lifecycle import (
   ConfigurationLifecycle)
@@ -156,6 +157,77 @@ class TestConfigurationLifecycle(unittest.TestCase):
     self.assertEqual(process.close_calls, 1)
     for queue in queues:
       self.assertEqual((queue.cancel_calls, queue.close_calls), (1, 1))
+
+  def test_only_owner_reads_histogram_process_status(self) -> None:
+    """Report reception cannot race with joining or closing the Process."""
+
+    process = Mock()
+    process.name = 'histogram'
+    process.pid = 123
+    process.is_alive.return_value = False
+    lifecycle, _, _, _ = self.make_lifecycle(process)
+    readers = []
+    polled_twice = ThreadEvent()
+    polls = 0
+
+    def receive(_: tuple[_Queue, ...]) -> bool:
+      nonlocal polls
+      polls += 1
+      if polls >= 2:
+        polled_twice.set()
+      return False
+
+    def exitcode() -> None:
+      readers.append(current_thread())
+      return None
+
+    with (patch.object(lifecycle.manager, 'receive', side_effect=receive),
+          patch.object(type(process), 'exitcode', new_callable=PropertyMock,
+                       create=True, side_effect=exitcode)):
+      lifecycle.mark_histogram_started()
+      try:
+        self.assertTrue(polled_twice.wait(2.0))
+        self.assertFalse(lifecycle.failed)
+        lifecycle.close_resources()
+      finally:
+        lifecycle._receiver_stop.set()
+        if lifecycle._receiver is not None:
+          lifecycle._receiver.join(2.0)
+
+    self.assertTrue(readers)
+    self.assertTrue(all(reader is current_thread() for reader in readers))
+    self.assertEqual(lifecycle.manager.snapshot(), ())
+
+  def test_histogram_exit_is_observed_by_owner(self) -> None:
+    """The window still notices an unexplained exit, including exit zero."""
+
+    for code in (0, 13):
+      with self.subTest(exitcode=code):
+        process = _Process()
+        lifecycle, _, _, _ = self.make_lifecycle(process)
+        lifecycle._histogram_started = True
+        process.exitcode = code
+        self.assertTrue(lifecycle.failed)
+        with self.assertRaises(ExceptionGroup) as caught:
+          lifecycle.close_resources()
+        self.assertEqual(exception_leaves(caught.exception)[0].exitcode, code)
+
+  def test_closed_configuration_does_not_poll_process(self) -> None:
+    """Repeated cleanup and state checks never touch a closed Process."""
+
+    process = Mock()
+    process.is_alive.return_value = False
+    process.name = 'histogram'
+    process.pid = 123
+    lifecycle, _, _, _ = self.make_lifecycle(process)
+    lifecycle._histogram_started = True
+    with patch.object(type(process), 'exitcode', new_callable=PropertyMock,
+                      create=True, return_value=0) as status:
+      lifecycle.close_resources()
+      status.side_effect = ValueError('process object is closed')
+      self.assertFalse(lifecycle.failed)
+      lifecycle.close_resources()
+    self.assertEqual(lifecycle.manager.snapshot(), ())
 
   def test_hung_process_is_terminated_then_killed(self) -> None:
     """A process that ignores graceful shutdown reaches the kill stage."""
