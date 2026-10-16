@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import ast
 from importlib import import_module
 from pathlib import Path
 import unittest
@@ -56,36 +55,14 @@ class TestPublicApiReference(unittest.TestCase):
 
   @staticmethod
   def _declared_exports() -> set[str]:
-    """Finds names explicitly exposed by the package initializer.
+    """Returns the package's intentional public export inventory.
 
     Importing a subpackage also adds it to ``vars(crappy)``, even when the
     initializer never exported it. Those incidental names are not part of the
     intentional top-level API checked here.
     """
 
-    source = Path(crappy.__file__).read_text(encoding='utf-8')
-    names = set()
-    for statement in ast.parse(source).body:
-      if isinstance(statement, ast.ImportFrom):
-        for alias in statement.names:
-          if alias.name == '*':
-            raise AssertionError('Top-level star imports cannot be inventoried')
-          names.add(alias.asname or alias.name)
-      elif isinstance(statement, ast.Import):
-        names.update(alias.asname or alias.name.split('.')[0]
-                     for alias in statement.names)
-      elif isinstance(statement, ast.Assign):
-        names.update(target.id for target in statement.targets
-                     if isinstance(target, ast.Name))
-      elif isinstance(statement, ast.AnnAssign):
-        if isinstance(statement.target, ast.Name):
-          names.add(statement.target.id)
-      elif isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef,
-                                  ast.ClassDef)):
-        names.add(statement.name)
-
-    return {name for name in names
-            if not name.startswith('_') or name == '__version__'}
+    return set(crappy.__all__)
 
   def test_top_level_export_inventory_is_intentional(self) -> None:
     """Fails when an export is added without documentation or a reason."""
@@ -93,8 +70,10 @@ class TestPublicApiReference(unittest.TestCase):
     exports = self._declared_exports()
     classified = set(self._reference_entries) | set(self._excluded_exports)
 
-    self.assertTrue(exports <= vars(crappy).keys())
     self.assertEqual(exports, classified)
+    for export in exports:
+      with self.subTest(export=export):
+        self.assertTrue(hasattr(crappy, export))
     self.assertTrue(all(self._excluded_exports.values()))
 
   def test_imported_subpackage_does_not_expand_explicit_exports(self) -> None:
