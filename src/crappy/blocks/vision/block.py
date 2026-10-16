@@ -15,7 +15,6 @@ from uuid import uuid4
 from math import prod, isfinite
 from time import monotonic
 
-from ..._failure import FailureManager
 from ..meta_block import Block
 from ...links import ImageLink
 from ..._exceptions import LinkDataError, StopRequested
@@ -338,23 +337,16 @@ class VisionBlock(Block, ABC):
 
     self._last_fps_img = monotonic()
 
-  def finish(self, manager: FailureManager | None = None) -> None:
+  def finish(self) -> None:
     """Releases shared-memory resources owned or attached by this Block.
 
     Incoming shared-memory handles are closed without unlinking their
     source-owned segments. The output segment, when present, is both closed and
     unlinked by its owning Block. Unused configuration Pipe endpoints are also
     closed. Failures are reported only after every cleanup has been attempted.
-
-    Args:
-      manager: Manager used for reporting caught Exceptions.
     """
 
-    # Make sure a FailureManager is available and has a logger
-    manager = (manager or self._failure_manager or
-               FailureManager(self.name, 'finish'))
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('VisionBlock cleanup'):
@@ -386,9 +378,8 @@ class VisionBlock(Block, ABC):
             try:
               data.img_buffer.unlink()
             except FileNotFoundError:
-              data.buffer_unlinked = True
-            else:
-              data.buffer_unlinked = True
+              pass
+            data.buffer_unlinked = True
         # Case when closing succeeded
         if data.buffer_closed and data.buffer_unlinked:
           data.img_buffer = None
@@ -661,7 +652,6 @@ class VisionBlock(Block, ABC):
     """Checks the existing lifecycle flags without holding an image lock."""
 
     return ((self._stop_event is not None and self._stop_event.is_set()) or
-            (self._raise_event is not None and self._raise_event.is_set()) or
             (self._ready_barrier is not None and self._ready_barrier.broken))
 
   def request_config(self, source: str) -> ConfigRequest | None:
@@ -726,10 +716,7 @@ class VisionBlock(Block, ABC):
         cannot be closed.
     """
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'prepare')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('Vision configuration response'):
@@ -796,10 +783,7 @@ class VisionBlock(Block, ABC):
       raise ValueError("The stop Event should be initialized at this point")
 
     configs: dict[str, tuple[Any, ...] | None] = dict()
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'prepare')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # For each request, wait for the configuration information to arrive
     for request in self._config_requests_out:

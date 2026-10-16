@@ -3,7 +3,6 @@
 from collections.abc import Mapping, Sequence
 import logging
 
-from ..._failure import FailureManager
 from .block import VisionBlock, ConfigRequest
 from ...tool.image_processing import VideoExtensoTool, LostSpotError
 from ...tool.camera_config.config_tools import SpotsBoxes
@@ -248,6 +247,7 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
                          "not")
 
     self.log(logging.INFO, "Instantiating the VideoExtenso tool")
+    assert self._stop_event is not None
     self._ve = VideoExtensoTool(spots=self._spots,
                                 thresh=self._thresh,
                                 log_level=self._log_level,
@@ -326,7 +326,7 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
 
     # In case the spots were just lost
     except LostSpotError as error:
-      manager = self._failure_manager or FailureManager(self.name, 'main')
+      manager = self._failure_manager
       with manager.collect('Lost spot shutdown'):
         if self._raise_on_lost_spot:
           manager.record_context_exception(error, 'lost spot')
@@ -347,13 +347,10 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
     if self.display_freq:
       self._print_freq(img_handled=True)
 
-  def finish(self, _: FailureManager | None = None) -> None:
+  def finish(self) -> None:
     """Stops the spot trackers and releases inherited image resources."""
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('VideoExtenso cleanup'):
@@ -365,7 +362,7 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
           self._ve = None
 
       with manager.step('release shared image buffers'):
-        super().finish(manager=manager)
+        super().finish()
 
   def request_config(self, source: str) -> ConfigRequest:
     """Builds the VideoExtenso configuration request for an image source.

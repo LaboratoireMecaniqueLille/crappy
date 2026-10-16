@@ -12,7 +12,6 @@ from socket import timeout, gaierror
 from itertools import chain
 import logging
 
-from .._failure import FailureManager
 from .._exceptions import ProcessExitError, StopRequested, ShutdownTimeoutError
 from .meta_block import Block
 from .._global import OptionalModule
@@ -416,10 +415,7 @@ class ClientServer(Block):
     Cleanup also works after partial preparation.
     """
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('ClientServer cleanup'):
@@ -503,12 +499,7 @@ class ClientServer(Block):
   def _output_reader(self) -> None:
     """Reads the output strings from Mosquitto's subprocess."""
 
-    # Make sure the FailureManager and the logger are configured
-    if self._failure_manager is None:
-      self._failure_manager = FailureManager(self.name, 'monitoring')
     manager = self._failure_manager
-    if self._logger is not None:
-      manager._logger = self._logger
     process = self._proc
     stop = self._stop_event
 

@@ -8,7 +8,6 @@ from numbers import Real
 from math import isfinite
 import logging
 
-from .._failure import FailureManager
 from .meta_block import Block
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
@@ -397,10 +396,7 @@ class Machine(Block):
     constructed Actuator, including one whose open failed.
     """
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('Machine cleanup'):

@@ -5,7 +5,6 @@ import logging.handlers
 from time import sleep
 
 from .camera_process import CameraProcess
-from ..._failure import FailureManager
 from ...tool.image_processing import VideoExtensoTool, LostSpotError
 from ...tool.camera_config import SpotsBoxes
 
@@ -135,6 +134,7 @@ class VideoExtensoProcess(CameraProcess):
                          "not")
 
     self.log(logging.INFO, "Instantiating the VideoExtenso tool")
+    assert self._stop_event is not None
     self._ve = VideoExtensoTool(spots=self._spots,
                                 thresh=self._thresh,
                                 log_level=self._log_level,
@@ -190,7 +190,7 @@ class VideoExtensoProcess(CameraProcess):
 
       # In case the spots were just lost
       except LostSpotError as error:
-        manager = self._failure_manager or FailureManager(self.name, 'main')
+        manager = self._failure_manager
         with manager.collect('Lost spot shutdown'):
           if self._raise_on_lost_spot:
             manager.record_context_exception(error, 'lost spot')

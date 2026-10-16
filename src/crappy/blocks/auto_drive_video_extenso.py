@@ -6,7 +6,6 @@ from numbers import Real
 from math import isfinite
 import logging
 
-from .._failure import FailureManager
 from .meta_block import Block
 from ..actuator import actuator_dict, Actuator, moved_to_collection
 from .._collection import (CollectionEntry, collection_registry,
@@ -236,10 +235,7 @@ class AutoDriveVideoExtenso(Block):
       return
 
     name = type(self._device).__name__
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('AutoDriveVideoExtenso cleanup'):

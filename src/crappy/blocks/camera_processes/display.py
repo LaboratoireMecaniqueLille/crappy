@@ -8,7 +8,6 @@ from time import sleep, monotonic
 import logging
 import logging.handlers
 
-from ..._failure import FailureManager
 from ..._exceptions import OptionalDependencyError, StopRequested
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
@@ -200,10 +199,7 @@ class Displayer(CameraProcess):
     """Closes the Displayer window and stops the :obj:`~threading.Thread`
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay`"""
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('Displayer cleanup'):
@@ -246,10 +242,7 @@ class Displayer(CameraProcess):
     Overlays.
     """
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'monitoring')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Keep reference to the original objects in case reset() is called
     connection = self._to_draw_conn

@@ -8,7 +8,6 @@ from math import ceil, log2
 from itertools import chain
 from collections.abc import Sequence
 
-from ..._failure import FailureManager
 from ..._exceptions import OptionalDependencyError
 from .block import VisionBlock
 from ..._global import OptionalModule
@@ -280,19 +279,16 @@ class ImageDisplayer(VisionBlock):
     if self.display_freq:
       self._print_freq(img_handled=True)
 
-  def finish(self, _: FailureManager | None = None) -> None:
+  def finish(self) -> None:
     """Closes the display window and releases the input image buffer."""
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('ImageDisplayer cleanup'):
       # Release the parent resources first
       with manager.step('release shared image buffers'):
-        super().finish(manager=manager)
+        super().finish()
 
       if self._window_opened:
         with manager.step('cleanup diagnostic'):

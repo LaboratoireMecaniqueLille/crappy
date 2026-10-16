@@ -6,7 +6,6 @@ import logging
 from numbers import Real
 from math import isfinite
 
-from .._failure import FailureManager
 from .meta_block import Block
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
@@ -438,10 +437,7 @@ class IOBlock(Block):
       return
 
     name = type(self._device).__name__
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect(f'{name} IOBlock cleanup'):

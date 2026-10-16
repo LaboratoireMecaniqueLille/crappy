@@ -10,7 +10,6 @@ import numbers
 import os
 from warnings import warn
 
-from .._failure import FailureManager
 from .meta_block import Block
 from .._global import OptionalModule
 
@@ -256,10 +255,7 @@ class Dashboard(Block):
     .. versionadded:: 1.5.7
     """
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('Dashboard cleanup'):
@@ -272,10 +268,8 @@ class Dashboard(Block):
           try:
             self._dashboard.destroy()
           except tk.TclError:
-            # Tk may already have destroyed the window
-            self._dashboard = None
-          else:
-            self._dashboard = None
+            pass
+          self._dashboard = None
 
       # Close the Qt window
       if self._qt_window is not None:
@@ -306,7 +300,7 @@ class Dashboard(Block):
     The two columns, font, and spacing match the Tkinter layout.
     """
 
-    self._qt_app = self._get_application(self._failure_manager)
+    self._qt_app = self._get_application()
     self._qt_window = QtWidgets.QWidget()
     assert self._qt_window is not None
     self._qt_window.setWindowTitle('Dashboard')
@@ -339,9 +333,7 @@ class Dashboard(Block):
     assert self._qt_app is not None
     self._qt_app.processEvents()
 
-  @staticmethod
-  def _get_application(manager: FailureManager | None = None
-                       ) -> QtWidgets.QApplication:
+  def _get_application(self) -> QtWidgets.QApplication:
     """Reuses a Qt widget application or creates one for this Block.
 
     OpenCV's bundled Qt plugin path is excluded during application creation,
@@ -354,7 +346,7 @@ class Dashboard(Block):
         raise RuntimeError("A non-widget Qt application already exists")
       return app
 
-    manager = manager or FailureManager('Qt application', 'prepare')
+    manager = self._failure_manager
     original = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH')
     numeric_locale = None
     with manager.collect('Qt application setup'):

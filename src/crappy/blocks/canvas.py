@@ -14,7 +14,6 @@ import tkinter as tk
 from pathlib import Path
 from warnings import warn
 
-from .._failure import FailureManager
 from .meta_block import Block
 from .._global import OptionalModule
 
@@ -463,10 +462,7 @@ class Canvas(Block):
     An existing Qt application is left available for its other windows.
     """
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('Canvas cleanup'):
@@ -479,10 +475,8 @@ class Canvas(Block):
           try:
             self._root.destroy()
           except tk.TclError:
-            # Tk may already have destroyed the window
-            self._root = None
-          else:
-            self._root = None
+            pass
+          self._root = None
 
       # Close the Qt window
       if self._qt_window is not None:
@@ -570,7 +564,7 @@ class Canvas(Block):
   def _prepare_pyqt(self) -> None:
     """Creates the native Qt image scene, overlays, and color bar."""
 
-    self._qt_app = self._get_application(self._failure_manager)
+    self._qt_app = self._get_application()
     self._qt_window = QtWidgets.QMainWindow()
     assert self._qt_window is not None
     self._qt_window.setWindowTitle(self._title)
@@ -673,9 +667,7 @@ class Canvas(Block):
                           QtGui.QColor(*color))
     pixmap = QtGui.QPixmap(256, 16)
     painter = QtGui.QPainter(pixmap)
-    manager = self._failure_manager or FailureManager(self.name, 'prepare')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
     with manager.collect('Canvas color bar'):
       with manager.step('paint gradient'):
         painter.fillRect(pixmap.rect(), QtGui.QBrush(gradient))
@@ -724,9 +716,7 @@ class Canvas(Block):
                             QtCore.Qt.AspectRatioMode.KeepAspectRatio)
     self._qt_view_size = self._qt_view.viewport().size()
 
-  @staticmethod
-  def _get_application(manager: FailureManager | None = None
-                       ) -> QtWidgets.QApplication:
+  def _get_application(self) -> QtWidgets.QApplication:
     """Reuses a Qt widget application or creates one for this Block.
 
     OpenCV's bundled Qt plugin path is excluded during application creation,
@@ -739,7 +729,7 @@ class Canvas(Block):
         raise RuntimeError("A non-widget Qt application already exists")
       return app
 
-    manager = manager or FailureManager('Qt application', 'prepare')
+    manager = self._failure_manager
     original = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH')
     numeric_locale = None
     with manager.collect('Qt application setup'):

@@ -13,7 +13,6 @@ import numpy as np
 import os
 from warnings import warn
 
-from .._failure import FailureManager
 from .meta_block import Block
 from .._global import OptionalModule
 
@@ -421,10 +420,7 @@ class Grapher(Block):
   def finish(self) -> None:
     """Closes the plotting window owned by this Block."""
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('Grapher cleanup'):
@@ -600,10 +596,7 @@ class Grapher(Block):
         else:
           os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'prepare')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('Grapher Qt setup'):

@@ -112,7 +112,7 @@ class Link:
     input_block.add_output(self)
     output_block.add_input(self)
 
-  def close(self, manager: FailureManager | None = None) -> None:
+  def close(self, manager: FailureManager) -> None:
     """Closes both Pipe endpoints, including when one close fails.
 
     Successful closes are remembered so repeated cleanup only retries failures.
@@ -121,12 +121,6 @@ class Link:
     Args:
       manager: FailureManager of the owning Process.
     """
-
-    # Make sure a FailureManager is available and has a logger
-    if manager is None:
-      manager = FailureManager(self.name, 'framework cleanup')
-      if self._logger is not None:
-        manager._logger = self._logger
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('Link cleanup'):

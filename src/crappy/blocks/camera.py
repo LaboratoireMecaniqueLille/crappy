@@ -15,7 +15,6 @@ from threading import (BrokenBarrierError, Thread, Event as ThreadEvent,
 import logging
 from warnings import warn
 
-from .._failure import FailureManager
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
@@ -490,11 +489,6 @@ class Camera(Block):
     method of the :class:`~crappy.camera.meta_camera.camera.Camera` object.
     """
 
-    # Make sure a FailureManager is available and has a logger
-    if self._failure_manager is None:
-      self._failure_manager = FailureManager(self.name, 'prepare')
-      if self._logger is not None:
-        self._failure_manager._logger = self._logger
     self._workers_ready = ThreadEvent()
 
     # Instantiating the synchronization objects
@@ -790,7 +784,7 @@ class Camera(Block):
     camera_barrier = self._cam_barrier
     block_barrier = self._ready_barrier
     start = self._start_event
-    if (manager is None or stop is None or camera_stop is None or
+    if (stop is None or camera_stop is None or
         self._worker_failure_thread is not current_thread()):
       return
 
@@ -979,10 +973,7 @@ class Camera(Block):
     :meth:`~crappy.camera.meta_camera.camera.Camera.close` method is called.
     """
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
     
     # Guard cleanup steps with the FailureManager
     with manager.collect('Camera cleanup'):
@@ -1158,7 +1149,8 @@ class Camera(Block):
         with manager.step(f'close failure Queue of {process.name}'):
           queue.close()
           del self._worker_failure_queues[process]
-          process._failure_queue = None
+          if hasattr(process, '_failure_queue'):
+            del process._failure_queue
 
       # Double-check that the Processes stopped and report ones that didn't
       reported = {(report.process_name, report.pid)
@@ -1221,11 +1213,7 @@ get_config` is unpacked into
                self._ready_barrier.broken) or
               (self._stop_event is not None and self._stop_event.is_set()))
 
-    # Make sure a FailureManager is available and has a logger
-    assert self._failure_manager is not None
     manager = self._failure_manager
-    if self._logger is not None:
-      manager._logger = self._logger
     configured = False
 
     # Guard configuration steps with the FailureManager
@@ -1278,7 +1266,6 @@ get_config` output must match the processing
     if self._log_queue is None:
       raise RuntimeError("The logging Queue was never initialized")
 
-    assert self._failure_manager is not None
     return create_configurator(self.configurator,
                                self._camera,
                                self._config_backend,

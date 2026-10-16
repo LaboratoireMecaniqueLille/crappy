@@ -9,7 +9,6 @@ from time import time, strftime, gmtime
 from types import MethodType
 from typing import Any, Literal
 
-from ..._failure import FailureManager
 from .block import VisionBlock
 from ..camera import camera_dict, DummyCam, moved_to_collection
 from ...tool.camera_config import CameraConfig, create_configurator
@@ -503,7 +502,7 @@ class CameraSource(VisionBlock):
     if self.display_freq:
       self._print_freq(img_handled=True)
 
-  def finish(self, _: FailureManager | None = None) -> None:
+  def finish(self) -> None:
     """Closes the physical :class:`~crappy.camera.meta_camera.camera.Camera`
     and releases shared image resources.
 
@@ -512,16 +511,13 @@ class CameraSource(VisionBlock):
     image-generator mode. Shared memory is released before the Camera.
     """
 
-    # Make sure a FailureManager is available and has a logger
-    manager = self._failure_manager or FailureManager(self.name, 'finish')
-    if self._logger is not None:
-      manager._logger = self._logger
+    manager = self._failure_manager
 
     # Guard cleanup steps with the FailureManager
     with manager.collect('CameraSource cleanup'):
       # Release the shared memory
       with manager.step('release shared image buffers'):
-        super().finish(manager=manager)
+        super().finish()
 
       # Release the Camera resources
       if self._camera is not None and self._image_generator is None:
@@ -605,11 +601,7 @@ get_config`, or :obj:`None` if the configurator has no data to export.
                self._ready_barrier.broken) or
               (self._stop_event is not None and self._stop_event.is_set()))
 
-    # Make sure a FailureManager is available and has a logger
-    assert self._failure_manager is not None
     manager = self._failure_manager
-    if self._logger is not None:
-      manager._logger = self._logger
 
     # Guard configuration steps with the FailureManager
     configured = False
