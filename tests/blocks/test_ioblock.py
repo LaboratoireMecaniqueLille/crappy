@@ -11,6 +11,7 @@ from crappy.blocks.ioblock import IOBlock
 from crappy.inout.meta_inout import InOut
 
 from ..block import BlockTestBase, TestBlock, link
+from tests.block.block_test_base import exception_leaves, with_failure_manager
 
 
 InOut.classes.pop('IOBlockTestInOut', None)
@@ -109,13 +110,14 @@ class TestIOBlock(BlockTestBase):
   def setUp(self) -> None:
     """Clears fake InOut instances before each test."""
 
+    super().setUp()
     IOBlockTestInOut.reset()
 
   def _make_block(self, **kwargs) -> IOBlock:
     """Creates an IOBlock ready for direct loop calls."""
 
     kwargs.setdefault('freq', None)
-    block = IOBlock('IOBlockTestInOut', **kwargs)
+    block = with_failure_manager(IOBlock('IOBlockTestInOut', **kwargs))
     block._instance_t0 = Value('d', self._t0)
     return block
 
@@ -196,12 +198,12 @@ class TestIOBlock(BlockTestBase):
     """Checks unknown names and collection drivers that are not registered."""
 
     with self.assertRaises(ValueError):
-      IOBlock('MissingInOut')
+      with_failure_manager(IOBlock('MissingInOut'))
 
     with patch.object(ioblock_module, 'moved_to_collection',
                       ('UnimportedCollectionInOut',)):
       with self.assertRaises(NotImplementedError):
-        IOBlock('UnimportedCollectionInOut')
+        with_failure_manager(IOBlock('UnimportedCollectionInOut'))
 
   def test_prepare_requires_links_and_command_labels(self) -> None:
     """Checks prepare-time Link layout validation."""
@@ -484,10 +486,10 @@ class TestIOBlock(BlockTestBase):
     block._write = True
     block._stream_started = True
 
-    with self.assertRaises(RuntimeError) as caught:
+    with self.assertRaises(ExceptionGroup) as caught:
       block.finish()
 
-    self.assertIs(caught.exception, error)
+    self.assertEqual(exception_leaves(caught.exception), (error,))
     self.assertEqual(device.calls, ['stop_stream', 'set_cmd', 'close'])
     self.assertEqual(device.commands, [(0,)])
     self.assertTrue(device.closed)
@@ -502,10 +504,10 @@ class TestIOBlock(BlockTestBase):
     block._device_opened = True
     block._write = True
 
-    with self.assertRaises(RuntimeError) as caught:
+    with self.assertRaises(ExceptionGroup) as caught:
       block.finish()
 
-    self.assertIs(caught.exception, error)
+    self.assertEqual(exception_leaves(caught.exception), (error,))
     self.assertEqual(device.commands, [(0,)])
     self.assertTrue(device.closed)
 
@@ -548,7 +550,8 @@ class TestIOBlock(BlockTestBase):
       block.finish()
 
     self.assertEqual(device.calls, ['stop_stream', 'set_cmd', 'close'])
-    self.assertEqual(caught.exception.message, 'InOut cleanup failures')
+    self.assertEqual(caught.exception.message,
+                     'IOBlockTestInOut IOBlock cleanup failures')
     self.assertEqual(caught.exception.exceptions,
                      (stop_error, cmd_error, close_error))
     for error, operation in zip(
@@ -571,10 +574,10 @@ class TestIOBlock(BlockTestBase):
     block._read_data()
     device.calls.clear()
 
-    with self.assertRaises(OSError) as caught:
+    with self.assertRaises(ExceptionGroup) as caught:
       block.finish()
 
-    self.assertIs(caught.exception, error)
+    self.assertEqual(exception_leaves(caught.exception), (error,))
     self.assertEqual(device.calls, ['stop_stream', 'set_cmd', 'close'])
 
     device.close_error = None
@@ -600,14 +603,14 @@ class TestIOBlock(BlockTestBase):
         block._read_data()
         device.calls.clear()
 
-        with self.assertRaises(KeyboardInterrupt) as caught:
+        with self.assertRaises(BaseExceptionGroup) as caught:
           block.finish()
 
-        self.assertIs(caught.exception, interrupt)
+        self.assertEqual(exception_leaves(caught.exception), (interrupt,))
         self.assertEqual(device.calls, ['stop_stream', 'set_cmd', 'close'])
 
   def test_finish_preserves_other_failures_when_interrupted(self) -> None:
-    """Checks the original interrupt is raised with noted failures as cause."""
+    """Checks interrupts and independent failures retain their order."""
 
     operations = ('stop stream', 'set exit command', 'close device')
     for index, operation in enumerate(operations):
@@ -627,16 +630,17 @@ class TestIOBlock(BlockTestBase):
         block._read_data()
         device.calls.clear()
 
-        with self.assertRaises(KeyboardInterrupt) as caught:
+        with self.assertRaises(BaseExceptionGroup) as caught:
           block.finish()
 
-        self.assertIs(caught.exception, interrupt)
+        self.assertIn(interrupt, exception_leaves(caught.exception))
         self.assertEqual(device.calls, ['stop_stream', 'set_cmd', 'close'])
-        group = interrupt.__cause__
-        self.assertIsInstance(group, ExceptionGroup)
-        self.assertEqual(group.message, 'Other InOut cleanup failures')
-        self.assertEqual(group.exceptions,
-                         tuple(errors[:index] + errors[index + 1:]))
+        group = caught.exception
+        self.assertIsInstance(group, BaseExceptionGroup)
+        self.assertEqual(group.message,
+                         'IOBlockTestInOut IOBlock cleanup failures')
+        self.assertEqual(group.exceptions, tuple(errors))
+        self.assertIsNone(interrupt.__cause__)
         for error in group.exceptions:
           self.assertIsNotNone(error.__traceback__)
         for error, step in zip(errors, operations):

@@ -6,6 +6,8 @@ from queue import Empty
 from unittest.mock import Mock, patch
 import numpy as np
 
+from crappy._failure import FailureManager
+
 from ._fixtures import TkinterConfigTestCase, FakeTestCameraSimple
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
@@ -22,8 +24,9 @@ class TestHistogram(TkinterConfigTestCase):
     """Used for instantiating the configuration window without starting it for
     now."""
 
-    self._config = TkinterCameraConfig(self._camera, self._log_queue,
-                                       self._log_level, self._freq, None)
+    self._config = TkinterCameraConfig(
+        self._camera, self._log_queue, self._log_level, self._freq, None,
+        FailureManager('test configuration', 'configuration'))
 
     self._config._testing = True
 
@@ -62,8 +65,9 @@ class TestNormalRun(TkinterConfigTestCase):
   def customSetUp(self) -> None:
     """Used for setting the testing mode to :obj:`False`."""
 
-    self._config = TkinterCameraConfig(self._camera, self._log_queue,
-                                       self._log_level, self._freq, None)
+    self._config = TkinterCameraConfig(
+        self._camera, self._log_queue, self._log_level, self._freq, None,
+        FailureManager('test configuration', 'configuration'))
 
     self._config._testing = False
     self._config.start()

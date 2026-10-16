@@ -537,6 +537,7 @@ DISCorrelConfig` window is displayed before the test starts. There, the user
       raise RuntimeError("At that point the patch to track should be set but "
                          "it is not")
 
+    assert self._failure_manager is not None
     return create_configurator(self.configurator,
                                self._camera,
                                self._config_backend,
@@ -544,4 +545,5 @@ DISCorrelConfig` window is displayed before the test starts. There, the user
                                self._log_level,
                                self.freq,
                                self._transform,
+                               self._failure_manager,
                                patch=self._patch)

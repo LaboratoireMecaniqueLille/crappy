@@ -11,21 +11,21 @@ from ..._global import OptionalModule
 
 try:
   import SimpleITK as Sitk
-except (ModuleNotFoundError, ImportError):
-  Sitk = OptionalModule("SimpleITK")
+except (ModuleNotFoundError, ImportError) as error:
+  Sitk = OptionalModule("SimpleITK", cause=error)
 
 try:
   import PIL
   from PIL.ExifTags import TAGS
   TAGS_INV = {val: key for key, val in TAGS.items()}
-except (ModuleNotFoundError, ImportError):
-  PIL = OptionalModule("Pillow")
-  TAGS = TAGS_INV = OptionalModule("Pillow")
+except (ModuleNotFoundError, ImportError) as error:
+  PIL = OptionalModule("PIL", install_name="Pillow", cause=error)
+  TAGS = TAGS_INV = OptionalModule("PIL", install_name="Pillow", cause=error)
 
 try:
   import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+except (ModuleNotFoundError, ImportError) as error:
+  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
 
 
 class ImageSaver(CameraProcess):
@@ -160,7 +160,10 @@ class ImageSaver(CameraProcess):
       Path.mkdir(self._save_folder, exist_ok=True, parents=True)
 
   def _has_new_image(self) -> bool:
-    """Waits for a frame to save, not for the skipped frames."""
+    """Waits for a frame to save, not for the skipped frames.
+
+    .. versionadded:: 2.2.0
+    """
 
     assert self._data_dict is not None
     image_id = self._data_dict.get('ImageUniqueID')

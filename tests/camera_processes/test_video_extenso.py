@@ -1,9 +1,12 @@
 # coding: utf-8
 
 from unittest.mock import patch
+from multiprocessing import Event
 import logging
 
 import numpy as np
+
+from tests.block.block_test_base import exception_leaves
 
 import crappy.blocks.camera_processes.video_extenso as video_extenso_module
 from crappy.blocks.camera_processes.video_extenso import VideoExtensoProcess
@@ -63,8 +66,7 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
     spots.save_length()
     return spots
 
-  @staticmethod
-  def _make_process(**kwargs) -> VideoExtensoProcess:
+  def _make_process(self, **kwargs) -> VideoExtensoProcess:
     """Creates a process with the public Block's default options."""
 
     defaults = {
@@ -78,11 +80,15 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
       'raise_on_lost_spot': True,
     }
     defaults.update(kwargs)
-    return VideoExtensoProcess(**defaults)
+    process = VideoExtensoProcess(**defaults)
+    self.set_test_logger(process)
+    process._stop_event = Event()
+    return process
 
   def setUp(self) -> None:
     """Resets the fake tool registry."""
 
+    super().setUp()
     DummyVideoExtensoTool.instances.clear()
 
   def _init_process(self,
@@ -129,6 +135,9 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
       'safe_mode': True,
       'border': 7,
       'blur': 3,
+      'failure_manager': process._failure_manager,
+      'stop_event': process._stop_event,
+      'raise_on_lost_spot': process._raise_on_lost_spot,
     })
     self.assertEqual(tool.start_calls, 1)
     self.assertEqual(tool.stop_calls, 0)
@@ -188,20 +197,21 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
     process.img = np.zeros((3, 4), dtype=np.uint8)
     tool.raise_on_get_data = True
 
-    with self.assertRaises(LostSpotError):
+    with self.assertRaises(ExceptionGroup) as caught:
       process.loop()
+    self.assertIsInstance(exception_leaves(caught.exception)[0], LostSpotError)
 
     self.assertEqual(tool.stop_calls, 1)
     self.assertFalse(process._lost_spots)
 
   def test_loop_handles_lost_spot_and_then_stays_idle(self) -> None:
-    """Checks non-raising lost-spot handling and subsequent idle behavior."""
+    """Checks a reason string requests nonfatal loss and subsequent idle."""
 
     process, tool = self._init_process(raise_on_lost_spot=False)
     sent_overlays = list()
     process.send_to_draw = sent_overlays.append
     process.img = np.zeros((3, 4), dtype=np.uint8)
-    tool.raise_on_get_data = True
+    tool.return_value = 'The selected spot left the frame'
 
     process.loop()
 
@@ -218,6 +228,22 @@ class TestVideoExtensoProcess(CameraProcessTestBase):
     self.assertEqual(process.fps_count, 4)
     self.assertEqual(len(tool.images), 1)
     self.assertEqual(tool.stop_calls, 1)
+
+  def test_loop_retains_fatal_lost_spot_reason(self) -> None:
+    """Checks tool-generated loss reasons remain diagnostic when fatal."""
+
+    process, tool = self._init_process(raise_on_lost_spot=True)
+    process.img = np.zeros((3, 4), dtype=np.uint8)
+    tool.return_value = 'Overlapping spots detected in safe mode'
+
+    with self.assertRaises(ExceptionGroup) as caught:
+      process.loop()
+
+    error, = exception_leaves(caught.exception)
+    self.assertIsInstance(error, LostSpotError)
+    self.assertEqual(str(error), tool.return_value)
+    self.assertEqual(tool.stop_calls, 1)
+    self.assertFalse(process._lost_spots)
 
   def test_finish_before_and_after_initialization(self) -> None:
     """Checks that finish is safe and stops an initialized tool."""

@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.block.block_test_base import with_failure_manager
+
 from tkinter import TclError
 from unittest.mock import patch
 import numpy as np
@@ -36,7 +38,7 @@ class DashboardTests:
 
     kwargs.setdefault('backend', self._backend)
     source = TestBlock()
-    dashboard = Dashboard(labels, **kwargs)
+    dashboard = with_failure_manager(Dashboard(labels, **kwargs))
     link(source, dashboard)
 
     self._dashboards.append(dashboard)
@@ -65,7 +67,7 @@ class DashboardTests:
                               ('2', TypeError), (True, TypeError)):
       with self.subTest(nb_digits=nb_digits):
         with self.assertRaises(error):
-          Dashboard('a', nb_digits=nb_digits)
+          with_failure_manager(Dashboard('a', nb_digits=nb_digits))
 
     self.assertEqual(Dashboard('a', nb_digits=0)._nb_digits, 0)
     self.assertEqual(Dashboard('a', nb_digits=3)._nb_digits, 3)
@@ -73,7 +75,7 @@ class DashboardTests:
   def test_prepare_requires_input_link(self) -> None:
     """Checks that a Dashboard without input Links fails early."""
 
-    dashboard = Dashboard('a')
+    dashboard = with_failure_manager(Dashboard('a'))
 
     with self.assertRaises(IOError):
       dashboard.prepare()

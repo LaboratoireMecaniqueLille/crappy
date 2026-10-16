@@ -7,7 +7,7 @@ import logging
 from multiprocessing import current_process
 from abc import ABC, abstractmethod
 
-from ...._global import DefinitionError
+from ...._exceptions import DefinitionError
 
 ConditionType = Callable[[dict[str, list]], bool]
 

@@ -3,6 +3,11 @@
 """Qt lifetime, cleanup, cancellation, and callback failures."""
 
 from unittest.mock import Mock, patch
+from crappy._exceptions import StopRequested
+from crappy._failure import FailureManager
+from tests.block.block_test_base import exception_leaves
+from .._fixtures import assert_failure
+
 from multiprocessing import Event, Queue
 
 from ._fixtures import PyQtConfigTestCase
@@ -37,7 +42,8 @@ class TestLifecycle(PyQtConfigTestCase):
     QTimer.singleShot(0, stop_event.set)
     with (patch.object(config, '_validate_close') as validate,
           patch.object(config, '_on_valid_close') as finalize):
-      config.run()
+      with self.assertRaises(StopRequested):
+        config.run()
 
     validate.assert_not_called()
     finalize.assert_not_called()
@@ -50,7 +56,8 @@ class TestLifecycle(PyQtConfigTestCase):
 
     config = self.make_config()
     config.watch_shutdown(lambda: True)
-    config.run()
+    with self.assertRaises(StopRequested):
+      config.run()
 
     config._histogram_process.start.assert_not_called()
     self.assertTrue(config._window_closed)
@@ -62,7 +69,7 @@ class TestLifecycle(PyQtConfigTestCase):
 
     config = self.make_config()
     config._histogram_process.start.side_effect = RuntimeError('cannot start')
-    with self.assertRaisesRegex(RuntimeError, 'cannot start'):
+    with assert_failure(self, RuntimeError, 'cannot start'):
       config.run()
 
     self.assertTrue(config._window_closed)
@@ -81,8 +88,10 @@ class TestLifecycle(PyQtConfigTestCase):
         type(self).instance = self
         raise ValueError('layout failed')
 
-    with self.assertRaisesRegex(ValueError, 'layout failed'):
-      BrokenConfig(self.camera, self.log_queue, None, 30, None)
+    with assert_failure(self, ValueError, 'layout failed'):
+      BrokenConfig(
+          self.camera, self.log_queue, None, 30, None,
+          FailureManager('test configuration', 'configuration'))
 
     config = BrokenConfig.instance
     self.assertTrue(config._window_closed)
@@ -105,10 +114,12 @@ class TestLifecycle(PyQtConfigTestCase):
     with (patch.object(pyqt_config, 'Queue', side_effect=make_queue),
           patch.object(pyqt_config, 'HistogramProcess',
                        side_effect=RuntimeError('histogram failed'))):
-      with self.assertRaisesRegex(RuntimeError, 'histogram failed'):
-        pyqt_config.PyQtCameraConfig(self.camera, self.log_queue, None, 30, None)
+      with assert_failure(self, RuntimeError, 'histogram failed'):
+        pyqt_config.PyQtCameraConfig(
+            self.camera, self.log_queue, None, 30, None,
+            FailureManager('test configuration', 'configuration'))
 
-    self.assertEqual(len(queues), 2)
+    self.assertEqual(len(queues), 3)
     self.assertTrue(all(queue._closed for queue in queues))
 
   def test_partial_core_failure_keeps_original_exception(self) -> None:
@@ -120,8 +131,10 @@ class TestLifecycle(PyQtConfigTestCase):
       def _create_local_settings(self):
         raise ValueError('local setting')
 
-    with self.assertRaisesRegex(ValueError, 'local setting'):
-      FailingConfig(self.camera, self.log_queue, None, 30, None)
+    with assert_failure(self, ValueError, 'local setting'):
+      FailingConfig(
+          self.camera, self.log_queue, None, 30, None,
+          FailureManager('test configuration', 'configuration'))
 
   def test_callback_error_reaches_run(self) -> None:
     """Qt callback errors escape run() after the window and process close."""
@@ -131,7 +144,7 @@ class TestLifecycle(PyQtConfigTestCase):
     config = self.make_config()
     config._update_img = Mock(side_effect=ValueError('frame'))
     with patch.object(pyqt_config.QMessageBox, 'critical'):
-      with self.assertRaisesRegex(ValueError, 'frame'):
+      with assert_failure(self, ValueError, 'frame'):
         config.run()
     self.assertTrue(config._lifecycle.closed)
     self.assertTrue(config._window_closed)
@@ -157,13 +170,13 @@ class TestLifecycle(PyQtConfigTestCase):
     interrupt = KeyboardInterrupt()
     config._update_img = Mock(side_effect=interrupt)
     with (patch.object(pyqt_config.QMessageBox, 'critical') as dialog,
-          patch.object(config._lifecycle, '_log') as log):
-      with self.assertRaises(KeyboardInterrupt) as raised:
+          patch.object(config._failure_manager._logger, 'error') as log):
+      with self.assertRaises(BaseExceptionGroup) as raised:
         config.run()
 
-    self.assertIs(raised.exception, interrupt)
+    self.assertEqual(exception_leaves(raised.exception), (interrupt,))
     dialog.assert_not_called()
-    log.assert_not_called()
+    log.assert_called_once()
     self.assertTrue(config._window_closed)
     self.assertTrue(config._img_in._closed)
     self.assertTrue(config._img_out._closed)
@@ -181,7 +194,7 @@ class TestLifecycle(PyQtConfigTestCase):
         config = self.make_config()
         interrupt = KeyboardInterrupt()
         with (patch.object(pyqt_config.QMessageBox, 'critical') as dialog,
-              patch.object(config._lifecycle, '_log') as log):
+              patch.object(config._failure_manager._logger, 'error') as log):
           if path == 'signal':
             config._guard(Mock(side_effect=interrupt))()
           elif path == 'event_filter':
@@ -192,12 +205,12 @@ class TestLifecycle(PyQtConfigTestCase):
             event = QCloseEvent()
             config.closeEvent(event)
             self.assertTrue(event.isAccepted())
-          with self.assertRaises(KeyboardInterrupt) as raised:
+          with self.assertRaises(BaseExceptionGroup) as raised:
             config.run()
 
-        self.assertIs(raised.exception, interrupt)
+        self.assertEqual(exception_leaves(raised.exception), (interrupt,))
         dialog.assert_not_called()
-        log.assert_not_called()
+        log.assert_called_once()
         self.assertTrue(config._window_closed)
         self.assertTrue(config._img_in._closed)
         self.assertTrue(config._img_out._closed)
@@ -210,12 +223,12 @@ class TestLifecycle(PyQtConfigTestCase):
     config = self.make_config()
     with (patch.object(config, 'start', side_effect=KeyboardInterrupt),
           patch.object(pyqt_config.QMessageBox, 'critical') as dialog,
-          patch.object(config._lifecycle, '_log') as log):
-      with self.assertRaises(KeyboardInterrupt):
+          patch.object(config._failure_manager._logger, 'error') as log):
+      with self.assertRaises(BaseExceptionGroup):
         config.run()
 
     dialog.assert_not_called()
-    log.assert_not_called()
+    log.assert_called_once()
     self.assertTrue(config._window_closed)
     self.assertTrue(config._img_in._closed)
     self.assertTrue(config._img_out._closed)

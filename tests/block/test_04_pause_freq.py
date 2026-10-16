@@ -11,26 +11,31 @@ from unittest.mock import Mock, patch
 from .block_test_base import BlockTestBase, TestBlock
 
 
+class TestBlockStopInBegin(TestBlock):
+  """Requests stop before main, after startup has completed normally."""
+
+  def begin(self) -> None:
+    super().begin()
+    self._stop_event.set()
+
+
 class TestPauseFreq(BlockTestBase):
   """Tests the pause handling and loop-frequency bookkeeping of Blocks."""
 
   def test_stop_event(self) -> None:
     """Tests that an already-set stop Event skips the loop body."""
 
-    self._block = TestBlock()
+    self._block = TestBlockStopInBegin()
     self._block.display_freq = True
 
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
 
     self._block._start_event.set()
-    self._block._stop_event.set()
 
     self._block.start()
 
@@ -39,8 +44,7 @@ class TestPauseFreq(BlockTestBase):
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertFalse(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertFalse(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())
@@ -67,8 +71,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -121,8 +123,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = pause
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -169,8 +169,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = pause
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -219,8 +217,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = pause
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -260,8 +256,6 @@ class TestPauseFreq(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = stop
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = pause
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()

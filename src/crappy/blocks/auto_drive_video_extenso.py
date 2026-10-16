@@ -235,40 +235,20 @@ class AutoDriveVideoExtenso(Block):
       return
 
     name = type(self._device).__name__
-    failures: list[Exception | KeyboardInterrupt] = list()
+    manager = self._failure_manager
 
-    if self._device_opened and not self._device_stopped:
-      self.log(logging.INFO, f"Stopping the {name} actuator")
-      try:
-        self._device.stop()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"AutoDriveVideoExtenso cleanup step: stop {name}")
-        failures.append(error)
-      else:
-        self._device_stopped = True
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('AutoDriveVideoExtenso cleanup'):
+      if self._device_opened and not self._device_stopped:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, f"Stopping the {name} actuator")
+        with manager.step(f'stop {name}'):
+          self._device.stop()
+          self._device_stopped = True
 
-    self.log(logging.INFO, f"Closing the {name} actuator")
-    try:
-      self._device.close()
-    except (Exception, KeyboardInterrupt) as error:
-      error.add_note(f"AutoDriveVideoExtenso cleanup step: close {name}")
-      failures.append(error)
-    else:
-      self._device = None
-      self._device_opened = False
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other AutoDrive cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("AutoDrive cleanup failures", failures)
+      with manager.step('cleanup diagnostic'):
+        self.log(logging.INFO, f"Closing the {name} actuator")
+      with manager.step(f'close {name}'):
+        self._device.close()
+        self._device = None
+        self._device_opened = False

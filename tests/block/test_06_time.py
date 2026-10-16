@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from crappy import Block
-from crappy._global import T0NotSetError
+from crappy._exceptions import T0NotSetError
 from multiprocessing import Barrier, Event, Value, Queue
 import logging
 
@@ -29,8 +29,6 @@ class TestBlockTime(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', -1.0)
     self._block._log_queue = Queue()
@@ -44,12 +42,11 @@ class TestBlockTime(BlockTestBase):
 
     self._block.join(4.0)
 
-    # The error should be converted into the shared raise Event by Block.run
+    # Block.run should retain and send the error through its failure Queue.
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertTrue(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertTrue(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())
@@ -66,8 +63,6 @@ class TestBlockTime(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', -1.0)
     self._block._log_queue = Queue()
@@ -79,8 +74,7 @@ class TestBlockTime(BlockTestBase):
     self.assertFalse(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertTrue(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertTrue(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertFalse(self._block.begun.is_set())
@@ -98,13 +92,13 @@ class TestBlockTime(BlockTestBase):
 
     self.assertTrue(self._block.prepared.wait(3.0))
 
+    manager = Block.run_failure_manager
     Block.launch_all()
 
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertFalse(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertFalse(manager.snapshot())
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())

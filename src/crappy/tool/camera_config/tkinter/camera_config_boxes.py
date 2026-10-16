@@ -10,6 +10,7 @@ import numpy as np
 from .camera_config import TkinterCameraConfig
 from ..base import CameraConfigBoxes
 from ....camera.meta_camera import Camera
+from ...._failure import FailureManager
 
 
 class TkinterCameraConfigBoxes(CameraConfigBoxes, TkinterCameraConfig):
@@ -33,7 +34,8 @@ CameraConfigBoxes` hooks determine how a completed box is used. This class
                log_queue: Queue,
                log_level: int | None,
                max_freq: float | None,
-               transform: Callable[[np.ndarray], np.ndarray] | None) -> None:
+               transform: Callable[[np.ndarray], np.ndarray] | None,
+               failure_manager: FailureManager) -> None:
     """Initializes box-selection state and the camera window.
 
     Args:
@@ -56,9 +58,14 @@ CameraConfigBoxes` hooks determine how a completed box is used. This class
         leave them unchanged.
 
         .. versionadded:: 2.1.0
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
     """
 
-    super().__init__(camera, log_queue, log_level, max_freq, transform)
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager)
 
   def _set_bindings(self) -> None:
     """Bind Tk left-button events to the shared selection lifecycle."""

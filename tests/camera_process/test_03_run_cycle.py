@@ -44,8 +44,9 @@ class TestRunCycle(CameraProcessTestBase):
     self._process.join(4.0)
 
     self.assertEqual(self._process.exitcode, 0)
-    self.assertFalse(shared.barrier.broken)
+    self.assertTrue(shared.barrier.broken)
     self.assertTrue(shared.stop_event.is_set())
+    self.assertEqual(self.receive_failures(shared).snapshot(), ())
 
     self.assertTrue(self._process.initialized.is_set())
     self.assertFalse(self._process.looped.is_set())
@@ -98,7 +99,11 @@ class TestRunCycle(CameraProcessTestBase):
     self._process.start()
     self._process.join(4.0)
 
-    self.assertNotEqual(self._process.exitcode, 0)
+    self.assertEqual(self._process.exitcode, 0)
+    reports = self.receive_failures(shared).snapshot()
+    self.assertEqual(len(reports), 1)
+    self.assertEqual(reports[0][0].nodes[0].type_name,
+                     'ExpectedProcessError')
     self.assertTrue(shared.barrier.broken)
     self.assertTrue(shared.stop_event.is_set())
 
@@ -117,7 +122,11 @@ class TestRunCycle(CameraProcessTestBase):
     self._process.start()
     self._process.join(4.0)
 
-    self.assertNotEqual(self._process.exitcode, 0)
+    self.assertEqual(self._process.exitcode, 0)
+    reports = self.receive_failures(shared).snapshot()
+    self.assertEqual(len(reports), 1)
+    self.assertEqual(reports[0][0].nodes[0].type_name,
+                     'ExpectedProcessError')
     self.assertFalse(shared.barrier.broken)
     self.assertTrue(shared.stop_event.is_set())
 
@@ -159,7 +168,7 @@ class TestRunCycle(CameraProcessTestBase):
 
     self.assertEqual(self._process.exitcode, 0)
     self.assertTrue(shared.barrier.broken)
-    self.assertFalse(shared.stop_event.is_set())
+    self.assertTrue(shared.stop_event.is_set())
 
     self.assertTrue(self._process.initialized.is_set())
     self.assertFalse(self._process.looped.is_set())
@@ -196,8 +205,9 @@ class TestRunCycle(CameraProcessTestBase):
     self.assertTrue(shared.stop_event.is_set())
     self.assertTrue(self._process.finished.is_set())
     self.assertIn('close overlay Pipe', error.__notes__[0])
-    logger.exception.assert_called_once_with('Could not close the overlay Pipe',
-                                            exc_info=error)
+    logger.error.assert_called_once()
+    logger.exception.assert_not_called()
+    self.assertIs(self._process._failure_manager.snapshot()[0][1], error)
 
   def test_keyboard_interrupt(self) -> None:
     """Tests that KeyboardInterrupt exits cleanly through finish."""

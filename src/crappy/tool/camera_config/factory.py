@@ -9,6 +9,7 @@ import numpy as np
 
 from .base import CameraConfig
 from ...camera.meta_camera import Camera
+from ..._failure import FailureManager
 
 
 def create_configurator(configurator: type[CameraConfig] |
@@ -19,16 +20,14 @@ def create_configurator(configurator: type[CameraConfig] |
                         log_level: int | None,
                         max_freq: float | None,
                         transform: Callable[[np.ndarray], np.ndarray] | None,
+                        failure_manager: FailureManager,
                         *args: Any,
                         **kwargs: Any) -> CameraConfig:
-  """Instantiates a configuration class from an explicit given type or a
-  backend mapping.
+  """Creates a configuration window for the selected backend.
 
-  A class supplied directly is used regardless of ``config_backend``. Public
-  :class:`Camera Blocks <crappy.blocks.Camera>` validate backend selection,
-  while :class:`~crappy.blocks.meta_block.block.Block` subclasses choose
-  configurator classes through their configurator attribute. This helper does
-  not register classes, validate arguments, or start the configuration window.
+  A class supplied directly is used regardless of ``config_backend``. A
+  mapping selects the class for that backend. The returned window is ready
+  for a call to its run method.
 
   Args:
     configurator:
@@ -47,6 +46,10 @@ def create_configurator(configurator: type[CameraConfig] |
     transform: :obj:`~collections.abc.Callable` applied to acquired images
       before preview conversion and image-format reporting, or :obj:`None` to
       leave them unchanged.
+    failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+      reporting caught exceptions.
+
+      .. versionadded:: 2.2.0
     *args: Additional positional arguments passed to the selected class.
     **kwargs: Additional keyword arguments passed to the selected class.
 
@@ -64,4 +67,4 @@ run>` to start configuration.
   selected = (configurator[config_backend]
               if isinstance(configurator, Mapping) else configurator)
   return selected(camera, log_queue, log_level, max_freq, transform,
-                  *args, **kwargs)
+                  failure_manager, *args, **kwargs)

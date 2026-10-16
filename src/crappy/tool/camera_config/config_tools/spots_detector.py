@@ -11,15 +11,14 @@ from ...._global import OptionalModule
 
 try:
   import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+except (ModuleNotFoundError, ImportError) as error:
+  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
 try:
   from skimage.filters import threshold_otsu
   from skimage.morphology import label
   from skimage.measure import regionprops, perimeter_crofton
-except (ModuleNotFoundError, ImportError):
-  label = OptionalModule("skimage", "Please install scikit-image to use"
-                         "Video-extenso")
+except (ModuleNotFoundError, ImportError) as error:
+  label = OptionalModule("skimage", install_name="scikit-image", cause=error)
   threshold_otsu = regionprops = perimeter_crofton = label
 
 

@@ -1,5 +1,8 @@
 # coding: utf-8
 
+from tests.block.block_test_base import with_failure_manager
+
+import gc
 from multiprocessing import Value
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -47,7 +50,7 @@ class CanvasTests:
     kwargs.setdefault('image_path', self._image)
     kwargs.setdefault('backend', self._backend)
     source = TestBlock()
-    canvas = Canvas(**kwargs)
+    canvas = with_failure_manager(Canvas(**kwargs))
     canvas._instance_t0 = Value('d', self._t0)
     link(source, canvas)
     self._canvases.append(canvas)
@@ -235,6 +238,9 @@ class TestCanvasPyQt(CanvasTests, BlockTestBase):
     self.assertEqual(len(bars), 1)
     self.assertEqual((bars[0].pixmap().width(), bars[0].pixmap().height()),
                      (256, 16))
+    # The scene must still expose its pixmap after temporary wrappers are
+    # collected, including on Python versions with different GC timing.
+    gc.collect()
     backgrounds = [item for item in canvas.qt_scene.items()
                    if isinstance(item, widgets.QGraphicsPixmapItem)]
     self.assertEqual(len(backgrounds), 1)

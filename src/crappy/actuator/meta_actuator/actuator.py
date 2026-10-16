@@ -4,7 +4,7 @@ from time import sleep
 import logging
 from multiprocessing import current_process
 
-from ..._global import DefinitionError
+from ..._exceptions import DefinitionError
 
 
 class Actuator:

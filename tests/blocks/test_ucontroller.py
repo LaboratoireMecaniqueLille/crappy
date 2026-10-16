@@ -5,9 +5,11 @@ from struct import pack
 from typing import Any
 from unittest.mock import patch
 from crappy._global import OptionalModule
+from crappy._exceptions import OptionalDependencyError
 import crappy.blocks.ucontroller as ucontroller_module
 
 from ..block import BlockTestBase, TestBlock, link
+from tests.block.block_test_base import with_failure_manager
 
 
 class FakeSerialError(Exception):
@@ -146,6 +148,7 @@ class TestUController(BlockTestBase):
   def setUp(self) -> None:
     """Resets the fake serial bus before each test."""
 
+    super().setUp()
     FakeMicrocontrollerSerial.reset()
 
   def _serial_patch(self):
@@ -390,7 +393,7 @@ class TestUController(BlockTestBase):
       ctrl.prepare()
       bus = FakeMicrocontrollerSerial.instances[-1]
 
-      ctrl.finish()
+      with_failure_manager(ctrl).finish()
 
     self.assertTrue(bus.stopped)
     self.assertTrue(bus.closed)
@@ -408,8 +411,8 @@ class TestUController(BlockTestBase):
     link(ctrl, TestBlock())
 
     with patch.multiple(ucontroller_module,
-                        Serial=OptionalModule("pyserial"),
+                        Serial=OptionalModule('serial', install_name='pyserial'),
                         SerialException=MissingSerialException):
       self.assertIsNot(ucontroller_module.SerialException, Exception)
-      with self.assertRaisesRegex(RuntimeError, "Missing module: pyserial"):
+      with self.assertRaisesRegex(OptionalDependencyError, 'serial'):
         ctrl.prepare()

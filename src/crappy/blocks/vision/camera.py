@@ -17,7 +17,7 @@ from ...tool.camera_config.pyqt import PyQtCameraConfig
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,
                             load_collection_class)
-from ..._global import CameraConfigError, PrepareError
+from ..._exceptions import StopRequested
 
 
 class CameraSource(VisionBlock):
@@ -269,9 +269,9 @@ class CameraSource(VisionBlock):
         unavailable or a required configuration request cannot be handled.
       ValueError: If preparation synchronization objects or the final image
         format are unavailable.
-      PrepareError: If another :class:`~crappy.blocks.meta_block.block.Block`
+      StopRequested: If another :class:`~crappy.blocks.meta_block.block.Block`
         fails while configurations are running.
-      CameraConfigError: If an interactive configuration window fails.
+      ExceptionGroup: If interactive configuration or its cleanup fails.
     """
 
     # Ensuring Link consistency
@@ -347,8 +347,7 @@ class CameraSource(VisionBlock):
 
             # First check if we should proceed with the configurations
             if self._ready_barrier.broken or self._stop_event.is_set():
-              raise PrepareError("An exception occurred in another Block, "
-                                 "aborting")
+              raise StopRequested
 
             self.log(logging.DEBUG, f"Starting configure request from Block "
                                     f"{request.requester}")
@@ -512,45 +511,26 @@ class CameraSource(VisionBlock):
     image-generator mode. Shared memory is released before the Camera.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    manager = self._failure_manager
 
-    # Release the shared memory
-    try:
-      super().finish()
-    except (Exception, KeyboardInterrupt) as error:
-      error.add_note("CameraSource cleanup step: release shared image buffers")
-      failures.append(error)
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('CameraSource cleanup'):
+      # Release the shared memory
+      with manager.step('release shared image buffers'):
+        super().finish()
 
-    # Release the Camera resources
-    if self._camera is not None and self._image_generator is None:
-      self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
-      try:
-        self._camera.close()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note(f"CameraSource cleanup step: close {self._camera_name}")
-        failures.append(error)
-      else:
+      # Release the Camera resources
+      if self._camera is not None and self._image_generator is None:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
+        with manager.step(f'close {self._camera_name}'):
+          self._camera.close()
+          self._camera = None
+          self._camera_opened = False
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
+      elif self._camera is not None:
         self._camera = None
-        self._camera_opened = False
-        self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
-    elif self._camera is not None:
-      self._camera = None
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other CameraSource cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("CameraSource cleanup failures", failures)
 
   def configure(self,
                 camera: BaseCam,
@@ -588,11 +568,11 @@ get_config`, or :obj:`None` if the configurator has no data to export.
         :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
         subclass.
       ValueError: If the mapping has no class for the selected backend.
-      RuntimeError: If the logging queue has not been initialized.
-      CameraConfigError: If the configuration window fails.
-      PrepareError: If the :class:`~crappy.blocks.meta_block.block.Block` must
+      ExceptionGroup: If the logging queue is unavailable, configuration
+        fails, or its cleanup fails.
+      StopRequested: If the :class:`~crappy.blocks.meta_block.block.Block` must
         stop while configuration is running.
-      KeyboardInterrupt: If configuration is interrupted by the user.
+      BaseExceptionGroup: If configuration is interrupted by the user.
     """
 
     # Preliminary general checks
@@ -621,61 +601,43 @@ get_config`, or :obj:`None` if the configurator has no data to export.
                self._ready_barrier.broken) or
               (self._stop_event is not None and self._stop_event.is_set()))
 
-    # Instantiating and starting the configuration window
-    try:
-      if self._log_queue is None:
-        raise RuntimeError("Cannot start the configuration window because the "
-                           "log_queue wasn't defined")
-      self.log(logging.DEBUG, f"Starting configuration window of class "
-                              f"{class_name} with camera "
-                              f"{type(camera).__name__}, args {args}, "
-                              f"kwargs {kwargs}")
-      config = create_configurator(config_class, camera, self._config_backend,
-                                   self._log_queue, self._log_level, self.freq,
-                                   self._transform, *args, **kwargs)
-      assert config is not None
-      config.watch_shutdown(shutdown_requested)
-      config.run()
-      if shutdown_requested():
-        raise PrepareError("Camera configuration stopped during preparation")
-      configured_shape = config.shape
-      configured_dtype = config.dtype
-      result = config.get_config()
+    manager = self._failure_manager
 
-    # A peer failed during preparation, or the test was asked to stop.
-    except PrepareError:
-      if config is not None:
-        try:
+    # Guard configuration steps with the FailureManager
+    configured = False
+    with manager.collect('CameraSource configuration'):
+      with manager.step('run configuration window'):
+        if self._log_queue is None:
+          raise RuntimeError("Cannot start the configuration window because "
+                             "the log_queue wasn't defined")
+        self.log(logging.DEBUG, f"Starting configuration window of class "
+                                f"{class_name} with camera "
+                                f"{type(camera).__name__}, args {args}, "
+                                f"kwargs {kwargs}")
+        config = create_configurator(config_class,
+                                     camera,
+                                     self._config_backend,
+                                     self._log_queue,
+                                     self._log_level,
+                                     self.freq,
+                                     self._transform,
+                                     manager,
+                                     *args,
+                                     **kwargs)
+        assert config is not None
+        config.watch_shutdown(shutdown_requested)
+        config.run()
+        if shutdown_requested():
+          raise StopRequested("Camera configuration cancelled")
+        configured_shape = config.shape
+        configured_dtype = config.dtype
+        result = config.get_config()
+        configured = True
+      if config is not None and not configured:
+        with manager.step('stop configuration window'):
           config.stop()
-        except (Exception,) as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not stop the configuration window",
-                                   exc_info=cleanup_error)
-      raise
-    # If an exception is raised in the config window, closing it before raising
-    except (Exception,) as exc:
-      # Not much we can do if there's no logger set to report Exception
-      if self._logger is not None:
-        self._logger.exception("Caught exception in the configuration "
-                               "window!", exc_info=exc)
-      if config is not None:
-        try:
-          config.stop()
-        except (Exception,) as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not stop the configuration window",
-                                   exc_info=cleanup_error)
-      raise CameraConfigError("Camera configuration failed") from exc
-    # Special case of KeyboardInterrupt because it's a non-local exception
-    except KeyboardInterrupt:
-      if config is not None:
-        try:
-          config.stop()
-        except (Exception,) as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not stop the configuration window",
-                                   exc_info=cleanup_error)
-      raise
+    if not configured:
+      raise StopRequested
 
     # Getting the image dtype and shape for setting the shared Array
     if configured_shape is not None:
@@ -710,8 +672,8 @@ get_config`, or :obj:`None` if the configurator has no data to export.
     Raises:
       RuntimeError: If the :class:`~crappy.camera.meta_camera.camera.Camera`
         has not been initialized.
-      CameraConfigError: If the configuration window fails.
-      KeyboardInterrupt: If configuration is interrupted by the user.
+      ExceptionGroup: If configuration or its cleanup fails.
+      BaseExceptionGroup: If configuration is interrupted by the user.
     """
 
     if self._camera is None:

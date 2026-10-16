@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.block.block_test_base import with_failure_manager
+
 from tkinter import TclError
 from unittest.mock import patch
 
@@ -43,7 +45,7 @@ class TestGrapher(BlockTestBase):
     kwargs.setdefault('plotter', 'mpl')
 
     source = TestBlock()
-    grapher = Grapher(*labels, **kwargs)
+    grapher = with_failure_manager(Grapher(*labels, **kwargs))
     link(source, grapher)
 
     with (patch.object(mpl_plt, 'show'),
@@ -61,7 +63,7 @@ class TestGrapher(BlockTestBase):
     kwargs.setdefault('plotter', 'pyqt')
 
     source = TestBlock()
-    grapher = Grapher(*labels, **kwargs)
+    grapher = with_failure_manager(Grapher(*labels, **kwargs))
     link(source, grapher)
     grapher.prepare()
 
@@ -72,54 +74,54 @@ class TestGrapher(BlockTestBase):
     """Checks that labels must be non-empty string pairs."""
 
     with self.assertRaises(ValueError):
-      Grapher()
+      with_failure_manager(Grapher())
 
     with self.assertRaises(ValueError):
-      Grapher(('x',))
+      with_failure_manager(Grapher(('x',)))
 
     with self.assertRaises(ValueError):
-      Grapher(('x', 'y', 'z'))
+      with_failure_manager(Grapher(('x', 'y', 'z')))
 
     with self.assertRaises(ValueError):
-      Grapher(('x', ''))
+      with_failure_manager(Grapher(('x', '')))
 
-    self.assertEqual(Grapher(('x', 'y'))._graph_labels,
+    self.assertEqual(with_failure_manager(Grapher(('x', 'y')))._graph_labels,
                      (('x', 'y'),))
 
   def test_constructor_validates_plotter_and_backend(self) -> None:
     """Checks plotter selection and plotter-specific backends."""
 
-    self.assertEqual(Grapher(('x', 'y'))._plotter, 'pyqt')
+    self.assertEqual(with_failure_manager(Grapher(('x', 'y')))._plotter, 'pyqt')
     self.assertEqual(Grapher(('x', 'y'), backend='PyQt6')._backend,
                      'PyQt6')
-    self.assertEqual(Grapher(('x', 'y'), plotter='mpl',
-                             backend='TkAgg')._backend, 'TkAgg')
+    self.assertEqual(with_failure_manager(Grapher(('x', 'y'), plotter='mpl',
+                             backend='TkAgg'))._backend, 'TkAgg')
 
     with self.assertRaises(ValueError):
-      Grapher(('x', 'y'), plotter='invalid')
+      with_failure_manager(Grapher(('x', 'y'), plotter='invalid'))
     with self.assertRaises(ValueError):
-      Grapher(('x', 'y'), backend='TkAgg')
+      with_failure_manager(Grapher(('x', 'y'), backend='TkAgg'))
     with self.assertRaises(ValueError):
-      Grapher(('x', 'y'), plotter='mpl', backend='PyQt6')
+      with_failure_manager(Grapher(('x', 'y'), plotter='mpl', backend='PyQt6'))
 
   def test_constructor_validates_limits_and_refresh_frequency(self) -> None:
     """Checks validation of the new buffering and refresh arguments."""
 
     with self.assertRaises(ValueError):
-      Grapher(('x', 'y'), length=3)
+      with_failure_manager(Grapher(('x', 'y'), length=3))
 
     with self.assertRaises(ValueError):
-      Grapher(('x', 'y'), upd_freq=11, freq=10)
+      with_failure_manager(Grapher(('x', 'y'), upd_freq=11, freq=10))
 
-    self.assertEqual(Grapher(('x', 'y'), length=True,
-                             max_pt=None)._length, 1)
-    self.assertEqual(Grapher(('x', 'y'), max_pt=True)._max_pt, 1)
+    self.assertEqual(with_failure_manager(Grapher(('x', 'y'), length=True,
+                             max_pt=None))._length, 1)
+    self.assertEqual(with_failure_manager(Grapher(('x', 'y'), max_pt=True))._max_pt, 1)
     self.assertEqual(Grapher(('x', 'y'), upd_freq=True)._upd_freq, 1.0)
 
     for value in (float('nan'), float('inf')):
       with self.subTest(value=value):
         with self.assertRaises(ValueError):
-          Grapher(('x', 'y'), upd_freq=value, freq=None)
+          with_failure_manager(Grapher(('x', 'y'), upd_freq=value, freq=None))
 
   def test_constructor_accepts_fractional_size_and_screen_coordinates(
       self) -> None:
@@ -134,7 +136,7 @@ class TestGrapher(BlockTestBase):
   def test_prepare_requires_input_link(self) -> None:
     """Checks that a Grapher without input Links fails early."""
 
-    grapher = Grapher(('x', 'y'))
+    grapher = with_failure_manager(Grapher(('x', 'y')))
 
     with self.assertRaises(IOError):
       grapher.prepare()
@@ -143,7 +145,7 @@ class TestGrapher(BlockTestBase):
     """Checks that a Grapher cannot be used as a data source."""
 
     source = TestBlock()
-    grapher = Grapher(('x', 'y'))
+    grapher = with_failure_manager(Grapher(('x', 'y')))
     sink = TestBlock()
     link(source, grapher)
     link(grapher, sink)
@@ -218,7 +220,7 @@ class TestGrapher(BlockTestBase):
           observed_paths.append(grapher_module.os.environ.get(variable))
           return qt_app
 
-        grapher = Grapher(('x', 'y'))
+        grapher = with_failure_manager(Grapher(('x', 'y')))
         with (patch.dict(grapher_module.os.environ,
                          {variable: original_path}),
               patch.object(grapher_module, 'pg') as pyqtgraph):
@@ -497,7 +499,7 @@ class TestGrapher(BlockTestBase):
     """Checks that an unprepared Grapher does not close a current figure."""
 
     figure = grapher_module.plt.figure()
-    grapher = Grapher(('x', 'y'), plotter='mpl')
+    grapher = with_failure_manager(Grapher(('x', 'y'), plotter='mpl'))
 
     grapher.finish()
 

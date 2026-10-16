@@ -9,6 +9,9 @@ import logging
 import logging.handlers
 from functools import partial
 
+from ...._failure import FailureManager
+from ...._exceptions import StopRequested
+
 
 class HistogramProcess(Process):
   """Worker process that computes an 8-bit preview histogram through queues.
@@ -27,7 +30,10 @@ class HistogramProcess(Process):
                img_in: Queue,
                img_out: Queue,
                log_level: int | None,
-               log_queue: Queue) -> None:
+               log_queue: Queue,
+               failure_queue: Queue,
+               block_name: str,
+               owner_path: str) -> None:
     """Initializes worker resources without starting the process.
 
     Args:
@@ -45,6 +51,16 @@ class HistogramProcess(Process):
         logging.
       log_queue: Crappy logging queue, used with spawn and forkserver start
         methods to forward records to the main process.
+      failure_queue: :obj:`~multiprocessing.Queue` for reporting failures to
+        the configuration window.
+
+        .. versionadded:: 2.2.0
+      block_name: Name of the parent Block, shown in failure reports.
+
+        .. versionadded:: 2.2.0
+      owner_path: Name identifying this worker within its parent Block.
+
+        .. versionadded:: 2.2.0
     """
 
     self._logger: logging.Logger | None = None
@@ -53,13 +69,16 @@ class HistogramProcess(Process):
 
     super().__init__(name=f"{current_process().name}.{type(self).__name__}")
 
+    # Attributes for managing failure reporting
+    self._failure_queue = failure_queue
+    self._failure_manager: FailureManager
+    self._block_name: str = block_name
+    self._owner_path: str = owner_path
+
     self._stop_event: Event = stop_event
     self._processing_event: Event = processing_event
     self._img_in: Queue = img_in
     self._img_out: Queue = img_out
-    self._drained_queues: list[Queue] = list()
-    self._cancelled_queues: list[Queue] = list()
-    self._closed_queues: list[Queue] = list()
 
   def run(self) -> None:
     """Processes histogram requests until shutdown or failure.
@@ -69,26 +88,45 @@ class HistogramProcess(Process):
     backend rendering, not numerical bin counts.
     """
 
-    try:
-      self._processing_event.clear()
-      self.log(logging.DEBUG, "Histogram worker started")
+    # Make sure there's a FailureManager running
+    self._failure_manager = FailureManager(self._block_name,
+                                           'bootstrap',
+                                           owner_path=self._owner_path)
+    manager = self._failure_manager
 
-      # Looping until told to stop or an exception is raised
-      latest = None
-      while not self._stop_event.is_set():
+    # Guard execution with a FailureManager
+    with manager.collect('Histogram lifecycle', raise_on_exit=False):
+      with manager.step('execution'):
+        # Start with configuring the FailureManager and logger
+        manager.set_queue(self._failure_queue)
+        self._set_logger()
+        if self._logger is not None:
+          manager._logger = self._logger
+        manager.phase = 'configuration'
 
-        # Setting the processing event when busy processing an image
-        try:
-          # Add timeout to avoid spamming the CPU when no image is available
-          latest = self._img_in.get(timeout=0.01)
-          self._processing_event.set()
-          while True:
-            latest = self._img_in.get_nowait()
-        except Empty:
-          if latest is None:
-            continue
+        self._processing_event.clear()
+        self.log(logging.DEBUG, "Histogram worker started")
 
-        try:
+        # Looping until told to stop or an exception is raised
+        latest = None
+        while not self._stop_event.is_set():
+
+          # Setting the processing event when busy processing an image
+          try:
+            # Add timeout to avoid spamming the CPU when no image is available
+            latest = self._img_in.get(timeout=0.01)
+            self._processing_event.set()
+            while True:
+              latest = self._img_in.get_nowait()
+          except Empty:
+            if latest is None:
+              continue
+          # Case when reading from the Queue fails
+          except (EOFError, OSError):
+            if self._stop_event.is_set():
+              raise StopRequested from None
+            raise
+
           img, auto_range, low_thresh, high_thresh = latest
 
           # Fast-forward without running calculation
@@ -107,9 +145,11 @@ class HistogramProcess(Process):
                                     shape=(80, 512))
           out_img = np.flip(out_img, axis=0).astype('uint8')
 
-          # Adding vertical grey bars to indicate the limits of the auto range
+          # Adding vertical grey bars to indicate the limits of the
+          # auto-range
           if auto_range:
-            self.log(logging.DEBUG, "Drawing Auto range threshold markers")
+            self.log(logging.DEBUG, "Drawing Auto range threshold "
+                                    "markers")
             out_img[:, round(2 * low_thresh)] = 127
             out_img[:, round(2 * high_thresh)] = 127
 
@@ -117,81 +157,49 @@ class HistogramProcess(Process):
           self._img_out.put_nowait(out_img)
           self.log(logging.DEBUG, "Sent the histogram back to the "
                                   "CameraConfig")
-
-        # Cleanup performed at the end of each processing
-        finally:
           latest = None
           self._processing_event.clear()
 
-      self.log(logging.DEBUG, "Histogram worker stopping after shutdown "
-                              "request")
+        self.log(logging.DEBUG, "Histogram worker stopping after shutdown "
+                                "request")
+      manager.phase = 'configuration cleanup'
 
-    except KeyboardInterrupt:
-      self.log(logging.DEBUG, "Histogram worker interrupted")
-    except (Exception,) as exc:
-      if self._logger is None:
-        self._set_logger()
-      self._logger.exception("Histogram processing failed",
-                             exc_info=exc)
-    finally:
-      self._cleanup_queues()
+      # Clean up the managed multiprocessing objects
+      with manager.step('clear processing Event'):
+        self._processing_event.clear()
+      with manager.step('release preview Queues'):
+        self._cleanup_queues()
+      manager.phase = 'failure Queue shutdown'
+
+      # Handle proper termination of the FailureManager
+      with manager.step('disconnect'):
+        manager.set_queue(None)
+      with manager.step('close'):
+        self._failure_queue.close()
+      with manager.step('flush'):
+        self._failure_queue.join_thread()
 
   def _cleanup_queues(self) -> None:
-    """Drains and releases both worker Queue handles, even after failure."""
+    """Drains and releases both worker Queue handles, even after failure.
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    .. versionadded:: 2.2.0
+    """
 
-    for index, queue in enumerate((self._img_in, self._img_out)):
-      if (queue not in self._drained_queues and
-          queue not in self._closed_queues):
+    manager = self._failure_manager
 
-        # First, flush the Queues
-        try:
-          self._flush_queue(queue)
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note(f"HistogramProcess cleanup step: drain Queue "
-                         f"{index + 1}")
-          failures.append(error)
-        else:
-          self._drained_queues.append(queue)
-
-      # Then, cancel the feeder join
-      if queue not in self._cancelled_queues:
-        try:
+    # Flush and clean up the managed Queues
+    with manager.collect('Histogram preview cleanup'):
+      for index, queue in enumerate((self._img_in, self._img_out)):
+        with manager.step(f'drain Queue {index + 1}'):
+          try:
+            while True:
+              queue.get_nowait()
+          except Empty:
+            pass
+        with manager.step(f'cancel Queue {index + 1} feeder join'):
           queue.cancel_join_thread()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note(f"HistogramProcess cleanup step: cancel Queue "
-                         f"{index + 1} feeder join")
-          failures.append(error)
-        else:
-          self._cancelled_queues.append(queue)
-
-      # Then, close the queues
-      if queue not in self._closed_queues:
-        try:
+        with manager.step(f'close Queue {index + 1}'):
           queue.close()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note(f"HistogramProcess cleanup step: close Queue "
-                         f"{index + 1}")
-          failures.append(error)
-        else:
-          self._closed_queues.append(queue)
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other HistogramProcess cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("HistogramProcess cleanup failures", failures)
 
   @staticmethod
   def _hist_func(x: np.ndarray,
@@ -201,21 +209,6 @@ class HistogramProcess(Process):
     the histogram."""
 
     return np.where(x <= histo, 0, 255)
-
-  @staticmethod
-  def _flush_queue(queue: Queue) -> None:
-    """Drains a :obj:`~multiprocessing.Queue` before exiting.
-
-    Pending queue contents can prevent the
-    :class:`~crappy.tool.camera_config.config_tools.HistogramProcess` from
-    finishing on time, especially with the spawn start method.
-    """
-
-    try:
-      while True:
-        queue.get_nowait()
-    except Empty:
-      pass
 
   def log(self, level: int, msg: str) -> None:
     """Records log messages for the
@@ -241,10 +234,9 @@ class HistogramProcess(Process):
     logger = logging.getLogger(self.name)
 
     # Disabling logging if requested
+    logger.disabled = self._log_level is None
     if self._log_level is not None:
       logger.setLevel(self._log_level)
-    else:
-      logging.disable()
 
     # On spawn and forkserver, the messages need to be sent through a Queue for
     # logging

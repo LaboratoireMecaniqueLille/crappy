@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from unittest.mock import patch, sentinel
+from crappy._failure import FailureManager
 
 from crappy.blocks.camera import Camera
 from crappy.blocks.dic_ve import DICVE
@@ -159,6 +160,7 @@ class TestDICVE(CameraWrapperTestBase):
                   transform=transform,
                   config_backend='tkinter',
                   **self.camera_kwargs(config=True))
+    block._failure_manager = FailureManager(block.name, 'prepare')
     block._camera = sentinel.camera
     block._log_queue = sentinel.log_queue
     block._log_level = 30
@@ -174,4 +176,5 @@ class TestDICVE(CameraWrapperTestBase):
                                      'pyqt': dic_ve_module.PyQtDICVEConfig},
                                     sentinel.camera, 'tkinter',
                                     sentinel.log_queue, 30, 123.0, transform,
+                                    block._failure_manager,
                                     patches=sentinel.patches)

@@ -247,6 +247,7 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
                          "not")
 
     self.log(logging.INFO, "Instantiating the VideoExtenso tool")
+    assert self._stop_event is not None
     self._ve = VideoExtensoTool(spots=self._spots,
                                 thresh=self._thresh,
                                 log_level=self._log_level,
@@ -255,7 +256,10 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
                                 update_thresh=self._update_thresh,
                                 safe_mode=self._safe_mode,
                                 border=self._border,
-                                blur=self._blur)
+                                blur=self._blur,
+                                failure_manager=self._failure_manager,
+                                stop_event=self._stop_event,
+                                raise_on_lost_spot=self._raise_on_lost_spot)
 
     # Mandatory otherwise the Block won't run
     super().prepare()
@@ -311,35 +315,33 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
         raise RuntimeError("The VideoExtensoTool isn't initialized")
 
       # Sending the results to the downstream Blocks, including the overlay
-      if (data := self._ve.get_data(img)) is not None:
+      data = self._ve.get_data(img)
+      if isinstance(data, str):
+        raise LostSpotError(data)
+      if data is not None:
         self.send([metadata['t(s)'], metadata, *data, self._ve.spots])
 
         # Save the last data points for the case when spots are lost
         self._last_data = data
 
     # In case the spots were just lost
-    except LostSpotError:
-      if self._ve is None:
-        self.log(logging.ERROR, "Trying to stop the spot Trackers but they "
-                                "are not initialized")
-      else:
-        self.log(logging.INFO, "Spots lost, stopping the spot trackers")
-        self._ve.stop_tracking()
-      # Raising if specified by the user
-      if self._raise_on_lost_spot:
-        self.log(logging.ERROR, "Spots lost, stopping the VideoExtenso "
-                                "process")
-        raise
+    except LostSpotError as error:
+      manager = self._failure_manager
+      with manager.collect('Lost spot shutdown'):
+        if self._raise_on_lost_spot:
+          manager.record_context_exception(error, 'lost spot')
+        with manager.step('stop spot trackers'):
+          if self._ve is not None:
+            self._ve.stop_tracking()
       # Otherwise, simply setting a flag so that no additional
       # processing is performed
-      else:
-        self._lost_spots = True
-        self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
-                                  "idle until the test ends")
-        # Send a message with the last data points and no overlay for stopping
-        # the display of the overlay
-        if self._last_data is not None:
-          self.send([metadata['t(s)'], metadata, *self._last_data, list()])
+      self._lost_spots = True
+      self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
+                                "idle until the test ends")
+      # Send a message with the last data points and no overlay for stopping
+      # the display of the overlay
+      if self._last_data is not None:
+        self.send([metadata['t(s)'], metadata, *self._last_data, list()])
 
     # If requested, displays the FPS of the image display
     if self.display_freq:
@@ -348,39 +350,19 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
   def finish(self) -> None:
     """Stops the spot trackers and releases inherited image resources."""
 
-    failures: list[Exception | KeyboardInterrupt] = list()
+    manager = self._failure_manager
 
-    if self._ve is not None:
-      self.log(logging.INFO, "Stopping the spot trackers before returning")
-      try:
-        self._ve.stop_tracking()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("VideoExtenso cleanup step: stop spot trackers")
-        failures.append(error)
-      else:
-        self._ve = None
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('VideoExtenso cleanup'):
+      if self._ve is not None:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, "Stopping the spot trackers before returning")
+        with manager.step('stop spot trackers'):
+          self._ve.stop_tracking()
+          self._ve = None
 
-    try:
-      super().finish()
-    except (Exception, KeyboardInterrupt) as error:
-      error.add_note("VideoExtenso cleanup step: release shared image buffers")
-      failures.append(error)
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other VideoExtenso cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("VideoExtenso cleanup failures", failures)
+      with manager.step('release shared image buffers'):
+        super().finish()
 
   def request_config(self, source: str) -> ConfigRequest:
     """Builds the VideoExtenso configuration request for an image source.

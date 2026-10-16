@@ -3,6 +3,7 @@
 from .test_advanced_tutorials import TestAdvancedTutorialDownloads
 from .test_ai_discovery import TestAiDiscovery
 from .test_api_reference import TestPublicApiReference
+from .test_failure_handling import TestFailureDocumentation
 from .test_custom_object_tutorials import TestCustomObjectTutorialDownloads
 from .test_downloads import TestDownloadablePythonFiles
 from .test_getting_started import TestGettingStartedDownloads

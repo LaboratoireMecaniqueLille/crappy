@@ -25,6 +25,7 @@ class TestOptionalImports(unittest.TestCase):
 
         builtins.__import__ = without_pyqt
 
+        from crappy._failure import FailureManager
         from crappy.camera.meta_camera import Camera
         from crappy.tool.camera_config.base import CameraConfig
         from crappy.tool.camera_config.tkinter import (
@@ -49,8 +50,9 @@ class TestOptionalImports(unittest.TestCase):
             return None
 
         try:
-          PyQtCameraConfig(NoHardwareCamera(), None, None, None, None)
-        except RuntimeError as error:
+          PyQtCameraConfig(NoHardwareCamera(), None, None, None, None,
+                          FailureManager('test configuration', 'configuration'))
+        except ImportError as error:
           assert 'PyQt6' in str(error), error
         else:
           raise AssertionError('Missing PyQt6 should be reported on use')

@@ -12,20 +12,22 @@ from socket import timeout, gaierror
 from itertools import chain
 import logging
 
+from .._exceptions import ProcessExitError, StopRequested, ShutdownTimeoutError
 from .meta_block import Block
 from .._global import OptionalModule
 
 try:
   import paho.mqtt.client as mqtt
-except (ModuleNotFoundError, ImportError):
-  mqtt = OptionalModule("paho-mqtt")
+except (ModuleNotFoundError, ImportError) as error:
+  mqtt = OptionalModule("paho.mqtt.client", install_name="paho-mqtt",
+                        cause=error)
 
 TopicsType = Sequence[str | Sequence[str]]
 
 
 class ClientServer(Block):
   """This Block can exchange data on a local network using the MQTT protocol.
-  
+
   It communicates with an MQTT broker, from which it can receive data by
   subscribing to topics, and to which it can send data by publishing in topics.
   This Block can also manage the execution of a Mosquitto broker, so that the
@@ -413,119 +415,76 @@ class ClientServer(Block):
     Cleanup also works after partial preparation.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
-    self._stop_mosquitto = True
+    manager = self._failure_manager
 
-    if self._client is not None:
-      # Disconnect first so loop_stop does not wait on an active connection
-      if not self._client_disconnected:
-        try:
-          self._client.disconnect()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: disconnect MQTT client")
-          failures.append(error)
-        else:
-          self._client_disconnected = True
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('ClientServer cleanup'):
+      self._stop_mosquitto = True
 
-      # Stop the client loop
-      if self._client_loop_started:
-        try:
-          self._client.loop_stop()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: stop MQTT loop")
-          failures.append(error)
-        else:
-          self._client_loop_started = False
-      if self._client_disconnected and not self._client_loop_started:
-        self._client = None
+      if self._client is not None:
+        # Disconnect first so loop_stop does not wait on an active connection
+        if not self._client_disconnected:
+          with manager.step('disconnect MQTT client'):
+            self._client.disconnect()
+            self._client_disconnected = True
 
-    # An existing broker process belongs to this Block, even after failed setup
-    if self._proc is not None and not self._broker_stopped:
-      try:
-        self._proc.terminate()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("ClientServer cleanup step: terminate broker")
-        failures.append(error)
+        # Stop the client loop
+        if self._client_loop_started:
+          with manager.step('stop MQTT loop'):
+            self._client.loop_stop()
+            self._client_loop_started = False
+        if self._client_disconnected and not self._client_loop_started:
+          self._client = None
 
-      # Wait for the subprocess to terminate
-      try:
-        self._proc.wait(timeout=15)
-      except TimeoutExpired:
-        pass
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("ClientServer cleanup step: wait for broker")
-        failures.append(error)
-      else:
-        self._broker_stopped = True
+      # An existing broker process belongs to this Block, even after failed
+      # setup
+      if self._proc is not None and not self._broker_stopped:
+        with manager.step('terminate broker'):
+          self._proc.terminate()
+        # Wait for the subprocess to terminate
+        with manager.step('wait for broker'):
+          try:
+            self._proc.wait(timeout=2.0)
+          except TimeoutExpired:
+            pass
+          else:
+            self._broker_stopped = True
 
-      # Kill the subprocess if it is still alive
-      if not self._broker_stopped:
-        try:
-          self._proc.kill()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: kill broker")
-          failures.append(error)
+        # Kill the subprocess if it is still alive
+        if not self._broker_stopped:
+          with manager.step('kill broker'):
+            self._proc.kill()
+          # Give some time for the subprocess to die
+          with manager.step('reap killed broker'):
+            self._proc.wait(timeout=0.5)
+            self._broker_stopped = True
 
-        # Give some time for the subprocess to die
-        try:
-          self._proc.wait(timeout=1)
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: reap killed broker")
-          failures.append(error)
-        else:
-          self._broker_stopped = True
-
-    if self._reader is not None:
-      if self._reader_started:
-        # give some time for the reader thread to stop
-        try:
-          self._reader.join(0.2)
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: join broker reader")
-          failures.append(error)
-
-        # Report the reader thread failing to stop
-        try:
-          if self._reader.is_alive():
-            raise RuntimeError("The broker reader thread did not stop in time")
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: check broker reader")
-          failures.append(error)
+      if self._reader is not None:
+        if self._reader_started:
+          # give some time for the reader thread to stop
+          with manager.step('join broker reader'):
+            self._reader.join(0.5)
+          # Report the reader thread failing to stop
+          with manager.step('check broker reader'):
+            if self._reader.is_alive():
+              raise ShutdownTimeoutError("The broker reader thread did not "
+                                         "stop",
+                                         phase='monitoring',
+                                         timeout=0.5)
+            self._reader = None
+            self._reader_started = False
         else:
           self._reader = None
-          self._reader_started = False
-      else:
-        self._reader = None
 
-    # Closing stdout while its reader holds the stream lock could block
-    if self._proc is not None and self._reader is None:
-      if not self._broker_stdout_closed:
-        try:
-          if self._proc.stdout is not None:
-            self._proc.stdout.close()
-        except (Exception, KeyboardInterrupt) as error:
-          error.add_note("ClientServer cleanup step: close broker stdout")
-          failures.append(error)
-        else:
-          self._broker_stdout_closed = True
-      if self._broker_stopped and self._broker_stdout_closed:
-        self._proc = None
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other ClientServer cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("ClientServer cleanup failures", failures)
+      # Closing stdout while its reader holds the stream lock could block
+      if self._proc is not None and self._reader is None:
+        if not self._broker_stdout_closed:
+          with manager.step('close broker stdout'):
+            if self._proc.stdout is not None:
+              self._proc.stdout.close()
+            self._broker_stdout_closed = True
+        if self._broker_stopped and self._broker_stdout_closed:
+          self._proc = None
 
   def _launch_mosquitto(self) -> None:
     """Starts Mosquitto in a subprocess."""
@@ -540,41 +499,102 @@ class ClientServer(Block):
   def _output_reader(self) -> None:
     """Reads the output strings from Mosquitto's subprocess."""
 
-    while not self._stop_mosquitto:
-      for line in iter(self._proc.stdout.readline, b''):
-        self.log(logging.INFO, f"[Mosquitto] {line.decode()}")
-        if 'Error: Address already in use' in line.decode():
-          self.log(logging.WARNING, "Mosquitto is already running on this "
-                                    "port !")
-      sleep(0.1)
+    manager = self._failure_manager
+    process = self._proc
+    stop = self._stop_event
 
-  def _on_message(self, _, __, message) -> None:
-    """Buffers the received data.
+    # Guard Exceptions with the FailureManager
+    with manager.collect('Broker output reception', raise_on_exit=False):
+      with manager.step('read broker output'):
+        if process is None or process.stdout is None:
+          raise RuntimeError("The broker output stream is unavailable")
+        # Read the output strings from the subprocess
+        while (not self._stop_mosquitto and
+               (stop is None or not stop.is_set())):
+          try:
+            line = process.stdout.readline()
+          except (EOFError, OSError):
+            if self._stop_mosquitto or (stop is not None and stop.is_set()):
+              raise StopRequested from None
+            raise
+          # Stop when told to
+          if not line:
+            if self._stop_mosquitto or (stop is not None and stop.is_set()):
+              break
+            # If the subprocess exited with an error code, report it
+            code = process.poll()
+            raise ProcessExitError(f"Mosquitto broker exited unexpectedly "
+                                   f"({code})",
+                                   process_name='Mosquitto',
+                                   pid=process.pid,
+                                   phase='main',
+                                   exitcode=code)
+          text = line.decode()
+          self.log(logging.INFO, f"[Mosquitto] {text}")
+          if 'Error: Address already in use' in text:
+            self.log(logging.WARNING, "Mosquitto is already running on this "
+                                      "port")
+      # Stop as soon as an error report is received
+      if manager.snapshot():
+        with manager.step('request broker failure shutdown'):
+          if stop is not None:
+            stop.set()
+        with manager.step('abort broker preparation'):
+          if (self._ready_barrier is not None and
+              (self._start_event is None or not self._start_event.is_set())):
+            self._ready_barrier.abort()
 
-    The received message consists in a list of lists of values. Data is placed
-    in the right buffer according to the topic, in the form of lists of values.
+  def _on_message(self, _: Any, __: Any, message: Any) -> None:
+    """Stores incoming MQTT data in the matching topic's buffer.
+
+    Invalid pickle data produces a warning and is ignored. Unexpected failures
+    are reported and request the test to stop.
+
+    Args:
+      _: MQTT client supplied by the library.
+      __: User data supplied by the library.
+      message: MQTT message with a topic and a pickled payload.
     """
 
     try:
-      self.log(logging.DEBUG, f"Received message from the broker: {message}")
-      for data_points in zip(*loads(message.payload)):
-        self._buffer_output[literal_eval(message.topic)].put_nowait(
-          list(data_points))
-    except UnpicklingError:
-      self.log(logging.WARNING, f"Received message caused UnpicklingError, "
-                                f"ignoring it: {message}")
+      try:
+        self.log(logging.DEBUG, f"Received message from the broker: {message}")
+        for data_points in zip(*loads(message.payload)):
+          self._buffer_output[literal_eval(message.topic)].put_nowait(
+            list(data_points))
+      except UnpicklingError:
+        self.log(logging.WARNING, f"Received message caused UnpicklingError, "
+                                  f"ignoring it: {message}")
+    except BaseException as error:
+      self._record_callback_failure(error)
 
-  def _on_connect(self, _, __, ___, rc: Any) -> None:
-    """Automatically subscribes to the topics when connecting to the broker."""
+  def _on_connect(self, _: Any, __: Any, ___: Any, rc: Any) -> None:
+    """Subscribes to the requested MQTT topics after connecting.
 
-    self.log(logging.INFO, f"Connected to the broker with return code {rc}")
+    A refused connection is reported as a failure and requests the test to
+    stop.
 
-    # Subscribing on connect, so that it automatically resubscribes when
-    # reconnecting after a connection loss
-    if self._topics is not None:
-      for topic in self._topics:
-        self._client.subscribe(topic=str(topic), qos=0)
-        self.log(logging.INFO, f"Subscribed to topic {topic}")
+    Args:
+      _: MQTT client supplied by the library.
+      __: User data supplied by the library.
+      ___: Connection flags supplied by the library.
+      rc: Connection result code. Zero means the connection succeeded.
+    """
 
-    self._client.loop_start()
-    self._client_loop_started = True
+    try:
+      if rc != 0:
+        raise ConnectionRefusedError(f"MQTT connection refused (return code "
+                                     f"{rc})")
+      self.log(logging.INFO, f"Connected to the broker with return code {rc}")
+
+      # Subscribing on connect, so that it automatically resubscribes when
+      # reconnecting after a connection loss
+      if self._topics is not None:
+        for topic in self._topics:
+          self._client.subscribe(topic=str(topic), qos=0)
+          self.log(logging.INFO, f"Subscribed to topic {topic}")
+
+      self._client.loop_start()
+      self._client_loop_started = True
+    except BaseException as error:
+      self._record_callback_failure(error)

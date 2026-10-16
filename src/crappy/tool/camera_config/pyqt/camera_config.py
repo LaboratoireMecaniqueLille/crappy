@@ -27,11 +27,13 @@ from ....camera.meta_camera import Camera
 from ....camera.meta_camera.camera_setting import (
   CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting, CameraSetting)
 from ...._global import OptionalModule
+from ...._failure import FailureManager
+from ...._exceptions import StopRequested
 
 try:
   from PIL import Image
-except (ModuleNotFoundError, ImportError):
-  Image = OptionalModule('pillow')
+except (ModuleNotFoundError, ImportError) as error:
+  Image = OptionalModule("PIL", install_name="Pillow", cause=error)
 
 try:
   from PyQt6.QtCore import QEvent, QEventLoop, Qt, QTimer, QCoreApplication
@@ -40,12 +42,12 @@ try:
                                QGroupBox, QHBoxLayout, QLabel, QMessageBox,
                                QPushButton, QRadioButton, QScrollArea,
                                QSizePolicy, QSlider, QVBoxLayout, QWidget)
-except (ModuleNotFoundError, ImportError):
+except (ModuleNotFoundError, ImportError) as error:
   QEvent = QEventLoop = Qt = QTimer = QCloseEvent = QImage = QPalette = \
     QPixmap = QApplication = QButtonGroup = QCheckBox = QFrame = QGroupBox = \
     QHBoxLayout = QLabel = QMessageBox = QPushButton = QRadioButton = \
     QScrollArea = QSizePolicy = QSlider = QVBoxLayout = QCoreApplication = \
-    OptionalModule('PyQt6')
+    OptionalModule('PyQt6', cause=error)
   # A base class must be a type, even when Qt is unavailable
   QWidget = object
 
@@ -120,7 +122,9 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
-               *_, **__) -> None:
+               failure_manager: FailureManager,
+               *_: Any,
+               **__: Any) -> None:
     """Builds the window and histogram resources without starting acquisition.
 
     Args:
@@ -135,7 +139,19 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
+      *_: Additional positional arguments, unused by this base window.
+      **__: Additional keyword arguments, unused by this base window.
     """
+
+    # Attributes for handling lifecycle and Exception reports
+    self._failure_manager: FailureManager = failure_manager
+    self._cancelled: bool = False
+    self._running: bool = False
+    self._window_created: bool = False
 
     # Reuse an application created by the caller, or create one for this window
     self._qt_app: QApplication = self._get_application()
@@ -153,19 +169,22 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
     self._hist: np.ndarray | None = None
     self._setting_controls: dict[CameraSetting, _QtSettingControl] = dict()
 
-    # Abort early if the Camera settings cannot be initialized
+    # Abort early if the configuration window cannot be initialized
     try:
-      super().__init__(camera, log_queue, log_level, max_freq, transform)
-    except BaseException:
-      self._window_closed = True
-      try:
-        self.close()
-      except (Exception,):
-        pass
-      raise
+      super().__init__(camera, log_queue, log_level, max_freq, transform,
+                       self._failure_manager)
+    except BaseException as error:
+      with self._failure_manager.collect('Configuration initialization'):
+        self._failure_manager.record_context_exception(error,
+                                                       'initialize settings')
+        if self._window_created:
+          with self._failure_manager.step('close partial window'):
+            self._window_closed = True
+            if not self.close():
+              raise RuntimeError("The configuration window refused to close")
 
     # A constructor failure must close any queues that were already created
-    created_queues: list[MPQueue] = []
+    created_queues: list[MPQueue] = list()
     histogram_process: HistogramProcess | None = None
     try:
       self._stop_event: synchronize.Event = Event()
@@ -174,72 +193,43 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
       created_queues.append(self._img_in)
       self._img_out: MPQueue = Queue(maxsize=0)
       created_queues.append(self._img_out)
+      self._failure_queue: MPQueue = Queue()
+      created_queues.append(self._failure_queue)
       self._histogram_process = HistogramProcess(
           stop_event=self._stop_event,
           processing_event=self._processing_event,
           img_in=self._img_in,
           img_out=self._img_out,
           log_level=self._log_level,
-          log_queue=self._log_queue)
+          log_queue=self._log_queue,
+          failure_queue=self._failure_queue,
+          block_name=self._failure_manager.block_name,
+          owner_path=f'{self._failure_manager.owner_path}.'
+                     f'{type(self).__name__}.HistogramProcess')
       histogram_process = self._histogram_process
       self._lifecycle = ConfigurationLifecycle(
           self._stop_event, self._histogram_process,
-          (self._img_in, self._img_out), self.log)
+          (self._img_in, self._img_out), self._failure_manager,
+          self._failure_queue)
     except BaseException as error:
-      failures: list[BaseException] = [error]
-
-      # Close the histogram process that wasn't started yet
-      if histogram_process is not None:
-        try:
-          histogram_process.close()
-        except (Exception, KeyboardInterrupt) as cleanup_error:
-          cleanup_error.add_note("PyQtCameraConfig rollback step: close "
-                                 "histogram")
-          failures.append(cleanup_error)
-
-      # Close the opened Queues
-      for index, queue in enumerate(created_queues):
-        # First cancel the feeder join
-        try:
-          queue.cancel_join_thread()
-        except (Exception, KeyboardInterrupt) as cleanup_error:
-          cleanup_error.add_note("PyQtCameraConfig rollback step: cancel "
-                                 f"Queue {index + 1} feeder join")
-          failures.append(cleanup_error)
-        # Then actually close the Queues
-        try:
-          queue.close()
-        except (Exception, KeyboardInterrupt) as cleanup_error:
-          cleanup_error.add_note("PyQtCameraConfig rollback step: close "
-                                 f"Queue {index + 1}")
-          failures.append(cleanup_error)
-      self._window_closed = True
-
-      # Then properly close the opened window
-      try:
-        if not self.close():
-          raise RuntimeError("The configuration window refused to close")
-      except (Exception, KeyboardInterrupt) as cleanup_error:
-        cleanup_error.add_note("PyQtCameraConfig rollback step: close window")
-        failures.append(cleanup_error)
-
-      # If there's only one Exception, raise it
-      if len(failures) == 1:
-        raise
-      # Handle the case when a KeyboardInterrupt is among the Exceptions
-      elif any(isinstance(exc, KeyboardInterrupt) for exc in failures):
-        for index, exc in enumerate(failures):
-          if isinstance(exc, KeyboardInterrupt):
-            others = failures[:index] + failures[index + 1:]
-            if exc.__cause__ is not None:
-              others.insert(0, exc.__cause__)
-            raise exc from BaseExceptionGroup("Other PyQtCameraConfig "
-                                              "initialization failures",
-                                              others)
-      # Otherwise just raise all Exceptions at once
-      else:
-        raise BaseExceptionGroup("PyQtCameraConfig initialization failures",
-                                 failures)
+      manager = self._failure_manager
+      with manager.collect('Configuration initialization'):
+        manager.record_context_exception(error, 'initialize histogram')
+        # Close the histogram process that wasn't started yet
+        if histogram_process is not None:
+          with manager.step('close unstarted histogram'):
+            histogram_process.close()
+        # Close the opened Queues
+        for index, queue in enumerate(created_queues):
+          with manager.step(f'cancel Queue {index + 1} feeder join'):
+            queue.cancel_join_thread()
+          with manager.step(f'close Queue {index + 1}'):
+            queue.close()
+        # Then properly close the opened window
+        with manager.step('close partial window'):
+          self._window_closed = True
+          if not self.close():
+            raise RuntimeError("The configuration window refused to close")
 
     # Assemble the interface only after the core and histogram process exist
     try:
@@ -260,9 +250,12 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
                           f'{type(camera).__name__}')
       self._set_layout()
       self._add_settings()
-    except BaseException:
-      self.stop()
-      raise
+    except BaseException as error:
+      with self._failure_manager.collect('Configuration initialization'):
+        self._failure_manager.record_context_exception(error,
+                                                       'build interface')
+        with self._failure_manager.step('stop partial configuration'):
+          self.stop()
 
   @staticmethod
   def _get_application() -> QApplication:
@@ -302,10 +295,14 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
         os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
 
   def _guard(self, callback: Callable[..., Any]) -> Callable[..., None]:
-    """Wraps a Qt callback so failures can be raised after the event loop.
+    """Makes a callback report failures and close the configuration window.
 
     Args:
-      callback: The function connected to a Qt signal.
+      callback: Function to call when the Qt signal is received.
+
+    Returns:
+      Callable accepting the signal's arguments. A caught failure is reported
+      and raised after the window closes.
     """
 
     def guarded(*args: Any) -> None:
@@ -317,23 +314,27 @@ PyQtCameraConfig.stop>`  and :class:`~crappy.blocks.meta_block.block.Block`
     return guarded
 
   def _record_callback_failure(self, error: BaseException) -> None:
-    """Reports a callback failure and asks the window to close.
+    """Reports a callback failure and closes the configuration window.
 
-    The lifecycle retains the original traceback for :meth:`run` to raise
-    after the Qt event loop has stopped. Keyboard interrupts close silently.
+    The failure is raised after the window closes. Interruptions do not open
+    an error dialog.
+
+    Args:
+      error: Exception or :exc:`BaseExceptionGroup` caught by the callback.
     """
 
-    self._lifecycle.record_callback_failure(error, error.__traceback__)
-    try:
-      if not isinstance(error, KeyboardInterrupt):
-        QMessageBox.critical(self, 'Error!',
-                             f'{type(error).__name__}\n{error}')
-    except Exception as dialog_error:
-      self.log(logging.ERROR, 'Could not display configuration error',
-               exc_info=(type(dialog_error), dialog_error,
-                         dialog_error.__traceback__))
-    finally:
-      self._lifecycle.request_close(self.stop)
+    with self._failure_manager.collect('Configuration callback',
+                                       raise_on_exit=False):
+      self._failure_manager.record_context_exception(error, 'callback')
+      with self._failure_manager.step('show error'):
+        if (not self._window_destroyed and
+            not any(isinstance(member, KeyboardInterrupt)
+                    for member in
+                    self._failure_manager.iter_exception_members(error))):
+          QMessageBox.critical(self, 'Error!',
+                               f'{type(error).__name__}\n{error}')
+      with self._failure_manager.step('close configuration'):
+        self.stop()
 
   def run(self) -> None:
     """Runs configuration until user close, failure, or
@@ -347,32 +348,34 @@ PyQtCameraConfig.watch_shutdown>` bypasses selection validation.
 
     Raises:
       RuntimeError: If the window has already been closed.
-      KeyboardInterrupt: After cleanup, without an error dialog or error log.
+      BaseExceptionGroup: Retained failures after cleanup.
+      StopRequested: If the parent Block cancelled configuration.
     """
 
-    try:
-      self._lifecycle.raise_if_failed()
-      if self._window_closed:
-        raise RuntimeError('Cannot run a closed configuration window')
-      self._check_shutdown()
-      if not self._window_closed:
-        self._event_loop = QEventLoop(self)
-        self.show()
-        self.start()
-        self._event_loop.exec()
-    except BaseException as error:
-      try:
-        self.stop()
-      except Exception as cleanup_error:
-        self.log(logging.ERROR, 'Could not clean up configuration window',
-                 exc_info=(type(cleanup_error), cleanup_error,
-                           cleanup_error.__traceback__))
-      if not isinstance(error, KeyboardInterrupt):
-        self._lifecycle.raise_if_failed()
-      raise
+    manager = self._failure_manager
+    self._running = True
+    with manager.collect('Configuration run', raise_on_exit=False):
+      with manager.step('run event loop'):
+        # Stop as soon as an error is reported
+        if manager.snapshot():
+          raise StopRequested
+        if self._window_closed:
+          raise RuntimeError("Cannot run a closed configuration window")
+        self._check_shutdown()
+        # The main run path
+        if not self._window_closed:
+          self._event_loop = QEventLoop(self)
+          self.show()
+          self.start()
+          self._event_loop.exec()
 
-    self.stop()
-    self._lifecycle.raise_if_failed()
+      # Once we're done running, stop the window and raise any Exception
+      self._running = False
+      with manager.step('stop configuration'):
+        self.stop()
+    manager.raise_if_failed('Configuration failures')
+    if self._cancelled:
+      raise StopRequested
 
   def start(self) -> None:
     """Starts the histogram worker and schedules preview updates.
@@ -402,8 +405,7 @@ PyQtCameraConfig.start>`. The window can be started only once. A closed window
     self._next_acq_t = -float('inf')
     self._acquisition_timer.start(0)
     self._indicator_timer.start()
-    if self._shutdown_requested is not None:
-      self._shutdown_timer.start()
+    self._shutdown_timer.start()
 
   def watch_shutdown(self, requested: Callable[[], bool]) -> None:
     """Registers a shutdown condition checked by PyQt's event loop.
@@ -427,9 +429,14 @@ PyQtCameraConfig.start>`. The window can be started only once. A closed window
     """Checks the :class:`~crappy.blocks.meta_block.block.Block` shutdown
     request from the Qt event loop."""
 
-    if (not self._window_closed and
-        self._shutdown_requested is not None and
-        self._shutdown_requested()):
+    if self._window_closed:
+      return
+
+    if self._lifecycle.failed:
+      self.stop()
+    elif (self._shutdown_requested is not None and
+          self._shutdown_requested()):
+      self._cancelled = True
       self.log(logging.DEBUG, 'Closing configuration after Block shutdown '
                               'request')
       self.stop()
@@ -450,6 +457,7 @@ Camera` setting edits are not applied here. If the
 
     # The Block may need to close even when its current selection is invalid
     if self._shutdown_requested is not None and self._shutdown_requested():
+      self._cancelled = True
       self.stop()
       return
     if (reason := self._validate_close()) is not None:
@@ -487,65 +495,36 @@ Camera` setting edits are not applied here. If the
     owned by the :class:`~crappy.blocks.meta_block.block.Block`.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
-    self._window_closed = True
+    manager = self._failure_manager
+    with manager.collect('Configuration window cleanup'):
+      self._window_closed = True
 
-    # Cancel every timer independently
-    for timer in (self._acquisition_timer, self._indicator_timer,
-                  self._shutdown_timer):
-      if timer is None or timer in self._stopped_timers:
-        continue
-      try:
-        timer.stop()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("PyQtCameraConfig cleanup step: stop update timer")
-        failures.append(error)
-      else:
-        self._stopped_timers.append(timer)
+      # Cancel every timer independently
+      for timer in (self._acquisition_timer, self._indicator_timer,
+                    self._shutdown_timer):
+        if timer is None or timer in self._stopped_timers:
+          continue
+        with manager.step('stop update timer'):
+          timer.stop()
+          self._stopped_timers.append(timer)
 
-    # Destroy the current window
-    if not self._window_destroyed:
-      try:
-        if not self.close():
-          raise RuntimeError("The configuration window refused to close")
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("PyQtCameraConfig cleanup step: close window")
-        failures.append(error)
-      else:
-        self._window_destroyed = True
+      # Close the window and report any failure
+      if not self._window_destroyed:
+        with manager.step('close window'):
+          if not self.close():
+            raise RuntimeError("The configuration window refused to close")
+          self._window_destroyed = True
 
-    # Quit the event loop
-    if self._event_loop is not None:
-      try:
-        self._event_loop.quit()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("PyQtCameraConfig cleanup step: quit event loop")
-        failures.append(error)
-      else:
-        self._event_loop = None
+      # Quit the event loop
+      if self._event_loop is not None:
+        with manager.step('quit event loop'):
+          self._event_loop.quit()
+          self._event_loop = None
 
-    # Release the histogram process resources
-    try:
-      self._lifecycle.close_resources()
-    except (Exception, KeyboardInterrupt) as error:
-      error.add_note("PyQtCameraConfig cleanup step: release histogram")
-      failures.append(error)
-
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other PyQtCameraConfig cleanup "
-                                              "failures", others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("PyQtCameraConfig cleanup failures", failures)
+      # Release the histogram process resources
+      if not self._running:
+        with manager.step('release histogram'):
+          self._lifecycle.close_resources()
 
   def _set_frame_style(self) -> None:
     """Rounds frame outlines and softens their current theme's text color."""

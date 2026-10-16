@@ -4,7 +4,7 @@ import logging
 from multiprocessing import current_process
 from unittest import TestCase
 from unittest.mock import patch
-from crappy._global import DefinitionError
+from crappy._exceptions import DefinitionError
 from crappy.actuator.meta_actuator.actuator import Actuator
 import crappy.actuator.meta_actuator.actuator as actuator_module
 

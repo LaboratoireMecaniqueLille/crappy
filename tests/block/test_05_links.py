@@ -1,13 +1,13 @@
 # coding: utf-8
 
 from crappy import Block
-from crappy._global import LinkDataError
+from crappy._exceptions import LinkDataError
 from crappy.blocks.vision import VisionBlock
 from crappy.links import GraphStructureError, ImageLink, link_graph
 from itertools import chain
 from multiprocessing import Barrier, Event, Value, Queue
 
-from .block_test_base import BlockTestBase, TestBlock, link
+from .block_test_base import BlockTestBase, TestBlock, exception_leaves, link
 
 
 class TestBlockLink(TestBlock):
@@ -78,8 +78,10 @@ class TestLinks(BlockTestBase):
 
     link(source, target, name='first')
 
-    with self.assertRaises(GraphStructureError):
+    with self.assertRaises(ExceptionGroup) as caught:
       link(source, target, name='rejected')
+    failure, = exception_leaves(caught.exception)
+    self.assertIsInstance(failure, GraphStructureError)
 
     self.assertEqual(len(source.outputs), 1)
     self.assertEqual(len(target.inputs), 1)
@@ -100,8 +102,10 @@ class TestLinks(BlockTestBase):
 
     link(first, second, name='shared-name')
 
-    with self.assertRaises(GraphStructureError):
+    with self.assertRaises(ExceptionGroup) as caught:
       link(first, third, name='shared-name')
+    failure, = exception_leaves(caught.exception)
+    self.assertIsInstance(failure, GraphStructureError)
 
     self.assertEqual(len(first.outputs), 1)
     self.assertEqual(len(second.inputs), 1)
@@ -517,15 +521,13 @@ class TestLinks(BlockTestBase):
     Block.reset()
 
   def test_link_data_error(self) -> None:
-    """Tests that a Link data conversion error sets the shared raise Event."""
+    """Tests that a Link data conversion error sets the failure Queue."""
 
     self._block = TestBlockLink(stop=False)
 
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -567,8 +569,7 @@ class TestLinks(BlockTestBase):
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertTrue(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertTrue(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())

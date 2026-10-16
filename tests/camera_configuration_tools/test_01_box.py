@@ -107,6 +107,23 @@ class TestBox(unittest.TestCase):
 
     self._box.reset()
 
+  def test_draw_preserves_grouped_interruptions(self) -> None:
+    """Rendering recovery must not swallow an interruption inside a group."""
+
+    error = BaseExceptionGroup('drawing interrupted',
+                               [ValueError('bad pixels'), KeyboardInterrupt()])
+
+    class FailingImage:
+      shape = (100, 100)
+
+      def __getitem__(self, key):
+        raise error
+
+    box = Box(x_start=25, x_end=75, y_start=25, y_end=75)
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      box.draw(FailingImage())
+    self.assertIs(caught.exception, error)
+
   def test_04_update(self) -> None:
     """Test the Box.update() method."""
 

@@ -7,18 +7,28 @@ import logging
 from importlib import import_module
 from multiprocessing import Event
 from types import SimpleNamespace
-from unittest.mock import Mock, patch
+from queue import Empty
+from threading import Event as ThreadEvent, current_thread
+from unittest.mock import Mock, PropertyMock, patch
 
 from crappy.tool.camera_config.base._configuration_lifecycle import (
-  ConfigurationLifecycle, ExceptionInfo)
+  ConfigurationLifecycle)
 from crappy.tool.camera_config.pyqt import PyQtCameraConfig
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
+
+
+from crappy._failure import FailureManager
+from crappy._exceptions import ShutdownTimeoutError
+from tests.block.block_test_base import exception_leaves
 
 
 class _Queue:
   def __init__(self) -> None:
     self.cancel_calls = 0
     self.close_calls = 0
+
+  def get_nowait(self):
+    raise Empty
 
   def cancel_join_thread(self) -> None:
     self.cancel_calls += 1
@@ -30,6 +40,9 @@ class _Queue:
 class _Process:
   def __init__(self, alive: bool = False) -> None:
     self.alive = alive
+    self.name = 'histogram'
+    self.pid = None
+    self.exitcode = None
     self.join_calls = 0
     self.terminate_calls = 0
     self.kill_calls = 0
@@ -55,6 +68,25 @@ class _Process:
 
 
 class TestConfigurationLifecycle(unittest.TestCase):
+  def _report_callback_failure(self, lifecycle, error, stop):
+    """Exercises the Tk callback entry point without creating a window."""
+
+    window = SimpleNamespace(_failure_manager=lifecycle.manager,
+                             _window_destroyed=False, stop=stop)
+    with patch('crappy.tool.camera_config.tkinter.camera_config.showerror'):
+      TkinterCameraConfig.report_callback_exception(
+          window, type(error), error, error.__traceback__)
+    return window
+
+  def test_requires_owner_manager(self) -> None:
+    """The resource owner must supply the same manager as its configurator."""
+
+    with self.assertRaisesRegex(TypeError, 'manager'):
+      ConfigurationLifecycle(Event(), _Process(), ())
+    with self.assertRaisesRegex(TypeError, 'failure_queue'):
+      ConfigurationLifecycle(Event(), _Process(), (_Queue(), _Queue()),
+                             FailureManager('configuration', 'configuration'))
+
   def test_constructor_rollback_attempts_all_acquired_resources(self) -> None:
     """Early constructor failure and a cleanup interrupt retain all errors."""
 
@@ -66,23 +98,28 @@ class TestConfigurationLifecycle(unittest.TestCase):
         window = SimpleNamespace(_get_application=Mock(), destroy=Mock(),
                                   close=Mock(return_value=True),
                                   _log_level=None, _log_queue=Mock(), log=Mock())
-        queues, process = (Mock(), Mock()), Mock()
+        queues, process = (Mock(), Mock(), Mock()), Mock()
         primary, interrupt = ValueError('initialization'), KeyboardInterrupt()
         errors = (OSError('cancel feeder'), RuntimeError('close queue'))
         process.close.side_effect = interrupt
         queues[0].cancel_join_thread.side_effect = errors[0]
         queues[1].close.side_effect = errors[1]
+        manager = FailureManager('test configurator', 'configuration')
+        manager._logger = Mock()
         with (patch.object(module, 'super', create=True,
                            return_value=SimpleNamespace(__init__=Mock())),
               patch.object(module, 'Queue', side_effect=queues),
               patch.object(module, 'HistogramProcess', return_value=process),
               patch.object(module, 'ConfigurationLifecycle',
                            side_effect=primary)):
-          with self.assertRaises(KeyboardInterrupt) as caught:
-            config_type.__init__(window, Mock(), Mock(), None, None, None)
+          with self.assertRaises(BaseExceptionGroup) as caught:
+            config_type.__init__(window, Mock(), Mock(), None, None, None,
+                                 failure_manager=manager)
 
-        self.assertIs(caught.exception, interrupt)
-        self.assertEqual(interrupt.__cause__.exceptions, (primary, *errors))
+        self.assertEqual(exception_leaves(caught.exception),
+                         (primary, interrupt, *errors))
+        self.assertIsNone(interrupt.__cause__)
+        self.assertEqual(manager._logger.error.call_count, 4)
         process.close.assert_called_once_with()
         for queue in queues:
           queue.cancel_join_thread.assert_called_once_with()
@@ -97,17 +134,12 @@ class TestConfigurationLifecycle(unittest.TestCase):
 
     stop_event = Event()
     queues = (_Queue(), _Queue())
-    messages: list[tuple[int, str, ExceptionInfo | None]] = []
-
-    def record(level: int,
-               msg: str,
-               *,
-               exc_info: ExceptionInfo | None = None) -> None:
-      """Keep ordinary and exception records for assertions."""
-
-      messages.append((level, msg, exc_info))
-
-    lifecycle = ConfigurationLifecycle(stop_event, process, queues, record)
+    messages = []
+    manager = FailureManager('test configuration', 'configuration')
+    manager._logger = Mock()
+    manager._logger.error.side_effect = messages.append
+    lifecycle = ConfigurationLifecycle(stop_event, process, queues,
+                                        manager, _Queue())
     return lifecycle, stop_event, queues, messages
 
   def test_unstarted_process_cleanup_is_idempotent(self) -> None:
@@ -120,10 +152,82 @@ class TestConfigurationLifecycle(unittest.TestCase):
 
     self.assertTrue(stop_event.is_set())
     self.assertTrue(lifecycle.closed)
+    self.assertEqual(lifecycle._failure_queue.close_calls, 1)
     self.assertEqual(process.join_calls, 0)
     self.assertEqual(process.close_calls, 1)
     for queue in queues:
       self.assertEqual((queue.cancel_calls, queue.close_calls), (1, 1))
+
+  def test_only_owner_reads_histogram_process_status(self) -> None:
+    """Report reception cannot race with joining or closing the Process."""
+
+    process = Mock()
+    process.name = 'histogram'
+    process.pid = 123
+    process.is_alive.return_value = False
+    lifecycle, _, _, _ = self.make_lifecycle(process)
+    readers = []
+    polled_twice = ThreadEvent()
+    polls = 0
+
+    def receive(_: tuple[_Queue, ...]) -> bool:
+      nonlocal polls
+      polls += 1
+      if polls >= 2:
+        polled_twice.set()
+      return False
+
+    def exitcode() -> None:
+      readers.append(current_thread())
+      return None
+
+    with (patch.object(lifecycle.manager, 'receive', side_effect=receive),
+          patch.object(type(process), 'exitcode', new_callable=PropertyMock,
+                       create=True, side_effect=exitcode)):
+      lifecycle.mark_histogram_started()
+      try:
+        self.assertTrue(polled_twice.wait(2.0))
+        self.assertFalse(lifecycle.failed)
+        lifecycle.close_resources()
+      finally:
+        lifecycle._receiver_stop.set()
+        if lifecycle._receiver is not None:
+          lifecycle._receiver.join(2.0)
+
+    self.assertTrue(readers)
+    self.assertTrue(all(reader is current_thread() for reader in readers))
+    self.assertEqual(lifecycle.manager.snapshot(), ())
+
+  def test_histogram_exit_is_observed_by_owner(self) -> None:
+    """The window still notices an unexplained exit, including exit zero."""
+
+    for code in (0, 13):
+      with self.subTest(exitcode=code):
+        process = _Process()
+        lifecycle, _, _, _ = self.make_lifecycle(process)
+        lifecycle._histogram_started = True
+        process.exitcode = code
+        self.assertTrue(lifecycle.failed)
+        with self.assertRaises(ExceptionGroup) as caught:
+          lifecycle.close_resources()
+        self.assertEqual(exception_leaves(caught.exception)[0].exitcode, code)
+
+  def test_closed_configuration_does_not_poll_process(self) -> None:
+    """Repeated cleanup and state checks never touch a closed Process."""
+
+    process = Mock()
+    process.is_alive.return_value = False
+    process.name = 'histogram'
+    process.pid = 123
+    lifecycle, _, _, _ = self.make_lifecycle(process)
+    lifecycle._histogram_started = True
+    with patch.object(type(process), 'exitcode', new_callable=PropertyMock,
+                      create=True, return_value=0) as status:
+      lifecycle.close_resources()
+      status.side_effect = ValueError('process object is closed')
+      self.assertFalse(lifecycle.failed)
+      lifecycle.close_resources()
+    self.assertEqual(lifecycle.manager.snapshot(), ())
 
   def test_hung_process_is_terminated_then_killed(self) -> None:
     """A process that ignores graceful shutdown reaches the kill stage."""
@@ -131,7 +235,10 @@ class TestConfigurationLifecycle(unittest.TestCase):
     process = _Process(alive=True)
     lifecycle, _, _, _ = self.make_lifecycle(process)
     lifecycle.mark_histogram_started()
-    lifecycle.close_resources()
+    with self.assertRaises(ExceptionGroup) as caught:
+      lifecycle.close_resources()
+    self.assertIsInstance(exception_leaves(caught.exception)[0],
+                          ShutdownTimeoutError)
 
     self.assertEqual(process.join_calls, 3)
     self.assertEqual(process.terminate_calls, 1)
@@ -151,11 +258,13 @@ class TestConfigurationLifecycle(unittest.TestCase):
     lifecycle.mark_histogram_started()
     with self.assertRaises(ExceptionGroup) as caught:
       lifecycle.close_resources()
-    self.assertEqual(caught.exception.exceptions, errors)
+    leaves = exception_leaves(caught.exception)
+    self.assertEqual((leaves[0], leaves[2]), errors)
+    self.assertIsInstance(leaves[1], ShutdownTimeoutError)
     process.kill.assert_called_once_with()
     process.close.assert_called_once_with()
     self.assertEqual([call.args for call in process.join.call_args_list],
-                     [(1.0,), (1.0,), (1.0,)])
+                     [(2.0,), (0.5,), (0.5,)])
     for queue in queues:
       self.assertEqual((queue.cancel_calls, queue.close_calls), (1, 1))
     lifecycle.close_resources()
@@ -170,10 +279,10 @@ class TestConfigurationLifecycle(unittest.TestCase):
     lifecycle._stop_event = Mock()
     lifecycle._stop_event.set.side_effect = interrupt
     with patch.object(queues[0], 'close', side_effect=error):
-      with self.assertRaises(KeyboardInterrupt) as caught:
+      with self.assertRaises(BaseExceptionGroup) as caught:
         lifecycle.close_resources()
-    self.assertIs(caught.exception, interrupt)
-    self.assertEqual(interrupt.__cause__.exceptions, (error,))
+    self.assertEqual(exception_leaves(caught.exception), (interrupt, error))
+    self.assertIsNone(interrupt.__cause__)
     self.assertEqual(process.close_calls, 1)
     self.assertEqual(queues[1].close_calls, 1)
 
@@ -186,6 +295,9 @@ class TestConfigurationLifecycle(unittest.TestCase):
         _img_acq_sched_obj='acquisition', _upd_var_sched_obj='indicator',
         _shutdown_sched_obj='shutdown', after_cancel=Mock(),
         destroy=Mock(), log=Mock(), _lifecycle=Mock())
+    window._failure_manager = FailureManager('test Tk window', 'finish')
+    window._failure_manager._logger = Mock()
+    window._running = False
     window.after_cancel.side_effect = [errors[0], None, None]
     window.destroy.side_effect = errors[1]
     window._lifecycle.close_resources.side_effect = errors[2]
@@ -214,6 +326,9 @@ class TestConfigurationLifecycle(unittest.TestCase):
         _acquisition_timer=timers[0], _indicator_timer=timers[1],
         _shutdown_timer=timers[2], close=Mock(),
         _event_loop=Mock(), _lifecycle=Mock())
+    window._failure_manager = FailureManager('test Qt window', 'finish')
+    window._failure_manager._logger = Mock()
+    window._running = False
     timers[0].stop.side_effect = errors[0]
     timers[2].stop.side_effect = errors[1]
     window.close.side_effect = errors[2]
@@ -241,21 +356,17 @@ class TestConfigurationLifecycle(unittest.TestCase):
     except ValueError as error:
       original = error
       original_traceback = error.__traceback__
-      lifecycle.record_callback_failure(error, original_traceback)
+      window = self._report_callback_failure(lifecycle, error, Mock())
 
-    close_calls = []
-    lifecycle.request_close(lambda: close_calls.append(True))
-    with self.assertRaises(ValueError) as raised:
-      lifecycle.raise_if_failed()
+    window.stop.assert_called_once_with()
+    with self.assertRaises(ExceptionGroup) as raised:
+      lifecycle.manager.raise_if_failed('configuration failures')
 
-    self.assertIs(raised.exception, original)
-    self.assertEqual(close_calls, [True])
-    self.assertEqual(messages[-1][0:2],
-                     (logging.ERROR, 'Configuration callback failed'))
-    info = messages[-1][2]
-    assert info is not None
-    self.assertIs(info[1], original)
-    self.assertIs(info[2], original_traceback)
+    self.assertEqual(exception_leaves(raised.exception), (original,))
+    self.assertEqual(len(messages), 1)
+    self.assertIn('bad callback', messages[0])
+    self.assertIs(lifecycle.manager.snapshot()[0][1], original)
+    self.assertIs(original.__traceback__, original_traceback)
 
   def test_close_failure_keeps_exception_details(self) -> None:
     """A backend close failure is logged with its original traceback."""
@@ -267,27 +378,31 @@ class TestConfigurationLifecycle(unittest.TestCase):
 
       raise RuntimeError('close failed')
 
-    lifecycle.request_close(fail_close)
+    original = ValueError('callback failed')
+    self._report_callback_failure(lifecycle, original,
+                                  Mock(side_effect=fail_close))
 
-    self.assertEqual(messages[-1][0:2],
-                     (logging.ERROR, 'Could not close configuration window'))
-    info = messages[-1][2]
-    assert info is not None
-    self.assertIsInstance(info[1], RuntimeError)
-    self.assertIsNotNone(info[2])
+    self.assertEqual(len(messages), 2)
+    self.assertIs(lifecycle.manager.snapshot()[0][1], original)
+    error = lifecycle.manager.snapshot()[1][1]
+    self.assertIsInstance(error, RuntimeError)
+    self.assertIsNotNone(error.__traceback__)
 
-  def test_keyboard_interrupt_is_retained_without_error_logging(self) -> None:
-    """Cancellation reaches the caller without being reported as a failure."""
+  def test_keyboard_interrupt_is_retained_as_a_group_member(self) -> None:
+    """An interrupt is retained and reported without changing its cause."""
 
     lifecycle, _, _, messages = self.make_lifecycle(_Process())
     interrupt = KeyboardInterrupt()
-    lifecycle.record_callback_failure(interrupt, None)
+    stop = Mock()
+    self._report_callback_failure(lifecycle, interrupt, stop)
+    stop.assert_called_once_with()
 
-    with self.assertRaises(KeyboardInterrupt) as raised:
-      lifecycle.raise_if_failed()
+    with self.assertRaises(BaseExceptionGroup) as raised:
+      lifecycle.manager.raise_if_failed('configuration failures')
 
-    self.assertIs(raised.exception, interrupt)
-    self.assertEqual(messages, [])
+    self.assertEqual(exception_leaves(raised.exception), (interrupt,))
+    self.assertEqual(len(messages), 1)
+    self.assertIsNone(interrupt.__cause__)
 
   def test_queue_cleanup_failures_keep_exception_details(self) -> None:
     """Resource cleanup reports caught failures as exception records."""
@@ -309,6 +424,36 @@ class TestConfigurationLifecycle(unittest.TestCase):
     lifecycle.close_resources()
     lifecycle.close_resources()
     self.assertEqual(queues[1].close_calls, 1)
+
+
+  def test_multiple_callbacks_and_close_failures_are_retained_once(self):
+    lifecycle, _, _, messages = self.make_lifecycle(_Process())
+    cause = KeyError('original callback cause')
+    first, second, cleanup = (ValueError('first callback'),
+                               KeyboardInterrupt('second callback'),
+                               OSError('window close'))
+    first.__cause__ = cause
+    grouped = BaseExceptionGroup('callbacks', [first, second])
+    stop = Mock(side_effect=cleanup)
+    self._report_callback_failure(lifecycle, grouped, stop)
+    self._report_callback_failure(lifecycle, grouped, stop)
+    self.assertEqual(stop.call_count, 2)
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      lifecycle.manager.raise_if_failed('configuration failures')
+    self.assertEqual(exception_leaves(caught.exception), (first, second, cleanup))
+    self.assertIs(first.__cause__, cause)
+    self.assertIsNone(second.__cause__)
+    self.assertEqual(len(messages), 2)
+
+  def test_cancel_request_is_not_a_callback_incident(self):
+    from crappy._exceptions import StopRequested
+    lifecycle, _, _, messages = self.make_lifecycle(_Process())
+    stop = Mock()
+    self._report_callback_failure(lifecycle, StopRequested(), stop)
+    stop.assert_called_once_with()
+    lifecycle.manager.raise_if_failed('configuration failures')
+    self.assertEqual(lifecycle.manager.snapshot(), ())
+    self.assertEqual(messages, [])
 
 
 if __name__ == '__main__':

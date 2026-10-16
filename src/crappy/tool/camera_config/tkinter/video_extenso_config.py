@@ -10,6 +10,7 @@ from .camera_config_boxes import TkinterCameraConfigBoxes
 from ..base import VideoExtensoConfig
 from ..config_tools import SpotsDetector, SpotsBoxes
 from ....camera.meta_camera import Camera
+from ...._failure import FailureManager
 
 
 class TkinterVideoExtensoConfig(VideoExtensoConfig,
@@ -41,6 +42,7 @@ VideoExtensoConfig`.
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
+               failure_manager: FailureManager,
                white_spots: bool,
                num_spots: int | None,
                min_area: int,
@@ -70,6 +72,10 @@ VideoExtensoConfig`.
         leave them unchanged.
 
         .. versionadded:: 2.1.0
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
       white_spots: :obj:`True` for light spots on a dark background,
         :obj:`False` for dark spots on a light background.
       num_spots: Required number of spots from 1 to 4, or :obj:`None` to accept
@@ -89,12 +95,21 @@ VideoExtensoConfig`.
     .. versionremoved:: 2.0.0 *video_extenso* argument
     """
 
-    super().__init__(camera, log_queue, log_level, max_freq, transform)
-    self._detector: SpotsDetector = SpotsDetector(white_spots=white_spots,
-                                                  num_spots=num_spots,
-                                                  min_area=min_area,
-                                                  blur=blur,
-                                                  update_thresh=update_thresh,
-                                                  safe_mode=safe_mode,
-                                                  border=border)
-    self._spots: SpotsBoxes = self._detector.spots
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager)
+
+    try:
+      self._detector = SpotsDetector(white_spots=white_spots,
+                                     num_spots=num_spots,
+                                     min_area=min_area,
+                                     blur=blur,
+                                     update_thresh=update_thresh,
+                                     safe_mode=safe_mode,
+                                     border=border)
+      self._spots: SpotsBoxes = self._detector.spots
+    except BaseException as error:
+      with self._failure_manager.collect('Spot detector initialization'):
+        self._failure_manager.record_context_exception(error,
+                                                       'create detector')
+        with self._failure_manager.step('stop partial configuration'):
+          self.stop()

@@ -10,6 +10,7 @@ from .camera_config_boxes import TkinterCameraConfigBoxes
 from ..base import DISCorrelConfig
 from ..config_tools import Box
 from ....camera.meta_camera import Camera
+from ...._failure import FailureManager
 
 
 class TkinterDISCorrelConfig(DISCorrelConfig, TkinterCameraConfigBoxes):
@@ -34,6 +35,7 @@ class TkinterDISCorrelConfig(DISCorrelConfig, TkinterCameraConfigBoxes):
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
+               failure_manager: FailureManager,
                patch: Box) -> None:
     """Builds the window with the provided correlation region.
 
@@ -57,6 +59,10 @@ class TkinterDISCorrelConfig(DISCorrelConfig, TkinterCameraConfigBoxes):
         leave them unchanged.
 
         .. versionadded:: 2.1.0
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
       patch: :class:`~crappy.tool.camera_config.config_tools.Box` to display
         and update in place. The same
         :class:`~crappy.tool.camera_config.config_tools.Box` is returned by
@@ -69,4 +75,5 @@ DISCorrelConfig.get_config>` after validation.
     self._correl_box: Box = patch
     self._draw_correl_box: bool = True
 
-    super().__init__(camera, log_queue, log_level, max_freq, transform)
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager)

@@ -8,7 +8,7 @@ import logging
 from multiprocessing import current_process
 from collections import defaultdict
 
-from ..._global import DefinitionError
+from ..._exceptions import DefinitionError
 
 
 class InOut:

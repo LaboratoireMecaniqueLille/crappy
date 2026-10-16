@@ -3,6 +3,7 @@
 """Selection semantics can be exercised without constructing a Tk window."""
 
 import unittest
+from crappy._failure import FailureManager
 from unittest.mock import sentinel
 
 import numpy as np
@@ -17,7 +18,8 @@ from ._fixtures import RecordingCore
 
 class _Host(CameraConfigBoxes, RecordingCore):
   def __init__(self) -> None:
-    super().__init__(DummyCamera(), sentinel.log_queue, None, None, None)
+    super().__init__(DummyCamera(), sentinel.log_queue, None, None, None,
+                     FailureManager('test selection', 'configuration'))
     self._img = np.zeros((100, 100), dtype=np.uint8)
     self._original_img = np.arange(10000, dtype=np.uint16).reshape(100, 100)
     self._display_geometry = DisplayGeometry(width=100, height=100,

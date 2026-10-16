@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from crappy import Block
-from crappy._global import SchedulerStop
+from crappy._exceptions import SchedulerStop
 from multiprocessing import Barrier, Event, Value, Queue, Pipe
 
 from .block_test_base import BlockTestBase, TestBlock
@@ -72,8 +72,6 @@ class TestRunCycle(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -93,8 +91,6 @@ class TestRunCycle(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -109,8 +105,7 @@ class TestRunCycle(BlockTestBase):
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertFalse(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertFalse(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())
@@ -130,8 +125,6 @@ class TestRunCycle(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -141,12 +134,11 @@ class TestRunCycle(BlockTestBase):
     self._block.join(4.0)
 
     # An exception during prepare should break the barrier and propagate to the
-    # shared raise Event.
+    # failure Queue.
     self.assertFalse(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertTrue(self._block._ready_barrier.broken)
-    self.assertTrue(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertTrue(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertFalse(self._block.begun.is_set())
@@ -166,8 +158,6 @@ class TestRunCycle(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -181,8 +171,7 @@ class TestRunCycle(BlockTestBase):
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertTrue(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertTrue(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())
@@ -202,8 +191,6 @@ class TestRunCycle(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -217,8 +204,7 @@ class TestRunCycle(BlockTestBase):
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertTrue(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertTrue(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())
@@ -238,8 +224,6 @@ class TestRunCycle(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -254,8 +238,7 @@ class TestRunCycle(BlockTestBase):
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertFalse(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertFalse(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())
@@ -273,8 +256,6 @@ class TestRunCycle(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -288,8 +269,7 @@ class TestRunCycle(BlockTestBase):
     self.assertTrue(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertTrue(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertTrue(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertTrue(self._block.begun.is_set())
@@ -309,8 +289,6 @@ class TestRunCycle(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -324,8 +302,7 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertTrue(self._block._ready_barrier.broken)
-    self.assertFalse(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertFalse(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertFalse(self._block.begun.is_set())
@@ -345,8 +322,6 @@ class TestRunCycle(BlockTestBase):
     self._block._ready_barrier = Barrier(1)
     self._block._start_event = Event()
     self._block._stop_event = Event()
-    self._block._raise_event = Event()
-    self._block._kbi_event = Event()
     self._block._pause_event = Event()
     self._block._instance_t0 = Value('d', 0.0)
     self._block._log_queue = Queue()
@@ -358,8 +333,7 @@ class TestRunCycle(BlockTestBase):
     self.assertFalse(self._block._start_event.is_set())
     self.assertTrue(self._block._stop_event.is_set())
     self.assertFalse(self._block._ready_barrier.broken)
-    self.assertTrue(self._block._raise_event.is_set())
-    self.assertFalse(self._block._kbi_event.is_set())
+    self.assertTrue(self.failures(self._block))
 
     self.assertTrue(self._block.prepared.is_set())
     self.assertFalse(self._block.begun.is_set())

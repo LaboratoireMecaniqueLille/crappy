@@ -8,7 +8,7 @@ from multiprocessing import current_process
 import logging
 from abc import ABC, abstractmethod
 
-from ..._global import DefinitionError
+from ..._exceptions import DefinitionError
 from .camera_setting import (CameraSetting, CameraBoolSetting,
                              CameraScaleSetting, CameraChoiceSetting)
 

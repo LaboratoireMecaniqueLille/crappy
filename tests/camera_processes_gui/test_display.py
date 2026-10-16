@@ -13,6 +13,8 @@ import numpy as np
 
 import crappy.blocks.camera_processes.display as display_module
 from crappy.blocks.camera_processes.display import Displayer
+from crappy._exceptions import OptionalDependencyError
+from crappy._global import OptionalModule
 
 from tests.camera_process.camera_process_test_base import CameraProcessTestBase
 
@@ -45,7 +47,7 @@ class TestDisplayer(CameraProcessTestBase):
 
     try:
       display_module.plt.close('all')
-    except RuntimeError:
+    except (ImportError, RuntimeError):
       pass
 
     super().tearDown()
@@ -61,6 +63,18 @@ class TestDisplayer(CameraProcessTestBase):
 
     with self.assertRaises(ValueError):
       Displayer(title='invalid', framerate=1, backend='bad')
+
+  def test_unavailable_backends_retain_the_import_cause(self) -> None:
+    """The no-backend diagnostic must retain the actual import failure."""
+
+    cause = ImportError('matplotlib native loader failure')
+    with (patch.object(display_module, 'cv2', OptionalModule('cv2')),
+          patch.object(display_module, 'plt',
+                       OptionalModule('matplotlib.pyplot', cause=cause))):
+      with self.assertRaises(ModuleNotFoundError) as caught:
+        Displayer(title='Unavailable display', framerate=5, backend=None)
+    self.assertIsInstance(caught.exception.__cause__, OptionalDependencyError)
+    self.assertIs(caught.exception.__cause__.__cause__, cause)
 
   def test_get_data_respects_display_framerate(self) -> None:
     """Checks frame throttling and copied image data."""

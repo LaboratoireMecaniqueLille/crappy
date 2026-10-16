@@ -9,6 +9,7 @@ import numpy as np
 from ..base import DISCorrelConfig
 from ..config_tools import Box
 from ....camera.meta_camera import Camera
+from ...._failure import FailureManager
 from .camera_config_boxes import PyQtCameraConfigBoxes
 
 
@@ -31,6 +32,7 @@ class PyQtDISCorrelConfig(DISCorrelConfig, PyQtCameraConfigBoxes):
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
+               failure_manager: FailureManager,
                patch: Box) -> None:
     """Builds the window with the provided correlation region.
 
@@ -46,6 +48,10 @@ class PyQtDISCorrelConfig(DISCorrelConfig, PyQtCameraConfigBoxes):
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
       patch: :class:`~crappy.tool.camera_config.config_tools.Box` to display
         and update in place. The same
         :class:`~crappy.tool.camera_config.config_tools.Box` is returned by
@@ -56,4 +62,5 @@ DISCorrelConfig.get_config>` after validation.
     # The overlay must exist before the first image is drawn
     self._correl_box = patch
     self._draw_correl_box = True
-    super().__init__(camera, log_queue, log_level, max_freq, transform)
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager)

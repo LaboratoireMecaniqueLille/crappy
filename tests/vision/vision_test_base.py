@@ -8,7 +8,7 @@ from multiprocessing.shared_memory import SharedMemory
 from crappy import Block
 from crappy.blocks.vision import CameraSource, VisionBlock
 
-from tests.block.block_test_base import BlockTestBase
+from tests.block.block_test_base import BlockTestBase, with_failure_manager
 
 
 class StubVisionBlock(VisionBlock):
@@ -42,6 +42,7 @@ class VisionTestBase(BlockTestBase):
   def track_block(self, block: VisionBlock) -> VisionBlock:
     """Keeps a strong reference to a concrete VisionBlock until cleanup."""
 
+    with_failure_manager(block)
     self._vision_blocks.append(block)
     return block
 

@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.block.block_test_base import exception_leaves, with_failure_manager
+
 import logging
 from multiprocessing import Event
 from tkinter import TclError
@@ -34,7 +36,7 @@ class StopButtonTests:
     """Creates a StopButton and prepares its GUI."""
 
     kwargs.setdefault('backend', self._backend)
-    button = StopButton(**kwargs)
+    button = with_failure_manager(StopButton(**kwargs))
     self._buttons.append(button)
     button.prepare()
     if self._backend == 'tkinter':
@@ -64,7 +66,7 @@ class StopButtonTests:
   def test_init_sets_block_options(self) -> None:
     """Checks StopButton-specific initialization."""
 
-    button = StopButton(freq=None, display_freq=True, debug=True)
+    button = with_failure_manager(StopButton(freq=None, display_freq=True, debug=True))
 
     self.assertIsNone(button.freq)
     self.assertTrue(button.display_freq)
@@ -158,7 +160,7 @@ class StopButtonTests:
   def test_finish_is_safe_before_prepare(self) -> None:
     """Checks that finish accepts a StopButton without a window."""
 
-    button = StopButton()
+    button = with_failure_manager(StopButton())
 
     button.finish()
 
@@ -196,10 +198,12 @@ class TestStopButtonPyQt(StopButtonTests, BlockTestBase):
     error = RuntimeError('stop failed')
     with patch.object(button, 'stop', side_effect=error):
       button._qt_button.click()
-    self.assertIs(button._callback_error, error)
+    self.assertIs(button._failure_manager.snapshot()[0][1], error)
     self.assertFalse(button._qt_button.isEnabled())
-    with self.assertRaisesRegex(RuntimeError, 'stop failed'):
+    with self.assertRaises(ExceptionGroup) as caught:
       button.loop()
+    self.assertEqual(exception_leaves(caught.exception), (error,))
+    self.assertFalse(hasattr(button, '_callback_error'))
 
   def test_closing_window_is_not_a_stop_request(self) -> None:
     """Only the STOP button, not the window close control, stops the test."""

@@ -17,15 +17,15 @@ import numpy as np
 from ..config_tools.zoom import Zoom
 from ._display_state import DisplayGeometry, DisplayState
 from ._setting_manager import SettingManager
-from ._configuration_lifecycle import ExceptionInfo
 from ....camera.meta_camera import Camera
 from ....camera.meta_camera.camera_setting import CameraSetting
 from ...._global import OptionalModule
+from ...._failure import FailureManager
 
 try:
   from PIL import Image
-except (ModuleNotFoundError, ImportError):
-  Image = OptionalModule("pillow")
+except (ModuleNotFoundError, ImportError) as error:
+  Image = OptionalModule("PIL", install_name="Pillow", cause=error)
 
 
 @dataclass(frozen=True)
@@ -70,8 +70,9 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
-               *_,
-               **__) -> None:
+               failure_manager: FailureManager,
+               *_: Any,
+               **__: Any) -> None:
     """Initializes the shared models without starting acquisition.
 
     Args:
@@ -86,15 +87,29 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
       transform: :obj:`~collections.abc.Callable` applied to acquired images
         before preview conversion and image-format reporting, or :obj:`None` to
         leave them unchanged.
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
+      *_: Additional positional arguments, unused by this base window.
+      **__: Additional keyword arguments, unused by this base window.
     """
 
     # Logging must be available during GUI and local settings initialization
-    self._logger: logging.Logger | None = None
     self._log_queue: Queue = log_queue
     self._log_level: int | None = log_level
 
+    # Configure the logger and the FailureManager
+    self._logger = logging.getLogger(
+        f'{current_process().name}.{type(self).__name__}')
+    self._logger.disabled = log_level is None
+    if log_level is not None:
+      self._logger.setLevel(log_level)
+    self._failure_manager: FailureManager = failure_manager
+
     # Continue through the MRO so the selected GUI backend creates its window
     super().__init__()
+    self._window_created = True
 
     self._camera: Camera = camera
 
@@ -130,8 +145,7 @@ tool.camera_config.base.camera_config.CameraConfig.watch_shutdown>` in a GUI.
 
     GUI implementations must release resources before returning or raising.
     Callback failures must propagate after the event loop ends.
-    :exc:`KeyboardInterrupt` must propagate after cleanup without an error
-    dialog or error log.
+    Failures, including user interrupts, propagate as groups after cleanup.
     """
 
     ...
@@ -164,32 +178,18 @@ camera_config.base.camera_config.CameraConfig.run>` executes. A :obj:`True`
 
     ...
 
-  def log(self,
-          level: int,
-          msg: str,
-          exc_info: ExceptionInfo | None = None) -> None:
+  def log(self, level: int, msg: str) -> None:
     """Records a message using the owning process's logging configuration.
 
-    The logger is created on first use and named after the process and concrete
-    configurator class. This method does not install logging handlers.
+    The logger is named after the process and concrete configurator class.
+    This method does not install logging handlers.
 
     Args:
       level: Logging level of the message.
       msg: Message to record.
-      exc_info: Exception type, instance, and traceback to log at error level.
-        An explicit :obj:`tuple` preserves callback tracebacks outside their
-        original exception handler. :obj:`None` records a normal message at
-        level.
     """
 
-    if self._logger is None:
-      self._logger = logging.getLogger(
-        f"{current_process().name}.{type(self).__name__}")
-
-    if exc_info is None:
-      self._logger.log(level, msg)
-    else:
-      self._logger.exception(msg, exc_info=exc_info)
+    self._logger.log(level, msg)
 
   def _create_local_settings(self) -> tuple[CameraSetting, ...]:
     """Creates settings owned by the configurator rather than the

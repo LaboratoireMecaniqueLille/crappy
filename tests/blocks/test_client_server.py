@@ -9,10 +9,12 @@ from subprocess import TimeoutExpired
 from typing import Any
 from unittest.mock import patch
 from crappy._global import OptionalModule
+from crappy._exceptions import OptionalDependencyError
 from crappy.blocks.client_server import ClientServer
 import crappy.blocks.client_server as client_server_module
 
 from ..block import BlockTestBase, TestBlock, link
+from tests.block.block_test_base import with_failure_manager
 
 
 class FakeMQTTClient:
@@ -163,6 +165,7 @@ class TestClientServer(BlockTestBase):
   def setUp(self) -> None:
     """Resets fake MQTT state before each test."""
 
+    super().setUp()
     FakeMQTTClient.reset()
 
   def _mqtt_patch(self):
@@ -197,11 +200,11 @@ class TestClientServer(BlockTestBase):
   def test_topics_and_command_labels_normalization(self) -> None:
     """Checks the supported topic and cmd_label forms."""
 
-    block = ClientServer(
+    block = with_failure_manager(ClientServer(
       topics=[('t', 'value'), 'state'],
       cmd_labels=['cmd', ('t(s)', 'drive')],
       labels_to_send=['remote_cmd', ('time', 'remote_drive')],
-      init_output={'t': 0, 'value': 0, 'state': 'idle'})
+      init_output={'t': 0, 'value': 0, 'state': 'idle'}))
 
     self.assertEqual(block._topics, [('t', 'value'), ('state',)])
     self.assertEqual(block._last_out_val, {
@@ -219,26 +222,26 @@ class TestClientServer(BlockTestBase):
     """Checks that each command topic gets a rename topic if any is given."""
 
     with self.assertRaises(ValueError):
-      ClientServer(cmd_labels=['cmd', 'state'],
-                   labels_to_send=['remote_cmd'])
+      with_failure_manager(ClientServer(cmd_labels=['cmd', 'state'],
+                   labels_to_send=['remote_cmd']))
 
   def test_prepare_requires_matching_links(self) -> None:
     """Checks that topics and cmd_labels match the Link layout."""
 
     with self.assertRaises(ValueError):
-      ClientServer(topics=['sensor']).prepare()
+      with_failure_manager(ClientServer(topics=['sensor'])).prepare()
 
     with self.assertRaises(ValueError):
-      ClientServer(cmd_labels=['cmd']).prepare()
+      with_failure_manager(ClientServer(cmd_labels=['cmd'])).prepare()
 
     source = TestBlock()
-    block = ClientServer(topics=['sensor'], cmd_labels=['cmd'])
+    block = with_failure_manager(ClientServer(topics=['sensor'], cmd_labels=['cmd']))
     link(source, block)
 
     with self.assertRaises(ValueError):
       block.prepare()
 
-    block = ClientServer(topics=['sensor'], cmd_labels=['cmd'])
+    block = with_failure_manager(ClientServer(topics=['sensor'], cmd_labels=['cmd']))
     sink = TestBlock()
     link(block, sink)
 
@@ -250,10 +253,10 @@ class TestClientServer(BlockTestBase):
     """Checks MQTT client setup, connection, and topic subscriptions."""
 
     source = TestBlock()
-    block = ClientServer(address='mqtt.local',
+    block = with_failure_manager(ClientServer(address='mqtt.local',
                          port=1884,
                          topics=['sensor'],
-                         cmd_labels=['cmd'])
+                         cmd_labels=['cmd']))
     sink = TestBlock()
     link(source, block)
     link(block, sink)
@@ -280,7 +283,7 @@ class TestClientServer(BlockTestBase):
   def test_prepare_retries_refused_connections(self) -> None:
     """Checks that refused connections are retried before succeeding."""
 
-    block = ClientServer(topics=['sensor'])
+    block = with_failure_manager(ClientServer(topics=['sensor']))
     link(block, TestBlock())
     FakeMQTTClient.connect_errors = [ConnectionRefusedError]
 
@@ -306,7 +309,7 @@ class TestClientServer(BlockTestBase):
 
     for error, expected_exception in cases:
       with self.subTest(error=type(error).__name__):
-        block = ClientServer(topics=['sensor'])
+        block = with_failure_manager(ClientServer(topics=['sensor']))
         link(block, TestBlock())
         FakeMQTTClient.reset()
         FakeMQTTClient.connect_errors = [error]
@@ -318,19 +321,20 @@ class TestClientServer(BlockTestBase):
   def test_prepare_surfaces_missing_paho(self) -> None:
     """Checks that missing paho-mqtt fails only when preparing the Block."""
 
-    block = ClientServer(topics=['sensor'])
+    block = with_failure_manager(ClientServer(topics=['sensor']))
     link(block, TestBlock())
 
     with patch.object(client_server_module,
                       'mqtt',
-                      OptionalModule("paho-mqtt")):
-      with self.assertRaisesRegex(RuntimeError, "Missing module: paho-mqtt"):
+                      OptionalModule('paho.mqtt.client',
+                                     install_name='paho-mqtt')):
+      with self.assertRaisesRegex(OptionalDependencyError, 'paho.mqtt.client'):
         block.prepare()
 
   def test_on_message_buffers_all_data_points(self) -> None:
     """Checks decoding of broker payloads into per-topic queues."""
 
-    block = ClientServer(topics=[('a', 'b')])
+    block = with_failure_manager(ClientServer(topics=[('a', 'b')]))
     self._set_buffer(block)
 
     block._on_message(None,
@@ -345,7 +349,7 @@ class TestClientServer(BlockTestBase):
   def test_on_message_ignores_unpickleable_payloads(self) -> None:
     """Checks that invalid broker payloads are logged and ignored."""
 
-    block = ClientServer(topics=['a'])
+    block = with_failure_manager(ClientServer(topics=['a']))
     self._set_buffer(block)
     logs = list()
 
@@ -362,8 +366,8 @@ class TestClientServer(BlockTestBase):
   def test_loop_sends_received_values_and_init_values(self) -> None:
     """Checks broker input forwarding with init values for quiet topics."""
 
-    block = ClientServer(topics=[('a', 'b'), 'state'],
-                         init_output={'state': 'idle'})
+    block = with_failure_manager(ClientServer(topics=[('a', 'b'), 'state'],
+                         init_output={'state': 'idle'}))
     self._set_buffer(block)
     self._set_t0(block)
     sent = self._capture_send(block)
@@ -387,7 +391,7 @@ class TestClientServer(BlockTestBase):
   def test_loop_reuses_last_received_values(self) -> None:
     """Checks that missing labels are completed from previous values."""
 
-    block = ClientServer(topics=['a', 'b'])
+    block = with_failure_manager(ClientServer(topics=['a', 'b']))
     self._set_buffer(block)
     self._set_t0(block)
     sent = self._capture_send(block)
@@ -411,9 +415,9 @@ class TestClientServer(BlockTestBase):
   def test_loop_spam_sends_initial_values_without_new_message(self) -> None:
     """Checks spam mode output before any broker message is received."""
 
-    block = ClientServer(topics=['a'],
+    block = with_failure_manager(ClientServer(topics=['a'],
                          init_output={'a': 0},
-                         spam=True)
+                         spam=True))
     self._set_buffer(block)
     self._set_t0(block)
     sent = self._capture_send(block)
@@ -426,7 +430,7 @@ class TestClientServer(BlockTestBase):
   def test_loop_requires_init_values_for_missing_labels(self) -> None:
     """Checks that partial broker input needs init or previous values."""
 
-    block = ClientServer(topics=['a', 'b'])
+    block = with_failure_manager(ClientServer(topics=['a', 'b']))
     self._set_buffer(block)
     block._buffer_output[('a',)].put_nowait([1])
 
@@ -436,9 +440,9 @@ class TestClientServer(BlockTestBase):
   def test_loop_publishes_complete_commands(self) -> None:
     """Checks command grouping, renaming, and payload serialization."""
 
-    block = ClientServer(
+    block = with_failure_manager(ClientServer(
       cmd_labels=[('t(s)', 'cmd'), 'state'],
-      labels_to_send=[('time', 'remote_cmd'), 'remote_state'])
+      labels_to_send=[('time', 'remote_cmd'), 'remote_state']))
     client = FakeMQTTClient(client_id='publisher')
     block._client = client
 
@@ -467,7 +471,7 @@ class TestClientServer(BlockTestBase):
   def test_loop_does_not_publish_incomplete_commands(self) -> None:
     """Checks that a topic is published only from a complete input dict."""
 
-    block = ClientServer(cmd_labels=[('t(s)', 'cmd')])
+    block = with_failure_manager(ClientServer(cmd_labels=[('t(s)', 'cmd')]))
     client = FakeMQTTClient(client_id='publisher')
     block._client = client
     block.recv_all_data_raw = lambda: [{'t(s)': [0, 1]}]
@@ -479,7 +483,7 @@ class TestClientServer(BlockTestBase):
   def test_finish_stops_client_and_broker(self) -> None:
     """Checks MQTT disconnection and managed broker termination."""
 
-    block = ClientServer(broker=True)
+    block = with_failure_manager(ClientServer(broker=True))
     client = FakeMQTTClient(client_id='client')
     proc = FakeProcess()
     reader = FakeReader()
@@ -495,10 +499,10 @@ class TestClientServer(BlockTestBase):
     self.assertEqual(client.loop_stop_calls, 1)
     self.assertEqual(client.disconnect_calls, 1)
     self.assertTrue(proc.terminated)
-    self.assertEqual(proc.wait_calls, [15])
+    self.assertEqual(proc.wait_calls, [2.0])
     self.assertFalse(proc.killed)
     self.assertTrue(block._stop_mosquitto)
-    self.assertEqual(reader.join_calls, [0.2])
+    self.assertEqual(reader.join_calls, [0.5])
     block.finish()
     self.assertEqual(client.loop_stop_calls, 1)
     self.assertEqual(client.disconnect_calls, 1)
@@ -507,20 +511,20 @@ class TestClientServer(BlockTestBase):
     """Checks that an unresponsive managed broker is killed."""
 
     proc = FakeProcess(wait_error=TimeoutExpired(cmd='mosquitto',
-                                                 timeout=15))
-    block = ClientServer(broker=True)
+                                                 timeout=2.0))
+    block = with_failure_manager(ClientServer(broker=True))
     block._proc = proc
 
     block.finish()
 
     self.assertTrue(proc.terminated)
-    self.assertEqual(proc.wait_calls, [15, 1])
+    self.assertEqual(proc.wait_calls, [2.0, 0.5])
     self.assertTrue(proc.killed)
 
   def test_launch_mosquitto_starts_expected_subprocess(self) -> None:
     """Checks the Mosquitto command line without starting a real broker."""
 
-    block = ClientServer(broker=True, port=1885)
+    block = with_failure_manager(ClientServer(broker=True, port=1885))
     proc = FakeProcess()
 
     with patch.object(client_server_module, 'Popen', return_value=proc) as pop:
@@ -534,7 +538,7 @@ class TestClientServer(BlockTestBase):
   def test_launch_mosquitto_reports_missing_executable(self) -> None:
     """Checks the error raised when Mosquitto is not installed."""
 
-    block = ClientServer(broker=True)
+    block = with_failure_manager(ClientServer(broker=True))
 
     with patch.object(client_server_module,
                       'Popen',
@@ -542,3 +546,87 @@ class TestClientServer(BlockTestBase):
       with self.assertRaisesRegex(FileNotFoundError,
                                   "Mosquitto is not installed"):
         block._launch_mosquitto()
+
+
+class TestClientServerFailureCallbacks(BlockTestBase):
+  """Unexpected reader and MQTT faults are retained instead of escaping Threads."""
+
+  def make_client_server(self):
+    from multiprocessing import Barrier, Event
+    from unittest.mock import Mock
+    from crappy._failure import FailureManager
+
+    block = with_failure_manager(ClientServer(topics=['value']))
+    block._failure_manager = FailureManager(block.name, 'main')
+    block._logger = block._failure_manager._logger = Mock()
+    block._stop_event = Event()
+    block._ready_barrier = Barrier(1)
+    block._start_event = Event()
+    self._block = block
+    return block
+
+  def test_message_and_subscribe_failures_keep_all_original_errors(self):
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+    from tests.block.block_test_base import exception_leaves, with_failure_manager
+
+    block = self.make_client_server()
+    message_error = OSError('message buffer')
+    subscribe_error = KeyboardInterrupt('subscribe')
+    output = Mock()
+    output.put_nowait.side_effect = message_error
+    block._buffer_output = {('value',): output}
+    block._on_message(None, None, SimpleNamespace(
+        payload=dumps([[1]]), topic="('value',)"))
+    block._client = Mock()
+    block._client.subscribe.side_effect = subscribe_error
+    block._on_connect(None, None, None, 0)
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      block._failure_manager.raise_if_failed('MQTT callbacks')
+    self.assertEqual(exception_leaves(caught.exception),
+                     (message_error, subscribe_error))
+    self.assertTrue(block._stop_event.is_set())
+    self.assertTrue(block._ready_barrier.broken)
+    self.assertEqual(block._logger.error.call_count, 2)
+    block._client.subscribe.side_effect = None
+
+  def test_broker_hard_exit_and_intentional_eof_are_distinguished(self):
+    from unittest.mock import Mock
+    from crappy._exceptions import ProcessExitError
+
+    for stopped in (False, True):
+      with self.subTest(stopped=stopped):
+        block = self.make_client_server()
+        broker = block._proc = Mock()
+        broker.pid = 123
+        broker.stdout.readline.return_value = b''
+        broker.poll.return_value = 7
+        if stopped:
+          block._stop_event.set()
+        block._output_reader()
+        failures = block._failure_manager.snapshot()
+        if stopped:
+          self.assertEqual(failures, ())
+        else:
+          self.assertEqual(len(failures), 1)
+          error = failures[0][1]
+          self.assertIsInstance(error, ProcessExitError)
+          self.assertEqual((error.process_name, error.pid, error.exitcode),
+                           ('Mosquitto', 123, 7))
+          self.assertTrue(block._stop_event.is_set())
+          self.assertTrue(block._ready_barrier.broken)
+        block._proc = None
+
+  def test_reader_error_is_retained_without_default_thread_traceback(self):
+    from unittest.mock import Mock
+
+    block = self.make_client_server()
+    broker = block._proc = Mock()
+    broker.stdout.readline.return_value = bytes([255])
+    block._output_reader()
+    retained = block._failure_manager.snapshot()[0][1]
+    self.assertIsInstance(retained, UnicodeDecodeError)
+    self.assertTrue(block._stop_event.is_set())
+    self.assertTrue(block._ready_barrier.broken)
+    block._logger.error.assert_called_once()
+    block._proc = None

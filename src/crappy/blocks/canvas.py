@@ -402,6 +402,7 @@ class Canvas(Block):
 
     # Attributes related to PyQt6
     self.qt_scene: QtWidgets.QGraphicsScene | None = None
+    self._qt_background: QtWidgets.QGraphicsPixmapItem | None = None
     self._qt_view: QtWidgets.QGraphicsView | None = None
     self._qt_view_size: QtCore.QSize | None = None
 
@@ -462,59 +463,35 @@ class Canvas(Block):
     An existing Qt application is left available for its other windows.
     """
 
-    failures: list[Exception | KeyboardInterrupt] = list()
-    self.log(logging.INFO, "Closing the GUI")
+    manager = self._failure_manager
 
-    # Destroy the Tk window
-    if self._root is not None:
-      try:
-        self._root.destroy()
-      except tk.TclError:
-        # Tk may already have destroyed the window
-        self._root = None
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Canvas cleanup step: destroy Tk window")
-        failures.append(error)
-      else:
-        self._root = None
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Canvas cleanup'):
+      with manager.step('cleanup diagnostic'):
+        self.log(logging.INFO, "Closing the GUI")
 
-    # Close the Qt window
-    if self._qt_window is not None:
-      self._qt_events_processed = False
-      try:
-        if not self._qt_window.close():
-          raise RuntimeError("The Canvas Qt window refused to close")
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Canvas cleanup step: close Qt window")
-        failures.append(error)
-      else:
-        self._qt_window = None
+      # Destroy the Tk window
+      if self._root is not None:
+        with manager.step('destroy Tk window'):
+          try:
+            self._root.destroy()
+          except tk.TclError:
+            pass
+          self._root = None
 
-    # Process the last Qt events
-    if self._qt_app is not None and not self._qt_events_processed:
-      try:
-        self._qt_app.processEvents()
-      except (Exception, KeyboardInterrupt) as error:
-        error.add_note("Canvas cleanup step: process Qt close events")
-        failures.append(error)
-      else:
-        self._qt_events_processed = True
+      # Close the Qt window
+      if self._qt_window is not None:
+        self._qt_events_processed = False
+        with manager.step('close Qt window'):
+          if not self._qt_window.close():
+            raise RuntimeError("The Canvas Qt window refused to close")
+          self._qt_window = None
 
-    # If there's only one Exception, raise it
-    if len(failures) == 1:
-      raise failures[0]
-    # Handle the case when a KeyboardInterrupt is among the Exceptions
-    elif any(isinstance(error, KeyboardInterrupt) for error in failures):
-      for index, error in enumerate(failures):
-        if isinstance(error, KeyboardInterrupt):
-          others: list[BaseException] = failures[:index] + failures[index + 1:]
-          if error.__cause__ is not None:
-            others.insert(0, error.__cause__)
-          raise error from BaseExceptionGroup("Other Canvas cleanup failures",
-                                              others)
-    # Otherwise just raise all Exceptions at once
-    elif failures:
-      raise ExceptionGroup("Canvas cleanup failures", failures)
+      # Process the last Qt events
+      if self._qt_app is not None and not self._qt_events_processed:
+        with manager.step('process Qt close events'):
+          self._qt_app.processEvents()
+          self._qt_events_processed = True
 
   @staticmethod
   def _validate_element(element: dict[str, Any]) -> None:
@@ -569,6 +546,7 @@ class Canvas(Block):
     """Creates the Tkinter drawing window."""
 
     self._root = tk.Tk()
+    self._root.report_callback_exception = self._report_tk_callback_exception
     assert self._root is not None
     self._root.title(self._title)
 
@@ -604,9 +582,9 @@ class Canvas(Block):
     self.qt_scene = QtWidgets.QGraphicsScene(self._qt_window)
     assert self.qt_scene is not None
     self.qt_scene.setSceneRect(QtCore.QRectF(image.rect()))
-    background = self.qt_scene.addPixmap(QtGui.QPixmap.fromImage(image))
-    assert background is not None
-    background.setTransformationMode(
+    self._qt_background = self.qt_scene.addPixmap(QtGui.QPixmap.fromImage(image))
+    assert self._qt_background is not None
+    self._qt_background.setTransformationMode(
         QtCore.Qt.TransformationMode.SmoothTransformation)
 
     panel = QtWidgets.QWidget(self._qt_window)
@@ -690,10 +668,12 @@ class Canvas(Block):
                           QtGui.QColor(*color))
     pixmap = QtGui.QPixmap(256, 16)
     painter = QtGui.QPainter(pixmap)
-    try:
-      painter.fillRect(pixmap.rect(), QtGui.QBrush(gradient))
-    finally:
-      painter.end()
+    manager = self._failure_manager
+    with manager.collect('Canvas color bar'):
+      with manager.step('paint gradient'):
+        painter.fillRect(pixmap.rect(), QtGui.QBrush(gradient))
+      with manager.step('end painter'):
+        painter.end()
 
     bar = QtWidgets.QLabel()
     bar.setPixmap(pixmap)
@@ -737,8 +717,7 @@ class Canvas(Block):
                             QtCore.Qt.AspectRatioMode.KeepAspectRatio)
     self._qt_view_size = self._qt_view.viewport().size()
 
-  @staticmethod
-  def _get_application() -> QtWidgets.QApplication:
+  def _get_application(self) -> QtWidgets.QApplication:
     """Reuses a Qt widget application or creates one for this Block.
 
     OpenCV's bundled Qt plugin path is excluded during application creation,
@@ -751,22 +730,28 @@ class Canvas(Block):
         raise RuntimeError("A non-widget Qt application already exists")
       return app
 
+    manager = self._failure_manager
     original = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH')
-    if original is not None:
-      paths = original.split(os.pathsep)
-      filtered = [path for path in paths if
-                  tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
-                  ('cv2', 'qt', 'plugins')]
-      if filtered != paths:
-        if filtered:
-          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.pathsep.join(filtered)
-        else:
-          os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
-
-    numeric_locale = locale.setlocale(locale.LC_NUMERIC)
-    try:
-      return QtWidgets.QApplication([])
-    finally:
-      locale.setlocale(locale.LC_NUMERIC, numeric_locale)
-      if original is not None:
-        os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+    numeric_locale = None
+    with manager.collect('Qt application setup'):
+      with manager.step('create application'):
+        numeric_locale = locale.setlocale(locale.LC_NUMERIC)
+        if original is not None:
+          paths = original.split(os.pathsep)
+          filtered = [path for path in paths if
+                      tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
+                      ('cv2', 'qt', 'plugins')]
+          if filtered != paths:
+            if filtered:
+              os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = (
+                  os.pathsep.join(filtered))
+            else:
+              os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
+        app = QtWidgets.QApplication([])
+      with manager.step('restore numeric locale'):
+        if numeric_locale is not None:
+          locale.setlocale(locale.LC_NUMERIC, numeric_locale)
+      with manager.step('restore Qt plugin path'):
+        if original is not None:
+          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+    return app

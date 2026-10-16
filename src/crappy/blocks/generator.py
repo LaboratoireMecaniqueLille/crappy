@@ -9,7 +9,7 @@ import logging
 
 from .meta_block import Block
 from .generator_path.meta_path import paths_dict, Path
-from .._global import GeneratorStop
+from .._exceptions import GeneratorStop
 
 
 class GeneratorNoStop(Exception):

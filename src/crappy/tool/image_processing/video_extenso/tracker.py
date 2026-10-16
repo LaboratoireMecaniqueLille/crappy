@@ -3,25 +3,31 @@
 from multiprocessing import Process, get_start_method
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
+
 import numpy as np
 from time import monotonic
 from select import select
 import logging
 import logging.handlers
 from platform import system
+from pickle import loads
+from multiprocessing import synchronize
+
+from ...._failure import FailureManager
+from ...._exceptions import StopRequested
 
 from ...camera_config import Box
 from ...._global import OptionalModule
 
 try:
   import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+except (ModuleNotFoundError, ImportError) as error:
+  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
 try:
   from skimage.filters import threshold_otsu
-except (ModuleNotFoundError, ImportError):
-  threshold_otsu = OptionalModule("skimage", "Please install scikit-image to "
-                                             "use Video-extenso")
+except (ModuleNotFoundError, ImportError) as error:
+  threshold_otsu = OptionalModule("skimage", install_name="scikit-image",
+                                  cause=error)
 
 
 class LostSpotError(Exception):
@@ -47,9 +53,13 @@ class Tracker(Process):
                logger_name: str,
                log_level: int | None,
                log_queue: Queue,
+               stop_event: synchronize.Event,
+               failure_queue: Queue,
+               block_name: str,
                white_spots: bool = False,
                thresh: int | None = None,
-               blur: int | None = 5) -> None:
+               blur: int | None = 5,
+               raise_on_lost_spot: bool = False) -> None:
     """Sets the arguments.
 
     Args:
@@ -62,12 +72,21 @@ class Tracker(Process):
         :obj:`int`.
       log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
         the main :obj:`~logging.Logger`, only used in Windows.
+      stop_event: Shared Event for requesting shutdown.
       white_spots: If :obj:`True`, detects white objects on a black background,
         else black objects on a white background.
       thresh: If given, this threshold value will always be used for isolating
         the spot from the background. If not given (:obj:`None`), a new
         threshold is recalculated for each new subframe. Spots are less likely
         to be lost with an adaptive threshold, but it takes a bit more time.
+      failure_queue: :obj:`~multiprocessing.Queue` for reporting failures to
+        the parent component.
+
+        .. versionadded:: 2.2.0
+      block_name: Name of the parent Block.
+      raise_on_lost_spot: If :obj:`True`, report :exc:`LostSpotError` as a
+        failure and request stop. If :obj:`False`, return its reason to the
+        caller without reporting a failure.
       blur: If not :obj:`None`, the subframe is first blurred before trying to
         detect the spot. This argument gives the size of the kernel to use for
         blurring. Better results are obtained with blurring, but it takes a bit
@@ -82,6 +101,13 @@ class Tracker(Process):
                              or not blur % 2
                              or not isinstance(blur, int)):
       raise ValueError("blur must be a positive odd integer, or None")
+
+    # Attributes for failure handling and report
+    self._failure_queue: Queue = failure_queue
+    self._failure_manager: FailureManager
+    self._stop_event: synchronize.Event = stop_event
+    self._block_name: str = block_name
+    self._raise_on_lost_spot: bool = raise_on_lost_spot
 
     self._pipe = pipe
     self._white_spots = white_spots
@@ -118,52 +144,61 @@ class Tracker(Process):
 
   def run(self) -> None:
     """Continuously reads incoming subframes, tries to detect a spot and sends
-    back the coordinates of the detected spot.
+    back the coordinates of the detected spot."""
 
-    Can only be stopped either with a :exc:`KeyboardInterrupt` or when
-    receiving a text message from the 
-    :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
-    """
+    # Make sure there's a FailureManager running
+    self._failure_manager = FailureManager(self._block_name,
+                                           'bootstrap',
+                                           owner_path=self.name)
+    manager = self._failure_manager
 
-    # Looping forever for receiving data
-    try:
-      self._set_logger()
+    # Guard execution with a FailureManager
+    with manager.collect('Tracker lifecycle', raise_on_exit=False):
+      with manager.step('execution'):
+        # Start with configuring the FailureManager and logger
+        manager.set_queue(self._failure_queue)
+        self._set_logger()
+        if self._logger is not None:
+          manager._logger = self._logger
+        manager.phase = 'tracking'
 
-      while True:
-        # Making sure the call to recv is not blocking
-        if self._pipe.poll(0.5):
-          y_start, x_start, img = self._pipe.recv()
+        while not self._stop_event.is_set():
+          try:
+            # Making sure the call to recv is not blocking
+            if not self._pipe.poll(0.1):
+              continue
+            y_start, x_start, img = loads(self._pipe.recv_bytes())
+          # Case when the received values cannot be read
+          except (EOFError, OSError):
+            if self._stop_event.is_set():
+              raise StopRequested from None
+            raise
           self._log(logging.DEBUG, "Received data from pipe")
           self._n += 1
 
-          # If a string is received, always means the process has to stop
-          if isinstance(img, str):
+          # Evaluate the new position of the spot and handle a lost spot
+          try:
+            box = self._evaluate(x_start, y_start, img)
+          except LostSpotError as error:
+            if self._raise_on_lost_spot:
+              raise
+            self._pipe.send(str(error) or 'The selected spot was lost')
             break
 
           # Simply sending back the new Box containing the spot
-          try:
-            self._log(logging.DEBUG, "Sending back data through pipe")
-            self._send(self._evaluate(x_start, y_start, img))
+          self._send(box)
 
-          # If the caught exception is a KeyboardInterrupt, simply stopping
-          except KeyboardInterrupt:
-            self._log(logging.INFO, "Caught KeyboardInterrupt, stopping the "
-                                    "process")
-            break
-          # Sending back the exception if anything else unexpected happened
-          except (Exception,) as exc:
-            self._logger.exception("Caught exception while tracking spot",
-                                   exc_info=exc)
-            self._send('stop')
-            break
-
-    # In case the user presses CTRL+C, simply stopping the process
-    except KeyboardInterrupt:
-      self._log(logging.INFO, "Caught KeyboardInterrupt, stopping the process")
-
-    # Always close the pipe connection on exit
-    finally:
-      self._pipe.close()
+      # Clean up the multiprocessing resources owned by the Process
+      manager.phase = 'tracker cleanup'
+      with manager.step('close tracking Pipe'):
+        self._pipe.close()
+      manager.phase = 'failure Queue shutdown'
+      with manager.step('disconnect'):
+        manager.set_queue(None)
+      with manager.step('close'):
+        self._failure_queue.close()
+      with manager.step('flush'):
+        self._failure_queue.join_thread()
 
   def _evaluate(self, x_start: int, y_start: int, img: np.ndarray) -> Box:
     """Takes a sub-image, applies a threshold on it and tries to detect the new
@@ -211,14 +246,10 @@ class Tracker(Process):
 
         # If the spot still cannot be detected, aborting
         if np.count_nonzero(black_white) < 0.1 * img.size:
-          self._log(logging.ERROR,
-                    "Couldn't detect spot with adaptive threshold, aborting !")
           raise LostSpotError
 
       # If an adaptive threshold is already used, nothing more can be done
       else:
-        self._log(logging.ERROR,
-                  "Couldn't detect spot with adaptive threshold, aborting !")
         raise LostSpotError
 
     # Calculating the coordinates of the centroid using the image moments
@@ -239,7 +270,7 @@ class Tracker(Process):
                x_centroid=x_start + x,
                y_centroid=y_start + y)
 
-  def _send(self, val: Box | str) -> None:
+  def _send(self, val: Box) -> None:
     """Sends a message to the 
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`, and 
     in Linux checks that the :obj:`multiprocessing.Pipe` is not full before 
@@ -261,10 +292,9 @@ class Tracker(Process):
     logger = logging.getLogger(self.name)
 
     # Disabling logging if requested
+    logger.disabled = self._log_level is None
     if self._log_level is not None:
       logger.setLevel(self._log_level)
-    else:
-      logging.disable()
 
     # On spawn and forkserver, the messages need to be sent through a Queue for
     # logging

@@ -2,8 +2,14 @@
 
 """Tk window lifecycle, cleanup, cancellation, and callback failures."""
 
+from crappy._exceptions import StopRequested
+from tests.block.block_test_base import exception_leaves
+from .._fixtures import assert_failure
+
 from multiprocessing import Event, Queue
 from unittest.mock import patch
+
+from crappy._failure import FailureManager
 
 from ._fixtures import TkinterConfigTestCase, tk
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
@@ -62,7 +68,8 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
 
     with (patch.object(self._config, '_validate_close') as validate,
           patch.object(self._config, '_on_valid_close') as finalize):
-      self._config.run()
+      with self.assertRaises(StopRequested):
+        self._config.run()
 
     validate.assert_not_called()
     finalize.assert_not_called()
@@ -81,7 +88,8 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     self._config.watch_shutdown(stop_event.is_set)
 
     with patch.object(self._config._histogram_process, 'start') as start:
-      self._config.run()
+      with self.assertRaises(StopRequested):
+        self._config.run()
 
     start.assert_not_called()
     self.assertTrue(self._config._stop_event.is_set())
@@ -111,7 +119,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     self._config.after(0, fail)
     with patch.object(camera_config_module, 'showerror',
                       side_effect=RuntimeError('dialog failed')):
-      with self.assertRaisesRegex(ValueError, 'scheduled callback failed'):
+      with assert_failure(self, ValueError, 'scheduled callback failed'):
         self._config.run()
 
     self.assertTrue(self._config._stop_event.is_set())
@@ -123,18 +131,17 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     try:
       raise ValueError('early callback failed')
     except ValueError as error:
-      logger = self._config._logger
+      logger = self._config._failure_manager._logger
       assert logger is not None
-      with patch.object(logger, 'exception') as exception_log:
+      with patch.object(logger, 'error') as exception_log:
         self._config.report_callback_exception(type(error), error,
                                                error.__traceback__)
 
       exception_log.assert_called_once()
-      self.assertEqual(exception_log.call_args.args[0],
-                       'Configuration callback failed')
-      self.assertIs(exception_log.call_args.kwargs['exc_info'][1], error)
+      self.assertIn('early callback failed', exception_log.call_args.args[0])
+      self.assertIs(self._config._failure_manager.snapshot()[0][1], error)
 
-    with self.assertRaisesRegex(ValueError, 'early callback failed'):
+    with assert_failure(self, ValueError, 'early callback failed'):
       self._config.run()
 
   def test_callback_keyboard_interrupt_closes_silently(self) -> None:
@@ -147,13 +154,13 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
 
     self._config.after(0, cancel)
     with (patch.object(camera_config_module, 'showerror') as dialog,
-          patch.object(self._config._lifecycle, '_log') as log):
-      with self.assertRaises(KeyboardInterrupt) as raised:
+          patch.object(self._config._failure_manager._logger, 'error') as log):
+      with self.assertRaises(BaseExceptionGroup) as raised:
         self._config.run()
 
-    self.assertIs(raised.exception, interrupt)
+    self.assertEqual(exception_leaves(raised.exception), (interrupt,))
     dialog.assert_not_called()
-    log.assert_not_called()
+    log.assert_called_once()
     self.assertTrue(self._config._window_closed)
     self.assertTrue(self._config._img_in._closed)
     self.assertTrue(self._config._img_out._closed)
@@ -165,12 +172,12 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     with (patch.object(self._config, 'wait_window',
                        side_effect=KeyboardInterrupt),
           patch.object(camera_config_module, 'showerror') as dialog,
-          patch.object(self._config._lifecycle, '_log') as log):
-      with self.assertRaises(KeyboardInterrupt):
+          patch.object(self._config._failure_manager._logger, 'error') as log):
+      with self.assertRaises(BaseExceptionGroup):
         self._config.run()
 
     dialog.assert_not_called()
-    log.assert_not_called()
+    log.assert_called_once()
     self.assertTrue(self._config._window_closed)
     self.assertTrue(self._config._img_in._closed)
     self.assertTrue(self._config._img_out._closed)
@@ -181,7 +188,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
 
     with patch.object(self._config._histogram_process, 'start',
                       side_effect=RuntimeError('cannot start')):
-      with self.assertRaisesRegex(RuntimeError, 'cannot start'):
+      with assert_failure(self, RuntimeError, 'cannot start'):
         self._config.run()
 
     self.assertTrue(self._config._stop_event.is_set())
@@ -193,7 +200,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
   def test_destroy_failure_uses_exception_logging(self) -> None:
     """A Tk destruction error is recorded without skipping resource cleanup."""
 
-    logger = self._config._logger
+    logger = self._config._failure_manager._logger
     assert logger is not None
     destroy = self._config.destroy
 
@@ -205,14 +212,12 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
 
     with (patch.object(self._config, 'destroy',
                        side_effect=destroy_then_fail),
-          patch.object(logger, 'exception') as exception_log):
-      self._config.stop()
+          patch.object(logger, 'error') as exception_log):
+      with self.assertRaises(ExceptionGroup) as caught:
+        self._config.stop()
 
     exception_log.assert_called_once()
-    self.assertEqual(exception_log.call_args.args[0],
-                     'Cannot destroy the configuration window')
-    self.assertIsInstance(exception_log.call_args.kwargs['exc_info'][1],
-                          tk.TclError)
+    self.assertIsInstance(exception_leaves(caught.exception)[0], tk.TclError)
     self.assertTrue(self._config._stop_event.is_set())
     self.assertTrue(self._config._img_in._closed)
     self.assertTrue(self._config._img_out._closed)
@@ -228,9 +233,10 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
         self.update_idletasks()
         raise ValueError('layout failed')
 
-    with self.assertRaisesRegex(ValueError, 'layout failed'):
-      BrokenConfig(self._camera, self._log_queue,
-                   self._log_level, self._freq, None)
+    with assert_failure(self, ValueError, 'layout failed'):
+      BrokenConfig(
+          self._camera, self._log_queue, self._log_level, self._freq, None,
+          FailureManager('test configuration', 'configuration'))
 
     broken = BrokenConfig.instance
     self.assertTrue(broken._stop_event.is_set())
@@ -253,9 +259,10 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     with (patch.object(camera_config_module, 'Queue', side_effect=make_queue),
           patch.object(camera_config_module, 'HistogramProcess',
                        side_effect=RuntimeError('histogram failed'))):
-      with self.assertRaisesRegex(RuntimeError, 'histogram failed'):
-        TkinterCameraConfig(self._camera, self._log_queue,
-                     self._log_level, self._freq, None)
+      with assert_failure(self, RuntimeError, 'histogram failed'):
+        TkinterCameraConfig(
+            self._camera, self._log_queue, self._log_level, self._freq, None,
+            FailureManager('test configuration', 'configuration'))
 
-    self.assertEqual(len(queues), 2)
+    self.assertEqual(len(queues), 3)
     self.assertTrue(all(queue._closed for queue in queues))

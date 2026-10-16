@@ -5,6 +5,8 @@ import logging
 
 import numpy as np
 
+from tests.block.block_test_base import exception_leaves
+
 import crappy.blocks.vision.video_extenso as video_extenso_module
 from crappy.blocks.vision import VideoExtensoProcessor
 from crappy.tool.camera_config.config_tools import SpotsBoxes
@@ -202,6 +204,7 @@ class TestVideoExtensoProcessor(VisionTestBase):
                                     border=9,
                                     blur=3)
     self.add_image_input(processor)
+    self.set_prepare_sync(processor)
     configured = self.spots((2, 3, 4, 5))
     processor.recv_configs = Mock(return_value={
       'camera': (configured, 123),
@@ -229,8 +232,11 @@ class TestVideoExtensoProcessor(VisionTestBase):
       'safe_mode': True,
       'border': 9,
       'blur': 3,
+      'failure_manager': processor._failure_manager,
+      'stop_event': processor._stop_event,
+      'raise_on_lost_spot': processor._raise_on_lost_spot,
     })
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
     self.assertEqual(tool.start_calls, 1)
 
   def test_prepare_rejects_missing_ambiguous_or_malformed_config(self) -> None:
@@ -330,20 +336,21 @@ class TestVideoExtensoProcessor(VisionTestBase):
     processor._ve = tool
     self.feed_image(processor, np.zeros((3, 4), dtype=np.uint8))
 
-    with self.assertRaises(LostSpotError):
+    with self.assertRaises(ExceptionGroup) as caught:
       processor.loop()
+    self.assertIsInstance(exception_leaves(caught.exception)[0], LostSpotError)
 
     self.assertEqual(tool.stop_calls, 1)
     self.assertFalse(processor._lost_spots)
 
   def test_loop_tolerates_lost_spot_clears_overlay_then_stays_idle(self
                                                                   ) -> None:
-    """Checks nonfatal spot loss sends final data and disables processing."""
+    """Checks a reason string sends final data and disables processing."""
 
     processor = self.make_processor(raise_on_lost_spot=False)
     spots = self.spots()
     tool = RecordingVideoExtensoTool(spots=spots)
-    tool.raise_on_get_data = True
+    tool.return_value = 'The selected spot left the frame'
     processor._ve = tool
     processor._last_data = ([(1, 2)], 3, 4)
     processor.send = Mock()
@@ -362,6 +369,24 @@ class TestVideoExtensoProcessor(VisionTestBase):
     processor.loop()
     processor.receive_imgs.assert_not_called()
     self.assertEqual(tool.stop_calls, 1)
+
+  def test_loop_retains_fatal_lost_spot_reason(self) -> None:
+    """Checks tool-generated loss reasons remain diagnostic when fatal."""
+
+    processor = self.make_processor(raise_on_lost_spot=True)
+    tool = RecordingVideoExtensoTool(spots=self.spots())
+    tool.return_value = 'Overlapping spots detected in safe mode'
+    processor._ve = tool
+    self.feed_image(processor, np.zeros((3, 4), dtype=np.uint8))
+
+    with self.assertRaises(ExceptionGroup) as caught:
+      processor.loop()
+
+    error, = exception_leaves(caught.exception)
+    self.assertIsInstance(error, LostSpotError)
+    self.assertEqual(str(error), tool.return_value)
+    self.assertEqual(tool.stop_calls, 1)
+    self.assertFalse(processor._lost_spots)
 
   def test_loop_requires_metadata_and_initialized_tool(self) -> None:
     """Checks clear failures for impossible partially initialized states."""
@@ -390,15 +415,16 @@ class TestVideoExtensoProcessor(VisionTestBase):
     with patch.object(video_extenso_module.VisionBlock, 'finish') as inherited:
       processor.finish()
     self.assertEqual(tool.stop_calls, 1)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
     self.assertIsNone(processor._ve)
 
     tool.raise_on_stop = True
     processor._ve = tool
     with patch.object(video_extenso_module.VisionBlock, 'finish') as inherited:
-      with self.assertRaises(RuntimeError):
+      with self.assertRaises(ExceptionGroup) as caught:
         processor.finish()
-    inherited.assert_called_once_with()
+      self.assertIsInstance(caught.exception.exceptions[0], RuntimeError)
+    inherited.assert_called_once()
 
   def test_finish_reports_tracker_and_memory_errors_together(self) -> None:
     """Neither local nor inherited cleanup failures overwrite the other."""

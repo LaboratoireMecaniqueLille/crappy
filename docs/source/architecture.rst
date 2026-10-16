@@ -116,8 +116,8 @@ Startup coordination
 --------------------
 
 :meth:`~crappy.blocks.meta_block.block.Block.start_all`, exposed as
-:ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`, calls these class
-methods in order:
+:ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`, performs these
+phases in order:
 
 1. :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`
 2. :meth:`~crappy.blocks.meta_block.block.Block.renice_all`
@@ -136,8 +136,9 @@ objects shared with all Blocks. These currently include:
 
 - a readiness barrier with one participant per Block plus the main process
 - a shared floating-point value initialized to ``-1`` for the common ``t0``
-- events for start, pause, stop, runtime exceptions, and keyboard interruption
-- a logging queue and its coordinating thread
+- events for start, pause and stop
+- failure reporting for each Block and a receiver in the main process
+- logging resources for the selected process start method
 
 References to these objects are assigned to every Block before the processes
 start. Block-specific logging levels are also reconciled with the global
@@ -194,8 +195,9 @@ lifecycle. It performs these steps:
 6. Enter :meth:`~crappy.blocks.meta_block.block.Block.main`, which calls
    :meth:`~crappy.blocks.meta_block.block.Block.loop` repeatedly until the stop
    event is set.
-7. Set the shared stop event and call
-   :meth:`~crappy.blocks.meta_block.block.Block.finish` in a ``finally`` block.
+7. Request stop and attempt
+   :meth:`~crappy.blocks.meta_block.block.Block.finish`, followed by resource
+   cleanup, whether execution succeeded or failed.
 
 ``main`` also applies the Block's target frequency and pause behavior. A
 paused Block continues frequency regulation but does not call ``loop`` while
@@ -211,27 +213,27 @@ leave a consumer waiting indefinitely.
 Error propagation and cleanup
 -----------------------------
 
-A Block that fails during ``prepare`` aborts the readiness barrier. Other
-participants receive the broken-barrier state instead of waiting forever. A
-runtime exception sets the shared exception state. Keyboard interruption has a
-separate shared state so that it can be reported as such after cleanup.
+Each process uses a :class:`~crappy._failure.FailureManager` to record and
+report its failures. Child workers report through their parent component:
+for example, a video-extensometry spot tracker reports through its
+image-processing worker and Camera Block. Parents keep the original failure
+details without logging them again.
 
-The ``finally`` section of ``Block.run`` sets the shared stop event and attempts
-to call ``finish``. An error in ``finish`` is logged and recorded as another
-runtime failure. A process that must be terminated externally cannot complete
-this path, which is why hardware safety cannot depend only on ``finish``.
+A failure requests coordinated shutdown. A preparation failure also releases
+the readiness barrier so other Blocks do not wait indefinitely. Expected
+cancellation is not added to the failure summary.
 
-The main cleanup routine sets the stop event and gives the Blocks a limited
-time to exit. The current timeout is three seconds. It terminates survivors,
-then kills any still alive, allowing one second for each escalation stage,
-before shutting down the optional image manager and logging thread. The
-logging thread is asked to stop and given one second to exit, a missed deadline
-is recorded as a shutdown failure. Finally,
-:meth:`~crappy.blocks.meta_block.block.Block.reset` clears the registries,
-graph, shared-object references, and lifecycle flags.
+Each resource owner attempts its cleanup operations independently, keeping
+cleanup failures alongside the original error. Children are given time to stop
+before their parent finishes. Processes that miss their shutdown allowance
+are terminated, then killed if necessary. A blocked thread cannot be stopped
+safely and may have to be left behind.
 
-Unless ``no_raise`` was selected, the main process raises after cleanup when a
-runtime exception, keyboard interruption, or incomplete shutdown was recorded.
+The main process waits for reporting and cleanup, resets the graph, and raises
+the recorded failures together. See :ref:`concepts-lifecycle-shutdown` for
+exception handling and the exact :ref:`lifecycle-no-raise` rule. Reporting
+requires the main process to survive, abrupt termination can lose reports
+that have not yet arrived.
 
 Regular Link internals
 ----------------------

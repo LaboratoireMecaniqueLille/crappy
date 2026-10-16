@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import crappy.blocks.generator_path as generator_path_package
 import crappy.blocks.generator_path.meta_path.path as path_module
-from crappy._global import DefinitionError
+from crappy._exceptions import DefinitionError
 from crappy.blocks.generator_path.meta_path import Path
 
 

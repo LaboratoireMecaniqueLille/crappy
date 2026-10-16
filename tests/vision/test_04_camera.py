@@ -8,7 +8,8 @@ import logging
 import numpy as np
 
 import crappy.blocks.vision.camera as camera_module
-from crappy._global import CameraConfigError, PrepareError
+from crappy._exceptions import StopRequested
+from crappy._failure import FailureManager
 from crappy.blocks.camera import DummyCam
 from crappy.blocks.vision import CameraSource
 from crappy.blocks.vision.block import ConfigRequest
@@ -16,6 +17,7 @@ from crappy.camera import Camera as BaseCamera
 from crappy.tool.camera_config import CameraConfig
 
 from .vision_test_base import VisionTestBase
+from tests.block.block_test_base import exception_leaves
 
 
 class RecordingVisionCamera(BaseCamera):
@@ -63,10 +65,11 @@ class RecordingConfig(CameraConfig):
   raise_in: str | None = None
 
   def __init__(self, camera, log_queue, log_level, max_freq, transform,
-               *args, **kwargs) -> None:
+               failure_manager, *args, **kwargs) -> None:
     """Records constructor arguments without initializing Tk."""
 
-    super().__init__(camera, log_queue, log_level, max_freq, transform)
+    super().__init__(camera, log_queue, log_level, max_freq, transform,
+                     failure_manager=failure_manager)
     self.constructor_args = (camera, log_queue, log_level, max_freq,
                              transform, args, kwargs)
     self.shape = type(self).shape_value
@@ -135,6 +138,7 @@ class TestCameraSource(VisionTestBase):
     }
     options.update(kwargs)
     source = source_type(**options)
+    source._failure_manager = FailureManager(source.name, 'prepare')
     self.track_block(source)
     return source
 
@@ -246,7 +250,7 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(camera.open_calls,
                      [{'trigger': 'Hdw after config', 'serial': 'abc'}])
     self.assertEqual(camera.trigger, 'Hardware')
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_prepare_builds_image_generator_camera(self) -> None:
     """Checks synthetic settings, ROI setup, and generated acquisition."""
@@ -269,7 +273,7 @@ class TestCameraSource(VisionTestBase):
     self.assertIn('Eyy', source._camera.settings)
     self.assertIn(source._camera.roi_width_name, source._camera.settings)
     generator.assert_called_once_with(0, 0)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
     timestamp, image = source._camera.get_image()
     self.assertIsInstance(timestamp, float)
@@ -297,7 +301,7 @@ class TestCameraSource(VisionTestBase):
       source.prepare()
 
     default_config.assert_called_once_with()
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_prepare_runs_and_answers_specialized_configurations(self) -> None:
     """Checks ordered downstream configurators and their responses."""
@@ -324,7 +328,7 @@ class TestCameraSource(VisionTestBase):
     second.connection.close.assert_called_once_with()
     self.assertTrue(first.completed)
     self.assertTrue(second.completed)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_prepare_declines_optional_requests_when_config_is_disabled(self
                                                                       ) -> None:
@@ -340,7 +344,7 @@ class TestCameraSource(VisionTestBase):
     request.connection.send.assert_called_once_with(None)
     request.connection.close.assert_called_once_with()
     self.assertTrue(request.completed)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_prepare_disallowed_downstream_config_uses_default_and_declines(self
                                                                           ) -> None:
@@ -386,7 +390,7 @@ class TestCameraSource(VisionTestBase):
     source._stop_event.set()
     self.request(source)
 
-    with self.assertRaises(PrepareError):
+    with self.assertRaises(StopRequested):
       source.prepare()
 
   def test_loop_waits_for_software_trigger(self) -> None:
@@ -508,7 +512,7 @@ class TestCameraSource(VisionTestBase):
       physical.finish()
     self.assertEqual(camera.close_calls, 1)
     self.assertIsNone(physical._camera)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
     physical.finish()
     self.assertEqual(camera.close_calls, 1)
 
@@ -523,7 +527,7 @@ class TestCameraSource(VisionTestBase):
       generator.finish()
     dummy.close.assert_not_called()
     self.assertIsNone(generator._camera)
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
 
   def test_finish_closes_camera_even_after_failed_open(self) -> None:
     """The driver owns partial open internals; its close is still called."""
@@ -552,7 +556,7 @@ class TestCameraSource(VisionTestBase):
       with self.assertRaises(ExceptionGroup) as caught:
         source.finish()
     self.assertEqual(caught.exception.exceptions, tuple(errors))
-    inherited.assert_called_once_with()
+    inherited.assert_called_once()
     camera.close.assert_called_once_with()
     self.assertIs(source._camera, camera)
     camera.close.side_effect = None
@@ -572,10 +576,11 @@ class TestCameraSource(VisionTestBase):
     camera.close.side_effect = error
     with patch.object(camera_module.VisionBlock, 'finish',
                       side_effect=interrupt):
-      with self.assertRaises(KeyboardInterrupt) as caught:
+      with self.assertRaises(BaseExceptionGroup) as caught:
         source.finish()
-    self.assertIs(caught.exception, interrupt)
-    self.assertEqual(interrupt.__cause__.exceptions, (earlier, error))
+    self.assertIn(interrupt, exception_leaves(caught.exception))
+    self.assertIs(interrupt.__cause__, earlier)
+    self.assertEqual(exception_leaves(caught.exception), (interrupt, error))
     camera.close.side_effect = None
     source.finish()
 
@@ -587,6 +592,7 @@ class TestCameraSource(VisionTestBase):
                               img_shape=(1, 1),
                               img_dtype='uint8',
                               freq=123)
+    source._failure_manager = FailureManager(source.name, 'configuration')
     source._log_queue = sentinel.log_queue
     source._log_level = logging.WARNING
     camera = RecordingVisionCamera()
@@ -598,9 +604,12 @@ class TestCameraSource(VisionTestBase):
 
     config = RecordingConfig.instances[-1]
     self.assertEqual(factory.call_args.args[2], 'pyqt')
+    self.assertIs(factory.call_args.args[7],
+                  source._failure_manager)
     self.assertEqual(config.constructor_args,
                      (camera, sentinel.log_queue, logging.WARNING, 123,
                       transform, ('argument',), {'option': sentinel.option}))
+    self.assertIs(config._failure_manager, source._failure_manager)
     self.assertEqual(config.run_calls, 1)
     self.assertEqual(config.stop_calls, 0)
     self.assertEqual(result, ('configured',))
@@ -634,7 +643,7 @@ class TestCameraSource(VisionTestBase):
 
         source._ready_barrier.abort()
 
-    with self.assertRaises(PrepareError):
+    with self.assertRaises(StopRequested):
       source.configure(camera, WatchedConfig)
 
     config = WatchedConfig.instances[-1]
@@ -696,20 +705,20 @@ class TestCameraSource(VisionTestBase):
     camera = RecordingVisionCamera()
 
     RecordingConfig.raise_in = 'start'
-    with self.assertRaises(CameraConfigError) as raised:
+    with self.assertRaises(ExceptionGroup) as raised:
       source.configure(camera, RecordingConfig)
-    self.assertIsInstance(raised.exception.__cause__, ValueError)
+    self.assertIsInstance(exception_leaves(raised.exception)[0], ValueError)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
     RecordingConfig.raise_in = 'keyboard'
-    with self.assertRaises(KeyboardInterrupt):
+    with self.assertRaises(BaseExceptionGroup):
       source.configure(camera, RecordingConfig)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
     RecordingConfig.raise_in = 'result'
-    with self.assertRaises(CameraConfigError) as raised:
+    with self.assertRaises(ExceptionGroup) as raised:
       source.configure(camera, RecordingConfig)
-    self.assertIsInstance(raised.exception.__cause__, ValueError)
+    self.assertIsInstance(exception_leaves(raised.exception)[0], ValueError)
     self.assertEqual(RecordingConfig.instances[-1].stop_calls, 1)
 
   def test_configure_preserves_failure_when_cleanup_fails(self) -> None:
@@ -733,10 +742,10 @@ class TestCameraSource(VisionTestBase):
         self.stop_calls += 1
         raise RuntimeError('cleanup failed')
 
-    with self.assertRaises(CameraConfigError) as raised:
+    with self.assertRaises(ExceptionGroup) as raised:
       source.configure(RecordingVisionCamera(), FailingStopConfig)
 
-    self.assertIs(raised.exception.__cause__, failure)
+    self.assertIs(exception_leaves(raised.exception)[0], failure)
     self.assertEqual(FailingStopConfig.instances[-1].stop_calls, 1)
 
   def test_configure_reports_missing_log_queue_as_runtime_error(self) -> None:
@@ -744,8 +753,9 @@ class TestCameraSource(VisionTestBase):
 
     source = self.make_source()
 
-    with self.assertRaises(RuntimeError):
+    with self.assertRaises(ExceptionGroup) as caught:
       source.configure(RecordingVisionCamera(), RecordingConfig)
+    self.assertIsInstance(exception_leaves(caught.exception)[0], RuntimeError)
 
   def test_default_configuration_uses_base_configurator(self) -> None:
     """Checks the generic configuration helper."""

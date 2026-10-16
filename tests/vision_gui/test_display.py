@@ -14,6 +14,7 @@ import numpy as np
 
 import crappy.blocks.vision.display as display_module
 from crappy._global import OptionalModule
+from crappy._exceptions import OptionalDependencyError
 from crappy.blocks.vision import ImageDisplayer
 from crappy.tool.camera_config import Overlay
 
@@ -55,7 +56,7 @@ class TestImageDisplayer(VisionTestBase):
 
     try:
       display_module.plt.close('all')
-    except (RuntimeError, AttributeError):
+    except (ImportError, RuntimeError, AttributeError):
       pass
     ImageDisplayer._count = 0
     super().tearDown()
@@ -148,11 +149,22 @@ class TestImageDisplayer(VisionTestBase):
     self.track_block(displayer)
     self.assertEqual(displayer._backend, 'mpl')
 
+    cause = ImportError('matplotlib native loader failure')
     with (patch.object(display_module, 'cv2', missing_cv2),
           patch.object(display_module, 'plt',
-                       OptionalModule('missing-matplotlib'))):
-      with self.assertRaises(ModuleNotFoundError):
+                       OptionalModule('matplotlib.pyplot', cause=cause))):
+      with self.assertRaises(ModuleNotFoundError) as caught:
         ImageDisplayer(backend=None)
+    self.assertIsInstance(caught.exception.__cause__, OptionalDependencyError)
+    self.assertIs(caught.exception.__cause__.__cause__, cause)
+
+    error = RuntimeError('unrelated backend failure')
+    with (patch.object(display_module, 'cv2', missing_cv2),
+          patch.object(display_module, 'plt', OptionalModule('matplotlib')),
+          patch.object(OptionalModule, '__getattr__', side_effect=error)):
+      with self.assertRaises(RuntimeError) as caught:
+        ImageDisplayer(backend=None)
+    self.assertIs(caught.exception, error)
 
   def test_prepare_validates_supported_topology(self) -> None:
     """Checks the exactly-one-input and no-output ImageLink topology."""
@@ -218,6 +230,26 @@ class TestImageDisplayer(VisionTestBase):
     displayer._finish_mpl.assert_called_once_with()
     inherited.assert_called_once_with()
     self.assertFalse(displayer._window_opened)
+
+  def test_invalid_overlay_recovery_preserves_grouped_interruptions(self
+                                                                   ) -> None:
+    """Invalid overlays may be ignored, but interruptions must propagate."""
+
+    error = BaseExceptionGroup('overlay interrupted',
+                               [ValueError('bad overlay'), KeyboardInterrupt()])
+
+    class FailingOverlay:
+      def __iter__(self):
+        raise error
+
+    displayer = self.make_displayer()
+    regular = Mock()
+    regular.name = 'overlay-link'
+    regular.recv_last.return_value = {'overlay': FailingOverlay()}
+    displayer.inputs = [regular]
+    with self.assertRaises(BaseExceptionGroup) as caught:
+      displayer.loop()
+    self.assertIs(caught.exception, error)
 
   def test_loop_consumes_overlays_before_rate_limit(self) -> None:
     """Checks overlay state remains current even when display is throttled."""

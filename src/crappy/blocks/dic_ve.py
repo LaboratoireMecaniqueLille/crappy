@@ -529,6 +529,7 @@ CameraConfig` window that can be displayed by the Camera Block, this Block can
       raise RuntimeError("At that point the patches to track should be set "
                          "but they are not")
 
+    assert self._failure_manager is not None
     return create_configurator(self.configurator,
                                self._camera,
                                self._config_backend,
@@ -536,4 +537,5 @@ CameraConfig` window that can be displayed by the Camera Block, this Block can
                                self._log_level,
                                self.freq,
                                self._transform,
+                               self._failure_manager,
                                patches=self._patches)

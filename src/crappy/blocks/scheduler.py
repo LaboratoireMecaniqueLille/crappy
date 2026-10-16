@@ -9,7 +9,7 @@ from numbers import Real
 
 from .meta_block import Block
 from .schedulers import State
-from .._global import SchedulerStop
+from .._exceptions import SchedulerStop
 
 
 class Scheduler(Block):
@@ -533,7 +533,7 @@ class Scheduler(Block):
   def _end_condition(self,
                      dt: float,
                      _:  dict[str, list[Any]]) -> bool:
-    """Raises :exc:`~crappy._global.SchedulerStop` after ``end_delay``.
+    """Raises :exc:`~crappy._exceptions.SchedulerStop` after ``end_delay``.
 
     Delay evaluation is skipped until a configured ``last_output`` has been
     generated, so that these values can be sent before the Scheduler stops.

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from importlib import import_module
-from typing import Literal
+from typing import Any, Literal
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,12 +51,29 @@ class CollectionUnavailableError(RuntimeError):
       raise TypeError("The provided cause must be an Exception")
 
     self.entry = entry
-    self.cause = cause
+    self.__cause__ = cause
 
     super().__init__(f"The {entry.kind} {entry.name!r} is declared in "
                      f"crappy.collection, but could not be loaded.\n"
                      f"Importing {entry.module!r} raised "
                      f"{type(cause).__name__}: {cause}")
+
+  @property
+  def cause(self) -> BaseException | None:
+    """Returns the import cause.
+
+    .. versionchanged:: 2.2.0 this attribute is now read-only.
+    """
+
+    return self.__cause__
+
+  def __reduce__(self) -> tuple[Any, ...]:
+    """Ensures correct transfer of this Exception when serializing it.
+
+    .. versionadded:: 2.2.0
+    """
+
+    return type(self), (self.entry, self.cause), self.__dict__.copy()
 
 
 class CollectionRegistry:
