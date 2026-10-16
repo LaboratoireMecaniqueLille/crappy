@@ -48,6 +48,111 @@ def report_import_failures(queue):
 
 
 class TestOptionalModule(TestCase):
+  def test_explicit_resolution_shares_the_import_cache_with_access(self):
+    module = OptionalModule('backend.submodule', lazy_import=True)
+    actual = ModuleType('backend.submodule')
+    actual.feature = 42
+
+    with patch('crappy._global.import_module', return_value=actual) as importer:
+      self.assertIs(module.resolve(), actual)
+      self.assertIs(module.is_available(), True)
+      self.assertIs(module.resolve(), actual)
+      self.assertEqual(module.feature, 42)
+
+    importer.assert_called_once_with('backend.submodule')
+
+  def test_availability_caches_the_module_before_use(self):
+    module = OptionalModule('backend', lazy_import=True)
+    actual = ModuleType('backend')
+    actual.feature = 42
+
+    with patch('crappy._global.import_module', return_value=actual) as importer:
+      self.assertIs(module.is_available(), True)
+      self.assertIs(module.is_available(), True)
+      self.assertIs(module.resolve(), actual)
+      self.assertEqual(module.feature, 42)
+
+    importer.assert_called_once_with('backend')
+
+  def test_availability_retains_import_failures_for_explicit_resolution(self):
+    failures = (
+      ModuleNotFoundError("No module named 'backend'", name='backend'),
+      ModuleNotFoundError("No module named 'child'", name='child'),
+      ImportError('undefined native symbol', name='backend', path='native.so'),
+    )
+    for cause in failures:
+      with self.subTest(cause=cause):
+        module = OptionalModule('backend', 'Needed for preview',
+                                lazy_import=True, install_name='backend-package')
+        with patch('crappy._global.import_module',
+                   side_effect=cause) as importer:
+          self.assertIs(module.is_available(), False)
+          with self.assertRaises(OptionalDependencyError) as caught:
+            module.resolve()
+
+        self.assertEqual(importer.call_count, 2)
+        error = caught.exception
+        self.assertIs(error.__cause__, cause)
+        self.assertIsNotNone(cause.__traceback__)
+        self.assertEqual(error.import_name, 'backend')
+        self.assertEqual(error.name, 'backend')
+        self.assertEqual(error.install_name, 'backend-package')
+        self.assertIn('Needed for preview', str(error))
+        restored = pickle.loads(pickle.dumps(error))
+        self.assertIs(type(restored), OptionalDependencyError)
+        self.assertEqual(restored.import_name, error.import_name)
+        self.assertEqual(restored.install_name, error.install_name)
+        self.assertEqual(str(restored), str(error))
+
+  def test_non_lazy_placeholders_remain_unavailable_without_reimport(self):
+    for cause in (None, ImportError('native loader failure')):
+      with self.subTest(cause=cause):
+        module = OptionalModule('backend', cause=cause)
+        with patch('crappy._global.import_module') as importer:
+          self.assertIs(module.is_available(), False)
+          with self.assertRaises(OptionalDependencyError) as caught:
+            module.resolve()
+
+        importer.assert_not_called()
+        self.assertIs(caught.exception.__cause__, cause)
+
+  def test_failed_availability_check_can_be_retried(self):
+    module = OptionalModule('backend', lazy_import=True)
+    actual = ModuleType('backend')
+    actual.feature = 42
+
+    with patch('crappy._global.import_module',
+               side_effect=[ImportError('temporary failure'), actual]) as importer:
+      self.assertIs(module.is_available(), False)
+      self.assertIs(module.is_available(), True)
+      self.assertIs(module.resolve(), actual)
+      self.assertEqual(module.feature, 42)
+
+    self.assertEqual(importer.call_count, 2)
+    self.assertIsNone(module._cause)
+
+  def test_explicit_helpers_propagate_initialization_errors_and_interruptions(self):
+    failures = (ValueError('module bug'), RuntimeError('initialization failure'),
+                KeyboardInterrupt(), SystemExit(2),
+                BaseExceptionGroup('import interrupted',
+                                   [ValueError('module bug'), SystemExit(2)]))
+    for method in ('resolve', 'is_available'):
+      for error in failures:
+        with self.subTest(method=method, error=error):
+          module = OptionalModule('backend', lazy_import=True)
+          with patch('crappy._global.import_module', side_effect=error):
+            with self.assertRaises(type(error)) as caught:
+              getattr(module, method)()
+          self.assertIs(caught.exception, error)
+
+  def test_explicit_helpers_resolve_a_real_standard_library_module(self):
+    import math
+
+    module = OptionalModule('math', lazy_import=True)
+    self.assertIs(module.is_available(), True)
+    self.assertIs(module.resolve(), math)
+    self.assertEqual(module.sqrt(4), 2)
+
   def test_eager_cause_is_retained_without_importing_again(self):
     try:
       failing_import('backend')
