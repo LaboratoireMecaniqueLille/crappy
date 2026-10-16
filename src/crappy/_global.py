@@ -6,6 +6,8 @@ import webbrowser
 import importlib.resources
 from numpy import frombuffer, uint8
 
+from . import _exceptions
+
 
 # Quick access to documentation
 def docs():
@@ -21,43 +23,67 @@ def docs():
 
 
 class OptionalModule:
-  """Placeholder for optional dependencies that are not installed.
+  """Placeholder for an unavailable or lazily imported optional dependency.
 
-  Will display a message and raise an error when trying to use them.
-  
+  Reports an import failure only when the dependency is used. It retains the
+  original exception as its cause when available.
+
   .. versionadded:: 1.4.0
   """
 
   def __init__(self,
                module_name: str,
                message: str | None = None,
-               lazy_import: bool = False) -> None:
+               lazy_import: bool = False,
+               cause: ImportError | None = None,
+               install_name: str | None = None) -> None:
     """Sets the arguments.
 
     Args:
-      module_name: The name of the module s a :obj:`str`, preferably the one
-        invoked with `pip install`.
-      message: Optionally, the message to display in case the module is
-        missing (as a :obj:`str`). If not provided, a generic message will be
-        displayed.
+      module_name: Python import name, such as ``cv2`` or ``PIL``.
+      message: Additional guidance displayed if the dependency cannot load.
       lazy_import: If :obj:`True`, the module won't be imported directly even
         if it is installed. Instead, it will be imported only when necessary.
-        Allows reducing the import time, especially on Window.
+        Allows reducing the import time, especially on Windows.
 
         .. versionadded:: 2.0.0
+      cause: Original failure from an import, if available.
+      install_name: Installation package name when different from the import
+        name, such as ``opencv-python`` or ``Pillow``.
     """
 
-    self._name = module_name
-
-    # Setting a default message if none was provided
-    if message is not None:
-      self._msg = message
-    else:
-      self._msg = f"The module {self._name} is necessary to use this " \
-                  f"functionality. Please install it and try again !"
-
-    self._lazy = lazy_import
+    self._name: str = module_name
+    self._msg: str | None = message
+    self._cause: ImportError | None = cause
+    self._install_name: str = install_name or module_name.split('.')[0]
+    self._lazy: bool = lazy_import
     self._module = None
+
+  def _resolve(self) -> Any:
+    """Imports a lazy dependency or reports why its import failed."""
+
+    # A non-lazy OptionalModule must fail when resolved
+    if not self._lazy:
+      self._raise_unavailable()
+
+    # Trying to import the module
+    if self._module is None:
+      try:
+        self._module = import_module(self._name)
+      except ImportError as error:
+        self._cause = error
+        self._raise_unavailable()
+      self._cause = None
+
+    # If import succeeded, just return the module
+    return self._module
+
+  def _raise_unavailable(self) -> NoReturn:
+    """Raises an OptionalDependencyError while preserving the context."""
+
+    raise _exceptions.OptionalDependencyError(self._name,
+                                              self._install_name,
+                                              self._msg) from self._cause
 
   def __getattr__(self, attr: str) -> Any:
     """Method normally raising an exception indicating that the module is
@@ -68,28 +94,17 @@ class OptionalModule:
     missing.
     """
 
-    # The module has to be imported only when called because it's too heavy
-    if self._lazy:
-      raise_ = False
+    return getattr(self._resolve(), attr)
 
-      # Trying to import the module
-      if self._module is None:
-        try:
-          self._module = import_module(self._name)
-        except (ImportError, ModuleNotFoundError):
-          raise_ = True
+  def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    """Method raising an exception indicating that the module is missing.
 
-      # The module could be imported, returning the desired attribute
-      if not raise_:
-        return getattr(self._module, attr)
+    In case the ``lazy_import`` argument was set to :obj:`True`, still tries to
+    call the desired method and raises the exception only if the module is
+    missing.
+    """
 
-    # The module could not be imported
-    raise RuntimeError(f"Missing module: {self._name}\n{self._msg}")
-
-  def __call__(self, *_, **__) -> NoReturn:
-    """Method raising an exception indicating that the module is missing."""
-
-    raise RuntimeError(f"Missing module: {self._name}\n{self._msg}")
+    return self._resolve()(*args, **kwargs)
 
 
 # Data aliases
