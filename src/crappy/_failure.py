@@ -5,7 +5,7 @@
 from __future__ import annotations
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass, fields, replace
+from dataclasses import dataclass, field, fields, replace
 from multiprocessing import current_process, queues
 from os import getpid
 from queue import Empty
@@ -54,7 +54,7 @@ class ExceptionNode:
   module: str
   type_name: str
   message: str
-  mro: tuple[str, ...]
+  mro: tuple[str, ...] = field()
   notes: tuple[str, ...] = tuple()
   formatted_stack: str = ''
   children: tuple[int, ...] = tuple()
