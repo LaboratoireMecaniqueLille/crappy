@@ -45,15 +45,17 @@ or installation is being used. A script named ``crappy.py`` or a directory
 named ``crappy`` beside the script can also shadow the installed package.
 Rename the local file or directory, then run the check again.
 
-An optional dependency is missing
----------------------------------
+An optional dependency cannot be loaded
+---------------------------------------
 
-``RuntimeError: Missing module: ...``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``OptionalDependencyError`` when using a feature
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Crappy uses placeholders for optional dependencies, so importing ``crappy``
 can succeed even when a package needed by one feature is absent. The error is
-raised when that feature starts. Install the missing dependency with the same
+raised when that feature starts. Read its import exception to determine whether
+the requested package is absent, a dependency is missing, or a compiled
+extension cannot load. If a package is missing, install it with the same
 interpreter that runs the script:
 
 .. code-block:: shell-session
