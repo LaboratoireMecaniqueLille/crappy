@@ -265,26 +265,6 @@ class StartTimeout(TimeoutError):
   """Exception raised when the start event takes too long to be set."""
 
 
-class PrepareError(IOError):
-  """Error raised in a :class:`~crappy.blocks.meta_block.block.Block` when
-  waiting for all Blocks to be ready but another Block fails to prepare."""
-
-
-class CameraConfigError(RuntimeError):
-  """Error raised by a :class:`~crappy.tool.camera_config.base.camera_config.\
-CameraConfig` window when encountering an exception."""
-
-
-class CameraPrepareError(RuntimeError):
-  """Error raised by a :class:`~crappy.blocks.Camera` when one of its children
-  processes crashes while preparing."""
-
-
-class CameraRuntimeError(RuntimeError):
-  """Error raised by a :class:`~crappy.blocks.Camera` when one of its children
-  processes crashes while running."""
-
-
 class T0NotSetError(ValueError):
   """Exception raised when requesting the t0 value when it is not set."""
 
@@ -319,20 +299,3 @@ class SchedulerStop(Exception):
 class ReaderStop(Exception):
   """Exception raised when a :class:`~crappy.camera.FileReader` Camera has
   exhausted all the images to read."""
-
-
-class CrappyFail(Exception):
-  """Exception raised when an unexpected Exception is caught in Crappy. Also
-  raised when all the Blocks do not terminate gracefully."""
-
-  def __init__(self) -> None:
-    """Only defined here to set the message to display when raised."""
-
-    super().__init__("This Exception means that an error occurred while "
-                     "running Crappy. Check the Traceback in the terminal for "
-                     "more information")
-
-  def __reduce__(self) -> tuple[Any, ...]:
-    """Ensures correct transfer of this Exception when serializing it."""
-
-    return type(self), (), self.__dict__.copy()
