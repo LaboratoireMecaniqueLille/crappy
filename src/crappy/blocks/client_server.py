@@ -444,7 +444,7 @@ class ClientServer(Block):
         # Wait for the subprocess to terminate
         with manager.step('wait for broker'):
           try:
-            self._proc.wait(timeout=15)
+            self._proc.wait(timeout=2.0)
           except TimeoutExpired:
             pass
           else:
@@ -456,21 +456,21 @@ class ClientServer(Block):
             self._proc.kill()
           # Give some time for the subprocess to die
           with manager.step('reap killed broker'):
-            self._proc.wait(timeout=1)
+            self._proc.wait(timeout=0.5)
             self._broker_stopped = True
 
       if self._reader is not None:
         if self._reader_started:
           # give some time for the reader thread to stop
           with manager.step('join broker reader'):
-            self._reader.join(0.2)
+            self._reader.join(0.5)
           # Report the reader thread failing to stop
           with manager.step('check broker reader'):
             if self._reader.is_alive():
               raise ShutdownTimeoutError("The broker reader thread did not "
                                          "stop",
                                          phase='monitoring',
-                                         timeout=0.2)
+                                         timeout=0.5)
             self._reader = None
             self._reader_started = False
         else:

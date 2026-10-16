@@ -149,9 +149,9 @@ class ConfigurationLifecycle:
             with manager.step('terminate histogram'):
               process.terminate()
               terminated = True
-            # Give the histogram Process one extra second to terminate
+            # Give the histogram Process half a second to terminate
             with manager.step('join terminated histogram'):
-              process.join(1.0)
+              process.join(0.5)
             alive = True
             # Check if the histogram Process is still alive after termination
             with manager.step('check terminated histogram'):
@@ -161,9 +161,9 @@ class ConfigurationLifecycle:
               with manager.step('kill histogram'):
                 process.kill()
                 terminated = True
-              # Give the histogram Process one extra second to be killed
+              # Give the histogram Process half a second to be killed
               with manager.step('join killed histogram'):
-                process.join(1.0)
+                process.join(0.5)
           # Report any unexpected exit code from the histogram Process
           with manager.step('observe histogram exit'):
             code = process.exitcode
@@ -177,14 +177,14 @@ class ConfigurationLifecycle:
       # Stop the Thread receiving Exceptions from the histogram Process
       with manager.step('stop histogram receiver'):
         self._receiver_stop.set()
-      # Give the Thread one second to stop
+      # Give the Thread half a second to stop
       with manager.step('join histogram receiver'):
         if self._receiver is not None and self._receiver.ident is not None:
-          self._receiver.join(1.0)
+          self._receiver.join(0.5)
           # Report it if the Thread is still alive
           if self._receiver.is_alive():
             raise ShutdownTimeoutError("Histogram failure receiver did not "
-                                       "stop", phase='monitoring', timeout=1.0)
+                                       "stop", phase='monitoring', timeout=0.5)
           self._receiver = None
 
       # Close the Queue carrying Exceptions

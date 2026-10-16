@@ -798,10 +798,10 @@ class Block(Process, ABC):
       # If the watchdog Thread doesn't stop, don't proceed any further
       with manager.step('join watchdog'):
         if cls.watchdog_thread.ident is not None:
-          cls.watchdog_thread.join(timeout=1.0)
+          cls.watchdog_thread.join(timeout=0.5)
           if cls.watchdog_thread.is_alive():
             raise ShutdownTimeoutError("The Barrier watchdog did not stop",
-                                       phase='synchronize', timeout=1.0)
+                                       phase='synchronize', timeout=0.5)
 
     # Double-check for race conditions before proceeding
     if cls.ready_barrier.broken or (cls.stop_event is not None and
@@ -877,15 +877,15 @@ class Block(Process, ABC):
         if cls.watchdog_stop is not None:
           cls.watchdog_stop.set()
 
-      # Waiting at most 3 seconds for all the Blocks to finish
+      # Waiting at most 10 seconds for all the Blocks to finish
       pending = dict()
       # First, check which Blocks are still alive
       for instance in cls._run_blocks:
         with manager.step(f'inspect {instance.name}'):
           if instance.is_alive():
             pending[instance.sentinel] = instance
-      # Check stopped blocks each 0.5s at most for 3 seconds
-      deadline = monotonic() + 3.0
+      # Check stopped blocks each 0.5s at most for 10 seconds
+      deadline = monotonic() + 10.0
       while pending and (remaining := deadline - monotonic()) > 0:
         exited = None
         with manager.step('wait for Block exits'):
@@ -913,11 +913,11 @@ class Block(Process, ABC):
         for instance in survivors:
           with manager.step(f'shutdown deadline for {instance.name}'):
             raise ShutdownTimeoutError(f"Block {instance.name} did not finish "
-                                       f"within three seconds",
+                                       f"within 10 seconds",
                                        process_name=instance.name,
                                        pid=instance.pid,
                                        phase='framework cleanup',
-                                       timeout=3.0)
+                                       timeout=10.0)
           # The two contexts below are executed since the Exception is caught
           with manager.step(f'termination diagnostic for {instance.name}'):
             cls.cls_log(logging.WARNING, f'Terminating Block {instance.name}')
@@ -925,8 +925,8 @@ class Block(Process, ABC):
             instance.terminate()
             forced.add(instance)
 
-        # Waiting at most one second for the survivors to terminate
-        deadline = monotonic() + 1.0
+        # Waiting at most half a second for the survivors to terminate
+        deadline = monotonic() + 0.5
         for instance in survivors:
           with manager.step(f'join after terminate {instance.name}'):
             instance.join(timeout=max(0.0, deadline - monotonic()))
@@ -950,8 +950,8 @@ class Block(Process, ABC):
               instance.kill()
               forced.add(instance)
 
-          # Waiting at most one second for the survivors to get killed
-          deadline = monotonic() + 1.0
+          # Waiting at most half a second for the survivors to get killed
+          deadline = monotonic() + 0.5
           for instance in survivors:
             with manager.step(f'join after kill {instance.name}'):
               instance.join(timeout=max(0.0, deadline - monotonic()))
@@ -1004,11 +1004,11 @@ class Block(Process, ABC):
       with manager.step('join failure receiver'):
         if (cls.failure_thread is not None and
             cls.failure_thread.ident is not None):
-          cls.failure_thread.join(timeout=1.0)
+          cls.failure_thread.join(timeout=0.5)
           # If it is still alive, report it as an error
           if cls.failure_thread.is_alive():
             raise ShutdownTimeoutError("The failure receiver did not stop",
-                                       phase='monitoring', timeout=1.0)
+                                       phase='monitoring', timeout=0.5)
 
       # Close the Exception Queues
       for queue in cls.failure_queues:
@@ -1038,7 +1038,7 @@ class Block(Process, ABC):
             raise ShutdownTimeoutError(
                 f"Block {instance.name} is still running after shutdown",
                 process_name=instance.name, pid=instance.pid,
-                phase='framework cleanup', timeout=5.0)
+                phase='framework cleanup', timeout=11.0)
 
       # Stop the log Thread and wait for it to finish
       cls.thread_stop = True

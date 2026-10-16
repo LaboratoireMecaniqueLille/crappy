@@ -221,7 +221,7 @@ class Displayer(CameraProcess):
 
           # Give some time for the overlay thread to finish
           with manager.step('join overlay thread'):
-            self._overlay_thread.join(0.2)
+            self._overlay_thread.join(0.5)
           # Check if the overlay thread is still alive and report it if so
           with manager.step('check overlay thread'):
             alive = self._overlay_thread.is_alive()
