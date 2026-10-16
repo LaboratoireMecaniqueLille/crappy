@@ -9,8 +9,7 @@ from time import monotonic
 import numpy as np
 
 import crappy.blocks.camera_processes.record as record_module
-from crappy._global import OptionalModule
-from crappy.blocks.camera_processes.record import ImageSaver, TAGS_INV
+from crappy.blocks.camera_processes.record import ImageSaver
 
 from tests.camera_process.camera_process_test_base import (CameraProcessTestBase,
                                                            TestLink)
@@ -167,10 +166,13 @@ class TestImageSaver(CameraProcessTestBase):
         'meta': saver.metadata,
       })
 
-  @unittest.skipIf(isinstance(record_module.PIL, OptionalModule),
-                   "Pillow is not available")
   def test_loop_saves_pil_images_with_exif_metadata(self) -> None:
     """Checks PIL saving for common formats and EXIF object generation."""
+
+    if not (record_module.Image.is_available() and
+            record_module.ExifTags.is_available()):
+      self.skipTest('Pillow is not available')
+    tags_inv = {val: key for key, val in record_module.ExifTags.TAGS.items()}
 
     metadata = {
       'ImageUniqueID': np.uint16(7),
@@ -196,22 +198,27 @@ class TestImageSaver(CameraProcessTestBase):
           saved = folder / f'000007_1.234.{extension}'
           self.assertTrue(saved.exists())
 
-          with record_module.PIL.Image.open(saved) as img:
+          with record_module.Image.open(saved) as img:
             exif = img.getexif()
-          self.assertEqual(exif.get(TAGS_INV['DateTimeOriginal']),
+          self.assertEqual(exif.get(tags_inv['DateTimeOriginal']),
                            '2020:01:01 00:00:00')
-          self.assertEqual(exif.get(TAGS_INV['SubsecTimeOriginal']),
+          self.assertEqual(exif.get(tags_inv['SubsecTimeOriginal']),
                            '0.234567')
-          self.assertEqual(exif.get(TAGS_INV['ImageUniqueID']), '7')
+          self.assertEqual(exif.get(tags_inv['ImageUniqueID']), '7')
 
-  @unittest.skipIf(isinstance(record_module.PIL, OptionalModule),
-                   "Pillow is not available")
   def test_pil_exif_converts_numpy_scalars_and_skips_unknown_keys(self) -> None:
     """Checks EXIF construction for normal Crappy metadata values."""
 
-    saver = ImageSaver(save_backend='pil')
+    if not (record_module.Image.is_available() and
+            record_module.ExifTags.is_available()):
+      self.skipTest('Pillow is not available')
+    tags_inv = {val: key for key, val in record_module.ExifTags.TAGS.items()}
+    tmp = TemporaryDirectory()
+    self.addCleanup(tmp.cleanup)
+    saver = ImageSaver(save_backend='pil', save_folder=tmp.name)
     self._process = saver
     self.set_test_logger(saver)
+    saver.init()
     saver.metadata = {
       'DateTimeOriginal': '2020:01:01 00:00:00',
       'ImageUniqueID': np.uint16(7),
@@ -222,7 +229,7 @@ class TestImageSaver(CameraProcessTestBase):
 
     exif = saver._pil_exif()
 
-    self.assertEqual(exif.get(TAGS_INV['DateTimeOriginal']),
+    self.assertEqual(exif.get(tags_inv['DateTimeOriginal']),
                      '2020:01:01 00:00:00')
-    self.assertEqual(exif.get(TAGS_INV['ImageUniqueID']), '7')
-    self.assertEqual(exif.get(TAGS_INV['SubsecTimeOriginal']), '0.234567')
+    self.assertEqual(exif.get(tags_inv['ImageUniqueID']), '7')
+    self.assertEqual(exif.get(tags_inv['SubsecTimeOriginal']), '0.234567')

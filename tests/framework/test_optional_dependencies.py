@@ -280,9 +280,11 @@ class TestOptionalModule(TestCase):
     self.assertEqual(str(restored), str(error))
     self.assertEqual(restored.__notes__, ['original note'])
 
-  def test_eager_framework_sites_retain_a_native_import_failure(self):
+  def test_framework_sites_retain_a_native_import_failure(self):
     script = textwrap.dedent('''
       import builtins
+      import importlib.abc
+      import sys
       import traceback
       original = builtins.__import__
 
@@ -292,13 +294,24 @@ class TestOptionalModule(TestCase):
         return original(name, *args, **kwargs)
 
       builtins.__import__ = blocked_import
+      class BlockCV2(importlib.abc.MetaPathFinder):
+        def find_spec(self, fullname, path=None, target=None):
+          if fullname == 'cv2' or fullname.startswith('cv2.'):
+            blocked_import(fullname)
+      sys.meta_path.insert(0, BlockCV2())
+
       import crappy
       from crappy._exceptions import OptionalDependencyError
       from crappy.blocks.camera_processes import display, record
+      from crappy.blocks.vision import display as vision_display
+      from crappy.blocks.vision import record as vision_record
+      from crappy.camera import file_reader
       from crappy.tool.image_processing import fields
 
       for proxy in (crappy.resources.speckle, crappy.resources.ve_markers,
-                    crappy.resources.pad, display.cv2, record.cv2, fields.cv2):
+                    crappy.resources.pad, display.cv2, record.cv2,
+                    vision_display.cv2, vision_record.cv2, file_reader.cv2,
+                    fields.cv2):
         try:
           proxy.unavailable_feature
         except OptionalDependencyError as error:

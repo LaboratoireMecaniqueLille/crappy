@@ -159,9 +159,10 @@ class TestImageDisplayer(VisionTestBase):
     self.assertIs(caught.exception.__cause__.__cause__, cause)
 
     error = RuntimeError('unrelated backend failure')
+    broken_plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
     with (patch.object(display_module, 'cv2', missing_cv2),
-          patch.object(display_module, 'plt', OptionalModule('matplotlib')),
-          patch.object(OptionalModule, '__getattr__', side_effect=error)):
+          patch.object(display_module, 'plt', broken_plt),
+          patch.object(broken_plt, 'resolve', side_effect=error)):
       with self.assertRaises(RuntimeError) as caught:
         ImageDisplayer(backend=None)
     self.assertIs(caught.exception, error)
@@ -470,7 +471,7 @@ class TestImageDisplayer(VisionTestBase):
     if system() == 'Linux' and not os.environ.get('DISPLAY'):
       self.skipTest('No display is available for GUI lifecycle testing')
 
-    if backend == 'cv2' and isinstance(display_module.cv2, OptionalModule):
+    if backend == 'cv2' and not display_module.cv2.is_available():
       self.skipTest('OpenCV is not available')
 
     code = textwrap.dedent(f'''\
