@@ -95,8 +95,6 @@ class Block(Process, ABC):
   start_event: synchronize.Event | None = None
   pause_event: synchronize.Event | None = None
   stop_event: synchronize.Event | None = None
-  raise_event: synchronize.Event | None = None
-  kbi_event: synchronize.Event | None = None
   logger: logging.Logger | None = None
   log_handlers: list[logging.Handler] = list()
   logger_state: tuple[int, bool, bool] | None = None
@@ -156,8 +154,6 @@ class Block(Process, ABC):
     self._start_event: synchronize.Event | None = None
     self._pause_event: synchronize.Event | None = None
     self._stop_event: synchronize.Event | None = None
-    self._raise_event: synchronize.Event | None = None
-    self._kbi_event: synchronize.Event | None = None
     self._main_entered: c_byte | None = None
 
     # Configuration Pipe endpoints that this Process inherits under fork but
@@ -166,7 +162,7 @@ class Block(Process, ABC):
 
     # Will be set later once the Blocks are starting
     self._failure_queue: queues.Queue | None = None
-    self._failure_manager: FailureManager | None = None
+    self._failure_manager: FailureManager
 
     # The objects for logging will be set later
     self._log_queue: queues.Queue | None = None
@@ -258,9 +254,7 @@ class Block(Process, ABC):
 
     # Make sure that the Exception Manager is running
     cls.no_raise = no_raise
-    cls._ensure_failure_manager()
-    manager = cls.run_failure_manager
-    assert manager is not None
+    manager = cls._ensure_failure_manager()
 
     # Guard with the FailureManager to catch any Exception
     with manager.collect('start_all', raise_on_exit=False):
@@ -303,9 +297,7 @@ class Block(Process, ABC):
     """
 
     # Make sure that the Exception Manager is running
-    cls._ensure_failure_manager()
-    manager = cls.run_failure_manager
-    assert manager is not None
+    manager = cls._ensure_failure_manager()
 
     # Guard with the FailureManager to catch any Exception
     with manager.collect('prepare_all', raise_on_exit=False):
@@ -333,9 +325,7 @@ class Block(Process, ABC):
     """
 
     # Make sure that the Exception Manager is running
-    cls._ensure_failure_manager()
-    manager = cls.run_failure_manager
-    assert manager is not None
+    manager = cls._ensure_failure_manager()
 
     # Guard with the FailureManager to catch any Exception
     with manager.collect('renice_all', raise_on_exit=False):
@@ -370,9 +360,7 @@ class Block(Process, ABC):
 
     # Make sure that the Exception Manager is running
     cls.no_raise = no_raise
-    cls._ensure_failure_manager()
-    manager = cls.run_failure_manager
-    assert manager is not None
+    manager = cls._ensure_failure_manager()
 
     # Guard with the FailureManager to catch any Exception
     with manager.collect('launch_all', raise_on_exit=False):
@@ -389,11 +377,7 @@ class Block(Process, ABC):
 
     if cls.stop_event is not None:
       # Make sure that the Exception Manager is running
-      manager = cls.run_failure_manager
-      if manager is None:
-        manager = FailureManager('main', 'stop')
-        if cls.logger is not None:
-          manager._logger = cls.logger
+      manager = cls._ensure_failure_manager()
 
       # Guard with the FailureManager to catch any Exception
       with manager.collect('stop_all'):
@@ -417,11 +401,7 @@ class Block(Process, ABC):
     """
 
     # Make sure that the Exception Manager is running
-    manager = cls.run_failure_manager
-    if manager is None:
-      manager = FailureManager('main', 'logging shutdown')
-      if cls.logger is not None:
-        manager._logger = cls.logger
+    manager = cls._ensure_failure_manager()
     manager.phase = 'logging shutdown'
 
     with manager.collect('reset'):
@@ -472,8 +452,6 @@ class Block(Process, ABC):
       cls.start_event = None
       cls.pause_event = None
       cls.stop_event = None
-      cls.raise_event = None
-      cls.kbi_event = None
       cls.shared_mgr = None
 
       # Display the final success message
@@ -528,13 +506,14 @@ class Block(Process, ABC):
     cls.logger.log(level=level, msg=msg)
 
   @classmethod
-  def _ensure_failure_manager(cls) -> None:
+  def _ensure_failure_manager(cls) -> FailureManager:
     """Ensures that one failure manager is running wherever needed."""
 
     if cls.run_failure_manager is None:
       cls.run_failure_manager = FailureManager('main', 'bootstrap')
       if cls.logger is not None:
         cls.run_failure_manager._logger = cls.logger
+    return cls.run_failure_manager
 
   @classmethod
   def _prepare_all(cls, log_level: int | None) -> None:
@@ -605,24 +584,17 @@ class Block(Process, ABC):
         cls.start_event = Event()
         cls.pause_event = Event()
         cls.stop_event = Event()
-        cls.raise_event = Event()
-        cls.kbi_event = Event()
         cls.cls_log(logging.INFO, 'Multiprocessing synchronization objects '
                                   'set for main process')
 
         # Initializing the objects required for Blocks to log
         cls.log_queue = Queue()
-        if cls.logger is not None:
-          cls.run_failure_manager._logger = cls.logger
         # Pass log queue explicitly so that the Thread keeps the same queue
         # even if a new one is created at the class level
         cls.log_thread = Thread(target=cls._log_target,
                                 args=(cls.log_queue,),
                                 name='crappy.log-reader', daemon=True)
         if get_start_method() != 'fork':
-          if cls.log_thread is None:
-            raise RuntimeError("The log Thread was not initialized, cannot "
-                               "start it!")
           cls.log_thread.start()
           cls.cls_log(logging.INFO, 'Logger thread started')
 
@@ -635,8 +607,6 @@ class Block(Process, ABC):
           instance._stop_event = cls.stop_event
           instance._pause_event = cls.pause_event
           instance._start_event = cls.start_event
-          instance._raise_event = cls.raise_event
-          instance._kbi_event = cls.kbi_event
           instance._main_entered = Value('b', 0, lock=False)
           instance._log_queue = cls.log_queue
           cls.cls_log(logging.INFO, f'Multiprocessing synchronization objects '
@@ -736,7 +706,7 @@ class Block(Process, ABC):
           cls.cls_log(logging.INFO, f'Started the {instance.name} Block')
 
         # Start the Thread that manages Exception communication between Blocks
-        if cls.run_failure_manager is not None and cls.failure_queues:
+        if cls.failure_queues:
           cls.failure_thread_stop = ThreadEvent()
           cls.failure_thread = Thread(target=cls._failure_target,
                                       name='crappy.failure-reader',
@@ -877,9 +847,7 @@ class Block(Process, ABC):
     """
 
     # Make sure that the Exception Manager is running
-    cls._ensure_failure_manager()
-    manager = cls.run_failure_manager
-    assert manager is not None
+    manager = cls._ensure_failure_manager()
     manager.phase = 'framework cleanup'
     
     # Guard with the FailureManager to catch any Exception
@@ -1103,9 +1071,7 @@ class Block(Process, ABC):
     """Cleans up, resets independently, then raises the run failures."""
 
     # Make sure that the Exception Manager is running
-    cls._ensure_failure_manager()
-    manager = cls.run_failure_manager
-    assert manager is not None
+    manager = cls._ensure_failure_manager()
     no_raise = cls.no_raise
     eligible = False
 
@@ -1210,13 +1176,6 @@ class Block(Process, ABC):
     handling.
     """
 
-    # Make sure to only read from a single log queue
-    if log_queue is None:
-      raise RuntimeError("The log queue doesn't exist!")
-    # Means that Crappy was likely reset without this Thread stopping
-    if cls.log_queue is not log_queue:
-      return
-
     # Keep first instances in case the Block is reset
     manager = cls.run_failure_manager
     handlers = tuple(cls.log_handlers)
@@ -1225,6 +1184,7 @@ class Block(Process, ABC):
     # Means that Crappy was likely reset without this Thread stopping
     if cls.log_queue is not log_queue:
       return
+    assert manager is not None
 
     # Main loop, simply receive log messages and handle them
     try:
@@ -1244,8 +1204,6 @@ class Block(Process, ABC):
 
     # Exceptions caught in the logger Thread are reported the regular way
     except BaseException as error:
-      if manager is None:
-        manager = FailureManager('main', 'logging')
       try:
         manager.capture_exception(error, phase='logging')
       except (BaseException,):
@@ -1263,8 +1221,6 @@ class Block(Process, ABC):
     # In case reset() left logging in a stale state, close log handlers
     finally:
       if cls.log_queue is not log_queue and handlers:
-        if manager is None:
-          manager = FailureManager('main', 'logging shutdown')
         with manager.collect('abandoned log reader shutdown',
                              raise_on_exit=False):
           for handler in handlers:
@@ -1393,12 +1349,10 @@ class Block(Process, ABC):
 
     self._failure_manager = FailureManager(self.name, 'bootstrap')
     manager = self._failure_manager
-    assert manager is not None
     with manager.collect('Block lifecycle', raise_on_exit=False):
       with manager.step('execution'):
         # Start with setting the Exception queue and the logger
-        if self._failure_queue is not None:
-          manager.set_queue(self._failure_queue)
+        manager.set_queue(self._failure_queue)
         self._set_block_logger()
         if self._logger is not None:
           manager._logger = self._logger
@@ -1507,12 +1461,7 @@ class Block(Process, ABC):
       error: Original callback exception, including exception groups.
     """
 
-    # Make sure that a FailureManager and a logger are available
-    if self._failure_manager is None:
-      self._failure_manager = FailureManager(self.name, 'callback')
     manager = self._failure_manager
-    if self._logger is not None:
-      manager._logger = self._logger
 
     # Record the Exception and stop the test
     with manager.collect('Block callback', raise_on_exit=False):
@@ -1536,7 +1485,6 @@ class Block(Process, ABC):
     if not self._config_connections_to_close:
       return
 
-    assert self._failure_manager is not None
     with self._failure_manager.collect('configuration Pipe shutdown'):
       for conn in tuple(self._config_connections_to_close):
         with self._failure_manager.step('close inherited config Pipe'):
