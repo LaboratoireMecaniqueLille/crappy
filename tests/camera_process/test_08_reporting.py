@@ -352,6 +352,9 @@ class TestCameraReporting(CameraBlockTestBase):
   def test_public_camera_and_vision_runs_in_all_start_methods(self) -> None:
     for method in get_all_start_methods():
       with self.subTest(method=method):
+        if sys.platform == 'darwin' and method == 'fork':
+          self.skipTest('fork is unsafe with macOS native libraries '
+                        '(bpo-33725)')
         script = ('from tests.camera_process.test_08_reporting import '
                   f'_exercise_public_context; _exercise_public_context({method!r})')
         result = subprocess.run([sys.executable, '-c', script],
@@ -362,6 +365,9 @@ class TestCameraReporting(CameraBlockTestBase):
   def test_nested_configuration_and_trackers_reach_public_boundary(self):
     for method in get_all_start_methods():
       with self.subTest(method=method):
+        if sys.platform == 'darwin' and method == 'fork':
+          self.skipTest('fork is unsafe with macOS native libraries '
+                        '(bpo-33725)')
         script = ('from tests.camera_process.test_08_reporting import '
                   f'_exercise_nested_context; _exercise_nested_context({method!r})')
         result = subprocess.run([sys.executable, '-c', script], text=True,

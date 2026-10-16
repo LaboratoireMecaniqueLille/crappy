@@ -402,6 +402,7 @@ class Canvas(Block):
 
     # Attributes related to PyQt6
     self.qt_scene: QtWidgets.QGraphicsScene | None = None
+    self._qt_background: QtWidgets.QGraphicsPixmapItem | None = None
     self._qt_view: QtWidgets.QGraphicsView | None = None
     self._qt_view_size: QtCore.QSize | None = None
 
@@ -581,9 +582,9 @@ class Canvas(Block):
     self.qt_scene = QtWidgets.QGraphicsScene(self._qt_window)
     assert self.qt_scene is not None
     self.qt_scene.setSceneRect(QtCore.QRectF(image.rect()))
-    background = self.qt_scene.addPixmap(QtGui.QPixmap.fromImage(image))
-    assert background is not None
-    background.setTransformationMode(
+    self._qt_background = self.qt_scene.addPixmap(QtGui.QPixmap.fromImage(image))
+    assert self._qt_background is not None
+    self._qt_background.setTransformationMode(
         QtCore.Qt.TransformationMode.SmoothTransformation)
 
     panel = QtWidgets.QWidget(self._qt_window)

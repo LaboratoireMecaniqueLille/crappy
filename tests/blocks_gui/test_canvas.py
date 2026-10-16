@@ -2,6 +2,7 @@
 
 from tests.block.block_test_base import with_failure_manager
 
+import gc
 from multiprocessing import Value
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -237,6 +238,9 @@ class TestCanvasPyQt(CanvasTests, BlockTestBase):
     self.assertEqual(len(bars), 1)
     self.assertEqual((bars[0].pixmap().width(), bars[0].pixmap().height()),
                      (256, 16))
+    # The scene must still expose its pixmap after temporary wrappers are
+    # collected, including on Python versions with different GC timing.
+    gc.collect()
     backgrounds = [item for item in canvas.qt_scene.items()
                    if isinstance(item, widgets.QGraphicsPixmapItem)]
     self.assertEqual(len(backgrounds), 1)
