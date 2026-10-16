@@ -86,7 +86,7 @@ class Camera(ABC):
 
     self._logger.log(level, msg)
 
-  def open(self, **kwargs) -> None:
+  def open(self, *args, **kwargs) -> None:
     """This method should initialize the connection to the camera, configure
     the camera, and start the image acquisition.
 
