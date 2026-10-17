@@ -3,6 +3,7 @@
 """:class:`~crappy.camera.meta_camera.camera.Camera` configuration state and
 interactions shared by GUI backends."""
 
+from __future__ import annotations
 import logging
 import importlib.resources
 from abc import ABC, abstractmethod
@@ -11,16 +12,18 @@ from dataclasses import dataclass
 from io import BytesIO
 from multiprocessing import current_process
 from multiprocessing.queues import Queue
-from typing import Any
+from typing import Any, TYPE_CHECKING
 import numpy as np
 
 from ..config_tools.zoom import Zoom
 from ._display_state import DisplayGeometry, DisplayState
 from ._setting_manager import SettingManager
-from ....camera.meta_camera import Camera
-from ....camera.meta_camera.camera_setting import CameraSetting
 from ...._global import OptionalModule
-from ...._failure import FailureManager
+
+if TYPE_CHECKING:
+  from ....camera.meta_camera import Camera
+  from ....camera.meta_camera.camera_setting import CameraSetting
+  from ...._failure import FailureManager
 
 try:
   from PIL import Image

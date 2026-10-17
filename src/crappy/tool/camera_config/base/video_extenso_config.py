@@ -3,13 +3,17 @@
 """Backend-independent spot detection and configuration for
 :class:`~crappy.blocks.VideoExtenso`."""
 
+from __future__ import annotations
 import logging
+from typing import TYPE_CHECKING
 
 from .camera_config import ConfigAction
 from .camera_config_boxes import CameraConfigBoxes
 from ..config_tools.box import Box
 from ..config_tools.spots_boxes import SpotsBoxes
-from ..config_tools.spots_detector import SpotsDetector
+
+if TYPE_CHECKING:
+  from ..config_tools.spots_detector import SpotsDetector
 
 
 class VideoExtensoConfig(CameraConfigBoxes):
