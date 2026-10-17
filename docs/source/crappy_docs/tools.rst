@@ -139,6 +139,9 @@ PyQt6 configurations
 Configurator selection
 ++++++++++++++++++++++
 
+.. autoclass:: crappy.tool.camera_config.factory.LazyConfiguratorMapping
+   :special-members: __init__
+
 .. autofunction:: crappy.tool.camera_config.factory.create_configurator
 
 Configurator Tools
