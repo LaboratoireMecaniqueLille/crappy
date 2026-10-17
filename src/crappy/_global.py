@@ -156,8 +156,8 @@ class OptionalModule:
       Object returned by the callable.
 
     Raises:
-      ~crappy._exceptions.OptionalDependencyError: The dependency is u
-        navailable.
+      ~crappy._exceptions.OptionalDependencyError: The dependency is
+        unavailable.
       TypeError: The loaded dependency is not callable.
     """
 
@@ -165,7 +165,10 @@ class OptionalModule:
 
 
 def __getattr__(name: str) -> Any:
-  """Loads the resource namespace on first access."""
+  """Loads the resource namespace on first access.
+
+  .. versionadded:: 2.2.0
+  """
 
   if name == 'resources':
     from ._resources import resources
@@ -176,6 +179,8 @@ def __getattr__(name: str) -> Any:
 
 
 def __dir__() -> list[str]:
-  """Includes lazy exports without loading them."""
+  """Includes lazy exports without loading them.
+
+  .. versionadded:: 2.2.0"""
 
   return sorted(set(globals()) | set(__all__))
