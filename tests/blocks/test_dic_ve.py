@@ -172,8 +172,7 @@ class TestDICVE(CameraWrapperTestBase):
       ret = block._configure()
 
     self.assertIs(ret, sentinel.config)
-    factory.assert_called_once_with({'tkinter': dic_ve_module.TkinterDICVEConfig,
-                                     'pyqt': dic_ve_module.PyQtDICVEConfig},
+    factory.assert_called_once_with(block.configurator,
                                     sentinel.camera, 'tkinter',
                                     sentinel.log_queue, 30, 123.0, transform,
                                     block._failure_manager,

@@ -158,9 +158,7 @@ class TestVideoExtensoProcessor(VisionTestBase):
 
     self.assertEqual(request.requester, processor.name)
     self.assertEqual(request.img_source, 'camera')
-    self.assertEqual(request.configurator,
-                     {'tkinter': video_extenso_module.TkinterVideoExtensoConfig,
-                      'pyqt': video_extenso_module.PyQtVideoExtensoConfig})
+    self.assertIs(request.configurator, processor.configurator)
     self.assertTrue(request.required)
     self.assertEqual(request.args, tuple())
     self.assertEqual(request.kwargs, {

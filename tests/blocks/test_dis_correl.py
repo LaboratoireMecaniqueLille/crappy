@@ -215,8 +215,7 @@ class TestDISCorrel(CameraWrapperTestBase):
 
     self.assertIs(ret, sentinel.config)
     factory.assert_called_once_with(
-                                    {'tkinter': dis_correl_module.TkinterDISCorrelConfig,
-                                     'pyqt': dis_correl_module.PyQtDISCorrelConfig},
+                                    block.configurator,
                                     sentinel.camera, 'tkinter',
                                     sentinel.log_queue, 30, 123.0, transform,
                                     block._failure_manager,

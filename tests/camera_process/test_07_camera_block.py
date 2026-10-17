@@ -463,8 +463,7 @@ class TestCameraBlock(CameraBlockTestBase):
 
     self.assertIs(ret, sentinel.config)
     factory.assert_called_once_with(
-                                    {'tkinter': camera_module.TkinterCameraConfig,
-                                     'pyqt': camera_module.PyQtCameraConfig},
+                                    camera.configurator,
                                     sentinel.camera, 'tkinter',
                                     camera._log_queue, camera._log_level,
                                     camera.freq, transform,
@@ -522,12 +521,15 @@ class TestCameraBlock(CameraBlockTestBase):
   def test_block_subclass_selects_custom_configurator(self) -> None:
     """A Camera subclass can replace the window without a new API argument."""
 
-    class CustomTk(camera_module.TkinterCameraConfig):
+    from crappy.tool.camera_config.tkinter import TkinterCameraConfig
+    from crappy.tool.camera_config.pyqt import PyQtCameraConfig
+
+    class CustomTk(TkinterCameraConfig):
       pass
 
     class CustomCamera(Camera):
       configurator = {'tkinter': CustomTk,
-                      'pyqt': camera_module.PyQtCameraConfig}
+                      'pyqt': PyQtCameraConfig}
 
     camera = self.make_camera(block_type=CustomCamera)
     camera._camera = sentinel.camera

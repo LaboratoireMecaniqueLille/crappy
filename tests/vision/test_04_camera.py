@@ -768,8 +768,7 @@ class TestCameraSource(VisionTestBase):
     source.default_configuration()
 
     source.configure.assert_called_once_with(
-      camera, {'tkinter': camera_module.TkinterCameraConfig,
-               'pyqt': camera_module.PyQtCameraConfig})
+      camera, source.configurator)
 
   def test_source_subclass_chooses_its_generic_window(self) -> None:
     """A CameraSource subclass can replace the default configurator class."""

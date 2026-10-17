@@ -187,9 +187,7 @@ class TestDISCorrelProcessor(VisionTestBase):
     request = configured.request_config('camera')
     self.assertEqual(request.requester, configured.name)
     self.assertEqual(request.img_source, 'camera')
-    self.assertEqual(request.configurator,
-                     {'tkinter': dis_correl_module.TkinterDISCorrelConfig,
-                      'pyqt': dis_correl_module.PyQtDISCorrelConfig})
+    self.assertIs(request.configurator, configured.configurator)
     self.assertIs(request.kwargs['patch'], configured._patch)
     self.assertFalse(request.required)
 

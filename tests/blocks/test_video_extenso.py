@@ -107,8 +107,7 @@ class TestVideoExtenso(CameraWrapperTestBase):
 
     self.assertIs(ret, sentinel.config)
     factory.assert_called_once_with(
-                                    {'tkinter': video_extenso_module.TkinterVideoExtensoConfig,
-                                     'pyqt': video_extenso_module.PyQtVideoExtensoConfig},
+                                    block.configurator,
                                     sentinel.camera,
                                     'tkinter', sentinel.log_queue, 30, 123.0,
                                     transform,
