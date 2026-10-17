@@ -1,15 +1,18 @@
 # coding: utf-8
 
-from typing import Literal
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from collections.abc import Mapping, Sequence
 import numpy as np
 import logging
 
 from .block import VisionBlock, ConfigRequest
 from ...tool.image_processing import DICVETool, LostPatchError
-from ...tool.camera_config import CameraConfig, SpotsBoxes
-from ...tool.camera_config.tkinter import TkinterDICVEConfig
-from ...tool.camera_config.pyqt import PyQtDICVEConfig
+from ...tool.camera_config import SpotsBoxes
+from ...tool.camera_config.factory import LazyConfiguratorMapping
+
+if TYPE_CHECKING:
+  from ...tool.camera_config import CameraConfig
 
 
 class DICVEProcessor(VisionBlock):
@@ -63,9 +66,9 @@ class DICVEProcessor(VisionBlock):
   """
 
   configurator: (type[CameraConfig] |
-                 Mapping[str, type[CameraConfig]]) = {
-                   'tkinter': TkinterDICVEConfig,
-                   'pyqt': PyQtDICVEConfig}
+                 Mapping[str, type[CameraConfig]]) = LazyConfiguratorMapping({
+                   'tkinter': ('.tkinter', 'TkinterDICVEConfig'),
+                   'pyqt': ('.pyqt', 'PyQtDICVEConfig')})
 
   def __init__(self,
                patches: Sequence[tuple[int, int, int, int]] | None = None,

@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from __future__ import annotations
 from abc import ABC
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import (synchronize, managers, RLock, Event, Value,
@@ -7,7 +8,7 @@ from multiprocessing import (synchronize, managers, RLock, Event, Value,
                              connection as mp_connection)
 import numpy as np
 import logging
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from base64 import urlsafe_b64encode
@@ -18,7 +19,9 @@ from time import monotonic
 from ..meta_block import Block
 from ...links import ImageLink
 from ..._exceptions import LinkDataError, StopRequested
-from ...tool.camera_config import CameraConfig
+
+if TYPE_CHECKING:
+  from ...tool.camera_config import CameraConfig
 
 
 @dataclass

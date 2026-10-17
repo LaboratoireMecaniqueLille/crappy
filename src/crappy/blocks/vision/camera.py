@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from __future__ import annotations
 from collections.abc import Callable, Mapping
 import numpy as np
 from collections import defaultdict
@@ -7,17 +8,19 @@ from inspect import isabstract
 import logging
 from time import time, strftime, gmtime
 from types import MethodType
-from typing import Any, Literal
+from typing import Any, Literal, TYPE_CHECKING
 
 from .block import VisionBlock
 from ..camera import camera_dict, DummyCam, moved_to_collection
-from ...tool.camera_config import CameraConfig, create_configurator
-from ...tool.camera_config.tkinter import TkinterCameraConfig
-from ...tool.camera_config.pyqt import PyQtCameraConfig
+from ...tool.camera_config import create_configurator
+from ...tool.camera_config.factory import LazyConfiguratorMapping
 from ...camera import Camera as BaseCam
 from ..._collection import (CollectionEntry, collection_registry,
                             load_collection_class)
 from ..._exceptions import StopRequested
+
+if TYPE_CHECKING:
+  from ...tool.camera_config import CameraConfig
 
 
 class CameraSource(VisionBlock):
@@ -75,9 +78,9 @@ class CameraSource(VisionBlock):
 
   cam_count: dict[str, int] = defaultdict(lambda: 0)
   configurator: (type[CameraConfig] |
-                 Mapping[str, type[CameraConfig]]) = {
-                   'tkinter': TkinterCameraConfig,
-                   'pyqt': PyQtCameraConfig}
+                 Mapping[str, type[CameraConfig]]) = LazyConfiguratorMapping({
+                   'tkinter': ('.tkinter', 'TkinterCameraConfig'),
+                   'pyqt': ('.pyqt', 'PyQtCameraConfig')})
 
   def __init__(self,
                camera: str,
@@ -574,6 +577,10 @@ get_config`, or :obj:`None` if the configurator has no data to export.
         stop while configuration is running.
       BaseExceptionGroup: If configuration is interrupted by the user.
     """
+
+    # Defer import so that the configuration classes are imported only when
+    # needed
+    from ...tool.camera_config import CameraConfig
 
     # Preliminary general checks
     if not isinstance(camera, BaseCam):

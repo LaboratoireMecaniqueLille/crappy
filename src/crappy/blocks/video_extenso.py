@@ -1,15 +1,18 @@
 # coding: utf-8
 
-from typing import Literal
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from collections.abc import Callable, Sequence
 import numpy as np
 from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
-from ..tool.camera_config import CameraConfig, create_configurator
-from ..tool.camera_config.tkinter import TkinterVideoExtensoConfig
-from ..tool.camera_config.pyqt import PyQtVideoExtensoConfig
+from ..tool.camera_config import create_configurator
+from ..tool.camera_config.factory import LazyConfiguratorMapping
+
+if TYPE_CHECKING:
+  from ..tool.camera_config import CameraConfig
 
 
 class VideoExtenso(Camera):
@@ -59,8 +62,9 @@ VideoExtensoConfig` window owns the
      tracking helpers to their owning configuration and processing layers
   """
 
-  configurator = {'tkinter': TkinterVideoExtensoConfig,
-                  'pyqt': PyQtVideoExtensoConfig}
+  configurator = LazyConfiguratorMapping({
+    'tkinter': ('.tkinter', 'TkinterVideoExtensoConfig'),
+    'pyqt': ('.pyqt', 'PyQtVideoExtensoConfig')})
 
   def __init__(self,
                camera: str,

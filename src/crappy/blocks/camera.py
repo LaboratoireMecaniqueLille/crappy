@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Literal
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from collections.abc import Callable, Mapping
 from pathlib import Path
 import numpy as np
@@ -18,13 +19,15 @@ from warnings import warn
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
-from ..tool.camera_config import CameraConfig, create_configurator
-from ..tool.camera_config.tkinter import TkinterCameraConfig
-from ..tool.camera_config.pyqt import PyQtCameraConfig
+from ..tool.camera_config import create_configurator
+from ..tool.camera_config.factory import LazyConfiguratorMapping
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
 from .._exceptions import (StopRequested, ProcessExitError,
                            ShutdownTimeoutError)
+
+if TYPE_CHECKING:
+  from ..tool.camera_config import CameraConfig
 
 
 class DummyCam(BaseCam):
@@ -87,9 +90,9 @@ class Camera(Block):
   """
 
   cam_count: dict[str, int] = dict()
-  configurator: Mapping[str, type[CameraConfig]] = {
-                   'tkinter': TkinterCameraConfig,
-                   'pyqt': PyQtCameraConfig}
+  configurator: Mapping[str, type[CameraConfig]] = LazyConfiguratorMapping({
+    'tkinter': ('.tkinter', 'TkinterCameraConfig'),
+    'pyqt': ('.pyqt', 'PyQtCameraConfig')})
 
   def __init__(self,
                camera: str,
