@@ -122,13 +122,15 @@ class Block(Process, ABC):
   prepared_all: bool = False
   launched_all: bool = False
 
+  # Actual loaded subclasses
   classes = dict()
 
   def __init_subclass__(cls, **kwargs) -> None:
     """Used for checking that two subclasses don't share the same name."""
 
     super().__init_subclass__()
-    if cls.__name__ in cls.classes:
+    from .. import is_reserved
+    if cls.__name__ in cls.classes or is_reserved(cls):
       raise DefinitionError(f"A Block with the name {cls.__name__} is already "
                             f"defined !")
     cls.classes[cls.__name__] = cls
