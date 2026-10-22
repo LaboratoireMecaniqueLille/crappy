@@ -47,7 +47,7 @@ if _TYPE_CHECKING:
                                            as PhidgetWheatstoneBridge)
 
 
-def _inout_names() -> set[str]:
+def inout_names() -> set[str]:
   """Lists declared built-ins and loaded custom classes without imports.
 
   .. versionadded:: 2.2.0
@@ -56,7 +56,7 @@ def _inout_names() -> set[str]:
   return set(_DRIVERS) | set(inout_dict)
 
 
-def _resolve_inout(name: str) -> type[InOut]:
+def resolve_inout(name: str) -> type[InOut]:
   """Returns a registered class or imports only the requested built-in.
 
   Unknown names raise KeyError; import failures propagate unchanged.
@@ -92,7 +92,7 @@ def __getattr__(name: str) -> _Any:
 
   if name not in _EXPORTS:
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-  value = _resolve_inout(name)
+  value = resolve_inout(name)
   globals()[name] = value
   return value
 

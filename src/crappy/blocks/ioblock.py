@@ -10,6 +10,7 @@ from .meta_block import Block
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
 from ..inout import inout_dict, InOut, moved_to_collection
+from ..inout import resolve_inout, inout_names
 
 
 class IOBlock(Block):
@@ -146,6 +147,8 @@ class IOBlock(Block):
     # None means that this is an ordinary core or user-defined InOut
     self._collection_entry: CollectionEntry | None = None
 
+    if name in inout_names():
+      resolve_inout(name)
     # Check if the requested InOut is part of crappy.collection
     entry = collection_registry.get("InOut", name)
 
@@ -165,7 +168,7 @@ class IOBlock(Block):
                                   f"of your script")
       # The name of the InOut simply cannot be found anywhere
       else:
-        possible = ', '.join(sorted(inout_dict.keys()))
+        possible = ', '.join(sorted(inout_names()))
         raise ValueError(f"Unknown InOut name : {name}! "
                          f"The currently available ones are: {possible}")
     # Case when the InOut was already loaded in a separate Block
@@ -339,7 +342,7 @@ class IOBlock(Block):
       load_collection_class(self._collection_entry, inout_dict)
 
     # Instantiating the device
-    self._device = inout_dict[self._io_name](**self._inout_kwargs)
+    self._device = resolve_inout(self._io_name)(**self._inout_kwargs)
 
     # Now opening the device
     self.log(logging.INFO, f"Opening the {type(self._device).__name__} InOut")
