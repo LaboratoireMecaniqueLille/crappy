@@ -7,7 +7,7 @@ import logging
 from math import isfinite
 from numbers import Real
 from time import monotonic
-from tkinter import TclError
+from sys import modules
 from typing import TYPE_CHECKING, Literal
 import numpy as np
 import os
@@ -32,6 +32,17 @@ if TYPE_CHECKING:
 MPL_BACKENDS = ('QtAgg', 'ipympl', 'GTK3Agg', 'GTK4Agg', 'macosx', 'TkAgg',
                 'nbAgg', 'WebAgg', 'GTK3Cairo', 'GTK4Cairo', 'wxAgg')
 PYQT_BACKENDS = ('PyQt6', 'PySide6', 'PyQt5', 'PySide2')
+
+
+def _tkinter_errors() -> tuple[type[Exception], ...]:
+  """Recognizes Tk errors only if a GUI backend has already loaded Tkinter.
+
+  Matplotlib backends that do not use Tk must not acquire that dependency
+  just to check an exception type.
+  """
+
+  error_type = getattr(modules.get('tkinter'), 'TclError', None)
+  return (error_type,) if error_type is not None else tuple()
 
 
 class Grapher(Block):
@@ -407,7 +418,7 @@ class Grapher(Block):
       try:
         self._canvas.draw()
         self._canvas.flush_events()
-      except TclError:
+      except _tkinter_errors():
         pass
 
     # Update the last update time
@@ -626,7 +637,7 @@ class Grapher(Block):
       if self._canvas is not None:
         try:
           self._canvas.draw_idle()
-        except TclError:
+        except _tkinter_errors():
           pass
 
       self.log(logging.INFO, "Cleared the matplotlib window")
