@@ -19,6 +19,7 @@ from warnings import warn
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
+from ..camera import resolve_camera, camera_names
 from ..tool.camera_config import create_configurator
 from ..tool.camera_config.factory import LazyConfiguratorMapping
 from .._collection import (CollectionEntry, collection_registry,
@@ -350,6 +351,8 @@ class Camera(Block):
 
     # Checking if the requested Camera exists in Crappy
     if image_generator is None:
+      if camera in camera_names():
+        resolve_camera(camera)
       # Check if the requested Camera is part of crappy.collection
       entry = collection_registry.get("Camera", camera)
       # Cannot find the Camera in the list of available ones
@@ -368,7 +371,7 @@ class Camera(Block):
                                     f"beginning of your script")
         # The name of the Camera simply cannot be found anywhere
         else:
-          possible = ', '.join(sorted(camera_dict.keys()))
+          possible = ', '.join(sorted(camera_names()))
           raise ValueError(f"Unknown Camera name : {camera}! "
                            f"The currently available ones are: {possible}")
       # Case when the Camera was already loaded in a separate Block
@@ -567,7 +570,7 @@ class Camera(Block):
       if self._collection_entry is not None:
         load_collection_class(self._collection_entry, camera_dict)
 
-      self._camera = camera_dict[self._camera_name]()
+      self._camera = resolve_camera(self._camera_name)()
       if self._camera is None:
         raise RuntimeError("The Camera wasn't set whereas it should be")
       self.log(logging.INFO, f"Opening the {self._camera_name} Camera")

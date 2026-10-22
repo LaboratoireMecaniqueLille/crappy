@@ -68,7 +68,7 @@ def _driver_module(name: str) -> str:
   return module
 
 
-def _camera_names() -> set[str]:
+def camera_names() -> set[str]:
   """Lists declared built-ins and loaded custom classes without imports.
 
   .. versionadded:: 2.2.0
@@ -77,7 +77,7 @@ def _camera_names() -> set[str]:
   return set(_DRIVERS) | set(camera_dict)
 
 
-def _resolve_camera(name: str) -> type[Camera]:
+def resolve_camera(name: str) -> type[Camera]:
   """Returns a registered class or imports only the requested built-in.
 
   Unknown names raise KeyError, import failures propagate unchanged.
@@ -118,7 +118,7 @@ def __getattr__(name: str) -> _Any:
 
   if name not in _EXPORTS:
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-  value = _resolve_camera(name)
+  value = resolve_camera(name)
   globals()[name] = value
   return value
 
