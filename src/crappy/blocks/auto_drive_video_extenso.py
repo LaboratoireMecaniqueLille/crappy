@@ -8,6 +8,7 @@ import logging
 
 from .meta_block import Block
 from ..actuator import actuator_dict, Actuator, moved_to_collection
+from ..actuator import resolve_actuator, actuator_names
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
 
@@ -111,6 +112,8 @@ class AutoDriveVideoExtenso(Block):
         raise TypeError("The actuator type must be a non-empty string")
 
     self._collection_entry: CollectionEntry | None = None
+    if self._actuator_name in actuator_names():
+      resolve_actuator(self._actuator_name)
     entry = collection_registry.get('Actuator', self._actuator_name)
     if self._actuator_name not in actuator_dict:
       if entry is not None:
@@ -185,7 +188,8 @@ class AutoDriveVideoExtenso(Block):
       load_collection_class(self._collection_entry, actuator_dict)
 
     # Instantiate the Actuator to drive
-    self._device = actuator_dict[self._actuator_name](**self._actuator_kwargs)
+    self._device = resolve_actuator(self._actuator_name)(
+        **self._actuator_kwargs)
     self._device_opened = False
     self._device_stopped = False
 

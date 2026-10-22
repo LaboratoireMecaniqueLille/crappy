@@ -12,6 +12,7 @@ from .meta_block import Block
 from .._collection import (CollectionEntry, collection_registry,
                            load_collection_class)
 from ..actuator import actuator_dict, Actuator, moved_to_collection
+from ..actuator import resolve_actuator, actuator_names
 
 
 @dataclass
@@ -246,6 +247,8 @@ class Machine(Block):
 
     # Checking that all the given Actuators names are valid
     for type_ in self._types:
+      if type_ in actuator_names():
+        resolve_actuator(type_)
       # Check if the requested Actuator is part of crappy.collection
       entry = collection_registry.get("Actuator", type_)
       # This loop only handles invalid Actuators
@@ -274,7 +277,7 @@ class Machine(Block):
     # Report all the missing Actuators at once instead of raising for only one
     if unknown:
       unknown = ', '.join(unknown)
-      possible = ', '.join(sorted(actuator_dict.keys()))
+      possible = ', '.join(sorted(actuator_names()))
       raise ValueError(f"Unknown actuator name(s) : {unknown}! "
                        f"The currently available ones are: {possible}")
 
@@ -309,7 +312,8 @@ class Machine(Block):
     # Instantiate all the Actuators to drive
     for type_, setting, actuator_kw in zip(self._types, self._settings,
                                            self._actuators_kw):
-      actuator = ActuatorInstance(actuator=actuator_dict[type_](**actuator_kw),
+      actuator = ActuatorInstance(actuator=resolve_actuator(
+        type_)(**actuator_kw),
                                   **setting)
       self._actuators.append(actuator)
       self.log(logging.INFO, f"Opening the {type(actuator.actuator).__name__}"
