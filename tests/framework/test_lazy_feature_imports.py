@@ -3,6 +3,7 @@
 """Optional rendering and GUI dependencies load only for selected features."""
 
 import os
+import multiprocessing as mp
 import subprocess
 import sys
 import textwrap
@@ -46,6 +47,14 @@ class TestLazyFeatureImports(TestCase):
         assert name not in vars(crappy)
       assert not forbidden.intersection(sys.modules)
     ''')
+
+  def test_numeric_and_numpy_recording_pipelines_need_no_optional_stack(self):
+    for method in mp.get_all_start_methods():
+      with self.subTest(method=method):
+        result = subprocess.run(
+          [sys.executable, '-B', '-m', 'tests.framework.lazy_numeric_pipeline', method],
+          capture_output=True, text=True, timeout=45)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_graph_rendering_resolves_once_and_preserves_output(self):
     self._run_script('''

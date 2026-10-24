@@ -113,3 +113,42 @@ class TestPublicApiReference(unittest.TestCase):
     self.assertEqual(source.count('.. autofunction:: '
                                   'crappy.tool.camera_config.factory.'
                                   'create_configurator\n'), 1)
+
+  def test_import_helpers_are_documented(self) -> None:
+    """New import helpers have API entries without tutorial requirements."""
+
+    functions = {
+      'actuators.rst': ('crappy.actuator.actuator_names',
+                        'crappy.actuator.resolve_actuator',
+                        'crappy.actuator.is_reserved'),
+      'cameras.rst': ('crappy.camera.camera_names',
+                      'crappy.camera.resolve_camera',
+                      'crappy.camera.is_reserved'),
+      'inouts.rst': ('crappy.inout.inout_names',
+                     'crappy.inout.resolve_inout',
+                     'crappy.inout.is_reserved'),
+      'block_base.rst': ('crappy.blocks.is_reserved',),
+      'tools.rst': ('crappy.tool.camera_config.factory.resolve_configurator',),
+    }
+    for file_name, names in functions.items():
+      source = (self._source_dir / file_name).read_text(encoding='utf-8')
+      for name in names:
+        with self.subTest(name=name):
+          module, attribute = name.rsplit('.', 1)
+          self.assertTrue(callable(getattr(import_module(module), attribute)))
+          self.assertEqual(source.count(f'.. autofunction:: {name}\n'), 1)
+
+    tools = (self._source_dir / 'tools.rst').read_text(encoding='utf-8')
+    self.assertEqual(tools.count('.. autoclass:: '
+                                'crappy.tool.camera_config.factory.'
+                                'LazyConfiguratorMapping\n'), 1)
+    optional = (self._source_dir / 'exceptions.rst').read_text(encoding='utf-8')
+    self.assertIn(':members: resolve, is_available', optional)
+
+  def test_vision_configuration_resolution_methods_are_documented(self) -> None:
+    """Both source-side preparation methods remain in the API reference."""
+
+    source = (self._source_dir / 'vision_blocks.rst').read_text(encoding='utf-8')
+    for name in ('VisionBlock', 'crappy.blocks.vision.CameraSource'):
+      entry = source.split(f'.. autoclass:: {name}\n', 1)[1].split('\n\n', 1)[0]
+      self.assertIn('resolve_config_requests', entry)
