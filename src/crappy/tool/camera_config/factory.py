@@ -29,7 +29,7 @@ class LazyConfiguratorMapping(Mapping[str, type['CameraConfig']]):
         Relative module names are resolved from ``crappy.tool.camera_config``.
     """
 
-    self._references: dict[str, str] = dict(references)
+    self._references: dict[str, tuple[str, str]] = dict(references)
     self._classes: dict[str, type[CameraConfig]] = dict()
 
   def __getitem__(self, backend: str) -> type[CameraConfig]:
@@ -56,6 +56,20 @@ class LazyConfiguratorMapping(Mapping[str, type['CameraConfig']]):
     """Checks whether a backend is declared without importing its class."""
 
     return backend in self._references
+
+
+def resolve_configurator(configurator: type[CameraConfig] |
+                         Mapping[str, type[CameraConfig]],
+                         config_backend: str) -> type[CameraConfig]:
+  """Returns the selected configurator class.
+
+  A class supplied directly is returned unchanged.
+
+  .. versionadded:: 2.2.0
+  """
+
+  return (configurator[config_backend]
+          if isinstance(configurator, Mapping) else configurator)
 
 
 def create_configurator(configurator: type[CameraConfig] |
@@ -114,7 +128,6 @@ run>` to start configuration.
   .. versionadded:: 2.1.0
   """
 
-  selected = (configurator[config_backend]
-              if isinstance(configurator, Mapping) else configurator)
+  selected = resolve_configurator(configurator, config_backend)
   return selected(camera, log_queue, log_level, max_freq, transform,
                   failure_manager, *args, **kwargs)

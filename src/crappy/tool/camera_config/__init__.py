@@ -6,8 +6,9 @@ backends, and selection tools.
 The base package contains abstract configuration classes shared by the
 'tkinter' and 'pyqt' packages. The possible configuration windows are selected
 by :class:`~crappy.blocks.vision.CameraSource` and the all-in-one
-:class:`Camera Blocks <crappy.blocks.Camera>` during preparation. config_tools
-contains the boxes, spot detector, zoom model, and histogram worker they use.
+:class:`Camera Blocks <crappy.blocks.Camera>` before their workers start.
+config_tools contains the boxes, spot detector, zoom model, and histogram
+worker they use.
 """
 
 from importlib import import_module as _import_module
@@ -26,7 +27,8 @@ _EXPORTS = {'CameraConfig': ('.base', 'CameraConfig'),
             'TkinterDISCorrelConfig': ('.tkinter', 'TkinterDISCorrelConfig'),
             'TkinterVideoExtensoConfig': ('.tkinter',
                                           'TkinterVideoExtensoConfig'),
-            'create_configurator': ('.factory', 'create_configurator')}
+            'create_configurator': ('.factory', 'create_configurator'),
+            'resolve_configurator': ('.factory', 'resolve_configurator')}
 __all__ = tuple(_EXPORTS)
 
 if _TYPE_CHECKING:
@@ -35,7 +37,7 @@ if _TYPE_CHECKING:
   from .tkinter import (TkinterCameraConfig, TkinterCameraConfigBoxes,
                         TkinterDICVEConfig, TkinterDISCorrelConfig,
                         TkinterVideoExtensoConfig)
-  from .factory import create_configurator
+  from .factory import create_configurator, resolve_configurator
 
 
 def __getattr__(name: str) -> _Any:

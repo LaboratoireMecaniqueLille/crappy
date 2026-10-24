@@ -50,6 +50,9 @@ class VisionBlockType(Protocol):
   def add_config_request_out(self, request) -> None:
     """Registers a configuration request sent to an upstream image source."""
 
+  def resolve_config_requests(self) -> None:
+    """Finalizes a source's configurators after collecting its requests."""
+
   def set_shared_objects(self) -> None:
     """Creates and distributes synchronization objects for output images."""
 
@@ -664,6 +667,9 @@ class Block(Process, ABC):
                 # Register request in both the source and the consumer Blocks
                 source.add_config_request_in(source_request)
                 consumer.add_config_request_out(consumer_request)
+
+            # This source now knows every requested configuration window
+            source.resolve_config_requests()
 
           # With fork, every child inherits every open file descriptor from the
           # parent. Explicitly tell each Block which endpoints it must close on

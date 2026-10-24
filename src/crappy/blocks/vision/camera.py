@@ -12,7 +12,7 @@ from typing import Any, Literal, TYPE_CHECKING
 
 from .block import VisionBlock
 from ..camera import camera_dict, DummyCam, moved_to_collection
-from ...tool.camera_config import create_configurator
+from ...tool.camera_config import resolve_configurator
 from ...tool.camera_config.factory import LazyConfiguratorMapping
 from ...camera import Camera as BaseCam
 from ...camera import resolve_camera, camera_names
@@ -238,6 +238,56 @@ class CameraSource(VisionBlock):
                                     np.ndarray] | None = image_generator
     self._camera_kwargs = kwargs
 
+  def resolve_config_requests(self) -> None:
+    """Checks configuration requests and resolves the requested configuration
+    class.
+
+    Required requests that cannot be served fail here, before opening cameras
+    or starting workers. Only the selected configurator classes are retained.
+    """
+
+    # Detect and reject unhandled required configurations
+    if (self.config_requests_in and
+        (not self._config_cam or not self._allow_downstream_config)):
+      unhandled = [request.requester for request in self.config_requests_in
+                   if request.required]
+      if unhandled:
+        raise RuntimeError(f"The combination of the config and "
+                           f"allow_downstream_config arguments is leading to "
+                           f"unhandled required config requests from Blocks "
+                           f"{', '.join(unhandled)}, aborting early!\nTry to "
+                           f"set config=True and allow_downstream_config=True,"
+                           f" or provide configuration information to the "
+                           f"downstream Blocks")
+
+    if not self._config_cam:
+      return
+
+    if self._allow_downstream_config and self.config_requests_in:
+      for request in self.config_requests_in:
+        request.configurator = self._resolve_configurator(request.configurator)
+    else:
+      self.configurator = self._resolve_configurator(self.configurator)
+
+  def _resolve_configurator(self,
+                            config_class: type[CameraConfig] |
+                            Mapping[str, type[CameraConfig]]
+                            ) -> type[CameraConfig]:
+    """Selects and validates a camera configuration class."""
+
+    from ...tool.camera_config import CameraConfig
+
+    if (isinstance(config_class, Mapping) and
+        self._config_backend not in config_class):
+      raise ValueError(f"config_class has no class for "
+                       f"{self._config_backend!r}")
+
+    selected = resolve_configurator(config_class, self._config_backend)
+    if (not isinstance(selected, type) or
+        not issubclass(selected, CameraConfig) or isabstract(selected)):
+      raise TypeError("config_class must be a CameraConfig subclass")
+    return selected
+
   def prepare(self) -> None:
     """Opens the :class:`~crappy.camera.meta_camera.camera.Camera`, runs
     configuration, and creates image buffers.
@@ -253,7 +303,8 @@ class CameraSource(VisionBlock):
     downstream requests are handled in order. Otherwise, the generic
     :class:`~crappy.camera.meta_camera.camera.Camera` configuration window is
     used. Optional requests that cannot be handled are answered with
-    :obj:`None`, while required requests abort preparation.
+    :obj:`None`. Required requests that cannot be handled have already been
+    rejected by :meth:`resolve_config_requests`.
 
     The method also resolves ``'Hdw after config'`` trigger mode, verifies that
     the final output image shape and dtype are known, and delegates shared
@@ -264,7 +315,7 @@ class CameraSource(VisionBlock):
         input :class:`~crappy.links.img_link.ImageLink` or no output
         :class:`~crappy.links.img_link.ImageLink`.
       RuntimeError: If the :class:`~crappy.camera.meta_camera.camera.Camera` is
-        unavailable or a required configuration request cannot be handled.
+        unavailable.
       ValueError: If preparation synchronization objects or the final image
         format are unavailable.
       StopRequested: If another :class:`~crappy.blocks.meta_block.block.Block`
@@ -308,19 +359,6 @@ class CameraSource(VisionBlock):
       self._camera.open(**self._camera_kwargs)
       self._camera_opened = True
       self.log(logging.INFO, f"Opened the {self._camera_name} Camera")
-
-    if (self.config_requests_in and
-        (not self._config_cam or not self._allow_downstream_config)):
-      unhandled = [request.requester for request in self.config_requests_in
-                   if request.required]
-      if unhandled:
-        raise RuntimeError(f"The combination of the config and "
-                           f"allow_downstream_config arguments is leading to "
-                           f"unhandled required config requests from Blocks "
-                           f"{', '.join(unhandled)}, aborting early!\nTry to "
-                           f"set config=True and allow_downstream_config=True,"
-                           f" or provide configuration information to the "
-                           f"downstream Blocks")
 
     # Displaying the configuration windows if required
     if self._config_cam:
@@ -527,14 +565,13 @@ class CameraSource(VisionBlock):
 
   def configure(self,
                 camera: BaseCam,
-                config_class: (type[CameraConfig] |
-                               Mapping[str, type[CameraConfig]]),
+                config_class: type[CameraConfig],
                 *args,
                 **kwargs) -> tuple[Any, ...] | None:
     """Runs one interactive configuration window for a
     :class:`~crappy.camera.meta_camera.camera.Camera`.
 
-    The requested configurator receives this
+    The resolved configurator receives this
     :class:`~crappy.blocks.meta_block.block.Block`'s logging settings, target
     frequency, image transform, and any request-specific arguments. Its final
     image shape and dtype replace the current output format, with a warning if
@@ -545,7 +582,7 @@ class CameraSource(VisionBlock):
         to configure.
       config_class: A
         :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
-        subclass or backend-to-class mapping.
+        subclass selected during parent preparation.
       *args: Positional arguments forwarded to *config_class*.
       **kwargs: Keyword arguments forwarded to *config_class*.
 
@@ -556,11 +593,7 @@ get_config`, or :obj:`None` if the configurator has no data to export.
 
     Raises:
       TypeError: If *camera* is not a
-        :class:`~crappy.camera.meta_camera.camera.Camera` or *config_class* is
-        not a
-        :class:`~crappy.tool.camera_config.base.camera_config.CameraConfig`
-        subclass.
-      ValueError: If the mapping has no class for the selected backend.
+        :class:`~crappy.camera.meta_camera.camera.Camera`.
       ExceptionGroup: If the logging queue is unavailable, configuration
         fails, or its cleanup fails.
       StopRequested: If the :class:`~crappy.blocks.meta_block.block.Block` must
@@ -568,25 +601,10 @@ get_config`, or :obj:`None` if the configurator has no data to export.
       BaseExceptionGroup: If configuration is interrupted by the user.
     """
 
-    # Defer import so that the configuration classes are imported only when
-    # needed
-    from ...tool.camera_config import CameraConfig
-
     # Preliminary general checks
     if not isinstance(camera, BaseCam):
       raise TypeError("camera must be an instance of Camera")
-    if isinstance(config_class, Mapping):
-      if self._config_backend not in config_class:
-        raise ValueError(f"config_class has no class for "
-                         f"{self._config_backend!r}")
-      selected = config_class[self._config_backend]
-    else:
-      selected = config_class
-    if (not isinstance(selected, type) or
-        not issubclass(selected, CameraConfig) or isabstract(selected)):
-      raise TypeError("config_class must be a concrete CameraConfig "
-                      "subclass")
-    class_name = selected.__name__
+    class_name = config_class.__name__
 
     config: CameraConfig | None = None
 
@@ -611,16 +629,14 @@ get_config`, or :obj:`None` if the configurator has no data to export.
                                 f"{class_name} with camera "
                                 f"{type(camera).__name__}, args {args}, "
                                 f"kwargs {kwargs}")
-        config = create_configurator(config_class,
-                                     camera,
-                                     self._config_backend,
-                                     self._log_queue,
-                                     self._log_level,
-                                     self.freq,
-                                     self._transform,
-                                     manager,
-                                     *args,
-                                     **kwargs)
+        config = config_class(camera,
+                              self._log_queue,
+                              self._log_level,
+                              self.freq,
+                              self._transform,
+                              manager,
+                              *args,
+                              **kwargs)
         assert config is not None
         config.watch_shutdown(shutdown_requested)
         config.run()

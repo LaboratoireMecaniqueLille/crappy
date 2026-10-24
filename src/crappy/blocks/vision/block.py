@@ -663,6 +663,17 @@ class VisionBlock(Block, ABC):
     return ((self._stop_event is not None and self._stop_event.is_set()) or
             (self._ready_barrier is not None and self._ready_barrier.broken))
 
+  def resolve_config_requests(self) -> None:
+    """Finalizes source configurator choices.
+
+    Called after collecting all downstream requests for an image source, before
+    starting Managers or Blocks.
+
+    .. versionadded:: 2.2.0
+    """
+
+    ...
+
   def request_config(self, source: str) -> ConfigRequest | None:
     """Returns this Block's configuration request for an image source.
 
