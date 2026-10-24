@@ -191,8 +191,7 @@ class Button(Block):
       assert self._qt_app is not None
       self._qt_app.processEvents()
 
-    if self._failure_manager is not None:
-      self._failure_manager.raise_if_failed('GUI callback failures')
+    self._failure_manager.raise_if_failed('GUI callback failures')
     self.log(logging.DEBUG, "GUI updated")
 
     if self._spam:

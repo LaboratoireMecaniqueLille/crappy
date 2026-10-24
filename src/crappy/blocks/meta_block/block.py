@@ -631,8 +631,9 @@ class Block(Process, ABC):
 
         # Build the connection graph of the VisionBlocks and share
         # configuration requests to relevant sources
-        if any(instance.is_vision_block for instance in cls._run_blocks):
-
+        vision_blocks = [instance for instance in cls._run_blocks
+                         if instance.is_vision_block]
+        if vision_blocks:
           # Manage config requests for each source-consumer pair
           for source_name in link_graph.img_sources():
             source = instances_lookup[source_name]
@@ -689,25 +690,22 @@ class Block(Process, ABC):
                                     "graph nor sharing config requests")
 
         # Initialize the common Manager for image Blocks if needed
-        if any(instance.is_vision_block for instance in cls._run_blocks):
+        if vision_blocks:
           cls.shared_mgr = Manager()
           cls.cls_log(logging.INFO, 'Created the shared Manager object')
 
           # Making vision Blocks generate their shared synchronization objects
-          for instance in cls._run_blocks:
-            if (instance.is_vision_block and
-                isinstance(instance, VisionBlockType)):
-              instance.set_shared_objects()
-              cls.cls_log(logging.INFO, f"Set shared image-related objects "
-                                        f"for the {instance.name} Block")
+          for instance in vision_blocks:
+            instance.set_shared_objects()
+            cls.cls_log(logging.INFO, f"Set shared image-related objects "
+                                      f"for the {instance.name} Block")
         else:
           cls.cls_log(logging.INFO, "No vision Block detected, not "
                                     "instantiating a shared Manager")
 
         # Under fork, ensures proper management of SharedMemory tracking at the
         # Process-level
-        if (get_start_method() == 'fork' and
-            any(instance.is_vision_block for instance in cls._run_blocks)):
+        if get_start_method() == 'fork' and vision_blocks:
           resource_tracker.ensure_running()
           cls.cls_log(logging.INFO, 'Shared-memory resource tracker started')
 

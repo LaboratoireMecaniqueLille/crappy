@@ -308,9 +308,6 @@ class DISCorrelTool:
   def _crop_to_box(self, img: np.ndarray) -> np.ndarray:
     """Crops an array expressed in correlation-crop coordinates to the ROI."""
 
-    if self._correl_box is None:
-      raise RuntimeError("The correlation crop isn't initialized")
-
     box_x_min, box_x_max, box_y_min, box_y_max = self.box.sorted()
     corr_x_min, _, corr_y_min, _ = self._correl_box
 
@@ -324,8 +321,7 @@ class DISCorrelTool:
     """Updates the correlation box offset from the measured rigid body
     transformation."""
 
-    if (self._correl_box is None or self._width is None
-        or self._height is None):
+    if self._width is None or self._height is None:
       raise RuntimeError("The correlation crop isn't initialized")
 
     # The mean displacement of the ROI is used as the rigid-body translation

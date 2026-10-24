@@ -121,8 +121,7 @@ class ImageLink:
       self._logger = logging.getLogger(
           f"{current_process().name}.{self.name}")
 
-    if self._logger is not None:
-      self._logger.log(log_level, msg)
+    self._logger.log(log_level, msg)
 
   def set_buffers(self,
                   name: str,

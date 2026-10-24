@@ -193,11 +193,6 @@ class DICVETool:
         patch.y_start = round(patch.y_start + disp[1])
         patch.y_end = round(patch.y_end + disp[1])
 
-        if (patch.x_start is None or patch.y_start is None
-            or patch.x_end is None or patch.y_end is None):
-          raise RuntimeError("The patch dimensions shouldn't be None at that "
-                             "point")
-        
         patch.x_centroid = (patch.x_end + patch.x_start) / 2
         patch.y_centroid = (patch.y_end + patch.y_start) / 2
 
@@ -268,8 +263,6 @@ class DICVETool:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using DISFlow."""
 
-    if self._img0 is None:
-      raise RuntimeError("The reference image isn't set")
     if self._dis is None:
       raise RuntimeError("The optical flow isn't initialized")
     disp_img = self._dis.calc(self._get_patch(self._img0, patch, offset),
@@ -283,9 +276,6 @@ class DICVETool:
     """Returns the displacement between the original and the current image with
     a precision limited to 1 pixel."""
 
-    if self._img0 is None:
-      raise RuntimeError("The reference image isn't set")
-
     cross_correl, max_width, max_height = self._cross_correlation(
       self._get_patch(self._img0, patch, offset), self._get_patch(img, patch))
 
@@ -298,9 +288,6 @@ class DICVETool:
                      offset: tuple[int, int]) -> list[float]:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using two parabola fits (one in x and one in y)."""
-
-    if self._img0 is None:
-      raise RuntimeError("The reference image isn't set")
 
     cross_correl, max_width, max_height = self._cross_correlation(
       self._get_patch(self._img0, patch, offset), self._get_patch(img, patch))

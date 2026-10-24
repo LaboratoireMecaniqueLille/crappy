@@ -323,14 +323,6 @@ class ImageRecorder(VisionBlock):
       np.save(path, img)
 
     # Sending information on the image through regular Links
-    if self.last_received[upd_link].metadata is None:
-      raise RuntimeError("At that point, the image metadata should not be "
-                         "empty")
-    if ('t(s)' not in self.last_received[upd_link].metadata
-        and 'ImageUniqueID' not in self.last_received[upd_link].metadata):
-      raise RuntimeError(
-        "At that point, 't(s)' and 'ImageUniqueID' should be "
-        "in the metadata dictionary")
     self.send({'t(s)': metadata['t(s)'],
                'img_index': metadata['ImageUniqueID'],
                'meta': metadata})
