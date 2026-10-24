@@ -8,7 +8,6 @@ from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
-from ..tool.camera_config import create_configurator
 from ..tool.camera_config.factory import LazyConfiguratorMapping
 
 if TYPE_CHECKING:
@@ -440,18 +439,16 @@ VideoExtensoConfig.get_config` exports only the selected spots and detection
                          "isn't")
 
     assert self._failure_manager is not None
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform,
-                               self._failure_manager,
-                               white_spots=self._white_spots,
-                               num_spots=self._num_spots,
-                               min_area=self._min_area,
-                               blur=self._blur,
-                               update_thresh=self._update_thresh,
-                               safe_mode=self._safe_mode,
-                               border=self._border)
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager,
+                             white_spots=self._white_spots,
+                             num_spots=self._num_spots,
+                             min_area=self._min_area,
+                             blur=self._blur,
+                             update_thresh=self._update_thresh,
+                             safe_mode=self._safe_mode,
+                             border=self._border)

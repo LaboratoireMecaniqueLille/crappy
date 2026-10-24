@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
-from ..tool.camera_config import Box, create_configurator
+from ..tool.camera_config import Box
 from ..tool.camera_config.factory import LazyConfiguratorMapping
 from ..tool.image_processing.fields import allowed_fields
 
@@ -541,12 +541,10 @@ DISCorrelConfig` window is displayed before the test starts. There, the user
                          "it is not")
 
     assert self._failure_manager is not None
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform,
-                               self._failure_manager,
-                               patch=self._patch)
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager,
+                             patch=self._patch)

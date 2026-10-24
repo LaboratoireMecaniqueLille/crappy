@@ -464,6 +464,11 @@ class Camera(Block):
     self._framerate: float = displayer_framerate
     self._displayer_backend: Literal['cv2', 'mpl'] | None = displayer_backend
 
+    # Store the reference to the configuration window to use
+    if self._config_cam:
+      self.configurator = resolve_configurator(self.configurator,
+                                               self._config_backend)
+
   def __del__(self) -> None:
     """Safety method called when deleting the
     :class:`~crappy.blocks.meta_block.block.Block` and ensuring that all the
@@ -1258,7 +1263,6 @@ get_config` is unpacked into
     """Creates the :class:`~crappy.blocks.meta_block.block.Block`-specific
     camera configuration window.
 
-    Override ``configurator`` to select a custom concrete class or mapping.
     Override this method when construction needs additional arguments. The
     returned configurator implements the shared ``run()``, ``stop()``,
     ``watch_shutdown()``, and ``get_config()`` contract. The configurator's
@@ -1273,11 +1277,9 @@ get_config` output must match the processing
     if self._log_queue is None:
       raise RuntimeError("The logging Queue was never initialized")
 
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform,
-                               self._failure_manager)
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager)

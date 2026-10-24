@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .camera_processes import DICVEProcess
 from .camera import Camera
-from ..tool.camera_config import SpotsBoxes, create_configurator
+from ..tool.camera_config import SpotsBoxes
 from ..tool.camera_config.factory import LazyConfiguratorMapping
 
 if TYPE_CHECKING:
@@ -533,12 +533,10 @@ CameraConfig` window that can be displayed by the Camera Block, this Block can
                          "but they are not")
 
     assert self._failure_manager is not None
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform,
-                               self._failure_manager,
-                               patches=self._patches)
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager,
+                             patches=self._patches)
