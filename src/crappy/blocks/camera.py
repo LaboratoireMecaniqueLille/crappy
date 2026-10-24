@@ -20,10 +20,9 @@ from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
 from ..camera import resolve_camera, camera_names
-from ..tool.camera_config import create_configurator
+from ..tool.camera_config import resolve_configurator
 from ..tool.camera_config.factory import LazyConfiguratorMapping
-from .._collection import (CollectionEntry, collection_registry,
-                           load_collection_class)
+from .._collection import collection_registry, load_collection_class
 from .._exceptions import (StopRequested, ProcessExitError,
                            ShutdownTimeoutError)
 
@@ -295,6 +294,7 @@ class Camera(Block):
     """
 
     self._logger: logging.Logger | None = None
+    self._camera_class: type[BaseCam] | None = None
 
     warn("\nThe default backend for camera configuration was changed from "
          "'tkinter' to 'pyqt' without prior notice.\nThis change was "
@@ -346,9 +346,6 @@ class Camera(Block):
     if not camera and image_generator is None:
       raise ValueError("camera must be a non-empty string")
 
-    # None means that this is an ordinary core or user-defined Camera
-    self._collection_entry: CollectionEntry | None = None
-
     # Checking if the requested Camera exists in Crappy
     if image_generator is None:
       if camera in camera_names():
@@ -358,10 +355,9 @@ class Camera(Block):
       # Cannot find the Camera in the list of available ones
       if camera not in camera_dict:
         # First option, the Camera should be loaded from crappy.collection
-        if (entry := collection_registry.get("Camera", camera)) is not None:
+        if entry is not None:
           # This call raises early if the module cannot be loaded
           load_collection_class(entry, camera_dict)
-          self._collection_entry = entry
         # Second case, the Camera was moved to crappy.collection but this
         # module was not imported
         elif camera in moved_to_collection:
@@ -374,11 +370,7 @@ class Camera(Block):
           possible = ', '.join(sorted(camera_names()))
           raise ValueError(f"Unknown Camera name : {camera}! "
                            f"The currently available ones are: {possible}")
-      # Case when the Camera was already loaded in a separate Block
-      elif (entry is not None
-            and camera_dict[camera].__module__ == entry.module):
-        self._collection_entry = entry
-
+      self._camera_class = camera_dict[camera]
       self._camera_name: str = camera
     else:
       self._camera_name: str = 'Image Generator'
@@ -565,12 +557,7 @@ class Camera(Block):
 
     # Instantiating the Camera object for acquiring the images
     else:
-      # Under the spawn multiprocessing start method, it is necessary to
-      # re-load the modules from crappy.collection
-      if self._collection_entry is not None:
-        load_collection_class(self._collection_entry, camera_dict)
-
-      self._camera = resolve_camera(self._camera_name)()
+      self._camera = self._camera_class()
       if self._camera is None:
         raise RuntimeError("The Camera wasn't set whereas it should be")
       self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
