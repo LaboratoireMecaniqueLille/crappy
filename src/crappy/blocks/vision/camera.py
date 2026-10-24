@@ -304,7 +304,8 @@ class CameraSource(VisionBlock):
     :class:`~crappy.camera.meta_camera.camera.Camera` configuration window is
     used. Optional requests that cannot be handled are answered with
     :obj:`None`. Required requests that cannot be handled have already been
-    rejected by :meth:`resolve_config_requests`.
+    rejected by
+    :meth:`~crappy.blocks.vision.CameraSource.resolve_config_requests`.
 
     The method also resolves ``'Hdw after config'`` trigger mode, verifies that
     the final output image shape and dtype are known, and delegates shared
