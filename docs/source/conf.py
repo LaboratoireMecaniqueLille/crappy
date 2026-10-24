@@ -160,3 +160,28 @@ linkcheck_request_headers = (
 linkcheck_retries = 2
 linkcheck_timeout = 30
 linkcheck_report_timeouts_as_broken = False
+
+
+def _qualify_annotation_references(app, doctree):
+    """Link postponed annotation aliases without importing type-only
+    objects."""
+    from sphinx import addnodes
+
+    targets = {
+        "Camera": "crappy.camera.meta_camera.camera.Camera",
+        "BaseCam": "crappy.camera.meta_camera.camera.Camera",
+        "Queue": "multiprocessing.queues.Queue",
+        "MPQueue": "multiprocessing.queues.Queue",
+        "np.ndarray": "numpy.ndarray",
+        "mp_connection.Connection": "multiprocessing.connection.Connection",
+    }
+
+    for signature in doctree.findall(addnodes.desc_signature):
+        for reference in signature.findall(addnodes.pending_xref):
+            target = reference.get("reftarget")
+            if reference.get("refdomain") == "py" and target in targets:
+                reference["reftarget"] = targets[target]
+
+
+def setup(app):
+    app.connect("doctree-read", _qualify_annotation_references)
