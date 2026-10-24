@@ -24,8 +24,7 @@ def __getattr__(name: str) -> _Any:
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
   module, attribute = _EXPORTS[name]
-  imported = _import_module(module, __name__)
-  value = imported if attribute is None else getattr(imported, attribute)
+  value = getattr(_import_module(module, __name__), attribute)
   globals()[name] = value
   return value
 
