@@ -16,7 +16,7 @@ def resolve_driver_in_worker(category, name, queue):
   module = import_module('crappy.' + category)
   registry = getattr(module, category + '_dict')
   cold = name not in registry
-  selected = getattr(module, '_resolve_' + category)(name)
+  selected = getattr(module, 'resolve_' + category)(name)
   assert selected is getattr(module, name) is registry[name]
   queue.put((cold, selected.__module__))
   queue.close()
@@ -165,7 +165,7 @@ class TestLazyExports(TestCase):
           assert type(registry) is dict
           assert registry is getattr(module, base_name).classes
           assert registry == {}, registry
-          names = getattr(module, '_' + category + '_names')()
+          names = getattr(module, category + '_names')()
           assert set(module._DRIVERS) == names
           assert set(module.__all__).issubset(dir(module))
           for relative, _ in module._DRIVERS.values():
@@ -185,7 +185,7 @@ class TestLazyExports(TestCase):
           with patch('subprocess.run', side_effect=AssertionError('Unused probe')):
             selected = getattr(module, '{selected}')
           assert isinstance(selected, type)
-          assert selected is getattr(module, '_resolve_{category}')('{selected}')
+          assert selected is getattr(module, 'resolve_{category}')('{selected}')
           assert selected is getattr(module, '{category}_dict')['{selected}']
           assert selected is vars(module)['{selected}']
           for name, (relative, _) in module._DRIVERS.items():
@@ -243,7 +243,7 @@ class TestLazyExports(TestCase):
         raise SystemExit(77)
       expected = {
         'crappy': 'actuator blocks camera inout lamcube links modifier tool __version__ OptionalModule docs resources link img_link display_graph Block VisionBlock Actuator Camera InOut Modifier Path stop prepare launch start renice reset',
-        'crappy.blocks': 'AutoDriveVideoExtenso Block Button Camera Canvas ClientServer Dashboard DICVE DISCorrel FakeMachine Generator GPUCorrel GPUVE Grapher HDFRecorder IOBlock LinkReader Machine MeanBlock Multiplexer Pause PID Recorder Scheduler Sink StopBlock StopButton Synchronizer UController VideoExtenso generator_path schedulers camera_processes vision AutoDrive Client_server Displayer DISVE Drawing Fake_machine GUI Hdf_recorder Mean_block Multiplex Reader Video_extenso',
+        'crappy.blocks': 'AutoDriveVideoExtenso Block Button Camera Canvas ClientServer Dashboard DICVE DISCorrel FakeMachine Generator GPUCorrel GPUVE Grapher HDFRecorder IOBlock LinkReader Machine MeanBlock Multiplexer Pause PID Recorder Scheduler Sink StopBlock StopButton Synchronizer UController VideoExtenso generator_path schedulers camera_processes vision',
         'crappy.blocks.vision': 'VisionBlock CameraSource DICVEProcessor DISCorrelProcessor ImageDisplayer ImageRecorder VideoExtensoProcessor',
         'crappy.blocks.camera_processes': 'CameraProcess DISCorrelProcess Displayer DICVEProcess GPUCorrelProcess GPUVEProcess ImageSaver VideoExtensoProcess',
         'crappy.tool': 'bindings camera_config image_processing ApplyStrainToImage',
@@ -373,7 +373,7 @@ class TestLazyExports(TestCase):
             else:
               crappy.blocks.Machine([{{'type': '{name}'}}])
               selected = crappy.actuator.actuator_dict['{name}']
-            assert crappy.actuator._resolve_actuator('{name}') is selected
+            assert crappy.actuator.resolve_actuator('{name}') is selected
             assert getattr(crappy.lamcube, '{name}') is selected
             assert 'crappy.lamcube.' + '{sibling}'.lower() not in sys.modules
           ''')
@@ -390,7 +390,7 @@ class TestLazyExports(TestCase):
                patch('subprocess.run', side_effect={"None" if available else "FileNotFoundError('v4l2-ctl')"}) as probe:
             import crappy.camera as cameras
             assert probe.call_count == 0
-            cameras._camera_names()
+            cameras.camera_names()
             assert probe.call_count == 0
             first = cameras.CameraOpencv
             expected = 1 if '{platform}' == 'Linux' else 0
@@ -412,7 +412,7 @@ class TestLazyExports(TestCase):
           implementation = importlib.import_module('crappy.camera.opencv_camera_{variant}')
           import crappy.camera as cameras
           assert cameras.CameraOpencv is implementation.CameraOpencv
-          assert cameras._resolve_camera('CameraOpencv') is implementation.CameraOpencv
+          assert cameras.resolve_camera('CameraOpencv') is implementation.CameraOpencv
       ''')
 
   def test_driver_resolution_in_fresh_workers(self):
@@ -425,7 +425,7 @@ class TestLazyExports(TestCase):
                               ('actuator', 'FakeDCMotor'),
                               ('inout', 'FakeInOut')):
         module = importlib.import_module('crappy.' + category)
-        selected = getattr(module, '_resolve_' + category)(name)
+        selected = getattr(module, 'resolve_' + category)(name)
         for method in mp.get_all_start_methods():
           context = mp.get_context(method)
           queue = context.Queue()
@@ -446,21 +446,17 @@ class TestLazyExports(TestCase):
             queue.join_thread()
     ''')
 
-  def test_deprecated_block_methods_remain_eager(self):
+  def test_removed_deprecated_block_api_is_not_exported(self):
     self._run_script('''
       import crappy
       assert 'Camera' not in crappy.Block.classes
       for name in ('recv_all', 'poll', 'recv_all_last', 'get_last',
                    'get_all_last', 'recv_all_delay', 'drop'):
-        method = getattr(crappy.Block, name)
-        try:
-          method(None)
-        except NotImplementedError:
-          pass
-        else:
-          raise AssertionError('Lost deprecation error: ' + name)
+        assert not hasattr(crappy.Block, name)
       for name in ('AutoDrive', 'Client_server', 'Displayer', 'DISVE',
                    'Drawing', 'Fake_machine', 'GUI', 'Hdf_recorder',
                    'Mean_block', 'Multiplex', 'Reader', 'Video_extenso'):
-        assert getattr(crappy.blocks, name) is crappy.Block.classes[name]
+        assert name not in crappy.blocks.__all__
+        assert name not in crappy.Block.classes
+        assert not hasattr(crappy.blocks, name)
     ''')

@@ -448,23 +448,23 @@ class TestCameraBlock(CameraBlockTestBase):
     process.set_config.assert_not_called()
     self.assertEqual(camera._img_dtype, 'uint8')
 
-  def test_configure_factory_forwards_transform(self) -> None:
+  def test_configure_forwards_transform(self) -> None:
     """Tests that CameraConfig previews the transformed camera image."""
 
     def transform(img: np.ndarray) -> np.ndarray:
       return img
 
-    camera = self.make_camera(transform=transform, config_backend='tkinter')
+    camera = self.make_camera(transform=transform, config_backend='tkinter',
+                              config=True)
     camera._camera = sentinel.camera
 
-    with patch.object(camera_module, 'create_configurator',
+    with patch.object(camera, 'configurator',
                       return_value=sentinel.config) as factory:
       ret = camera._configure()
 
     self.assertIs(ret, sentinel.config)
     factory.assert_called_once_with(
-                                    camera.configurator,
-                                    sentinel.camera, 'tkinter',
+                                    sentinel.camera,
                                     camera._log_queue, camera._log_level,
                                     camera.freq, transform,
                                     camera._failure_manager)
@@ -481,18 +481,25 @@ class TestCameraBlock(CameraBlockTestBase):
     with self.assertRaisesRegex(TypeError, 'config_backend'):
       self.make_camera(config_backend=None)
 
-  def test_pyqt_backend_is_forwarded_to_factory(self) -> None:
-    """The Camera Block requests the selected configuration backend."""
+  def test_pyqt_backend_is_resolved_before_window_construction(self) -> None:
+    """The worker constructs the class already selected in the constructor."""
 
-    camera = self.make_camera(config_backend='pyqt')
+    constructor = Mock(return_value=sentinel.config)
+    with patch.object(Camera, 'configurator', {'pyqt': constructor}):
+      camera = self.make_camera(config_backend='pyqt', config=True)
+    self.assertIs(camera.configurator, constructor)
+    constructor.assert_not_called()
     camera._camera = sentinel.camera
 
-    with patch.object(camera_module, 'create_configurator',
-                      return_value=sentinel.config) as factory:
+    with patch('crappy.tool.camera_config.factory.resolve_configurator',
+               side_effect=AssertionError('Configurator reselected in worker')):
       result = camera._configure()
 
     self.assertIs(result, sentinel.config)
-    self.assertEqual(factory.call_args.args[2], 'pyqt')
+    constructor.assert_called_once_with(sentinel.camera, camera._log_queue,
+                                        camera._log_level, camera.freq,
+                                        camera._transform,
+                                        camera._failure_manager)
 
   def test_backend_mapping_instantiates_the_selected_configurator(self) -> None:
     """Exercise the actual selection path through the Camera Block API."""
@@ -508,9 +515,10 @@ class TestCameraBlock(CameraBlockTestBase):
 
     for backend, expected in (('tkinter', TkConfig), ('pyqt', QtConfig)):
       with self.subTest(backend=backend):
-        camera = self.make_camera(config_backend=backend)
+        with patch.object(Camera, 'configurator',
+                          {'tkinter': TkConfig, 'pyqt': QtConfig}):
+          camera = self.make_camera(config_backend=backend, config=True)
         camera._camera = DummyCamera()
-        camera.configurator = {'tkinter': TkConfig, 'pyqt': QtConfig}
         config = camera._configure()
 
         self.assertIsInstance(config, expected)
@@ -531,14 +539,16 @@ class TestCameraBlock(CameraBlockTestBase):
       configurator = {'tkinter': CustomTk,
                       'pyqt': PyQtCameraConfig}
 
-    camera = self.make_camera(block_type=CustomCamera)
+    camera = self.make_camera(block_type=CustomCamera, config=True,
+                              config_backend='tkinter')
+    self.assertIs(camera.configurator, CustomTk)
     camera._camera = sentinel.camera
-    with patch.object(camera_module, 'create_configurator',
+    with patch.object(camera, 'configurator',
                       return_value=sentinel.config) as factory:
       result = camera._configure()
 
     self.assertIs(result, sentinel.config)
-    self.assertIs(factory.call_args.args[0], CustomCamera.configurator)
+    self.assertIs(factory.call_args.args[0], sentinel.camera)
     self.assertNotIn('configurator', camera._camera_kwargs)
 
   def test_configure_stops_window_on_keyboard_interrupt(self) -> None:

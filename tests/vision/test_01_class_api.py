@@ -39,6 +39,7 @@ class TestVisionBlockClassAPI(VisionTestBase):
     self.assertIsInstance(block._out_link_data, ImgLinkData)
     self.assertEqual(block._sent_img_counter, 0)
     self.assertIsNone(block.request_config('unused source'))
+    self.assertIsNone(block.resolve_config_requests())
 
   def test_constructor_accepts_valid_image_formats(self) -> None:
     """Checks valid two- and three-dimensional output formats."""

@@ -167,13 +167,12 @@ class TestDICVE(CameraWrapperTestBase):
     block.freq = 123
     block._patches = sentinel.patches
 
-    with patch.object(dic_ve_module, 'create_configurator',
+    with patch.object(block, 'configurator',
                       return_value=sentinel.config) as factory:
       ret = block._configure()
 
     self.assertIs(ret, sentinel.config)
-    factory.assert_called_once_with(block.configurator,
-                                    sentinel.camera, 'tkinter',
+    factory.assert_called_once_with(sentinel.camera,
                                     sentinel.log_queue, 30, 123.0, transform,
                                     block._failure_manager,
                                     patches=sentinel.patches)
