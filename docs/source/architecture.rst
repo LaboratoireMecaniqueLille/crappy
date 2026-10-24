@@ -92,6 +92,21 @@ unrelated responsibilities in one class. The
 :doc:`concepts/choosing_custom_object_type` guide explains which custom object
 type matches a device or task.
 
+Import boundaries
+-----------------
+
+Expensive package exports use module ``__getattr__``, ``__all__``, and
+``TYPE_CHECKING`` imports to expose objects without eagerly importing them.
+They are cached on their first access. Use :func:`~crappy.camera.camera_names`,
+:func:`~crappy.actuator.actuator_names`, and :func:`~crappy.inout.inout_names`
+for enumerating the available Cameras, Actuators and InOuts without importing
+them.
+
+Optional dependencies are handled using :class:`~crappy.OptionalModule`, with
+an option for lazily loading expensive dependencies.
+:meth:`~crappy.OptionalModule.is_available` checks importability
+and :meth:`~crappy.OptionalModule.resolve` returns the module.
+
 Construction and graph registration
 -----------------------------------
 
