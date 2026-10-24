@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Literal, Sequence
+from __future__ import annotations
+from typing import Literal, Sequence, TYPE_CHECKING
 from collections.abc import Mapping
 import numpy as np
 import logging
@@ -8,9 +9,11 @@ import logging
 from .block import VisionBlock, ConfigRequest
 from ...tool.image_processing.fields import allowed_fields
 from ...tool.image_processing import DISCorrelTool
-from ...tool.camera_config import Box, CameraConfig, SpotsBoxes
-from ...tool.camera_config.tkinter import TkinterDISCorrelConfig
-from ...tool.camera_config.pyqt import PyQtDISCorrelConfig
+from ...tool.camera_config import Box, SpotsBoxes
+from ...tool.camera_config.factory import LazyConfiguratorMapping
+
+if TYPE_CHECKING:
+  from ...tool.camera_config import CameraConfig
 
 field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
                      'exy', 'eyx', 'exy2', 'z'] | np.ndarray
@@ -57,9 +60,9 @@ class DISCorrelProcessor(VisionBlock):
   """
 
   configurator: (type[CameraConfig] |
-                 Mapping[str, type[CameraConfig]]) = {
-                   'tkinter': TkinterDISCorrelConfig,
-                   'pyqt': PyQtDISCorrelConfig}
+                 Mapping[str, type[CameraConfig]]) = LazyConfiguratorMapping({
+                   'tkinter': ('.tkinter', 'TkinterDISCorrelConfig'),
+                   'pyqt': ('.pyqt', 'PyQtDISCorrelConfig')})
 
   def __init__(self,
                patch: tuple[int, int, int, int] | None = None,

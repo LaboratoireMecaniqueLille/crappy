@@ -20,10 +20,8 @@ from collections.abc import Callable, Iterable
 from ..base import CameraConfig, ConfigurationLifecycle
 from ..config_tools import HistogramProcess
 from ....camera.meta_camera.camera_setting import (
-  CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
-from ....camera.meta_camera import Camera
+  CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
 from ...._global import OptionalModule
-from ...._failure import FailureManager
 from ...._exceptions import StopRequested
 
 try:
@@ -33,6 +31,9 @@ except (ModuleNotFoundError, ImportError) as error:
   Image = OptionalModule("PIL", install_name="Pillow", cause=error)
 
 if TYPE_CHECKING:
+  from ....camera.meta_camera import Camera
+  from ....camera.meta_camera.camera_setting import CameraSetting
+  from ...._failure import FailureManager
   from PIL import Image, ImageTk
 
 

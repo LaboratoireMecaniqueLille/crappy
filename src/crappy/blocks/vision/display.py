@@ -15,10 +15,7 @@ from ...tool.camera_config import Overlay
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError) as error:
-  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
+cv2 = OptionalModule('cv2', install_name='opencv-python', lazy_import=True)
 
 
 class ImageDisplayer(VisionBlock):
@@ -114,11 +111,11 @@ class ImageDisplayer(VisionBlock):
 
     # Validate backend before setting it
     if backend is None:
-      if not isinstance(cv2, OptionalModule):
+      if cv2.is_available():
         self._backend: str = 'cv2'
       else:
         try:
-          _ = plt.Figure
+          plt.resolve()
           self._backend: str = 'mpl'
         except OptionalDependencyError as error:
           raise ModuleNotFoundError("Neither opencv-python nor matplotlib "
@@ -161,6 +158,11 @@ class ImageDisplayer(VisionBlock):
       raise IOError("This VisionBlock is useless without an input ImageLink")
     if len(self.img_inputs) != 1:
       raise IOError("This VisionBlock requires exactly one input ImageLink")
+
+    if self._backend == 'cv2':
+      cv2.resolve()
+    else:
+      plt.resolve()
 
     # Preparing the Displayer window
     if self._backend == 'cv2':

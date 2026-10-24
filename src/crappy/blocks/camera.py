@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Literal
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from collections.abc import Callable, Mapping
 from pathlib import Path
 import numpy as np
@@ -18,13 +19,15 @@ from warnings import warn
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
-from ..tool.camera_config import CameraConfig, create_configurator
-from ..tool.camera_config.tkinter import TkinterCameraConfig
-from ..tool.camera_config.pyqt import PyQtCameraConfig
-from .._collection import (CollectionEntry, collection_registry,
-                           load_collection_class)
+from ..camera import resolve_camera, camera_names
+from ..tool.camera_config import resolve_configurator
+from ..tool.camera_config.factory import LazyConfiguratorMapping
+from .._collection import collection_registry, load_collection_class
 from .._exceptions import (StopRequested, ProcessExitError,
                            ShutdownTimeoutError)
+
+if TYPE_CHECKING:
+  from ..tool.camera_config import CameraConfig
 
 
 class DummyCam(BaseCam):
@@ -87,9 +90,9 @@ class Camera(Block):
   """
 
   cam_count: dict[str, int] = dict()
-  configurator: Mapping[str, type[CameraConfig]] = {
-                   'tkinter': TkinterCameraConfig,
-                   'pyqt': PyQtCameraConfig}
+  configurator: Mapping[str, type[CameraConfig]] = LazyConfiguratorMapping({
+    'tkinter': ('.tkinter', 'TkinterCameraConfig'),
+    'pyqt': ('.pyqt', 'PyQtCameraConfig')})
 
   def __init__(self,
                camera: str,
@@ -291,6 +294,7 @@ class Camera(Block):
     """
 
     self._logger: logging.Logger | None = None
+    self._camera_class: type[BaseCam] | None = None
 
     warn("\nThe default backend for camera configuration was changed from "
          "'tkinter' to 'pyqt' without prior notice.\nThis change was "
@@ -342,20 +346,18 @@ class Camera(Block):
     if not camera and image_generator is None:
       raise ValueError("camera must be a non-empty string")
 
-    # None means that this is an ordinary core or user-defined Camera
-    self._collection_entry: CollectionEntry | None = None
-
     # Checking if the requested Camera exists in Crappy
     if image_generator is None:
+      if camera in camera_names():
+        resolve_camera(camera)
       # Check if the requested Camera is part of crappy.collection
       entry = collection_registry.get("Camera", camera)
       # Cannot find the Camera in the list of available ones
       if camera not in camera_dict:
         # First option, the Camera should be loaded from crappy.collection
-        if (entry := collection_registry.get("Camera", camera)) is not None:
+        if entry is not None:
           # This call raises early if the module cannot be loaded
           load_collection_class(entry, camera_dict)
-          self._collection_entry = entry
         # Second case, the Camera was moved to crappy.collection but this
         # module was not imported
         elif camera in moved_to_collection:
@@ -365,14 +367,10 @@ class Camera(Block):
                                     f"beginning of your script")
         # The name of the Camera simply cannot be found anywhere
         else:
-          possible = ', '.join(sorted(camera_dict.keys()))
+          possible = ', '.join(sorted(camera_names()))
           raise ValueError(f"Unknown Camera name : {camera}! "
                            f"The currently available ones are: {possible}")
-      # Case when the Camera was already loaded in a separate Block
-      elif (entry is not None
-            and camera_dict[camera].__module__ == entry.module):
-        self._collection_entry = entry
-
+      self._camera_class = camera_dict[camera]
       self._camera_name: str = camera
     else:
       self._camera_name: str = 'Image Generator'
@@ -465,6 +463,11 @@ class Camera(Block):
                         f"{Camera.cam_count[self._camera_name]}")
     self._framerate: float = displayer_framerate
     self._displayer_backend: Literal['cv2', 'mpl'] | None = displayer_backend
+
+    # Store the reference to the configuration window to use
+    if self._config_cam:
+      self.configurator = resolve_configurator(self.configurator,
+                                               self._config_backend)
 
   def __del__(self) -> None:
     """Safety method called when deleting the
@@ -559,12 +562,7 @@ class Camera(Block):
 
     # Instantiating the Camera object for acquiring the images
     else:
-      # Under the spawn multiprocessing start method, it is necessary to
-      # re-load the modules from crappy.collection
-      if self._collection_entry is not None:
-        load_collection_class(self._collection_entry, camera_dict)
-
-      self._camera = camera_dict[self._camera_name]()
+      self._camera = self._camera_class()
       if self._camera is None:
         raise RuntimeError("The Camera wasn't set whereas it should be")
       self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
@@ -1265,7 +1263,6 @@ get_config` is unpacked into
     """Creates the :class:`~crappy.blocks.meta_block.block.Block`-specific
     camera configuration window.
 
-    Override ``configurator`` to select a custom concrete class or mapping.
     Override this method when construction needs additional arguments. The
     returned configurator implements the shared ``run()``, ``stop()``,
     ``watch_shutdown()``, and ``get_config()`` contract. The configurator's
@@ -1280,11 +1277,9 @@ get_config` output must match the processing
     if self._log_queue is None:
       raise RuntimeError("The logging Queue was never initialized")
 
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform,
-                               self._failure_manager)
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager)

@@ -11,7 +11,6 @@ import numpy as np
 import crappy.blocks.vision.record as record_module
 from crappy._global import OptionalModule
 from crappy.blocks.vision import ImageRecorder
-from crappy.blocks.vision.record import TAGS_INV
 
 from .vision_test_base import VisionTestBase
 
@@ -99,7 +98,8 @@ class TestImageRecorder(VisionTestBase):
     missing_sitk = OptionalModule('missing-sitk')
     pil_available = Mock()
     with (patch.object(record_module, 'Sitk', missing_sitk),
-          patch.object(record_module, 'PIL', pil_available)):
+          patch.object(record_module, 'Image', pil_available),
+          patch.object(record_module, 'ExifTags', Mock())):
       recorder = ImageRecorder()
     self.track_block(recorder)
     self.assertEqual(recorder._save_backend, 'pil')
@@ -107,7 +107,7 @@ class TestImageRecorder(VisionTestBase):
     missing_pil = OptionalModule('missing-pil')
     missing_cv2 = OptionalModule('missing-cv2')
     with (patch.object(record_module, 'Sitk', missing_sitk),
-          patch.object(record_module, 'PIL', missing_pil),
+          patch.object(record_module, 'Image', missing_pil),
           patch.object(record_module, 'cv2', missing_cv2)):
       recorder = ImageRecorder()
     self.track_block(recorder)
@@ -117,7 +117,7 @@ class TestImageRecorder(VisionTestBase):
   def test_constructor_rejects_explicit_unavailable_backend(self) -> None:
     """Checks clear errors for missing requested optional dependencies."""
 
-    mapping = {'sitk': 'Sitk', 'pil': 'PIL', 'cv2': 'cv2'}
+    mapping = {'sitk': 'Sitk', 'pil': 'Image', 'cv2': 'cv2'}
     for backend, attribute in mapping.items():
       with self.subTest(backend=backend):
         with patch.object(record_module, attribute,
@@ -320,8 +320,9 @@ class TestImageRecorder(VisionTestBase):
     with TemporaryDirectory() as tmp:
       fake_pil = Mock()
       encoded = Mock()
-      fake_pil.Image.fromarray.return_value = encoded
-      with patch.object(record_module, 'PIL', fake_pil):
+      fake_pil.fromarray.return_value = encoded
+      with (patch.object(record_module, 'Image', fake_pil),
+            patch.object(record_module, 'ExifTags', Mock())):
         for name, image, expected in (
             ('gray', np.arange(6, dtype=np.uint8).reshape(2, 3),
              np.arange(6, dtype=np.uint8).reshape(2, 3)),
@@ -338,7 +339,7 @@ class TestImageRecorder(VisionTestBase):
             recorder.loop()
 
             np.testing.assert_array_equal(
-                fake_pil.Image.fromarray.call_args.args[0], expected)
+                fake_pil.fromarray.call_args.args[0], expected)
             encoded.save.assert_called_with(
                 str(folder / '000002_0.500.tiff'), exif=sentinel.exif)
             recorder._pil_exif.assert_called_once_with(metadata)
@@ -365,13 +366,20 @@ class TestImageRecorder(VisionTestBase):
       self.assertEqual(path, str(Path(tmp) / '000003_0.750.png'))
       np.testing.assert_array_equal(written, image)
 
-  @unittest.skipIf(isinstance(record_module.PIL, OptionalModule),
-                   'Pillow is not available')
   def test_pil_exif_converts_numpy_scalars_and_skips_unknown_keys(self) -> None:
     """Checks EXIF construction for normal Camera metadata values."""
 
-    recorder = ImageRecorder(save_backend='pil')
+    if not (record_module.Image.is_available() and
+            record_module.ExifTags.is_available()):
+      self.skipTest('Pillow is not available')
+    tags_inv = {val: key for key, val in record_module.ExifTags.TAGS.items()}
+    tmp = TemporaryDirectory()
+    self.addCleanup(tmp.cleanup)
+    recorder = ImageRecorder(save_backend='pil', save_folder=tmp.name)
     self.track_block(recorder)
+    self.add_image_input(recorder)
+    with patch.object(record_module.VisionBlock, 'prepare'):
+      recorder.prepare()
     metadata = {
       'DateTimeOriginal': '2020:01:01 00:00:00',
       'ImageUniqueID': np.uint16(7),
@@ -382,10 +390,10 @@ class TestImageRecorder(VisionTestBase):
 
     exif = recorder._pil_exif(metadata)
 
-    self.assertEqual(exif.get(TAGS_INV['DateTimeOriginal']),
+    self.assertEqual(exif.get(tags_inv['DateTimeOriginal']),
                      '2020:01:01 00:00:00')
-    self.assertEqual(exif.get(TAGS_INV['ImageUniqueID']), '7')
-    self.assertEqual(exif.get(TAGS_INV['SubsecTimeOriginal']), '0.234567')
+    self.assertEqual(exif.get(tags_inv['ImageUniqueID']), '7')
+    self.assertEqual(exif.get(tags_inv['SubsecTimeOriginal']), '0.234567')
 
 
 if __name__ == '__main__':

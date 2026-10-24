@@ -11,6 +11,7 @@ from unittest.mock import patch, sentinel, Mock
 import numpy as np
 
 from crappy.camera.meta_camera.camera_setting import CameraBoolSetting
+from crappy.camera.meta_camera import Camera
 from crappy._failure import FailureManager
 from crappy.tool.camera_config.base import CameraConfig
 from crappy.tool.camera_config.factory import create_configurator
@@ -69,8 +70,11 @@ class TestCameraConfig(unittest.TestCase):
         classes.append(getattr(module, prefix + family))
     for constructor in (*classes, create_configurator):
       with self.subTest(constructor=constructor):
-        parameters = list(signature(constructor,
-                                    eval_str=True).parameters.values())
+        # Annotation-only imports are intentionally absent at runtime.
+        context = {'Camera': Camera, 'CameraConfig': CameraConfig,
+                   'FailureManager': FailureManager, 'np': np}
+        parameters = list(signature(constructor, eval_str=True,
+                                    locals=context).parameters.values())
         index = next(i for i, item in enumerate(parameters)
                      if item.name == 'failure_manager')
         self.assertEqual(parameters[index - 1].name, 'transform')

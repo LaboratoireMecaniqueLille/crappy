@@ -33,3 +33,8 @@ Block
              recv_all_data_raw
    :private-members: _cleanup
    :special-members: __init__
+
+Internal name reservation
+-------------------------
+
+.. autofunction:: crappy.blocks.is_reserved

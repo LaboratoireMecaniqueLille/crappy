@@ -160,6 +160,13 @@ class Tracker(Process):
         self._set_logger()
         if self._logger is not None:
           manager._logger = self._logger
+
+        # Report unavailable processing dependencies early
+        manager.phase = 'init'
+        if isinstance(cv2, OptionalModule):
+          cv2.resolve()
+        if isinstance(threshold_otsu, OptionalModule):
+          threshold_otsu.resolve()
         manager.phase = 'tracking'
 
         while not self._stop_event.is_set():

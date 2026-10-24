@@ -27,13 +27,15 @@ class Camera(ABC):
      __init_subclass__
   """
 
+  # Actually loaded subclasses
   classes = dict()
 
   def __init_subclass__(cls, **kwargs) -> None:
     """Used for checking that two subclasses don't share the same name."""
 
     super().__init_subclass__()
-    if cls.__name__ in cls.classes:
+    from .. import is_reserved
+    if cls.__name__ in cls.classes or is_reserved(cls):
       raise DefinitionError(f"A Camera with the name {cls.__name__} is "
                             f"already defined !")
     cls.classes[cls.__name__] = cls
@@ -86,7 +88,7 @@ class Camera(ABC):
 
     self._logger.log(level, msg)
 
-  def open(self, **kwargs) -> None:
+  def open(self, *args, **kwargs) -> None:
     """This method should initialize the connection to the camera, configure
     the camera, and start the image acquisition.
 

@@ -8,10 +8,7 @@ from pathlib import Path
 
 from .._global import OptionalModule
 
-try:
-  from graphviz import Digraph
-except (ModuleNotFoundError, ImportError) as error:
-  Digraph = OptionalModule("graphviz", cause=error)
+graphviz = OptionalModule('graphviz', lazy_import=True)
 
 
 @dataclass
@@ -456,10 +453,10 @@ class LinkGraph:
     else:
       graph_path = None
 
-    graph = Digraph(name="Crappy",
-                    filename="crappy_graph",
-                    format='pdf',
-                    directory=graph_path)
+    graph = graphviz.Digraph(name="Crappy",
+                             filename="crappy_graph",
+                             format='pdf',
+                             directory=graph_path)
     graph.attr(rankdir="LR")
 
     # Add all Blocks, including isolated ones

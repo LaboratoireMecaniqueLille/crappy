@@ -178,7 +178,7 @@ class TestMachine(BlockTestBase):
                       spam=True,
                       freq=None))
 
-    self.assertEqual(block._types, ['TrackingActuator'])
+    self.assertEqual(block._actuator_classes, (TrackingActuator,))
     self.assertEqual(block._settings, [{
       'cmd_label': 'common_cmd',
       'position_label': 'pos',

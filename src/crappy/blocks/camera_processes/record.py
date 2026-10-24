@@ -9,23 +9,11 @@ import logging.handlers
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
 
-try:
-  import SimpleITK as Sitk
-except (ModuleNotFoundError, ImportError) as error:
-  Sitk = OptionalModule("SimpleITK", cause=error)
-
-try:
-  import PIL
-  from PIL.ExifTags import TAGS
-  TAGS_INV = {val: key for key, val in TAGS.items()}
-except (ModuleNotFoundError, ImportError) as error:
-  PIL = OptionalModule("PIL", install_name="Pillow", cause=error)
-  TAGS = TAGS_INV = OptionalModule("PIL", install_name="Pillow", cause=error)
-
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError) as error:
-  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
+Sitk = OptionalModule('SimpleITK', lazy_import=True)
+Image = OptionalModule('PIL.Image', install_name='Pillow', lazy_import=True)
+ExifTags = OptionalModule('PIL.ExifTags', install_name='Pillow',
+                          lazy_import=True)
+cv2 = OptionalModule('cv2', install_name='opencv-python', lazy_import=True)
 
 
 class ImageSaver(CameraProcess):
@@ -68,6 +56,9 @@ class ImageSaver(CameraProcess):
         Fork), ``cv2`` (OpenCV), and :mod:`numpy`. Depending on the machine,
         some may be faster or slower. The ``img_extension`` is ignored for the
         backend ``'npy'``, that saves the images as raw numpy arrays.
+        Only the requested backend is checked, otherwise SimpleITK, Pillow,
+        OpenCV, and NumPy are tried in that order. The selected backend is
+        initialized in the recording process before any frames are saved.
       send_msg: In case no processing is performed, and if output Links are
         present, this argument is set to :obj:`True`. In that case, a message
         containing the timestamp, the index, and the metadata of the image is
@@ -81,28 +72,22 @@ class ImageSaver(CameraProcess):
     if not isinstance(save_period, int) or save_period < 1:
       raise ValueError("save_period must be a strictly positive integer")
 
-    # Trying the different possible backends and checking if the given one
-    # is correct
+    # Probe only the requested backend, or stop at the first available one
+    backends = {'sitk': Sitk.is_available,
+                'pil': lambda: (Image.is_available() and
+                                ExifTags.is_available()),
+                'cv2': cv2.is_available,
+                'npy': lambda: True}
     if save_backend is None:
-      if not isinstance(Sitk, OptionalModule):
-        self._save_backend = 'sitk'
-      elif not isinstance(PIL, OptionalModule):
-        self._save_backend = 'pil'
-      elif not isinstance(cv2, OptionalModule):
-        self._save_backend = 'cv2'
-      else:
-        self._save_backend = 'npy'
-    elif save_backend in ('sitk', 'pil', 'cv2', 'npy'):
-      if save_backend == 'sitk' and isinstance(Sitk, OptionalModule):
-        raise ModuleNotFoundError("Backend 'sitk' requested but could not "
-                                  "be imported")
-      elif save_backend == 'pil' and isinstance(PIL, OptionalModule):
-        raise ModuleNotFoundError("Backend 'pil' requested but could not "
-                                  "be imported")
-      elif save_backend == 'cv2' and isinstance(cv2, OptionalModule):
-        raise ModuleNotFoundError("Backend 'cv2' requested but could not "
-                                  "be imported")
+      for name, is_available in backends.items():
+        if is_available():
+          self._save_backend = name
+          break
 
+    elif save_backend in ('sitk', 'pil', 'cv2', 'npy'):
+      if not backends[save_backend]():
+        raise ModuleNotFoundError(f"Backend {save_backend!r} requested but "
+                                  "could not be imported")
       self._save_backend = save_backend
     else:
       raise ValueError("The save_backend argument should be either 'sitk', "
@@ -123,13 +108,24 @@ class ImageSaver(CameraProcess):
     self._csv_created = False
     self._csv_path = None
     self._metadata_name = 'metadata.csv'
+    self._pil_tags_inv: dict[str, int] = dict()
 
   def init(self) -> None:
-    """Creates the folder for saving the images.
+    """Resolves the selected backend and creates the recording folder.
 
     If a folder is already present at the indicated path and contains images,
     saving to a new folder with the same name but ending with a suffix.
     """
+
+    # Fresh workers must finish importing before handling their first frame
+    if self._save_backend == 'sitk':
+      Sitk.resolve()
+    elif self._save_backend == 'pil':
+      Image.resolve().init()
+      self._pil_tags_inv = {val: key for key, val
+                            in ExifTags.resolve().TAGS.items()}
+    elif self._save_backend == 'cv2':
+      cv2.resolve()
 
     # If the save folder already exists, checking if it contains images by
     # checking if a metadata file is present
@@ -220,10 +216,10 @@ class ImageSaver(CameraProcess):
 
     elif self._save_backend == 'pil':
       if len(self.img.shape) == 3:
-        PIL.Image.fromarray(self.img[:, :, ::-1]).save(path,
-                                                       exif=self._pil_exif())
+        Image.fromarray(self.img[:, :, ::-1]).save(path,
+                                                   exif=self._pil_exif())
       else:
-        PIL.Image.fromarray(self.img).save(path, exif=self._pil_exif())
+        Image.fromarray(self.img).save(path, exif=self._pil_exif())
 
     elif self._save_backend == 'cv2':
       cv2.imwrite(path, self.img)
@@ -241,10 +237,10 @@ class ImageSaver(CameraProcess):
     """Parses the metadata of the current image and converts it to a
     PIL.Image.Exif object."""
 
-    exif = PIL.Image.Exif()
+    exif = Image.Exif()
 
     for key, value in self.metadata.items():
-      if key not in TAGS_INV:
+      if key not in self._pil_tags_inv:
         continue
 
       # Convert Numpy scalars to Python object
@@ -256,7 +252,7 @@ class ImageSaver(CameraProcess):
         value = str(value)
 
       try:
-        exif[TAGS_INV[key]] = value
+        exif[self._pil_tags_inv[key]] = value
       except (TypeError, ValueError):
         self.log(logging.DEBUG, f"Could not encode metadata field "
                                 f"{key} as EXIF")

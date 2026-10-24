@@ -10,13 +10,13 @@ from collections.abc import Sequence
 import logging
 import locale
 import os
-import tkinter as tk
 from pathlib import Path
 from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
 
+tk = OptionalModule('tkinter', lazy_import=True)
 mpl = OptionalModule('matplotlib', lazy_import=True)
 mpl_figure = OptionalModule('matplotlib.figure', lazy_import=True)
 mpl_image = OptionalModule('matplotlib.image', lazy_import=True)
@@ -28,6 +28,7 @@ QtGui = OptionalModule('PyQt6.QtGui', lazy_import=True)
 QtWidgets = OptionalModule('PyQt6.QtWidgets', lazy_import=True)
 
 if TYPE_CHECKING:
+  import tkinter as tk
   from matplotlib import figure as mpl_figure
   from matplotlib import patches as mpl_patches
   from matplotlib import text as mpl_text
@@ -545,6 +546,7 @@ class Canvas(Block):
   def _prepare_tkinter(self) -> None:
     """Creates the Tkinter drawing window."""
 
+    tk.resolve()
     self._root = tk.Tk()
     self._root.report_callback_exception = self._report_tk_callback_exception
     assert self._root is not None

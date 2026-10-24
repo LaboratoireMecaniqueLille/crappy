@@ -10,14 +10,8 @@ from .meta_camera import Camera
 from .._exceptions import ReaderStop
 from .._global import OptionalModule
 
-try:
-  import SimpleITK as Sitk
-except (ModuleNotFoundError, ImportError) as error:
-  Sitk = OptionalModule("SimpleITK", cause=error)
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError) as error:
-  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
+Sitk = OptionalModule('SimpleITK', lazy_import=True)
+cv2 = OptionalModule('cv2', install_name='opencv-python', lazy_import=True)
 
 
 class FileReader(Camera):
@@ -57,8 +51,7 @@ class FileReader(Camera):
            reader_folder: Path | str,
            reader_backend: str | None = None,
            stop_at_end: bool = True) -> None:
-    """Sets the reader backend and retrieves the images to read, sorted by
-    their timestamp.
+    """Resolves the reader backend and retrieves images sorted by timestamp.
 
     Args:
       reader_folder: The path to the folder containing the images to read.
@@ -71,6 +64,8 @@ class FileReader(Camera):
           'sitk' or 'cv2'
 
         If not given, SimpleITK is preferred over OpenCV if available.
+        Only the selected backend, or automatic candidates up to the first
+        usable one, are imported before reading begins.
 
         .. versionadded:: 1.5.10
       stop_at_end: If :obj:`True` (the default), stops the Crappy script once
@@ -85,9 +80,9 @@ class FileReader(Camera):
 
     # Selecting an  available backend between first sitk and then cv2
     if reader_backend is None:
-      if not isinstance(Sitk, OptionalModule):
+      if Sitk.is_available():
         self._backend = 'sitk'
-      elif not isinstance(cv2, OptionalModule):
+      elif cv2.is_available():
         self._backend = 'cv2'
       else:
         raise ModuleNotFoundError("Neither SimpleITK nor opencv-python could "
@@ -95,10 +90,10 @@ class FileReader(Camera):
                                   "the images")
     # Setting the backend requested by the user
     elif reader_backend in ('sitk', 'cv2'):
-      if reader_backend == 'sitk' and isinstance(Sitk, OptionalModule):
+      if reader_backend == 'sitk' and not Sitk.is_available():
         raise ModuleNotFoundError("Backend 'sitk' requested but could not "
                                   "be imported")
-      elif reader_backend == 'cv2' and isinstance(cv2, OptionalModule):
+      elif reader_backend == 'cv2' and not cv2.is_available():
         raise ModuleNotFoundError("Backend 'cv2' requested but could not "
                                   "be imported")
       self._backend = reader_backend

@@ -363,8 +363,8 @@ class TestCameraSource(VisionTestBase):
     request.connection.send.assert_called_once_with(None)
     self.assertTrue(request.completed)
 
-  def test_prepare_rejects_unserviceable_required_requests_early(self) -> None:
-    """Checks required requests fail for both disabling option combinations."""
+  def test_parent_rejects_unserviceable_required_requests_early(self) -> None:
+    """Required requests fail before a worker opens the camera."""
 
     for options in ({'config': False},
                     {'config': True, 'allow_downstream_config': False}):
@@ -375,8 +375,9 @@ class TestCameraSource(VisionTestBase):
         request = self.request(source, required=True)
 
         with self.assertRaises(RuntimeError):
-          source.prepare()
+          source.resolve_config_requests()
 
+        self.assertIsNone(source._camera)
         request.connection.send.assert_not_called()
         self.assertFalse(request.completed)
 
@@ -588,24 +589,28 @@ class TestCameraSource(VisionTestBase):
     """Checks configurator construction, lifecycle, result, shape, and dtype."""
 
     transform = Mock()
-    source = self.make_source(transform=transform,
+    source = self.make_source(config=True,
+                              transform=transform,
                               img_shape=(1, 1),
                               img_dtype='uint8',
                               freq=123)
     source._failure_manager = FailureManager(source.name, 'configuration')
     source._log_queue = sentinel.log_queue
     source._log_level = logging.WARNING
+    source.configurator = RecordingConfig
+    source.resolve_config_requests()
     camera = RecordingVisionCamera()
 
-    with patch.object(camera_module, 'create_configurator',
-                      wraps=camera_module.create_configurator) as factory:
-      result = source.configure(camera, RecordingConfig,
+    with (patch.object(source, '_resolve_configurator',
+                       side_effect=AssertionError('Repeated resolution')),
+          patch.object(camera_module, 'resolve_configurator',
+                       side_effect=AssertionError('Worker selection')),
+          patch('crappy.tool.camera_config.factory.resolve_configurator',
+                side_effect=AssertionError('Worker factory selection'))):
+      result = source.configure(camera, source.configurator,
                                 'argument', option=sentinel.option)
 
     config = RecordingConfig.instances[-1]
-    self.assertEqual(factory.call_args.args[2], 'pyqt')
-    self.assertIs(factory.call_args.args[7],
-                  source._failure_manager)
     self.assertEqual(config.constructor_args,
                      (camera, sentinel.log_queue, logging.WARNING, 123,
                       transform, ('argument',), {'option': sentinel.option}))
@@ -652,30 +657,35 @@ class TestCameraSource(VisionTestBase):
     self.assertEqual(source._img_shape, (2, 3))
     self.assertEqual(source._img_dtype, 'uint8')
 
-  def test_configure_validates_camera_and_configurator_types(self) -> None:
-    """Checks direct type validation before opening a GUI."""
+  def test_configure_validates_camera_type(self) -> None:
+    """Checks the opened Camera argument before running a window."""
 
     source = self.make_source()
     source._log_queue = sentinel.log_queue
-    camera = RecordingVisionCamera()
-
     with self.assertRaises(TypeError):
       source.configure(object(), RecordingConfig)
-    with self.assertRaises(TypeError):
-      source.configure(camera, object)
-    with self.assertRaises(TypeError):
-      source.configure(camera, 'unknown')
-    with self.assertRaises(ValueError):
-      source.configure(camera, {'unknown': RecordingConfig})
+
+  def test_parent_preparation_validates_configurators_before_running_windows(self
+                                                                          ) -> None:
+    """Invalid selections fail in the parent, not during configure()."""
 
     class MissingShutdown(RecordingConfig):
       watch_shutdown = CameraConfig.watch_shutdown
 
-    with self.assertRaises(TypeError):
-      source.configure(camera, MissingShutdown)
+    for choice, error in ((object, TypeError), ('unknown', TypeError),
+                           ({'unknown': RecordingConfig}, ValueError),
+                           (MissingShutdown, TypeError)):
+      with self.subTest(choice=choice):
+        source = self.make_source(config=True)
+        source.configurator = choice
+        with patch.object(source, 'configure') as configure:
+          with self.assertRaises(error):
+            source.resolve_config_requests()
+        configure.assert_not_called()
+    self.assertEqual(RecordingConfig.instances, [])
 
   def test_backend_mapping_instantiates_the_selected_configurator(self) -> None:
-    """CameraSource selects explicit classes through its public configure API."""
+    """The parent selects the backend; the worker runs the resolved class."""
 
     class TkConfig(RecordingConfig):
       pass
@@ -685,11 +695,15 @@ class TestCameraSource(VisionTestBase):
 
     for backend, expected in (('tkinter', TkConfig), ('pyqt', QtConfig)):
       with self.subTest(backend=backend):
-        source = self.make_source(config_backend=backend)
+        source = self.make_source(config=True, config_backend=backend)
         source._log_queue = sentinel.log_queue
         camera = RecordingVisionCamera()
-        result = source.configure(camera,
-                                  {'tkinter': TkConfig, 'pyqt': QtConfig})
+        source.configurator = {'tkinter': TkConfig, 'pyqt': QtConfig}
+        source.resolve_config_requests()
+        self.assertIs(source.configurator, expected)
+        with patch.object(source, '_resolve_configurator',
+                          side_effect=AssertionError('Worker resolution')):
+          result = source.configure(camera, source.configurator)
 
         config = expected.instances[-1]
         self.assertIs(type(config), expected)
@@ -768,8 +782,7 @@ class TestCameraSource(VisionTestBase):
     source.default_configuration()
 
     source.configure.assert_called_once_with(
-      camera, {'tkinter': camera_module.TkinterCameraConfig,
-               'pyqt': camera_module.PyQtCameraConfig})
+      camera, source.configurator)
 
   def test_source_subclass_chooses_its_generic_window(self) -> None:
     """A CameraSource subclass can replace the default configurator class."""

@@ -1,13 +1,16 @@
 # coding:utf-8
 
-from typing import NoReturn, Any
+from typing import NoReturn, Any, TYPE_CHECKING as _TYPE_CHECKING
 from types import ModuleType
 from importlib import import_module
 import webbrowser
-import importlib.resources
-from numpy import frombuffer, uint8
 
 from . import _exceptions
+
+if _TYPE_CHECKING:
+  from ._resources import resources
+
+__all__ = ('OptionalModule', 'docs', 'resources')
 
 
 # Quick access to documentation
@@ -63,15 +66,38 @@ class OptionalModule:
     self._lazy: bool = lazy_import
     self._module: ModuleType | None = None
 
-  def _resolve(self) -> ModuleType:
-    """Loads the dependency or explains why it could not be loaded.
+  def is_available(self) -> bool:
+    """Checks whether the dependency can be loaded.
+
+    Lazy dependencies are imported and successful imports are cached. Import
+    failures return :obj:`False` and can be retried on a later check or use.
+    Other initialization errors and interruptions propagate unchanged.
+    Non-lazy placeholders return :obj:`False` without importing anything.
+
+    Returns:
+      Whether the dependency could be loaded.
+
+    .. versionadded:: 2.2.0
+    """
+
+    try:
+      self.resolve()
+    except _exceptions.OptionalDependencyError:
+      return False
+    return True
+
+  def resolve(self) -> ModuleType:
+    """Loads the dependency and returns the cached module.
+
+    Failed lazy imports can be retried by a later call. Non-lazy placeholders
+    report the dependency as unavailable without trying to import it.
 
     Returns:
       Imported module.
 
     Raises:
       ~crappy._exceptions.OptionalDependencyError: The dependency is
-      unavailable.
+        unavailable. Its original import error is retained as the cause.
 
     .. versionadded:: 2.2.0
     """
@@ -117,7 +143,7 @@ class OptionalModule:
       AttributeError: The loaded module has no such attribute.
     """
 
-    return getattr(self._resolve(), attr)
+    return getattr(self.resolve(), attr)
 
   def __call__(self, *args: Any, **kwargs: Any) -> Any:
     """Calls the loaded dependency if it is callable.
@@ -130,58 +156,31 @@ class OptionalModule:
       Object returned by the callable.
 
     Raises:
-      ~crappy._exceptions.OptionalDependencyError: The dependency is u
-        navailable.
+      ~crappy._exceptions.OptionalDependencyError: The dependency is
+        unavailable.
       TypeError: The loaded dependency is not callable.
     """
 
-    return self._resolve()(*args, **kwargs)
+    return self.resolve()(*args, **kwargs)
 
 
-# Data aliases
-class resources:
-  """This class defines aliases for quick access to the resources in the
-  `tool/data/` folder.
+def __getattr__(name: str) -> Any:
+  """Loads the resource namespace on first access.
 
-  These aliases are then used in the examples provided on the GitHub
-  repository, but could also be used in custom user scripts.
-
-  .. versionadded:: 1.5.3
+  .. versionadded:: 2.2.0
   """
 
-  try:
-    # Defining aliases to the images themselves
-    from cv2 import imdecode
-    speckle_path = importlib.resources.files('crappy').joinpath(
-        'tool/data/speckle.png')
-    speckle = imdecode(frombuffer(speckle_path.read_bytes(), uint8),
-                       flags=0)
+  if name == 'resources':
+    from ._resources import resources
+    globals()[name] = resources
+    return resources
 
-    ve_markers_path = importlib.resources.files('crappy').joinpath(
-        'tool/data/ve_markers.tif')
-    ve_markers = imdecode(frombuffer(ve_markers_path.read_bytes(), uint8),
-                          flags=0)
+  raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-    pad_path = importlib.resources.files('crappy').joinpath(
-        'tool/data/pad.png')
-    pad = imdecode(frombuffer(pad_path.read_bytes(), uint8),
-                   flags=0)
 
-  # In case the module opencv-python is missing
-  except (ModuleNotFoundError, ImportError) as error:
-    speckle = OptionalModule('cv2', cause=error, install_name='opencv-python')
-    ve_markers = OptionalModule('cv2', cause=error,
-                                install_name='opencv-python')
-    pad = OptionalModule('cv2', cause=error, install_name='opencv-python')
+def __dir__() -> list[str]:
+  """Includes lazy exports without loading them.
 
-  # Also getting the paths to the images
-  ref_pad = (importlib.resources.files('crappy') / 'tool' / 'data' /
-             'pad.png')
-  ref_speckle = (importlib.resources.files('crappy') / 'tool' / 'data' /
-                 'speckle.png')
-  ref_ve = (importlib.resources.files('crappy') / 'tool' / 'data' /
-            've_markers.tif')
-  with (importlib.resources.as_file(ref_pad) as path_pad,
-        importlib.resources.as_file(ref_speckle) as path_speckle,
-        importlib.resources.as_file(ref_ve) as path_ve):
-    paths = {'pad': path_pad, 'speckle': path_speckle, 've_markers': path_ve}
+  .. versionadded:: 2.2.0"""
+
+  return sorted(set(globals()) | set(__all__))

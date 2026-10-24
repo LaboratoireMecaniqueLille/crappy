@@ -101,16 +101,14 @@ class TestVideoExtenso(CameraWrapperTestBase):
     block._log_level = 30
     block.freq = 123
 
-    with patch.object(video_extenso_module, 'create_configurator',
+    with patch.object(block, 'configurator',
                       return_value=sentinel.config) as factory:
       ret = block._configure()
 
     self.assertIs(ret, sentinel.config)
     factory.assert_called_once_with(
-                                    {'tkinter': video_extenso_module.TkinterVideoExtensoConfig,
-                                     'pyqt': video_extenso_module.PyQtVideoExtensoConfig},
                                     sentinel.camera,
-                                    'tkinter', sentinel.log_queue, 30, 123.0,
+                                    sentinel.log_queue, 30, 123.0,
                                     transform,
                                     block._failure_manager,
                                     white_spots=False,

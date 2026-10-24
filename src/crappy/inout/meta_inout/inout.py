@@ -24,13 +24,15 @@ class InOut:
   .. versionchanged:: 2.1.0 removed the *ft232h* class attribute
   """
 
+  # Actually loaded subclasses
   classes = dict()
 
   def __init_subclass__(cls, **kwargs) -> None:
     """Used for checking that two subclasses don't share the same name."""
 
     super().__init_subclass__()
-    if cls.__name__ in cls.classes:
+    from .. import is_reserved
+    if cls.__name__ in cls.classes or is_reserved(cls):
       raise DefinitionError(f"An InOut with the name {cls.__name__} is "
                             f"already defined !")
     cls.classes[cls.__name__] = cls

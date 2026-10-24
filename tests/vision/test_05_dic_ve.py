@@ -170,9 +170,7 @@ class TestDICVEProcessor(VisionTestBase):
     request = configured.request_config('camera')
     self.assertEqual(request.requester, configured.name)
     self.assertEqual(request.img_source, 'camera')
-    self.assertEqual(request.configurator,
-                     {'tkinter': dic_ve_module.TkinterDICVEConfig,
-                      'pyqt': dic_ve_module.PyQtDICVEConfig})
+    self.assertIs(request.configurator, configured.configurator)
     self.assertIs(request.kwargs['patches'], configured._patches)
     self.assertFalse(request.required)
 
@@ -183,8 +181,10 @@ class TestDICVEProcessor(VisionTestBase):
     disabled = self.make_processor(request_configuration=False)
     self.assertIsNone(disabled.request_config('camera'))
 
+    from crappy.tool.camera_config.tkinter import TkinterDICVEConfig
+
     class CustomDICVE(DICVEProcessor):
-      configurator = dic_ve_module.TkinterDICVEConfig
+      configurator = TkinterDICVEConfig
 
     custom = CustomDICVE(patches=[(1, 2, 3, 4)])
     self.track_block(custom)

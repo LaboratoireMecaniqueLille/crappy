@@ -209,15 +209,13 @@ class TestDISCorrel(CameraWrapperTestBase):
     block.freq = 123
     block._patch = sentinel.box
 
-    with patch.object(dis_correl_module, 'create_configurator',
+    with patch.object(block, 'configurator',
                       return_value=sentinel.config) as factory:
       ret = block._configure()
 
     self.assertIs(ret, sentinel.config)
     factory.assert_called_once_with(
-                                    {'tkinter': dis_correl_module.TkinterDISCorrelConfig,
-                                     'pyqt': dis_correl_module.PyQtDISCorrelConfig},
-                                    sentinel.camera, 'tkinter',
+                                    sentinel.camera,
                                     sentinel.log_queue, 30, 123.0, transform,
                                     block._failure_manager,
                                     patch=sentinel.box)

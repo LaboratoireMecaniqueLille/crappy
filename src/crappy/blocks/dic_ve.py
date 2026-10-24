@@ -1,16 +1,18 @@
 # coding: utf-8
 
-from typing import Literal
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from collections.abc import Sequence, Callable
 import numpy as np
 from pathlib import Path
 
 from .camera_processes import DICVEProcess
 from .camera import Camera
-from ..tool.camera_config import (CameraConfig, SpotsBoxes,
-                                  create_configurator)
-from ..tool.camera_config.tkinter import TkinterDICVEConfig
-from ..tool.camera_config.pyqt import PyQtDICVEConfig
+from ..tool.camera_config import SpotsBoxes
+from ..tool.camera_config.factory import LazyConfiguratorMapping
+
+if TYPE_CHECKING:
+  from ..tool.camera_config import CameraConfig
 
 
 class DICVE(Camera):
@@ -54,8 +56,9 @@ CameraConfig` window that can be displayed by the Camera Block, this Block can
   .. versionchanged:: 2.0.0 renamed from *DISVE* to *DICVE*
   """
 
-  configurator = {'tkinter': TkinterDICVEConfig,
-                  'pyqt': PyQtDICVEConfig}
+  configurator = LazyConfiguratorMapping({
+    'tkinter': ('.tkinter', 'TkinterDICVEConfig'),
+    'pyqt': ('.pyqt', 'PyQtDICVEConfig')})
 
   def __init__(self,
                camera: str,
@@ -530,12 +533,10 @@ CameraConfig` window that can be displayed by the Camera Block, this Block can
                          "but they are not")
 
     assert self._failure_manager is not None
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform,
-                               self._failure_manager,
-                               patches=self._patches)
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager,
+                             patches=self._patches)

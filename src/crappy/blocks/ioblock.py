@@ -7,9 +7,9 @@ from numbers import Real
 from math import isfinite
 
 from .meta_block import Block
-from .._collection import (CollectionEntry, collection_registry,
-                           load_collection_class)
+from .._collection import collection_registry, load_collection_class
 from ..inout import inout_dict, InOut, moved_to_collection
+from ..inout import resolve_inout, inout_names
 
 
 class IOBlock(Block):
@@ -143,9 +143,8 @@ class IOBlock(Block):
         raise TypeError("The InOut name must be provided as a non-empty "
                         "string")
 
-    # None means that this is an ordinary core or user-defined InOut
-    self._collection_entry: CollectionEntry | None = None
-
+    if name in inout_names():
+      resolve_inout(name)
     # Check if the requested InOut is part of crappy.collection
     entry = collection_registry.get("InOut", name)
 
@@ -155,7 +154,6 @@ class IOBlock(Block):
       if entry is not None:
         # This call raises early if the module cannot be loaded
         load_collection_class(entry, inout_dict)
-        self._collection_entry = entry
       # Second case, the InOut was moved to crappy.collection but this module
       # was not imported
       elif name in moved_to_collection:
@@ -165,14 +163,10 @@ class IOBlock(Block):
                                   f"of your script")
       # The name of the InOut simply cannot be found anywhere
       else:
-        possible = ', '.join(sorted(inout_dict.keys()))
+        possible = ', '.join(sorted(inout_names()))
         raise ValueError(f"Unknown InOut name : {name}! "
                          f"The currently available ones are: {possible}")
-    # Case when the InOut was already loaded in a separate Block
-    elif entry is not None and inout_dict[name].__module__ == entry.module:
-      self._collection_entry = entry
-
-    self._io_name: str = name
+    self._inout_class: type[InOut] = inout_dict[name]
 
     match streamer:
       case bool():
@@ -333,13 +327,8 @@ class IOBlock(Block):
     self._read = bool(self.outputs)
     self._write = bool(self._cmd_labels)
 
-    # Under the spawn multiprocessing start method, it is necessary to re-load
-    # the modules from crappy.collection
-    if self._collection_entry is not None:
-      load_collection_class(self._collection_entry, inout_dict)
-
     # Instantiating the device
-    self._device = inout_dict[self._io_name](**self._inout_kwargs)
+    self._device = self._inout_class(**self._inout_kwargs)
 
     # Now opening the device
     self.log(logging.INFO, f"Opening the {type(self._device).__name__} InOut")

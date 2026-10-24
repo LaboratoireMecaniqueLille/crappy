@@ -8,8 +8,8 @@ import logging
 
 from .meta_block import Block
 from ..actuator import actuator_dict, Actuator, moved_to_collection
-from .._collection import (CollectionEntry, collection_registry,
-                           load_collection_class)
+from ..actuator import resolve_actuator, actuator_names
+from .._collection import collection_registry, load_collection_class
 
 
 class AutoDriveVideoExtenso(Block):
@@ -104,28 +104,27 @@ class AutoDriveVideoExtenso(Block):
                        "Actuator !")
     match actuator['type']:
       case str(name) if name.strip():
-        self._actuator_name: str = name
+        pass
       case str():
         raise ValueError("The actuator type must be a non-empty string")
       case _:
         raise TypeError("The actuator type must be a non-empty string")
 
-    self._collection_entry: CollectionEntry | None = None
-    entry = collection_registry.get('Actuator', self._actuator_name)
-    if self._actuator_name not in actuator_dict:
+    if name in actuator_names():
+      resolve_actuator(name)
+    entry = collection_registry.get('Actuator', name)
+    if name not in actuator_dict:
       if entry is not None:
         load_collection_class(entry, actuator_dict)
-        self._collection_entry = entry
-      elif self._actuator_name in moved_to_collection:
-        raise NotImplementedError(f"The Actuator {self._actuator_name} was "
+      elif name in moved_to_collection:
+        raise NotImplementedError(f"The Actuator {name} was "
                                   f"moved to crappy.collection. To use it, "
                                   f"add import crappy.collection at the "
                                   f"beginning of your script")
       else:
-        raise ValueError(f"Unknown actuator name: {self._actuator_name}!")
-    elif (entry is not None and
-          actuator_dict[self._actuator_name].__module__ == entry.module):
-      self._collection_entry = entry
+        raise ValueError(f"Unknown actuator name: {name}!")
+
+    self._actuator_class: type[Actuator] = actuator_dict[name]
 
     self._actuator_kwargs: dict[str, Any] = {key: value for key, value
                                              in actuator.items()
@@ -179,13 +178,8 @@ class AutoDriveVideoExtenso(Block):
       raise IOError("The AutoDriveVideoExtenso Block can only have one input "
                     "Link !")
 
-    # Under the spawn multiprocessing start method, it is necessary to re-load
-    # the modules from crappy.collection
-    if self._collection_entry is not None:
-      load_collection_class(self._collection_entry, actuator_dict)
-
     # Instantiate the Actuator to drive
-    self._device = actuator_dict[self._actuator_name](**self._actuator_kwargs)
+    self._device = self._actuator_class(**self._actuator_kwargs)
     self._device_opened = False
     self._device_stopped = False
 

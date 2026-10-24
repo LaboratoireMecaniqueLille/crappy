@@ -15,10 +15,7 @@ from ...tool.camera_config import Overlay
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError) as error:
-  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
+cv2 = OptionalModule('cv2', install_name='opencv-python', lazy_import=True)
 
 
 class Displayer(CameraProcess):
@@ -76,11 +73,11 @@ class Displayer(CameraProcess):
 
     # Selecting the backend if no backend was specified
     if backend is None:
-      if not isinstance(cv2, OptionalModule):
+      if cv2.is_available():
         self._backend = 'cv2'
       else:
         try:
-          _ = plt.Figure
+          plt.resolve()
           self._backend = 'mpl'
         except OptionalDependencyError as error:
           raise ModuleNotFoundError("Neither opencv-python nor matplotlib "
@@ -112,6 +109,12 @@ class Displayer(CameraProcess):
     """Starts the :obj:`~threading.Thread` for grabbing the
     :class:`~crappy.tool.camera_config.config_tools.Overlay` to display, and
     initializes the Displayer window."""
+
+    # Fail before starting helper threads if the selected backend cannot load
+    if self._backend == 'cv2':
+      cv2.resolve()
+    else:
+      plt.resolve()
 
     # Instantiating and starting the Thread for grabbing the Overlays
     self.log(logging.INFO, "Instantiating the thread for getting the Overlays"

@@ -5,16 +5,17 @@ from typing import TYPE_CHECKING, Literal
 import logging
 import locale
 import os
-import tkinter as tk
 from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
 
+tk = OptionalModule('tkinter', lazy_import=True)
 QtCore = OptionalModule('PyQt6.QtCore', lazy_import=True)
 QtWidgets = OptionalModule('PyQt6.QtWidgets', lazy_import=True)
 
 if TYPE_CHECKING:
+  import tkinter as tk
   from PyQt6 import QtWidgets, QtCore
 
 
@@ -165,6 +166,7 @@ class StopButton(Block):
   def _prepare_tkinter(self) -> None:
     """Creates the Tkinter window with a message above the stop button."""
 
+    tk.resolve()
     self._root = tk.Tk()
     self._root.report_callback_exception = self._report_tk_callback_exception
     assert self._root is not None

@@ -20,6 +20,10 @@ class FakeCV2:
   def __init__(self) -> None:
     self.paths = list()
 
+  @staticmethod
+  def is_available() -> bool:
+    return True
+
   def imread(self, path: str, flags: int):
     self.paths.append((path, flags))
     return np.array([[float(Path(path).stem.split('_')[1])]])
@@ -30,6 +34,10 @@ class FakeSitk:
 
   def __init__(self) -> None:
     self.paths = list()
+
+  @staticmethod
+  def is_available() -> bool:
+    return True
 
   def ReadImage(self, path):
     self.paths.append(path)

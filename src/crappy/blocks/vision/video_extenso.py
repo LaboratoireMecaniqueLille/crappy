@@ -1,14 +1,17 @@
 # coding: utf-8
 
+from __future__ import annotations
 from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING
 import logging
 
 from .block import VisionBlock, ConfigRequest
 from ...tool.image_processing import VideoExtensoTool, LostSpotError
 from ...tool.camera_config.config_tools import SpotsBoxes
-from ...tool.camera_config import CameraConfig
-from ...tool.camera_config.tkinter import TkinterVideoExtensoConfig
-from ...tool.camera_config.pyqt import PyQtVideoExtensoConfig
+from ...tool.camera_config.factory import LazyConfiguratorMapping
+
+if TYPE_CHECKING:
+  from ...tool.camera_config import CameraConfig
 
 
 class VideoExtensoProcessor(VisionBlock):
@@ -57,9 +60,9 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
   """
 
   configurator: (type[CameraConfig] |
-                 Mapping[str, type[CameraConfig]]) = {
-                   'tkinter': TkinterVideoExtensoConfig,
-                   'pyqt': PyQtVideoExtensoConfig}
+                 Mapping[str, type[CameraConfig]]) = LazyConfiguratorMapping({
+                   'tkinter': ('.tkinter', 'TkinterVideoExtensoConfig'),
+                   'pyqt': ('.pyqt', 'PyQtVideoExtensoConfig')})
 
   def __init__(self,
                labels: str | Sequence[str] | None = None,

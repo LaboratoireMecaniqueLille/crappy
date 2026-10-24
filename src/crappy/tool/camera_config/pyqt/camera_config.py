@@ -23,11 +23,9 @@ import numpy as np
 
 from ..base import CameraConfig, CameraConfigBoxes, ConfigurationLifecycle
 from ..config_tools import HistogramProcess
-from ....camera.meta_camera import Camera
 from ....camera.meta_camera.camera_setting import (
-  CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting, CameraSetting)
+  CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
 from ...._global import OptionalModule
-from ...._failure import FailureManager
 from ...._exceptions import StopRequested
 
 try:
@@ -58,6 +56,9 @@ if TYPE_CHECKING:
                                QGroupBox, QHBoxLayout, QLabel, QMessageBox,
                                QPushButton, QRadioButton, QScrollArea,
                                QSizePolicy, QSlider, QVBoxLayout, QWidget)
+  from ....camera.meta_camera import Camera
+  from ....camera.meta_camera.camera_setting import CameraSetting
+  from ...._failure import FailureManager
 
 
 @dataclass

@@ -31,7 +31,7 @@ VisionBlock
    :members: prepare, begin, finish, add_img_output, add_img_input, send_img,
              receive_imgs, request_config, add_config_request_in,
              config_requests_in, send_config, add_config_request_out,
-             recv_configs, set_shared_objects
+             recv_configs, set_shared_objects, resolve_config_requests
    :special-members: __init__
 
 .. py:attribute:: VisionBlock.last_received
@@ -45,7 +45,8 @@ Camera Source
 -------------
 
 .. autoclass:: crappy.blocks.vision.CameraSource
-   :members: prepare, loop, finish, configure, default_configuration
+   :members: prepare, loop, finish, configure, default_configuration,
+             resolve_config_requests
    :special-members: __init__
 
 .. _crappy_docs/blocks:dic ve processor:

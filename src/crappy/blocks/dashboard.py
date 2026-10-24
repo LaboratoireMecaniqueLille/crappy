@@ -3,7 +3,6 @@
 from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal
-import tkinter as tk
 import logging
 import locale
 import numbers
@@ -13,58 +12,16 @@ from warnings import warn
 from .meta_block import Block
 from .._global import OptionalModule
 
+tk = OptionalModule('tkinter', lazy_import=True)
 QtCore = OptionalModule('PyQt6.QtCore', lazy_import=True)
 QtWidgets = OptionalModule('PyQt6.QtWidgets', lazy_import=True)
 
+__all__ = ('Dashboard', 'DashboardWindow')
+
 if TYPE_CHECKING:
+  import tkinter as tk
   from PyQt6 import QtWidgets, QtCore
-
-
-class DashboardWindow(tk.Tk):
-  """The Tkinter GUI for displaying the label values.
-  
-  .. versionadded:: 1.5.7
-  .. versionchanged:: 2.0.0
-     renamed from *Dashboard_window* to *DashboardWindow*
-  """
-
-  def __init__(self, labels: list[str]) -> None:
-    """Initializes the GUI and sets the layout."""
-
-    super().__init__()
-    self.title('Dashboard')
-    self.resizable(False, False)
-
-    self._labels: list[str] = labels
-
-    # Attributes storing the tkinter objects
-    self._tk_labels: dict[str, tk.Label] = dict()
-    self._tk_values: dict[str, tk.Label] = dict()
-    self.tk_var: dict[str, tk.StringVar] = dict()
-
-    # Setting the GUI
-    self._set_variables()
-    self._set_layout()
-
-  def _set_variables(self) -> None:
-    """Attributes one StringVar per label."""
-
-    for label in self._labels:
-      self.tk_var[label] = tk.StringVar(self, value='')
-
-  def _set_layout(self) -> None:
-    """Creates the Labels and places them on the GUI."""
-
-    for row, label in enumerate(self._labels):
-      # The name of the labels on the left
-      self._tk_labels[label] = tk.Label(self, text=f'{label}:', borderwidth=15,
-                                        font=("Courier bold", 48))
-      self._tk_labels[label].grid(row=row, column=0)
-      # Their values on the right
-      self._tk_values[label] = tk.Label(self, borderwidth=15,
-                                        textvariable=self.tk_var[label],
-                                        font=("Courier bold", 48))
-      self._tk_values[label].grid(row=row, column=1)
+  from ._dashboard_tkinter import DashboardWindow
 
 
 class Dashboard(Block):
@@ -288,6 +245,9 @@ class Dashboard(Block):
   def _prepare_tkinter(self) -> None:
     """Creates the Tkinter window with label names and their latest values."""
 
+    tk.resolve()
+    from ._dashboard_tkinter import DashboardWindow
+
     self._dashboard = DashboardWindow(self._dash_labels)
     assert self._dashboard is not None
     self._dashboard.report_callback_exception = (
@@ -371,3 +331,27 @@ class Dashboard(Block):
         if original is not None:
           os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
     return app
+
+
+def __getattr__(name: str) -> type:
+  """Preserves the public Tk window alias without loading it for Qt users.
+
+  .. versionadded:: 2.2.0
+  """
+
+  if name != 'DashboardWindow':
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+  from ._dashboard_tkinter import DashboardWindow
+
+  globals()[name] = DashboardWindow
+  return DashboardWindow
+
+
+def __dir__() -> list[str]:
+  """Includes the deferred Tk window class in attribute discovery.
+
+  .. versionadded:: 2.2.0
+  """
+
+  return sorted(set(globals()) | set(__all__))

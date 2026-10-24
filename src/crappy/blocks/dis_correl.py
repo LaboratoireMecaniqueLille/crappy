@@ -1,17 +1,19 @@
 # coding: utf-8
 
-from typing import Literal
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from collections.abc import Sequence, Callable
 import numpy as np
 from pathlib import Path
 
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
-from ..tool.camera_config import (CameraConfig, Box,
-                                  create_configurator)
-from ..tool.camera_config.tkinter import TkinterDISCorrelConfig
-from ..tool.camera_config.pyqt import PyQtDISCorrelConfig
+from ..tool.camera_config import Box
+from ..tool.camera_config.factory import LazyConfiguratorMapping
 from ..tool.image_processing.fields import allowed_fields
+
+if TYPE_CHECKING:
+  from ..tool.camera_config import CameraConfig
 
 field_type = Literal['x', 'y', 'r', 'exx', 'eyy',
                      'exy', 'eyx', 'exy2', 'z'] | np.ndarray
@@ -50,8 +52,9 @@ CameraConfig` window that can be displayed by the Camera Block, this Block can
   .. versionadded:: 1.4.0
   """
 
-  configurator = {'tkinter': TkinterDISCorrelConfig,
-                  'pyqt': PyQtDISCorrelConfig}
+  configurator = LazyConfiguratorMapping({
+    'tkinter': ('.tkinter', 'TkinterDISCorrelConfig'),
+    'pyqt': ('.pyqt', 'PyQtDISCorrelConfig')})
 
   def __init__(self,
                camera: str,
@@ -538,12 +541,10 @@ DISCorrelConfig` window is displayed before the test starts. There, the user
                          "it is not")
 
     assert self._failure_manager is not None
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform,
-                               self._failure_manager,
-                               patch=self._patch)
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager,
+                             patch=self._patch)

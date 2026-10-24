@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from __future__ import annotations
 from abc import ABC
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import (synchronize, managers, RLock, Event, Value,
@@ -7,7 +8,7 @@ from multiprocessing import (synchronize, managers, RLock, Event, Value,
                              connection as mp_connection)
 import numpy as np
 import logging
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from base64 import urlsafe_b64encode
@@ -18,7 +19,9 @@ from time import monotonic
 from ..meta_block import Block
 from ...links import ImageLink
 from ..._exceptions import LinkDataError, StopRequested
-from ...tool.camera_config import CameraConfig
+
+if TYPE_CHECKING:
+  from ...tool.camera_config import CameraConfig
 
 
 @dataclass
@@ -659,6 +662,17 @@ class VisionBlock(Block, ABC):
 
     return ((self._stop_event is not None and self._stop_event.is_set()) or
             (self._ready_barrier is not None and self._ready_barrier.broken))
+
+  def resolve_config_requests(self) -> None:
+    """Finalizes source configurator choices.
+
+    Called after collecting all downstream requests for an image source, before
+    starting Managers or Blocks.
+
+    .. versionadded:: 2.2.0
+    """
+
+    ...
 
   def request_config(self, source: str) -> ConfigRequest | None:
     """Returns this Block's configuration request for an image source.

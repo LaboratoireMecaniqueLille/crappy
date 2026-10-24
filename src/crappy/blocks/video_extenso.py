@@ -1,15 +1,17 @@
 # coding: utf-8
 
-from typing import Literal
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from collections.abc import Callable, Sequence
 import numpy as np
 from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
-from ..tool.camera_config import CameraConfig, create_configurator
-from ..tool.camera_config.tkinter import TkinterVideoExtensoConfig
-from ..tool.camera_config.pyqt import PyQtVideoExtensoConfig
+from ..tool.camera_config.factory import LazyConfiguratorMapping
+
+if TYPE_CHECKING:
+  from ..tool.camera_config import CameraConfig
 
 
 class VideoExtenso(Camera):
@@ -59,8 +61,9 @@ VideoExtensoConfig` window owns the
      tracking helpers to their owning configuration and processing layers
   """
 
-  configurator = {'tkinter': TkinterVideoExtensoConfig,
-                  'pyqt': PyQtVideoExtensoConfig}
+  configurator = LazyConfiguratorMapping({
+    'tkinter': ('.tkinter', 'TkinterVideoExtensoConfig'),
+    'pyqt': ('.pyqt', 'PyQtVideoExtensoConfig')})
 
   def __init__(self,
                camera: str,
@@ -436,18 +439,16 @@ VideoExtensoConfig.get_config` exports only the selected spots and detection
                          "isn't")
 
     assert self._failure_manager is not None
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform,
-                               self._failure_manager,
-                               white_spots=self._white_spots,
-                               num_spots=self._num_spots,
-                               min_area=self._min_area,
-                               blur=self._blur,
-                               update_thresh=self._update_thresh,
-                               safe_mode=self._safe_mode,
-                               border=self._border)
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager,
+                             white_spots=self._white_spots,
+                             num_spots=self._num_spots,
+                             min_area=self._min_area,
+                             blur=self._blur,
+                             update_thresh=self._update_thresh,
+                             safe_mode=self._safe_mode,
+                             border=self._border)
