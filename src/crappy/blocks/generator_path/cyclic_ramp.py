@@ -5,6 +5,7 @@ from itertools import cycle, islice
 import logging
 
 from .meta_path import Path, ConditionType
+from ... import _validation as check
 
 
 class CyclicRamp(Path):
@@ -63,6 +64,11 @@ class CyclicRamp(Path):
     .. versionremoved:: 1.5.10 *verbose* argument
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
+
+    check.real(speed1, 'speed1')
+    check.real(speed2, 'speed2')
+    check.real(cycles, 'cycles')
+    check.real(init_value, 'init_value', optional=True)
 
     super().__init__()
 

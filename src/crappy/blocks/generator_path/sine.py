@@ -5,6 +5,7 @@ from numpy import sin, pi
 import logging
 
 from .meta_path import Path, ConditionType
+from ... import _validation as check
 
 
 class Sine(Path):
@@ -35,6 +36,11 @@ class Sine(Path):
     .. versionchanged:: 1.5.10 renamed *cmd* argument to *_last_cmd*
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
+
+    check.real(freq, 'freq', minimum=0, strict=True)
+    check.real(amplitude, 'amplitude', minimum=0)
+    check.real(offset, 'offset')
+    check.real(phase, 'phase')
 
     super().__init__()
 
