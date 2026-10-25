@@ -263,3 +263,23 @@ Video Extenso Tracker
 .. autoclass:: crappy.tool.image_processing.video_extenso.tracker.Tracker
    :members: run
    :special-members: __init__
+
+Argument Validation
+-------------------
+
+.. automodule:: crappy._validation
+
+.. autofunction:: crappy._validation.boolean
+.. autofunction:: crappy._validation.real
+.. autofunction:: crappy._validation.integer
+.. autofunction:: crappy._validation.string
+.. autofunction:: crappy._validation.choice
+.. autofunction:: crappy._validation.callable_
+.. autofunction:: crappy._validation.sequence
+.. autofunction:: crappy._validation.labels
+.. autofunction:: crappy._validation.mapping
+.. autofunction:: crappy._validation.log_level
+.. autofunction:: crappy._validation.instance
+.. autofunction:: crappy._validation.interface
+.. autofunction:: crappy._validation.dtype
+.. autofunction:: crappy._validation.image
