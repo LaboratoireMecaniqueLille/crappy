@@ -5,6 +5,7 @@ from multiprocessing import (synchronize, current_process, managers,
 import logging
 
 from .link_graph import link_graph
+from .. import _validation as check
 
 
 class ImageLink:
@@ -42,6 +43,8 @@ class ImageLink:
         order in which they are instantiated in the script. Names must be
         unique across both ImageLinks and regular Links.
     """
+
+    check.string(name, 'name', optional=True)
 
     self.name = self._get_name(name)
     self._img_buffer_name: str | None = None
@@ -102,11 +105,6 @@ class ImageLink:
       The name generated or validated for this ImageLink, as a :obj:`str`.
     """
 
-    if name is not None and not isinstance(name, str):
-      raise TypeError("The ImageLink's name must be a string or None")
-    if name == '':
-      raise ValueError("The ImageLink's name must be a non-empty string")
-
     return name if name is not None else f'image_link{cls._count}'
 
   def log(self, log_level: int, msg: str) -> None:
@@ -116,6 +114,9 @@ class ImageLink:
       log_level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
     """
+
+    check.log_level(log_level, 'log_level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._logger = logging.getLogger(

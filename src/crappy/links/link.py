@@ -14,6 +14,7 @@ import logging
 from .link_graph import link_graph
 from .._exceptions import LinkDataError
 from .._failure import FailureManager
+from .. import _validation as check
 
 ModifierType = Callable[[dict[str, Any]], [dict[str, Any] | None]]
 
@@ -75,14 +76,16 @@ class Link:
     .. versionremoved:: 2.0.0 *conditions*, *timeout* and *action* arguments
     """
 
+    check.string(name, 'name', optional=True)
+    check.boolean(allow_parallel, 'allow_parallel')
+    check.sequence(modifiers, 'modifiers', optional=True)
+
     if modifiers is None:
       modifiers = list()
 
     # Checking that all the given modifiers are callable
-    if modifiers and not all(callable(mod) for mod in modifiers):
-      not_callable = [mod for mod in modifiers if not callable(mod)]
-      raise TypeError(f"The following objects passed as modifiers are not "
-                      f"callable : {not_callable} !")
+    for modifier in modifiers:
+      check.callable_(modifier, 'modifiers')
 
     self.name = name if name is not None else f'link{self._get_count()}'
 
@@ -156,6 +159,9 @@ class Link:
     
     .. versionadded:: 2.0.0
     """
+
+    check.log_level(log_level, 'log_level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._logger = logging.getLogger(
