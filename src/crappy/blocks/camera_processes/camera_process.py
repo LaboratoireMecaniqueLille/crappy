@@ -11,10 +11,10 @@ import logging
 import logging.handlers
 from select import select
 from time import monotonic
-from math import isfinite
 from platform import system
 from abc import ABC, abstractmethod
 
+from ... import _validation as check
 from ...links import Link
 from ..._exceptions import LinkDataError, StopRequested
 from ..._failure import FailureManager
@@ -413,6 +413,9 @@ get_config`. The received values should normally be stored for use by
       msg: The message to log, as a :obj:`str`.
     """
 
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
+
     if self._logger is None:
       return
     self._logger.log(level, msg)
@@ -435,11 +438,8 @@ get_config`. The received values should normally be stored for use by
       :obj:`False` if no frame was grabbed and nothing should be done.
     """
 
-    if not isinstance(timeout, (int, float)):
-      raise TypeError("The image receive timeout must be a number")
-    if not isfinite(timeout) or timeout < 0:
-      raise ValueError("The image receive timeout must be finite and "
-                       "non-negative")
+    check.real(timeout, 'timeout', minimum=0)
+
     if self._data_dict is None:
       raise RuntimeError("The shared metadata dictionary wasn't initialized")
     if self._lock is None:
