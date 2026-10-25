@@ -10,6 +10,7 @@ from .camera_processes import DICVEProcess
 from .camera import Camera
 from ..tool.camera_config import SpotsBoxes
 from ..tool.camera_config.factory import LazyConfiguratorMapping
+from .. import _validation as check
 
 if TYPE_CHECKING:
   from ..tool.camera_config import CameraConfig
@@ -391,19 +392,19 @@ CameraConfig` window that can be displayed by the Camera Block, this Block can
       raise ValueError("Only 1 to 4 patches can be provided!")
 
     if patches is not None:
-      for patch in patches:
-        if (not isinstance(patch, tuple)
-            or len(patch) != 4
-            or not all(isinstance(val, int) for val in patch)
-            or not all(val >= 0 for val in patch)):
-          raise ValueError("The patches should be provided as tuples of 4 "
-                           "positive integer values")
-
-    if patches is not None:
-      for patch in patches:
-        if patch[2] <= 0 or patch[3] <= 0:
-          raise ValueError("The widths and heights of the patches must be "
-                           "strictly positive integers")
+      try:
+        for patch in patches:
+          check.instance(patch, 'patch', tuple)
+          check.sequence(patch, 'patch', length=4)
+          y, x, height, width = patch
+          for value in (y, x):
+            check.integer(int(value) if isinstance(value, bool) else value,
+                          'patch position', minimum=0)
+          for value in (height, width):
+            check.integer(int(value) if isinstance(value, bool) else value,
+                          'patch size', minimum=1)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
 
     # Forcing the labels into a list
     if labels is None:
@@ -429,37 +430,34 @@ CameraConfig` window that can be displayed by the Camera Block, this Block can
                                              is not None else None)
 
     # Checking the validity of the provided arguments
-    if method not in ('Disflow', 'Lucas Kanade',
-                      'Pixel precision', 'Parabola'):
-      raise ValueError("The method argument should be one of 'Disflow', "
-                       "'Lucas Kanade', 'Pixel precision', 'Parabola'")
-    if ((not isinstance(alpha, float) and not isinstance(alpha, int))
-        or alpha < 0):
-      raise ValueError("alpha must be a positive float")
-    if ((not isinstance(delta, float) and not isinstance(delta, int))
-        or delta < 0):
-      raise ValueError("delta must be a positive float")
-    if ((not isinstance(gamma, float) and not isinstance(gamma, int))
-        or gamma < 0):
-      raise ValueError("gamma must be a positive float")
-    if not isinstance(finest_scale, int) or finest_scale < 0:
-      raise ValueError("finest_scale must be a positive integer")
-    if not isinstance(iterations, int) or iterations < 0:
-      raise ValueError("iterations must be a positive integer")
-    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
-      raise ValueError("gradient_iterations must be a positive integer")
-    if not isinstance(patch_size, int) or patch_size < 0:
-      raise ValueError("patch_size must be a positive integer")
-    if not isinstance(patch_stride, int) or patch_stride < 0:
-      raise ValueError("patch_stride must be a positive integer")
-    if ((not isinstance(border, float) and not isinstance(border, int))
-        or not 0 <= border < 1):
-      raise ValueError("border must be greater than or equal to 0 and strictly"
-                       " less than 1")
-    if not isinstance(safe, bool):
-      raise TypeError("safe must be a boolean")
-    if not isinstance(follow, bool):
-      raise TypeError("follow must be a boolean")
+    try:
+      check.choice(method, 'method',
+                   ('Disflow', 'Lucas Kanade', 'Pixel precision', 'Parabola'))
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    try:
+      check.real(alpha, 'alpha', minimum=0)
+      check.real(delta, 'delta', minimum=0)
+      check.real(gamma, 'gamma', minimum=0)
+      check.integer(finest_scale, 'finest_scale', minimum=0)
+      check.integer(iterations, 'iterations', minimum=0)
+      check.integer(gradient_iterations, 'gradient_iterations', minimum=0)
+      check.integer(patch_size, 'patch_size', minimum=1)
+      check.integer(patch_stride, 'patch_stride', minimum=1)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if patch_stride >= patch_size:
+      raise ValueError("patch_stride must be smaller than patch_size")
+    check.boolean(raise_on_patch_exit, 'raise_on_patch_exit')
+    try:
+      check.real(int(border) if isinstance(border, bool) else border,
+                 'border', minimum=0)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if border >= 1:
+      raise ValueError("border must be strictly less than 1")
+    check.boolean(safe, 'safe')
+    check.boolean(follow, 'follow')
 
     # These arguments are for the DICVEProcess
     self._method: Literal['Disflow', 'Lucas Kanade',

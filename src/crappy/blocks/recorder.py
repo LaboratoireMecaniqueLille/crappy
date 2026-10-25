@@ -5,12 +5,11 @@ from collections import defaultdict
 from pathlib import Path
 import csv
 import logging
-from numbers import Real
-from math import isfinite
 from typing import Any
 from time import monotonic
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 class Recorder(Block):
@@ -98,33 +97,20 @@ class Recorder(Block):
       case _:
         raise TypeError("file_name must be provided as a non-empty string or "
                         "a Path")
-    match delay:
-      case Real() if not isfinite(delay) or delay <= 0:
-        raise ValueError("delay must be a finite strictly positive float")
-      case Real():
-        self._delay: float = delay
-      case _:
-        raise TypeError("delay must be a finite strictly positive float")
-    match labels:
-      case None:
-        self._requested_labels: list[str] | None = labels
-      case str() if labels.strip():
-        self._requested_labels: list[str] | None = [labels]
-      case str():
-        raise ValueError("labels must be a non-empty string or a sequence "
-                         "of non-empty strings or None")
-      case ():
-        raise ValueError("labels must contain at least one element when "
-                         "provided as a sequence")
-      case (*labels,) if (all(isinstance(label, str) for label in labels) and
-                          all(label.strip() for label in labels)):
-        self._requested_labels: list[str] | None = list(labels)
-      case (*_,):
-        raise ValueError("labels must be a non-empty string or a sequence "
-                         "of non-empty strings or None")
-      case _:
-        raise TypeError("labels must be a non-empty string or a sequence "
-                        "of non-empty strings or None")
+    check.real(int(delay) if isinstance(delay, bool) else delay,
+               'delay', minimum=0, strict=True)
+    self._delay: float = delay
+    if (isinstance(labels, Sequence)
+        and not isinstance(labels, (str, bytes, bytearray))):
+      try:
+        check.labels(labels, 'labels', single=False, unique=False)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
+    else:
+      check.labels(labels, 'labels', optional=True, unique=False)
+    self._requested_labels: list[str] | None = (
+      None if labels is None else [labels] if isinstance(labels, str)
+      else list(labels))
 
     self._recorder_labels: list[str] = (
       list() if self._requested_labels is None else self._requested_labels)

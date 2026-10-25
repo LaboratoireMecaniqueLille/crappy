@@ -6,6 +6,7 @@ import re
 from time import time
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 class Pause(Block):
@@ -91,10 +92,13 @@ class Pause(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    # Handling the case when only one pause condition is given
-    if isinstance(criteria, str) or isinstance(criteria, Callable):
+    if isinstance(criteria, str) or callable(criteria):
       criteria = (criteria,)
     criteria = tuple(criteria)
+    check.sequence(criteria, 'criteria', minimum=1)
+    for criterion in criteria:
+      if not callable(criterion):
+        check.string(criterion, 'criteria')
 
     self._raw_crit: tuple[str |
                           Callable[[dict[str, list]], bool | None],
@@ -153,6 +157,18 @@ class Pause(Block):
                                                  bool | None]
                        ) -> Callable[[dict[str, list]], bool | None]:
     """Returns a criterion callable."""
+
+    if not callable(criterion):
+      parsed = re.fullmatch(r'\s*(.+?)\s*[<>]\s*(.+?)\s*', criterion)
+      if parsed is None:
+        raise ValueError("Invalid criterion syntax; expected 'label < value' "
+                         "or 'label > value'")
+      check.string(parsed[1], 'criterion label')
+      try:
+        threshold = float(parsed[2])
+      except ValueError as error:
+        raise ValueError("The criterion threshold must be numeric") from error
+      check.real(threshold, 'criterion threshold')
 
     # If the criterion is already a callable, returning it
     if isinstance(criterion, Callable):

@@ -15,6 +15,7 @@ import logging
 from .._exceptions import ProcessExitError, StopRequested, ShutdownTimeoutError
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
 try:
   import paho.mqtt.client as mqtt
@@ -153,7 +154,6 @@ class ClientServer(Block):
           cmd_labels=['cmd1', 'cmd2']
           labels_to_send=['cmd1', 'cmd2']
 
-
     Examples:
       - ``topics``:
         If
@@ -173,7 +173,6 @@ class ClientServer(Block):
           't1', 'cmd1'
           'sign'
 
-
       - ``cmd_labels``:
         If
         ::
@@ -191,7 +190,6 @@ class ClientServer(Block):
 
            ('t1', 'cmd1')
            ('sign',)
-
 
       - ``labels_to_send``:
         If
@@ -220,6 +218,28 @@ class ClientServer(Block):
 
           ('sign',)
     """
+
+    check.boolean(broker, 'broker')
+    check.boolean(spam, 'spam')
+    check.string(address, 'address')
+    check.integer(port, 'port', minimum=1, maximum=65535)
+    check.mapping(init_output, 'init_output', optional=True)
+    for value, name in ((topics, 'topics'),
+                        (cmd_labels, 'cmd_labels'),
+                        (labels_to_send, 'labels_to_send')):
+      check.sequence(value, name, optional=True)
+      if value is not None:
+        for topic in value:
+          check.labels(topic, name)
+    if labels_to_send is not None:
+      if cmd_labels is None or len(labels_to_send) != len(cmd_labels):
+        raise ValueError("labels_to_send must have the same structure as "
+                         "cmd_labels")
+      for commands, renamed in zip(cmd_labels, labels_to_send):
+        if ((1 if isinstance(commands, str) else len(commands)) !=
+            (1 if isinstance(renamed, str) else len(renamed))):
+          raise ValueError("Each renamed topic must have as many labels as "
+                           "its command topic")
 
     self._client: mqtt.Client | None = None
     self._reader: Thread | None = None

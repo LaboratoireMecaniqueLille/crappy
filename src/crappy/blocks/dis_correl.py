@@ -11,6 +11,7 @@ from .camera import Camera
 from ..tool.camera_config import Box
 from ..tool.camera_config.factory import LazyConfiguratorMapping
 from ..tool.image_processing.fields import allowed_fields
+from .. import _validation as check
 
 if TYPE_CHECKING:
   from ..tool.camera_config import CameraConfig
@@ -373,15 +374,19 @@ DISCorrelConfig` window is displayed before the test starts. There, the user
     if not config and patch is None:
       raise ValueError("If the config window is disabled, the patch must be "
                        "provided !")
-    if patch is not None and (not isinstance(patch, tuple)
-                              or len(patch) != 4
-                              or not all(isinstance(val, int) for val in patch)
-                              or not all(val >= 0 for val in patch)):
-      raise ValueError("The patch should be provided as a tuple of 4 "
-                       "positive integer values")
-    if patch is not None and (patch[2] <= 0 or patch[3] <= 0):
-      raise ValueError("The width and height of the patch must be "
-                       "strictly positive integers")
+    if patch is not None:
+      try:
+        check.instance(patch, 'patch', tuple)
+        check.sequence(patch, 'patch', length=4)
+        y, x, height, width = patch
+        for value in (y, x):
+          check.integer(int(value) if isinstance(value, bool) else value,
+                        'patch position', minimum=0)
+        for value in (height, width):
+          check.integer(int(value) if isinstance(value, bool) else value,
+                        'patch size', minimum=1)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
 
     # Make sure that proper labels are provided if custom fields are provided
     if fields is not None and labels is None:
@@ -395,13 +400,20 @@ DISCorrelConfig` window is displayed before the test starts. There, the user
     else:
       _fields = list(fields)
 
-    if not all(isinstance(field, (np.ndarray, str)) for field in _fields):
-      raise TypeError("All the provided fields must be either strings or "
-                      "numpy arrays")
-    if not all(field in allowed_fields for field in _fields
-               if isinstance(field, str)):
-      raise ValueError(f"The only allowed values for the fields given as "
-                       f"strings are {allowed_fields}")
+    check.sequence(_fields, 'fields', minimum=1)
+    for field in _fields:
+      match field:
+        case str():
+          check.choice(field, 'fields', allowed_fields)
+        case np.ndarray():
+          check.image(field, 'fields', ndim=(3,))
+          if field.shape[-1] != 2:
+            raise ValueError("fields arrays must have shape (height, width, "
+                             "2)")
+          if not np.all(np.isfinite(field)):
+            raise ValueError("fields arrays must contain only finite values")
+        case _:
+          raise TypeError("fields must contain field names or NumPy arrays")
 
     # Forcing the labels into a list
     if labels is None:
@@ -423,42 +435,34 @@ DISCorrelConfig` window is displayed before the test starts. There, the user
 
     self.labels = _labels
 
-    if ((not isinstance(alpha, float) and not isinstance(alpha, int))
-        or alpha < 0):
-      raise ValueError("alpha must be a positive float")
-    if ((not isinstance(delta, float) and not isinstance(delta, int))
-        or delta < 0):
-      raise ValueError("delta must be a positive float")
-    if ((not isinstance(gamma, float) and not isinstance(gamma, int))
-        or gamma < 0):
-      raise ValueError("gamma must be a positive float")
-    if not isinstance(finest_scale, int) or finest_scale < 0:
-      raise ValueError("finest_scale must be a positive integer")
-    if not isinstance(iterations, int) or iterations < 0:
-      raise ValueError("iterations must be a positive integer")
-    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
-      raise ValueError("gradient_iterations must be a positive integer")
-    if not isinstance(patch_size, int) or patch_size < 0:
-      raise ValueError("patch_size must be a positive integer")
-    if not isinstance(patch_stride, int) or patch_stride < 0:
-      raise ValueError("patch_stride must be a positive integer")
-    if not isinstance(init, bool):
-      raise TypeError("init must be a boolean")
-    if not isinstance(residual, bool):
-      raise TypeError("residual must be a boolean")
-    if border is not None and not isinstance(border, (int, tuple)):
-      raise TypeError("border must be either None, an integer, or a tuple of "
-                      "two integers")
-    if (isinstance(border, tuple) and
-        (len(border) != 2 or not all(isinstance(val, int) for val in border) or
-         not all(val >= 0 for val in border))):
-      raise ValueError("If provided as a tuple, border must contain exactly "
-                       "two non-negative integers")
-    if isinstance(border, int) and border < 0:
-      raise ValueError("If provided as an integer, border must be "
-                       "non-negative")
-    if not isinstance(follow, bool):
-      raise TypeError("follow must be a boolean")
+    try:
+      check.real(alpha, 'alpha', minimum=0)
+      check.real(delta, 'delta', minimum=0)
+      check.real(gamma, 'gamma', minimum=0)
+      check.integer(finest_scale, 'finest_scale', minimum=0)
+      check.integer(iterations, 'iterations', minimum=0)
+      check.integer(gradient_iterations, 'gradient_iterations', minimum=0)
+      check.integer(patch_size, 'patch_size', minimum=1)
+      check.integer(patch_stride, 'patch_stride', minimum=1)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if patch_stride >= patch_size:
+      raise ValueError("patch_stride must be smaller than patch_size")
+    check.boolean(init, 'init')
+    check.boolean(residual, 'residual')
+    if isinstance(border, tuple):
+      try:
+        check.sequence(border, 'border', length=2)
+        for value in border:
+          check.integer(int(value) if isinstance(value, bool) else value,
+                        'border', minimum=0)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
+    else:
+      check.integer(int(border) if isinstance(border, bool) else border,
+                    'border', optional=True, minimum=0)
+
+    check.boolean(follow, 'follow')
 
     self._patch_int: tuple[int, int, int, int] | None = patch
     self._patch: Box | None = None

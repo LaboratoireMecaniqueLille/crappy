@@ -7,10 +7,15 @@ from collections.abc import Callable
 import logging
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 def plastic(v: float, yield_strain: float = .005, rate: float = .02) -> float:
   """A basic plastic law given as an example."""
+
+  check.real(v, 'v')
+  check.real(yield_strain, 'yield_strain', minimum=0)
+  check.real(rate, 'rate', minimum=0, strict=True)
 
   if v > yield_strain:
     return rate * ((((v - yield_strain) / rate) ** 2 + 1) ** .5 - 1)
@@ -90,6 +95,19 @@ class FakeMachine(Block):
 
         .. versionadded:: 2.0.0
     """
+
+    check.real(rigidity, 'rigidity', minimum=0, strict=True)
+    check.real(l0, 'l0', minimum=0, strict=True)
+    check.real(max_strain, 'max_strain', minimum=0, strict=True)
+    check.real(nu, 'nu')
+    check.real(max_speed, 'max_speed', minimum=0)
+    check.callable_(plastic_law, 'plastic_law')
+    check.choice(mode, 'mode', ('speed', 'position'))
+    check.string(cmd_label, 'cmd_label')
+    check.mapping(sigma, 'sigma', optional=True)
+    if sigma is not None:
+      for deviation in sigma.values():
+        check.real(deviation, 'sigma values', minimum=0)
 
     super().__init__()
     self.freq = freq

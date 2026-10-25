@@ -4,8 +4,9 @@ import numpy as np
 from pathlib import Path
 import logging
 
-from .._global import OptionalModule
 from .meta_block import Block
+from .._global import OptionalModule
+from .. import _validation as check
 
 try:
   import tables
@@ -92,13 +93,33 @@ class HDFRecorder(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    if not isinstance(expected_rows, int) or expected_rows < 1:
-      raise ValueError('expected_rows must be a positive integer')
-    if (flush_period is not None
-        and (not isinstance(flush_period, int) or flush_period < 1)):
-      raise ValueError('flush_period must be a positive integer')
+    match filename:
+      case Path() if filename.name.strip():
+        self._path: Path = filename
+      case Path():
+        raise ValueError("filename must contain a file name, not a directory")
+      case str() if filename.strip() and Path(filename).name.strip():
+        self._path: Path = Path(filename)
+      case str():
+        raise ValueError("filename must be non-empty when provided as a str, "
+                         "and correspond to a file not to a directory")
+      case _:
+        raise TypeError("filename must be provided as a non-empty string or "
+                        "a Path")
 
-    self._path = Path(filename)
+    check.string(node, 'node')
+    check.string(label, 'label')
+    check.mapping(metadata, 'metadata', optional=True)
+
+    try:
+      check.integer(int(expected_rows) if isinstance(expected_rows, bool)
+                    else expected_rows, 'expected_rows', minimum=1)
+      check.integer(int(flush_period) if isinstance(flush_period, bool)
+                    else flush_period, 'flush_period', optional=True,
+                    minimum=1)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+
     self._label = label
     self._metadata = {} if metadata is None else metadata
     self._expected_rows = expected_rows
@@ -125,6 +146,10 @@ class HDFRecorder(Block):
     elif len(self.inputs) > 1:
       raise ValueError('Cannot link more than one block to an HDF Recorder '
                        'block !')
+
+    if self._path.is_dir():
+      raise IsADirectoryError("The provided path points to an existing "
+                              "directory!")
 
     parent_folder = self._path.parent
 

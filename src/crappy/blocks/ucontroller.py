@@ -3,10 +3,12 @@
 from struct import unpack
 from time import time
 from collections.abc import Callable, Sequence
+from numbers import Real
 import logging
 
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
 try:
   from serial import Serial
@@ -45,35 +47,39 @@ class UController(Block):
     """Checks the validity of the arguments.
 
     Args:
-      labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing the
+      labels: A sequence (like a :obj:`list` or a :obj:`tuple`) containing the
         labels to get from the device (as :obj:`str`). Only these labels should
         be given as arguments to the ``send_to_pc`` function in the
         MicroPython script. If this argument is not :obj:`None`, then the
         ``init_output`` argument should be given as well. No more than 9 labels
-        should be given. If there's only one label to acquire, it can be given
-        directly as a :obj:`str` and not in an iterable.
-      cmd_labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        should be given, or 8 when ``t_device`` is :obj:`True`. Labels must be
+        unique non-empty strings, without surrounding whitespace or line
+        breaks. Do not include ``'t(s)'``, which is reserved for timestamps.
+        If there's only one label to acquire, it can be given directly as a
+        :obj:`str`.
+      cmd_labels: A sequence (like a :obj:`list` or a :obj:`tuple`) containing
         the command labels that will be sent to the device upon reception from
         an upstream Block. The variables in the MicroPython script should have
         these exact names. Not more than 9 cmd_labels should be given. If
         there's only one command label, it can be given directly as a
-        :obj:`str` and not in an iterable.
-      init_output: If the ``labels`` argument is not :obj:`None`, the values to 
-        output to downstream Blocks for each label as long as no value has been 
-        received from the device. An initial output value must be given for 
-        each label.
+        :obj:`str`. Command labels must be unique non-empty strings, without
+        surrounding whitespace or line breaks.
+      init_output: A dictionary of finite real values to output to downstream
+        Blocks for each label as long as no value has been received from the
+        device. An initial value must be given for each declared label.
       post_process: Optionally allows applying a function to the data of a 
         label before transmitting it to downstream Blocks. It is possible to 
-        give functions for only part of the labels.
-      t_device: It :obj:`True`, the timestamp returned under the label `'t(s)'` 
+        give functions for only part of the declared ``labels``. Each function
+        receives and returns a real number.
+      t_device: If :obj:`True`, the timestamp returned under the label `'t(s)'`
         is the one of the device, not the one of Crappy. It may reduce the 
         maximum achievable sample rate, as more bytes have to be transmitted, 
         but it is also far more precise.
       port: The serial port to open for communicating with the device. In 
         Windows, they are usually called `COMx`, whereas in Linux and Mac 
         they're called `/dev/ttyxxxx`.
-      baudrate: The baudrate for serial communication. It depends on the 
-        capabilities of the device.
+      baudrate: The baudrate for serial communication, as a non-negative
+        integer. It depends on the capabilities of the device.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block.
         
@@ -93,26 +99,17 @@ class UController(Block):
 
     super().__init__()
     self.debug = debug
-
-    if not isinstance(display_freq, bool):
-      raise TypeError("display_freq should be either True or False !")
     self.display_freq = display_freq
-
-    if (freq is not None and
-        (not isinstance(freq, (float, int)) or freq <= 0)):
-      raise TypeError("freq should be a positive float !")
     self.freq = freq
 
-    if not isinstance(t_device, bool):
-      raise TypeError("t_device should be either True or False !")
+    check.labels(labels, 'labels', optional=True, empty=True)
+    check.labels(cmd_labels, 'cmd_labels', optional=True, empty=True)
+    check.boolean(t_device, 't_device')
+    check.string(port, 'port')
+    check.integer(baudrate, 'baudrate', minimum=0)
     self._t_device = t_device
 
-    if not isinstance(port, str):
-      raise TypeError("port should be a string !")
     self._port = port
-
-    if not isinstance(baudrate, int) or baudrate < 0:
-      raise ValueError("baudrate should be a positive integer !")
     self._baudrate = baudrate
 
     # Forcing the labels into a list
@@ -123,11 +120,6 @@ class UController(Block):
     else:
       self._uc_labels = None
 
-    if (self._t_device and self._uc_labels is not None and
-        len(self._uc_labels) > 8):
-      raise ValueError("Cannot manage more than 8 labels when t_device is "
-                       "True")
-
     # Forcing the cmd_labels into a list
     if cmd_labels is not None and isinstance(cmd_labels, str):
       self._cmd_labels = [cmd_labels]
@@ -136,26 +128,44 @@ class UController(Block):
     else:
       self._cmd_labels = None
 
-    if self._uc_labels is not None and len(self._uc_labels) > 9:
-      raise ValueError("Sorry, a maximum of 9 labels is allowed !")
+    max_labels = 8 if t_device else 9
+    if self._uc_labels is not None and len(self._uc_labels) > max_labels:
+      raise ValueError(f"labels must contain at most {max_labels} labels "
+                       f"when t_device is {t_device}")
     if self._cmd_labels is not None and len(self._cmd_labels) > 9:
-      raise ValueError("Sorry, a maximum of 9 cmd_labels is allowed !")
+      raise ValueError("cmd_labels must contain at most 9 labels")
+
+    for name, values in (('labels', self._uc_labels),
+                          ('cmd_labels', self._cmd_labels)):
+      for label in values or ():
+        if label != label.strip() or '\r' in label or '\n' in label:
+          raise ValueError(f"{name} must not contain surrounding whitespace "
+                           "or line breaks")
+    if self._uc_labels is not None and 't(s)' in self._uc_labels:
+      raise ValueError("'t(s)' is reserved for timestamps; do not include it "
+                       "in labels")
 
     if self._cmd_labels is not None:
       self._prev_cmd = {cmd_label: None for cmd_label in self._cmd_labels}
 
-    if init_output is not None and not isinstance(init_output, dict):
-      raise TypeError("init_output should be a dict !")
+    check.instance(init_output, 'init_output', dict, optional=True)
+    if init_output is not None:
+      for label, value in init_output.items():
+        check.string(label, 'init_output keys')
+        check.real(value, f"init_output[{label!r}]")
     if self._uc_labels is not None and not all(
-        label in (init_output if init_output is not None else dict())
+        label in (init_output if init_output is not None else {})
         for label in self._uc_labels):
       raise ValueError("Every label should have an init_output value !")
     self._out = init_output
 
-    if post_process is not None and (not isinstance(post_process, dict) or
-                                     not all(callable(func) for func
-                                             in post_process.values())):
-      raise TypeError("post_process should be a dict of callables !")
+    check.instance(post_process, 'post_process', dict, optional=True)
+    if post_process is not None:
+      for label, callback in post_process.items():
+        check.string(label, 'post_process keys')
+        check.callable_(callback, f"post_process[{label!r}]")
+        if label not in (self._uc_labels or ()):
+          raise ValueError(f"post_process label {label!r} is not in labels")
     self._post_process = post_process if post_process is not None else {}
 
     self._buffer = None
@@ -271,7 +281,8 @@ class UController(Block):
     Important:
       The precision of the commands sent to the device is limited to 3 digits
       after the decimal point, to limit the traffic on the bus. Adapt the range
-      of the command values consequently.
+      of the command values consequently. Commands must be finite real
+      numbers, booleans are sent as 0 or 1.
 
     Note:
       Commands are sent as text, because some boards cannot read bytes from the
@@ -289,6 +300,12 @@ class UController(Block):
     """
     if self._cmd_labels is not None:
       cmd = self.recv_last_data()
+      # Validate the whole command batch before writing to the device
+      for label in self._cmd_labels:
+        if label in cmd:
+          value = cmd[label]
+          check.real(int(value) if isinstance(value, bool) else value,
+                     f"command {label!r}")
       for label in self._cmd_labels:
         if label in cmd and cmd[label] != self._prev_cmd[label]:
           msg = b''.join((f'{self._cmd_table[label]}'
@@ -359,8 +376,10 @@ class UController(Block):
       for label in self._uc_labels:
         if read[0] == self._labels_table[label]:
           value = read[1]
-          self._out[label] = self._post_process[label](value) if \
-              label in self._post_process else value
+          if label in self._post_process:
+            value = self._post_process[label](value)
+            check.instance(value, f"post_process[{label!r}] result", Real)
+          self._out[label] = value
           if not self._t_device:
             self._out['t(s)'] = time() - self.t0
           self.send(self._out)

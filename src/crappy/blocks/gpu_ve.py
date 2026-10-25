@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .camera_processes import GPUVEProcess
 from .camera import Camera
+from .. import _validation as check
 
 
 class GPUVE(Camera):
@@ -275,6 +276,43 @@ class GPUVE(Camera):
                      img_shape=img_shape,
                      img_dtype=img_dtype,
                      **kwargs)
+
+    check.integer(int(verbose) if isinstance(verbose, bool) else verbose,
+                  'verbose', minimum=0, maximum=3)
+    check.integer(iterations, 'iterations', minimum=1)
+    check.real(mul, 'mul', minimum=0, strict=True)
+
+    match kernel_file:
+      case None:
+        pass
+      case Path() if kernel_file.name.strip():
+        pass
+      case Path():
+        raise ValueError("kernel_file must contain a file name, not a "
+                         "directory")
+      case str() if kernel_file.strip() and Path(kernel_file).name.strip():
+        kernel_file = Path(kernel_file)
+      case str():
+        raise ValueError("kernel_file must be non-empty when provided as a "
+                         "str, and correspond to a file not to a directory")
+      case _:
+        raise TypeError("kernel_file must be provided as a non-empty string, "
+                        "a Path or None")
+    if kernel_file is not None and kernel_file.is_dir():
+      raise IsADirectoryError(f"kernel_file points to a directory: "
+                              f"{kernel_file}")
+
+    check.image(img_ref, 'img_ref', optional=True, ndim=(2,))
+    check.sequence(patches, 'patches', minimum=1)
+    if len(patches) > 4:
+      raise ValueError("patches must contain at most 4 patches")
+    for patch in patches:
+      check.sequence(patch, 'patch', length=4)
+      y, x, height, width = patch
+      check.integer(y, 'patch y', minimum=0)
+      check.integer(x, 'patch x', minimum=0)
+      check.integer(height, 'patch height', minimum=1)
+      check.integer(width, 'patch width', minimum=1)
 
     # Forcing the patches into a list
     patches = list(patches)

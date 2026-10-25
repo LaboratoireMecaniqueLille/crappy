@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from collections import defaultdict
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 class Multiplexer(Block):
@@ -90,8 +91,9 @@ class Multiplexer(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    if interp_freq <= 0:
-      raise ValueError("interp_freq must be greater than 0")
+    check.string(time_label, 'time_label')
+    check.labels(out_labels, 'out_labels', optional=True)
+    check.real(interp_freq, 'interp_freq', minimum=0, strict=True)
 
     # Initializing the attributes
     self._time_label = time_label

@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 from datetime import timedelta
-from math import isfinite, isnan
-from numbers import Real
+from math import isnan
 from time import time
 from typing import Any, TYPE_CHECKING, Literal
 from collections.abc import Sequence
@@ -15,6 +14,7 @@ from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
 tk = OptionalModule('tkinter', lazy_import=True)
 mpl = OptionalModule('matplotlib', lazy_import=True)
@@ -344,54 +344,35 @@ class Canvas(Block):
         raise TypeError("image_path must be provided as a non-empty string or "
                         "a Path")
 
-    match draw:
-      case None:
-        self._draw: list[dict[str, Any]] = list()
-      case Sequence() if not isinstance(draw, (str, bytes)):
-        self._draw: list[dict[str, Any]] = list()
-        for element in draw:
-          self._validate_element(element)
-          self._draw.append(element.copy())
-      case _:
-        raise TypeError("draw must be a sequence of dictionaries or None")
+    check.sequence(draw, 'draw', optional=True)
+    self._draw: list[dict[str, Any]] = list()
+    for element in (() if draw is None else draw):
+      self._validate_element(element)
+      self._draw.append(element.copy())
 
-    match color_range:
-      case (Real() as low, Real() as high) if isinstance(color_range, tuple):
-        if not isfinite(low) or not isfinite(high):
-          raise ValueError("color_range must contain two finite numbers")
-        if low == high:
-          raise ValueError("The two values of color_range cannot be equal")
-        self.color_range: tuple[float, float] = (min(low, high),
-                                                 max(low, high))
-      case _:
-        raise TypeError("color_range must be a tuple of two finite numbers")
+    check.instance(color_range, 'color_range', tuple)
+    check.sequence(color_range, 'color_range', length=2)
+    low, high = color_range
+    for bound in color_range:
+      check.real(int(bound) if isinstance(bound, bool) else bound,
+                 'color_range')
+    if low == high:
+      raise ValueError("The two values of color_range cannot be equal")
+    self.color_range: tuple[float, float] = (min(low, high), max(low, high))
 
-    match title:
-      case str() if title.strip():
-        self._title: str = title
-      case str():
-        raise ValueError("title must be a non-empty string")
-      case _:
-        raise TypeError("title must be a non-empty string")
+    check.string(title, 'title')
+    self._title: str = title
 
-    match window_size:
-      case (Real() as width, Real() as height) if isinstance(window_size,
-                                                             tuple):
-        if (not isfinite(width) or not isfinite(height) or
-            width <= 0 or height <= 0):
-          raise ValueError("window_size must contain two finite positive "
-                           "numbers")
-        self._window_size: tuple[float, float] = (float(width), float(height))
-      case _:
-        raise TypeError("window_size must be a tuple of two positive numbers")
+    check.instance(window_size, 'window_size', tuple)
+    check.sequence(window_size, 'window_size', length=2)
+    width, height = window_size
+    for size in window_size:
+      check.real(int(size) if isinstance(size, bool) else size,
+                 'window_size', minimum=0, strict=True)
+    self._window_size: tuple[float, float] = (float(width), float(height))
 
-    match backend:
-      case str() if backend in ('tkinter', 'pyqt'):
-        self.backend: Literal['tkinter', 'pyqt'] = backend
-      case str():
-        raise ValueError("The backend must be either 'tkinter' or 'pyqt'")
-      case _:
-        raise TypeError("The backend must be either 'tkinter' or 'pyqt'")
+    check.choice(backend, 'backend', ('tkinter', 'pyqt'))
+    self.backend: Literal['tkinter', 'pyqt'] = backend
 
     # Drawing elements use the selected backend's text and dot objects
     self._drawing_elements: list[Text | DotText | Time] = list()
@@ -498,30 +479,17 @@ class Canvas(Block):
   def _validate_element(element: dict[str, Any]) -> None:
     """Checks the type, coordinates, and required fields of an overlay."""
 
-    match element:
-      case dict() if 'type' in element and 'coord' in element:
-        pass
-      case dict():
-        raise ValueError("All draw dictionaries must contain 'type' and "
-                         "'coord' keys")
-      case _:
-        raise TypeError("All draw elements must be dictionaries")
+    check.instance(element, 'draw element', dict)
+    if 'type' not in element or 'coord' not in element:
+      raise ValueError("All draw dictionaries must contain 'type' and "
+                       "'coord' keys")
 
-    match element['type']:
-      case str() if element['type'] in ('text', 'dot_text', 'time'):
-        pass
-      case str():
-        raise ValueError("The 'type' key must be either 'text', 'dot_text', "
-                         "or 'time'")
-      case _:
-        raise TypeError("The 'type' key must be a string")
+    check.choice(element['type'], 'draw type', ('text', 'dot_text', 'time'))
 
-    match element['coord']:
-      case (Real() as x, Real() as y) if isinstance(element['coord'], tuple):
-        if not isfinite(x) or not isfinite(y):
-          raise ValueError("The coordinates must contain two finite numbers")
-      case _:
-        raise TypeError("The coordinates must be a tuple of two numbers")
+    check.instance(element['coord'], 'coord', tuple)
+    check.sequence(element['coord'], 'coord', length=2)
+    for coord in element['coord']:
+      check.real(int(coord) if isinstance(coord, bool) else coord, 'coord')
 
     if element['type'] == 'time':
       return
@@ -529,19 +497,9 @@ class Canvas(Block):
       raise ValueError("Text and dot_text elements must contain 'text' and "
                        "'label' keys")
 
-    match element['text']:
-      case str():
-        pass
-      case _:
-        raise TypeError("The text must be a string")
+    check.string(element['text'], 'text', empty=True)
 
-    match element['label']:
-      case str() if element['label'].strip():
-        pass
-      case str():
-        raise ValueError("The label must be a non-empty string")
-      case _:
-        raise TypeError("The label must be a non-empty string")
+    check.string(element['label'], 'label')
 
   def _prepare_tkinter(self) -> None:
     """Creates the Tkinter drawing window."""

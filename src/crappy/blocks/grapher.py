@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 from collections import deque
-from itertools import chain
 import logging
-from math import isfinite
-from numbers import Real
 from time import monotonic
 from sys import modules
 from typing import TYPE_CHECKING, Literal
@@ -15,6 +12,7 @@ from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 pg = OptionalModule('pyqtgraph', lazy_import=True)
@@ -191,56 +189,36 @@ class Grapher(Block):
     self.debug = debug
 
     # Checking the validity of the provided arguments
-    match plotter:
-      case _ if plotter in ('mpl', 'pyqt'):
-        self._plotter: Literal['mpl', 'pyqt'] = plotter
-      case _:
-        raise ValueError("The plotter must be either 'mpl' or 'pyqt'")
+    try:
+      check.choice(plotter, 'plotter', ('mpl', 'pyqt'))
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    self._plotter: Literal['mpl', 'pyqt'] = plotter
 
-    match upd_freq:
-      case None:
-        self._upd_freq: float | None = None
-      case Real() if not isfinite(upd_freq) or upd_freq <= 0:
-        raise ValueError("upd_freq must be a finite strictly positive float "
-                         "or None")
-      case Real() if self.freq is not None and upd_freq > self.freq:
-        raise ValueError("upd_freq cannot exceed the target freq")
-      case Real():
-        self._upd_freq: float | None = float(upd_freq)
-      case _:
-        raise TypeError("upd_freq must be a strictly positive float or None")
+    check.real(int(upd_freq) if isinstance(upd_freq, bool) else upd_freq,
+               'upd_freq', optional=True, minimum=0, strict=True)
+    if upd_freq is not None and self.freq is not None and upd_freq > self.freq:
+      raise ValueError("upd_freq cannot exceed the target freq")
+    self._upd_freq: float | None = (
+      None if upd_freq is None else float(upd_freq))
 
-    match labels:
-      case ():
-        raise ValueError("No labels to plot were provided")
-      case (*items,) if (all(isinstance(item, tuple) for item in items) and
-                         all(len(item) == 2 for item in items) and
-                         all((isinstance(label, str) and label)
-                             for label in chain.from_iterable(labels))):
-        self._graph_labels: tuple[tuple[str, str], ...] = labels
-      case _:
-        raise ValueError("The labels to plot must be given as tuples of "
-                         "exactly two non-empty strings")
+    try:
+      check.sequence(labels, 'labels', minimum=1)
+      for pair in labels:
+        check.instance(pair, 'label pair', tuple)
+        check.sequence(pair, 'label pair', length=2)
+        check.labels(pair, 'label pair', single=False, unique=False)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    self._graph_labels: tuple[tuple[str, str], ...] = labels
 
-    match length:
-      case None:
-        self._length: int | None = None
-      case int() if length > 0:
-        self._length: int | None = length
-      case int():
-        raise ValueError("length must be a strictly positive integer or None")
-      case _:
-        raise TypeError("length must be a strictly positive integer or None")
+    check.integer(int(length) if isinstance(length, bool) else length,
+                  'length', optional=True, minimum=1)
+    self._length: int | None = length
 
-    match max_pt:
-      case None:
-        self._max_pt: int | None = None
-      case int() if max_pt > 0:
-        self._max_pt: int | None = max_pt
-      case int():
-        raise ValueError("max_pt must be a strictly positive integer or None")
-      case _:
-        raise TypeError("max_pt must be a strictly positive integer or None")
+    check.integer(int(max_pt) if isinstance(max_pt, bool) else max_pt,
+                  'max_pt', optional=True, minimum=1)
+    self._max_pt: int | None = max_pt
 
     match self._length, self._max_pt:
       case (None, _) | (_, None):
@@ -248,45 +226,34 @@ class Grapher(Block):
       case _:
         raise ValueError("Only one of length and max_pt can be set at a time")
 
-    match window_size:
-      case (Real() as width,
-            Real() as height) if (isinstance(window_size, tuple) and
-                                  isfinite(width) and isfinite(height)
-                                  and width > 0 and height > 0):
-        self._window_size: tuple[float, float] = (float(width), float(height))
-      case (Real(), Real()):
-        raise ValueError("window_size must contain two finite positive "
-                         "numbers")
-      case _:
-        raise TypeError("window_size must be a tuple of two positive numbers")
+    check.instance(window_size, 'window_size', tuple)
+    check.sequence(window_size, 'window_size', length=2)
+    width, height = window_size
+    for size in window_size:
+      check.real(int(size) if isinstance(size, bool) else size,
+                 'window_size', minimum=0, strict=True)
+    self._window_size: tuple[float, float] = (float(width), float(height))
 
-    match window_pos:
-      case None:
-        self._window_pos: tuple[int, int] | None = None
-      case (int(), int()):
-        self._window_pos: tuple[int, int] | None = window_pos
-      case _:
-        raise TypeError("window_pos must be a tuple of two integers or None")
+    if window_pos is not None:
+      try:
+        check.sequence(window_pos, 'window_pos', length=2)
+        for position in window_pos:
+          check.integer(int(position) if isinstance(position, bool)
+                        else position, 'window_pos')
+      except ValueError as error:
+        raise TypeError(str(error)) from error
+    self._window_pos: tuple[int, int] | None = window_pos
 
-    match interp:
-      case bool():
-        self._interp: bool = interp
-      case _:
-        raise TypeError("interp must be a boolean")
+    check.boolean(interp, 'interp')
+    self._interp: bool = interp
 
-    match backend:
-      case None:
-        self._backend: str | None = backend
-      case _ if plotter == 'mpl' and backend in MPL_BACKENDS:
-        self._backend: str | None = backend
-      case _ if plotter == 'pyqt' and backend in PYQT_BACKENDS:
-        self._backend: str | None = backend
-      case _ if plotter == 'mpl':
-        raise ValueError(f"The possible backends with plotter='mpl' are "
-                         f"{MPL_BACKENDS}")
-      case _ if plotter == 'pyqt':
-        raise ValueError(f"The possible backends with plotter='pyqt' are "
-                         f"{PYQT_BACKENDS}")
+    try:
+      check.choice(backend, 'backend',
+                   MPL_BACKENDS if plotter == 'mpl' else PYQT_BACKENDS,
+                   optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    self._backend: str | None = backend
 
     # Attributes related to Matplotlib
     self._ax: Axes | None = None

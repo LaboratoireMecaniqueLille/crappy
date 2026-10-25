@@ -11,6 +11,7 @@ from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
 tk = OptionalModule('tkinter', lazy_import=True)
 QtCore = OptionalModule('PyQt6.QtCore', lazy_import=True)
@@ -102,43 +103,21 @@ class Dashboard(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    match labels:
-      case str() if labels.strip():
-        self._dash_labels: list[str] = [labels]
-      case str():
-        raise ValueError("labels must contain non-empty strings")
-      case Iterable() if not isinstance(labels, (bytes, bytearray)):
-        self._dash_labels: list[str] = list(labels)
-        if not self._dash_labels:
-          raise ValueError("At least one label must be provided")
-        for label in self._dash_labels:
-          match label:
-            case str() if label.strip():
-              pass
-            case str():
-              raise ValueError("labels must contain non-empty strings")
-            case _:
-              raise TypeError("labels must contain non-empty strings")
-      case _:
+    if isinstance(labels, str):
+      labels = [labels]
+    else:
+      check.instance(labels, 'labels', Iterable)
+      if isinstance(labels, (bytes, bytearray)):
         raise TypeError("labels must be a string or an iterable of strings")
+      labels = list(labels)
+    check.labels(labels, 'labels', single=False, unique=False)
+    self._dash_labels: list[str] = labels
 
-    match nb_digits:
-      case bool():
-        raise TypeError("nb_digits must be a non-negative integer")
-      case int() if nb_digits >= 0:
-        self._nb_digits: int = nb_digits
-      case int():
-        raise ValueError("nb_digits must be a non-negative integer")
-      case _:
-        raise TypeError("nb_digits must be a non-negative integer")
+    check.integer(nb_digits, 'nb_digits', minimum=0)
+    self._nb_digits: int = nb_digits
 
-    match backend:
-      case str() if backend in ('tkinter', 'pyqt'):
-        self._backend: Literal['tkinter', 'pyqt'] = backend
-      case str():
-        raise ValueError("The backend must be either 'tkinter' or 'pyqt'")
-      case _:
-        raise TypeError("The backend must be either 'tkinter' or 'pyqt'")
+    check.choice(backend, 'backend', ('tkinter', 'pyqt'))
+    self._backend: Literal['tkinter', 'pyqt'] = backend
 
     # Attributes related to PyQt6
     self._qt_labels: dict[str, QtWidgets.QLabel] = dict()

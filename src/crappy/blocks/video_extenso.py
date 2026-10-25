@@ -9,6 +9,7 @@ from pathlib import Path
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
 from ..tool.camera_config.factory import LazyConfiguratorMapping
+from .. import _validation as check
 
 if TYPE_CHECKING:
   from ..tool.camera_config import CameraConfig
@@ -360,25 +361,28 @@ VideoExtensoConfig` window is displayed before the test starts. There, the user
     self.labels = _labels
 
     # Checking the validity of the provided arguments
-    if not isinstance(raise_on_lost_spot, bool):
-      raise TypeError("raise_on_lost_spot must be a boolean")
-    if not isinstance(white_spots, bool):
-      raise TypeError("white_spots must be a boolean")
-    if (num_spots is not None and
-        (not isinstance(num_spots, int) or not 0 < num_spots < 5)):
-      raise ValueError("When provided, num_spots must be an integer between "
-                       "1 and 4")
-    if not isinstance(min_area, int) or min_area < 0:
-      raise ValueError("min_area must be a positive integer")
-    if (blur is not None and
-        (not isinstance(blur, int) or blur < 1 or not blur % 2)):
+    check.boolean(raise_on_lost_spot, 'raise_on_lost_spot')
+    check.boolean(white_spots, 'white_spots')
+    try:
+      check.integer(int(num_spots) if isinstance(num_spots, bool)
+                    else num_spots, 'num_spots', optional=True,
+                    minimum=1, maximum=4)
+      check.integer(int(min_area) if isinstance(min_area, bool) else min_area,
+                    'min_area', minimum=0)
+      check.integer(int(blur) if isinstance(blur, bool) else blur,
+                    'blur', optional=True, minimum=1)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if blur is not None and not blur % 2:
       raise ValueError("When provided, blur must be a positive odd integer")
-    if not isinstance(update_thresh, bool):
-      raise TypeError("update_thresh must be a boolean")
-    if not isinstance(safe_mode, bool):
-      raise TypeError("safe_mode must be a boolean")
-    if not isinstance(border, int) or border < 0:
-      raise ValueError("border must be a positive integer")
+
+    check.boolean(update_thresh, 'update_thresh')
+    check.boolean(safe_mode, 'safe_mode')
+    try:
+      check.integer(int(border) if isinstance(border, bool) else border,
+                    'border', minimum=0)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
     self._raise_on_lost_spot: bool = raise_on_lost_spot
 
