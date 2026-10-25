@@ -43,14 +43,14 @@ class TestVideoExtenso(CameraWrapperTestBase):
     """Checks VideoExtenso label count, type, and uniqueness validation."""
 
     cases = (
-      ['too', 'few'],
-      ['same'] * 5,
-      ['time', 'meta', 'coords', 'eyy', 1],
+      (['too', 'few'], ValueError),
+      (['same'] * 5, ValueError),
+      (['time', 'meta', 'coords', 'eyy', 1], TypeError),
     )
 
-    for labels in cases:
+    for labels, error in cases:
       with self.subTest(labels=labels):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(error):
           VideoExtenso(labels=labels, **self.camera_kwargs(config=True))
 
   def test_prepare_forwards_process_options(self) -> None:

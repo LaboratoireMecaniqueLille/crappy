@@ -5,6 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 
@@ -130,6 +131,24 @@ class TestHDFRecorder(BlockTestBase):
 
       with self.assertRaises(ValueError):
         recorder.prepare()
+
+  def test_prepare_rejects_a_directory_without_creating_a_sibling_file(
+      self) -> None:
+    """Directories are rejected before any file is renamed or opened."""
+
+    with TemporaryDirectory() as folder:
+      target = Path(folder) / 'recording'
+      target.mkdir()
+      existing = target / 'keep.txt'
+      existing.write_text('keep')
+      recorder = HDFRecorder(target, atom='float64')
+      link(TestBlock(), recorder)
+      with patch.object(hdf_module.tables, 'open_file') as open_file:
+        with self.assertRaises(IsADirectoryError):
+          recorder.prepare()
+        open_file.assert_not_called()
+      self.assertEqual(existing.read_text(), 'keep')
+      self.assertEqual(list(Path(folder).iterdir()), [target])
 
   def test_prepare_creates_parent_folder_and_writes_metadata(self) -> None:
     """Checks that prepare creates the file and stores metadata arrays."""

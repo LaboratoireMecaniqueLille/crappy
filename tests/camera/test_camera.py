@@ -38,6 +38,33 @@ class TestCamera(TestCase):
     with self.assertRaises(TypeError):
       Camera()
 
+  def test_settings_validate_before_creating_child_objects(self) -> None:
+    """Invalid metadata is rejected by Camera before registering a setting."""
+
+    camera = UnitTestCamera()
+    cases = ((camera.add_bool_setting, (1,), {}, TypeError),
+             (camera.add_bool_setting, ('enabled',), {'default': 1}, TypeError),
+             (camera.add_bool_setting, ('enabled',), {'getter': 1}, TypeError),
+             (camera.add_bool_setting, ('enabled',), {'setter': 1}, TypeError),
+             (camera.add_scale_setting, ('gain', 1, 1), {}, ValueError),
+             (camera.add_scale_setting, ('gain', 0, 10), {'step': 0}, ValueError),
+             (camera.add_scale_setting, ('gain', 0, 10), {'step': -1}, ValueError),
+             (camera.add_scale_setting, ('gain', np.nan, 10), {}, ValueError),
+             (camera.add_choice_setting, ('mode', ()), {}, ValueError),
+             (camera.add_choice_setting, ('mode', ('a', 1)), {}, TypeError),
+             (camera.add_trigger_setting, (), {'setter': 1}, TypeError))
+    with patch.object(camera_module, 'CameraBoolSetting') as boolean, \
+         patch.object(camera_module, 'CameraScaleSetting') as scale, \
+         patch.object(camera_module, 'CameraChoiceSetting') as choice:
+      for method, args, kwargs, error in cases:
+        with self.subTest(method=method.__name__, args=args, kwargs=kwargs):
+          with self.assertRaises(error):
+            method(*args, **kwargs)
+      boolean.assert_not_called()
+      scale.assert_not_called()
+      choice.assert_not_called()
+    self.assertEqual(camera.settings, {})
+
   def test_subclasses_are_registered_by_name(self) -> None:
     """Checks that new Camera subclasses are added to the registry."""
 

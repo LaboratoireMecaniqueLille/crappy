@@ -44,7 +44,7 @@ class TestProperties(BlockTestBase):
 
     self._block.niceness = 19
     self._block.labels = None
-    self._block.freq = True
+    self._block.freq = 1
 
     self.assertEqual(self._block.niceness, 19)
     self.assertIsNone(self._block.labels)
@@ -77,15 +77,16 @@ class TestProperties(BlockTestBase):
         with self.assertRaises(TypeError):
           self._block.labels = value
 
-    for value in (('time', 1), ('value', 'value')):
-      with self.subTest(value=value):
-        with self.assertRaises(ValueError):
-          self._block.labels = value
+    with self.assertRaises(TypeError):
+      self._block.labels = ('time', 1)
+
+    with self.assertRaises(ValueError):
+      self._block.labels = ('value', 'value')
 
   def test_freq_validation(self) -> None:
     """Checks frequency type and positive-value validation."""
 
-    for value in ('25', []):
+    for value in ('25', [], True, False):
       with self.subTest(value=value):
         with self.assertRaises(TypeError):
           self._block.freq = value

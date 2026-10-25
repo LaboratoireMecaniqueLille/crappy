@@ -19,6 +19,7 @@ import crappy.blocks.camera_processes.record as saver_module
 import crappy.blocks.camera_processes.display as display_module
 import crappy.blocks.vision.record as recorder_module
 import crappy.blocks.vision.display as displayer_module
+from crappy.blocks.camera import Camera
 from crappy._exceptions import OptionalDependencyError
 from crappy._global import OptionalModule
 
@@ -336,7 +337,7 @@ class TestImageBackends(BlockTestBase):
               patch.object(common, 'import_module',
                            side_effect=ImportError('missing')) as imports):
           with self.assertRaises(ModuleNotFoundError):
-            reader_module.FileReader().open('unused', reader_backend=backend)
+            reader_module.FileReader().open(Path.cwd(), reader_backend=backend)
         self.assertEqual([call.args[0] for call in imports.call_args_list], names)
 
   def test_automatic_displayers_preserve_preference_and_failure_causes(self):
@@ -410,12 +411,16 @@ class TestImageBackends(BlockTestBase):
                       side_effect=AssertionError('Unnecessary backend probe')):
       for backend in ('invalid', [], {}, 1):
         with self.subTest(backend=backend):
-          for _, cls in RECORDERS:
-            with self.assertRaises(ValueError):
-              self.recorder(cls, backend, 'unused')
-          for _, cls in DISPLAYERS:
-            with self.assertRaises(ValueError):
-              self.displayer(cls, backend)
+          with self.assertRaises(ValueError):
+            Camera('', config=False, image_generator=lambda x, y: None,
+                   save_backend=backend)
+          with self.assertRaises(ValueError):
+            Camera('', config=False, image_generator=lambda x, y: None,
+                   displayer_backend=backend)
+          with self.assertRaises(ValueError):
+            self.recorder(recorder_module.ImageRecorder, backend, 'unused')
+          with self.assertRaises(ValueError):
+            self.displayer(displayer_module.ImageDisplayer, backend)
           with self.assertRaises(ValueError):
             reader_module.FileReader().open('unused', reader_backend=backend)
 
@@ -430,7 +435,7 @@ class TestImageBackends(BlockTestBase):
                 patch.object(common, 'import_module', side_effect=error)):
             with self.assertRaises(type(error)) as caught:
               if cls is None:
-                reader_module.FileReader().open('unused')
+                reader_module.FileReader().open(Path.cwd())
               elif (module, cls) in RECORDERS:
                 self.recorder(cls, None, 'unused')
               else:

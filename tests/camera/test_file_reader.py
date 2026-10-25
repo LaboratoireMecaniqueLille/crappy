@@ -137,6 +137,26 @@ class TestFileReader(TestCase):
       with self.assertRaises(FileNotFoundError):
         FileReader().open('/definitely/missing/folder', reader_backend='cv2')
 
+  def test_invalid_paths_are_rejected_before_loading_backends(self) -> None:
+    """Reader arguments are checked before importing optional libraries."""
+
+    with TemporaryDirectory() as folder:
+      existing = Path(folder) / 'file.txt'
+      existing.touch()
+      cases = ((None, TypeError), (1, TypeError), (b'folder', TypeError),
+               ('', ValueError), (' ', ValueError), (Path(' '), ValueError),
+               (Path(folder) / 'missing', FileNotFoundError),
+               (existing, FileNotFoundError))
+      with patch.object(file_reader_module.Sitk, 'is_available') as sitk, \
+           patch.object(file_reader_module.cv2, 'is_available') as cv2:
+        for value, error in cases:
+          with self.subTest(value=value), self.assertRaises(error):
+            FileReader().open(value)
+        with self.assertRaises(TypeError):
+          FileReader().open(folder, stop_at_end=1)
+        sitk.assert_not_called()
+        cv2.assert_not_called()
+
   def test_folder_without_matching_images_is_rejected(self) -> None:
     """Checks filename pattern validation."""
 

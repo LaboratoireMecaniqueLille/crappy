@@ -571,17 +571,12 @@ class TestTracker(TestCase):
     self.assertEqual(Tracker.get_name('parent', 'Tracker'),
                      'parent.Tracker-2')
 
-  def test_blur_validation(self) -> None:
-    """Checks accepted and rejected blur values."""
+  def test_blur_options_are_forwarded(self) -> None:
+    """Trackers receive blur options already validated by their Block."""
 
     self._make_tracker(blur=None)
     self._make_tracker(blur=1)
     self._make_tracker(blur=5)
-
-    for blur in (0, 2):
-      with self.subTest(blur=blur):
-        with self.assertRaises(ValueError):
-          self._make_tracker(blur=blur)
 
   def test_evaluate_detects_black_spot(self) -> None:
     """Checks thresholding and absolute coordinates for dark spots."""

@@ -60,14 +60,14 @@ class TestDICVE(CameraWrapperTestBase):
     """Checks DICVE label count, type, and uniqueness validation."""
 
     cases = (
-      ['too', 'few'],
-      ['same'] * 6,
-      ['time', 'meta', 'coords', 'eyy', 'exx', 1],
+      (['too', 'few'], ValueError),
+      (['same'] * 6, ValueError),
+      (['time', 'meta', 'coords', 'eyy', 'exx', 1], TypeError),
     )
 
-    for labels in cases:
+    for labels, error in cases:
       with self.subTest(labels=labels):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(error):
           DICVE(patches=[(0, 0, 2, 2)], labels=labels,
                 **self.camera_kwargs())
 
@@ -95,7 +95,7 @@ class TestDICVE(CameraWrapperTestBase):
                   iterations=5,
                   gradient_iterations=6,
                   patch_size=7,
-                  patch_stride=8,
+                  patch_stride=6,
                   border=0.3,
                   safe=False,
                   follow=False,
@@ -130,7 +130,7 @@ class TestDICVE(CameraWrapperTestBase):
       'iterations': 5,
       'gradient_iterations': 6,
       'patch_size': 7,
-      'patch_stride': 8,
+      'patch_stride': 6,
       'border': 0.3,
       'safe': False,
       'follow': False,
