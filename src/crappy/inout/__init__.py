@@ -24,6 +24,7 @@ _EXPORTS = {'ADS1115': ('.ads1115', 'ADS1115'),
                                         'PhidgetWheatstoneBridge')}
 _DRIVERS = _EXPORTS
 
+from .. import _validation as check
 from .meta_inout import InOut
 from ._collection import moved_to_collection
 
@@ -64,6 +65,8 @@ def resolve_inout(name: str) -> type[InOut]:
   .. versionadded:: 2.2.0
   """
 
+  check.string(name, 'name')
+
   if name in inout_dict:
     return inout_dict[name]
   module, attribute = _DRIVERS[name]
@@ -75,6 +78,8 @@ def is_reserved(cls: type) -> bool:
 
   .. versionadded:: 2.2.0
   """
+
+  check.instance(cls, 'cls', type)
 
   reference = _DRIVERS.get(cls.__name__)
   if reference is None:
