@@ -5,6 +5,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 
 from .box import Box
+from .... import _validation as check
 
 
 @dataclass
@@ -41,7 +42,17 @@ class SpotsBoxes:
   x_l0: float | None = None
   y_l0: float | None = None
 
+  def __post_init__(self) -> None:
+    """Validates initial boxes and optional reference lengths."""
+
+    for spot in self:
+      check.instance(spot, 'spot', Box, optional=True)
+    check.real(self.x_l0, 'x_l0', optional=True, minimum=0)
+    check.real(self.y_l0, 'y_l0', optional=True, minimum=0)
+
   def __getitem__(self, i: int) -> Box | None:
+    check.integer(i, 'i')
+
     if i == 0:
       return self.spot_1
     elif i == 1:
@@ -54,6 +65,9 @@ class SpotsBoxes:
       raise IndexError
 
   def __setitem__(self, i: int, value: Box | None) -> None:
+    check.integer(i, 'i')
+    check.instance(value, 'value', Box, optional=True)
+
     if i == 0:
       self.spot_1 = value
     elif i == 1:
@@ -150,6 +164,8 @@ reset>` first when replacing a larger existing collection.
       :class:`~crappy.tool.camera_config.config_tools.Box` created using
       :meth:`~crappy.tool.camera_config.config_tools.Box.__add__`.
     """
+
+    check.boolean(use_displacements, 'use_displacements')
 
     spots = SpotsBoxes(x_l0=self.x_l0, y_l0=self.y_l0)
     for i, spot in enumerate(self):

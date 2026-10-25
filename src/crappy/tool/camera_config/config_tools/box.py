@@ -6,6 +6,7 @@ import logging
 import numpy as np
 
 from .overlay_object import Overlay
+from .... import _validation as check
 
 
 @dataclass
@@ -70,10 +71,14 @@ class Box(Overlay):
       ValueError: If the :obj:`tuple` does not contain two integers.
     """
 
-    if not isinstance(other, tuple):
-      raise TypeError("Can only add a Box with a tuple of two integers")
-    if len(other) != 2 or not all(isinstance(el, int) for el in other):
-      raise ValueError("Can only add a Box with a tuple of two integers")
+    check.instance(other, 'other', tuple)
+    try:
+      check.sequence(other, 'other', length=2)
+      for value in other:
+        check.integer(int(value) if isinstance(value, bool) else value,
+                      'offset')
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
     if self.no_points():
       return self

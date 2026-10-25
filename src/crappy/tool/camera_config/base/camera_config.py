@@ -19,6 +19,7 @@ from ..config_tools.zoom import Zoom
 from ._display_state import DisplayGeometry, DisplayState
 from ._setting_manager import SettingManager
 from ...._global import OptionalModule
+from .... import _validation as check
 
 if TYPE_CHECKING:
   from ....camera.meta_camera import Camera
@@ -191,6 +192,9 @@ camera_config.base.camera_config.CameraConfig.run>` executes. A :obj:`True`
       level: Logging level of the message.
       msg: Message to record.
     """
+
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
 
     self._logger.log(level, msg)
 

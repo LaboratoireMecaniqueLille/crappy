@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+from .... import _validation as check
+
 
 @dataclass
 class Zoom:
@@ -24,6 +26,15 @@ class Zoom:
   y_low: float = 0.
   y_high: float = 1.
 
+  def __post_init__(self) -> None:
+    """Validates the normalized visible rectangle."""
+
+    for value, name in ((self.x_low, 'x_low'), (self.x_high, 'x_high'),
+                        (self.y_low, 'y_low'), (self.y_high, 'y_high')):
+      check.real(value, name, minimum=0, maximum=1)
+    if self.x_low >= self.x_high or self.y_low >= self.y_high:
+      raise ValueError("Zoom lower bounds must be below upper bounds")
+
   def reset(self) -> None:
     """Resets the zoom level to default (no zoom)."""
 
@@ -44,6 +55,10 @@ class Zoom:
       ratio: The zoom ratio to apply. If it is greater than `1` we zoom in,
         otherwise we zoom out.
     """
+
+    check.real(x, 'x', minimum=0, maximum=1)
+    check.real(y, 'y', minimum=0, maximum=1)
+    check.real(ratio, 'ratio', minimum=0, strict=True)
 
     prev_x_low, prev_x_high = self.x_low, self.x_high
     prev_y_low, prev_y_high = self.y_low, self.y_high
@@ -82,6 +97,9 @@ class Zoom:
       delta_x: Horizontal displacement as a fraction of the full image width.
       delta_y: Vertical displacement as a fraction of the full image height.
     """
+
+    check.real(delta_x, 'delta_x')
+    check.real(delta_y, 'delta_y')
 
     prev_x_low, prev_x_high = self.x_low, self.x_high
     prev_y_low, prev_y_high = self.y_low, self.y_high

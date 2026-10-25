@@ -100,8 +100,6 @@ class SpotsDetector:
     self._logger = logging.getLogger(f"{current_process().name}."
                                      f"{type(self).__name__}")
 
-    if num_spots is not None and num_spots not in range(1, 5):
-      raise ValueError("num_spots should be either None, 1, 2, 3 or 4 !")
     self.num_spots = num_spots
 
     self.spots = SpotsBoxes()
