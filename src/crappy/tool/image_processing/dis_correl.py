@@ -4,9 +4,10 @@ from math import ceil, sqrt
 from typing import Literal
 import numpy as np
 
-from ..._global import OptionalModule
-from ..camera_config import Box
 from .fields import get_res, get_field
+from ..camera_config import Box
+from ... import _validation as check
+from ..._global import OptionalModule
 
 try:
   import cv2
@@ -150,8 +151,7 @@ class DISCorrelTool:
     .. versionadded:: 1.5.10
     """
 
-    if not isinstance(img0, np.ndarray):
-      raise TypeError("The reference image must be a Numpy array")
+    check.instance(img0, 'img0', np.ndarray)
     if img0.dtype != np.uint8:
       raise ValueError("The reference image must have dtype uint8")
 
@@ -257,8 +257,7 @@ class DISCorrelTool:
                        "the region of interest !")
     if self._correl_box is None:
       raise RuntimeError("The correlation crop isn't initialized")
-    if not isinstance(img, np.ndarray):
-      raise TypeError("The image to process must be a Numpy array")
+    check.instance(img, 'img', np.ndarray)
     if img.dtype != np.uint8:
       raise ValueError("The image to process must have dtype uint8")
     if img.shape != self._img0.shape:
