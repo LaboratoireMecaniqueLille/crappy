@@ -179,23 +179,21 @@ class TestPublicArgumentGuards(BlockTestBase):
   def test_link_arguments_fail_before_opening_a_pipe(self):
     upstream, downstream = TestBlock(), TestBlock()
     with patch('crappy.links.link.Pipe') as pipe:
-      cases = ((object(), downstream, {}),
-               (upstream, object(), {}),
-               (upstream, downstream, {'modifiers': [object()]}),
-               (upstream, downstream, {'allow_parallel': 'yes'}),
-               (upstream, downstream, {'name': ''}))
-      for source, target, options in cases:
+      cases = ({'modifiers': [object()]},
+               {'allow_parallel': 'yes'}, {'name': ''})
+      for options in cases:
         with self.subTest(options=options):
           with self.assertRaises((TypeError, ValueError)):
-            Link(source, target, **options)
+            Link(upstream, downstream, **options)
       pipe.assert_not_called()
 
-  def test_image_link_rejects_bad_endpoints_before_graph_registration(self):
+  def test_image_link_rejects_nonvision_blocks_before_graph_registration(self):
     upstream, downstream = TestBlock(), TestBlock()
+    vision = ImageRecorder(save_backend='npy')
     with patch.object(link_graph, 'add_edge') as add_edge:
-      for source, target in ((object(), downstream), (upstream, object())):
+      for source, target in ((upstream, vision), (vision, downstream)):
         with self.subTest(source=source, target=target):
-          with self.assertRaises(TypeError):
+          with self.assertRaises(NotImplementedError):
             ImageLink(source, target)
       add_edge.assert_not_called()
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from importlib import import_module
-from inspect import isfunction
+from inspect import getdoc, isfunction, signature
 from pathlib import Path
 import unittest
 
@@ -154,19 +154,18 @@ class TestPublicApiReference(unittest.TestCase):
       entry = source.split(f'.. autoclass:: {name}\n', 1)[1].split('\n\n', 1)[0]
       self.assertIn('resolve_config_requests', entry)
 
-  def test_validation_helpers_are_documented(self) -> None:
-    """Keeps the validation reference aligned with the defined helpers."""
+  def test_validation_helpers_have_docstrings(self) -> None:
+    """Private validation helpers document their arguments in the source."""
 
     module = import_module('crappy._validation')
-    helpers = {name for name, value in vars(module).items()
+    helpers = {name: value for name, value in vars(module).items()
                if isfunction(value) and value.__module__ == module.__name__}
-    source = (self._source_dir / 'validation.rst').read_text(encoding='utf-8')
-    self.assertIn('.. automodule:: crappy._validation\n', source)
-    members = source.split(':members:', 1)[1].split('\n\n', 1)[0]
-    self.assertEqual({name.strip() for name in members.split(',')}, helpers)
-
-    api = (self._source_dir.parent / 'api.rst').read_text(encoding='utf-8')
-    self.assertIn('crappy_docs/validation.rst', api)
-    developers = (self._source_dir.parent / 'developers.rst').read_text(
-      encoding='utf-8')
-    self.assertIn('<crappy_docs/validation>', developers)
+    self.assertTrue(helpers)
+    for name, helper in helpers.items():
+      with self.subTest(helper=name):
+        docstring = getdoc(helper)
+        self.assertIsNotNone(docstring)
+        self.assertIn('Args:', docstring)
+        self.assertIn('Raises:', docstring)
+        for parameter in signature(helper).parameters:
+          self.assertIn(f'\n  {parameter}:', docstring)

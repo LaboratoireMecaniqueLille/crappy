@@ -2,6 +2,7 @@
 
 """Resources and deterministic update helpers for Tkinter window tests."""
 
+import gc
 import logging
 from crappy._failure import FailureManager
 from collections.abc import Callable
@@ -60,6 +61,9 @@ class TkinterConfigTestCase(unittest.TestCase):
     """Create isolated Cameras, log queues, and configuration windows."""
 
     super().setUp()
+    # Tk objects left in cycles must be finalized on the main thread, before
+    # histogram receiver threads can trigger garbage collection.
+    gc.collect()
     patcher = patch.object(camera_config_module, 'showerror', return_value=None)
     patcher.start()
     self.addCleanup(patcher.stop)
@@ -125,9 +129,12 @@ class TkinterConfigTestCase(unittest.TestCase):
     if self._config is None:
       return
 
-    self._config.stop()
-
-    self.assertTrue(self._config._lifecycle._process_closed)
+    try:
+      self._config.stop()
+      self.assertTrue(self._config._lifecycle._process_closed)
+    finally:
+      self._config = None
+      gc.collect()
 
   def _close_log_queue(self) -> None:
     """Release the logging queue without waiting for its feeder thread."""

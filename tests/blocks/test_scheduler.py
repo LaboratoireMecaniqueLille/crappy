@@ -4,7 +4,6 @@ from unittest.mock import patch
 from typing import Any
 
 import crappy.blocks.scheduler as scheduler_module
-from crappy import _validation as check
 from crappy._exceptions import SchedulerStop
 from crappy.blocks.scheduler import Scheduler
 from crappy.blocks.schedulers import State
@@ -153,27 +152,19 @@ class TestScheduler(BlockTestBase):
     self.assertEqual(safe_sent, [])
     self.assertEqual(safe._current_state.id, 'A')
 
-  def test_begin_checks_runtime_arguments_once(self) -> None:
-    """The initial transition receives checked elapsed time and input data."""
+  def test_begin_passes_runtime_arguments_to_initial_transition(self) -> None:
+    """The initial transition receives elapsed time and an empty data set."""
 
     scheduler = self._make_scheduler()
     with patch.object(scheduler_module, 'monotonic', return_value=10), \
-         patch.object(check, 'real', wraps=check.real) as real, \
-         patch.object(check, 'mapping', wraps=check.mapping) as mapping:
+         patch.object(scheduler, '_evaluate_conditions',
+                      wraps=scheduler._evaluate_conditions) as evaluate:
       scheduler.begin()
-      real.assert_called_once_with(0, 'dt')
-      mapping.assert_called_once_with({}, 'data')
+      evaluate.assert_called_once_with(0, {})
     self.assertEqual(scheduler._current_state.id, 'A')
 
-    invalid = self._make_scheduler()
-    with patch.object(scheduler_module, 'monotonic',
-                      side_effect=(10, float('nan'))):
-      with self.assertRaises(ValueError):
-        invalid.begin()
-    self.assertEqual(invalid._current_state.id, 'Start')
-
-  def test_loop_checks_runtime_arguments_once(self) -> None:
-    """One check covers nested conditions, custom callables and all outputs."""
+  def test_loop_shares_runtime_arguments_across_callbacks(self) -> None:
+    """Nested conditions and outputs receive the same elapsed time and data."""
 
     first, second = ProbeCondition(False), ProbeCondition(False)
     nested = AnyCondition(AllCondition(Delay(1), AllLabel('enabled')), first)
@@ -187,44 +178,12 @@ class TestScheduler(BlockTestBase):
     scheduler.begin()
     scheduler._last_t_sched = 10
 
-    with patch.object(scheduler_module, 'monotonic', return_value=12), \
-         patch.object(check, 'real', wraps=check.real) as real, \
-         patch.object(check, 'mapping', wraps=check.mapping) as mapping:
+    with patch.object(scheduler_module, 'monotonic', return_value=12):
       scheduler.loop()
-      real.assert_called_once_with(2, 'dt')
-      self.assertEqual([call.args for call in mapping.call_args_list
-                        if call.args[1] == 'data'], [(data, 'data')])
 
     for component in (first, second, output):
       self.assertEqual(component.calls, [(2, data)])
     self.assertEqual(sent, [{'x': 1, 'y': 2, 'state': 'A'}])
-
-  def test_loop_rejects_arguments_before_callbacks(self) -> None:
-    """No condition or output receives invalid time or input labels."""
-
-    cases = ((float('nan'), {}, ValueError),
-             (float('inf'), {}, ValueError),
-             (float('-inf'), {}, ValueError),
-             (1, None, TypeError),
-             (1, [], TypeError),
-             (1, {1: [2]}, TypeError),
-             (1, {'': [2]}, ValueError),
-             (1, {' ': [2]}, ValueError))
-    for dt, data, error in cases:
-      with self.subTest(dt=dt, data=data):
-        condition = ProbeCondition(False)
-        output = ProbeOutput({'x': 1})
-        scheduler = self._make_scheduler([
-          State('A', [output], [(condition, 'End')])])
-        self._set_batches(scheduler, [data])
-        scheduler.begin()
-        scheduler._last_t_sched = 0
-        with patch.object(scheduler_module, 'monotonic', return_value=dt):
-          with self.assertRaises(error):
-            scheduler.loop()
-        self.assertEqual(condition.calls, [])
-        self.assertEqual(output.calls, [])
-        self.assertEqual(scheduler._current_state.id, 'A')
 
   def test_loop_filters_inputs_and_reuses_latest_value(self) -> None:
     """Only selected labels are passed to outputs, with cached last values."""

@@ -60,26 +60,22 @@ class TestDisplayer(CameraProcessTestBase):
       with self.subTest(title=title), self.assertRaises(error):
         Displayer(title=title, framerate=5, backend='mpl')
 
-  def test_receive_timeout_is_checked_once_before_throttling(self) -> None:
-    """The base class rejects bad timeouts before the display wait is capped."""
+  def test_receive_timeout_is_rejected_before_throttling(self) -> None:
+    """Invalid timeouts never reach the parent's image receive method."""
 
     displayer = Displayer(title='timeout validation', framerate=5, backend='mpl')
     self._process = displayer
     self.make_shared(process=displayer, shape=(2, 3), dtype=np.uint8)
-    for timeout in (float('inf'), float('nan'), -1):
+    for timeout, error in ((None, TypeError), ('1', TypeError),
+                            (float('inf'), ValueError),
+                            (float('nan'), ValueError), (-1, ValueError)):
       with self.subTest(timeout=timeout), \
-           patch.object(display_module.check, 'real',
-                        wraps=display_module.check.real) as validate, \
-           patch.object(displayer, '_get_wait_timeout') as wait_timeout:
-        with self.assertRaises(ValueError):
+           patch.object(display_module.CameraProcess, '_get_data') as receive:
+        with self.assertRaises(error):
           displayer._get_data(timeout)
-        validate.assert_called_once_with(timeout, 'timeout', minimum=0)
-        wait_timeout.assert_not_called()
+        receive.assert_not_called()
 
-    with patch.object(display_module.check, 'real',
-                      wraps=display_module.check.real) as validate:
-      self.assertFalse(displayer._get_data(0))
-      validate.assert_called_once_with(0, 'timeout', minimum=0)
+    self.assertFalse(displayer._get_data(0))
 
   def test_unavailable_backends_retain_the_import_cause(self) -> None:
     """The no-backend diagnostic must retain the actual import failure."""
