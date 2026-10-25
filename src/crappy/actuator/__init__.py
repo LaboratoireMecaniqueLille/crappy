@@ -18,6 +18,7 @@ _EXPORTS = {'FakeDCMotor': ('.fake_dc_motor', 'FakeDCMotor'),
             'PololuTic': ('.pololu_tic', 'PololuTic')}
 
 # LaMcube classes are also selectable by actuator name
+from .. import _validation as check
 from ..lamcube import _EXPORTS as _LAB_EXPORTS
 _DRIVERS = {**_EXPORTS,
             **{name: ('..lamcube' + module, attribute)
@@ -57,6 +58,8 @@ def resolve_actuator(name: str) -> type[Actuator]:
   .. versionadded:: 2.2.0
   """
 
+  check.string(name, 'name')
+
   if name in actuator_dict:
     return actuator_dict[name]
   module, attribute = _DRIVERS[name]
@@ -69,6 +72,8 @@ def is_reserved(cls: type) -> bool:
 
   .. versionadded:: 2.2.0
   """
+
+  check.instance(cls, 'cls', type)
 
   reference = _DRIVERS.get(cls.__name__)
   if reference is None:
