@@ -3,6 +3,7 @@
 from typing import Any
 
 from .output import Output
+from .... import _validation as check
 
 
 class Constant(Output):
@@ -23,13 +24,8 @@ class Constant(Output):
 
     super().__init__()
 
-    match label:
-      case str() if label.strip():
-        self._label: str = label
-      case str():
-        raise ValueError("The provided label must be a non-empty string")
-      case _:
-        raise TypeError("The provided label must be a non-empty string")
+    check.string(label, 'label')
+    self._label: str = label
 
     self._value: Any = value
 

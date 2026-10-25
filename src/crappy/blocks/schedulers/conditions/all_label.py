@@ -4,6 +4,7 @@ from typing import Any, Literal
 import logging
 
 from .condition import Condition
+from .... import _validation as check
 
 
 class AllLabel(Condition):
@@ -30,24 +31,14 @@ class AllLabel(Condition):
 
     super().__init__()
 
-    match labels:
-      case ():
-        raise ValueError("At least one label must be provided")
-      case (*labels,) if (all(isinstance(label, str) for label in labels) and
-                          all(label.strip() for label in labels)):
-        self._labels: tuple[str, ...] = tuple(labels)
-      case (*_,):
-        raise ValueError("labels must be provided as non-empty strings")
-      case _:
-        raise TypeError("labels must be provided as non-empty strings")
+    try:
+      check.labels(labels, 'labels', single=False, unique=False)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    self._labels: tuple[str, ...] = tuple(labels)
 
-    match mode:
-      case str() if mode in ('any', 'all', 'last'):
-        self._mode: Literal['any', 'all', 'last'] = mode
-      case str():
-        raise ValueError("mode must be either 'any', 'all', or 'last'")
-      case _:
-        raise TypeError("mode must be either 'any', 'all', or 'last'")
+    check.choice(mode, 'mode', ('any', 'all', 'last'))
+    self._mode: Literal['any', 'all', 'last'] = mode
 
   def __call__(self,
                dt: float,

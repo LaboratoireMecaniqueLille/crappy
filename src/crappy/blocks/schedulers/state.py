@@ -3,6 +3,8 @@
 from collections.abc import Sequence, Callable
 from typing import Any
 
+from ... import _validation as check
+
 SchedCondType = tuple[Callable[[float,  dict[str, list[Any]]], bool], str]
 SchedOutType = Callable[[float,  dict[str, list[Any]]], dict[str, Any] | None]
 
@@ -43,31 +45,21 @@ class State:
         target of ``'End'`` terminates the workflow.
     """
 
-    match id_:
-      case str() if id_.strip():
-        self.id: str = id_
-      case str():
-        raise ValueError("The State index must be provided as a non-empty "
-                         "string")
-      case _:
-        raise TypeError("The State index must be provided as a non-empty "
-                        "string")
-    match outputs:
-      case (*outputs,) if all(callable(out) for out in outputs):
-        self.outputs: tuple[SchedOutType, ...] = tuple(outputs)
-      case _:
-        raise TypeError("The State outputs must be provided as a sequence of "
-                        "callables")
-    match stop_conditions:
-      case (*stop,) if (all(isinstance(stop_cond, Sequence) and
-                            not isinstance(stop_cond, (str, bytes)) and
-                            len(stop_cond) == 2
-                            for stop_cond in stop) and
-                        all(callable(cond) and isinstance(label, str)
-                            and label.strip() for cond, label in stop)):
-        self.stop_conditions: tuple[SchedCondType,
-                                    ...] = tuple(stop_conditions)
-      case _:
-        raise TypeError("The State stop conditions must be provided as a "
-                        "sequence of tuples containing each a callable and a"
-                        "non-empty label as a string")
+    check.string(id_, 'id_')
+    self.id: str = id_
+
+    check.sequence(outputs, 'outputs')
+    for output in outputs:
+      check.callable_(output, 'outputs')
+    self.outputs: tuple[SchedOutType, ...] = tuple(outputs)
+
+    check.sequence(stop_conditions, 'stop_conditions')
+    try:
+      for stop_condition in stop_conditions:
+        check.sequence(stop_condition, 'stop_conditions pair', length=2)
+        condition, target = stop_condition
+        check.callable_(condition, 'stop_conditions callable')
+        check.string(target, 'stop_conditions target')
+    except ValueError as error:
+      raise TypeError(str(error)) from error
+    self.stop_conditions: tuple[SchedCondType, ...] = tuple(stop_conditions)

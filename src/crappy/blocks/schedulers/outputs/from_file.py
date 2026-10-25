@@ -6,6 +6,7 @@ import logging
 import numpy as np
 
 from .output import Output
+from .... import _validation as check
 
 
 class FromFile(Output):
@@ -37,13 +38,8 @@ class FromFile(Output):
     
     super().__init__()
     
-    match label:
-      case str() if label.strip():
-        self._label: str = label
-      case str():
-        raise ValueError("The provided label must be a non-empty string")
-      case _:
-        raise TypeError("The provided label must be a non-empty string")
+    check.string(label, 'label')
+    self._label: str = label
 
     match file_name:
       case Path() if file_name.name:
@@ -59,23 +55,15 @@ class FromFile(Output):
         raise TypeError("file_name must be provided as a non-empty string or "
                         "a Path")
 
-    match repeat_last:
-      case bool():
-        self._repeat_last: bool = repeat_last
-      case _:
-        raise TypeError("repeat_last must be a boolean")
+    check.boolean(repeat_last, 'repeat_last')
+    self._repeat_last: bool = repeat_last
 
-    match delimiter:
-      case str() if delimiter.strip():
-        self._delimiter: str = delimiter
-      case str():
-        raise ValueError("The delimiter must be a non-empty string")
-      case _:
-        raise TypeError("The delimiter must be a non-empty string")
+    check.string(delimiter, 'delimiter')
+    self._delimiter: str = delimiter
 
     # Eagerly extract the data and check its consistency
     array = np.loadtxt(self._file_name, delimiter=self._delimiter, ndmin=2)
-    if len(array.shape) != 2:
+    if len(array.shape) != 2 or array.shape[0] == 0:
       raise ValueError(f"The file {self._file_name} should contain a 2D array "
                        f"with two columns")
     if array.shape[1] != 2:

@@ -2,9 +2,9 @@
 
 from typing import Any
 from numbers import Real
-from math import isfinite
 
 from .output import Output
+from .... import _validation as check
 
 
 class Ramp(Output):
@@ -27,29 +27,16 @@ class Ramp(Output):
 
     super().__init__()
 
-    match label:
-      case str() if label.strip():
-        self._label: str = label
-      case str():
-        raise ValueError("The provided label must be a non-empty string")
-      case _:
-        raise TypeError("The provided label must be a non-empty string")
+    check.string(label, 'label')
+    self._label: str = label
 
-    match init_value:
-      case Real() if isfinite(init_value):
-        self._init_value: float = float(init_value)
-      case Real():
-        raise ValueError("The init_value must be a finite real number")
-      case _:
-        raise TypeError("The init_value must be a finite real number")
+    check.real(int(init_value) if isinstance(init_value, bool) else init_value,
+               'init_value')
+    self._init_value: float = float(init_value)
     
-    match slope:
-      case Real() if isfinite(slope):
-        self._slope: float = float(slope)
-      case Real():
-        raise ValueError("The slope must be a finite real number")
-      case _:
-        raise TypeError("The slope must be a finite real number")
+    check.real(int(slope) if isinstance(slope, bool) else slope,
+               'slope')
+    self._slope: float = float(slope)
 
   def __call__(self,
                dt: float,
