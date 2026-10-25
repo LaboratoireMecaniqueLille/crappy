@@ -10,6 +10,7 @@ from .block import VisionBlock, ConfigRequest
 from ...tool.image_processing import DICVETool, LostPatchError
 from ...tool.camera_config import SpotsBoxes
 from ...tool.camera_config.factory import LazyConfiguratorMapping
+from ... import _validation as check
 
 if TYPE_CHECKING:
   from ...tool.camera_config import CameraConfig
@@ -172,20 +173,24 @@ DICVEConfig` window. The request is required when ``patches`` is omitted and
                      freq=freq)
 
     # Make sure the patches are correctly provided
+    if patches is not None:
+      check.sequence(patches, 'patches')
     if patches is not None and len(patches) > 4:
       raise ValueError("Only 1 to 4 patches can be provided")
-    if (patches is not None and patches
-        and (not all(isinstance(patch, tuple) for patch in patches)
-             or any(len(patch) != 4 for patch in patches)
-             or any(not all(isinstance(val, int) for val in patch)
-                    for patch in patches)
-             or any(not all(val >= 0 for val in patch) for patch in patches))):
-      raise ValueError("The patches should be provided as a sequence of "
-                       "tuples of 4 positive integer values")
-    if patches is not None and patches and any((patch[2] <= 0 or patch[3] <= 0)
-                                               for patch in patches):
-      raise ValueError("The width and height of the patches must be "
-                       "strictly positive integers")
+    if patches is not None:
+      try:
+        for patch in patches:
+          check.instance(patch, 'patch', tuple)
+          check.sequence(patch, 'patch', length=4)
+          y, x, height, width = patch
+          for value in (y, x):
+            check.integer(int(value) if isinstance(value, bool) else value,
+                          'patch position', minimum=0)
+          for value in (height, width):
+            check.integer(int(value) if isinstance(value, bool) else value,
+                          'patch size', minimum=1)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
 
     # Forcing the labels into a list
     if labels is None:
@@ -206,46 +211,43 @@ DICVEConfig` window. The request is required when ``patches`` is omitted and
     self.labels = _labels
 
     # Checking the validity of the provided arguments
-    if not isinstance(request_configuration, bool):
-      raise TypeError("request_configuration must be a boolean")
+    check.boolean(request_configuration, 'request_configuration')
     if not request_configuration and (patches is None or not patches):
       raise ValueError("A patch must be provided if request_configuration is "
                        "set to False")
-    if method not in ('Disflow', 'Lucas Kanade',
-                      'Pixel precision', 'Parabola'):
-      raise ValueError("The method argument should be one of 'Disflow', "
-                       "'Lucas Kanade', 'Pixel precision', 'Parabola'")
-    if (not isinstance(alpha, (float, int, bool)) or not np.isfinite(alpha)
-        or alpha < 0):
-      raise ValueError("alpha must be a finite, non-negative number")
-    if (not isinstance(delta, (float, int, bool)) or not np.isfinite(delta)
-        or delta < 0):
-      raise ValueError("delta must be a finite, non-negative number")
-    if (not isinstance(gamma, (float, int, bool)) or not np.isfinite(gamma)
-        or gamma < 0):
-      raise ValueError("gamma must be a finite, non-negative number")
-    if not isinstance(finest_scale, int) or finest_scale < 0:
-      raise ValueError("finest_scale must be a non-negative integer")
-    if not isinstance(iterations, int) or iterations < 0:
-      raise ValueError("iterations must be a non-negative integer")
-    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
-      raise ValueError("gradient_iterations must be a non-negative integer")
-    if not isinstance(patch_size, int) or patch_size <= 0:
-      raise ValueError("patch_size must be a positive integer")
-    if not isinstance(patch_stride, int) or patch_stride <= 0:
-      raise ValueError("patch_stride must be a positive integer")
+    try:
+      check.choice(method, 'method',
+                   ('Disflow', 'Lucas Kanade', 'Pixel precision', 'Parabola'))
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    try:
+      for value, name in ((alpha, 'alpha'), (delta, 'delta'),
+                          (gamma, 'gamma')):
+        check.real(int(value) if isinstance(value, bool) else value,
+                   name, minimum=0)
+      for value, name, minimum in ((finest_scale, 'finest_scale', 0),
+                                   (iterations, 'iterations', 0),
+                                   (gradient_iterations,
+                                    'gradient_iterations', 0),
+                                   (patch_size, 'patch_size', 1),
+                                   (patch_stride, 'patch_stride', 1)):
+        check.integer(int(value) if isinstance(value, bool) else value,
+                      name, minimum=minimum)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+
     if patch_stride >= patch_size:
       raise ValueError("patch_stride must be strictly less than patch_size")
-    if ((not isinstance(border, float) and not isinstance(border, int))
-        or not 0 <= border < 1):
-      raise ValueError("border must be greater than or equal to 0 and strictly"
-                       " less than 1")
-    if not isinstance(safe, bool):
-      raise TypeError("safe must be a boolean")
-    if not isinstance(follow, bool):
-      raise TypeError("follow must be a boolean")
-    if not isinstance(raise_on_patch_exit, bool):
-      raise TypeError("raise_on_patch_exit must be a boolean")
+    try:
+      check.real(int(border) if isinstance(border, bool) else border,
+                 'border', minimum=0)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if border >= 1:
+      raise ValueError("border must be strictly less than 1")
+    check.boolean(safe, 'safe')
+    check.boolean(follow, 'follow')
+    check.boolean(raise_on_patch_exit, 'raise_on_patch_exit')
 
     # These arguments are for the DICVETool
     self._method: Literal['Disflow', 'Lucas Kanade',
@@ -458,6 +460,8 @@ DICVEConfig`, or :obj:`None` when upstream configuration is disabled. The
       request contains the current patch boxes and is flagged as required only
       when no patches were provided.
     """
+
+    check.string(source, 'source')
 
     if not self._request_configuration:
       return None

@@ -13,12 +13,13 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from base64 import urlsafe_b64encode
 from uuid import uuid4
-from math import prod, isfinite
+from math import prod
 from time import monotonic
 
 from ..meta_block import Block
 from ...links import ImageLink
 from ..._exceptions import LinkDataError, StopRequested
+from ... import _validation as check
 
 if TYPE_CHECKING:
   from ...tool.camera_config import CameraConfig
@@ -66,10 +67,15 @@ class ConfigRequest:
   def __post_init__(self) -> None:
     """Validates the types of the mutable fields."""
 
-    if not isinstance(self.completed, bool):
-      raise TypeError("completed must be a boolean")
-    if not isinstance(self.required, bool):
-      raise TypeError("required must be a boolean")
+    check.string(self.requester, 'requester')
+    check.sequence(self.args, 'args')
+    check.mapping(self.kwargs, 'kwargs')
+    if not isinstance(self.configurator, (type, Mapping)):
+      raise TypeError("configurator must be a class or a mapping of backends "
+                      "to classes")
+
+    check.boolean(self.completed, 'completed')
+    check.boolean(self.required, 'required')
 
 
 @dataclass
@@ -222,21 +228,18 @@ class VisionBlock(Block, ABC):
     self.img_inputs: list[ImageLink] = list()
 
     # If provided, the shape and dtype must be valid
-    if img_shape is not None and not isinstance(img_shape, tuple):
-      raise TypeError("When provided, img_shape must be a tuple of 2 or 3 "
-                      "strictly positive integers")
-    if img_shape is not None and not 1 < len(img_shape) < 4:
-      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
-                       "strictly positive integers")
-    if (img_shape is not None and
-        not all(isinstance(el, int) and el > 0 for el in img_shape)):
-      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
-                       "strictly positive integers")
-    if (img_dtype is not None and
-        (not isinstance(img_dtype, str) or not img_dtype)):
-      raise ValueError("When provided, img_dtype must be a non-empty string")
-    if img_dtype is not None:
-      np.dtype(img_dtype)
+    check.instance(img_shape, 'img_shape', tuple, optional=True)
+    if img_shape is not None:
+      if len(img_shape) not in (2, 3):
+        raise ValueError("img_shape must contain 2 or 3 dimensions")
+      try:
+        for size in img_shape:
+          check.integer(int(size) if isinstance(size, bool) else size,
+                        'img_shape dimension', minimum=1)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
+
+    check.dtype(img_dtype, optional=True)
 
     # Information on the output images
     self._img_shape: tuple[int, int] | tuple[int, int, int] | None = img_shape
@@ -543,11 +546,7 @@ class VisionBlock(Block, ABC):
       TypeError: If the timeout is not a number.
     """
 
-    if not isinstance(timeout, (int, float)):
-      raise TypeError("The image receive timeout must be a number")
-    if not isfinite(timeout) or timeout < 0:
-      raise ValueError("The image receive timeout must be finite and "
-                       "non-negative")
+    check.real(timeout, 'timeout', minimum=0)
 
     # Return early in case the Block should stop
     if self._image_wait_should_stop():
@@ -705,8 +704,7 @@ class VisionBlock(Block, ABC):
       RuntimeError: If no Pipe endpoint was assigned to the request.
     """
 
-    if not isinstance(request, ConfigRequest):
-      raise TypeError("The request should be a ConfigRequest")
+    check.instance(request, 'request', ConfigRequest)
     if request.connection is None:
       raise RuntimeError("The ConfigRequest is expected to have its "
                          "Connection set")
@@ -772,8 +770,7 @@ class VisionBlock(Block, ABC):
       RuntimeError: If no Pipe endpoint was assigned to the request.
     """
 
-    if not isinstance(request, ConfigRequest):
-      raise TypeError("The request should be a ConfigRequest")
+    check.instance(request, 'request', ConfigRequest)
     if request.connection is None:
       raise RuntimeError("The ConfigRequest is expected to have its "
                          "Connection set")
