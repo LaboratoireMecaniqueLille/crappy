@@ -4,6 +4,7 @@ from collections.abc import Callable
 import logging
 
 from .camera_setting import CameraSetting
+from .... import _validation as check
 
 
 class CameraChoiceSetting(CameraSetting):
@@ -35,9 +36,6 @@ class CameraChoiceSetting(CameraSetting):
     """
 
     self._logger: logging.Logger | None = None
-
-    if not choices:
-      raise ValueError(f"No choices provided for setting {name}")
 
     self.choices = choices
 
@@ -72,11 +70,11 @@ class CameraChoiceSetting(CameraSetting):
     .. versionadded:: 2.0.0
     """
 
-    self.log(logging.DEBUG, f"Reloading the setting {self.name}")
+    check.labels(choices, 'choices', single=False)
+    check.string(default, 'default', optional=True)
+    check.string(value, 'value', optional=True)
 
-    if not choices:
-      raise ValueError(f"No choices provided when reloading setting "
-                       f"{self.name}")
+    self.log(logging.DEBUG, f"Reloading the setting {self.name}")
 
     # Updating the default value
     if default is not None:
@@ -127,3 +125,10 @@ class CameraChoiceSetting(CameraSetting):
       # values originally supplied as camera kwargs
       else:
         self.value = value
+
+  @CameraSetting.value.setter
+  def value(self, val: str) -> None:
+    """Sets one of the declared choices."""
+
+    check.choice(val, 'value', self.choices)
+    CameraSetting.value.fset(self, val)
