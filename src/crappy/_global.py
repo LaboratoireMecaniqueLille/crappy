@@ -6,6 +6,7 @@ from importlib import import_module
 import webbrowser
 
 from . import _exceptions
+from . import _validation as check
 
 if _TYPE_CHECKING:
   from ._resources import resources
@@ -58,6 +59,12 @@ class OptionalModule:
 
     .. versionchanged:: 2.2.0
     """
+
+    check.string(module_name, 'module_name')
+    check.string(message, 'message', optional=True, empty=True)
+    check.string(install_name, 'install_name', optional=True)
+    check.boolean(lazy_import, 'lazy_import')
+    check.instance(cause, 'cause', ImportError, optional=True)
 
     self._name: str = module_name
     self._msg: str | None = message
