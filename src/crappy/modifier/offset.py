@@ -4,6 +4,7 @@ from collections.abc import Iterable
 import logging
 
 from .meta_modifier import Modifier, T
+from .. import _validation as check
 
 
 class Offset(Modifier):
@@ -41,14 +42,18 @@ class Offset(Modifier):
     super().__init__()
 
     # Handling the case when only one label needs to be offset
-    if isinstance(labels, str):
-      labels = (labels,)
-    labels = tuple(labels)
+    if not isinstance(labels, str):
+      check.instance(labels, 'labels', Iterable)
+      labels = tuple(labels)
+    check.labels(labels, 'labels')
+
     try:
       iter(offsets)
     except TypeError:
       offsets = (offsets,)
     offsets = tuple(offsets)
+    for offset in offsets:
+      check.real(offset, 'offsets')
 
     # Checking that the number of offsets match the number of labels
     if len(offsets) != len(labels):

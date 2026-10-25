@@ -3,6 +3,7 @@
 import logging
 
 from .meta_modifier import Modifier, T
+from .. import _validation as check
 
 
 class Diff(Modifier):
@@ -28,6 +29,11 @@ class Diff(Modifier):
     """
 
     super().__init__()
+
+    check.string(label, 'label')
+    check.string(time_label, 'time_label')
+    check.string(out_label, 'out_label', optional=True)
+
     self._label = label
     self._time_label = time_label
     self._out_label = out_label if out_label is not None else f'd_{label}'

@@ -5,6 +5,7 @@ import logging
 from multiprocessing import current_process
 from abc import ABC, abstractmethod
 
+from ... import _validation as check
 from ..._exceptions import DefinitionError
 
 T = TypeVar('T')
@@ -98,6 +99,9 @@ class Modifier(ABC):
     
     .. versionadded:: 2.0.0
     """
+
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._logger = logging.getLogger(

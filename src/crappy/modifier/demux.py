@@ -6,6 +6,7 @@ from collections.abc import Sequence
 import logging
 
 from .meta_modifier import Modifier
+from .. import _validation as check
 
 
 class Demux(Modifier):
@@ -58,6 +59,12 @@ class Demux(Modifier):
 
     super().__init__()
 
+    check.labels(labels, 'labels')
+    check.string(stream_label, 'stream_label')
+    check.string(time_label, 'time_label')
+    check.boolean(mean, 'mean')
+    check.boolean(transpose, 'transpose')
+
     if isinstance(labels, str):
       labels = (labels,)
     self._labels = labels
@@ -77,6 +84,18 @@ class Demux(Modifier):
     """
 
     self.log(logging.DEBUG, f"Received {data}")
+
+    stream = data[self._stream_label]
+    check.instance(stream, self._stream_label, np.ndarray)
+    if stream.ndim != 2:
+      raise ValueError("The stream must be a two-dimensional array")
+    if stream.size:
+      channels = stream.shape[0 if self._transpose else 1]
+      if len(self._labels) > channels:
+        raise ValueError("There are more labels than stream channels")
+      timestamps = data[self._time_label]
+      if np.asarray(timestamps).size == 0:
+        raise ValueError("A non-empty stream requires at least one timestamp")
 
     # If there are no rows or no column, cannot perform the demux
     if 0 in data[self._stream_label].shape:
