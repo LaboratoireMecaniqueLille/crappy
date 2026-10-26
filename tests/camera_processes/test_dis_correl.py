@@ -99,7 +99,7 @@ class TestDISCorrelProcess(CameraProcessTestBase):
                                  iterations=5,
                                  gradient_iterations=6,
                                  patch_size=7,
-                                 patch_stride=8,
+                                 patch_stride=6,
                                  residual=True,
                                  border=(9, 10),
                                  follow=True)
@@ -122,7 +122,7 @@ class TestDISCorrelProcess(CameraProcessTestBase):
       'iterations': 5,
       'gradient_iterations': 6,
       'patch_size': 7,
-      'patch_stride': 8,
+      'patch_stride': 6,
       'border': (9, 10),
       'follow': True,
     })
@@ -132,7 +132,7 @@ class TestDISCorrelProcess(CameraProcessTestBase):
 
     box = self._box()
     process = self._make_process(patch=box,
-                                 fields=['x', 'y', 'res'],
+                                 fields=['x', 'y'],
                                  residual=True)
     self._process = process
     self.set_test_logger(process)

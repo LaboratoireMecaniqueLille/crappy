@@ -8,10 +8,11 @@ from math import ceil, log2
 from itertools import chain
 from collections.abc import Sequence
 
-from ..._exceptions import OptionalDependencyError
 from .block import VisionBlock
 from ..._global import OptionalModule
 from ...tool.camera_config import Overlay
+from ..._exceptions import OptionalDependencyError
+from ... import _validation as check
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
@@ -82,6 +83,10 @@ class ImageDisplayer(VisionBlock):
       freq: Target frequency for checking overlays and images. If :obj:`None`,
         loops as fast as possible. It bounds how often the requested display
         framerate can be reached.
+
+    Raises:
+      ValueError: If the title, framerate, or backend is invalid, or the
+        framerate exceeds ``freq``.
     """
 
     super().__init__(img_shape=None,
@@ -90,20 +95,20 @@ class ImageDisplayer(VisionBlock):
                      debug=debug,
                      freq=freq)
 
-    # Validate title before setting it
-    if title is not None:
-      if not isinstance(title, str) or not title:
-        raise ValueError("The provided Displayer title must be a non-empty "
-                         "string")
-      self._title: str = title
-    else:
-      self._title: str = f"Displayer {self._count}"
+    try:
+      check.string(title, 'title', optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    self._title: str = f"Displayer {self._count}" if title is None else title
+    try:
+      check.choice(backend, 'backend', ('cv2', 'mpl'), optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
-    # Validate framerate before setting it
-    if ((not isinstance(framerate, int) and
-        not isinstance(framerate, float))
-        or framerate <= 0):
-      raise ValueError("framerate must be a strictly positive float or int")
+    try:
+      check.real(framerate, 'framerate', minimum=0, strict=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
     if freq is not None and framerate > freq:
       raise ValueError("The displayer framerate is by nature inferior to the "
                        "freq!")
@@ -121,10 +126,8 @@ class ImageDisplayer(VisionBlock):
           raise ModuleNotFoundError("Neither opencv-python nor matplotlib "
                                     "could be imported, no backend found for "
                                     "displaying the images") from error
-    elif backend in ('cv2', 'mpl'):
-      self._backend: str = backend
     else:
-      raise ValueError("The backend argument should be either 'cv2' or 'mpl'!")
+      self._backend: str = backend
 
     # Setting other attributes
     self._ax = None

@@ -8,6 +8,7 @@ from csv import DictWriter
 
 from .block import VisionBlock
 from ..._global import OptionalModule
+from ... import _validation as check
 
 Sitk = OptionalModule('SimpleITK', lazy_import=True)
 Image = OptionalModule('PIL.Image', install_name='Pillow', lazy_import=True)
@@ -104,20 +105,32 @@ class ImageRecorder(VisionBlock):
                      debug=debug,
                      freq=freq)
 
-    # Validate arguments before setting them
-    if not img_extension and (save_backend is None or save_backend != 'npy'):
-      raise ValueError("img_extension must be a non-empty string")
-    if (save_folder is not None and
-        ((not isinstance(save_folder, str) or not save_folder)
-         and not isinstance(save_folder, Path))):
-      raise ValueError("When provided, save_folder must be a non-empty string "
-                       "or a Path")
-    if not isinstance(save_period, int) or save_period < 1:
-      raise ValueError("save_period must be a strictly positive integer")
-    if save_backend is not None and save_backend not in ('sitk', 'pil',
-                                                         'cv2', 'npy'):
-      raise ValueError("When provided, save_backend must be one of 'sitk', "
-                       "'pil', 'cv2', 'npy'")
+    # Validate arguments before checking optional backends or creating folders
+    try:
+      check.string(img_extension, 'img_extension', empty=save_backend == 'npy')
+      match save_folder:
+        case None:
+          pass
+        case Path() if str(save_folder).strip():
+          pass
+        case Path():
+          raise ValueError("save_folder must contain a directory path")
+        case str() if save_folder.strip():
+          save_folder = Path(save_folder)
+        case str():
+          raise ValueError("save_folder must be non-empty when provided as a "
+                           "str")
+        case _:
+          raise TypeError("save_folder must be a string, a Path or None")
+      check.integer(save_period, 'save_period', minimum=1)
+      check.choice(save_backend, 'save_backend', ('sitk', 'pil', 'cv2', 'npy'),
+                   optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if (save_folder is not None and save_folder.exists()
+        and not save_folder.is_dir()):
+      raise NotADirectoryError(f"save_folder points to an existing file: "
+                               f"{save_folder}")
 
     # Probe only the requested backend, or stop at the first available one
     backends = {'sitk': Sitk.is_available,
@@ -144,7 +157,7 @@ class ImageRecorder(VisionBlock):
     if save_folder is None:
       self._save_folder: Path = Path.cwd() / 'Crappy_images'
     else:
-      self._save_folder: Path = Path(save_folder)
+      self._save_folder: Path = save_folder
 
     self._save_period: int = save_period
 
@@ -323,14 +336,6 @@ class ImageRecorder(VisionBlock):
       np.save(path, img)
 
     # Sending information on the image through regular Links
-    if self.last_received[upd_link].metadata is None:
-      raise RuntimeError("At that point, the image metadata should not be "
-                         "empty")
-    if ('t(s)' not in self.last_received[upd_link].metadata
-        and 'ImageUniqueID' not in self.last_received[upd_link].metadata):
-      raise RuntimeError(
-        "At that point, 't(s)' and 'ImageUniqueID' should be "
-        "in the metadata dictionary")
     self.send({'t(s)': metadata['t(s)'],
                'img_index': metadata['ImageUniqueID'],
                'meta': metadata})

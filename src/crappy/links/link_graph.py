@@ -7,6 +7,7 @@ from platform import system
 from pathlib import Path
 
 from .._global import OptionalModule
+from .. import _validation as check
 
 graphviz = OptionalModule('graphviz', lazy_import=True)
 
@@ -97,14 +98,9 @@ class LinkGraph:
     """
 
     # Basic sanity checks on the arguments
-    if not isinstance(name, str):
-      raise TypeError("The Block's name must be a string")
-    if not name:
-      raise ValueError("The Block's name must be a non-empty string")
-    if not isinstance(block_type, type):
-      raise TypeError("The Block's type must be a type")
+    check.string(name, 'name')
+    check.instance(block_type, 'block_type', type)
 
-    # Adding the node except if it already exists
     if name not in self._nodes:
       self._nodes[name] = Node(name, block_type)
       self._out_edges[name] = list()
@@ -140,24 +136,14 @@ class LinkGraph:
     """
 
     # Basic sanity checks on the arguments
-    if not isinstance(name, str):
-      raise TypeError("The Link's name must be a string")
-    if not name:
-      raise ValueError("The Link's name must be a non-empty string")
-    if not isinstance(source, str):
-      raise TypeError("The name of the source Block must be a string")
-    if not source:
-      raise ValueError("The name of the source Block must be a non-empty "
-                       "string")
-    if not isinstance(target, str):
-      raise TypeError("The name of the target Block must be a string")
-    if not target:
-      raise ValueError("The name of the target Block must be a non-empty "
-                       "string")
-    if kind not in ("link", "image"):
-      raise ValueError("The Link's kind must be either 'link' or 'image'")
-    if not isinstance(allow_parallel, bool):
-      raise TypeError("allow_parallel must be a boolean")
+    check.string(name, 'name')
+    check.string(source, 'source')
+    check.string(target, 'target')
+    try:
+      check.choice(kind, 'kind', ('link', 'image'))
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    check.boolean(allow_parallel, 'allow_parallel')
 
     # The source and target Blocks must already be registered
     if source not in self._nodes:
@@ -215,6 +201,9 @@ class LinkGraph:
       KeyError: If *source* is not registered.
     """
 
+    check.string(source, 'source')
+    check.choice(kind, 'kind', ('link', 'image'), optional=True)
+
     # Set containing the visited Blocks
     visited = {source}
     # Buffer for iterating over the Links
@@ -258,6 +247,9 @@ class LinkGraph:
       KeyError: If *source* is not registered.
     """
 
+    check.string(source, 'source')
+    check.choice(kind, 'kind', ('link', 'image'), optional=True)
+
     return tuple(dict.fromkeys(edge.target for edge in self._out_edges[source]
                                if kind is None or edge.kind == kind))
 
@@ -278,6 +270,9 @@ class LinkGraph:
     Raises:
       KeyError: If *target* is not registered.
     """
+
+    check.string(target, 'target')
+    check.choice(kind, 'kind', ('link', 'image'), optional=True)
 
     # Set containing the visited Blocks
     visited = {target}
@@ -322,6 +317,9 @@ class LinkGraph:
       KeyError: If *target* is not registered.
     """
 
+    check.string(target, 'target')
+    check.choice(kind, 'kind', ('link', 'image'), optional=True)
+
     return tuple(dict.fromkeys(edge.source for edge in self._in_edges[target]
                                if kind is None or edge.kind == kind))
 
@@ -354,22 +352,14 @@ class LinkGraph:
       GraphStructureError: If *new_name* belongs to another Block.
     """
 
-    if not isinstance(node, str):
-      raise TypeError("The current Block name must be a string")
-    if not node:
-      raise ValueError("The current Block name must be a non-empty string")
+    check.string(node, 'node')
 
-    # Check that the node to rename actually exists
     if node not in self._nodes:
       raise KeyError("The Block to rename isn't registered, aborting")
 
     # Checking the validity of the new name
-    if not isinstance(new_name, str):
-      raise TypeError("The new Block name must be a string")
-    if not new_name:
-      raise ValueError("The new Block name must be a non-empty string")
+    check.string(new_name, 'new_name')
 
-    # Nothing to do if the new name is identical
     if node == new_name:
       return
 
@@ -405,16 +395,14 @@ class LinkGraph:
       ValueError: If *kind* is not ``'link'``, ``'image'``, or :obj:`None`.
     """
 
+    try:
+      check.choice(kind, 'kind', ('link', 'image'), optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
     if kind is None:
       return tuple(self._edges.keys())
-    elif kind == "image":
-      return tuple(edge.name for edge in self._edges.values()
-                   if edge.kind == "image")
-    elif kind == "link":
-      return tuple(edge.name for edge in self._edges.values()
-                   if edge.kind == "link")
-    else:
-      raise ValueError("kind must be either 'image', 'link', or None")
+    return tuple(edge.name for edge in self._edges.values()
+                 if edge.kind == kind)
 
   def reset(self) -> None:
     """Removes every node and edge, returning the graph to its initial state.
@@ -438,10 +426,8 @@ class LinkGraph:
       image_links: If True, displays the ImageLinks.
     """
 
-    if not isinstance(links, bool):
-      raise TypeError("links must be a boolean")
-    if not isinstance(image_links, bool):
-      raise TypeError("image_links must be a boolean")
+    check.boolean(links, 'links')
+    check.boolean(image_links, 'image_links')
     if not links and not image_links:
       raise ValueError("At least one Link type must be displayed")
 

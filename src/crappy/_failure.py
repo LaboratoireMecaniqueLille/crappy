@@ -19,6 +19,7 @@ import sys
 
 from ._exceptions import (FailureTransportError, RemoteFailureMetadata,
                           StopRequested)
+from . import _validation as check
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,8 +96,7 @@ class ExceptionNode:
       raise TypeError("group_message must be a string or None")
     if self.children and self.group_message is None:
       raise ValueError("group children require a group_message")
-    if type(self.suppress_context) is not bool:
-      raise TypeError("suppress_context must be a boolean")
+    check.boolean(self.suppress_context, 'suppress_context')
     if (self.original_bytes is not None and
         type(self.original_bytes) is not bytes):
       raise TypeError("original_bytes must be bytes or None")
@@ -393,8 +393,10 @@ class FailureManager:
       BaseExceptionGroup: This collection's failures, if raising is enabled.
     """
 
-    if not isinstance(label, str) or not label:
-      raise ValueError("label must be a non-empty string")
+    try:
+      check.string(label, 'label')
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
     # Create the containers for Exceptions
     stack = self._collections.stack
@@ -629,8 +631,7 @@ class FailureManager:
       Individual exceptions and exception groups.
     """
 
-    if not isinstance(error, BaseException):
-      raise TypeError("error must be a BaseException")
+    check.instance(error, 'error', BaseException)
 
     pending = [error]
     seen: set[int] = set()
@@ -1066,10 +1067,8 @@ class FailureManager:
       FailureTransportError: The same ID was used for different reports.
     """
 
-    if not isinstance(report, FailureReport):
-      raise TypeError("report must be a FailureReport")
-    if exception is not None and not isinstance(exception, BaseException):
-      raise TypeError("exception must be a BaseException or None")
+    check.instance(report, 'report', FailureReport)
+    check.instance(exception, 'exception', BaseException, optional=True)
     members = (tuple(self.iter_exception_members(exception))
                if exception is not None else ())
 
@@ -1265,8 +1264,7 @@ class FailureManager:
       nothing remains.
     """
 
-    if not isinstance(error, BaseException):
-      raise TypeError("error must be a BaseException")
+    check.instance(error, 'error', BaseException)
 
     # Start with the top Exception and then walk through its children
     pending = [(error, False)]

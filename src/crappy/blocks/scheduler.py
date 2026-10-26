@@ -5,11 +5,11 @@ from collections import Counter
 from typing import Any
 from time import monotonic
 import logging
-from numbers import Real
 
 from .meta_block import Block
 from .schedulers import State
 from .._exceptions import SchedulerStop
+from .. import _validation as check
 
 
 class Scheduler(Block):
@@ -127,147 +127,61 @@ class Scheduler(Block):
     self.debug = debug
 
     # Checking the validity of the provided arguments
-    match states:
-      case ():
-        raise ValueError("The provided sequence of States is empty")
-      case (*states,) if all(isinstance(state, State) for state in states):
-        # Reject duplicate State ids
-        ids = [state.id for state in states]
-        if len(states) != len(set(ids)):
-          duplicate = [id_ for id_, count in Counter(ids).items() if count > 1]
-          raise ValueError(f"Found duplicate State id(s): "
-                           f"{', '.join(duplicate)}")
-        # Reject States whose id is 'Start' or 'End'
-        if any(state.id in ('Start', 'End') for state in states):
-          raise ValueError("The State ids 'Start' and 'End' are reserved, "
-                           "please choose a different id")
-        self._states: dict[str, State] = {state.id: state for state in states}
-      case (*_,):
-        raise TypeError("All the States must be provided as State instances")
-      case _:
-        raise TypeError("At least one State must be provided, in a sequence "
-                        "of States")
+    check.sequence(states, 'states', minimum=1)
+    for state in states:
+      check.instance(state, 'states', State)
+    # Reject duplicate and reserved State identifiers
+    ids = [state.id for state in states]
+    if len(states) != len(set(ids)):
+      duplicate = [id_ for id_, count in Counter(ids).items() if count > 1]
+      raise ValueError(f"Found duplicate State id(s): {', '.join(duplicate)}")
+    if any(state.id in ('Start', 'End') for state in states):
+      raise ValueError("The State ids 'Start' and 'End' are reserved, "
+                       "please choose a different id")
+    self._states: dict[str, State] = {state.id: state for state in states}
 
-    match output_labels:
-      case ():
-        raise ValueError("No output_labels were provided! A Scheduler Block "
-                         "that does not output data is most certainly useless")
-      case (*labels,) if (all(isinstance(label, str) for label in labels) and
-                          all(label.strip() for label in labels)):
-        self._output_labels: Sequence[str] = tuple(output_labels)
-      case (*labels, ) if all(isinstance(label, str) for label in labels):
-        raise ValueError("All the output labels must be provided as non-empty "
-                         "strings")
-      case (*_,):
-        raise TypeError("All the output labels must be provided as non-empty "
-                        "strings")
-      case _:
-        raise TypeError("At least one output label must be provided, in a "
-                        "sequence of strings")
+    check.labels(output_labels, 'output_labels', single=False, unique=False)
+    self._output_labels: Sequence[str] = tuple(output_labels)
 
-    match input_labels:
-      case None:
-       self._input_labels: Sequence[str] = tuple()
-      case ():
-        self._input_labels: Sequence[str] = tuple()
-      case (*labels,) if (all(isinstance(label, str) for label in labels) and
-                          all(label.strip() for label in labels)):
-        self._input_labels: Sequence[str] = tuple(input_labels)
-      case (*labels, ) if all(isinstance(label, str) for label in labels):
-        raise ValueError("All the input labels must be provided as non-empty "
-                         "strings")
-      case (*_,):
-        raise TypeError("All the input labels must be provided as non-empty "
-                        "strings")
-      case _:
-        raise TypeError("When provided, input labels should be in a sequence "
-                        "of non-empty strings")
+    check.labels(input_labels, 'input_labels', optional=True, single=False,
+                 empty=True, unique=False)
+    self._input_labels: Sequence[str] = (
+      () if input_labels is None else tuple(input_labels))
 
-    match init_values:
-      case None:
-        self._init_values: dict[str, Any] = dict()
-      case dict(init) if (all(isinstance(key, str) for key in init) and
-                          all(key.strip() for key in init) and
-                          all(key in self._output_labels for key in init)):
-        self._init_values: dict[str, Any] = init_values.copy()
-      case dict(init) if (all(isinstance(key, str) for key in init) and
-                          all(key.strip() for key in init)):
-        missing = [key for key in init_values
-                   if key not in self._output_labels]
-        raise ValueError(f"An init value is provided for label(s) "
-                         f"{', '.join(missing)} although these label(s) are "
-                         f"not registered as output label(s)")
-      case dict(init) if all(isinstance(key, str) for key in init):
-        raise ValueError("The init values must be provided as a dictionary "
-                         "whose keys are labels, as non-empty strings")
-      case dict():
-        raise TypeError("The init values must be provided as a dictionary "
-                        "whose keys are labels, as non-empty strings")
-      case _:
-        raise TypeError("The init values must be provided as a dictionary "
-                        "whose keys are labels, as non-empty strings")
+    check.instance(init_values, 'init_values', dict, optional=True)
+    check.mapping(init_values, 'init_values', optional=True)
+    self._init_values: dict[str, Any] = (
+      {} if init_values is None else init_values.copy())
+    if missing := [key for key in self._init_values
+                   if key not in self._output_labels]:
+      raise ValueError(f"init_values contains unregistered output labels: "
+                       f"{', '.join(missing)}")
 
-    match last_output:
-      case None:
-        self._last_output: dict[str, Any] = dict()
-      case dict(last) if (all(isinstance(key, str) for key in last) and
-                          all(key.strip() for key in last) and
-                          all(key in self._output_labels for key in last)):
-        self._last_output: dict[str, Any] = last_output.copy()
-      case dict(last) if (all(isinstance(key, str) for key in last) and
-                          all(key.strip() for key in last)):
-        missing = [key for key in last_output
-                   if key not in self._output_labels]
-        raise ValueError(f"An last output is provided for label(s) "
-                         f"{', '.join(missing)} although these label(s) are "
-                         f"not registered as output label(s)")
-      case dict(last) if all(isinstance(key, str) for key in last):
-        raise ValueError("The last outputs must be provided as a dictionary "
-                         "whose keys are labels, as non-empty strings")
-      case dict():
-        raise TypeError("The last outputs must be provided as a dictionary "
-                        "whose keys are labels, as non-empty strings")
-      case _:
-        raise TypeError("The last outputs must be provided as a dictionary "
-                        "whose keys are labels, as non-empty strings")
+    check.instance(last_output, 'last_output', dict, optional=True)
+    check.mapping(last_output, 'last_output', optional=True)
+    self._last_output: dict[str, Any] = (
+      {} if last_output is None else last_output.copy())
+    if missing := [key for key in self._last_output
+                   if key not in self._output_labels]:
+      raise ValueError(f"last_output contains unregistered output labels: "
+                       f"{', '.join(missing)}")
 
-    match spam:
-      case bool():
-        self._spam: bool = spam
-      case _:
-        raise TypeError("spam mut be provided as a boolean")
+    check.boolean(spam, 'spam')
+    self._spam: bool = spam
 
-    match safe_start:
-      case bool():
-        self._safe_start: bool = safe_start
-      case _:
-        raise TypeError("safe_start mut be provided as a boolean")
+    check.boolean(safe_start, 'safe_start')
+    self._safe_start: bool = safe_start
 
-    match state_id_label:
-      case str() if state_id_label.strip():
-        # The state id label must not be already present in the output labels
-        if state_id_label in self._output_labels:
-          raise ValueError("The state id label is already part of the output "
-                           "labels")
-        self._state_id_label: str = state_id_label
-      case str():
-        raise ValueError("the state id label must be provided as a non-empty "
-                         "string")
-      case _:
-        raise TypeError("the state id label must be provided as a non-empty "
-                        "string")
+    check.string(state_id_label, 'state_id_label')
+    if state_id_label in self._output_labels:
+      raise ValueError("The state id label is already part of the output "
+                       "labels")
+    self._state_id_label: str = state_id_label
 
-    match end_delay:
-      case None:
-        self._end_delay: float | None = None
-      case Real() if end_delay >= 0:
-        self._end_delay: float | None = float(end_delay)
-      case Real():
-        raise ValueError("The end delay must be provided as a positive float "
-                         "or None")
-      case _:
-        raise TypeError("The end delay must be provided as a positive float "
-                        "or None")
+    check.real(int(end_delay) if isinstance(end_delay, bool) else end_delay,
+               'end_delay', optional=True, minimum=0, finite=False)
+    self._end_delay: float | None = (
+      None if end_delay is None else float(end_delay))
 
     # Check that the state transitions are consistent
     all_ids = {'Start', 'End', *[state.id for state in self._states.values()]}
@@ -442,31 +356,23 @@ class Scheduler(Block):
     global_out = dict()
     for i, output in enumerate(self._current_state.outputs):
       out = output(dt, data)
-      match out:
-        case None:
-          continue
-        case dict() if (all(isinstance(key, str) for key in out) and
-                        all(key.strip() for key in out) and
-                        not any(label in global_out for label in out)):
-          global_out.update(out)
-        case dict() if (all(isinstance(key, str) for key in out) and
-                        all(key.strip() for key in out)):
-          overlap = [label for label in out if label in global_out]
-          key = self._current_state.id, frozenset(overlap)
-          if key not in self._warned_overlap:
-            self.log(logging.WARNING, f"Label(s) {', '.join(overlap)} already "
-                                      f"set for output to downstream Blocks, "
-                                      f"output {i} of state "
-                                      f"{self._current_state.id} will "
-                                      f"overwrite")
-            self._warned_overlap.add(key)
-          global_out.update(out)
-        case dict():
-          raise ValueError("The dicts returned by State outputs must have "
-                           "only non-empty strings as keys")
-        case _:
-          raise TypeError("State outputs are expected to return either a dict "
-                          "or None")
+      if out is None:
+        continue
+      check.instance(out, 'State output', dict)
+      try:
+        check.mapping(out, 'State output')
+      except TypeError as error:
+        raise ValueError(str(error)) from error
+      overlap = [label for label in out if label in global_out]
+      if overlap:
+        key = self._current_state.id, frozenset(overlap)
+        if key not in self._warned_overlap:
+          self.log(logging.WARNING, f"Label(s) {', '.join(overlap)} already "
+                                    f"set for output to downstream Blocks, "
+                                    f"output {i} of state "
+                                    f"{self._current_state.id} will overwrite")
+          self._warned_overlap.add(key)
+      global_out.update(out)
 
     return global_out
 

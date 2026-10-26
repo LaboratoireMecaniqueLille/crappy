@@ -18,17 +18,6 @@ from tests.camera_process.camera_process_test_base import (CameraProcessTestBase
 class TestImageSaver(CameraProcessTestBase):
   """Unit tests for the ImageSaver CameraProcess."""
 
-  def test_constructor_validates_arguments(self) -> None:
-    """Checks early validation of user-facing settings."""
-
-    with self.assertRaises(ValueError):
-      ImageSaver(save_backend='bad')
-
-    for save_period in (0, -1, 1.5, '2'):
-      with self.subTest(save_period=save_period):
-        with self.assertRaises(ValueError):
-          ImageSaver(save_period=save_period)
-
   def test_init_creates_folder_and_suffixes_existing_recording(self) -> None:
     """Checks save-folder creation and collision avoidance."""
 

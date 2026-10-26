@@ -6,6 +6,7 @@ from pathlib import Path
 from re import fullmatch
 import logging
 
+from .. import _validation as check
 from .meta_camera import Camera
 from .._exceptions import ReaderStop
 from .._global import OptionalModule
@@ -78,7 +79,30 @@ class FileReader(Camera):
        1.5.10 *pattern*, *start_delay* and *modifier* arguments
     """
 
-    # Selecting an  available backend between first sitk and then cv2
+    match reader_folder:
+      case Path() if str(reader_folder).strip():
+        folder: Path = reader_folder
+      case Path():
+        raise ValueError("reader_folder must contain a directory path")
+      case str() if reader_folder.strip():
+        folder: Path = Path(reader_folder)
+      case str():
+        raise ValueError("reader_folder must be non-empty when provided as a "
+                         "str")
+      case _:
+        raise TypeError("reader_folder must be provided as a non-empty string "
+                        "or a Path")
+
+    check.boolean(stop_at_end, 'stop_at_end')
+    if reader_backend is not None and reader_backend not in ('sitk', 'cv2'):
+      raise ValueError("The backend argument should be either 'sitk' or "
+                       "'cv2' !")
+
+    if not folder.is_dir():
+      raise FileNotFoundError(f"The {folder} folder does not exist or is not "
+                              f"a folder !")
+
+    # Selecting an available backend between first sitk and then cv2
     if reader_backend is None:
       if Sitk.is_available():
         self._backend = 'sitk'
@@ -89,7 +113,7 @@ class FileReader(Camera):
                                   "be imported, no backend found for reading "
                                   "the images")
     # Setting the backend requested by the user
-    elif reader_backend in ('sitk', 'cv2'):
+    else:
       if reader_backend == 'sitk' and not Sitk.is_available():
         raise ModuleNotFoundError("Backend 'sitk' requested but could not "
                                   "be imported")
@@ -97,17 +121,7 @@ class FileReader(Camera):
         raise ModuleNotFoundError("Backend 'cv2' requested but could not "
                                   "be imported")
       self._backend = reader_backend
-    else:
-      raise ValueError("The backend argument should be either 'sitk' or "
-                       "'cv2' !")
-
     self._stop_at_end = stop_at_end
-
-    # Making sure that the given folder is valid
-    folder = Path(reader_folder)
-    if not folder.exists() or not folder.is_dir():
-      raise FileNotFoundError(f"The {folder} folder does not exist or is not "
-                              f"a folder !")
 
     # Retrieving all the images in the given folder that match the name pattern
     images = (path for path in folder.glob('*') if

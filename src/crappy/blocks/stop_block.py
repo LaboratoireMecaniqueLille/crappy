@@ -6,6 +6,7 @@ import re
 from time import time
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 class StopBlock(Block):
@@ -62,6 +63,13 @@ class StopBlock(Block):
     self.debug = debug
     self.pausable = False
 
+    if isinstance(criteria, str) or callable(criteria):
+      criteria = (criteria,)
+    check.sequence(criteria, 'criteria', minimum=1)
+    for criterion in criteria:
+      if not callable(criterion):
+        check.string(criterion, 'criteria')
+
     # Handling the case when only one stop condition is given
     if isinstance(criteria, str) or isinstance(criteria, Callable):
       criteria = (criteria,)
@@ -94,6 +102,19 @@ class StopBlock(Block):
   def _parse_criterion(self, criterion: str | Callable) -> Callable:
     """Parses a Callable or string criterion given as an input by the user, and
     returns the associated Callable."""
+
+    if not callable(criterion):
+      from re import fullmatch
+      parsed = fullmatch(r'\s*(.+?)\s*[<>]\s*(.+?)\s*', criterion)
+      if parsed is None:
+        raise ValueError("Invalid criterion syntax; expected 'label < value' "
+                         "or 'label > value'")
+      check.string(parsed[1], 'criterion label')
+      try:
+        threshold = float(parsed[2])
+      except ValueError as error:
+        raise ValueError("The criterion threshold must be numeric") from error
+      check.real(threshold, 'criterion threshold')
     
     # If the criterion is already a callable, returning it
     if isinstance(criterion, Callable):

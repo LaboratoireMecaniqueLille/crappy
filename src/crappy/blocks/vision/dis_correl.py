@@ -11,6 +11,7 @@ from ...tool.image_processing.fields import allowed_fields
 from ...tool.image_processing import DISCorrelTool
 from ...tool.camera_config import Box, SpotsBoxes
 from ...tool.camera_config.factory import LazyConfiguratorMapping
+from ... import _validation as check
 
 if TYPE_CHECKING:
   from ...tool.camera_config import CameraConfig
@@ -169,15 +170,19 @@ DISCorrelConfig` window. The request is required when ``patch`` is omitted and
                      freq=freq)
 
     # Make sure the patches are correctly provided
-    if patch is not None and (not isinstance(patch, tuple)
-                              or len(patch) != 4
-                              or not all(isinstance(val, int) for val in patch)
-                              or not all(val >= 0 for val in patch)):
-      raise ValueError("The patch should be provided as a tuple of 4 "
-                       "positive integer values")
-    if patch is not None and (patch[2] <= 0 or patch[3] <= 0):
-      raise ValueError("The width and height of the patch must be "
-                       "strictly positive integers")
+    if patch is not None:
+      try:
+        check.instance(patch, 'patch', tuple)
+        check.sequence(patch, 'patch', length=4)
+        y, x, height, width = patch
+        for value in (y, x):
+          check.integer(int(value) if isinstance(value, bool) else value,
+                        'patch position', minimum=0)
+        for value in (height, width):
+          check.integer(int(value) if isinstance(value, bool) else value,
+                        'patch size', minimum=1)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
 
     # Make sure that proper labels are provided if custom fields are provided
     if fields is not None and labels is None:
@@ -189,17 +194,22 @@ DISCorrelConfig` window. The request is required when ``patch`` is omitted and
     elif isinstance(fields, str) or isinstance(fields, np.ndarray):
       _fields = [fields]
     else:
+      check.sequence(fields, 'fields', minimum=1)
       _fields = list(fields)
 
-    if not all(isinstance(field, (np.ndarray, str)) for field in _fields):
-      raise TypeError("All the provided fields must be either strings or "
-                      "numpy arrays")
-    if not _fields:
-      raise ValueError("At least one field must be provided")
-    if not all(field in allowed_fields for field in _fields
-               if isinstance(field, str)):
-      raise ValueError(f"The only allowed values for the fields given as "
-                       f"strings are {allowed_fields}")
+    for field in _fields:
+      match field:
+        case str():
+          check.choice(field, 'fields', allowed_fields)
+        case np.ndarray():
+          check.image(field, 'fields', ndim=(3,))
+          if field.shape[-1] != 2:
+            raise ValueError("fields arrays must have shape (height, width, "
+                             "2)")
+          if not np.all(np.isfinite(field)):
+            raise ValueError("fields arrays must contain only finite values")
+        case _:
+          raise TypeError("fields must contain field names or NumPy arrays")
 
     # Forcing the labels into a list
     if labels is None:
@@ -210,8 +220,7 @@ DISCorrelConfig` window. The request is required when ``patch`` is omitted and
     else:
       _labels: list[str] = list(labels)
 
-    if not isinstance(residual, bool):
-      raise TypeError("residual must be a boolean")
+    check.boolean(residual, 'residual')
 
     # Adding the residuals if required
     if residual and _labels is not None:
@@ -226,47 +235,42 @@ DISCorrelConfig` window. The request is required when ``patch`` is omitted and
     _labels.append('overlay')
     self.labels = _labels
 
-    if not isinstance(request_configuration, bool):
-      raise TypeError("request_configuration must be a boolean")
+    check.boolean(request_configuration, 'request_configuration')
     if not request_configuration and patch is None:
       raise ValueError("A patch must be provided if request_configuration is "
                        "set to False")
-    if (not isinstance(alpha, (float, int, bool)) or not np.isfinite(alpha)
-        or alpha < 0):
-      raise ValueError("alpha must be a finite, non-negative number")
-    if (not isinstance(delta, (float, int, bool)) or not np.isfinite(delta)
-        or delta < 0):
-      raise ValueError("delta must be a finite, non-negative number")
-    if (not isinstance(gamma, (float, int, bool)) or not np.isfinite(gamma)
-        or gamma < 0):
-      raise ValueError("gamma must be a finite, non-negative number")
-    if not isinstance(finest_scale, int) or finest_scale < 0:
-      raise ValueError("finest_scale must be a non-negative integer")
-    if not isinstance(iterations, int) or iterations < 0:
-      raise ValueError("iterations must be a non-negative integer")
-    if not isinstance(gradient_iterations, int) or gradient_iterations < 0:
-      raise ValueError("gradient_iterations must be a non-negative integer")
-    if not isinstance(init, bool):
-      raise TypeError("init must be a boolean")
-    if not isinstance(patch_size, int) or patch_size <= 0:
-      raise ValueError("patch_size must be a positive integer")
-    if not isinstance(patch_stride, int) or patch_stride <= 0:
-      raise ValueError("patch_stride must be a positive integer")
+    try:
+      for value, name in ((alpha, 'alpha'), (delta, 'delta'),
+                          (gamma, 'gamma')):
+        check.real(int(value) if isinstance(value, bool) else value,
+                   name, minimum=0)
+      for value, name, minimum in ((finest_scale, 'finest_scale', 0),
+                                   (iterations, 'iterations', 0),
+                                   (gradient_iterations,
+                                    'gradient_iterations', 0),
+                                   (patch_size, 'patch_size', 1),
+                                   (patch_stride, 'patch_stride', 1)):
+        check.integer(int(value) if isinstance(value, bool) else value,
+                      name, minimum=minimum)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    check.boolean(init, 'init')
+
     if patch_stride >= patch_size:
       raise ValueError("patch_stride must be strictly less than patch_size")
-    if border is not None and not isinstance(border, (int, tuple)):
-      raise TypeError("border must be either None, an integer, or a tuple of "
-                      "two integers")
-    if (isinstance(border, tuple) and
-        (len(border) != 2 or not all(isinstance(val, int) for val in border) or
-         not all(val >= 0 for val in border))):
-      raise ValueError("If provided as a tuple, border must contain exactly "
-                       "two non-negative integers")
-    if isinstance(border, int) and border < 0:
-      raise ValueError("If provided as an integer, border must be "
-                       "non-negative")
-    if not isinstance(follow, bool):
-      raise TypeError("follow must be a boolean")
+    if isinstance(border, tuple):
+      try:
+        check.sequence(border, 'border', length=2)
+        for value in border:
+          check.integer(int(value) if isinstance(value, bool) else value,
+                        'border', minimum=0)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
+    else:
+      check.integer(int(border) if isinstance(border, bool) else border,
+                    'border', optional=True, minimum=0)
+
+    check.boolean(follow, 'follow')
 
     # These arguments are for the DISCorrelTool
     self._fields: list[Literal['x', 'y', 'r', 'exx', 'eyy',

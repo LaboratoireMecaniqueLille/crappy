@@ -97,7 +97,7 @@ class TestDICVEProcess(CameraProcessTestBase):
                                  iterations=5,
                                  gradient_iterations=6,
                                  patch_size=7,
-                                 patch_stride=8,
+                                 patch_stride=6,
                                  border=0.1,
                                  safe=False,
                                  follow=False)
@@ -117,7 +117,7 @@ class TestDICVEProcess(CameraProcessTestBase):
       'iterations': 5,
       'gradient_iterations': 6,
       'patch_size': 7,
-      'patch_stride': 8,
+      'patch_stride': 6,
       'border': 0.1,
       'safe': False,
       'follow': False,

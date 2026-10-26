@@ -3,6 +3,7 @@
 import numpy as np
 
 from .._global import OptionalModule
+from .. import _validation as check
 
 try:
   import cv2
@@ -29,6 +30,11 @@ class ApplyStrainToImage:
       image: Two- or three-dimensional reference image.
     """
 
+    check.image(image)
+    if image.shape[0] < 2 or image.shape[1] < 2:
+      raise ValueError("image height and width must both be at least two "
+                       "pixels")
+
     self._img = image
 
     # Building the lookup arrays for the cv2.remap method
@@ -53,6 +59,9 @@ class ApplyStrainToImage:
     Returns:
       Deformed image with the same shape and data type as the reference.
     """
+
+    check.real(exx, 'exx', minimum=-100, strict=True)
+    check.real(eyy, 'eyy', minimum=-100, strict=True)
 
     exx /= 100
     eyy /= 100

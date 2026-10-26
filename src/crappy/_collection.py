@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from importlib import import_module
 from typing import Any, Literal
 
+from . import _validation as check
+
 
 @dataclass(frozen=True, slots=True)
 class CollectionEntry:
@@ -24,12 +26,12 @@ class CollectionEntry:
   def __post_init__(self) -> None:
     """Checks the validity of the provided arguments."""
 
-    if not isinstance(self.name, str) or not self.name:
-      raise ValueError("name must be a non-empty string")
-    if self.kind not in ('Actuator', 'Camera', 'InOut'):
-      raise ValueError("kind must be one of 'Actuator', 'Camera', InOut'")
-    if not isinstance(self.module, str) or not self.module:
-      raise ValueError("module must be a non-empty string")
+    try:
+      check.string(self.name, 'name')
+      check.choice(self.kind, 'kind', ('Actuator', 'Camera', 'InOut'))
+      check.string(self.module, 'module')
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
 
 class CollectionUnavailableError(RuntimeError):
@@ -45,10 +47,8 @@ class CollectionUnavailableError(RuntimeError):
       cause: The Exception that caused the loading failure.
     """
 
-    if not isinstance(entry, CollectionEntry):
-      raise TypeError("The provided entry must be a CollectionEntry")
-    if not isinstance(cause, Exception):
-      raise TypeError("The provided cause must be an Exception")
+    check.instance(entry, 'entry', CollectionEntry)
+    check.instance(cause, 'cause', Exception)
 
     self.entry = entry
     self.__cause__ = cause
@@ -97,8 +97,7 @@ class CollectionRegistry:
     """
 
     for entry in entries:
-      if not isinstance(entry, CollectionEntry):
-        raise TypeError(f"The entry {entry} isn't a CollectionEntry!")
+      check.instance(entry, 'entry', CollectionEntry)
 
       # Store this pair to allow identical names for objects of different types
       key = (entry.kind, entry.name)
@@ -125,10 +124,11 @@ class CollectionRegistry:
       name: The name of the requested class, as a :obj:`str`.
     """
 
-    if kind not in ('Actuator', 'Camera', 'InOut'):
-      raise ValueError("kind must be one of 'Actuator', 'Camera', InOut'")
-    if not isinstance(name, str) or not name:
-      raise ValueError("name must be a non-empty string")
+    try:
+      check.choice(kind, 'kind', ('Actuator', 'Camera', 'InOut'))
+      check.string(name, 'name')
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
     return self._entries.get((kind, name))
 
@@ -144,8 +144,10 @@ class CollectionRegistry:
       the returned :obj:`tuple` contains 0 to 3 values.
     """
 
-    if not isinstance(name, str) or not name:
-      raise ValueError("name must be a non-empty string")
+    try:
+      check.string(name, 'name')
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
     return tuple(entry for entry in self._entries.values()
                  if entry.name == name)
@@ -163,8 +165,11 @@ class CollectionRegistry:
       provided kind, or just all the CollectionEntry if kind is :obj:`None`.
     """
 
-    if kind is not None and kind not in ('Actuator', 'Camera', 'InOut'):
-      raise ValueError("kind must be one of 'Actuator', 'Camera', InOut'")
+    try:
+      check.choice(kind, 'kind', ('Actuator', 'Camera', 'InOut'),
+                   optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
     entries = (entry for entry in self._entries.values()
                if kind is None or entry.kind == kind)

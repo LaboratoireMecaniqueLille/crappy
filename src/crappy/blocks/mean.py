@@ -4,12 +4,11 @@ import numpy as np
 from collections.abc import Sequence
 from time import time
 import logging
-from numbers import Real
-from math import isfinite
 from collections import defaultdict
 from typing import Any
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 class MeanBlock(Block):
@@ -94,41 +93,22 @@ class MeanBlock(Block):
     self.freq = freq
     self.debug = debug
 
-    match delay:
-      case Real() if not isfinite(delay) or delay <= 0:
-        raise ValueError("delay must be a finite strictly positive float")
-      case Real():
-        self._delay: float = delay
-      case _:
-        raise TypeError("delay must be a finite strictly positive float")
-    match time_label:
-      case str() if time_label:
-        self._time_label: str = time_label
-      case str():
-        raise ValueError("time_label must be a non-empty string")
-      case _:
-        raise TypeError("time_label must be a non-empty string")
-    match out_labels:
-      case None:
-        self._out_labels: list[str] | None = out_labels
-      case str() if out_labels:
-        self._out_labels: list[str] | None = [out_labels]
-      case str():
-        raise ValueError("out_labels must be a non-empty string or a sequence "
-                         "of non-empty strings or None")
-      case ():
-        raise ValueError("out_labels must contain at least one element when "
-                         "provided as a sequence")
-      case (*out_labels,) if (all(isinstance(label, str) for
-                                  label in out_labels) and
-                              all(label for label in out_labels)):
-        self._out_labels: list[str] | None = list(out_labels)
-      case (*_,):
-        raise ValueError("out_labels must be a non-empty string or a sequence "
-                         "of non-empty strings or None")
-      case _:
-        raise TypeError("out_labels must be a non-empty string or a sequence "
-                        "of non-empty strings or None")
+    check.real(int(delay) if isinstance(delay, bool) else delay,
+               'delay', minimum=0, strict=True)
+    self._delay: float = delay
+    check.string(time_label, 'time_label')
+    self._time_label: str = time_label
+    if (isinstance(out_labels, Sequence)
+        and not isinstance(out_labels, (str, bytes, bytearray))):
+      try:
+        check.labels(out_labels, 'out_labels', single=False, unique=False)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
+    else:
+      check.labels(out_labels, 'out_labels', optional=True, unique=False)
+    self._out_labels: list[str] | None = (
+      None if out_labels is None
+      else [out_labels] if isinstance(out_labels, str) else list(out_labels))
 
     self._last_sent_t: float = time()
     self._data_buf: dict[str, list[Any]] = defaultdict(list)

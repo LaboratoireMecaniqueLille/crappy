@@ -1,9 +1,11 @@
 # coding: utf-8
 
 from multiprocessing import Value
+from collections import UserDict
 from struct import pack
 from typing import Any
 from unittest.mock import patch
+import numpy as np
 from crappy._global import OptionalModule
 from crappy._exceptions import OptionalDependencyError
 import crappy.blocks.ucontroller as ucontroller_module
@@ -209,6 +211,85 @@ class TestUController(BlockTestBase):
                                      init_output={'nr': 0},
                                      post_process={'nr': 1})
 
+  def test_invalid_arguments_fail_before_opening_serial(self) -> None:
+    """Invalid configuration is rejected by the owning Block constructor."""
+
+    cases = (({'labels': 1}, TypeError),
+             ({'labels': ['nr', 1]}, TypeError),
+             ({'labels': ['nr', 'nr']}, ValueError),
+             ({'labels': ''}, ValueError),
+             ({'labels': ' nr'}, ValueError),
+             ({'labels': 'nr '}, ValueError),
+             ({'labels': 'nr\nother'}, ValueError),
+             ({'labels': 'nr\rother'}, ValueError),
+             ({'labels': 't(s)'}, ValueError),
+             ({'cmd_labels': 1}, TypeError),
+             ({'cmd_labels': ['freq', 'freq']}, ValueError),
+             ({'cmd_labels': ' '}, ValueError),
+             ({'cmd_labels': 'freq '}, ValueError),
+             ({'cmd_labels': 'freq\nother'}, ValueError),
+             ({'cmd_labels': 'freq\rother'}, ValueError),
+             ({'cmd_labels': [str(i) for i in range(10)]}, ValueError),
+             ({'t_device': 1}, TypeError),
+             ({'t_device': None}, TypeError),
+             ({'port': 1}, TypeError),
+             ({'port': ''}, ValueError),
+             ({'port': ' '}, ValueError),
+             ({'baudrate': True}, TypeError),
+             ({'baudrate': 9600.0}, TypeError),
+             ({'baudrate': -1}, ValueError),
+             ({'init_output': None}, ValueError),
+             ({'init_output': UserDict(nr=0)}, TypeError),
+             ({'init_output': {1: 0}}, TypeError),
+             ({'init_output': {'': 0}}, ValueError),
+             ({'init_output': {'nr': '0'}}, TypeError),
+             ({'init_output': {'nr': True}}, TypeError),
+             ({'init_output': {'nr': np.nan}}, ValueError),
+             ({'init_output': {'nr': np.inf}}, ValueError),
+             ({'init_output': {'other': 0}}, ValueError),
+             ({'post_process': UserDict(nr=float)}, TypeError),
+             ({'post_process': {1: float}}, TypeError),
+             ({'post_process': {'': float}}, ValueError),
+             ({'post_process': {'nr': 1}}, TypeError),
+             ({'post_process': {'other': float}}, ValueError),
+             ({'labels': None, 'post_process': {'nr': float}}, ValueError),
+             ({'display_freq': 1}, TypeError),
+             ({'freq': '100'}, TypeError),
+             ({'freq': 0}, ValueError),
+             ({'freq': np.nan}, ValueError),
+             ({'freq': np.inf}, ValueError),
+             ({'debug': 'yes'}, TypeError))
+    defaults = {'labels': 'nr', 'init_output': {'nr': 0}}
+    with patch.object(ucontroller_module, 'Serial') as serial:
+      for options, error in cases:
+        with self.subTest(options=options), self.assertRaises(error):
+          ucontroller_module.UController(**(defaults | options))
+      serial.assert_not_called()
+
+  def test_label_count_boundaries_match_the_startup_protocol(self) -> None:
+    """Both startup counts fit in one digit, including the timestamp slot."""
+
+    for t_device, count in ((False, 9), (True, 8)):
+      with self.subTest(t_device=t_device):
+        labels = [f'label_{i}' for i in range(count)]
+        ctrl = ucontroller_module.UController(
+          labels=labels, cmd_labels=[f'cmd_{i}' for i in range(9)],
+          init_output=dict.fromkeys(labels, 0), t_device=t_device)
+        link(TestBlock(), ctrl)
+        link(ctrl, TestBlock())
+        with self._serial_patch():
+          ctrl.prepare()
+        bus = FakeMicrocontrollerSerial.instances[-1]
+        self.assertEqual(bus.writes[0], b'go99\r\n')
+        self.assertEqual(len(bus.labels), 9)
+        self.assertEqual(bus.send_t, t_device)
+
+        labels.append('too_many')
+        with self.assertRaises(ValueError):
+          ucontroller_module.UController(
+            labels=labels, init_output=dict.fromkeys(labels, 0),
+            t_device=t_device)
+
   def test_prepare_requires_matching_links(self) -> None:
     """Checks that labels/cmd_labels match the Link layout."""
 
@@ -292,6 +373,44 @@ class TestUController(BlockTestBase):
     ])
     self.assertEqual(bus.received_commands, [('freq', 1.235), ('freq', 2.0)])
 
+  def test_invalid_command_batches_do_not_send_partial_updates(self) -> None:
+    """Every command is checked before any write or command-cache update."""
+
+    source = TestBlock()
+    ctrl = ucontroller_module.UController(cmd_labels=('first', 'second'))
+    link(source, ctrl)
+    cases = (('1', TypeError), (None, TypeError), (1j, TypeError),
+             (np.array([1, 2]), TypeError), (np.nan, ValueError),
+             (np.inf, ValueError), (-np.inf, ValueError))
+    with self._serial_patch():
+      ctrl.prepare()
+      bus = FakeMicrocontrollerSerial.instances[-1]
+      startup = list(bus.writes)
+      for value, error in cases:
+        with self.subTest(value=value):
+          source.send({'first': 1.25, 'second': value})
+          with self.assertRaises(error):
+            ctrl.loop()
+          self.assertEqual(bus.writes, startup)
+          self.assertEqual(ctrl._prev_cmd, {'first': None, 'second': None})
+
+  def test_numeric_and_boolean_commands_preserve_the_wire_format(self) -> None:
+    """Supported numeric commands work; unrelated input labels are ignored."""
+
+    source = TestBlock()
+    ctrl = ucontroller_module.UController(cmd_labels='freq')
+    link(source, ctrl)
+    with self._serial_patch():
+      ctrl.prepare()
+      bus = FakeMicrocontrollerSerial.instances[-1]
+      source.send({'ignored': ['not a command']})
+      ctrl.loop()
+      for value in (np.int64(3), np.float64(-2.5), True, False):
+        source.send({'freq': value})
+        ctrl.loop()
+    self.assertEqual(bus.received_commands,
+                     [('freq', 3.0), ('freq', -2.5), ('freq', 1.0), ('freq', 0.0)])
+
   def test_loop_receives_pc_timestamped_label(self) -> None:
     """Checks parsing a label frame and adding the PC timestamp."""
 
@@ -315,6 +434,41 @@ class TestUController(BlockTestBase):
     self.assertEqual(set(sent[0]), {'nr', 't(s)'})
     self.assertAlmostEqual(sent[0]['nr'], 8.0)
     self.assertAlmostEqual(sent[0]['t(s)'], 2.5)
+
+  def test_post_process_rejects_non_numeric_results(self) -> None:
+    """A bad callback result cannot replace the previous measurement."""
+
+    for result in (None, 'value', 1j, np.array([1, 2])):
+      with self.subTest(result=result):
+        ctrl = ucontroller_module.UController(
+          labels='nr', init_output={'nr': 0},
+          post_process={'nr': lambda value: result})
+        link(ctrl, TestBlock())
+        sent = self._capture_send(ctrl)
+        with self._serial_patch():
+          ctrl.prepare()
+          FakeMicrocontrollerSerial.instances[-1].queue_label('nr', 4)
+          with self.assertRaises(TypeError):
+            ctrl.loop()
+        self.assertEqual(ctrl._out['nr'], 0)
+        self.assertEqual(sent, [])
+
+  def test_post_process_preserves_nan_measurements(self) -> None:
+    """NaN remains supported for unavailable device measurements."""
+
+    ctrl = ucontroller_module.UController(
+      labels='nr', init_output={'nr': 0}, post_process={'nr': lambda value: value})
+    ctrl._instance_t0 = Value('d', 1.0)
+    link(ctrl, TestBlock())
+    sent = self._capture_send(ctrl)
+    with self._serial_patch():
+      ctrl.prepare()
+      FakeMicrocontrollerSerial.instances[-1].queue_label('nr', np.nan)
+      with patch.object(ucontroller_module, 'time', return_value=2):
+        ctrl.loop()
+    self.assertEqual(len(sent), 1)
+    self.assertTrue(np.isnan(sent[0]['nr']))
+    self.assertEqual(sent[0]['t(s)'], 1)
 
   def test_loop_receives_device_timestamped_label(self) -> None:
     """Checks parsing a timestamped frame emitted by the device."""

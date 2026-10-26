@@ -7,6 +7,8 @@ from pathlib import Path
 
 from .camera_processes import GPUCorrelProcess
 from .camera import Camera
+from .. import _validation as check
+from ..tool.image_processing.fields import allowed_fields
 
 field_type = Literal['x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z']
 
@@ -330,11 +332,59 @@ class GPUCorrel(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
+    check.integer(int(verbose) if isinstance(verbose, bool) else verbose,
+                  'verbose', minimum=0, maximum=3)
+    check.integer(iterations, 'iterations', minimum=1)
+    check.real(mul, 'mul', minimum=0, strict=True)
+
+    match kernel_file:
+      case None:
+        pass
+      case Path() if kernel_file.name.strip():
+        pass
+      case Path():
+        raise ValueError("kernel_file must contain a file name, not a "
+                         "directory")
+      case str() if kernel_file.strip() and Path(kernel_file).name.strip():
+        kernel_file = Path(kernel_file)
+      case str():
+        raise ValueError("kernel_file must be non-empty when provided as a "
+                         "str, and correspond to a file not to a directory")
+      case _:
+        raise TypeError("kernel_file must be provided as a non-empty string, "
+                        "a Path or None")
+    if kernel_file is not None and kernel_file.is_dir():
+      raise IsADirectoryError(f"kernel_file points to a directory: "
+                              f"{kernel_file}")
+
+    check.image(img_ref, 'img_ref', optional=True, ndim=(2,))
+    check.integer(levels, 'levels', minimum=1)
+    check.real(resampling_factor, 'resampling_factor', minimum=1, strict=True)
+    check.image(mask, 'mask', optional=True, ndim=(2,))
+    check.real(discard_limit, 'discard_limit', minimum=0)
+    check.integer(discard_ref, 'discard_ref', minimum=1)
+    check.boolean(res, 'res')
+
     # Forcing the fields into a list
-    if isinstance(fields, str):
+    if isinstance(fields, (str, np.ndarray)):
       fields = [fields]
     else:
+      check.sequence(fields, 'fields', minimum=1)
       fields = list(fields)
+
+    for field in fields:
+      match field:
+        case str():
+          check.choice(field, 'fields', allowed_fields)
+        case np.ndarray():
+          check.image(field, 'fields', ndim=(3,))
+          if field.shape[-1] != 2:
+            raise ValueError("fields arrays must have shape (height, width, "
+                             "2)")
+          if not np.all(np.isfinite(field)):
+            raise ValueError("fields arrays must contain only finite values")
+        case _:
+          raise TypeError("fields must contain field names or NumPy arrays")
 
     # Forcing the labels into a list
     if labels is None:

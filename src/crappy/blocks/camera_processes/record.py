@@ -6,6 +6,7 @@ from pathlib import Path
 import logging
 import logging.handlers
 
+from ... import _validation as check
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
 
@@ -69,8 +70,7 @@ class ImageSaver(CameraProcess):
 
     super().__init__()
 
-    if not isinstance(save_period, int) or save_period < 1:
-      raise ValueError("save_period must be a strictly positive integer")
+    check.boolean(send_msg, 'send_msg')
 
     # Probe only the requested backend, or stop at the first available one
     backends = {'sitk': Sitk.is_available,
@@ -84,14 +84,11 @@ class ImageSaver(CameraProcess):
           self._save_backend = name
           break
 
-    elif save_backend in ('sitk', 'pil', 'cv2', 'npy'):
+    else:
       if not backends[save_backend]():
         raise ModuleNotFoundError(f"Backend {save_backend!r} requested but "
                                   "could not be imported")
       self._save_backend = save_backend
-    else:
-      raise ValueError("The save_backend argument should be either 'sitk', "
-                       "'pil', 'cv2' or 'npy' !")
 
     # In case the images are saved as arrays, don't include extension
     self._img_extension = img_extension if self._save_backend != 'npy' else ''

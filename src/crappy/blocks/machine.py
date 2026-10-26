@@ -4,14 +4,13 @@ from time import time
 from typing import Any
 from collections.abc import Sequence
 from dataclasses import dataclass, field, fields
-from numbers import Real
-from math import isfinite
 import logging
 
 from .meta_block import Block
 from .._collection import collection_registry, load_collection_class
 from ..actuator import actuator_dict, Actuator, moved_to_collection
 from ..actuator import resolve_actuator, actuator_names
+from .. import _validation as check
 
 
 @dataclass
@@ -142,43 +141,23 @@ class Machine(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    match actuators:
-      case ():
-        raise ValueError("No actuator to drive was specified")
-      case (*actuators,) if all(isinstance(actuator, dict)
-                                for actuator in actuators):
-        pass
-      case _:
-        raise TypeError("actuators must be a non-empty sequence of "
-                        "dictionaries")
+    check.sequence(actuators, 'actuators', minimum=1)
+    for actuator in actuators:
+      check.instance(actuator, 'actuator', dict)
 
-    match common:
-      case None:
-        common = dict()
-      case dict():
-        pass
-      case _:
-        raise TypeError("common must be a dictionary or None")
+    check.instance(common, 'common', dict, optional=True)
+    common = {} if common is None else common
 
-    match time_label:
-      case str() if time_label.strip():
-        self._time_label: str = time_label
-      case str():
-        raise ValueError("time_label must be a non-empty string")
-      case _:
-        raise TypeError("time_label must be a non-empty string")
+    check.string(time_label, 'time_label')
+    self._time_label: str = time_label
 
-    match spam:
-      case bool():
-        self._spam: bool = spam
-      case _:
-        raise TypeError("spam must be provided as a boolean")
+    check.boolean(spam, 'spam')
+    self._spam: bool = spam
 
     # Merge common values into the Actuators dictionaries
     actuators = [actuator | common for actuator in actuators]
-    if not all(isinstance(key, str) for actuator in actuators
-               for key in actuator):
-      raise TypeError("All actuator dictionary keys must be strings")
+    for actuator in actuators:
+      check.mapping(actuator, 'actuator')
 
     # Making sure all the dicts contain the 'type' key
     if not all('type' in dic for dic in actuators):
@@ -187,51 +166,21 @@ class Machine(Block):
 
     # Validate Actuator types and modes
     for actuator in actuators:
-      match actuator['type']:
-        case str() if actuator['type'].strip():
-          pass
-        case str():
-          raise ValueError("The actuator type must be a non-empty string")
-        case _:
-          raise TypeError("The actuator type must be a non-empty string")
+      check.string(actuator['type'], "actuator['type']")
 
-      match actuator.get('mode', 'speed'):
-        case 'speed' | 'position':
-          pass
-        case str():
-          raise ValueError("The 'mode' key must be either 'speed' or "
-                           "'position'")
-        case _:
-          raise TypeError("The 'mode' key must be a string")
+      check.choice(actuator.get('mode', 'speed'), 'mode',
+                   ('speed', 'position'))
 
-      match actuator.get('cmd_label', 'cmd'):
-        case str(label) if label.strip():
-          pass
-        case str():
-          raise ValueError("cmd_label must be a non-empty string")
-        case _:
-          raise TypeError("cmd_label must be a non-empty string")
+      check.string(actuator.get('cmd_label', 'cmd'), 'cmd_label')
 
       for key in ('position_label', 'speed_label', 'speed_cmd_label'):
-        match actuator.get(key):
-          case None:
-            pass
-          case str(label) if label.strip():
-            pass
-          case str():
-            raise ValueError(f"{key} must be a non-empty string or None")
-          case _:
-            raise TypeError(f"{key} must be a non-empty string or None")
+        check.string(actuator.get(key), key, optional=True)
 
-      match actuator.get('speed'):
-        case None:
-          pass
-        case Real() as speed if isfinite(speed):
-          actuator['speed'] = float(speed)
-        case Real():
-          raise ValueError("speed must be a finite number or None")
-        case _:
-          raise TypeError("speed must be a finite number or None")
+      speed = actuator.get('speed')
+      check.real(int(speed) if isinstance(speed, bool) else speed,
+                 'speed', optional=True)
+      if speed is not None:
+        actuator['speed'] = float(speed)
 
     # The names of the possible settings, to avoid typos and reduce verbosity
     actuator_settings = [setting.name for setting in fields(ActuatorInstance)

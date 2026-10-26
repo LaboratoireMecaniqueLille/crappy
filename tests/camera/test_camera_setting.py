@@ -126,12 +126,6 @@ class TestCameraBoolSetting(TestCase):
 class TestCameraChoiceSetting(TestCase):
   """Unit tests for choice Camera settings."""
 
-  def test_empty_choices_are_rejected(self) -> None:
-    """Checks constructor validation."""
-
-    with self.assertRaises(ValueError):
-      CameraChoiceSetting('mode', tuple())
-
   def test_default_is_first_choice_when_not_given(self) -> None:
     """Checks implicit default value."""
 
@@ -229,20 +223,6 @@ class TestCameraChoiceSetting(TestCase):
 
 class TestCameraScaleSetting(TestCase):
   """Unit tests for scale Camera settings."""
-
-  def test_equal_bounds_are_rejected(self) -> None:
-    """Checks constructor bound validation."""
-
-    with self.assertRaises(ValueError):
-      CameraScaleSetting('gain', 1, 1)
-
-  def test_zero_and_negative_steps_are_rejected(self) -> None:
-    """Checks constructor step validation."""
-
-    with self.assertRaises(ValueError):
-      CameraScaleSetting('gain', 0, 10, step=0)
-    with self.assertRaises(ValueError):
-      CameraScaleSetting('gain', 0, 10, step=-1)
 
   def test_reversed_bounds_are_swapped(self) -> None:
     """Checks bounds normalization."""

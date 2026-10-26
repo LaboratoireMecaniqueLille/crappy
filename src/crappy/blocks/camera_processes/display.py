@@ -8,6 +8,7 @@ from time import sleep, monotonic
 import logging
 import logging.handlers
 
+from ... import _validation as check
 from ..._exceptions import OptionalDependencyError, StopRequested
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
@@ -64,9 +65,7 @@ class Displayer(CameraProcess):
     self._stop_thread = False
 
     super().__init__()
-
-    if not framerate > 0:
-      raise ValueError("framerate must be strictly positive")
+    check.string(title, 'title')
 
     self._title = title
     self._framerate = framerate
@@ -84,11 +83,8 @@ class Displayer(CameraProcess):
                                     "could be imported, no backend found for "
                                     "displaying the images") from error
 
-    elif backend in ('cv2', 'mpl'):
-      self._backend = backend
     else:
-      raise ValueError("The backend argument should be either 'cv2' or "
-                       "'mpl' !")
+      self._backend = backend
 
     # Setting other instance attributes
     self._last_upd = monotonic()

@@ -18,6 +18,7 @@ from ...camera import Camera as BaseCam
 from ...camera import resolve_camera, camera_names
 from ..._collection import collection_registry, load_collection_class
 from ..._exceptions import StopRequested
+from ... import _validation as check
 
 if TYPE_CHECKING:
   from ...tool.camera_config import CameraConfig
@@ -173,10 +174,7 @@ class CameraSource(VisionBlock):
                      debug=debug,
                      freq=freq)
 
-    if not isinstance(camera, str):
-      raise TypeError("camera must be a string")
-    if not camera and image_generator is None:
-      raise ValueError("camera must be a non-empty string")
+    check.string(camera, 'camera', empty=image_generator is not None)
 
     # Checking if the requested Camera exists in Crappy
     if image_generator is None:
@@ -211,22 +209,16 @@ class CameraSource(VisionBlock):
     CameraSource.cam_count[self._camera_name] += 1
 
     # Checking the validity of the provided arguments
-    if transform is not None and not callable(transform):
-      raise TypeError("When provided, transform must be a callable")
-    if not isinstance(config, bool):
-      raise TypeError("config must be a boolean")
-    if not isinstance(config_backend, str):
-      raise TypeError("config_backend must be a string")
-    if config_backend not in ('tkinter', 'pyqt'):
-      raise ValueError("config_backend must be either 'tkinter' or 'pyqt'")
-    if not isinstance(allow_downstream_config, bool):
-      raise TypeError("allow_downstream_config must be a boolean")
-    if (software_trig_label is not None and
-        (not isinstance(software_trig_label, str) or not software_trig_label)):
-      raise ValueError("When provided, software_trig_label must be a "
-                       "non-empty string")
-    if image_generator is not None and not callable(image_generator):
-      raise TypeError("When provided, image_generator must be a callable")
+    check.callable_(transform, 'transform', optional=True)
+    check.boolean(config, 'config')
+    check.choice(config_backend, 'config_backend', ('tkinter', 'pyqt'))
+
+    check.boolean(allow_downstream_config, 'allow_downstream_config')
+    try:
+      check.string(software_trig_label, 'software_trig_label', optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    check.callable_(image_generator, 'image_generator', optional=True)
 
     # Setting the other attributes
     self._trig_label: str | None = software_trig_label
@@ -603,8 +595,7 @@ get_config`, or :obj:`None` if the configurator has no data to export.
     """
 
     # Preliminary general checks
-    if not isinstance(camera, BaseCam):
-      raise TypeError("camera must be an instance of Camera")
+    check.instance(camera, 'camera', BaseCam)
     class_name = config_class.__name__
 
     config: CameraConfig | None = None

@@ -2,9 +2,9 @@
 
 from typing import Any
 from numbers import Real
-from math import isfinite
 
 from .output import Output
+from .... import _validation as check
 
 
 class Square(Output):
@@ -33,49 +33,24 @@ class Square(Output):
     
     super().__init__()
     
-    match label:
-      case str() if label.strip():
-        self._label: str = label
-      case str():
-        raise ValueError("The provided label must be a non-empty string")
-      case _:
-        raise TypeError("The provided label must be a non-empty string")
+    check.string(label, 'label')
+    self._label: str = label
     
-    match high:
-      case Real() if isfinite(high):
-        self._high: float = float(high)
-      case Real():
-        raise ValueError("The high value must be a finite real number")
-      case _:
-        raise TypeError("The high value must be a finite real number")
+    check.real(int(high) if isinstance(high, bool) else high,
+               'high')
+    self._high: float = float(high)
 
-    match low:
-      case Real() if isfinite(low):
-        self._low: float = float(low)
-      case Real():
-        raise ValueError("The low value must be a finite real number")
-      case _:
-        raise TypeError("The low value must be a finite real number")
+    check.real(int(low) if isinstance(low, bool) else low,
+               'low')
+    self._low: float = float(low)
 
-    match period:
-      case Real() if isfinite(period) and float(period) > 0:
-        self._period: float = float(period)
-      case Real():
-        raise ValueError("The period must be a finite, strictly positive "
-                         "real number")
-      case _:
-        raise TypeError("The period must be a finite, strictly positive "
-                        "real number")
+    check.real(int(period) if isinstance(period, bool) else period,
+               'period', minimum=0, strict=True)
+    self._period: float = float(period)
 
-    match duty_cycle:
-      case Real() if isfinite(duty_cycle) and 0 <= float(duty_cycle) <= 1:
-        self._duty_cycle: float = float(duty_cycle)
-      case Real():
-        raise ValueError("The duty_cycle must be a finite real number between "
-                         "0 and 1")
-      case _:
-        raise TypeError("The duty_cycle must be a finite real number between "
-                        "0 and 1")
+    check.real(int(duty_cycle) if isinstance(duty_cycle, bool) else duty_cycle,
+               'duty_cycle', minimum=0, maximum=1)
+    self._duty_cycle: float = float(duty_cycle)
   
   def __call__(self,
                dt: float,

@@ -11,6 +11,7 @@ from functools import partial
 
 from ...._failure import FailureManager
 from ...._exceptions import StopRequested
+from .... import _validation as check
 
 
 class HistogramProcess(Process):
@@ -221,6 +222,9 @@ class HistogramProcess(Process):
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
     """
+
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._set_logger()

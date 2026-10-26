@@ -5,6 +5,7 @@ from math import sqrt, copysign
 from threading import Thread, RLock
 import logging
 
+from .. import _validation as check
 from .meta_actuator import Actuator
 
 
@@ -43,6 +44,12 @@ class FakeStepperMotor(Actuator):
         on the responsiveness of the motor.
       max_speed: The maximum achievable speed of the motor, in mm/s.
     """
+
+    for value, name in ((steps_per_mm, 'steps_per_mm'),
+                        (acceleration, 'acceleration'),
+                        (max_speed, 'max_speed')):
+      check.real(value, name)
+    check.integer(microsteps, 'microsteps')
 
     super().__init__()
 
@@ -90,6 +97,9 @@ class FakeStepperMotor(Actuator):
         close, the motor might not reach this position during its movement.
     """
 
+    check.real(position, 'position')
+    check.real(speed, 'speed', optional=True)
+
     with self._lock:
       self._target_speed = None
       self._target_pos = position * self._steps_per_mm * self._microsteps
@@ -107,6 +117,8 @@ class FakeStepperMotor(Actuator):
     Args:
       speed: The target speed of the motor, in mm/s. Can be negative.
     """
+
+    check.real(speed, 'speed')
 
     with self._lock:
       self._target_pos = None

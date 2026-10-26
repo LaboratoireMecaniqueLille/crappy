@@ -103,7 +103,7 @@ class TestDISCorrelTool(TestCase):
                                iterations=5,
                                gradient_iterations=6,
                                patch_size=7,
-                               patch_stride=8)
+                               patch_stride=6)
 
     self.assertEqual(dummy.params, [
       ('alpha', 1),
@@ -113,7 +113,7 @@ class TestDISCorrelTool(TestCase):
       ('iterations', 5),
       ('gradient_iterations', 6),
       ('patch_size', 7),
-      ('patch_stride', 8),
+      ('patch_stride', 6),
     ])
 
   def test_set_img0_and_set_box_initialize_state(self) -> None:

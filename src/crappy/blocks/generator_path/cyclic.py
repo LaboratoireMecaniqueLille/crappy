@@ -5,6 +5,7 @@ from itertools import cycle, islice
 import logging
 
 from .meta_path import Path, ConditionType
+from ... import _validation as check
 
 
 class Cyclic(Path):
@@ -57,6 +58,10 @@ class Cyclic(Path):
     .. versionremoved:: 1.5.10 *verbose* argument
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
+
+    check.real(value1, 'value1')
+    check.real(value2, 'value2')
+    check.real(cycles, 'cycles')
 
     super().__init__()
 

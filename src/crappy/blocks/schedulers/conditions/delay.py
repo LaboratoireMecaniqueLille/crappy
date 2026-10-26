@@ -2,9 +2,9 @@
 
 from typing import Any
 from numbers import Real
-from math import isfinite
 
 from .condition import Condition
+from .... import _validation as check
 
 
 class Delay(Condition):
@@ -23,15 +23,9 @@ class Delay(Condition):
 
     super().__init__()
 
-    match delay:
-      case Real() if isfinite(delay) and float(delay) > 0:
-        self._delay: float = float(delay)
-      case Real():
-        raise ValueError("The delay must be a finite, strictly positive "
-                         "real number")
-      case _:
-        raise TypeError("The delay must be a finite, strictly positive "
-                        "real number")
+    check.real(int(delay) if isinstance(delay, bool) else delay,
+               'delay', minimum=0, strict=True)
+    self._delay: float = float(delay)
 
   def __call__(self,
                dt: float,

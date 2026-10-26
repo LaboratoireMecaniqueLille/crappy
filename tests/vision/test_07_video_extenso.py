@@ -248,6 +248,11 @@ class TestVideoExtensoProcessor(VisionTestBase):
       ({'camera': object()}, TypeError),
       ({'camera': (None, 1)}, RuntimeError),
       ({'camera': (self.spots(), None)}, RuntimeError),
+      ({'camera': ('spots', 123)}, TypeError),
+      ({'camera': (self.spots(), '123')}, TypeError),
+      ({'camera': (self.spots(), True)}, TypeError),
+      ({'camera': (self.spots(), -1)}, ValueError),
+      ({'camera': (self.spots(), 256)}, ValueError),
     )
     for configs, error in cases:
       with self.subTest(configs=configs, error=error):
@@ -255,8 +260,10 @@ class TestVideoExtensoProcessor(VisionTestBase):
         self.add_image_input(processor)
         processor.recv_configs = Mock(return_value=configs)
         processor._log_queue = Mock()
-        with self.assertRaises(error):
-          processor.prepare()
+        with patch.object(video_extenso_module, 'VideoExtensoTool') as tool:
+          with self.assertRaises(error):
+            processor.prepare()
+          tool.assert_not_called()
 
   def test_prepare_requires_logging_queue(self) -> None:
     """Checks tracker processes cannot start without logging infrastructure."""

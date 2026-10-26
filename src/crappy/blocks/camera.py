@@ -25,6 +25,7 @@ from ..tool.camera_config.factory import LazyConfiguratorMapping
 from .._collection import collection_registry, load_collection_class
 from .._exceptions import (StopRequested, ProcessExitError,
                            ShutdownTimeoutError)
+from .. import _validation as check
 
 if TYPE_CHECKING:
   from ..tool.camera_config import CameraConfig
@@ -341,10 +342,7 @@ class Camera(Block):
     self.niceness: int = -10
     self.debug: bool | None = debug
 
-    if not isinstance(camera, str):
-      raise TypeError("camera must be a string")
-    if not camera and image_generator is None:
-      raise ValueError("camera must be a non-empty string")
+    check.string(camera, 'camera', empty=image_generator is not None)
 
     # Checking if the requested Camera exists in Crappy
     if image_generator is None:
@@ -382,58 +380,64 @@ class Camera(Block):
       Camera.cam_count[self._camera_name] += 1
 
     # Checking the validity of the provided arguments
-    if transform is not None and not callable(transform):
-      raise TypeError("When provided, transform must be a callable")
-    if not isinstance(config, bool):
-      raise TypeError("config must be a boolean")
-    if not isinstance(config_backend, str):
-      raise TypeError("config_backend must be a string")
-    if config_backend not in ('tkinter', 'pyqt'):
-      raise ValueError("config_backend must be either 'tkinter' or 'pyqt'")
-    if not isinstance(display_images, bool):
-      raise TypeError("display_images must be a boolean")
-    if (displayer_backend is not None 
-        and displayer_backend not in ('cv2', 'mpl')):
-      raise ValueError("displayer_backend must be one of 'cv2' or 'mpl'")
-    if (not isinstance(displayer_framerate, float) and 
-        not isinstance(displayer_framerate, int)) or displayer_framerate <= 0:
-      raise ValueError("displayer_framerate must be a strictly positive float")
-    if (software_trig_label is not None and 
-        (not isinstance(software_trig_label, str) or not software_trig_label)):
-      raise ValueError("When provided, software_trig_label must be a "
-                       "non-empty string")
-    if not isinstance(save_images, bool):
-      raise TypeError("save_images must be a boolean")
-    if not isinstance(img_extension, str):
-      raise TypeError("img_extension must be a string")
-    if not img_extension and (save_backend is None or save_backend != 'npy'):
-      raise ValueError("img_extension must be a non-empty string")
-    if (save_folder is not None and 
-        ((not isinstance(save_folder, str) or not save_folder) 
-         and not isinstance(save_folder, Path))):
-      raise ValueError("When provided, save_folder must be a non-empty string "
-                       "or a Path")
-    if not isinstance(save_period, int) or save_period < 1:
-      raise ValueError("save_period must be a strictly positive integer")
-    if save_backend is not None and save_backend not in ('sitk', 'pil', 
-                                                         'cv2', 'npy'):
-      raise ValueError("When provided, save_backend must be one of 'sitk', "
-                       "'pil', 'cv2', 'npy'")
-    if image_generator is not None and not callable(image_generator):
-      raise TypeError("When provided, image_generator must be a callable")
-    if img_shape is not None and not isinstance(img_shape, tuple):
-      raise TypeError("When provided, img_shape must be a tuple of 2 or 3 "
-                      "strictly positive integers")
-    if img_shape is not None and not 1 < len(img_shape) < 4:
-      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
-                       "strictly positive integers")
-    if (img_shape is not None and 
-        not all(isinstance(el, int) for el in img_shape)):
-      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
-                       "strictly positive integers")
-    if (img_dtype is not None and 
-        (not isinstance(img_dtype, str) or not img_dtype)):
-      raise ValueError("When provided, img_dtype must be a non-empty string")
+    check.callable_(transform, 'transform', optional=True)
+    check.boolean(config, 'config')
+    check.choice(config_backend, 'config_backend', ('tkinter', 'pyqt'))
+
+    check.boolean(display_images, 'display_images')
+    try:
+      check.choice(displayer_backend, 'displayer_backend', ('cv2', 'mpl'),
+                   optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    try:
+      check.real(displayer_framerate, 'displayer_framerate', minimum=0,
+                 strict=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    try:
+      check.string(software_trig_label, 'software_trig_label', optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    check.boolean(save_images, 'save_images')
+    check.string(img_extension, 'img_extension', empty=save_backend == 'npy')
+    try:
+      match save_folder:
+        case None:
+          pass
+        case Path() if str(save_folder).strip():
+          pass
+        case Path():
+          raise ValueError("save_folder must contain a directory path")
+        case str() if save_folder.strip():
+          save_folder = Path(save_folder)
+        case str():
+          raise ValueError("save_folder must be non-empty when provided as a "
+                           "str")
+        case _:
+          raise TypeError("save_folder must be a string, a Path or None")
+      check.integer(save_period, 'save_period', minimum=1)
+      check.choice(save_backend, 'save_backend', ('sitk', 'pil', 'cv2', 'npy'),
+                   optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if (save_folder is not None and save_folder.exists()
+        and not save_folder.is_dir()):
+      raise NotADirectoryError(f"save_folder points to an existing file: "
+                               f"{save_folder}")
+    check.callable_(image_generator, 'image_generator', optional=True)
+    check.instance(img_shape, 'img_shape', tuple, optional=True)
+    if img_shape is not None:
+      if len(img_shape) not in (2, 3):
+        raise ValueError("img_shape must contain 2 or 3 dimensions")
+      try:
+        for size in img_shape:
+          check.integer(int(size) if isinstance(size, bool) else size,
+                        'img_shape dimension', minimum=1)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
+
+    check.dtype(img_dtype, optional=True)
 
     # Setting the other attributes
     self._trig_label: str | None = software_trig_label
@@ -453,7 +457,7 @@ class Camera(Block):
     # Instantiating the ImageSaver if requested
     self._save_images: bool = save_images
     self._img_extension: str = img_extension
-    self._save_folder: str | Path | None = save_folder
+    self._save_folder: Path | None = save_folder
     self._save_period: int = save_period
     self._save_backend: str | None = save_backend
 

@@ -2,6 +2,7 @@
 
 from time import monotonic
 
+from .. import _validation as check
 from .meta_actuator import Actuator
 
 
@@ -40,6 +41,16 @@ class FakeDCMotor(Actuator):
       initial_speed: The initial speed of the motor, in RPM.
       initial_pos: The initial position of the motor, in turns.
     """
+
+    for value, name in ((inertia, 'inertia'),
+                        (torque, 'torque'),
+                        (kv, 'kv'),
+                        (rv, 'rv'),
+                        (fv, 'fv'),
+                        (initial_speed, 'initial_speed'),
+                        (initial_pos, 'initial_pos')):
+      check.real(value, name)
+    check.real(simulation_speed, 'simulation_speed', minimum=0, strict=True)
 
     super().__init__()
 
@@ -85,6 +96,8 @@ class FakeDCMotor(Actuator):
 
   def set_speed(self, volt: float) -> None:
     """Sets the command of the motor, in volts."""
+
+    check.real(volt, 'volt')
 
     self._update()
     self._volt = volt

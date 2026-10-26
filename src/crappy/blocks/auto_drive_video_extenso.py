@@ -2,14 +2,13 @@
 
 from time import time
 from typing import Any, Literal
-from numbers import Real
-from math import isfinite
 import logging
 
 from .meta_block import Block
 from ..actuator import actuator_dict, Actuator, moved_to_collection
 from ..actuator import resolve_actuator, actuator_names
 from .._collection import collection_registry, load_collection_class
+from .. import _validation as check
 
 
 class AutoDriveVideoExtenso(Block):
@@ -92,23 +91,13 @@ class AutoDriveVideoExtenso(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    match actuator:
-      case dict():
-        pass
-      case _:
-        raise TypeError("actuator must be a dictionary")
-    if not all(isinstance(key, str) for key in actuator):
-      raise TypeError("All actuator dictionary keys must be strings")
+    check.instance(actuator, 'actuator', dict)
+    check.mapping(actuator, 'actuator')
     if 'type' not in actuator:
       raise ValueError("The 'type' key must be provided for instantiating the "
                        "Actuator !")
-    match actuator['type']:
-      case str(name) if name.strip():
-        pass
-      case str():
-        raise ValueError("The actuator type must be a non-empty string")
-      case _:
-        raise TypeError("The actuator type must be a non-empty string")
+    check.string(actuator['type'], "actuator['type']")
+    name = actuator['type']
 
     if name in actuator_names():
       resolve_actuator(name)
@@ -130,41 +119,20 @@ class AutoDriveVideoExtenso(Block):
                                              in actuator.items()
                                              if key != 'type'}
 
-    match direction:
-      case 'X-' | 'X+' | 'Y-' | 'Y+' | 'x-' | 'x+' | 'y-' | 'y+':
-        self._direction: str = direction
-      case str():
-        raise ValueError("Direction should be in "
-                         "('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+')")
-      case _:
-        raise TypeError("direction must be a string")
+    check.choice(direction, 'direction',
+                 ('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+'))
+    self._direction: str = direction
 
-    match gain:
-      case Real() if isfinite(gain):
-        self._gain: float = float(-gain if '-' in direction else gain)
-      case Real():
-        raise ValueError("gain must be a finite number")
-      case _:
-        raise TypeError("gain must be a finite number")
+    check.real(int(gain) if isinstance(gain, bool) else gain,
+               'gain')
+    self._gain: float = float(-gain if '-' in direction else gain)
 
-    match pixel_range:
-      case bool():
-        raise TypeError("pixel_range must be a strictly positive integer")
-      case int() if pixel_range > 0:
-        self._pixel_range: int = pixel_range
-      case int():
-        raise ValueError("pixel_range must be a strictly positive integer")
-      case _:
-        raise TypeError("pixel_range must be a strictly positive integer")
+    check.integer(pixel_range, 'pixel_range', minimum=1)
+    self._pixel_range: int = pixel_range
 
-    match max_speed:
-      case Real() if max_speed > 0 and isfinite(max_speed):
-        self._max_speed: float = float(max_speed)
-      case Real():
-        raise ValueError("max_speed must be a strictly positive, finite "
-                         "number")
-      case _:
-        raise TypeError("max_speed must be a strictly positive, finite number")
+    check.real(int(max_speed) if isinstance(max_speed, bool) else max_speed,
+               'max_speed', minimum=0, strict=True)
+    self._max_speed: float = float(max_speed)
 
   def prepare(self) -> None:
     """Checks the consistency of the linking and initializes the 

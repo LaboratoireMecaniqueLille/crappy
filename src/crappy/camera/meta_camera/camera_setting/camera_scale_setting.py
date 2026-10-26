@@ -4,6 +4,7 @@ from collections.abc import Callable
 import logging
 
 from .camera_setting import CameraSetting
+from .... import _validation as check
 
 NbrType = int | float
 
@@ -106,6 +107,8 @@ class CameraScaleSetting(CameraSetting):
 
   @value.setter
   def value(self, val: NbrType) -> None:
+    check.real(val, 'value')
+
     val = min(max(val, self.lowest), self.highest)
     self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
     self.was_set = True
@@ -147,15 +150,13 @@ class CameraScaleSetting(CameraSetting):
     .. versionadded:: 2.0.0
     """
 
-    self.log(logging.DEBUG, f"Reloading the setting {self.name}")
+    check.real(lowest, 'lowest')
+    check.real(highest, 'highest')
+    check.real(default, 'default', optional=True)
+    check.real(step, 'step', optional=True, minimum=0, strict=True)
+    check.real(value, 'value', optional=True)
 
-    # Ensure the step is greater than zero
-    if step is not None and step == 0:
-      raise ValueError(f"The provided step is equal to zero when reloading "
-                       f"setting {self.name}!")
-    elif step is not None and step < 0:
-      raise ValueError(f"The provided step is negative when reloading setting "
-                       f"{self.name}!")
+    self.log(logging.DEBUG, f"Reloading the setting {self.name}")
 
     # Ensuring that the two bounds are not equal
     if lowest == highest:

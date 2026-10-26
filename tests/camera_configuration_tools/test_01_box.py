@@ -113,8 +113,9 @@ class TestBox(unittest.TestCase):
     error = BaseExceptionGroup('drawing interrupted',
                                [ValueError('bad pixels'), KeyboardInterrupt()])
 
-    class FailingImage:
-      shape = (100, 100)
+    class FailingImage(np.ndarray):
+      def __new__(cls):
+        return np.zeros((100, 100), dtype=np.uint8).view(cls)
 
       def __getitem__(self, key):
         raise error

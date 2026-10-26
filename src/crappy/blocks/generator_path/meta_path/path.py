@@ -7,6 +7,7 @@ import logging
 from multiprocessing import current_process
 from abc import ABC, abstractmethod
 
+from .... import _validation as check
 from ...._exceptions import DefinitionError
 
 ConditionType = Callable[[dict[str, list]], bool]
@@ -111,6 +112,9 @@ class Path(ABC):
     .. versionadded:: 2.0.0
     """
 
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
+
     if self._logger is None:
       self._logger = logging.getLogger(
         f"{current_process().name}.{type(self).__name__}")
@@ -152,6 +156,14 @@ class Path(ABC):
     handle custom conditions.
     """
 
+    match condition:
+      case None | str():
+        pass
+      case _ if callable(condition):
+        pass
+      case _:
+        raise TypeError("condition must be a string, a callable, or None")
+
     if not isinstance(condition, str):
       # First case, the condition is None
       if condition is None:
@@ -182,6 +194,9 @@ class Path(ABC):
         raise ValueError(f"Wrong syntax for the condition: {condition}, "
                          f"please refer to the documentation")
 
+      check.real(thresh, 'threshold')
+      check.string(var, 'condition label')
+
       # Return a function that checks if received data is inferior to threshold
       def cond(data: dict[str, list]) -> bool:
         """Condition checking that the label values are below a given
@@ -207,6 +222,9 @@ class Path(ABC):
         raise ValueError(f"Wrong syntax for the condition: {condition}, "
                          f"please refer to the documentation")
 
+      check.real(thresh, 'threshold')
+      check.string(var, 'condition label')
+
       # Return a function that checks if received data is superior to threshold
       def cond(data: dict[str, list]) -> bool:
         """Condition checking that the label values are above a given
@@ -231,6 +249,8 @@ class Path(ABC):
       else:
         raise ValueError(f"Wrong syntax for the condition: {condition}, "
                          f"please refer to the documentation")
+
+      check.real(delay, 'delay', minimum=0)
 
       # Return a function that checks if the delay is expired
       def cond(_: dict[str, list]) -> bool:

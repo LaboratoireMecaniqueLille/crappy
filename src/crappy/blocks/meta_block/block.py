@@ -30,6 +30,7 @@ from ..._exceptions import (LinkDataError, StartTimeout, StopRequested,
                             SchedulerStop, DefinitionError, ProcessExitError,
                             ShutdownTimeoutError)
 from ..._failure import FailureManager
+from ... import _validation as check
 
 
 @runtime_checkable
@@ -208,6 +209,8 @@ class Block(Process, ABC):
     .. versionadded:: 2.0.0
     """
 
+    check.string(name, 'name')
+
     i = 1
     while f"crappy.{name}-{i}" in cls.names:
       i += 1
@@ -257,6 +260,10 @@ class Block(Process, ABC):
        Raises failures together after cleanup, including single failures.
     """
 
+    check.boolean(allow_root, 'allow_root')
+    check.log_level(log_level, optional=True)
+    check.boolean(no_raise, 'no_raise')
+
     # Make sure that the Exception Manager is running
     cls.no_raise = no_raise
     manager = cls._ensure_failure_manager()
@@ -292,6 +299,8 @@ class Block(Process, ABC):
     .. versionchanged:: 2.2.0 raises recorded failures together after cleanup
     """
 
+    check.log_level(log_level, optional=True)
+
     # Make sure that the Exception Manager is running
     manager = cls._ensure_failure_manager()
 
@@ -321,6 +330,8 @@ class Block(Process, ABC):
     .. versionchanged:: 2.2.0
        Raises recorded failures together after cleanup.
     """
+
+    check.boolean(allow_root, 'allow_root')
 
     # Make sure that the Exception Manager is running
     manager = cls._ensure_failure_manager()
@@ -355,6 +366,8 @@ class Block(Process, ABC):
        Raises failures together after cleanup. Suppression requires every
        participating Block to have entered ``main()``.
     """
+
+    check.boolean(no_raise, 'no_raise')
 
     # Make sure that the Exception Manager is running
     cls.no_raise = no_raise
@@ -499,6 +512,9 @@ class Block(Process, ABC):
     .. versionadded:: 2.0.0
     """
 
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
+
     if cls.logger is None:
       return
     cls.logger.log(level=level, msg=msg)
@@ -631,8 +647,9 @@ class Block(Process, ABC):
 
         # Build the connection graph of the VisionBlocks and share
         # configuration requests to relevant sources
-        if any(instance.is_vision_block for instance in cls._run_blocks):
-
+        vision_blocks = [instance for instance in cls._run_blocks
+                         if instance.is_vision_block]
+        if vision_blocks:
           # Manage config requests for each source-consumer pair
           for source_name in link_graph.img_sources():
             source = instances_lookup[source_name]
@@ -689,25 +706,22 @@ class Block(Process, ABC):
                                     "graph nor sharing config requests")
 
         # Initialize the common Manager for image Blocks if needed
-        if any(instance.is_vision_block for instance in cls._run_blocks):
+        if vision_blocks:
           cls.shared_mgr = Manager()
           cls.cls_log(logging.INFO, 'Created the shared Manager object')
 
           # Making vision Blocks generate their shared synchronization objects
-          for instance in cls._run_blocks:
-            if (instance.is_vision_block and
-                isinstance(instance, VisionBlockType)):
-              instance.set_shared_objects()
-              cls.cls_log(logging.INFO, f"Set shared image-related objects "
-                                        f"for the {instance.name} Block")
+          for instance in vision_blocks:
+            instance.set_shared_objects()
+            cls.cls_log(logging.INFO, f"Set shared image-related objects "
+                                      f"for the {instance.name} Block")
         else:
           cls.cls_log(logging.INFO, "No vision Block detected, not "
                                     "instantiating a shared Manager")
 
         # Under fork, ensures proper management of SharedMemory tracking at the
         # Process-level
-        if (get_start_method() == 'fork' and
-            any(instance.is_vision_block for instance in cls._run_blocks)):
+        if get_start_method() == 'fork' and vision_blocks:
           resource_tracker.ensure_running()
           cls.cls_log(logging.INFO, 'Shared-memory resource tracker started')
 
@@ -1706,6 +1720,8 @@ class Block(Process, ABC):
 
   @debug.setter
   def debug(self, val: bool | None) -> None:
+    check.boolean(val, 'debug', optional=True)
+
     if val is not None:
       if val:
         self._debug = True
@@ -1744,10 +1760,7 @@ class Block(Process, ABC):
 
   @niceness.setter
   def niceness(self, val: int) -> None:
-    if not isinstance(val, int):
-      raise TypeError("The niceness must be an integer")
-    if not -20 <= val <= 19:
-      raise ValueError("The niceness must be between -20 and 19")
+    check.integer(val, 'niceness', minimum=-20, maximum=19)
     self._niceness = val
 
   @property
@@ -1757,6 +1770,11 @@ class Block(Process, ABC):
     Must be a sequence containing only strings, or :obj:`None` when data will
     be sent as dictionaries.
 
+    Raises:
+      TypeError: If the assigned value is not a sequence or :obj:`None`,
+        is a single string, or contains a non-string label.
+      ValueError: If a label is blank or appears more than once.
+
     .. versionadded:: 2.1.0
     """
 
@@ -1764,20 +1782,7 @@ class Block(Process, ABC):
 
   @labels.setter
   def labels(self, val: Sequence[str] | None) -> None:
-    # checking that the labels is not a string
-    if val is not None and isinstance(val, str):
-      raise TypeError("The labels must be a Sequence of strings or None")
-    # Checking that the labels is a valid Sequence type
-    if val is not None and not isinstance(val, Sequence):
-      raise TypeError("The labels must be a Sequence of strings or None")
-    # Checking that the labels is a Sequence of strings only
-    if val is not None and not all(isinstance(label, str) for label in val):
-      non_str = [label for label in val if not isinstance(label, str)]
-      raise ValueError(f"Some labels are not strings: "
-                       f"{', '.join(map(repr, non_str))}")
-    # Checking that there are no duplicate labels
-    if val is not None and len(set(val)) != len(val):
-      raise ValueError("Duplicate labels provided in the list of labels!")
+    check.labels(val, 'labels', optional=True, single=False, empty=True)
 
     self._labels = val
 
@@ -1795,11 +1800,8 @@ class Block(Process, ABC):
 
   @freq.setter
   def freq(self, val: float | None) -> None:
-    if (val is not None and not isinstance(val, float)
-        and not isinstance(val, int)):
-      raise TypeError("The freq must be a float or None")
-    if val is not None and val <= 0:
-      raise ValueError("The freq must be a strictly positive float")
+    check.real(val, 'freq', optional=True, minimum=0, strict=True)
+
     self._freq = None if val is None else float(val)
 
   @property
@@ -1813,8 +1815,7 @@ class Block(Process, ABC):
 
   @display_freq.setter
   def display_freq(self, val: bool) -> None:
-    if not isinstance(val, bool):
-      raise TypeError("display_freq must be a boolean")
+    check.boolean(val, 'display_freq')
     self._display_freq = val
 
   @property
@@ -1832,11 +1833,7 @@ class Block(Process, ABC):
 
   @name.setter
   def name(self, val: str) -> None:
-    # Checking that the name is a valid string
-    if not isinstance(val, str):
-      raise TypeError("The name must be a string")
-    if not val:
-      raise ValueError("The name must be a non-empty string")
+    check.string(val, 'name')
     # Checking that the name doesn't already exist
     if val != self._name and val in self.names:
       raise ValueError(f"The name {val} is already in use by another Block!")
@@ -1863,8 +1860,7 @@ class Block(Process, ABC):
 
   @pausable.setter
   def pausable(self, val: bool) -> None:
-    if not isinstance(val, bool):
-      raise TypeError("pausable must be a boolean")
+    check.boolean(val, 'pausable')
     self._pausable = val
 
   @property
@@ -1882,8 +1878,7 @@ class Block(Process, ABC):
 
   @is_vision_block.setter
   def is_vision_block(self, val: bool) -> None:
-    if not isinstance(val, bool):
-      raise TypeError("is_vision_block must be a boolean")
+    check.boolean(val, 'is_vision_block')
     if not isinstance(self, VisionBlockType):
       raise TypeError(f"The Block {self.name} does not implement all the "
                       f"required methods of a VisionBlock!")
@@ -1912,6 +1907,9 @@ class Block(Process, ABC):
     .. versionadded:: 2.0.0
     """
 
+    check.log_level(log_level, 'log_level')
+    check.string(msg, 'msg', empty=True)
+
     if self._logger is None:
       return
     self._logger.log(log_level, msg)
@@ -1934,6 +1932,11 @@ class Block(Process, ABC):
     might not get sent. If ``data`` is :obj:`None` or resolves to an empty
     :obj:`dict`, nothing is sent.
     """
+
+    if isinstance(data, dict):
+      check.mapping(data, 'data')
+    elif isinstance(data, (str, bytes, bytearray)):
+      raise TypeError("data must be a dictionary or an iterable of samples")
 
     # Just in case, not handling non-existing data
     if data is None:
@@ -2039,6 +2042,8 @@ class Block(Process, ABC):
     .. versionremoved:: 2.0.0 *blocking* argument
     .. versionchanged:: 2.0.0 renamed from *get_last* to *recv_last_data*
     """
+
+    check.boolean(fill_missing, 'fill_missing')
 
     # Initializing the buffer storing the last received values
     if not len(self._last_values):

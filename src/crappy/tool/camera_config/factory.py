@@ -8,6 +8,8 @@ from importlib import import_module
 from multiprocessing.queues import Queue
 from typing import Any, TYPE_CHECKING
 
+from ... import _validation as check
+
 if TYPE_CHECKING:
   import numpy as np
   from .base import CameraConfig
@@ -68,8 +70,15 @@ def resolve_configurator(configurator: type[CameraConfig] |
   .. versionadded:: 2.2.0
   """
 
-  return (configurator[config_backend]
-          if isinstance(configurator, Mapping) else configurator)
+  check.string(config_backend, 'config_backend')
+  if not isinstance(configurator, Mapping) and not callable(configurator):
+    raise TypeError("configurator must be callable or a mapping of backends "
+                    "to callables")
+  selected = (configurator[config_backend] if isinstance(configurator, Mapping)
+              else configurator)
+  check.callable_(selected, 'selected configurator')
+
+  return selected
 
 
 def create_configurator(configurator: type[CameraConfig] |

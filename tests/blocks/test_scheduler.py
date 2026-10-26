@@ -7,7 +7,8 @@ import crappy.blocks.scheduler as scheduler_module
 from crappy._exceptions import SchedulerStop
 from crappy.blocks.scheduler import Scheduler
 from crappy.blocks.schedulers import State
-from crappy.blocks.schedulers.conditions import Delay
+from crappy.blocks.schedulers.conditions import (AllCondition, AllLabel,
+                                                 AnyCondition, Delay)
 from crappy.blocks.schedulers.outputs import Constant
 
 from ..block import BlockTestBase
@@ -150,6 +151,39 @@ class TestScheduler(BlockTestBase):
     safe.begin()
     self.assertEqual(safe_sent, [])
     self.assertEqual(safe._current_state.id, 'A')
+
+  def test_begin_passes_runtime_arguments_to_initial_transition(self) -> None:
+    """The initial transition receives elapsed time and an empty data set."""
+
+    scheduler = self._make_scheduler()
+    with patch.object(scheduler_module, 'monotonic', return_value=10), \
+         patch.object(scheduler, '_evaluate_conditions',
+                      wraps=scheduler._evaluate_conditions) as evaluate:
+      scheduler.begin()
+      evaluate.assert_called_once_with(0, {})
+    self.assertEqual(scheduler._current_state.id, 'A')
+
+  def test_loop_shares_runtime_arguments_across_callbacks(self) -> None:
+    """Nested conditions and outputs receive the same elapsed time and data."""
+
+    first, second = ProbeCondition(False), ProbeCondition(False)
+    nested = AnyCondition(AllCondition(Delay(1), AllLabel('enabled')), first)
+    output = ProbeOutput({'x': 1})
+    scheduler = self._make_scheduler([
+      State('A', [output, Constant('y', 2)],
+            [(nested, 'End'), (second, 'End')])], output_labels=('x', 'y'))
+    sent = self._capture_send(scheduler)
+    data = {'enabled': [False]}
+    self._set_batches(scheduler, [data])
+    scheduler.begin()
+    scheduler._last_t_sched = 10
+
+    with patch.object(scheduler_module, 'monotonic', return_value=12):
+      scheduler.loop()
+
+    for component in (first, second, output):
+      self.assertEqual(component.calls, [(2, data)])
+    self.assertEqual(sent, [{'x': 1, 'y': 2, 'state': 'A'}])
 
   def test_loop_filters_inputs_and_reuses_latest_value(self) -> None:
     """Only selected labels are passed to outputs, with cached last values."""

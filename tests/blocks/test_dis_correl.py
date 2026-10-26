@@ -94,14 +94,14 @@ class TestDISCorrel(CameraWrapperTestBase):
                 **self.camera_kwargs())
 
     cases = (
-      ['too', 'few'],
-      ['same'] * 6,
-      ['time', 'meta', 'x', 'y', 'exx', 1],
+      (['too', 'few'], ValueError),
+      (['same'] * 6, ValueError),
+      (['time', 'meta', 'x', 'y', 'exx', 1], TypeError),
     )
 
-    for labels in cases:
+    for labels, error in cases:
       with self.subTest(labels=labels):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(error):
           DISCorrel(patch=(0, 0, 2, 2), labels=labels,
                     **self.camera_kwargs())
 
@@ -144,7 +144,7 @@ class TestDISCorrel(CameraWrapperTestBase):
                       iterations=5,
                       gradient_iterations=6,
                       patch_size=7,
-                      patch_stride=8,
+                      patch_stride=6,
                       residual=True,
                       border=(9, 10),
                       follow=True,
@@ -173,7 +173,7 @@ class TestDISCorrel(CameraWrapperTestBase):
       'iterations': 5,
       'gradient_iterations': 6,
       'patch_size': 7,
-      'patch_stride': 8,
+      'patch_stride': 6,
       'residual': True,
       'border': (9, 10),
       'follow': True,

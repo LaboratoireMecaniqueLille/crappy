@@ -52,17 +52,30 @@ class TestDisplayer(CameraProcessTestBase):
 
     super().tearDown()
 
-  def test_arguments_are_validated(self) -> None:
-    """Checks constructor validation."""
+  def test_title_is_validated(self) -> None:
+    """Checks the title introduced here; Camera checks display options."""
 
-    with self.assertRaises(ValueError):
-      Displayer(title='invalid', framerate=0, backend='cv2')
+    for title, error in ((None, TypeError), (1, TypeError),
+                          ('', ValueError), (' ', ValueError)):
+      with self.subTest(title=title), self.assertRaises(error):
+        Displayer(title=title, framerate=5, backend='mpl')
 
-    with self.assertRaises(ValueError):
-      Displayer(title='invalid', framerate=-1, backend='cv2')
+  def test_receive_timeout_is_rejected_before_throttling(self) -> None:
+    """Invalid timeouts never reach the parent's image receive method."""
 
-    with self.assertRaises(ValueError):
-      Displayer(title='invalid', framerate=1, backend='bad')
+    displayer = Displayer(title='timeout validation', framerate=5, backend='mpl')
+    self._process = displayer
+    self.make_shared(process=displayer, shape=(2, 3), dtype=np.uint8)
+    for timeout, error in ((None, TypeError), ('1', TypeError),
+                            (float('inf'), ValueError),
+                            (float('nan'), ValueError), (-1, ValueError)):
+      with self.subTest(timeout=timeout), \
+           patch.object(display_module.CameraProcess, '_get_data') as receive:
+        with self.assertRaises(error):
+          displayer._get_data(timeout)
+        receive.assert_not_called()
+
+    self.assertFalse(displayer._get_data(0))
 
   def test_unavailable_backends_retain_the_import_cause(self) -> None:
     """The no-backend diagnostic must retain the actual import failure."""

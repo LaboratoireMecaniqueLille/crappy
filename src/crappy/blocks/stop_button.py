@@ -9,6 +9,7 @@ from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
 tk = OptionalModule('tkinter', lazy_import=True)
 QtCore = OptionalModule('PyQt6.QtCore', lazy_import=True)
@@ -79,13 +80,8 @@ class StopButton(Block):
     self.debug = debug
     self.pausable = False
 
-    match backend:
-      case str() if backend in ('tkinter', 'pyqt'):
-        self._backend: Literal['tkinter', 'pyqt'] = backend
-      case str():
-        raise ValueError("The backend must be either 'tkinter' or 'pyqt'")
-      case _:
-        raise TypeError("The backend must be either 'tkinter' or 'pyqt'")
+    check.choice(backend, 'backend', ('tkinter', 'pyqt'))
+    self._backend: Literal['tkinter', 'pyqt'] = backend
 
     # Attributes related to tkinter
     self._label: tk.Label | None = None
@@ -123,8 +119,7 @@ class StopButton(Block):
       assert self._qt_app is not None
       self._qt_app.processEvents()
 
-    if self._failure_manager is not None:
-      self._failure_manager.raise_if_failed('GUI callback failures')
+    self._failure_manager.raise_if_failed('GUI callback failures')
     self.log(logging.DEBUG, "GUI updated")
 
   def finish(self) -> None:

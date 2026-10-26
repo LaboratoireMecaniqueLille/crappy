@@ -8,6 +8,7 @@ import logging
 from multiprocessing import current_process
 from collections import defaultdict
 
+from ... import _validation as check
 from ..._exceptions import DefinitionError
 
 
@@ -58,6 +59,9 @@ class InOut:
     
     .. versionadded:: 2.0.0
     """
+
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._logger = logging.getLogger(
@@ -239,6 +243,8 @@ class InOut:
 
     .. versionadded:: 1.5.10
     """
+
+    check.real(delay, 'delay', minimum=0)
 
     buf = []
     buf_dict = defaultdict(list)

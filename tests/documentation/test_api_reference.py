@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from importlib import import_module
+from inspect import getdoc, isfunction, signature
 from pathlib import Path
 import unittest
 
@@ -152,3 +153,19 @@ class TestPublicApiReference(unittest.TestCase):
     for name in ('VisionBlock', 'crappy.blocks.vision.CameraSource'):
       entry = source.split(f'.. autoclass:: {name}\n', 1)[1].split('\n\n', 1)[0]
       self.assertIn('resolve_config_requests', entry)
+
+  def test_validation_helpers_have_docstrings(self) -> None:
+    """Private validation helpers document their arguments in the source."""
+
+    module = import_module('crappy._validation')
+    helpers = {name: value for name, value in vars(module).items()
+               if isfunction(value) and value.__module__ == module.__name__}
+    self.assertTrue(helpers)
+    for name, helper in helpers.items():
+      with self.subTest(helper=name):
+        docstring = getdoc(helper)
+        self.assertIsNotNone(docstring)
+        self.assertIn('Args:', docstring)
+        self.assertIn('Raises:', docstring)
+        for parameter in signature(helper).parameters:
+          self.assertIn(f'\n  {parameter}:', docstring)

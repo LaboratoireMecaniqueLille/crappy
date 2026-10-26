@@ -5,6 +5,7 @@ import numpy as np
 
 from .meta_inout import InOut
 from .._global import OptionalModule
+from .. import _validation as check
 
 try:
   from psutil import virtual_memory
@@ -46,10 +47,10 @@ class FakeInOut(InOut):
       *cmd: The target memory usage to set, in percent as a :obj:`float`.
     """
 
-    if not isinstance(cmd[0], float) and not isinstance(cmd[0], int):
-      raise TypeError("Not the right command type for the FakeInOut !")
-    if not 0 <= cmd[0] <= 100:
-      raise ValueError("Command should be a percentage of memory usage !")
+    check.sequence(cmd, 'cmd', minimum=1)
+    check.real(cmd[0], 'cmd', minimum=0, maximum=100)
+    for value in cmd[1:]:
+      check.real(value, 'cmd')
 
     if cmd[0] > (mem := virtual_memory().percent):
       self._buf.append([0] * 1024*1024)

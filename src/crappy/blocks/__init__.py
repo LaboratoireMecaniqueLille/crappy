@@ -48,6 +48,8 @@ def is_reserved(cls: type) -> bool:
   .. versionadded:: 2.2.0
   """
 
+  check.instance(cls, 'cls', type)
+
   from .vision import _EXPORTS as vision_exports
 
   for exports, package in ((_EXPORTS, __name__),
@@ -58,6 +60,7 @@ def is_reserved(cls: type) -> bool:
   return False
 
 
+from .. import _validation as check
 from .meta_block import Block
 
 __all__ = ('Block', *tuple(_EXPORTS))
