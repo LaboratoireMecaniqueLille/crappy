@@ -1,4 +1,4 @@
-# Installs the Python dependencies, installs Crappy, and checks that it imports
+# Run unittest checks with independent headless and graphical interpreters
 name: Test Python Package
 
 permissions:
@@ -64,24 +64,8 @@ jobs:
       env:
         MPLBACKEND: Agg
       run: |
-        python -m unittest -v tests.framework
-        python -m unittest -v tests.actuator
-        python -m unittest -v tests.block
-        python -m unittest -v tests.blocks
-        python -m unittest -v tests.camera
-        python -m unittest -v tests.camera_configuration.base
-        python -m unittest -v tests.collection
-        python -m unittest -v tests.camera_configuration_tools
-        python -m unittest -v tests.camera_process
-        python -m unittest -v tests.camera_processes
-        python -m unittest -v tests.generator_path
-        python -m unittest -v tests.image_processing
-        python -m unittest -v tests.inout
-        python -m unittest -v tests.integration
-        python -m unittest -v tests.links
-        python -m unittest -v tests.modifier
-        python -m unittest -v tests.schedulers
-        python -m unittest -v tests.vision
+        python -m unittest discover -s tests/unit -t . -v
+        python -m unittest discover -s tests/integration -t . -v
     # Keep Tk and Qt Blocks in separate interpreters to avoid crash on macOS
     # Grapher's Matplotlib tests use Agg, so its class belongs to the Qt group.
     # The Ubuntu runner is headless, xvfb-run starts and cleans up Xvfb for us
@@ -90,17 +74,14 @@ jobs:
       env:
         MPLBACKEND: TkAgg
       run: |
-        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v \
-          tests.blocks_gui.TestButton tests.blocks_gui.TestCanvas \
-          tests.blocks_gui.TestDashboard tests.blocks_gui.TestStopButton
-        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v \
-          tests.blocks_gui.TestButtonPyQt tests.blocks_gui.TestCanvasPyQt \
-          tests.blocks_gui.TestDashboardPyQt tests.blocks_gui.TestStopButtonPyQt \
-          tests.blocks_gui.TestGrapher
-        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_configuration.pyqt
-        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_configuration.tkinter
-        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.camera_processes_gui
-        xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests.vision_gui
+        CRAPPY_TEST_GUI=tkinter xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
+          python -m unittest discover -s tests/gui/tkinter -t . -v
+        CRAPPY_TEST_GUI=pyqt xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
+          python -m unittest discover -s tests/gui/pyqt -t . -v
+        CRAPPY_TEST_GUI=display xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
+          python -m unittest discover -s tests/gui/display/camera_processes -t . -v
+        CRAPPY_TEST_GUI=display xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
+          python -m unittest discover -s tests/gui/display/vision -t . -v
     # GitHub-hosted Windows and macOS runners provide a native GUI session
     - name: Test Crappy (graphical, Windows)
       if: runner.os == 'Windows'
@@ -109,17 +90,10 @@ jobs:
         MPLBACKEND: TkAgg
       run: |
         python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
-        python -m unittest -v \
-          tests.blocks_gui.TestButton tests.blocks_gui.TestCanvas \
-          tests.blocks_gui.TestDashboard tests.blocks_gui.TestStopButton
-        python -m unittest -v \
-          tests.blocks_gui.TestButtonPyQt tests.blocks_gui.TestCanvasPyQt \
-          tests.blocks_gui.TestDashboardPyQt tests.blocks_gui.TestStopButtonPyQt \
-          tests.blocks_gui.TestGrapher
-        python -m unittest -v tests.camera_configuration.pyqt
-        python -m unittest -v tests.camera_configuration.tkinter
-        python -m unittest -v tests.camera_processes_gui
-        python -m unittest -v tests.vision_gui
+        CRAPPY_TEST_GUI=tkinter python -m unittest discover -s tests/gui/tkinter -t . -v
+        CRAPPY_TEST_GUI=pyqt python -m unittest discover -s tests/gui/pyqt -t . -v
+        CRAPPY_TEST_GUI=display python -m unittest discover -s tests/gui/display/camera_processes -t . -v
+        CRAPPY_TEST_GUI=display python -m unittest discover -s tests/gui/display/vision -t . -v
     # On macOS, Tk test processes need to retain their first Tcl interpreter
     - name: Test Crappy (graphical, macOS)
       if: runner.os == 'macOS'
@@ -128,14 +102,10 @@ jobs:
         MPLBACKEND: TkAgg
       run: |
         python -c "import tkinter as tk; root = tk.Tk(); root.withdraw(); root.update_idletasks(); root.destroy()"
-        python .github/scripts/run_macos_tk_tests.py -v \
-          tests.blocks_gui.TestButton tests.blocks_gui.TestCanvas \
-          tests.blocks_gui.TestDashboard tests.blocks_gui.TestStopButton
-        python -m unittest -v \
-          tests.blocks_gui.TestButtonPyQt tests.blocks_gui.TestCanvasPyQt \
-          tests.blocks_gui.TestDashboardPyQt tests.blocks_gui.TestStopButtonPyQt \
-          tests.blocks_gui.TestGrapher
-        python -m unittest -v tests.camera_configuration.pyqt
-        python .github/scripts/run_macos_tk_tests.py -v tests.camera_configuration.tkinter
-        python .github/scripts/run_macos_tk_tests.py -v tests.camera_processes_gui
-        python .github/scripts/run_macos_tk_tests.py -v tests.vision_gui
+        CRAPPY_TEST_GUI=tkinter python .github/scripts/run_macos_tk_tests.py \
+          discover -s tests/gui/tkinter -t . -v
+        CRAPPY_TEST_GUI=pyqt python -m unittest discover -s tests/gui/pyqt -t . -v
+        CRAPPY_TEST_GUI=display python .github/scripts/run_macos_tk_tests.py \
+          discover -s tests/gui/display/camera_processes -t . -v
+        CRAPPY_TEST_GUI=display python .github/scripts/run_macos_tk_tests.py \
+          discover -s tests/gui/display/vision -t . -v

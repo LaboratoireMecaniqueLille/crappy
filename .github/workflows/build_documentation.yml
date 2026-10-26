@@ -43,7 +43,7 @@ jobs:
       - name: Run documentation tests
         env:
           MPLBACKEND: Agg
-        run: python -m unittest -v tests.documentation
+        run: python -m unittest discover -s tests/documentation -t . -v
       - name: Report API coverage
         run: |
           make -C docs api-coverage
