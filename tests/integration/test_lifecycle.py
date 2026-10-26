@@ -4,7 +4,7 @@ import csv
 import json
 from math import isfinite
 
-from .integration_test_base import IntegrationTestBase
+from tests.support.integration import IntegrationTestBase
 
 
 class TestLifecycleIntegration(IntegrationTestBase):

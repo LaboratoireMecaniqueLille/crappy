@@ -21,8 +21,8 @@ try:
 except (ImportError, ModuleNotFoundError):
   skimage = None
 
-from .integration_test_base import IntegrationTestBase
-from .scenarios.vision_blocks import generate_vision_test_image
+from tests.support.integration import IntegrationTestBase
+from tests.integration.scenarios.vision_blocks import generate_vision_test_image
 
 
 class TestVisionBlocksIntegration(IntegrationTestBase):

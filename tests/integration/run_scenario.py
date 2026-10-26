@@ -8,7 +8,7 @@ from pathlib import Path
 
 import crappy
 
-from .scenarios import scenario_builders
+from tests.integration.scenarios.registry import scenario_builders
 
 
 def main() -> None:

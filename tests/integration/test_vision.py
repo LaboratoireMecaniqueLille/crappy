@@ -12,8 +12,8 @@ try:
 except (ImportError, ModuleNotFoundError):
   cv2 = None
 
-from .integration_test_base import IntegrationTestBase
-from .scenarios.vision import generate_test_image
+from tests.support.integration import IntegrationTestBase
+from tests.integration.scenarios.vision import generate_test_image
 
 
 class TestVisionIntegration(IntegrationTestBase):

@@ -15,7 +15,7 @@ from crappy.blocks.vision.block import ConfigRequest
 from crappy.tool.camera_config import SpotsBoxes
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
-from .vision import CorrelationRecorder
+from tests.integration.scenarios.vision import CorrelationRecorder
 
 
 def generate_vision_test_image(_: float, __: float) -> np.ndarray:

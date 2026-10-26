@@ -1,0 +1,229 @@
+# coding: utf-8
+
+import numpy as np
+from unittest.mock import Mock, patch
+
+import crappy.blocks.camera_processes.camera_process as camera_process_module
+
+from tests.support.camera_processes import CameraProcessTestBase, TestCameraProcess
+
+
+class TestRunCycle(CameraProcessTestBase):
+  """Tests the CameraProcess execution cycle driven by run."""
+
+  def test_normal_run(self) -> None:
+    """Tests the nominal init/barrier/loop/finish sequence."""
+
+    self._process = TestCameraProcess()
+    shared = self.make_shared()
+    img = np.arange(12, dtype=np.uint8).reshape(3, 4)
+    self.write_image(shared, img, {'ImageUniqueID': 3, 't(s)': 1.5})
+
+    self._process.start()
+    self._process.join(4.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertFalse(shared.barrier.broken)
+    self.assertTrue(shared.stop_event.is_set())
+
+    self.assertTrue(self._process.initialized.is_set())
+    self.assertTrue(self._process.looped.is_set())
+    self.assertTrue(self._process.finished.is_set())
+    self.assertEqual(self._process.loops.value, 1)
+    self.assertEqual(self._process.last_image_id.value, 3)
+    self.assertEqual(self._process.last_image_sum.value, float(np.sum(img)))
+
+  def test_stop_event(self) -> None:
+    """Tests that an already-set stop Event skips the loop body."""
+
+    self._process = TestCameraProcess()
+    shared = self.make_shared()
+    shared.stop_event.set()
+
+    self._process.start()
+    self._process.join(4.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertTrue(shared.barrier.broken)
+    self.assertTrue(shared.stop_event.is_set())
+    self.assertEqual(self.receive_failures(shared).snapshot(), ())
+
+    self.assertTrue(self._process.initialized.is_set())
+    self.assertFalse(self._process.looped.is_set())
+    self.assertTrue(self._process.finished.is_set())
+    self.assertEqual(self._process.loops.value, 0)
+
+  def test_idle_process_stops_without_notification(self) -> None:
+    """The finite receive timeout notices an unnotified stop request."""
+
+    self._process = TestCameraProcess()
+    shared = self.make_shared()
+    self._process.start()
+    self.assertTrue(self._process.initialized.wait(timeout=3.0))
+
+    shared.stop_event.set()
+    self._process.join(timeout=3.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertTrue(self._process.finished.is_set())
+    self.assertFalse(self._process.looped.is_set())
+
+  def test_handle_freq(self) -> None:
+    """Tests the internal frequency bookkeeping during a run."""
+
+    self._process = TestCameraProcess()
+    shared = self.make_shared(display_freq=True)
+    img = np.arange(12, dtype=np.uint8).reshape(3, 4)
+    self.write_image(shared, img)
+
+    times = iter((0.0, 3.0))
+    with patch.object(camera_process_module, 'monotonic', side_effect=times):
+      self._process.run()
+
+    self.assertFalse(shared.barrier.broken)
+    self.assertTrue(shared.stop_event.is_set())
+
+    self.assertTrue(self._process.initialized.is_set())
+    self.assertTrue(self._process.looped.is_set())
+    self.assertTrue(self._process.finished.is_set())
+
+    self.assertEqual(self._process.fps_count, 0)
+    self.assertEqual(self._process._last_fps, 3.0)
+
+  def test_raise_init(self) -> None:
+    """Tests that an exception during init breaks the shared barrier."""
+
+    self._process = TestCameraProcess(raise_in='init')
+    shared = self.make_shared()
+
+    self._process.start()
+    self._process.join(4.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    reports = self.receive_failures(shared).snapshot()
+    self.assertEqual(len(reports), 1)
+    self.assertEqual(reports[0][0].nodes[0].type_name,
+                     'ExpectedProcessError')
+    self.assertTrue(shared.barrier.broken)
+    self.assertTrue(shared.stop_event.is_set())
+
+    self.assertTrue(self._process.initialized.is_set())
+    self.assertFalse(self._process.looped.is_set())
+    self.assertTrue(self._process.finished.is_set())
+
+  def test_raise_loop(self) -> None:
+    """Tests that an exception during loop sets the stop Event."""
+
+    self._process = TestCameraProcess(raise_in='loop')
+    shared = self.make_shared()
+    img = np.arange(12, dtype=np.uint8).reshape(3, 4)
+    self.write_image(shared, img, {'ImageUniqueID': 7, 't(s)': 2.0})
+
+    self._process.start()
+    self._process.join(4.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    reports = self.receive_failures(shared).snapshot()
+    self.assertEqual(len(reports), 1)
+    self.assertEqual(reports[0][0].nodes[0].type_name,
+                     'ExpectedProcessError')
+    self.assertFalse(shared.barrier.broken)
+    self.assertTrue(shared.stop_event.is_set())
+
+    self.assertTrue(self._process.initialized.is_set())
+    self.assertTrue(self._process.looped.is_set())
+    self.assertTrue(self._process.finished.is_set())
+    self.assertEqual(self._process.loops.value, 1)
+    self.assertEqual(self._process.last_image_id.value, 7)
+
+  def test_raise_finish(self) -> None:
+    """Tests that an exception during finish is contained by the process."""
+
+    self._process = TestCameraProcess(raise_in='finish')
+    shared = self.make_shared()
+    img = np.arange(12, dtype=np.uint8).reshape(3, 4)
+    self.write_image(shared, img)
+
+    self._process.start()
+    self._process.join(4.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertFalse(shared.barrier.broken)
+    self.assertTrue(shared.stop_event.is_set())
+
+    self.assertTrue(self._process.initialized.is_set())
+    self.assertTrue(self._process.looped.is_set())
+    self.assertTrue(self._process.finished.is_set())
+    self.assertEqual(self._process.loops.value, 1)
+
+  def test_broken_barrier(self) -> None:
+    """Tests the behavior when the ready barrier is already broken."""
+
+    self._process = TestCameraProcess()
+    shared = self.make_shared()
+    shared.barrier.abort()
+
+    self._process.start()
+    self._process.join(4.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertTrue(shared.barrier.broken)
+    self.assertTrue(shared.stop_event.is_set())
+
+    self.assertTrue(self._process.initialized.is_set())
+    self.assertFalse(self._process.looped.is_set())
+    self.assertTrue(self._process.finished.is_set())
+
+  def test_finish_failure_still_closes_overlay_endpoint(self) -> None:
+    """A failing finish hook cannot skip the process-owned Pipe copy."""
+
+    self._process = TestCameraProcess(raise_in='finish')
+    shared = self.make_shared()
+    shared.stop_event.set()
+    endpoint = Mock()
+    self._process._to_draw_conn = endpoint
+    self._process.run()
+    endpoint.close.assert_called_once_with()
+    self.assertIsNone(self._process._to_draw_conn)
+    self.assertTrue(self._process.finished.is_set())
+
+  def test_overlay_close_failure_is_reported_and_requests_stop(self) -> None:
+    """Pipe cleanup failures retain their context and notify peer processes."""
+
+    self._process = TestCameraProcess()
+    shared = self.make_shared()
+    shared.barrier.abort()
+    endpoint = Mock()
+    error = OSError('overlay close')
+    endpoint.close.side_effect = error
+    self._process._to_draw_conn = endpoint
+    logger = Mock()
+    self._process._logger = logger
+    with patch.object(self._process, '_set_logger'):
+      self._process.run()
+    endpoint.close.assert_called_once_with()
+    self.assertTrue(shared.stop_event.is_set())
+    self.assertTrue(self._process.finished.is_set())
+    self.assertIn('close overlay Pipe', error.__notes__[0])
+    logger.error.assert_called_once()
+    logger.exception.assert_not_called()
+    self.assertIs(self._process._failure_manager.snapshot()[0][1], error)
+
+  def test_keyboard_interrupt(self) -> None:
+    """Tests that KeyboardInterrupt exits cleanly through finish."""
+
+    self._process = TestCameraProcess(raise_in='keyboard')
+    shared = self.make_shared()
+    img = np.arange(12, dtype=np.uint8).reshape(3, 4)
+    self.write_image(shared, img)
+
+    self._process.start()
+    self._process.join(4.0)
+
+    self.assertEqual(self._process.exitcode, 0)
+    self.assertFalse(shared.barrier.broken)
+    self.assertTrue(shared.stop_event.is_set())
+
+    self.assertTrue(self._process.initialized.is_set())
+    self.assertTrue(self._process.looped.is_set())
+    self.assertTrue(self._process.finished.is_set())

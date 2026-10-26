@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.support.paths import PROJECT_ROOT
+
 from pathlib import Path
 import unittest
 
@@ -7,7 +9,7 @@ import unittest
 class TestCustomObjectTutorialDownloads(unittest.TestCase):
   """Checks the downloadable custom-object examples."""
 
-  _download_dir = (Path(__file__).resolve().parents[2] / 'docs' / 'source' /
+  _download_dir = (PROJECT_ROOT / 'docs' / 'source' /
                    'downloads' / 'custom_objects')
   _examples = {
     'custom_actuator_simulated.py': 'custom-actuator',

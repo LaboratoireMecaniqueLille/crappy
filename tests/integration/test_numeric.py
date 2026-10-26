@@ -12,7 +12,7 @@ try:
 except (ImportError, ModuleNotFoundError):
   tables = None
 
-from .integration_test_base import IntegrationTestBase
+from tests.support.integration import IntegrationTestBase
 
 
 class TestNumericIntegration(IntegrationTestBase):

@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.support.paths import PROJECT_ROOT
+
 import ast
 from contextlib import redirect_stdout
 from io import StringIO
@@ -11,7 +13,7 @@ import unittest
 class TestFailureDocumentation(unittest.TestCase):
   """Checks failure API documentation and the user-facing handling example."""
 
-  _root = Path(__file__).resolve().parents[2]
+  _root = PROJECT_ROOT
 
   def test_failure_methods_document_arguments_and_results(self) -> None:
     """Keeps failure methods typed and their inputs and results explained."""

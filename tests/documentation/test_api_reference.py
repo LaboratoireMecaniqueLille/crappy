@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.support.paths import PROJECT_ROOT
+
 from importlib import import_module
 from inspect import getdoc, isfunction, signature
 from pathlib import Path
@@ -11,7 +13,7 @@ import crappy
 class TestPublicApiReference(unittest.TestCase):
   """Keeps the intentional top-level API aligned with its reference pages."""
 
-  _source_dir = (Path(__file__).resolve().parents[2] / 'docs' / 'source' /
+  _source_dir = (PROJECT_ROOT / 'docs' / 'source' /
                  'crappy_docs')
 
   # Each user-facing top-level export maps to a unique, searchable marker in

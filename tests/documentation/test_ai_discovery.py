@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.support.paths import PROJECT_ROOT
+
 from pathlib import Path
 from re import findall
 from runpy import run_path
@@ -10,7 +12,7 @@ from urllib.parse import urlparse
 class TestAiDiscovery(unittest.TestCase):
   """Keeps the hand-reviewed AI entry point published and internally valid."""
 
-  _source_dir = (Path(__file__).resolve().parents[2] / 'docs' / 'source')
+  _source_dir = (PROJECT_ROOT / 'docs' / 'source')
   _llms_path = _source_dir / 'llms.txt'
 
   def test_llms_file_is_published(self) -> None:

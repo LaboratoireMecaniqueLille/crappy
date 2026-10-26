@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.support.paths import PROJECT_ROOT
+
 from ast import literal_eval
 from pathlib import Path
 from re import search, DOTALL, MULTILINE
@@ -9,7 +11,7 @@ import unittest
 class TestInstallationMetadata(unittest.TestCase):
   """Keeps documented base requirements aligned with package metadata."""
 
-  _repository = Path(__file__).resolve().parents[2]
+  _repository = PROJECT_ROOT
   _pyproject = (_repository / 'pyproject.toml').read_text(encoding='utf-8')
   _installation = (_repository / 'docs' / 'source' /
                    'installation.rst').read_text(encoding='utf-8')
