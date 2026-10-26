@@ -1,55 +1,92 @@
-Tests
-=====
+# Tests
 
-This directory contains Crappy's unit and integration test suites. The tests
-use Python's built-in ``unittest`` package and are organized by the package
-or feature they cover.
+Crappy uses Python's built-in `unittest` framework. Run commands from the
+repository root with the interpreter configured for the project.
 
-Installing the test dependencies
---------------------------------
+## Install dependencies
 
-From the repository root, install Crappy and the dependencies needed by the
-test suite:
+```bash
+python -m pip install .
+python -m pip install -r tests/requirements.txt
+```
 
-    python -m pip install .
-    python -m pip install -r tests/requirements.txt
+The existing test requirements include the CPU image/file-processing and PyQt6
+dependencies. Tkinter also needs Tk, which may require a separate system 
+package on Linux. GUI groups require a working display or Xvfb.
 
-The graphical tests require PyQt6 for the default Button, Canvas, Dashboard,
-StopButton, and camera-configuration interfaces. Grapher additionally requires
-PyQtGraph. Both packages are included in ``tests/requirements.txt``.
+The suite uses software devices, synthetic images, and test extensions. It does
+not test hardware drivers, GPU objects, MQTT services, or serial protocols.
 
-The Tkinter compatibility tests also require Tk. It is included with the
-standard Python installers on Windows and macOS, but may need to be installed
-separately on Linux.
+## Find a test
 
-Running the tests
------------------
+| Directory | Coverage |
+| --- | --- |
+| `tests/unit/` | Feature tests, grouped by package. |
+| `tests/integration/` | Real scripts with multi-processing. |
+| `tests/gui/tkinter/` | Tkinter Blocks and camera-configuration windows. |
+| `tests/gui/pyqt/` | PyQt Blocks, PyQtGraph, and camera-configuration windows. |
+| `tests/gui/display/` | CameraProcess and VisionBlock image display. |
+| `tests/documentation/` | Examples, downloads, references, and documentation metadata. |
+| `tests/support/` | Shared fixtures and resource helpers. |
+| `tests/gui/_support/` | GUI behavior helpers shared by the camera configuration backend test classes. |
 
-Run the complete suite from the repository root with:
+## Run headless tests
 
-    python -m unittest -v tests
+Run all headless tests, integration scenarios, and documentation checks with:
 
-An individual package or test module can also be run directly, for example:
+```bash
+python -m unittest discover -s tests -t . -v
+```
 
-    python -m unittest -v tests.modifier
-    python -m unittest -v tests.modifier.test_mean
+Graphical modules are intentionally skipped unless their group is explicitly
+selected. An available display does not automatically enable them. In a
+headless environment, set `MPLBACKEND=Agg` before starting Python.
 
-Camera-configuration tests are grouped into ``tests.camera_configuration.base``
-(headless shared behavior), ``tests.camera_configuration.tkinter``, and
-``tests.camera_configuration.pyqt`` (backend integration). The aggregate
-``tests.camera_configuration`` entry point runs all three layers.
+You can run a test level, feature, module, class, or method directly:
 
-The ``tests.blocks.test_gui_backends`` module checks backend selection,
-argument validation, Link restrictions, optional imports, application setup,
-and callback failures without a display. The ``tests.blocks_gui`` package
-checks actual Tkinter and PyQt6 windows, widget callbacks, received values,
-Canvas overlays, and cleanup. Common behavior is exercised on both backends.
+```bash
+python -m unittest discover -s tests/unit -t . -v
+python -m unittest discover -s tests/integration -t . -v
+python -m unittest discover -s tests/documentation -t . -v
+python -m unittest discover -s tests/unit/modifier -t . -v
+python -m unittest discover -s tests/unit/modifier -t . -p 'test_mean.py' -v
+python -m unittest tests.unit.modifier.test_mean -v
+python -m unittest tests.unit.modifier.test_mean.TestMean -v
+python -m unittest tests.unit.modifier.test_mean.TestMean.test_averages_all_labels_independently -v
+```
 
-The ``blocks_gui``, camera-configuration backend suites,
-``camera_processes_gui``, and ``vision_gui`` packages open graphical interfaces
-and therefore require a display. On a headless Linux system, run them through
-Xvfb, for example:
+Keep `-t .` in discovery commands so test modules and multiprocessing targets
+have the same importable names. Loading a package by name alone, such as
+`python -m unittest tests.unit.modifier`, does not recursively discover it.
 
-    xvfb-run --auto-servernum python -m unittest -v tests.blocks_gui
+## Run graphical tests
 
-The tests run every non-graphical package with the Matplotlib ``Agg`` backend.
+Set `CRAPPY_TEST_GUI` to exactly one of `tkinter`, `pyqt`, or `display` and
+discover the corresponding directory in a fresh interpreter. Set
+`MPLBACKEND=TkAgg` for these commands.
+
+For a native display, these Bash examples run each group separately:
+
+```bash
+CRAPPY_TEST_GUI=tkinter MPLBACKEND=TkAgg python -m unittest discover -s tests/gui/tkinter -t . -v
+CRAPPY_TEST_GUI=pyqt MPLBACKEND=TkAgg python -m unittest discover -s tests/gui/pyqt -t . -v
+CRAPPY_TEST_GUI=display MPLBACKEND=TkAgg python -m unittest discover -s tests/gui/display/camera_processes -t . -v
+CRAPPY_TEST_GUI=display MPLBACKEND=TkAgg python -m unittest discover -s tests/gui/display/vision -t . -v
+```
+
+On Windows PowerShell, set the environment before the corresponding command,
+for example `$env:CRAPPY_TEST_GUI = 'pyqt'` and `$env:MPLBACKEND = 'TkAgg'`.
+Use a fresh Python process for each group. Do not collect Tk and Qt tests in
+the same interpreter.
+
+On headless Linux, prefix each GUI command with Xvfb:
+
+```bash
+CRAPPY_TEST_GUI=tkinter MPLBACKEND=TkAgg xvfb-run --auto-servernum python -m unittest discover -s tests/gui/tkinter -t . -v
+```
+
+On macOS, Tk and image-display groups use the existing Tcl-lifetime wrapper:
+
+```bash
+CRAPPY_TEST_GUI=tkinter MPLBACKEND=TkAgg python .github/scripts/run_macos_tk_tests.py discover -s tests/gui/tkinter -t . -v
+```
