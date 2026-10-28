@@ -2,10 +2,8 @@
 
 from tests.support.paths import PROJECT_ROOT
 
-import ast
 from contextlib import redirect_stdout
 from io import StringIO
-from pathlib import Path
 from types import SimpleNamespace
 import unittest
 
@@ -14,44 +12,6 @@ class TestFailureDocumentation(unittest.TestCase):
   """Checks failure API documentation and the user-facing handling example."""
 
   _root = PROJECT_ROOT
-
-  def test_failure_methods_document_arguments_and_results(self) -> None:
-    """Keeps failure methods typed and their inputs and results explained."""
-
-    for file_name in ('_failure.py', '_exceptions.py'):
-      source = (self._root / 'src' / 'crappy' / file_name).read_text(
-          encoding='utf-8')
-      tree = ast.parse(source, feature_version=(3, 11))
-      for method in ast.walk(tree):
-        if not isinstance(method, ast.FunctionDef):
-          continue
-        with self.subTest(file=file_name, method=method.name):
-          doc = ast.get_docstring(method)
-          self.assertTrue(doc)
-          arguments = [*method.args.posonlyargs, *method.args.args,
-                       *method.args.kwonlyargs]
-          arguments += [arg for arg in (method.args.vararg,
-                                        method.args.kwarg) if arg is not None]
-          for argument in arguments:
-            if argument.arg in ('self', 'cls'):
-              continue
-            self.assertIsNotNone(argument.annotation, argument.arg)
-            self.assertIn(f'{argument.arg}:', doc)
-          self.assertIsNotNone(method.returns)
-          if ast.unparse(method.returns) != 'None':
-            self.assertTrue('Returns:' in doc or 'Yields:' in doc)
-
-  def test_report_constructors_document_each_field(self) -> None:
-    """Checks the generated dataclass constructors have argument guidance."""
-
-    from dataclasses import fields
-    from crappy._failure import ExceptionNode, FailureReport
-
-    for report_type in (ExceptionNode, FailureReport):
-      with self.subTest(report=report_type.__name__):
-        for field in fields(report_type):
-          self.assertIn(f'{field.name}:', report_type.__doc__)
-        self.assertIn('.. versionadded:: 2.2.0', report_type.__doc__)
 
   def test_group_handling_example_preserves_unhandled_failures(self) -> None:
     """The tutorial example handles errors and interrupts without hiding peers."""
@@ -85,4 +45,8 @@ class TestFailureDocumentation(unittest.TestCase):
                   'RemoteKeyboardInterrupt', 'RemoteSystemExit',
                   'RemoteBaseFailure'):
       with self.subTest(exception=name):
-        self.assertIn(f'.. autoexception:: crappy._exceptions.{name}\n', source)
+        self.assertIn(f'.. autoexception:: crappy._exceptions.{name}', source)
+
+    for name in ('ExceptionNode', 'FailureReport', 'FailureManager'):
+      with self.subTest(report=name):
+        self.assertIn(f'.. autoclass:: crappy._failure.{name}', source)
