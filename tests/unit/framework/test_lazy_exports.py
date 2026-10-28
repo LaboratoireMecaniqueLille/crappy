@@ -230,9 +230,9 @@ class TestLazyExports(TestCase):
     self._run_script('''
       import importlib
       import pickle
-      try:
-        import cv2
-      except ImportError:
+      from tests.support.dependencies import optional_import
+      cv2 = optional_import('cv2')
+      if cv2 is None:
         raise SystemExit(77)
       expected = {
         'crappy': 'actuator blocks camera inout lamcube links modifier tool __version__ OptionalModule docs resources link img_link display_graph Block VisionBlock Actuator Camera InOut Modifier Path stop prepare launch start renice reset',

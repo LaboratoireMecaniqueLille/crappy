@@ -8,6 +8,8 @@ require_gui_group('tkinter')
 
 import gc
 import logging
+import os
+from platform import system
 from crappy._failure import FailureManager
 from multiprocessing import Queue, current_process
 from multiprocessing.process import BaseProcess
@@ -15,17 +17,15 @@ from time import monotonic
 import unittest
 from unittest.mock import Mock, patch
 
-try:
-  import tkinter as tk
-except (ImportError, ModuleNotFoundError) as exc:
-  raise unittest.SkipTest("tkinter is required for camera configuration tests") \
-      from exc
+from tests.support.dependencies import optional_import
 
-try:
-  from PIL import Image as _PILImage
-except (ImportError, ModuleNotFoundError) as exc:
-  raise unittest.SkipTest("Pillow is required for camera configuration tests") \
-      from exc
+if optional_import('_tkinter') is None:
+  raise unittest.SkipTest("Tk support is required for camera configuration tests")
+tk = optional_import('tkinter')
+if tk is None:
+  raise unittest.SkipTest("tkinter is required for camera configuration tests")
+if optional_import('PIL.Image') is None:
+  raise unittest.SkipTest("Pillow is required for camera configuration tests")
 
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 from crappy.camera.meta_camera import Camera
@@ -45,14 +45,13 @@ class TkinterConfigTestCase(unittest.TestCase):
     """Skip Tk tests if no display is available, without affecting other layers."""
 
     super().setUpClass()
+    if system() == 'Linux' and not os.environ.get('DISPLAY'):
+      raise unittest.SkipTest("Tk camera configuration tests require an X display")
     root = None
     try:
       root = tk.Tk()
       root.withdraw()
       root.update_idletasks()
-    except tk.TclError as error:
-      raise unittest.SkipTest(
-          f"a working graphical environment is required ({error})") from error
     finally:
       if root is not None:
         root.destroy()

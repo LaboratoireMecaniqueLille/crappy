@@ -12,6 +12,7 @@ import crappy.blocks.vision.record as record_module
 from crappy._global import OptionalModule
 from crappy.blocks.vision import ImageRecorder
 
+from tests.support.dependencies import optional_import
 from tests.support.vision import VisionTestBase
 
 
@@ -375,8 +376,8 @@ class TestImageRecorder(VisionTestBase):
   def test_pil_exif_converts_numpy_scalars_and_skips_unknown_keys(self) -> None:
     """Checks EXIF construction for normal Camera metadata values."""
 
-    if not (record_module.Image.is_available() and
-            record_module.ExifTags.is_available()):
+    if (optional_import('PIL.Image') is None or
+        optional_import('PIL.ExifTags') is None):
       self.skipTest('Pillow is not available')
     tags_inv = {val: key for key, val in record_module.ExifTags.TAGS.items()}
     tmp = TemporaryDirectory()

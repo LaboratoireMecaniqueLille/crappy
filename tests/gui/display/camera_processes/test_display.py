@@ -6,6 +6,7 @@ from tests.support.gui import require_gui_group
 require_gui_group('display')
 
 from tests.support.paths import PROJECT_ROOT
+from tests.support.dependencies import optional_import
 
 import os
 from platform import system
@@ -212,10 +213,10 @@ class TestDisplayer(CameraProcessTestBase):
     backend = display_module.plt.get_backend().lower()
     if (backend in {'agg', 'cairo', 'pdf', 'pgf', 'ps', 'svg', 'template'} or
         'inline' in backend):
-      try:
-        display_module.plt.switch_backend('TkAgg')
-      except ImportError as exc:
-        self.skipTest(f'No usable Matplotlib GUI backend: {exc}')
+      if (optional_import('_tkinter') is None or
+          optional_import('tkinter') is None):
+        self.skipTest('Tk is required for the Matplotlib window test')
+      display_module.plt.switch_backend('TkAgg')
       backend = display_module.plt.get_backend().lower()
 
     self.assertNotIn(backend, {'agg', 'cairo', 'pdf', 'pgf', 'ps', 'svg',

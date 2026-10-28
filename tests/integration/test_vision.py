@@ -7,10 +7,9 @@ import unittest
 
 import numpy as np
 
-try:
-  import cv2  # noqa: F401
-except (ImportError, ModuleNotFoundError):
-  cv2 = None
+from tests.support.dependencies import optional_import
+
+cv2 = optional_import('cv2')
 
 from tests.support.integration import IntegrationTestBase
 from tests.integration.scenarios.vision import generate_test_image

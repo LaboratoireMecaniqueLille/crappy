@@ -6,6 +6,7 @@ from tests.support.gui import require_gui_group
 require_gui_group('display')
 
 from tests.support.paths import PROJECT_ROOT
+from tests.support.dependencies import optional_import
 
 import logging
 import os
@@ -475,7 +476,7 @@ class TestImageDisplayer(VisionTestBase):
     if system() == 'Linux' and not os.environ.get('DISPLAY'):
       self.skipTest('No display is available for GUI lifecycle testing')
 
-    if backend == 'cv2' and not display_module.cv2.is_available():
+    if backend == 'cv2' and optional_import('cv2') is None:
       self.skipTest('OpenCV is not available')
 
     code = textwrap.dedent(f'''\

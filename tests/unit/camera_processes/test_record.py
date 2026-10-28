@@ -10,6 +10,7 @@ import numpy as np
 import crappy.blocks.camera_processes.record as record_module
 from crappy.blocks.camera_processes.record import ImageSaver
 
+from tests.support.dependencies import optional_import
 from tests.support.camera_process_test_case import CameraProcessTestBase
 from tests.support.camera_processes import TestLink
 
@@ -157,8 +158,8 @@ class TestImageSaver(CameraProcessTestBase):
   def test_loop_saves_pil_images_with_exif_metadata(self) -> None:
     """Checks PIL saving for common formats and EXIF object generation."""
 
-    if not (record_module.Image.is_available() and
-            record_module.ExifTags.is_available()):
+    if (optional_import('PIL.Image') is None or
+        optional_import('PIL.ExifTags') is None):
       self.skipTest('Pillow is not available')
     tags_inv = {val: key for key, val in record_module.ExifTags.TAGS.items()}
 
@@ -197,8 +198,8 @@ class TestImageSaver(CameraProcessTestBase):
   def test_pil_exif_converts_numpy_scalars_and_skips_unknown_keys(self) -> None:
     """Checks EXIF construction for normal Crappy metadata values."""
 
-    if not (record_module.Image.is_available() and
-            record_module.ExifTags.is_available()):
+    if (optional_import('PIL.Image') is None or
+        optional_import('PIL.ExifTags') is None):
       self.skipTest('Pillow is not available')
     tags_inv = {val: key for key, val in record_module.ExifTags.TAGS.items()}
     tmp = TemporaryDirectory()

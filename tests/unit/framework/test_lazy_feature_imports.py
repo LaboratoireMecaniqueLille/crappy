@@ -129,9 +129,9 @@ class TestLazyFeatureImports(TestCase):
     self._run_script('''
       import importlib
       from unittest.mock import patch
-      try:
-        import graphviz
-      except ImportError:
+      from tests.support.dependencies import optional_import
+      graphviz = optional_import('graphviz')
+      if graphviz is None:
         raise SystemExit(77)
       module = importlib.import_module('crappy.links.link_graph')
       graph = module.LinkGraph()
@@ -188,10 +188,9 @@ class TestLazyFeatureImports(TestCase):
           if fullname.split('.')[0] in ('tkinter', '_tkinter'):
             raise AssertionError('Tkinter imported by Qt: ' + fullname)
       sys.meta_path.insert(0, RejectTk())
-      try:
-        import PyQt6
-        import pyqtgraph
-      except ImportError:
+      from tests.support.dependencies import optional_import
+      if (optional_import('PyQt6.QtWidgets') is None or
+          optional_import('pyqtgraph') is None):
         raise SystemExit(77)
       import crappy
       from crappy import Block, link
@@ -336,9 +335,9 @@ class TestLazyFeatureImports(TestCase):
       finally:
         sys.meta_path.remove(guard)
       assert 'DashboardWindow' not in vars(module)
-      try:
-        import tkinter
-      except ImportError:
+      from tests.support.dependencies import optional_import
+      tkinter = optional_import('tkinter')
+      if tkinter is None:
         raise SystemExit(77)
       from crappy.blocks.dashboard import DashboardWindow
       from crappy.blocks._dashboard_tkinter import DashboardWindow as implementation
@@ -370,9 +369,9 @@ class TestLazyFeatureImports(TestCase):
           if fullname.split('.')[0] in ('tkinter', '_tkinter'):
             raise AssertionError('Tkinter imported by Agg: ' + fullname)
       sys.meta_path.insert(0, RejectTk())
-      try:
-        import matplotlib
-      except ImportError:
+      from tests.support.dependencies import optional_import
+      matplotlib = optional_import('matplotlib')
+      if matplotlib is None:
         raise SystemExit(77)
       matplotlib.use('Agg')
       from crappy import Block, link

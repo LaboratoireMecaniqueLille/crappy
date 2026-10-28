@@ -400,14 +400,15 @@ class TestWorkerImportResolution(TestCase):
           warnings.simplefilter('ignore')
           from crappy.blocks import Camera
           from crappy.blocks.vision import CameraSource
+          from tests.support.dependencies import optional_import
+          required = ('PyQt6.QtWidgets',) if '{backend}' == 'pyqt' else ('_tkinter', 'tkinter')
+          if any(optional_import(name) is None for name in required):
+            raise SystemExit(77)
           for cls in (Camera, CameraSource):
-            try:
-              block = cls('', image_generator=lambda *_: None,
-                          config_backend='{backend}')
-              if isinstance(block, CameraSource):
-                block.resolve_config_requests()
-            except ImportError:
-              raise SystemExit(77)
+            block = cls('', image_generator=lambda *_: None,
+                        config_backend='{backend}')
+            if isinstance(block, CameraSource):
+              block.resolve_config_requests()
             assert isinstance(block.configurator, type)
             assert pickle.loads(pickle.dumps(block.configurator)) is block.configurator
             assert block._camera is None
@@ -434,7 +435,10 @@ class TestWorkerImportResolution(TestCase):
                                  block_name='test')
         missing = ImportError('missing ' + name)
         dependency = OptionalModule(name, cause=missing)
-        with patch.object(module, name, dependency):
+        # Isolate the missing dependency even when its peers are not installed.
+        with (patch.object(module, 'cv2', Mock()),
+              patch.object(module, 'threshold_otsu', Mock()),
+              patch.object(module, name, dependency)):
           tracker.run()
         pipe.poll.assert_not_called()
         pipe.close.assert_called_once_with()

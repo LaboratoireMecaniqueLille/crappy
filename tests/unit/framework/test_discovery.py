@@ -105,3 +105,49 @@ class TestDiscovery(unittest.TestCase):
       assert {type(case).__module__ for case in selected} == {
           'tests.unit.modifier.test_mean'}
     ''')
+
+  def test_optional_dependency_becomes_usable_after_installation(self):
+    """An absent package can be skipped, then imported when it appears."""
+
+    self.run_script('''
+      import importlib
+      from pathlib import Path
+      import sys
+      from tempfile import TemporaryDirectory
+      from tests.support.dependencies import optional_import
+
+      name = '_crappy_test_optional_dependency'
+      assert optional_import(name) is None
+      with TemporaryDirectory() as folder:
+        sys.path.insert(0, folder)
+        Path(folder, name + '.py').write_text('def value(): return 42\\n')
+        importlib.invalidate_caches()
+        assert optional_import(name).value() == 42
+    ''')
+
+  def test_broken_installed_dependencies_fail_collection(self):
+    """A native-loader or transitive-import failure cannot become a skip."""
+
+    for package, module in (('cv2', 'tests.integration.test_vision'),
+                             ('tables', 'tests.integration.test_numeric')):
+      for failure in ("ImportError()",
+                       "ModuleNotFoundError(name='_missing_transitive_dependency')",
+                       "RuntimeError()"):
+        with self.subTest(package=package, failure=failure):
+          self.run_script(f'''
+            from pathlib import Path
+            import sys
+            from tempfile import TemporaryDirectory
+            import unittest
+
+            with TemporaryDirectory() as folder:
+              Path(folder, {package!r} + '.py').write_text('raise ' + {failure!r})
+              sys.path.insert(0, folder)
+              loader = unittest.TestLoader()
+              try:
+                loader.loadTestsFromName({module!r})
+              except RuntimeError:
+                pass
+              else:
+                assert loader.errors, 'Broken dependency became a skip'
+          ''')

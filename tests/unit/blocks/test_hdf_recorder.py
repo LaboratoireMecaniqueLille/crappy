@@ -9,15 +9,15 @@ from unittest.mock import patch
 
 import numpy as np
 
-from crappy._global import OptionalModule
 from crappy.blocks.hdf_recorder import HDFRecorder
 import crappy.blocks.hdf_recorder as hdf_module
 
 from tests.support.block_test_case import BlockTestBase
 from tests.support.blocks import TestBlock, link
+from tests.support.dependencies import optional_import
 
 
-@unittest.skipIf(isinstance(hdf_module.tables, OptionalModule),
+@unittest.skipIf(optional_import('tables') is None,
                  'PyTables is not available')
 class TestHDFRecorder(BlockTestBase):
   """Unit tests for the HDFRecorder Block-specific behavior."""

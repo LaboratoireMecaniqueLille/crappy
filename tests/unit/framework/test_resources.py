@@ -57,9 +57,9 @@ class TestResources(TestCase):
           import crappy._global as common
 
           assert 'crappy._resources' not in sys.modules
-          try:
-            import cv2
-          except ImportError:
+          from tests.support.dependencies import optional_import
+          cv2 = optional_import('cv2')
+          if cv2 is None:
             raise SystemExit(77)
 
           with patch.object(cv2, 'imdecode', wraps=cv2.imdecode) as decode:
@@ -80,9 +80,9 @@ class TestResources(TestCase):
     self._run_script('''
       import hashlib
       from pathlib import Path
-      try:
-        import cv2
-      except ImportError:
+      from tests.support.dependencies import optional_import
+      cv2 = optional_import('cv2')
+      if cv2 is None:
         raise SystemExit(77)
       from crappy import resources
 
@@ -183,9 +183,9 @@ class TestResources(TestCase):
       from unittest.mock import patch
       import crappy
       import crappy._global as common
-      try:
-        import cv2
-      except ImportError:
+      from tests.support.dependencies import optional_import
+      cv2 = optional_import('cv2')
+      if cv2 is None:
         raise SystemExit(77)
 
       failure = ValueError('resource decoding failed')

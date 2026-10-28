@@ -23,6 +23,7 @@ from crappy._exceptions import OptionalDependencyError
 from crappy._global import OptionalModule
 
 from tests.support.block_test_case import BlockTestBase
+from tests.support.dependencies import optional_import
 
 
 RECORDERS = ((saver_module, saver_module.ImageSaver),
@@ -271,10 +272,11 @@ class TestImageBackends(BlockTestBase):
     for module, cls in RECORDERS:
       for backend in ('sitk', 'pil', 'cv2'):
         with self.subTest(cls=cls.__name__, backend=backend):
-          dependencies = {'sitk': (module.Sitk,),
-                          'pil': (module.Image, module.ExifTags),
-                          'cv2': (module.cv2,)}
-          if not all(item.is_available() for item in dependencies[backend]):
+          dependencies = {'sitk': ('SimpleITK',),
+                          'pil': ('PIL.Image', 'PIL.ExifTags'),
+                          'cv2': ('cv2',)}
+          if any(optional_import(name) is None
+                 for name in dependencies[backend]):
             self.skipTest(f'{backend} is unavailable')
           with TemporaryDirectory() as folder:
             component = self.recorder(cls, backend, folder)

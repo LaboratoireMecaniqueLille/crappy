@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from importlib.util import find_spec
 import logging
 from multiprocessing import current_process
 import unittest
@@ -10,13 +9,11 @@ from dataclasses import dataclass
 
 from crappy.tool.camera_config.config_tools import SpotsDetector
 
-try:
-  import cv2
-except (ImportError, ModuleNotFoundError):
-  cv2 = None
+from tests.support.dependencies import optional_import
 
+cv2 = optional_import('cv2')
 
-HAS_SPOT_DEPENDENCIES = cv2 is not None and find_spec('skimage') is not None
+HAS_SPOT_DEPENDENCIES = cv2 is not None and optional_import('skimage') is not None
 
 
 @dataclass
