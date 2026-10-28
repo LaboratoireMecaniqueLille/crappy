@@ -1,7 +1,6 @@
 # coding: utf-8
 
-from multiprocessing import current_process
-from platform import system
+import numpy as np
 from crappy.blocks.camera_processes.camera_process import CameraProcess
 
 from tests.support.camera_process_test_case import CameraProcessTestBase
@@ -17,33 +16,20 @@ class TestClassAPI(CameraProcessTestBase):
     with self.assertRaises(TypeError):
       CameraProcess()
 
-  def test_init_defaults(self) -> None:
-    """Tests the default state of a freshly instantiated CameraProcess."""
+  def test_default_process_receives_frame_and_finishes(self) -> None:
+    """A default process can receive a frame and finish its lifecycle."""
 
     self._process = TestCameraProcess()
+    shared = self.make_shared()
+    image = np.arange(12, dtype=np.uint8).reshape(3, 4)
+    metadata = {'ImageUniqueID': 7, 't(s)': 1.5}
+    self.write_image(shared, image, metadata)
 
-    self.assertEqual(self._process.name,
-                     f"{current_process().name}.TestCameraProcess")
-    self.assertEqual(self._process._system, system())
+    self._process.run()
 
-    self.assertFalse(hasattr(self._process, '_failure_manager'))
-    self.assertIsNone(self._process._log_queue)
-    self.assertIsNone(self._process._logger)
-    self.assertIsNone(self._process._log_level)
-
-    self.assertIsNone(self._process._img_array)
-    self.assertIsNone(self._process._data_dict)
-    self.assertIsNone(self._process._lock)
-    self.assertIsNone(self._process._cam_barrier)
-    self.assertIsNone(self._process._stop_event)
-    self.assertIsNone(self._process._shape)
-    self.assertIsNone(self._process._to_draw_conn)
-    self.assertEqual(self._process._outputs, list())
-    self.assertEqual(self._process._labels, list())
-    self.assertIsNone(self._process.img)
-    self.assertIsNone(self._process._dtype)
-    self.assertEqual(self._process.metadata, {'ImageUniqueID': None})
-    self.assertFalse(self._process._img0_set)
-
-    self.assertEqual(self._process.fps_count, 0)
-    self.assertIsNone(self._process._display_freq)
+    self.assertTrue(self._process.initialized.is_set())
+    self.assertTrue(self._process.looped.is_set())
+    self.assertTrue(self._process.finished.is_set())
+    np.testing.assert_array_equal(self._process.img, image)
+    self.assertEqual(self._process.metadata, metadata)
+    self.assertFalse(self._process._failure_manager.snapshot())

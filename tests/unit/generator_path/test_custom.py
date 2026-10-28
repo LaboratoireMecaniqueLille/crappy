@@ -2,20 +2,15 @@
 
 from pathlib import Path as FilePath
 from tempfile import TemporaryDirectory
-from unittest import TestCase
+from tests.support.generator_paths import GeneratorPathTestBase
 from unittest.mock import patch
 
 import crappy.blocks.generator_path.custom as custom_module
 from crappy.blocks.generator_path.custom import Custom
-from crappy.blocks.generator_path.meta_path import Path
 
 
-class TestCustom(TestCase):
+class TestCustom(GeneratorPathTestBase):
   """Unit tests for the Custom Generator Path."""
-
-  def setUp(self) -> None:
-    Path.t0 = 10
-    Path.last_cmd = None
 
   @staticmethod
   def _write_file(folder: str, name: str, content: str) -> FilePath:

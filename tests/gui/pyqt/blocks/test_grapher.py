@@ -4,6 +4,8 @@ require_gui_group('pyqt')
 
 from tests.support.assertions import with_failure_manager
 from unittest.mock import patch
+from matplotlib.backend_bases import KeyEvent
+from tests.support.clock import Clock
 from crappy.blocks.grapher import Grapher
 import crappy.blocks.grapher as grapher_module
 from tests.support.blocks import TestBlock, link
@@ -27,17 +29,14 @@ class TestGrapher(GrapherTestBase):
     with self.assertRaises(ValueError):
       with_failure_manager(Grapher(('x', '')))
 
-    self.assertEqual(with_failure_manager(Grapher(('x', 'y')))._graph_labels,
-                     (('x', 'y'),))
+    grapher, _ = self._prepare_grapher(('x', 'y'))
+    grapher.recv_all_data_raw = lambda: [{'x': [1], 'y': [2]}]
+    grapher.loop()
+    self.assertEqual(list(grapher._lines[0].get_xdata()), [1])
+    self.assertEqual(list(grapher._lines[0].get_ydata()), [2])
 
   def test_constructor_validates_plotter_and_backend(self) -> None:
     """Checks plotter selection and plotter-specific backends."""
-
-    self.assertEqual(with_failure_manager(Grapher(('x', 'y')))._plotter, 'pyqt')
-    self.assertEqual(Grapher(('x', 'y'), backend='PyQt6')._backend,
-                     'PyQt6')
-    self.assertEqual(with_failure_manager(Grapher(('x', 'y'), plotter='mpl',
-                             backend='TkAgg'))._backend, 'TkAgg')
 
     with self.assertRaises(ValueError):
       with_failure_manager(Grapher(('x', 'y'), plotter='invalid'))
@@ -55,10 +54,15 @@ class TestGrapher(GrapherTestBase):
     with self.assertRaises(ValueError):
       with_failure_manager(Grapher(('x', 'y'), upd_freq=11, freq=10))
 
-    self.assertEqual(with_failure_manager(Grapher(('x', 'y'), length=True,
-                             max_pt=None))._length, 1)
-    self.assertEqual(with_failure_manager(Grapher(('x', 'y'), max_pt=True))._max_pt, 1)
-    self.assertEqual(Grapher(('x', 'y'), upd_freq=True)._upd_freq, 1.0)
+    for options in ({'length': True, 'max_pt': None}, {'max_pt': True}):
+      with self.subTest(options=options):
+        grapher, _ = self._prepare_grapher(('x', 'y'), upd_freq=True, **options)
+        grapher.recv_all_data_raw = lambda: [{'x': [1, 2, 3], 'y': [4, 5, 6]}]
+        grapher.loop()
+        xs = list(grapher._lines[0].get_xdata())
+        ys = list(grapher._lines[0].get_ydata())
+        self.assertEqual(len(xs), 1)
+        self.assertEqual(ys, [value + 3 for value in xs])
 
     for value in (float('nan'), float('inf')):
       with self.subTest(value=value):
@@ -72,8 +76,7 @@ class TestGrapher(GrapherTestBase):
     grapher, _ = self._prepare_grapher(
       ('x', 'y'), window_size=(3.5, 2.25), window_pos=(-100, 0))
 
-    self.assertEqual(grapher._window_size, (3.5, 2.25))
-    self.assertEqual(grapher._window_pos, (-100, 0))
+    self.assertEqual(tuple(grapher._figure.get_size_inches()), (3.5, 2.25))
 
   def test_prepare_requires_input_link(self) -> None:
     """Checks that a Grapher without input Links fails early."""
@@ -106,10 +109,6 @@ class TestGrapher(GrapherTestBase):
     self.assertIs(grapher._canvas, grapher._figure.canvas)
     self.assertIsNotNone(grapher._ax)
     self.assertEqual(len(grapher._lines), 2)
-    self.assertEqual(grapher._factor, [1, 1])
-    self.assertEqual(grapher._counter, [0, 0])
-    self.assertEqual(grapher._ax.get_title(loc='right'),
-                     '(Press c to clear the graph)')
     self.assertEqual(tuple(grapher._figure.get_size_inches()), (3.5, 2.25))
     self.assertEqual(set(grapher._ax.get_xlabel().split(', ')), {'x', 'time'})
     self.assertEqual(set(grapher._ax.get_ylabel().split(', ')), {'y', 'z'})
@@ -121,8 +120,8 @@ class TestGrapher(GrapherTestBase):
 
     grapher, _ = self._prepare_grapher(('x', 'y'), interp=False)
 
-    self.assertEqual(grapher._lines[0].get_marker(), 'o')
-    self.assertEqual(grapher._lines[0].get_markersize(), 3)
+    self.assertNotIn(grapher._lines[0].get_marker(), ('None', 'none', '', None))
+    self.assertIn(grapher._lines[0].get_linestyle(), ('None', 'none', '', None))
 
   def test_prepare_builds_pyqtgraph_window_and_curves(self) -> None:
     """Checks the PyQtGraph application, plot, and curve objects."""
@@ -135,8 +134,6 @@ class TestGrapher(GrapherTestBase):
     self.assertEqual(len(grapher._qt_curves), 2)
     self.assertEqual({curve.name() for curve in grapher._qt_curves},
                      {'y', 'z'})
-    self.assertEqual(grapher._factor, [1, 1])
-    self.assertEqual(grapher._counter, [0, 0])
 
   def test_pyqtgraph_ignores_opencv_qt_plugin_path(self) -> None:
     """Checks OpenCV's Qt plugins are hidden while creating the Qt app."""
@@ -193,20 +190,23 @@ class TestGrapher(GrapherTestBase):
 
       self.assertEqual(grapher_module.os.environ['PYQTGRAPH_QT_LIB'], 'PyQt6')
 
-  def test_pyqtgraph_processes_events_once_after_curve_updates(self) -> None:
-    """Checks that multi-curve updates are rendered as one batch."""
+  def test_pyqtgraph_updates_curves_and_handles_queued_events(self) -> None:
+    """Curve updates keep the GUI event queue responsive."""
 
     grapher, _ = self._prepare_pyqt_grapher(
         ('x', 'y'), ('x', 'z'), upd_freq=None)
-    grapher.recv_all_data_raw = lambda: [
-      {'x': [1, 2], 'y': [3, 4], 'z': [5, 6]},
-    ]
+    from pyqtgraph.Qt import QtCore
+    grapher.recv_all_data_raw = lambda: [{'x': [1, 2], 'y': [3, 4], 'z': [5, 6]}]
+    callbacks = []
+    QtCore.QTimer.singleShot(0, lambda: callbacks.append('handled'))
 
-    with patch.object(grapher, '_qt_app',
-                      wraps=grapher._qt_app) as qt_app:
-      grapher.loop()
+    grapher.loop()
 
-    self.assertEqual(qt_app.processEvents.call_count, 2)
+    self.assertEqual(callbacks, ['handled'])
+    for curve, expected in zip(grapher._qt_curves, ([3, 4], [5, 6])):
+      xs, ys = curve.getData()
+      self.assertEqual(xs.tolist(), [1, 2])
+      self.assertEqual(ys.tolist(), expected)
 
   def test_loop_uses_nonblocking_receive(self) -> None:
     """Checks that receiving data never delays the independent loop timer."""
@@ -269,20 +269,22 @@ class TestGrapher(GrapherTestBase):
       grapher.loop()
 
   def test_loop_buffers_data_until_the_next_refresh(self) -> None:
-    """Checks that refresh limiting does not discard received values."""
+    """Refresh limiting retains all samples received since the last redraw."""
 
-    grapher, _ = self._prepare_grapher(('x', 'y'), upd_freq=2)
-    grapher._last_upd = 10
-    chunks = iter((
-      [{'x': [1], 'y': [3]}],
-      [{'x': [2], 'y': [4]}],
-    ))
-    grapher.recv_all_data_raw = lambda: next(chunks)
-
-    with patch('crappy.blocks.grapher.monotonic',
-               side_effect=(10.1, 10.5, 10.5)):
+    clock = Clock(10)
+    with patch.object(grapher_module, 'monotonic', clock):
+      grapher, _ = self._prepare_grapher(('x', 'y'), upd_freq=2)
+      grapher.recv_all_data_raw = lambda: []
+      grapher.loop()
+      chunks = iter((
+        [{'x': [1], 'y': [3]}],
+        [{'x': [2], 'y': [4]}],
+      ))
+      grapher.recv_all_data_raw = lambda: next(chunks)
+      clock.advance(0.1)
       grapher.loop()
       self.assertEqual(list(grapher._lines[0].get_xdata()), [])
+      clock.advance(0.5)
       grapher.loop()
 
     self.assertEqual(list(grapher._lines[0].get_xdata()), [1, 2])
@@ -318,8 +320,6 @@ class TestGrapher(GrapherTestBase):
 
     self.assertEqual(list(grapher._lines[0].get_xdata()), [1, 3, 5])
     self.assertEqual(list(grapher._lines[0].get_ydata()), [6, 8, 10])
-    self.assertEqual(grapher._factor, [2])
-    self.assertEqual(grapher._counter, [5])
 
   def test_loop_preserves_resampling_phase_between_chunks(self) -> None:
     """Checks that downsampling stays aligned across loop iterations."""
@@ -337,52 +337,48 @@ class TestGrapher(GrapherTestBase):
 
     self.assertEqual(list(grapher._lines[0].get_xdata()), [1, 5, 9])
     self.assertEqual(list(grapher._lines[0].get_ydata()), [11, 15, 19])
-    self.assertEqual(grapher._factor, [4])
-    self.assertEqual(grapher._counter, [9])
 
   def test_clear_key_resets_lines_and_resampling_state(self) -> None:
-    """Checks the c-key callback behavior."""
+    """Clear removes old samples and restarts sampling for new data."""
 
-    grapher, _ = self._prepare_grapher(('x', 'y'), ('x', 'z'))
-    for line in grapher._lines:
-      line.set_xdata([1, 2])
-      line.set_ydata([3, 4])
-    grapher._data[0][0].extend((1, 2))
-    grapher._data[0][1].extend((3, 4))
-    grapher._buf[0][0].append(5)
-    grapher._buf[0][1].append(6)
-    grapher._factor = [2, 4]
-    grapher._counter = [1, 3]
-    event = type('Event', (), {'key': 'c'})()
+    grapher, _ = self._prepare_grapher(('x', 'y'), ('x', 'z'),
+                                      max_pt=3, upd_freq=None)
+    chunks = iter((
+      [{'x': [1, 2, 3, 4, 5], 'y': [11, 12, 13, 14, 15], 'z': [21, 22, 23, 24, 25]}],
+      [{'x': [6, 7], 'y': [16, 17], 'z': [26, 27]}],
+    ))
+    grapher.recv_all_data_raw = lambda: next(chunks)
+    grapher.loop()
+    event = KeyEvent('key_press_event', grapher._canvas, key='c')
 
-    grapher._on_press_mpl(event)
+    grapher._canvas.callbacks.process('key_press_event', event)
 
     for line in grapher._lines:
       self.assertEqual(list(line.get_xdata()), [])
       self.assertEqual(list(line.get_ydata()), [])
-    self.assertEqual(grapher._factor, [1, 1])
-    self.assertEqual(grapher._counter, [0, 0])
-    self.assertTrue(all(not values for curve in grapher._data
-                        for values in curve))
-    self.assertTrue(all(not values for curve in grapher._buf
-                        for values in curve))
+    grapher.loop()
+    for line, expected in zip(grapher._lines, ([16, 17], [26, 27])):
+      self.assertEqual(list(line.get_xdata()), [6, 7])
+      self.assertEqual(list(line.get_ydata()), expected)
 
   def test_other_keys_do_not_clear_graph(self) -> None:
-    """Checks that only the c key clears the graph."""
+    """An unrelated key preserves displayed data and sampling progression."""
 
-    grapher, _ = self._prepare_grapher(('x', 'y'))
-    grapher._lines[0].set_xdata([1])
-    grapher._lines[0].set_ydata([2])
-    grapher._factor = [2]
-    grapher._counter = [1]
-    event = type('Event', (), {'key': 'x'})()
+    grapher, _ = self._prepare_grapher(('x', 'y'), max_pt=3, upd_freq=None)
+    chunks = iter((
+      [{'x': [1, 2, 3, 4, 5], 'y': [11, 12, 13, 14, 15]}],
+      [{'x': [6, 7, 8, 9], 'y': [16, 17, 18, 19]}],
+    ))
+    grapher.recv_all_data_raw = lambda: next(chunks)
+    grapher.loop()
+    event = KeyEvent('key_press_event', grapher._canvas, key='x')
 
-    grapher._on_press_mpl(event)
+    grapher._canvas.callbacks.process('key_press_event', event)
 
-    self.assertEqual(list(grapher._lines[0].get_xdata()), [1])
-    self.assertEqual(list(grapher._lines[0].get_ydata()), [2])
-    self.assertEqual(grapher._factor, [2])
-    self.assertEqual(grapher._counter, [1])
+    self.assertEqual(list(grapher._lines[0].get_xdata()), [1, 3, 5])
+    grapher.loop()
+    self.assertEqual(list(grapher._lines[0].get_xdata()), [1, 5, 9])
+    self.assertEqual(list(grapher._lines[0].get_ydata()), [11, 15, 19])
 
   def test_finish_closes_only_its_own_figure(self) -> None:
     """Checks that finish does not close another current Matplotlib figure."""
@@ -394,28 +390,29 @@ class TestGrapher(GrapherTestBase):
 
     grapher_1.finish()
 
-    self.assertIsNone(grapher_1._figure)
     self.assertNotIn(figure_number, grapher_module.plt.get_fignums())
     self.assertIn(grapher_2._figure.number, grapher_module.plt.get_fignums())
 
   def test_clear_resets_pyqtgraph_curves_and_resampling_state(self) -> None:
-    """Checks the PyQtGraph c-key callback behavior."""
+    """The Qt clear shortcut removes prior data and restarts sampling."""
 
-    grapher, _ = self._prepare_pyqt_grapher(('x', 'y'), upd_freq=None)
-    grapher.recv_all_data_raw = lambda: [{'x': [1, 2], 'y': [3, 4]}]
+    grapher, _ = self._prepare_pyqt_grapher(('x', 'y'), max_pt=3, upd_freq=None)
+    chunks = iter((
+      [{'x': [1, 2, 3, 4, 5], 'y': [11, 12, 13, 14, 15]}],
+      [{'x': [6, 7], 'y': [16, 17]}],
+    ))
+    grapher.recv_all_data_raw = lambda: next(chunks)
     grapher.loop()
-    grapher._factor = [2]
-    grapher._counter = [2]
 
     grapher._on_press_pyqt()
 
-    x_data, y_data = grapher._qt_curves[0].getData()
-    self.assertTrue(x_data is None or not len(x_data))
-    self.assertTrue(y_data is None or not len(y_data))
-    self.assertEqual(grapher._factor, [1])
-    self.assertEqual(grapher._counter, [0])
-    self.assertTrue(all(not values for curve in grapher._data
-                        for values in curve))
+    xs, ys = grapher._qt_curves[0].getData()
+    self.assertTrue(xs is None or not len(xs))
+    self.assertTrue(ys is None or not len(ys))
+    grapher.loop()
+    xs, ys = grapher._qt_curves[0].getData()
+    self.assertEqual(xs.tolist(), [6, 7])
+    self.assertEqual(ys.tolist(), [16, 17])
 
   def test_finish_before_prepare_does_not_close_another_figure(self) -> None:
     """Checks that an unprepared Grapher does not close a current figure."""

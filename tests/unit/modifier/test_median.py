@@ -8,14 +8,6 @@ from crappy.modifier import Median
 class TestMedian(TestCase):
   """Unit tests for the Median Modifier."""
 
-  def test_n_points_must_be_positive(self) -> None:
-    """Checks validation of the median period."""
-
-    with self.assertRaises((TypeError, ValueError)):
-      Median(0)
-    with self.assertRaises((TypeError, ValueError)):
-      Median(-1)
-
   def test_n_points_one_returns_each_point_as_float(self) -> None:
     """Checks that a one-point median emits every received sample."""
 

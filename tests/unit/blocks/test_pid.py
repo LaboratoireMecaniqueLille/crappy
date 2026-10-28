@@ -99,24 +99,21 @@ class TestPID(BlockTestBase):
       PID(kp=1, labels=('time', 'drive'), send_terms=True).labels,
       ['time', 'drive', 'p_term', 'i_term', 'd_term'])
 
-  def test_initial_gain_signs_follow_reverse_argument(self) -> None:
-    """Checks that initial gain signs are controlled only by reverse."""
+  def test_initial_gain_signs_follow_reverse_argument(self):
+    """All three gains affect emitted terms with the requested direction."""
 
-    pid = PID(kp=-1, ki=-2, kd=-3)
-
-    self.assertEqual((pid._kp, pid._ki, pid._kd), (1, 2, 3))
-
-    pid = PID(kp=1, ki=2, kd=3, reverse=True)
-
-    self.assertEqual((pid._kp, pid._ki, pid._kd), (-1, -2, -3))
-
-  def test_bounds_are_normalized(self) -> None:
-    """Checks that reversed output and integral limits are accepted."""
-
-    pid = PID(kp=1, out_min=10, out_max=-5, i_limit=(3, -2))
-
-    self.assertEqual((pid._out_min, pid._out_max), (-5, 10))
-    self.assertEqual((pid._i_min, pid._i_max), (-2, 3))
+    for reverse, sign, raw_sign in ((False, 1, -1), (False, 1, 1),
+                                    (True, -1, -1), (True, -1, 1)):
+      with self.subTest(reverse=reverse, raw_sign=raw_sign):
+        pid, sent, _, _ = self._make_pid(
+          kp=raw_sign, ki=2 * raw_sign, kd=3 * raw_sign,
+          reverse=reverse, send_terms=True,
+          batches=[{'cmd': 10, 'V': 7, 't(s)': 1}, {'V': 6, 't(s)': 3}])
+        self._loop(pid)
+        self._loop(pid, now=16)
+        self.assert_values_almost_equal(sent[0], [5, 3 * sign, 3 * sign, 0, 0])
+        self.assert_values_almost_equal(sent[1],
+                                       [6, 21.5 * sign, 4 * sign, 16 * sign, 1.5 * sign])
 
   def test_prepare_requires_input_and_output_links(self) -> None:
     """Checks that prepare fails early when the Block is not linked enough."""
@@ -158,27 +155,18 @@ class TestPID(BlockTestBase):
     self.assertEqual(recv_calls, [False])
     self.assert_values_almost_equal(sent[0], [5, 3])
 
-  def test_loop_returns_without_complete_input(self) -> None:
-    """Checks that missing input or time labels do not produce output."""
+  def test_loop_returns_without_complete_input(self):
+    """Incomplete samples cannot initialize history or emit a control output."""
 
-    cases = (
-      ({}, None),
-      ({'cmd': 12}, 12),
-      ({'V': 7}, None),
-      ({'t(s)': 1}, None),
-    )
-
-    for data, expected_setpoint in cases:
+    for data, expected in (({}, 0), ({'cmd': 12}, 4), ({'V': 7}, 0), ({'t(s)': 1}, 0)):
       with self.subTest(data=data):
-        pid, sent, recv_calls, _ = self._make_pid(kp=1, batches=[data])
-
+        pid, sent, _, _ = self._make_pid(
+          kp=1, ki=2, kd=3, send_terms=True,
+          batches=[data, {'V': 8, 't(s)': 2}])
         self._loop(pid)
-
-        self.assertEqual(recv_calls, [False])
         self.assertEqual(sent, [])
-        self.assertEqual(pid._setpoint, expected_setpoint)
-        self.assertIsNone(pid._last_input)
-        self.assertIsNone(pid._prev_t)
+        self._loop(pid)
+        self.assert_values_almost_equal(sent[0], [5, expected, expected, 0, 0])
 
   def test_setpoint_update_without_input_is_used_later(self) -> None:
     """Checks that setpoint-only messages update the stored target."""
@@ -194,7 +182,6 @@ class TestPID(BlockTestBase):
     self._loop(pid)
 
     self.assert_values_almost_equal(sent[0], [5, 10])
-    self.assertEqual(pid._setpoint, 12)
 
   def test_gain_update_without_input_is_used_later(self) -> None:
     """Checks that gain-only messages update the stored gains."""
@@ -209,20 +196,15 @@ class TestPID(BlockTestBase):
     self._loop(pid)
     self._loop(pid)
 
-    self.assertEqual(pid._kp, 2)
     self.assert_values_almost_equal(sent[0], [5, 6])
 
-  def test_first_input_sets_default_setpoint_when_missing(self) -> None:
-    """Checks that the first input becomes the setpoint if none was given."""
-
+  def test_first_input_sets_default_setpoint_when_missing(self):
     pid, sent, _, _ = self._make_pid(
-      kp=2,
-      batches=[{'V': 7, 't(s)': 1}])
-
+      kp=2, batches=[{'V': 7, 't(s)': 1}, {'V': 8, 't(s)': 2}])
     self._loop(pid)
-
-    self.assertEqual(pid._setpoint, 7)
+    self._loop(pid, now=16)
     self.assert_values_almost_equal(sent[0], [5, 0])
+    self.assert_values_almost_equal(sent[1], [6, -2])
 
   def test_first_input_does_not_integrate_or_derivate(self) -> None:
     """Checks that the first timestamp initializes the PID history."""
@@ -232,14 +214,13 @@ class TestPID(BlockTestBase):
       ki=3,
       kd=4,
       send_terms=True,
-      batches=[{'cmd': 10, 'V': 7, 't(s)': 100}])
+      batches=[{'cmd': 10, 'V': 7, 't(s)': 100}, {'V': 6, 't(s)': 101}])
 
     self._loop(pid)
 
     self.assert_values_almost_equal(sent[0], [5, 6, 6, 0, 0])
-    self.assertEqual(pid._prev_t, 100)
-    self.assertEqual(pid._last_input, 7)
-    self.assertEqual(pid._i_term, 0)
+    self._loop(pid, now=16)
+    self.assert_values_almost_equal(sent[1], [6, 24, 8, 12, 4])
 
   def test_next_inputs_calculate_all_pid_terms(self) -> None:
     """Checks P, I and D terms after the first history point exists."""
@@ -287,7 +268,7 @@ class TestPID(BlockTestBase):
       kp=0,
       ki=2,
       kd=0,
-      i_limit=(-5, 5),
+      i_limit=(5, -5),
       send_terms=True,
       batches=[
         {'cmd': 10, 'V': 0, 't(s)': 0},
@@ -321,36 +302,25 @@ class TestPID(BlockTestBase):
 
     self.assert_values_almost_equal(sent[1], [6, 0, 0, 0, 0])
 
-  def test_runtime_gain_updates_follow_normal_sign_rule(self) -> None:
-    """Checks that negative runtime gains stay non-reversed by default."""
-
+  def test_runtime_gain_updates_follow_normal_sign_rule(self):
     pid, sent, _, _ = self._make_pid(
-      kp=1,
-      ki=1,
-      kd=1,
-      batches=[{'kp': -2, 'ki': -3, 'kd': -4,
-                'cmd': 10, 'V': 7, 't(s)': 1}])
-
+      kp=1, ki=1, kd=1, reverse=False, send_terms=True,
+      batches=[{'kp': -2, 'ki': -3, 'kd': -4, 'cmd': 10, 'V': 7, 't(s)': 1},
+               {'V': 6, 't(s)': 3}])
     self._loop(pid)
+    self._loop(pid, now=16)
+    self.assert_values_almost_equal(sent[0], [5, 6, 6, 0, 0])
+    self.assert_values_almost_equal(sent[1], [6, 34, 8, 24, 2])
 
-    self.assertEqual((pid._kp, pid._ki, pid._kd), (2, 3, 4))
-    self.assert_values_almost_equal(sent[0], [5, 6])
-
-  def test_runtime_gain_updates_follow_reverse_sign_rule(self) -> None:
-    """Checks that runtime gains stay reversed when reverse is enabled."""
-
+  def test_runtime_gain_updates_follow_reverse_sign_rule(self):
     pid, sent, _, _ = self._make_pid(
-      kp=1,
-      ki=1,
-      kd=1,
-      reverse=True,
-      batches=[{'kp': 2, 'ki': 3, 'kd': 4,
-                'cmd': 10, 'V': 7, 't(s)': 1}])
-
+      kp=1, ki=1, kd=1, reverse=True, send_terms=True,
+      batches=[{'kp': 2, 'ki': 3, 'kd': 4, 'cmd': 10, 'V': 7, 't(s)': 1},
+               {'V': 6, 't(s)': 3}])
     self._loop(pid)
-
-    self.assertEqual((pid._kp, pid._ki, pid._kd), (-2, -3, -4))
-    self.assert_values_almost_equal(sent[0], [5, -6])
+    self._loop(pid, now=16)
+    self.assert_values_almost_equal(sent[0], [5, -6, -6, 0, 0])
+    self.assert_values_almost_equal(sent[1], [6, -34, -8, -24, -2])
 
   def test_custom_input_labels(self) -> None:
     """Checks custom labels for setpoint, input and input time."""
@@ -364,9 +334,6 @@ class TestPID(BlockTestBase):
 
     self._loop(pid)
 
-    self.assertEqual(pid._setpoint, 5)
-    self.assertEqual(pid._last_input, 2)
-    self.assertEqual(pid._prev_t, 4)
     self.assert_values_almost_equal(sent[0], [5, 6])
 
   def test_custom_gain_labels(self) -> None:
@@ -379,14 +346,16 @@ class TestPID(BlockTestBase):
       kp_label='p_gain',
       ki_label='i_gain',
       kd_label='d_gain',
+      send_terms=True,
       batches=[{'kp': 100, 'ki': 100, 'kd': 100,
                 'p_gain': 2, 'i_gain': 3, 'd_gain': 4,
-                'cmd': 10, 'V': 8, 't(s)': 1}])
+                'cmd': 10, 'V': 8, 't(s)': 1}, {'V': 7, 't(s)': 3}])
 
     self._loop(pid)
 
-    self.assertEqual((pid._kp, pid._ki, pid._kd), (2, 3, 4))
-    self.assert_values_almost_equal(sent[0], [5, 4])
+    self.assert_values_almost_equal(sent[0], [5, 4, 4, 0, 0])
+    self._loop(pid, now=16)
+    self.assert_values_almost_equal(sent[1], [6, 26, 6, 18, 2])
 
   def test_real_send_uses_custom_labels_and_pid_terms(self) -> None:
     """Checks iterable-to-dict conversion with custom labels and terms."""

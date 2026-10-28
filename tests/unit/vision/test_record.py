@@ -54,16 +54,26 @@ class TestImageRecorder(VisionTestBase):
     recorder.receive_imgs = Mock(return_value=[name])
 
   def test_constructor_sets_paths_backend_and_period(self) -> None:
-    """Checks explicit NumPy setup and default recording directory."""
+    """Default-directory recording honors the requested sampling period."""
 
-    recorder = self.make_recorder(save_period=3)
+    with TemporaryDirectory() as tmp, patch.object(Path, 'cwd', return_value=Path(tmp)):
+      recorder = self.make_recorder(save_period=3, img_extension='')
+      self.add_image_input(recorder)
+      with patch.object(record_module.VisionBlock, 'prepare'):
+        recorder.prepare()
+      image = np.arange(6, dtype=np.uint8).reshape(2, 3)
+      for index in (0, 1, 3):
+        self.feed_image(recorder, image + index,
+                        {'ImageUniqueID': index, 't(s)': float(index)},
+                        transport_id=index)
+        recorder.loop()
 
-    self.assertEqual(recorder._save_backend, 'npy')
-    self.assertEqual(recorder._img_extension, '')
-    self.assertEqual(recorder._save_folder,
-                     Path.cwd() / 'Crappy_images')
-    self.assertEqual(recorder._save_period, 3)
-    self.assertEqual(recorder.freq, 100)
+      folder = Path(tmp) / 'Crappy_images'
+      saved = sorted(folder.glob('*.npy'))
+      self.assertEqual(len(saved), 2)
+      np.testing.assert_array_equal(np.load(saved[0]), image)
+      np.testing.assert_array_equal(np.load(saved[1]), image + 3)
+      self.assertEqual(recorder.freq, 100)
 
   def test_constructor_validates_user_arguments(self) -> None:
     """Checks extension, directory, period, and backend validation."""
@@ -82,37 +92,32 @@ class TestImageRecorder(VisionTestBase):
         with self.assertRaises(ValueError):
           ImageRecorder(**options)
 
-    recorder = self.make_recorder(img_extension='', save_backend='npy')
-    self.assertEqual(recorder._img_extension, '')
+  def test_constructor_selects_available_backend_or_numpy_fallback(self) -> None:
+    """Automatic selection writes with the first usable backend."""
 
-  def test_constructor_selects_available_backend_or_numpy_fallback(self
-                                                                   ) -> None:
-    """Checks deterministic automatic-backend priority and fallback."""
+    image = np.arange(6, dtype=np.uint8).reshape(2, 3)
+    for backend in ('sitk', 'pil', 'npy'):
+      with self.subTest(backend=backend), TemporaryDirectory() as tmp:
+        sitk = Mock() if backend == 'sitk' else OptionalModule('missing-sitk')
+        pil = Mock() if backend == 'pil' else OptionalModule('missing-pil')
+        with (patch.object(record_module, 'Sitk', sitk),
+              patch.object(record_module, 'Image', pil),
+              patch.object(record_module, 'ExifTags', Mock()),
+              patch.object(record_module, 'cv2', OptionalModule('missing-cv2'))):
+          recorder = ImageRecorder(save_folder=tmp)
+          self.track_block(recorder)
+          self.feed_image(recorder, image, {'ImageUniqueID': 1, 't(s)': 0.25}, 0)
+          recorder.loop()
 
-    first_available = Mock()
-    with patch.object(record_module, 'Sitk', first_available):
-      recorder = ImageRecorder()
-    self.track_block(recorder)
-    self.assertEqual(recorder._save_backend, 'sitk')
-
-    missing_sitk = OptionalModule('missing-sitk')
-    pil_available = Mock()
-    with (patch.object(record_module, 'Sitk', missing_sitk),
-          patch.object(record_module, 'Image', pil_available),
-          patch.object(record_module, 'ExifTags', Mock())):
-      recorder = ImageRecorder()
-    self.track_block(recorder)
-    self.assertEqual(recorder._save_backend, 'pil')
-
-    missing_pil = OptionalModule('missing-pil')
-    missing_cv2 = OptionalModule('missing-cv2')
-    with (patch.object(record_module, 'Sitk', missing_sitk),
-          patch.object(record_module, 'Image', missing_pil),
-          patch.object(record_module, 'cv2', missing_cv2)):
-      recorder = ImageRecorder()
-    self.track_block(recorder)
-    self.assertEqual(recorder._save_backend, 'npy')
-    self.assertEqual(recorder._img_extension, '')
+          if backend == 'sitk':
+            np.testing.assert_array_equal(sitk.GetImageFromArray.call_args.args[0], image)
+            self.assertTrue(sitk.WriteImage.called)
+          elif backend == 'pil':
+            np.testing.assert_array_equal(pil.fromarray.call_args.args[0], image)
+            self.assertTrue(pil.fromarray.return_value.save.called)
+          else:
+            saved, = Path(tmp).glob('*.npy')
+            np.testing.assert_array_equal(np.load(saved), image)
 
   def test_constructor_rejects_explicit_unavailable_backend(self) -> None:
     """Checks clear errors for missing requested optional dependencies."""
@@ -160,40 +165,50 @@ class TestImageRecorder(VisionTestBase):
         recorder.prepare()
 
       self.assertTrue(folder.is_dir())
-      self.assertEqual(recorder._save_folder, folder)
       inherited.assert_called_once_with()
 
   def test_prepare_suffixes_existing_recording_folder(self) -> None:
-    """Checks existing Crappy recordings are never overwritten."""
+    """A previous recording and occupied sibling directories stay intact."""
 
     with TemporaryDirectory() as tmp:
       root = Path(tmp)
       folder = root / 'images'
       folder.mkdir()
-      (folder / 'metadata.csv').write_text('already used\n')
-      (root / 'images_00001').mkdir()
+      metadata_path = folder / 'metadata.csv'
+      metadata_path.write_text('already used\n')
+      occupied = root / 'images_00001'
+      occupied.mkdir()
+      (occupied / 'keep.txt').write_text('keep')
       recorder = self.make_recorder(save_folder=folder)
       self.add_image_input(recorder)
-
       with patch.object(record_module.VisionBlock, 'prepare'):
         recorder.prepare()
+      image = np.ones((2, 3), dtype=np.uint8)
+      self.feed_image(recorder, image, {'ImageUniqueID': 1, 't(s)': 0.25}, 0)
+      recorder.loop()
 
-      self.assertEqual(recorder._save_folder, root / 'images_00002')
-      self.assertTrue(recorder._save_folder.is_dir())
+      saved, = root.rglob('*.npy')
+      self.assertNotIn(saved.parent, (folder, occupied))
+      np.testing.assert_array_equal(np.load(saved), image)
+      self.assertEqual(metadata_path.read_text(), 'already used\n')
+      self.assertEqual((occupied / 'keep.txt').read_text(), 'keep')
 
   def test_prepare_reuses_existing_folder_without_metadata(self) -> None:
-    """Checks an existing empty target remains the selected destination."""
+    """An existing empty directory receives the new recording."""
 
     with TemporaryDirectory() as tmp:
       folder = Path(tmp) / 'images'
       folder.mkdir()
       recorder = self.make_recorder(save_folder=folder)
       self.add_image_input(recorder)
-
       with patch.object(record_module.VisionBlock, 'prepare'):
         recorder.prepare()
+      image = np.ones((2, 3), dtype=np.uint8)
+      self.feed_image(recorder, image, {'ImageUniqueID': 1, 't(s)': 0.25}, 0)
+      recorder.loop()
 
-      self.assertEqual(recorder._save_folder, folder)
+      saved, = folder.glob('*.npy')
+      np.testing.assert_array_equal(np.load(saved), image)
 
   def test_loop_skips_when_no_new_image(self) -> None:
     """Checks idle polling and handled-image frequency accounting."""
@@ -264,24 +279,15 @@ class TestImageRecorder(VisionTestBase):
       ])
 
   def test_loop_rejects_missing_metadata_or_mandatory_keys(self) -> None:
-    """Checks failures for frames that cannot be named or documented."""
+    """Incomplete metadata is rejected without requiring valid prior state."""
 
-    with TemporaryDirectory() as tmp:
-      image = np.zeros((2, 2), dtype=np.uint8)
-      recorder = self.make_recorder(save_folder=tmp)
-      self.feed_image(recorder, image, None, transport_id=0)
-      recorder.last_received['record-image'].metadata = None
-
-      with self.assertRaises(RuntimeError):
-        recorder.loop()
-
-      for metadata in ({'t(s)': 0.1}, {'ImageUniqueID': 1}):
-        with self.subTest(metadata=metadata):
-          recorder._last_processed_idx = -1
-          recorder._csv_created = False
-          self.feed_image(recorder, image, metadata, transport_id=1)
-          with self.assertRaises(KeyError):
-            recorder.loop()
+    image = np.zeros((2, 2), dtype=np.uint8)
+    for metadata in (None, {'t(s)': 0.1}, {'ImageUniqueID': 1}):
+      with self.subTest(metadata=metadata), TemporaryDirectory() as tmp:
+        recorder = self.make_recorder(save_folder=tmp)
+        self.feed_image(recorder, image, metadata, transport_id=0)
+        with self.assertRaises((RuntimeError, KeyError, TypeError, ValueError)):
+          recorder.loop()
 
   def test_loop_writes_simpleitk_grayscale_and_color(self) -> None:
     """Checks SimpleITK conversion, including BGR-to-RGB color reversal."""

@@ -16,6 +16,7 @@ class TestDICVE(CameraWrapperTestBase):
 
   def setUp(self) -> None:
     """Resets the process test double before each test."""
+    super().setUp()
 
     RecordingProcess.reset()
 

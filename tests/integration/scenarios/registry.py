@@ -5,7 +5,7 @@ from pathlib import Path
 from crappy.blocks import Block
 
 from tests.integration.scenarios.numeric import build_generator_recorder, build_ioblock_recorder, build_machine_recorder, build_multiplexer_recorder, build_pid_fake_machine_recorder, build_scheduler_recorder, build_stream_hdf_recorder, build_synchronizer_recorder
-from tests.integration.scenarios.lifecycle import build_auto_drive_recorder, build_generator_link_reader, build_generator_sink, build_pause_stop_probe
+from tests.integration.scenarios.lifecycle import build_repeating_generator, build_auto_drive_recorder, build_generator_link_reader, build_generator_sink, build_pause_stop_probe
 from tests.integration.scenarios.vision import build_camera_image_saver, build_delayed_dis_correl_recorder, build_dicve_recorder, build_dis_correl_recorder
 from tests.integration.scenarios.vision_blocks import build_vision_broken_required_config, build_vision_camera_recorder_fanout, build_vision_dicve_recorder, build_vision_dis_correl_recorder, build_vision_required_config_fanout, build_vision_video_extenso_recorder
 
@@ -19,6 +19,7 @@ scenario_builders: dict[str, Callable[[Path], tuple[Block, ...]]] = {
   'generator_link_reader': build_generator_link_reader,
   'generator_recorder': build_generator_recorder,
   'generator_sink': build_generator_sink,
+  'repeating_generator': build_repeating_generator,
   'ioblock_recorder': build_ioblock_recorder,
   'machine_recorder': build_machine_recorder,
   'multiplexer_recorder': build_multiplexer_recorder,

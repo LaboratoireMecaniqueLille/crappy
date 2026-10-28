@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from unittest import TestCase
+from tests.support.generator_paths import GeneratorPathTestBase
 from unittest.mock import patch
 
 import crappy.blocks.generator_path.ramp as ramp_module
@@ -11,15 +11,8 @@ from crappy.blocks.generator_path.ramp import Ramp
 from crappy.blocks.generator_path.sine import Sine
 
 
-class PathTestMixin:
-  """Shared setup for Path tests using class-level state."""
 
-  def setUp(self) -> None:
-    Path.t0 = 10
-    Path.last_cmd = None
-
-
-class TestConstant(PathTestMixin, TestCase):
+class TestConstant(GeneratorPathTestBase):
   """Unit tests for the Constant Generator Path."""
 
   def test_first_constant_requires_a_value(self) -> None:
@@ -52,7 +45,7 @@ class TestConstant(PathTestMixin, TestCase):
       path.get_cmd({})
 
 
-class TestRamp(PathTestMixin, TestCase):
+class TestRamp(GeneratorPathTestBase):
   """Unit tests for the Ramp Generator Path."""
 
   def test_first_ramp_requires_an_initial_value(self) -> None:
@@ -88,7 +81,7 @@ class TestRamp(PathTestMixin, TestCase):
       path.get_cmd({})
 
 
-class TestSine(PathTestMixin, TestCase):
+class TestSine(GeneratorPathTestBase):
   """Unit tests for the Sine Generator Path."""
 
   def test_sine_uses_peak_to_peak_amplitude(self) -> None:

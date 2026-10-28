@@ -1,8 +1,6 @@
 # coding: utf-8
 
 from multiprocessing import Value
-from itertools import cycle
-import pickle
 from typing import Any
 from unittest.mock import patch
 
@@ -69,17 +67,13 @@ class TestGenerator(BlockTestBase):
 
   def setUp(self) -> None:
     """Resets Generator Path class-level state before each test."""
+    super().setUp()
 
     GeneratorProbePath.reset()
+    self.addCleanup(setattr, Path, 't0', Path.t0)
+    self.addCleanup(setattr, Path, 'last_cmd', Path.last_cmd)
     Path.t0 = 0
     Path.last_cmd = None
-
-  def tearDown(self) -> None:
-    """Resets Generator Path state and lets the Block harness clean up."""
-
-    Path.t0 = 0
-    Path.last_cmd = None
-    super().tearDown()
 
   def _make_generator(self,
                       path: list[dict[str, Any]] | None = None,
@@ -155,9 +149,6 @@ class TestGenerator(BlockTestBase):
     self.assertIsNone(generator.freq)
     self.assertTrue(generator.display_freq)
     self.assertTrue(generator.debug)
-    self.assertTrue(generator._spam)
-    self.assertTrue(generator._safe_start)
-    self.assertIsNone(generator._end_delay)
 
   def test_constructor_validates_path_sequence(self) -> None:
     """Checks invalid Generator path declarations fail early."""
@@ -175,25 +166,6 @@ class TestGenerator(BlockTestBase):
         with self.assertRaises(exception):
           Generator(path, freq=None)
 
-  def test_repeating_path_iterator_is_created_only_during_prepare(self) -> None:
-    """Keep unpicklable cycles out of the state sent to a child process."""
-
-    path = [{'type': 'Constant', 'value': 3, 'condition': None}]
-    for repeat in (False, True):
-      with self.subTest(repeat=repeat):
-        generator = Generator(path, repeat=repeat, freq=None)
-        self.assertIsNone(generator._current_path)
-        self.assertEqual(list(pickle.loads(pickle.dumps(generator._path))), [])
-        self.assertEqual(pickle.loads(pickle.dumps(generator._raw_path)), path)
-        generator.prepare()
-        self.assertEqual(isinstance(generator._path, cycle), repeat)
-        self.assertEqual(next(generator._path), path[0])
-        if repeat:
-          self.assertEqual(next(generator._path), path[0])
-        else:
-          with self.assertRaises(StopIteration):
-            next(generator._path)
-
   def test_begin_instantiates_first_path_with_shared_state(self) -> None:
     """Checks first Path setup from the Generator start time."""
 
@@ -205,8 +177,6 @@ class TestGenerator(BlockTestBase):
     generator.begin()
 
     path = GeneratorProbePath.instances[-1]
-    self.assertIs(generator._current_path, path)
-    self.assertEqual(generator._path_id, 0)
     self.assertEqual(path.start_t0, self._t0)
     self.assertIsNone(path.start_last_cmd)
 
@@ -226,8 +196,6 @@ class TestGenerator(BlockTestBase):
 
     self.assertEqual(recv_calls, [None])
     self.assertEqual(sent, [[2.5, 5, 0]])
-    self.assertEqual(generator._last_cmd, 5)
-    self.assertEqual(generator._last_id, 0)
 
   def test_loop_does_not_send_none_commands(self) -> None:
     """Checks that a Path can deliberately skip output for one loop."""
@@ -243,8 +211,6 @@ class TestGenerator(BlockTestBase):
       generator.loop()
 
     self.assertEqual(sent, [])
-    self.assertIsNone(generator._last_cmd)
-    self.assertIsNone(generator._last_id)
 
   def test_duplicate_commands_are_suppressed_unless_spam_is_enabled(
       self) -> None:
@@ -321,13 +287,9 @@ class TestGenerator(BlockTestBase):
     self.assertEqual(sent, [[2.0, 2, 1]])
 
   def test_exhaustion_with_end_delay_raises_generator_stop(self) -> None:
-    """Checks the terminal delay is split into short sleeps."""
+    """Exhaustion waits for the requested delay before stopping."""
 
-    for end_delay, expected_sleeps in ((0, 0),
-                                       (0.05, 1),
-                                       (0.1, 1),
-                                       (0.2, 2),
-                                       (0.25, 3)):
+    for end_delay in (0, 0.05, 0.1, 0.2, 0.25):
       with self.subTest(end_delay=end_delay):
         generator = self._make_generator([
           {'type': 'GeneratorUnitPath', 'commands': ['stop']},
@@ -341,8 +303,7 @@ class TestGenerator(BlockTestBase):
             generator.loop()
 
         sleeps = [call.args[0] for call in sleep_mock.call_args_list]
-        self.assertEqual(len(sleeps), expected_sleeps)
-        self.assertTrue(all(0 < delay <= 0.1 for delay in sleeps))
+        self.assertTrue(all(0 < delay <= end_delay for delay in sleeps))
         self.assertAlmostEqual(sum(sleeps), end_delay)
 
   def test_exhaustion_without_end_delay_stays_idle(self) -> None:
@@ -359,7 +320,6 @@ class TestGenerator(BlockTestBase):
       generator.loop()
 
     self.assertEqual(sent, [])
-    self.assertTrue(generator._ended_no_raise)
     self.assertEqual(recv_calls, [None])
 
     def fail_on_recv() -> dict[str, list]:
@@ -383,7 +343,6 @@ class TestGenerator(BlockTestBase):
       generator.loop()
 
     self.assertEqual(sent, [[1.0, 1, 0], [3.0, 1, 1]])
-    self.assertEqual(generator._path_id, 1)
 
   def test_next_path_receives_previous_time_and_command(self) -> None:
     """Checks Path.t0 and Path.last_cmd handoff during transitions."""

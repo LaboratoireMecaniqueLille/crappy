@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from unittest import TestCase
-from unittest.mock import Mock, patch
 import logging
 
 from crappy.blocks.schedulers.conditions import Condition
@@ -32,18 +31,18 @@ class TestBaseHelpers(TestCase):
       with self.subTest(cls=cls), self.assertRaises(TypeError):
         cls()
 
-  def test_default_reset_and_lazy_logging(self) -> None:
-    """The base reset is safe and the logger is created only when used."""
+  def test_reset_and_log_forwarding_remain_usable(self) -> None:
+    """Reset keeps the helper usable; log calls preserve user messages/levels."""
 
     for cls in (ProbeOutput, ProbeCondition):
       with self.subTest(cls=cls):
         helper = cls()
-        self.assertIsNone(helper._logger)
+        expected = helper(2, {'value': [1]})
         helper.reset()
-        logger = Mock()
-        with patch('logging.getLogger', return_value=logger) as get_logger:
+        self.assertEqual(helper(2, {'value': [1]}), expected)
+        with self.assertLogs(level='INFO') as captured:
           helper.log(logging.INFO, 'first')
-          helper.log(logging.DEBUG, 'second')
-        get_logger.assert_called_once()
-        self.assertTrue(get_logger.call_args.args[0].endswith(cls.__name__))
-        self.assertEqual(logger.log.call_count, 2)
+          helper.log(logging.WARNING, 'second')
+        messages = [(record.levelno, record.getMessage()) for record in captured.records]
+        self.assertIn((logging.INFO, 'first'), messages)
+        self.assertIn((logging.WARNING, 'second'), messages)

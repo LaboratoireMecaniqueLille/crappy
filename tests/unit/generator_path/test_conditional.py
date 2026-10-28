@@ -1,17 +1,14 @@
 # coding: utf-8
 
-from unittest import TestCase
+from tests.support.generator_paths import GeneratorPathTestBase
 
 from crappy.blocks.generator_path.conditional import Conditional
-from crappy.blocks.generator_path.meta_path import Path
 
 
-class TestConditional(TestCase):
+class TestConditional(GeneratorPathTestBase):
   """Unit tests for the Conditional Generator Path."""
 
-  def setUp(self) -> None:
-    Path.t0 = 0
-    Path.last_cmd = None
+  path_t0 = 0
 
   def test_condition1_has_priority_over_condition2(self) -> None:
     """Checks value selection priority."""

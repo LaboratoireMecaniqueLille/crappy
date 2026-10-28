@@ -15,6 +15,7 @@ class TestVideoExtenso(CameraWrapperTestBase):
 
   def setUp(self) -> None:
     """Resets wrapper test doubles before each test."""
+    super().setUp()
 
     RecordingProcess.reset()
 

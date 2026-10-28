@@ -81,6 +81,7 @@ class TestDISCorrelProcess(CameraProcessTestBase):
 
   def setUp(self) -> None:
     """Resets the fake tool registry."""
+    super().setUp()
 
     DummyDISCorrelTool.instances.clear()
 

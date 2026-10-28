@@ -11,6 +11,7 @@ from crappy.blocks.schedulers.conditions import (AllCondition, AllLabel,
                                                  AnyCondition, Delay)
 from crappy.blocks.schedulers.outputs import Constant
 
+from tests.support.clock import Clock
 from tests.support.block_test_case import BlockTestBase
 
 
@@ -49,6 +50,11 @@ class ProbeCondition:
 class TestScheduler(BlockTestBase):
   """Unit tests for Scheduler initialization and state-machine behavior."""
 
+  def setUp(self):
+    super().setUp()
+    self.clock = Clock()
+    self.enterContext(patch.object(scheduler_module, 'monotonic', self.clock))
+
   def _make_scheduler(self,
                       states: list[State] | None = None,
                       output_labels: list[str] | tuple[str, ...] = ('x',),
@@ -77,24 +83,28 @@ class TestScheduler(BlockTestBase):
     batches_iter = iter(batches)
     scheduler.recv_all_data = lambda: next(batches_iter)
 
-  def test_constructor_builds_internal_states_and_options(self) -> None:
-    """Start and End are registered beside the supplied States."""
+  def test_initial_state_honors_start_and_output_options(self):
+    """Selected labels, gating, spam and terminal output affect the stream."""
 
-    scheduler = self._make_scheduler(input_labels=['sensor'],
-                                     init_values={'x': 2},
-                                     last_output={'x': 0},
-                                     spam=True, safe_start=True,
-                                     state_id_label='phase',
-                                     end_delay=None, display_freq=True)
-    self.assertEqual(set(scheduler._states), {'Start', 'A', 'End'})
-    self.assertEqual(scheduler._current_state.id, 'Start')
-    self.assertEqual(scheduler._input_labels, ('sensor',))
-    self.assertEqual(scheduler._init_values, {'x': 2})
-    self.assertEqual(scheduler._last_output, {'x': 0})
-    self.assertTrue(scheduler._spam)
-    self.assertTrue(scheduler._safe_start)
-    self.assertEqual(scheduler._state_id_label, 'phase')
-    self.assertIsNone(scheduler._end_delay)
+    transition = ProbeCondition(False)
+    scheduler = self._make_scheduler(
+      [State('A', [Constant('x', 1)], [(transition, 'End')])],
+      input_labels=['sensor'], init_values={'x': 2}, last_output={'x': 0},
+      spam=True, safe_start=True, state_id_label='phase', end_delay=None,
+      display_freq=True)
+    sent = self._capture_send(scheduler)
+    self._set_batches(scheduler, [{}, {'sensor': [1]}, {}, {}, {}, {}])
+    scheduler.begin()
+    scheduler.loop()
+    self.assertFalse(sent)
+    scheduler.loop()
+    scheduler.loop()
+    transition.result = True
+    scheduler.loop()
+    scheduler.loop()
+    scheduler.loop()
+    self.assertEqual(sent, [{'x': 1, 'phase': 'A'}, {'x': 1, 'phase': 'A'},
+                            {'x': 0, 'phase': 'End'}])
     self.assertIsNone(scheduler.freq)
     self.assertTrue(scheduler.display_freq)
 
@@ -143,25 +153,12 @@ class TestScheduler(BlockTestBase):
     sent = self._capture_send(scheduler)
     scheduler.begin()
     self.assertEqual(sent, [{'x': 3, 'state': 'Start'}])
-    self.assertEqual(scheduler._current_state.id, 'A')
 
     safe = self._make_scheduler(init_values={'x': 3}, safe_start=True,
                                 input_labels=['sensor'])
     safe_sent = self._capture_send(safe)
     safe.begin()
     self.assertEqual(safe_sent, [])
-    self.assertEqual(safe._current_state.id, 'A')
-
-  def test_begin_passes_runtime_arguments_to_initial_transition(self) -> None:
-    """The initial transition receives elapsed time and an empty data set."""
-
-    scheduler = self._make_scheduler()
-    with patch.object(scheduler_module, 'monotonic', return_value=10), \
-         patch.object(scheduler, '_evaluate_conditions',
-                      wraps=scheduler._evaluate_conditions) as evaluate:
-      scheduler.begin()
-      evaluate.assert_called_once_with(0, {})
-    self.assertEqual(scheduler._current_state.id, 'A')
 
   def test_loop_shares_runtime_arguments_across_callbacks(self) -> None:
     """Nested conditions and outputs receive the same elapsed time and data."""
@@ -175,8 +172,8 @@ class TestScheduler(BlockTestBase):
     sent = self._capture_send(scheduler)
     data = {'enabled': [False]}
     self._set_batches(scheduler, [data])
+    self.clock.now = 10
     scheduler.begin()
-    scheduler._last_t_sched = 10
 
     with patch.object(scheduler_module, 'monotonic', return_value=12):
       scheduler.loop()
@@ -225,12 +222,13 @@ class TestScheduler(BlockTestBase):
     gated_output = ProbeOutput({'x': 2})
     gated = self._make_scheduler(
       [State('A', [gated_output], [(transition, 'End')])],
-      input_labels=['missing'], safe_start=True, end_delay=None)
-    self._capture_send(gated)
-    self._set_batches(gated, [{}])
+      input_labels=['missing'], safe_start=True, end_delay=None, last_output={'x': 9})
+    gated_sent = self._capture_send(gated)
+    self._set_batches(gated, [{}, {}])
     gated.begin()
     gated.loop()
-    self.assertEqual(gated._current_state.id, 'End')
+    gated.loop()
+    self.assertEqual(gated_sent, [{'x': 9, 'state': 'End'}])
     self.assertEqual(gated_output.calls, [])
 
   def test_transition_priority_skips_output_and_resets_target(self) -> None:
@@ -247,7 +245,6 @@ class TestScheduler(BlockTestBase):
     self._set_batches(scheduler, [{}, {}])
     scheduler.begin()
     scheduler.loop()
-    self.assertEqual(scheduler._current_state.id, 'B')
     self.assertEqual(len(first.calls), 1)
     self.assertEqual(second.calls, [])
     self.assertEqual(old_output.calls, [])
@@ -306,33 +303,36 @@ class TestScheduler(BlockTestBase):
     scheduler = self._make_scheduler([State('A', [output], [])])
     self._capture_send(scheduler)
     self._set_batches(scheduler, [{}])
+    self.clock.now = 10
     scheduler.begin()
-    scheduler._last_t_sched = 10
     with patch.object(scheduler_module, 'monotonic', return_value=12.5):
       scheduler.loop()
     self.assertEqual(output.calls[0][0], 2.5)
 
-  def test_output_merge_and_return_validation(self) -> None:
-    """Later outputs overwrite earlier ones and invalid returns fail."""
+  def test_output_merge_and_return_validation(self):
+    """Later outputs win, None is ignored, and invalid returns emit nothing."""
 
     scheduler = self._make_scheduler([
-      State('A', [lambda _dt, _data: {'x': 1},
-                  lambda _dt, _data: None,
-                  lambda _dt, _data: {'x': 2, 'y': 3}], [])])
+      State('A', [lambda _dt, _data: {'x': 1}, lambda _dt, _data: None,
+                  lambda _dt, _data: {'x': 2, 'y': 3}], [])], output_labels=('x', 'y'))
+    sent = self._capture_send(scheduler)
+    self._set_batches(scheduler, [{}, {}])
     scheduler.begin()
     with patch.object(scheduler, 'log') as log:
-      self.assertEqual(scheduler._evaluate_output(0, {}), {'x': 2, 'y': 3})
-      scheduler._evaluate_output(0, {})
-    self.assertEqual(log.call_count, 1)
-
-    for value, error in ((1, TypeError), ({'': 1}, ValueError),
-                         ({1: 1}, ValueError)):
+      scheduler.loop()
+      scheduler.loop()
+    self.assertEqual(sent, [{'x': 2, 'y': 3, 'state': 'A'}])
+    self.assertEqual(sum(call.args[0] == 30 for call in log.call_args_list), 1)
+    for value in (1, {'': 1}, {1: 1}):
       with self.subTest(value=value):
         bad = self._make_scheduler([
           State('A', [lambda _dt, _data, result=value: result], [])])
+        bad_sent = self._capture_send(bad)
+        self._set_batches(bad, [{}])
         bad.begin()
-        with self.assertRaises(error):
-          bad._evaluate_output(0, {})
+        with self.assertRaises((TypeError, ValueError)):
+          bad.loop()
+        self.assertFalse(bad_sent)
 
   def test_unexpected_output_label_is_ignored_and_warned_once(self) -> None:
     """Unregistered labels cannot leak to downstream Blocks."""
@@ -349,27 +349,19 @@ class TestScheduler(BlockTestBase):
     warnings = [call for call in log.call_args_list if call.args[0] == 30]
     self.assertEqual(len(warnings), 1)
 
-  def test_send_policy_suppresses_duplicates_unless_requested(self) -> None:
-    """Changes, State entries and spam independently cause a send."""
+  def test_send_policy_suppresses_duplicates_unless_requested(self):
+    """Unchanged loop output is suppressed unless spam is requested."""
 
-    scheduler = self._make_scheduler()
-    sent = self._capture_send(scheduler)
-    scheduler.begin()
-    scheduler._send_values({'x': 1})
-    scheduler._send_values({'x': 1})
-    scheduler._send_on_state_change = True
-    scheduler._send_values({'x': 1})
-    scheduler._send_values({'x': 2})
-    self.assertEqual(sent, [{'x': 1, 'state': 'A'},
-                            {'x': 1, 'state': 'A'},
-                            {'x': 2, 'state': 'A'}])
-
-    spam = self._make_scheduler(spam=True)
-    spam_sent = self._capture_send(spam)
-    spam.begin()
-    spam._send_values({'x': 1})
-    spam._send_values({'x': 1})
-    self.assertEqual(len(spam_sent), 2)
+    for spam, expected in ((False, [1, 2]), (True, [1, 1, 2])):
+      with self.subTest(spam=spam):
+        scheduler = self._make_scheduler([
+          State('A', [lambda _dt, data: {'x': data['x'][-1]}], [])], spam=spam)
+        sent = self._capture_send(scheduler)
+        self._set_batches(scheduler, [{'x': [1]}, {'x': [1]}, {'x': [2]}])
+        scheduler.begin()
+        for _ in range(3):
+          scheduler.loop()
+        self.assertEqual([item['x'] for item in sent], expected)
 
   def test_end_state_sends_last_output_before_stopping(self) -> None:
     """The terminal delay does not prevent a configured final command."""
@@ -381,24 +373,34 @@ class TestScheduler(BlockTestBase):
     self._set_batches(scheduler, [{}, {}, {}])
     scheduler.begin()
     scheduler.loop()
-    self.assertEqual(scheduler._current_state.id, 'End')
     self.assertEqual(sent, [])
     with patch.object(scheduler_module, 'monotonic',
-                      return_value=scheduler._last_t_sched + 1):
+                      return_value=self.clock.now + 1):
       scheduler.loop()
       self.assertEqual(sent, [{'x': 0, 'state': 'End'}])
       with self.assertRaises(SchedulerStop):
         scheduler.loop()
 
-  def test_end_condition_boundary_and_indefinite_wait(self) -> None:
-    """Stopping requires elapsed time strictly beyond end_delay."""
+  def test_end_condition_boundary_and_indefinite_wait(self):
+    """The terminal delay is measured from actual entry into End."""
 
-    scheduler = self._make_scheduler(end_delay=2)
-    self.assertFalse(scheduler._end_condition(2, {}))
-    with self.assertRaises(SchedulerStop):
-      scheduler._end_condition(2.01, {})
-    idle = self._make_scheduler(end_delay=None)
-    self.assertFalse(idle._end_condition(1e9, {}))
+    for delay in (2, None):
+      with self.subTest(delay=delay):
+        self.clock.now = 10
+        scheduler = self._make_scheduler([
+          State('A', [], [(lambda _dt, _data: True, 'End')])], end_delay=delay)
+        self._capture_send(scheduler)
+        self._set_batches(scheduler, [{}, {}, {}])
+        scheduler.begin()
+        scheduler.loop()
+        self.clock.now = 12
+        scheduler.loop()
+        self.clock.now = 12.1 if delay is not None else 1e9
+        if delay is None:
+          scheduler.loop()
+        else:
+          with self.assertRaises(SchedulerStop):
+            scheduler.loop()
 
   def test_end_without_last_output_sends_retained_values_then_idles(
       self) -> None:
@@ -418,7 +420,6 @@ class TestScheduler(BlockTestBase):
     scheduler.loop()
     self.assertEqual(sent, [{'x': 1, 'state': 'A'},
                             {'x': 1, 'state': 'End'}])
-    self.assertTrue(scheduler._end)
 
   def test_zero_delay_stops_on_first_end_loop_without_final_output(
       self) -> None:
@@ -432,7 +433,7 @@ class TestScheduler(BlockTestBase):
     scheduler.begin()
     scheduler.loop()
     with patch.object(scheduler_module, 'monotonic',
-                      return_value=scheduler._last_t_sched + 1):
+                      return_value=self.clock.now + 1):
       with self.assertRaises(SchedulerStop):
         scheduler.loop()
     self.assertEqual(sent, [])
@@ -449,24 +450,21 @@ class TestScheduler(BlockTestBase):
     scheduler.loop()
     scheduler.loop()
     self.assertEqual(sent, [])
-    self.assertEqual(scheduler._send_cache, {'x': 0})
 
-  def test_finish_clears_runtime_caches_for_another_run(self) -> None:
-    """A second begin starts from Start with fresh caches."""
+  def test_finish_clears_runtime_caches_for_another_run(self):
+    """A fresh run waits for fresh input and emits its own output."""
 
-    scheduler = self._make_scheduler()
+    scheduler = self._make_scheduler([
+      State('A', [lambda _dt, data: {'x': data['sensor'][-1]}], [])],
+      input_labels=['sensor'], safe_start=True)
     sent = self._capture_send(scheduler)
-    self._set_batches(scheduler, [{}])
+    self._set_batches(scheduler, [{'sensor': [1]}])
     scheduler.begin()
+    scheduler.loop()
+    scheduler.finish()
+    scheduler.begin()
+    self._set_batches(scheduler, [{}, {'sensor': [2]}])
     scheduler.loop()
     self.assertEqual(sent, [{'x': 1, 'state': 'A'}])
-    scheduler.finish()
-    self.assertEqual(scheduler._current_state.id, 'Start')
-    self.assertEqual(scheduler._send_cache, {})
-    self.assertEqual(scheduler._receive_cache, {})
-    self.assertEqual(scheduler._latest_sent, {})
-    scheduler.begin()
-    self._set_batches(scheduler, [{}])
     scheduler.loop()
-    self.assertEqual(len(sent), 2)
-    self.assertEqual(sent[-1], {'x': 1, 'state': 'A'})
+    self.assertEqual(sent, [{'x': 1, 'state': 'A'}, {'x': 2, 'state': 'A'}])

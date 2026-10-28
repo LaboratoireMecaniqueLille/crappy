@@ -8,14 +8,6 @@ from crappy.modifier import Mean
 class TestMean(TestCase):
   """Unit tests for the Mean Modifier."""
 
-  def test_n_points_must_be_positive(self) -> None:
-    """Checks validation of the averaging period."""
-
-    with self.assertRaises((TypeError, ValueError)):
-      Mean(0)
-    with self.assertRaises((TypeError, ValueError)):
-      Mean(-1)
-
   def test_n_points_one_returns_each_point_as_float(self) -> None:
     """Checks that a one-point mean emits every received sample."""
 

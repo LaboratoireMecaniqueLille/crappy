@@ -1,5 +1,8 @@
 # coding: utf-8
 
+import logging
+import numpy as np
+
 from crappy import Block
 from crappy.links import link_graph
 from unittest.mock import patch
@@ -24,7 +27,8 @@ class TestProperties(BlockTestBase):
     self.assertIsNone(self._block.labels)
     self.assertIsNone(self._block.freq)
     self.assertFalse(self._block.display_freq)
-    self.assertEqual(self._block.name, 'crappy.TestBlock-1')
+    self.assertTrue(self._block.name)
+    self.assertIn(self._block.name, Block.names)
     self.assertTrue(self._block.pausable)
     self.assertFalse(self._block.is_vision_block)
 
@@ -126,17 +130,17 @@ class TestProperties(BlockTestBase):
     self.assertEqual(self._block.name, 'custom-name')
     self.assertNotIn(old_name, Block.names)
     self.assertIn('custom-name', Block.names)
-    self.assertNotIn(old_name, link_graph._nodes)
-    self.assertIn('custom-name', link_graph._nodes)
-    self.assertEqual(link_graph._edges['test-link'].source, 'custom-name')
-    self.assertEqual(link_graph._edges['test-link'].target, other.name)
+    self.assertNotIn(old_name, link_graph.nodes)
+    self.assertIn('custom-name', link_graph.nodes)
+    self.assertEqual(link_graph.predecessors(other.name), ('custom-name',))
+    self.assertEqual(link_graph.successors('custom-name'), (other.name,))
 
     with self.assertRaises(ValueError):
       self._block.name = other.name
 
     self.assertEqual(self._block.name, 'custom-name')
     self.assertEqual(len(Block.names), 2)
-    self.assertEqual(link_graph._edges['test-link'].source, 'custom-name')
+    self.assertEqual(link_graph.predecessors(other.name), ('custom-name',))
 
   def test_name_validation(self) -> None:
     """Checks that Block names are non-empty strings."""
@@ -159,5 +163,25 @@ class TestProperties(BlockTestBase):
     self.assertEqual(self._block.name, old_name)
     self.assertIn(old_name, Block.names)
     self.assertNotIn('runtime-name', Block.names)
-    self.assertIn(old_name, link_graph._nodes)
-    self.assertNotIn('runtime-name', link_graph._nodes)
+    self.assertIn(old_name, link_graph.nodes)
+    self.assertNotIn('runtime-name', link_graph.nodes)
+
+  def test_block_controls_validate_before_starting_a_run(self):
+    with patch.object(Block, '_ensure_failure_manager') as manager:
+      for method, options in ((Block.start_all, {'allow_root': 1}),
+                              (Block.start_all, {'log_level': 'DEBUG'}),
+                              (Block.prepare_all, {'log_level': True}),
+                              (Block.launch_all, {'no_raise': 1}),
+                              (Block.renice_all, {'allow_root': None})):
+        with self.subTest(method=method, options=options):
+          with self.assertRaises((TypeError, ValueError)):
+            method(**options)
+      manager.assert_not_called()
+    block = TestBlock()
+    for value in (np.nan, np.inf):
+      with self.assertRaises((TypeError, ValueError)):
+        block.freq = value
+    with self.assertRaises((TypeError, ValueError)):
+      block.debug = 'yes'
+    self.assertFalse(block.debug)
+    block.log(logging.DEBUG, '')

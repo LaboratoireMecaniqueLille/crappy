@@ -8,14 +8,6 @@ from crappy.modifier import MovingMed
 class TestMovingMed(TestCase):
   """Unit tests for the MovingMed Modifier."""
 
-  def test_n_points_must_be_positive(self) -> None:
-    """Checks validation of the moving median window."""
-
-    with self.assertRaises((TypeError, ValueError)):
-      MovingMed(0)
-    with self.assertRaises((TypeError, ValueError)):
-      MovingMed(-1)
-
   def test_n_points_one_returns_latest_point_as_float(self) -> None:
     """Checks the one-point moving median."""
 

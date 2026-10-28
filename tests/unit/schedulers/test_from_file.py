@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import warnings
 from unittest import TestCase
 from unittest.mock import patch
 import logging
@@ -41,11 +42,12 @@ class TestFromFile(TestCase):
     with patch.object(output, 'log') as log:
       self.assertEqual(output(3, {}), {'command': 20})
       self.assertEqual(output(4, {}), {'command': 20})
-      self.assertEqual(log.call_count, 1)
+      self.assertEqual(sum(call.args[0] == logging.WARNING
+                            for call in log.call_args_list), 1)
       output.reset()
       self.assertEqual(output(5, {}), {'command': 20})
-    self.assertEqual(log.call_count, 3)
-    self.assertEqual(log.call_args.args[0], logging.WARNING)
+    self.assertEqual(sum(call.args[0] == logging.WARNING
+                          for call in log.call_args_list), 2)
 
   def test_custom_delimiter_and_single_row(self) -> None:
     """A one-row file remains a two-column array."""
@@ -72,9 +74,9 @@ class TestFromFile(TestCase):
   def test_rejects_malformed_data(self) -> None:
     """Only two finite columns with increasing timestamps are accepted."""
 
-    for contents in ('0\n1\n', '0,1,2\n', '0,nan\n', '0,inf\n',
+    for contents in ('', '0,0\n1,nan\n', '0\n1\n', '0,1,2\n', '0,nan\n', '0,inf\n',
                      '1,2\n0,3\n', '1,2\n1,3\n'):
       with self.subTest(contents=contents):
         self.file.write_text(contents, encoding='utf-8')
-        with self.assertRaises((TypeError, ValueError)):
+        with warnings.catch_warnings(record=True), self.assertRaises((TypeError, ValueError)):
           FromFile('command', self.file)

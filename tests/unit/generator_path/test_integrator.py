@@ -1,17 +1,15 @@
 # coding: utf-8
 
-from unittest import TestCase
+from tests.support.generator_paths import GeneratorPathTestBase
 
 from crappy.blocks.generator_path.integrator import Integrator
 from crappy.blocks.generator_path.meta_path import Path
 
 
-class TestIntegrator(TestCase):
+class TestIntegrator(GeneratorPathTestBase):
   """Unit tests for the Integrator Generator Path."""
 
-  def setUp(self) -> None:
-    Path.t0 = 0
-    Path.last_cmd = None
+  path_t0 = 0
 
   def test_first_integrator_requires_initial_value(self) -> None:
     """Checks that the first path cannot infer a previous command."""

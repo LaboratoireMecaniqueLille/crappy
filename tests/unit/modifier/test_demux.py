@@ -10,12 +10,13 @@ from crappy.modifier import Demux
 class TestDemux(TestCase):
   """Unit tests for the Demux Modifier."""
 
-  def test_single_label_is_wrapped_in_tuple(self) -> None:
-    """Checks constructor normalization for a single label."""
+  def test_string_label_selects_one_column(self) -> None:
+    """A string label names one extracted value instead of its characters."""
 
     modifier = Demux('value')
 
-    self.assertEqual(modifier._labels, ('value',))
+    returned = modifier({'t(s)': np.array([42]), 'stream': np.array([[7]])})
+    self.assertEqual(returned, {'t(s)': 42.0, 'value': 7.0})
 
   def test_first_column_values_are_extracted_by_default(self) -> None:
     """Checks demuxing the first value of each stream column."""

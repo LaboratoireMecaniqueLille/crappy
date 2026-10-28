@@ -4,7 +4,9 @@ from tests.support.assertions import with_failure_manager
 
 from unittest.mock import Mock, patch
 import logging
+import re
 
+import numpy as np
 
 import crappy
 from crappy.blocks.meta_block.block import VisionBlockType
@@ -24,7 +26,6 @@ class TestVisionBlockClassAPI(VisionTestBase):
     """Checks the public alias and state established by the constructor."""
 
     block = StubVisionBlock()
-    self.assertFalse(hasattr(block, '_failure_manager'))
 
     self.assertIs(crappy.VisionBlock, VisionBlock)
     self.assertIsInstance(block, VisionBlockType)
@@ -35,8 +36,6 @@ class TestVisionBlockClassAPI(VisionTestBase):
     self.assertEqual(block.img_inputs, list())
     self.assertEqual(block.img_outputs, list())
     self.assertEqual(block.last_received, dict())
-    self.assertIsInstance(block._out_link_data, ImgLinkData)
-    self.assertEqual(block._sent_img_counter, 0)
     self.assertIsNone(block.request_config('unused source'))
     self.assertIsNone(block.resolve_config_requests())
 
@@ -47,9 +46,30 @@ class TestVisionBlockClassAPI(VisionTestBase):
                          ((2, 3, 4), 'float32'),
                          (None, None)):
       with self.subTest(shape=shape, dtype=dtype):
-        block = with_failure_manager(StubVisionBlock(img_shape=shape, img_dtype=dtype))
-        self.assertEqual(block._img_shape, shape)
-        self.assertEqual(block._img_dtype, dtype)
+        source = with_failure_manager(StubVisionBlock(img_shape=shape,
+                                                     img_dtype=dtype))
+        if shape is None:
+          source.set_shared_objects()
+          source.prepare()
+          self.assertEqual(source.img_outputs, [])
+          continue
+        consumer = with_failure_manager(StubVisionBlock())
+        link = ImageLink(source, consumer)
+        self.make_manager(source)
+        self.set_prepare_sync(consumer)
+        source.set_shared_objects()
+        source.prepare()
+        consumer.prepare()
+        image = np.arange(np.prod(shape), dtype=dtype).reshape(shape)
+        metadata = {'ImageUniqueID': 4, 't(s)': 0.5}
+
+        source.send_img(metadata, image)
+
+        self.assertEqual(consumer.receive_imgs(), [link.name])
+        received = consumer.last_received[link.name]
+        np.testing.assert_array_equal(received.img, image)
+        self.assertEqual(received.img.dtype, image.dtype)
+        self.assertEqual(received.metadata, metadata)
 
   def test_constructor_rejects_invalid_image_format_types(self) -> None:
     """Checks image format container, length, and element types."""
@@ -121,26 +141,37 @@ class TestVisionBlockClassAPI(VisionTestBase):
 
     block = with_failure_manager(StubVisionBlock())
 
-    with patch.object(block_module, 'monotonic', return_value=12.5):
+    with patch.object(block_module, 'monotonic', return_value=10.0):
       block.begin()
-    self.assertEqual(block._last_fps_img, 12.5)
 
     block.log = Mock()
-    block._last_fps_img = 10.0
-    block._fps_count = 2
+    with patch.object(block_module, 'monotonic', return_value=11.0):
+      block._print_freq(img_handled=True)
+      block._print_freq(img_handled=False)
+      block._print_freq(img_handled=True)
+    block.log.assert_not_called()
+
     with patch.object(block_module, 'monotonic', return_value=13.0):
       block._print_freq(img_handled=True)
 
-    block.log.assert_called_once_with(
-        logging.INFO, 'Frames handled per second: 1.0')
-    self.assertEqual(block._last_fps_img, 13.0)
-    self.assertEqual(block._fps_count, 0)
+    self.assertTrue(any(call.args[0] == logging.INFO
+                        for call in block.log.call_args_list))
+    reported = ' '.join(str(call.args[1]) for call in block.log.call_args_list)
+    self.assertIn(1.0, [float(value) for value in
+                        re.findall(r'\d+(?:\.\d+)?', reported)])
 
     block.log.reset_mock()
     with patch.object(block_module, 'monotonic', return_value=14.0):
       block._print_freq(img_handled=False)
     block.log.assert_not_called()
-    self.assertEqual(block._fps_count, 0)
+    # A later interval still reports, including when no frame was handled.
+    with patch.object(block_module, 'monotonic', return_value=16.0):
+      block._print_freq(img_handled=False)
+    self.assertTrue(any(call.args[0] == logging.INFO
+                        for call in block.log.call_args_list))
+    reported = ' '.join(str(call.args[1]) for call in block.log.call_args_list)
+    self.assertIn(0.0, [float(value) for value in
+                        re.findall(r'\d+(?:\.\d+)?', reported)])
 
   def test_finish_closes_inputs_and_unlinks_owned_output(self) -> None:
     """Checks ownership rules when releasing shared-memory handles."""

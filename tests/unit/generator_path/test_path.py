@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import logging
-from unittest import TestCase
+from tests.support.generator_paths import GeneratorPathTestBase
 from unittest.mock import patch
 
 import crappy.blocks.generator_path as generator_path_package
@@ -20,15 +20,10 @@ class UnitTestPath(Path):
     return Path.get_cmd(self, data)
 
 
-class TestPath(TestCase):
+class TestPath(GeneratorPathTestBase):
   """Unit tests for the base Generator Path class."""
 
-  def setUp(self) -> None:
-    """Resets shared Path state before each test."""
-
-    logging.disable(logging.NOTSET)
-    Path.t0 = 0
-    Path.last_cmd = None
+  path_t0 = 0
 
   def tearDown(self) -> None:
     """Removes dynamic classes registered during tests."""

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from unittest import TestCase
+from tests.support.generator_paths import GeneratorPathTestBase
 from unittest.mock import patch
 
 import crappy.blocks.generator_path.cyclic as cyclic_module
@@ -10,15 +10,8 @@ from crappy.blocks.generator_path.cyclic_ramp import CyclicRamp
 from crappy.blocks.generator_path.meta_path import Path
 
 
-class PathTestMixin:
-  """Shared setup for cyclic Path tests."""
 
-  def setUp(self) -> None:
-    Path.t0 = 10
-    Path.last_cmd = None
-
-
-class TestCyclic(PathTestMixin, TestCase):
+class TestCyclic(GeneratorPathTestBase):
   """Unit tests for the Cyclic Generator Path."""
 
   def test_cycles_must_be_full_or_half_cycles(self) -> None:
@@ -90,7 +83,7 @@ class TestCyclic(PathTestMixin, TestCase):
     self.assertEqual(path.t0, 42)
 
 
-class TestCyclicRamp(PathTestMixin, TestCase):
+class TestCyclicRamp(GeneratorPathTestBase):
   """Unit tests for the CyclicRamp Generator Path."""
 
   def test_first_cyclic_ramp_requires_initial_value(self) -> None:

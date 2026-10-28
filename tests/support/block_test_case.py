@@ -1,6 +1,7 @@
 """Resource ownership for tests of Blocks, separate from observable doubles."""
 
 import logging
+from multiprocessing import Barrier, Event, Queue as CreateQueue, Value
 from multiprocessing.process import BaseProcess
 from multiprocessing.queues import Queue
 import unittest
@@ -45,6 +46,20 @@ class BlockTestBase(unittest.TestCase):
 
   wait_until = staticmethod(wait_until)
   wait_until_stable = staticmethod(wait_until_stable)
+
+  def configure_run(self, block, *, t0=0.0, start=True):
+    """Give a standalone worker the synchronization normally owned by a run."""
+
+    self._block = block
+    block._ready_barrier = Barrier(1)
+    block._start_event = Event()
+    block._stop_event = Event()
+    block._pause_event = Event()
+    block._instance_t0 = Value('d', t0)
+    block._log_queue = CreateQueue()
+    if start:
+      block._start_event.set()
+    return block
 
   def failures(self, block):
     """Drain standalone child reports rather than inspecting legacy flags."""

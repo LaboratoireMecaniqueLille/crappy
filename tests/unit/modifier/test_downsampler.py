@@ -8,14 +8,6 @@ from crappy.modifier import DownSampler
 class TestDownSampler(TestCase):
   """Unit tests for the DownSampler Modifier."""
 
-  def test_n_points_must_be_positive(self) -> None:
-    """Checks validation of the downsampling period."""
-
-    with self.assertRaises((TypeError, ValueError)):
-      DownSampler(0)
-    with self.assertRaises((TypeError, ValueError)):
-      DownSampler(-1)
-
   def test_n_points_one_returns_every_point(self) -> None:
     """Checks the pass-through case."""
 

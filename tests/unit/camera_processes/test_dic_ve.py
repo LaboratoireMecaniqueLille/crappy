@@ -81,6 +81,7 @@ class TestDICVEProcess(CameraProcessTestBase):
 
   def setUp(self) -> None:
     """Resets the fake tool registry."""
+    super().setUp()
 
     DummyDICVETool.instances.clear()
 

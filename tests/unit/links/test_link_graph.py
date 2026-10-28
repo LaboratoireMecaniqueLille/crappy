@@ -242,15 +242,16 @@ class TestLinkGraph(TestCase):
     self.assertEqual(tuple(self.graph.nodes), ('first', 'second'))
     self.assertIs(self.graph.nodes['first'], first_node)
 
-  def test_rename_to_same_name_is_a_noop(self) -> None:
-    """Tests that assigning the current name preserves the node object."""
+  def test_rename_to_same_name_is_a_noop(self):
+    """A no-op rename retains metadata and connections."""
 
-    self.graph.add_node('first', FirstBlock)
-    node = self.graph.nodes['first']
-
+    self.add_nodes('first', 'second')
+    self.graph.add_edge('edge', 'first', 'second', 'link')
     self.graph.rename_node('first', 'first')
-
-    self.assertIs(self.graph.nodes['first'], node)
+    self.assertIs(self.graph.nodes['first'].block_type, FirstBlock)
+    self.assertEqual(self.graph.successors('first'), ('second',))
+    self.assertEqual(self.graph.predecessors('second'), ('first',))
+    self.assertEqual(self.graph.link_names(), ('edge',))
 
   def test_reset(self) -> None:
     """Tests idempotent reset and reuse of former node and edge names."""
@@ -273,3 +274,14 @@ class TestLinkGraph(TestCase):
 
     with self.assertRaises(ValueError):
       self.graph.link_names('other')
+
+  def test_graph_queries_validate_filters(self):
+    graph = LinkGraph()
+    graph.add_node('one', FirstBlock)
+    for method in (graph.ancestors, graph.descendants,
+                   graph.predecessors, graph.successors):
+      with self.subTest(method=method):
+        with self.assertRaises((TypeError, ValueError)):
+          method('one', kind='unknown')
+        with self.assertRaises((TypeError, ValueError)):
+          method([], kind='link')

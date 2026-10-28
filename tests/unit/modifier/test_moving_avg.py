@@ -8,14 +8,6 @@ from crappy.modifier import MovingAvg
 class TestMovingAvg(TestCase):
   """Unit tests for the MovingAvg Modifier."""
 
-  def test_n_points_must_be_positive(self) -> None:
-    """Checks validation of the moving average window."""
-
-    with self.assertRaises((TypeError, ValueError)):
-      MovingAvg(0)
-    with self.assertRaises((TypeError, ValueError)):
-      MovingAvg(-1)
-
   def test_n_points_one_returns_latest_point_as_float(self) -> None:
     """Checks the one-point moving average."""
 

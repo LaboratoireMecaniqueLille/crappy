@@ -143,7 +143,6 @@ class TestVisionBlockSharedMemory(VisionTestBase):
     self.assertEqual(received.id, 2)
     self.assertEqual(received.metadata['ImageUniqueID'], 12)
     np.testing.assert_array_equal(received.img, third)
-    self.assertEqual(source._sent_img_counter, 3)
 
     # The consumer owns a local copy, not a view over the shared source buffer.
     source._out_link_data.npy_buffer[:] = 0

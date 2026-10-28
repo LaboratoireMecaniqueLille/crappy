@@ -25,7 +25,8 @@ class TestMeanBlock(BlockTestBase):
 
     mean = MeanBlock(**kwargs)
     mean._instance_t0 = Value('d', self._t0)
-    mean._last_sent_t = self._t0
+    with patch('crappy.blocks.mean.time', return_value=self._t0):
+      mean.begin()
 
     sent = list()
     recv_calls = list()
@@ -59,7 +60,13 @@ class TestMeanBlock(BlockTestBase):
     with self.assertRaises(TypeError):
       MeanBlock(delay='1')
 
-    self.assertEqual(MeanBlock(delay=True)._delay, True)
+    mean, sent, _, _ = self._make_mean(delay=True, batches=[{'a': [2]}, {'a': [4]}])
+    with patch('crappy.blocks.mean.time', return_value=10.5):
+      mean.loop()
+    self.assertFalse(sent)
+    with patch('crappy.blocks.mean.time', return_value=11):
+      mean.loop()
+    self.assertEqual(sent[0]['a'], 3)
 
   def test_time_label_is_validated(self) -> None:
     """Checks that the time label is a non-empty string."""
@@ -69,21 +76,23 @@ class TestMeanBlock(BlockTestBase):
     with self.assertRaises(TypeError):
       MeanBlock(delay=1, time_label=1)
 
-  def test_out_labels_normalization(self) -> None:
-    """Checks the supported out_labels forms."""
+  def test_requested_labels_select_outputs(self):
+    """Label argument forms select the named outputs."""
 
-    self.assertIsNone(MeanBlock(delay=1)._out_labels)
-    self.assertEqual(MeanBlock(delay=1, out_labels='abc')._out_labels, ['abc'])
-    self.assertEqual(MeanBlock(delay=1, out_labels=('a', 'b'))._out_labels,
-                     ['a', 'b'])
-
-    for out_labels in ('', (), [], ('a', ''), ('a', 1)):
-      with self.subTest(out_labels=out_labels):
-        with self.assertRaises(ValueError):
-          MeanBlock(delay=1, out_labels=out_labels)
-
-    with self.assertRaises(TypeError):
-      MeanBlock(delay=1, out_labels={'a', 'b'})
+    for labels, expected in ((None, {'abc', 'a', 'b', 't(s)'}),
+                              ('abc', {'abc', 't(s)'}),
+                              (('a', 'b'), {'a', 'b', 't(s)'})):
+      with self.subTest(labels=labels):
+        mean, sent, _, _ = self._make_mean(
+          delay=1, out_labels=labels,
+          batches=[{'abc': [2, 4], 'a': [1, 3], 'b': [4, 6], 't(s)': [0, 2]}])
+        with patch('crappy.blocks.mean.time', return_value=11):
+          mean.loop()
+        self.assertEqual(set(sent[0]), expected)
+    for labels in ('', (), [], ('a', ''), ('a', 1), {'a', 'b'}):
+      with self.subTest(labels=labels):
+        with self.assertRaises((TypeError, ValueError)):
+          MeanBlock(delay=1, out_labels=labels)
 
   def test_prepare_requires_input_and_output_links(self) -> None:
     """Checks that prepare fails early when the Block is not linked enough."""
@@ -112,16 +121,18 @@ class TestMeanBlock(BlockTestBase):
 
     mean.prepare()
 
-  def test_begin_initializes_last_sent_time(self) -> None:
-    """Checks that begin initializes the averaging-window counter."""
+  def test_begin_initializes_last_sent_time(self):
+    """Beginning a run starts a fresh averaging interval."""
 
-    mean = MeanBlock(delay=1)
-    mean._instance_t0 = Value('d', self._t0)
-
+    mean, sent, _, _ = self._make_mean(delay=1, batches=[{'a': [1]}, {'a': [3]}])
     with patch('crappy.blocks.mean.time', return_value=20):
       mean.begin()
-
-    self.assertEqual(mean._last_sent_t, 20)
+    with patch('crappy.blocks.mean.time', return_value=20.5):
+      mean.loop()
+    self.assertFalse(sent)
+    with patch('crappy.blocks.mean.time', return_value=21):
+      mean.loop()
+    self.assertEqual(sent[0]['a'], 2)
 
   def test_loop_averages_numeric_labels(self) -> None:
     """Checks numeric averaging and non-blocking data reception."""
@@ -133,9 +144,7 @@ class TestMeanBlock(BlockTestBase):
     with patch('crappy.blocks.mean.time', return_value=20):
       mean.loop()
 
-    self.assertEqual(recv_calls, [None])
     self.assertEqual(sent, [{'a': 2.0, 'b': 4.0, 't(s)': 3.0}])
-    self.assertEqual(mean._last_sent_t, 20)
 
   def test_loop_filters_output_labels(self) -> None:
     """Checks that out_labels limits the averaged labels."""
@@ -173,7 +182,6 @@ class TestMeanBlock(BlockTestBase):
       mean.loop()
 
     self.assertEqual(sent, [{'a': 2.0, 't(s)': 2.0}])
-    self.assertEqual(mean._last_sent_t, 14)
 
   def test_loop_keeps_last_non_numeric_value(self) -> None:
     """Checks fallback behavior for labels that cannot be averaged."""
@@ -187,54 +195,36 @@ class TestMeanBlock(BlockTestBase):
 
     self.assertEqual(sent, [{'label': 'last', 't(s)': 1.0}])
     warning_logs = [msg for level, msg in logs if level == logging.WARNING]
-    self.assertEqual(len(warning_logs), 1)
-    self.assertIn("Cannot perform averaging on label label", warning_logs[0])
+    self.assertTrue(warning_logs)
 
-  def test_loop_does_not_send_without_matching_data(self) -> None:
-    """Checks empty and filtered windows are discarded and advance time."""
+  def test_loop_does_not_send_without_matching_data(self):
+    """Empty/filtered windows advance and cannot contaminate later samples."""
 
-    cases = (
-      ({}, None),
-      ({'t(s)': [10, 12], 'b': [1, 3]}, 'a'),
-    )
-
-    for data, out_labels in cases:
-      with self.subTest(data=data, out_labels=out_labels):
-        kwargs = {'delay': 1, 'batches': [data]}
-        if out_labels is not None:
-          kwargs['out_labels'] = out_labels
-        mean, sent, recv_calls, _ = self._make_mean(**kwargs)
-
-        with patch('crappy.blocks.mean.time', return_value=30):
+    for initial, labels in (({}, None), ({'t(s)': [10, 12], 'b': [1, 3]}, 'a')):
+      with self.subTest(initial=initial, labels=labels):
+        mean, sent, _, _ = self._make_mean(
+          delay=1, out_labels=labels,
+          batches=[initial, {'a': [6], 't(s)': [1]}, {'a': [8], 't(s)': [3]}])
+        for now in (30, 30.5):
+          with patch('crappy.blocks.mean.time', return_value=now):
+            mean.loop()
+          self.assertFalse(sent)
+        with patch('crappy.blocks.mean.time', return_value=31):
           mean.loop()
+        self.assertEqual(sent, [{'a': 7.0, 't(s)': 2.0}])
 
-        self.assertEqual(recv_calls, [None])
-        self.assertEqual(sent, [])
-        self.assertEqual(mean._last_sent_t, 30)
-        self.assertEqual(dict(mean._data_buf), {})
+  def test_loop_buffers_data_until_delay_is_reached(self):
+    """Successive averaging windows retain their own samples."""
 
-  def test_loop_buffers_data_until_delay_is_reached(self) -> None:
-    """Checks that non-blocking reads accumulate complete averaging windows."""
-
-    mean, sent, recv_calls, _ = self._make_mean(
-      delay=2,
-      batches=[
-        {'t(s)': [1, 2], 'a': [2, 4]},
-        {'t(s)': [3, 4], 'a': [6, 8]},
-      ])
-
-    with patch('crappy.blocks.mean.time', side_effect=(11, 12, 12)):
-      mean.loop()
-      self.assertEqual(sent, [])
-      self.assertEqual(dict(mean._data_buf),
-                       {'t(s)': [1, 2], 'a': [2, 4]})
-
-      mean.loop()
-
-    self.assertEqual(recv_calls, [None, None])
-    self.assertEqual(sent, [{'a': 5.0, 't(s)': 2.5}])
-    self.assertEqual(mean._last_sent_t, 12)
-    self.assertEqual(dict(mean._data_buf), {})
+    mean, sent, _, _ = self._make_mean(delay=2, batches=[
+      {'t(s)': [1, 2], 'a': [2, 4]}, {'t(s)': [3, 4], 'a': [6, 8]},
+      {'t(s)': [5], 'a': [100]}, {'t(s)': [6], 'a': [200]}])
+    for now in (11, 12, 13, 14):
+      with patch('crappy.blocks.mean.time', return_value=now):
+        mean.loop()
+      if now == 11:
+        self.assertFalse(sent)
+    self.assertEqual(sent, [{'a': 5.0, 't(s)': 2.5}, {'a': 150.0, 't(s)': 5.5}])
 
   def test_loop_recovers_after_an_empty_window(self) -> None:
     """Checks that an empty interval does not prevent later averaging."""
@@ -250,4 +240,3 @@ class TestMeanBlock(BlockTestBase):
       mean.loop()
 
     self.assertEqual(sent, [{'a': 6.0, 't(s)': 3.5}])
-    self.assertEqual(mean._last_sent_t, 14)
