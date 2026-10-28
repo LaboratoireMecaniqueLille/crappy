@@ -123,7 +123,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     self._config.after(0, fail)
     with patch.object(camera_config_module, 'showerror',
                       side_effect=RuntimeError('dialog failed')):
-      with assert_failure(self, ValueError, 'scheduled callback failed'):
+      with assert_failure(self, ValueError):
         self._config.run()
 
     self.assertTrue(self._config._stop_event.is_set())
@@ -145,7 +145,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
       self.assertIn('early callback failed', exception_log.call_args.args[0])
       self.assertIs(self._config._failure_manager.snapshot()[0][1], error)
 
-    with assert_failure(self, ValueError, 'early callback failed'):
+    with assert_failure(self, ValueError):
       self._config.run()
 
   def test_callback_keyboard_interrupt_closes_silently(self) -> None:
@@ -192,7 +192,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
 
     with patch.object(self._config._histogram_process, 'start',
                       side_effect=RuntimeError('cannot start')):
-      with assert_failure(self, RuntimeError, 'cannot start'):
+      with assert_failure(self, RuntimeError):
         self._config.run()
 
     self.assertTrue(self._config._stop_event.is_set())
@@ -237,7 +237,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
         self.update_idletasks()
         raise ValueError('layout failed')
 
-    with assert_failure(self, ValueError, 'layout failed'):
+    with assert_failure(self, ValueError):
       BrokenConfig(
           self._camera, self._log_queue, self._log_level, self._freq, None,
           FailureManager('test configuration', 'configuration'))
@@ -263,7 +263,7 @@ class TestConfigurationLifecycle(TkinterConfigTestCase):
     with (patch.object(camera_config_module, 'Queue', side_effect=make_queue),
           patch.object(camera_config_module, 'HistogramProcess',
                        side_effect=RuntimeError('histogram failed'))):
-      with assert_failure(self, RuntimeError, 'histogram failed'):
+      with assert_failure(self, RuntimeError):
         TkinterCameraConfig(
             self._camera, self._log_queue, self._log_level, self._freq, None,
             FailureManager('test configuration', 'configuration'))

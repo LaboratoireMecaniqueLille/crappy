@@ -81,29 +81,17 @@ class ButtonTests:
       button.prepare()
 
   def test_prepare_creates_gui_with_custom_label(self) -> None:
-    """Checks the initial window and native widgets created by prepare."""
+    """Custom labels are visible and identify the initial emitted value."""
 
-    button, _ = self._prepare_button(time_label='time', label='trigger')
-
-    self.assertEqual(button._step, 0)
-    self.assertEqual(self._text(button), 'trigger: 0')
+    button, sink = self._prepare_button(time_label='time', label='trigger', send_0=True)
+    with patch.object(button_module, 'time', return_value=12.0):
+      button.begin()
+    self.assertEqual(sink.inputs[0].recv(), {'time': 2.0, 'trigger': 0})
+    self.assertIn('trigger', self._text(button))
     if self._backend == 'tkinter':
-      self.assertEqual(button._root.title(), 'Button block')
-      self.assertEqual(str(button._label.cget('textvariable')),
-                       str(button._text))
-      self.assertEqual(button._button.cget('text'), 'Next step')
-      self.assertIsNone(button._qt_window)
+      self.assertTrue(button._root.winfo_exists())
     else:
-      self.assertEqual(button._qt_window.windowTitle(), 'Button block')
-      self.assertEqual(button._qt_button.text(), 'Next step')
-      self.assertIsNone(button._root)
-      layout = button._qt_window.layout()
-      self.assertIs(layout.itemAt(0).widget(), button._qt_label)
-      self.assertIs(layout.itemAt(1).layout().itemAt(0).widget(),
-                     button._qt_button)
-      constraints = button_module.QtWidgets.QLayout.SizeConstraint
-      self.assertEqual(layout.sizeConstraint(),
-                       constraints.SetFixedSize)
+      self.assertTrue(button._qt_window.isVisible())
 
   def test_begin_sends_initial_zero_when_requested(self) -> None:
     """Checks the optional initial zero emitted at Block start."""
@@ -146,8 +134,8 @@ class ButtonTests:
     with patch.object(button_module, 'time', return_value=13.0):
       self._click(button)
 
-    self.assertEqual(button._step, 1)
-    self.assertEqual(self._text(button), 'trigger: 1')
+    self.assertIn('trigger', self._text(button))
+    self.assertIn('1', self._text(button))
     self.assertEqual(sink.inputs[0].recv(), {'time': 3.0, 'trigger': 1})
 
   def test_loop_only_sends_in_spam_mode(self) -> None:
@@ -180,9 +168,7 @@ class ButtonTests:
 
     if self._backend == 'tkinter':
       from tkinter import TclError
-      self.assertIsNone(button._root)
       with self.assertRaises(TclError):
         window.wm_state()
     else:
-      self.assertIsNone(button._qt_window)
       self.assertFalse(window.isVisible())

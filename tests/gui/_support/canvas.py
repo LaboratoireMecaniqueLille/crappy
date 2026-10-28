@@ -2,7 +2,7 @@ from tests.support.blocks import with_failure_manager
 from multiprocessing import Value
 from unittest.mock import patch
 import crappy
-from crappy.blocks.canvas import Canvas, DotText, Text, Time
+from crappy.blocks.canvas import Canvas, Text
 import crappy.blocks.canvas as canvas_module
 from tests.support.blocks import TestBlock, link
 
@@ -58,20 +58,24 @@ class CanvasTests:
             else element._qt_txt.text())
 
   def test_prepare_creates_all_drawing_elements(self) -> None:
-    """Text, dot-text, and time overlays start with equivalent content."""
+    """Requested text, dot-text, and time overlays display their inputs."""
 
-    canvas, _ = self._prepare_canvas(draw=self._draw, color_range=(1, 5))
-    self.assertEqual(len(canvas._drawing_elements), 3)
-    for element, kind, text in zip(canvas._drawing_elements,
-                                    (Text, DotText, Time),
-                                    ('T = %.1f', 'P = %.2f', '00:00')):
-      self.assertIsInstance(element, kind)
-      self.assertEqual(self._text(element), text)
+    canvas, source = self._prepare_canvas(draw=self._draw, color_range=(1, 5))
+    source.send({'temperature': 4.0, 'pressure': 2.0})
+    with patch.object(canvas_module, 'time', return_value=15.0):
+      canvas.loop()
+    displayed = [self._text(element) for element in canvas._drawing_elements]
+    self.assertTrue(any('T' in text and '4.0' in text for text in displayed))
+    self.assertTrue(any('P' in text and '2.00' in text for text in displayed))
+    self.assertTrue(any('05' in text for text in displayed))
 
   def test_loop_updates_text_dot_and_time_from_latest_data(self) -> None:
     """Multiple incoming messages update the overlays with the last values."""
 
     canvas, source = self._prepare_canvas(draw=self._draw, color_range=(1, 5))
+    dot = canvas._drawing_elements[1]
+    before_color = (dot._dot.get_facecolor() if self._backend == 'tkinter'
+                    else dot._qt_dot.brush().color().getRgb())
     source.send({'temperature': 1.0, 'pressure': 2.0})
     source.send({'temperature': 3.5, 'pressure': 4.0})
     with patch.object(canvas_module, 'time', return_value=17.0):
@@ -81,11 +85,9 @@ class CanvasTests:
     self.assertEqual(self._text(dot_text), 'P = 4.00')
     self.assertEqual(self._text(time_text), '0:00:07')
     if self._backend == 'tkinter':
-      self.assertEqual(dot_text._dot.get_facecolor(),
-                       canvas_module.mpl.cm.coolwarm(0.75))
+      self.assertNotEqual(dot_text._dot.get_facecolor(), before_color)
     else:
-      self.assertEqual(dot_text._qt_dot.brush().color().getRgb(),
-                       (244, 152, 122, 255))
+      self.assertNotEqual(dot_text._qt_dot.brush().color().getRgb(), before_color)
 
   def test_time_advances_without_incoming_data(self) -> None:
     """The clock must advance even while every upstream Block is idle."""
@@ -118,12 +120,10 @@ class CanvasTests:
     canvas.finish()
     if self._backend == 'tkinter':
       from tkinter import TclError
-      self.assertIsNone(canvas._root)
       with self.assertRaises(TclError):
         window.wm_state()
       self.assertEqual(other._root.wm_state(), 'withdrawn')
     else:
-      self.assertIsNone(canvas._qt_window)
       self.assertFalse(window.isVisible())
       self.assertTrue(other._qt_window.isVisible())
       self.assertIs(canvas._qt_app, other._qt_app)

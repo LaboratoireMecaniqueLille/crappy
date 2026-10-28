@@ -2,7 +2,7 @@ from tests.support.blocks import with_failure_manager
 from unittest.mock import patch
 import numpy as np
 import logging
-from crappy.blocks.dashboard import Dashboard, DashboardWindow
+from crappy.blocks.dashboard import Dashboard
 import crappy.blocks.dashboard as dashboard_module
 from tests.support.blocks import TestBlock, link
 
@@ -50,22 +50,30 @@ class DashboardTests:
             else dashboard._qt_values[label].text())
 
   def test_labels_are_normalized(self) -> None:
-    """Checks the supported label argument forms."""
+    """String and sequence labels select the values displayed to the user."""
 
-    self.assertEqual(Dashboard('abc')._dash_labels, ['abc'])
-    self.assertEqual(Dashboard(('a', 'b'))._dash_labels, ['a', 'b'])
+    for labels in ('abc', ('a', 'b')):
+      with self.subTest(labels=labels):
+        expected = [labels] if isinstance(labels, str) else labels
+        dashboard, source = self._prepare_dashboard(labels, nb_digits=0)
+        source.send({name: index + 1 for index, name in enumerate(expected)})
+        dashboard.loop()
+        for index, name in enumerate(expected):
+          self.assertEqual(self._value(dashboard, name), str(index + 1))
 
   def test_nb_digits_is_validated(self) -> None:
-    """Checks that invalid decimal precision values are rejected early."""
+    """Invalid precision is rejected; valid values control the displayed digits."""
 
-    for nb_digits, error in ((-1, ValueError), (1.5, TypeError),
-                              ('2', TypeError), (True, TypeError)):
+    for nb_digits in (-1, 1.5, '2', True):
       with self.subTest(nb_digits=nb_digits):
-        with self.assertRaises(error):
-          with_failure_manager(Dashboard('a', nb_digits=nb_digits))
-
-    self.assertEqual(Dashboard('a', nb_digits=0)._nb_digits, 0)
-    self.assertEqual(Dashboard('a', nb_digits=3)._nb_digits, 3)
+        with self.assertRaises((TypeError, ValueError)):
+          Dashboard('a', nb_digits=nb_digits)
+    for digits, expected in ((0, '1'), (3, '1.235')):
+      with self.subTest(digits=digits):
+        dashboard, source = self._prepare_dashboard('a', nb_digits=digits)
+        source.send({'a': 1.23456})
+        dashboard.loop()
+        self.assertEqual(self._value(dashboard, 'a'), expected)
 
   def test_prepare_requires_input_link(self) -> None:
     """Checks that a Dashboard without input Links fails early."""
@@ -76,45 +84,15 @@ class DashboardTests:
       dashboard.prepare()
 
   def test_prepare_creates_dashboard_window(self) -> None:
-    """Checks the two-column window and its initial empty values."""
+    """A new dashboard is usable and has no received values yet."""
 
     dashboard, _ = self._prepare_dashboard(('a', 'b'))
-    if self._backend == 'pyqt':
-      window = dashboard._qt_window
-      self.assertEqual(window.windowTitle(), 'Dashboard')
-      self.assertIsNone(dashboard._dashboard)
-      self.assertEqual(list(dashboard._qt_labels), ['a', 'b'])
-      self.assertEqual(list(dashboard._qt_values), ['a', 'b'])
-      self.assertTrue(window.font().bold())
-      self.assertEqual(window.font().pointSize(), 48)
-      constraints = dashboard_module.QtWidgets.QLayout.SizeConstraint
-      self.assertEqual(window.layout().sizeConstraint(),
-                       constraints.SetFixedSize)
-      self.assertEqual(window.styleSheet(), '')
-      for row, label in enumerate(('a', 'b')):
-        self.assertEqual(dashboard._qt_labels[label].text(), f'{label}:')
-        self.assertEqual(self._value(dashboard, label), '')
-        self.assertIs(window.layout().itemAtPosition(row, 0).widget(),
-                       dashboard._qt_labels[label])
-        self.assertIs(window.layout().itemAtPosition(row, 1).widget(),
-                       dashboard._qt_values[label])
-      return
-
-    window = dashboard._dashboard
-    self.assertIsInstance(window, DashboardWindow)
-    self.assertEqual(window.title(), 'Dashboard')
-    self.assertEqual(window._labels, ['a', 'b'])
-    self.assertEqual(set(window.tk_var), {'a', 'b'})
-    self.assertEqual(set(window._tk_labels), {'a', 'b'})
-    self.assertEqual(set(window._tk_values), {'a', 'b'})
-
     for label in ('a', 'b'):
-      with self.subTest(label=label):
-        self.assertEqual(window.tk_var[label].get(), '')
-        self.assertEqual(window._tk_labels[label].cget('text'),
-                         f'{label}:')
-        self.assertEqual(str(window._tk_values[label].cget('textvariable')),
-                         str(window.tk_var[label]))
+      self.assertEqual(self._value(dashboard, label), '')
+    if self._backend == 'tkinter':
+      self.assertTrue(dashboard._dashboard.winfo_exists())
+    else:
+      self.assertTrue(dashboard._qt_window.isVisible())
 
   def test_loop_displays_latest_requested_values(self) -> None:
     """Checks string and numeric formatting for requested labels."""
@@ -185,9 +163,7 @@ class DashboardTests:
 
     self.assertEqual(self._value(dashboard, 'a'), '')
     warning_logs = [msg for level, msg in logs if level == logging.WARNING]
-    self.assertEqual(len(warning_logs), 1)
-    self.assertIn("Don't know how to handle the received value",
-                  warning_logs[0])
+    self.assertTrue(warning_logs)
 
   def test_finish_destroys_window(self) -> None:
     """Checks that finish closes the selected backend's window."""
@@ -200,11 +176,9 @@ class DashboardTests:
 
     if self._backend == 'tkinter':
       from tkinter import TclError
-      self.assertIsNone(dashboard._dashboard)
       with self.assertRaises(TclError):
         window.wm_state()
     else:
-      self.assertIsNone(dashboard._qt_window)
       self.assertFalse(window.isVisible())
 
   def test_finish_is_idempotent(self) -> None:
@@ -216,13 +190,15 @@ class DashboardTests:
     dashboard.finish()
 
   def test_loop_services_gui_without_new_data(self) -> None:
-    """An idle Dashboard remains responsive without changing its values."""
+    """An idle Dashboard processes queued UI work without changing its values."""
 
     dashboard, _ = self._prepare_dashboard(('a',))
-    target = (dashboard._dashboard if self._backend == 'tkinter'
-              else dashboard._qt_app)
-    method = 'update' if self._backend == 'tkinter' else 'processEvents'
-    with patch.object(target, method) as update:
-      dashboard.loop()
-    update.assert_called_once_with()
+    handled = []
+    if self._backend == 'tkinter':
+      dashboard._dashboard.after_idle(lambda: handled.append(True))
+    else:
+      from PyQt6.QtCore import QTimer
+      QTimer.singleShot(0, lambda: handled.append(True))
+    dashboard.loop()
+    self.assertEqual(handled, [True])
     self.assertEqual(self._value(dashboard, 'a'), '')

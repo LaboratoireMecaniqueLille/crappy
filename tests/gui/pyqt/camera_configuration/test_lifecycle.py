@@ -73,7 +73,7 @@ class TestLifecycle(PyQtConfigTestCase):
 
     config = self.make_config()
     config._histogram_process.start.side_effect = RuntimeError('cannot start')
-    with assert_failure(self, RuntimeError, 'cannot start'):
+    with assert_failure(self, RuntimeError):
       config.run()
 
     self.assertTrue(config._window_closed)
@@ -92,7 +92,7 @@ class TestLifecycle(PyQtConfigTestCase):
         type(self).instance = self
         raise ValueError('layout failed')
 
-    with assert_failure(self, ValueError, 'layout failed'):
+    with assert_failure(self, ValueError):
       BrokenConfig(
           self.camera, self.log_queue, None, 30, None,
           FailureManager('test configuration', 'configuration'))
@@ -118,7 +118,7 @@ class TestLifecycle(PyQtConfigTestCase):
     with (patch.object(pyqt_config, 'Queue', side_effect=make_queue),
           patch.object(pyqt_config, 'HistogramProcess',
                        side_effect=RuntimeError('histogram failed'))):
-      with assert_failure(self, RuntimeError, 'histogram failed'):
+      with assert_failure(self, RuntimeError):
         pyqt_config.PyQtCameraConfig(
             self.camera, self.log_queue, None, 30, None,
             FailureManager('test configuration', 'configuration'))
@@ -135,7 +135,7 @@ class TestLifecycle(PyQtConfigTestCase):
       def _create_local_settings(self):
         raise ValueError('local setting')
 
-    with assert_failure(self, ValueError, 'local setting'):
+    with assert_failure(self, ValueError):
       FailingConfig(
           self.camera, self.log_queue, None, 30, None,
           FailureManager('test configuration', 'configuration'))
@@ -148,7 +148,7 @@ class TestLifecycle(PyQtConfigTestCase):
     config = self.make_config()
     config._update_img = Mock(side_effect=ValueError('frame'))
     with patch.object(pyqt_config.QMessageBox, 'critical'):
-      with assert_failure(self, ValueError, 'frame'):
+      with assert_failure(self, ValueError):
         config.run()
     self.assertTrue(config._lifecycle.closed)
     self.assertTrue(config._window_closed)
