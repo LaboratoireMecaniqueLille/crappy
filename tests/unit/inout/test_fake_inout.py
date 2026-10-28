@@ -1,5 +1,8 @@
 # coding: utf-8
 
+import gc
+from itertools import count
+import tracemalloc
 from types import SimpleNamespace
 from unittest import TestCase
 from unittest.mock import patch
@@ -13,18 +16,31 @@ import crappy.inout.fake_inout as fake_inout_module
 class TestFakeInOut(TestCase):
   """Unit tests for the FakeInOut object."""
 
+  def memory_change(self, operation) -> int:
+    """Observe retained Python memory without requiring a buffer representation."""
+
+    if not tracemalloc.is_tracing():
+      tracemalloc.start()
+      self.addCleanup(tracemalloc.stop)
+    gc.collect()
+    before = tracemalloc.get_traced_memory()[0]
+    operation()
+    gc.collect()
+    return tracemalloc.get_traced_memory()[0] - before
+
   def test_open_initializes_buffer_and_close_deletes_it(self) -> None:
-    """Checks the fake memory buffer lifecycle."""
+    """Closing releases allocated memory and the object can be opened again."""
 
     inout = FakeInOut()
-
-    self.assertIsNone(inout._buf)
-
     inout.open()
-    self.assertEqual(inout._buf, [])
-
-    inout.close()
-    self.assertFalse(hasattr(inout, '_buf'))
+    self.addCleanup(inout.close)
+    with patch.object(fake_inout_module, 'virtual_memory',
+                      new=lambda: SimpleNamespace(percent=25)):
+      self.assertGreater(self.memory_change(lambda: inout.set_cmd(30)), 1024)
+      self.assertLess(self.memory_change(inout.close), -1024)
+      inout.open()
+      inout.set_cmd(0)
+      self.assertEqual(inout.get_data()[1], 25)
 
   def test_set_cmd_rejects_non_numeric_command(self) -> None:
     """Checks command type validation."""
@@ -47,52 +63,37 @@ class TestFakeInOut(TestCase):
       inout.set_cmd(101)
 
   def test_set_cmd_appends_chunk_when_target_is_above_memory(self) -> None:
-    """Checks that memory usage is increased through the internal buffer."""
+    """A demand above current usage allocates retained memory."""
 
     inout = FakeInOut()
     inout.open()
-
-    with patch.object(fake_inout_module,
-                      'virtual_memory',
-                      return_value=SimpleNamespace(percent=25)) as mocked_mem:
-      inout.set_cmd(30)
-
-    mocked_mem.assert_called_once_with()
-    self.assertEqual(len(inout._buf), 1)
-    self.assertEqual(len(inout._buf[0]), 1024 * 1024)
+    self.addCleanup(inout.close)
+    with patch.object(fake_inout_module, 'virtual_memory',
+                      new=lambda: SimpleNamespace(percent=25)):
+      self.assertGreater(self.memory_change(lambda: inout.set_cmd(30)), 1024)
 
   def test_set_cmd_deletes_chunk_when_target_is_below_memory(self) -> None:
-    """Checks that memory usage is reduced through the internal buffer."""
+    """A lower demand releases memory and tolerates an already empty device."""
 
     inout = FakeInOut()
     inout.open()
-    chunk = object()
-    inout._buf.append(chunk)
-
-    with patch.object(fake_inout_module,
-                      'virtual_memory',
-                      return_value=SimpleNamespace(percent=50)) as mocked_mem:
-      inout.set_cmd(40)
-      inout.set_cmd(40)
-
-    self.assertEqual(mocked_mem.call_count, 2)
-    self.assertEqual(inout._buf, [])
+    self.addCleanup(inout.close)
+    with patch.object(fake_inout_module, 'virtual_memory',
+                      new=lambda: SimpleNamespace(percent=50)):
+      self.assertGreater(self.memory_change(lambda: inout.set_cmd(60)), 1024)
+      self.assertLess(self.memory_change(lambda: inout.set_cmd(40)), -1024)
+      self.assertLess(abs(self.memory_change(lambda: inout.set_cmd(40))), 1024)
 
   def test_set_cmd_keeps_buffer_when_target_matches_memory(self) -> None:
-    """Checks that equal command and memory percent is a no-op."""
+    """Matching the reported usage leaves retained memory unchanged."""
 
     inout = FakeInOut()
     inout.open()
-    chunk = object()
-    inout._buf.append(chunk)
-
-    with patch.object(fake_inout_module,
-                      'virtual_memory',
-                      return_value=SimpleNamespace(percent=50)) as mocked_mem:
-      inout.set_cmd(50.0)
-
-    mocked_mem.assert_called_once_with()
-    self.assertEqual(inout._buf, [chunk])
+    self.addCleanup(inout.close)
+    with patch.object(fake_inout_module, 'virtual_memory',
+                      new=lambda: SimpleNamespace(percent=50)):
+      self.assertGreater(self.memory_change(lambda: inout.set_cmd(60)), 1024)
+      self.assertLess(abs(self.memory_change(lambda: inout.set_cmd(50))), 1024)
 
   def test_get_data_returns_timestamp_and_memory_percent(self) -> None:
     """Checks regular data acquisition."""
@@ -113,16 +114,21 @@ class TestFakeInOut(TestCase):
     self.assertIsNone(inout.start_stream())
     self.assertIsNone(inout.stop_stream())
 
-  def test_get_stream_batches_ten_get_data_calls(self) -> None:
-    """Checks streamer output shape and contents."""
+  def test_stream_preserves_sample_order_and_alignment(self) -> None:
+    """Streaming preserves sample order and time/value alignment in a batch."""
 
     inout = FakeInOut()
-    samples = [[float(i), float(i + 100)] for i in range(10)]
+    samples = count()
 
-    with patch.object(inout, 'get_data', side_effect=samples) as mocked_get:
-      t, values = inout.get_stream()
+    def get_data():
+      value = float(next(samples))
+      return [value, value + 100]
 
-    self.assertEqual(mocked_get.call_count, 10)
-    np.testing.assert_array_equal(t, np.arange(10, dtype=float))
-    np.testing.assert_array_equal(values,
-                                  np.arange(100, 110, dtype=float)[:, None])
+    with patch.object(inout, 'get_data', new=get_data):
+      timestamps, values = inout.get_stream()
+
+    self.assertEqual(timestamps.ndim, 1)
+    self.assertEqual(values.shape, (len(timestamps), 1))
+    self.assertGreater(len(timestamps), 0)
+    np.testing.assert_array_equal(timestamps, np.arange(len(timestamps)))
+    np.testing.assert_array_equal(values[:, 0], timestamps + 100)

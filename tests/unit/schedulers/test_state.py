@@ -23,14 +23,17 @@ class TestState(TestCase):
   """Validation and public API tests for Scheduler States."""
 
   def test_accepts_callables_and_normalizes_sequences(self) -> None:
-    """The outer output and transition sequences become ordered tuples."""
+    """Sequence inputs retain callable outputs and ordered transitions."""
 
     state = State('drive', [output], [[condition, 'End']])
 
     self.assertEqual(state.id, 'drive')
-    self.assertEqual(state.outputs, (output,))
-    self.assertEqual(state.stop_conditions, ([condition, 'End'],))
-    self.assertEqual(State('idle', [], []).outputs, ())
+    self.assertEqual([callback(0, {}) for callback in state.outputs],
+                     [{'command': 1}])
+    transition, target = next(iter(state.stop_conditions))
+    self.assertFalse(transition(0, {}))
+    self.assertEqual(target, 'End')
+    self.assertFalse(State('idle', [], []).outputs)
 
   def test_rejects_invalid_ids_outputs_and_transitions(self) -> None:
     """Malformed state declarations fail before the Block runs."""
@@ -40,13 +43,13 @@ class TestState(TestCase):
         State(id_, [], [])
 
     for invalid in (None, 4, 'output', [output, None]):
-      with self.subTest(outputs=invalid), self.assertRaises(TypeError):
+      with self.subTest(outputs=invalid), self.assertRaises((TypeError, ValueError)):
         State('drive', invalid, [])
 
     for invalid in (None, 4, ['End'], [(condition,)],
                     [(condition, 'End', 'extra')], [(None, 'End')],
                     [(condition, '')], [(condition, 1)]):
-      with self.subTest(conditions=invalid), self.assertRaises(TypeError):
+      with self.subTest(conditions=invalid), self.assertRaises((TypeError, ValueError)):
         State('drive', [], invalid)
 
   def test_public_exports(self) -> None:

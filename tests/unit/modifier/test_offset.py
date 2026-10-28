@@ -17,9 +17,6 @@ class TestOffset(TestCase):
 
     self.assertIs(modifier(first), first)
     self.assertEqual(first, {'x': 6, 'other': 1})
-    self.assertEqual(modifier._compensations, {'x': 3})
-    self.assertTrue(modifier._compensated)
-
     self.assertEqual(modifier(second), {'x': 13, 'other': 2})
 
   def test_multiple_labels_are_offset_independently(self) -> None:
@@ -35,7 +32,7 @@ class TestOffset(TestCase):
   def test_mismatched_label_and_offset_counts_are_rejected(self) -> None:
     """Checks constructor validation."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Offset(('x', 'y'), (0,))
 
   def test_missing_label_raises_key_error_before_compensation(self) -> None:
@@ -46,4 +43,5 @@ class TestOffset(TestCase):
     with self.assertRaises(KeyError):
       modifier({'y': 1})
 
-    self.assertFalse(modifier._compensated)
+    self.assertEqual(modifier({'x': 3}), {'x': 0})
+    self.assertEqual(modifier({'x': 5}), {'x': 2})

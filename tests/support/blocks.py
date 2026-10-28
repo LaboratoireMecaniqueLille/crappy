@@ -322,29 +322,9 @@ class BlockTestBase(unittest.TestCase):
         self._block._failure_queue.close()
       Block.reset()
 
-    # Make sure the Block was properly reset
-    self.assertEqual(0, len(Block.instances))
-    self.assertEqual(Block._run_blocks, ())
-    self.assertEqual(0, len(Block.names))
-
-    self.assertFalse(Block.thread_stop)
-    self.assertFalse(Block.prepared_all)
-    self.assertFalse(Block.launched_all)
-    self.assertFalse(Block.no_raise)
-
-    self.assertIsNone(Block.shared_t0)
-    self.assertIsNone(Block.ready_barrier)
-    self.assertIsNone(Block.start_event)
-    self.assertIsNone(Block.pause_event)
-    self.assertIsNone(Block.stop_event)
-
-    self.assertIsNone(Block.log_queue)
-    self.assertIsNone(Block.log_thread)
-    self.assertIsNone(Block.logger)
-    self.assertIsNone(Block.logger_state)
-    self.assertEqual(Block.log_handlers, [])
-
-    self.assertEqual(link_graph._nodes, dict())
-    self.assertEqual(link_graph._edges, dict())
-    self.assertEqual(link_graph._out_edges, dict())
-    self.assertEqual(link_graph._in_edges, dict())
+    # Resource and restart behavior is covered by the lifecycle tests. The
+    # shared fixture checks the public graph is empty, without prescribing
+    # every class attribute or the graph's internal indexes.
+    self.assertFalse(Block.instances)
+    self.assertFalse(link_graph.nodes)
+    self.assertFalse(link_graph.link_names())

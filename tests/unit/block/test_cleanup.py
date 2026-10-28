@@ -47,92 +47,70 @@ class TestCleanup(BlockTestBase):
     return process, link, manager, queue, worker
 
   def test_stop_status_logging_failure_does_not_skip_resources(self) -> None:
-    """Every stop-status branch preserves cleanup despite failed logging."""
+    """Logging failures cannot interrupt any shutdown escalation outcome."""
 
-    statuses = ('All Blocks stopped', 'All Blocks stopped after termination',
-                'All Blocks stopped after killing',
-                'Not all Blocks could be stopped even after killing them')
-    for status in statuses:
+    for outcome in ('stopped', 'terminated', 'killed', 'survives'):
       for error_type in (OSError, KeyboardInterrupt):
-        with self.subTest(status=status, error=error_type.__name__):
+        with self.subTest(outcome=outcome, error=error_type.__name__):
           process, link, manager, queue, worker = self.setup_cleanup_resources()
-          if status == statuses[0]:
+          if outcome == 'stopped':
             process.is_alive.return_value = False
-          elif status == statuses[1]:
+          elif outcome == 'terminated':
             process.terminate.side_effect = process.kill.side_effect
-          elif status == statuses[3]:
+          elif outcome == 'survives':
             process.kill.side_effect = None
-          error = error_type('status log')
-
-          def fail_log(*, level, msg) -> None:
-            if msg == status:
-              raise error
-
-          Block.logger.log.side_effect = fail_log
+          error = error_type('shutdown logging failure')
           Block.no_raise = True
-          with patch.object(block_module.connection, 'wait', return_value=[1]):
+          with (patch.object(Block.logger, 'log', side_effect=error),
+                patch.object(block_module.connection, 'wait', return_value=[1])):
             Block._cleanup()
-
-          self.assertIn('Block shutdown diagnostic', error.__notes__[0])
-          link.close.assert_called_once_with(manager=Block.run_failure_manager)
-          manager.shutdown.assert_called_once_with()
-          worker.join.assert_called_once_with(timeout=1.0)
-          queue.cancel_join_thread.assert_not_called()
-          queue.close.assert_called_once_with()
-
-  def test_cleanup_logs_escalation_and_resource_shutdown(self) -> None:
-    """Logs identify forcibly stopped Blocks and each remaining resource."""
-
-    self.setup_cleanup_resources()
-    logger = Block.logger
-    with patch.object(block_module.connection, 'wait', return_value=[1]):
-      Block._cleanup()
-
-    messages = [(call.kwargs['level'], call.kwargs['msg'])
-                for call in logger.log.call_args_list]
-    expected = [(logging.WARNING, 'Terminating Block process'),
-                (logging.WARNING, 'Killing Block process'),
-                (logging.DEBUG, "Closing Link 'cleanup-link'"),
-                (logging.INFO, 'Stopping the shared Manager'),
-                (logging.INFO, 'Stopping the logging Thread'),
-                (logging.DEBUG, 'Closing the log Queue')]
-    for message in expected:
-      self.assertIn(message, messages)
-    positions = [messages.index(message) for message in expected]
-    self.assertEqual(positions, sorted(positions))
-
-  def test_cleanup_progress_logging_failure_does_not_skip_resources(
-      self) -> None:
-    """Every progress message is independent of the operation it announces."""
-
-    messages = ('Terminating Block process', 'Killing Block process',
-                "Closing Link 'cleanup-link'", 'Stopping the shared Manager',
-                'Stopping the logging Thread', 'Closing the log Queue')
-    for message in messages:
-      for error_type in (OSError, KeyboardInterrupt):
-        with self.subTest(message=message, error=error_type.__name__):
-          process, link, manager, queue, worker = self.setup_cleanup_resources()
-          error = error_type('progress log')
-
-          def fail_log(*, level, msg) -> None:
-            if msg == message:
-              raise error
-
-          Block.logger.log.side_effect = fail_log
-          Block.no_raise = True
-          with patch.object(block_module.connection, 'wait', return_value=[1]):
-            Block._cleanup()
-
-          process.terminate.assert_called_once_with()
-          process.kill.assert_called_once_with()
-          link.close.assert_called_once_with(manager=Block.run_failure_manager)
-          manager.shutdown.assert_called_once_with()
-          worker.join.assert_called_once_with(timeout=1.0)
-          queue.cancel_join_thread.assert_not_called()
-          queue.close.assert_called_once_with()
           self.assertIn(error, [actual for _, actual in
                                 Block.run_failure_manager.snapshot()])
-          self.assertTrue(error.__notes__[0].startswith('Block cleanup step:'))
+          link.close.assert_called_once()
+          manager.shutdown.assert_called_once()
+          worker.join.assert_called_once()
+          queue.close.assert_called_once()
+
+  def test_cleanup_logs_escalation_and_resource_shutdown(self) -> None:
+    """Shutdown releases resources in dependency order and warns on escalation."""
+
+    process, link, manager, queue, worker = self.setup_cleanup_resources()
+    logger = Block.logger
+    operations = Mock()
+    for name, operation in (('terminate', process.terminate), ('kill', process.kill),
+                             ('close_link', link.close), ('shutdown', manager.shutdown),
+                             ('join_logger', worker.join), ('close_queue', queue.close)):
+      operations.attach_mock(operation, name)
+    with patch.object(block_module.connection, 'wait', return_value=[1]):
+      Block._cleanup()
+    completed = [call[0] for call in operations.mock_calls]
+    for name in ('terminate', 'kill', 'close_link', 'shutdown', 'join_logger', 'close_queue'):
+      self.assertIn(name, completed)
+    self.assertLess(completed.index('kill'), completed.index('close_link'))
+    self.assertLess(completed.index('close_link'), completed.index('shutdown'))
+    self.assertLess(completed.index('join_logger'), completed.index('close_queue'))
+    self.assertTrue(any(call.kwargs['level'] >= logging.WARNING
+                        for call in logger.log.call_args_list))
+
+  def test_cleanup_progress_logging_failure_does_not_skip_resources(self) -> None:
+    """A logger that keeps failing still allows every resource owner to close."""
+
+    for error_type in (OSError, KeyboardInterrupt):
+      with self.subTest(error=error_type.__name__):
+        process, link, manager, queue, worker = self.setup_cleanup_resources()
+        error = error_type('progress logging failure')
+        Block.no_raise = True
+        with (patch.object(Block.logger, 'log', side_effect=error),
+              patch.object(block_module.connection, 'wait', return_value=[1])):
+          Block._cleanup()
+        process.terminate.assert_called_once()
+        process.kill.assert_called_once()
+        link.close.assert_called_once()
+        manager.shutdown.assert_called_once()
+        worker.join.assert_called_once()
+        queue.close.assert_called_once()
+        self.assertIn(error, [actual for _, actual in
+                              Block.run_failure_manager.snapshot()])
 
   def test_partial_startup_without_stop_event_still_releases_resources(
       self) -> None:
@@ -149,27 +127,31 @@ class TestCleanup(BlockTestBase):
     queue.close.assert_called_once_with()
 
   def test_finish_announcement_failure_cannot_skip_finish(self) -> None:
-    """A failed finish log cannot skip the hook or inherited Pipe cleanup."""
+    """Logging after failed preparation cannot skip finish or connection release."""
 
     for error_type in (OSError, KeyboardInterrupt):
       with self.subTest(error=error_type.__name__):
         block = TestBlock()
         block._stop_event = Event()
-        error = error_type('finish log')
+        prepared = []
+        error = error_type('finish logging failure')
 
-        def fail_log(level, msg) -> None:
-          if msg == 'Calling the finish method':
+        def fail_prepare():
+          prepared.append(True)
+          raise ValueError('prepare failure')
+
+        def fail_log(level, msg):
+          if prepared:
             raise error
 
         with (patch.object(block, '_set_block_logger'),
               patch.object(block, 'log', side_effect=fail_log),
-              patch.object(block, 'prepare', side_effect=ValueError('prepare')),
+              patch.object(block, 'prepare', side_effect=fail_prepare),
               patch.object(block, 'finish') as finish,
               patch.object(block, '_close_config_connections') as close):
           block.run()
-
-        finish.assert_called_once_with()
-        self.assertEqual(close.call_count, 2)
+        finish.assert_called_once()
+        close.assert_called()
         self.assertIn(error, self.failures(block))
 
   def test_process_failures_do_not_skip_peers_manager_thread_or_queue(

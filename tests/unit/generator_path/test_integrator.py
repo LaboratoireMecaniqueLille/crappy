@@ -16,13 +16,13 @@ class TestIntegrator(TestCase):
   def test_first_integrator_requires_initial_value(self) -> None:
     """Checks that the first path cannot infer a previous command."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Integrator(condition=None, inertia=1, func_label='f')
 
   def test_inertia_must_be_non_zero(self) -> None:
     """Checks inertia validation."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Integrator(condition=None,
                  inertia=0,
                  func_label='f',

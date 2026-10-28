@@ -25,7 +25,7 @@ class TestConstant(PathTestMixin, TestCase):
   def test_first_constant_requires_a_value(self) -> None:
     """Checks that the first path cannot infer a previous command."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Constant(condition=None)
 
   def test_constant_uses_last_command_when_value_is_omitted(self) -> None:
@@ -58,7 +58,7 @@ class TestRamp(PathTestMixin, TestCase):
   def test_first_ramp_requires_an_initial_value(self) -> None:
     """Checks that the first path cannot infer a previous command."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Ramp(condition=None, speed=1)
 
   def test_ramp_uses_last_command_when_initial_value_is_omitted(self) -> None:

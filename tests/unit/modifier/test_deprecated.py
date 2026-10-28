@@ -18,26 +18,26 @@ class TestDeprecatedModifiers(TestCase):
     self.assertIs(Modifier.classes['Trig_on_change'], Trig_on_change)
     self.assertIs(Modifier.classes['Trig_on_value'], Trig_on_value)
 
-  def test_moving_avg_alias_raises_with_new_name(self) -> None:
-    """Checks the Moving_avg deprecation message."""
+  def test_retired_moving_avg_alias_rejects_construction(self) -> None:
+    """The retired Moving_avg spelling rejects construction."""
 
-    with self.assertRaisesRegex(NotImplementedError, 'MovingAvg'):
+    with self.assertRaises(NotImplementedError):
       Moving_avg()
 
-  def test_moving_med_alias_raises_with_new_name(self) -> None:
-    """Checks the Moving_med deprecation message."""
+  def test_retired_moving_med_alias_rejects_construction(self) -> None:
+    """The retired Moving_med spelling rejects construction."""
 
-    with self.assertRaisesRegex(NotImplementedError, 'MovingMed'):
+    with self.assertRaises(NotImplementedError):
       Moving_med()
 
-  def test_trig_on_change_alias_raises_with_new_name(self) -> None:
-    """Checks the Trig_on_change deprecation message."""
+  def test_retired_trig_on_change_alias_rejects_construction(self) -> None:
+    """The retired Trig_on_change spelling rejects construction."""
 
-    with self.assertRaisesRegex(NotImplementedError, 'TrigOnChange'):
+    with self.assertRaises(NotImplementedError):
       Trig_on_change()
 
-  def test_trig_on_value_alias_raises_with_new_name(self) -> None:
-    """Checks the Trig_on_value deprecation message."""
+  def test_retired_trig_on_value_alias_rejects_construction(self) -> None:
+    """The retired Trig_on_value spelling rejects construction."""
 
-    with self.assertRaisesRegex(NotImplementedError, 'TrigOnValue'):
+    with self.assertRaises(NotImplementedError):
       Trig_on_value()

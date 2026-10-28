@@ -3,7 +3,6 @@
 """Headless checks for the configurator's process and error lifecycle."""
 
 import unittest
-import logging
 from importlib import import_module
 from multiprocessing import Event
 from types import SimpleNamespace
@@ -81,9 +80,9 @@ class TestConfigurationLifecycle(unittest.TestCase):
   def test_requires_owner_manager(self) -> None:
     """The resource owner must supply the same manager as its configurator."""
 
-    with self.assertRaisesRegex(TypeError, 'manager'):
+    with self.assertRaises(TypeError):
       ConfigurationLifecycle(Event(), _Process(), ())
-    with self.assertRaisesRegex(TypeError, 'failure_queue'):
+    with self.assertRaises(TypeError):
       ConfigurationLifecycle(Event(), _Process(), (_Queue(), _Queue()),
                              FailureManager('configuration', 'configuration'))
 

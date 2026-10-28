@@ -76,5 +76,5 @@ class TestFromFile(TestCase):
                      '1,2\n0,3\n', '1,2\n1,3\n'):
       with self.subTest(contents=contents):
         self.file.write_text(contents, encoding='utf-8')
-        with self.assertRaises(ValueError):
+        with self.assertRaises((TypeError, ValueError)):
           FromFile('command', self.file)

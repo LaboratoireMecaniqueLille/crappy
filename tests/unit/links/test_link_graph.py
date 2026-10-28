@@ -28,19 +28,19 @@ class TestLinkGraph(TestCase):
       self.graph.add_node(name, FirstBlock)
 
   def test_add_node(self) -> None:
-    """Tests node storage and independent adjacency lists."""
+    """Node metadata and neighborhood queries remain independent."""
 
     self.graph.add_node('first', FirstBlock)
     self.graph.add_node('second', SecondBlock)
-
-    self.assertEqual(tuple(self.graph._nodes), ('first', 'second'))
-    self.assertEqual(self.graph._nodes['first'].name, 'first')
-    self.assertIs(self.graph._nodes['first'].block_type, FirstBlock)
-    self.assertIs(self.graph._nodes['second'].block_type, SecondBlock)
-    self.assertIsNot(self.graph._out_edges['first'],
-                     self.graph._out_edges['second'])
-    self.assertIsNot(self.graph._in_edges['first'],
-                     self.graph._in_edges['second'])
+    self.assertEqual(tuple(self.graph.nodes), ('first', 'second'))
+    self.assertEqual(self.graph.nodes['first'].name, 'first')
+    self.assertIs(self.graph.nodes['first'].block_type, FirstBlock)
+    self.assertIs(self.graph.nodes['second'].block_type, SecondBlock)
+    self.graph.add_edge('data', 'first', 'second', 'link')
+    self.assertEqual(self.graph.successors('first'), ('second',))
+    self.assertFalse(self.graph.successors('second'))
+    self.assertEqual(self.graph.predecessors('second'), ('first',))
+    self.assertFalse(self.graph.predecessors('first'))
 
   def test_add_node_validates_arguments(self) -> None:
     """Tests node name and type validation without partial registration."""
@@ -55,9 +55,8 @@ class TestLinkGraph(TestCase):
     with self.assertRaises(TypeError):
       self.graph.add_node('first', FirstBlock())
 
-    self.assertEqual(self.graph._nodes, dict())
-    self.assertEqual(self.graph._out_edges, dict())
-    self.assertEqual(self.graph._in_edges, dict())
+    self.assertEqual(self.graph.nodes, dict())
+    self.assertFalse(self.graph.link_names())
 
   def test_add_node_rejects_duplicate_names(self) -> None:
     """Tests that duplicate registration preserves the original node."""
@@ -67,29 +66,22 @@ class TestLinkGraph(TestCase):
     with self.assertRaises(GraphStructureError):
       self.graph.add_node('first', SecondBlock)
 
-    self.assertEqual(len(self.graph._nodes), 1)
-    self.assertIs(self.graph._nodes['first'].block_type, FirstBlock)
+    self.assertEqual(len(self.graph.nodes), 1)
+    self.assertIs(self.graph.nodes['first'].block_type, FirstBlock)
 
   def test_add_edge(self) -> None:
-    """Tests edge storage, filtering, and adjacency registration."""
+    """Data and image connections appear in the appropriate public queries."""
 
     self.add_nodes('source', 'target')
     self.graph.add_edge('data', 'source', 'target', 'link')
     self.graph.add_edge('image', 'source', 'target', 'image')
-
-    data_edge = self.graph._edges['data']
-    image_edge = self.graph._edges['image']
-
-    self.assertEqual((data_edge.name, data_edge.source, data_edge.target,
-                      data_edge.kind),
-                     ('data', 'source', 'target', 'link'))
-    self.assertIs(self.graph._out_edges['source'][0], data_edge)
-    self.assertIs(self.graph._in_edges['target'][0], data_edge)
-    self.assertIs(self.graph._out_edges['source'][1], image_edge)
-    self.assertIs(self.graph._in_edges['target'][1], image_edge)
     self.assertEqual(self.graph.link_names(), ('data', 'image'))
     self.assertEqual(self.graph.link_names('link'), ('data',))
     self.assertEqual(self.graph.link_names('image'), ('image',))
+    for kind in ('link', 'image'):
+      self.assertEqual(self.graph.successors('source', kind), ('target',))
+      self.assertEqual(self.graph.predecessors('target', kind), ('source',))
+    self.assertEqual(self.graph.img_sources(), ('source',))
 
   def test_add_edge_validates_arguments(self) -> None:
     """Tests edge argument validation without partial registration."""
@@ -113,9 +105,9 @@ class TestLinkGraph(TestCase):
         with self.assertRaises(exception):
           self.graph.add_edge(*args, **kwargs)
 
-    self.assertEqual(self.graph._edges, dict())
-    self.assertEqual(self.graph._out_edges['source'], list())
-    self.assertEqual(self.graph._in_edges['target'], list())
+    self.assertFalse(self.graph.link_names())
+    self.assertFalse(self.graph.successors('source'))
+    self.assertFalse(self.graph.predecessors('target'))
 
   def test_add_edge_requires_registered_endpoints(self) -> None:
     """Tests that both edge endpoints must already exist."""
@@ -127,7 +119,7 @@ class TestLinkGraph(TestCase):
     with self.assertRaises(GraphStructureError):
       self.graph.add_edge('missing-source', 'other', 'source', 'link')
 
-    self.assertEqual(self.graph._edges, dict())
+    self.assertFalse(self.graph.link_names())
 
   def test_add_edge_rejects_duplicate_names(self) -> None:
     """Tests global edge-name uniqueness without partial registration."""
@@ -155,8 +147,8 @@ class TestLinkGraph(TestCase):
                         allow_parallel=True)
 
     self.assertEqual(self.graph.link_names(), ('first', 'second'))
-    self.assertEqual(len(self.graph._out_edges['source']), 2)
-    self.assertEqual(len(self.graph._in_edges['target']), 2)
+    self.assertEqual(self.graph.successors('source'), ('target',))
+    self.assertEqual(self.graph.predecessors('target'), ('source',))
 
   def test_parallel_image_edges_can_be_enabled_on_standalone_graphs(self) \
       -> None:
@@ -218,19 +210,10 @@ class TestLinkGraph(TestCase):
 
     self.graph.rename_node('middle', 'renamed')
 
-    self.assertNotIn('middle', self.graph._nodes)
-    self.assertNotIn('middle', self.graph._out_edges)
-    self.assertNotIn('middle', self.graph._in_edges)
-    self.assertIs(self.graph._nodes['renamed'].block_type, FirstBlock)
-    self.assertEqual((self.graph._edges['incoming'].source,
-                      self.graph._edges['incoming'].target),
-                     ('first', 'renamed'))
-    self.assertEqual((self.graph._edges['outgoing'].source,
-                      self.graph._edges['outgoing'].target),
-                     ('renamed', 'last'))
-    self.assertEqual((self.graph._edges['self'].source,
-                      self.graph._edges['self'].target),
-                     ('renamed', 'renamed'))
+    self.assertNotIn('middle', self.graph.nodes)
+    self.assertIs(self.graph.nodes['renamed'].block_type, FirstBlock)
+    self.assertEqual(self.graph.successors('first'), ('renamed',))
+    self.assertEqual(self.graph.predecessors('last'), ('renamed',))
     self.assertEqual(self.graph.predecessors('renamed'),
                      ('first', 'renamed'))
     self.assertEqual(self.graph.successors('renamed'),
@@ -240,7 +223,7 @@ class TestLinkGraph(TestCase):
     """Tests rename validation leaves the graph unchanged."""
 
     self.add_nodes('first', 'second')
-    first_node = self.graph._nodes['first']
+    first_node = self.graph.nodes['first']
 
     invalid_calls = (
         (TypeError, None, 'renamed'),
@@ -256,18 +239,18 @@ class TestLinkGraph(TestCase):
         with self.assertRaises(exception):
           self.graph.rename_node(old_name, new_name)
 
-    self.assertEqual(tuple(self.graph._nodes), ('first', 'second'))
-    self.assertIs(self.graph._nodes['first'], first_node)
+    self.assertEqual(tuple(self.graph.nodes), ('first', 'second'))
+    self.assertIs(self.graph.nodes['first'], first_node)
 
   def test_rename_to_same_name_is_a_noop(self) -> None:
     """Tests that assigning the current name preserves the node object."""
 
     self.graph.add_node('first', FirstBlock)
-    node = self.graph._nodes['first']
+    node = self.graph.nodes['first']
 
     self.graph.rename_node('first', 'first')
 
-    self.assertIs(self.graph._nodes['first'], node)
+    self.assertIs(self.graph.nodes['first'], node)
 
   def test_reset(self) -> None:
     """Tests idempotent reset and reuse of former node and edge names."""
@@ -278,10 +261,8 @@ class TestLinkGraph(TestCase):
     self.graph.reset()
     self.graph.reset()
 
-    self.assertEqual(self.graph._nodes, dict())
-    self.assertEqual(self.graph._edges, dict())
-    self.assertEqual(self.graph._out_edges, dict())
-    self.assertEqual(self.graph._in_edges, dict())
+    self.assertEqual(self.graph.nodes, dict())
+    self.assertFalse(self.graph.link_names())
 
     self.add_nodes('source', 'target')
     self.graph.add_edge('edge', 'source', 'target', 'link')

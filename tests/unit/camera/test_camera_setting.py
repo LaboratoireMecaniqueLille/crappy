@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import logging
-from multiprocessing import current_process
 from unittest import TestCase
 
 from crappy.camera.meta_camera.camera_setting import (CameraBoolSetting,
@@ -28,17 +27,16 @@ class TestCameraSetting(TestCase):
     self.assertEqual(setting.revision, 0)
     self.assertEqual(setting.value, 5)
 
-  def test_log_initializes_process_scoped_logger(self) -> None:
-    """Checks logger naming and lazy initialization."""
+  def test_log_forwards_levels_and_messages(self) -> None:
+    """User messages retain their severity on first and subsequent calls."""
 
     setting = CameraSetting('gain', None, None, 5)
-    logger_name = f"{current_process().name}.CameraSetting"
-
-    with self.assertLogs(logger_name, level='INFO') as captured:
-      setting.log(logging.INFO, "message")
-
-    self.assertIs(setting._logger, logging.getLogger(logger_name))
-    self.assertEqual(captured.output, [f"INFO:{logger_name}:message"])
+    with self.assertLogs(level='INFO') as captured:
+      setting.log(logging.INFO, 'message')
+      setting.log(logging.WARNING, 'follow-up')
+    records = [(record.levelno, record.getMessage()) for record in captured.records]
+    self.assertIn((logging.INFO, 'message'), records)
+    self.assertIn((logging.WARNING, 'follow-up'), records)
 
   def test_value_without_getter_is_stored_locally(self) -> None:
     """Checks setting values without getter or setter."""

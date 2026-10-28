@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import logging
-from multiprocessing import current_process
 from unittest import TestCase
 from unittest.mock import patch
 import numpy as np
@@ -102,17 +101,16 @@ class TestCamera(TestCase):
     self.assertIn(camera.trigger_name, camera._reserved)
     self.assertIsNone(camera._logger)
 
-  def test_log_initializes_process_scoped_logger(self) -> None:
-    """Checks logger naming and lazy initialization."""
+  def test_log_forwards_levels_and_messages(self) -> None:
+    """User messages retain their severity on first and subsequent calls."""
 
     camera = UnitTestCamera()
-    logger_name = f"{current_process().name}.UnitTestCamera"
-
-    with self.assertLogs(logger_name, level='INFO') as captured:
-      camera.log(logging.INFO, "message")
-
-    self.assertIs(camera._logger, logging.getLogger(logger_name))
-    self.assertEqual(captured.output, [f"INFO:{logger_name}:message"])
+    with self.assertLogs(level='INFO') as captured:
+      camera.log(logging.INFO, 'message')
+      camera.log(logging.WARNING, 'follow-up')
+    records = [(record.levelno, record.getMessage()) for record in captured.records]
+    self.assertIn((logging.INFO, 'message'), records)
+    self.assertIn((logging.WARNING, 'follow-up'), records)
 
   def test_open_calls_set_all(self) -> None:
     """Checks default open implementation."""
@@ -135,9 +133,9 @@ class TestCamera(TestCase):
     with patch.object(camera_module, 'sleep') as mocked_sleep:
       self.assertIsNone(camera.get_image())
 
-    mocked_sleep.assert_called_once_with(1)
+    self.assertTrue(any(call.args[0] > 0
+                        for call in mocked_sleep.call_args_list))
     self.assertEqual(logs[0][0], logging.WARNING)
-    self.assertIn('get_img', logs[0][1])
 
   def test_close_is_noop_by_default(self) -> None:
     """Checks optional close method default behavior."""

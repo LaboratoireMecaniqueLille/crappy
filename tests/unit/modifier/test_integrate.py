@@ -9,7 +9,7 @@ class TestIntegrate(TestCase):
   """Unit tests for the Integrate Modifier."""
 
   def test_first_point_initializes_state_and_returns_zero(self) -> None:
-    """Checks first integration output and stored state."""
+    """The first sample produces zero and contributes to the next interval."""
 
     modifier = Integrate('x')
     data = {'t(s)': 1, 'x': 3}
@@ -18,9 +18,7 @@ class TestIntegrate(TestCase):
 
     self.assertIs(returned, data)
     self.assertEqual(returned, {'t(s)': 1, 'x': 3, 'i_x': 0})
-    self.assertEqual(modifier._last_t, 1)
-    self.assertEqual(modifier._last_val, 3)
-    self.assertEqual(modifier._integration, 0)
+    self.assertEqual(modifier({'t(s)': 3, 'x': 5})['i_x'], 8)
 
   def test_following_points_return_trapezoidal_integral(self) -> None:
     """Checks integration with default labels."""
@@ -55,6 +53,4 @@ class TestIntegrate(TestCase):
     returned = modifier({'t(s)': 1, 'x': 9})
 
     self.assertEqual(returned, {'t(s)': 1, 'x': 9, 'i_x': 0})
-    self.assertEqual(modifier._last_t, 1)
-    self.assertEqual(modifier._last_val, 9)
-    self.assertEqual(modifier._integration, 0)
+    self.assertEqual(modifier({'t(s)': 3, 'x': 3})['i_x'], 12)

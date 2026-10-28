@@ -15,8 +15,7 @@ class TestTrigOnChange(TestCase):
     data = {'x': 1}
 
     self.assertIs(modifier(data), data)
-    self.assertTrue(modifier._initialized)
-    self.assertEqual(modifier._last, 1)
+    self.assertIsNone(modifier({'x': 1}))
 
   def test_same_value_is_filtered_and_changed_value_is_returned(self) -> None:
     """Checks value-change filtering."""
@@ -29,7 +28,7 @@ class TestTrigOnChange(TestCase):
     self.assertIs(modifier(first), first)
     self.assertIsNone(modifier(same))
     self.assertIs(modifier(changed), changed)
-    self.assertEqual(modifier._last, 2)
+    self.assertIsNone(modifier({'x': 2}))
 
   def test_none_value_is_not_used_as_initialization_sentinel(self) -> None:
     """Checks that None can be a legitimate monitored value."""

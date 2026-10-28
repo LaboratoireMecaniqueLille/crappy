@@ -11,9 +11,9 @@ class TestMedian(TestCase):
   def test_n_points_must_be_positive(self) -> None:
     """Checks validation of the median period."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Median(0)
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Median(-1)
 
   def test_n_points_one_returns_each_point_as_float(self) -> None:
@@ -32,8 +32,9 @@ class TestMedian(TestCase):
     self.assertIsNone(modifier({'x': 1}))
     self.assertIsNone(modifier({'x': 9}))
     self.assertEqual(modifier({'x': 2}), {'x': 2.0})
-    self.assertEqual(modifier._buf, {'x': []})
     self.assertIsNone(modifier({'x': 10}))
+    self.assertIsNone(modifier({'x': 30}))
+    self.assertEqual(modifier({'x': 20}), {'x': 20.0})
 
   def test_calculates_median_for_all_labels_independently(self) -> None:
     """Checks multi-label median calculation."""

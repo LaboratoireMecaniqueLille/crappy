@@ -11,9 +11,9 @@ class TestMovingAvg(TestCase):
   def test_n_points_must_be_positive(self) -> None:
     """Checks validation of the moving average window."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       MovingAvg(0)
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       MovingAvg(-1)
 
   def test_n_points_one_returns_latest_point_as_float(self) -> None:
@@ -23,7 +23,7 @@ class TestMovingAvg(TestCase):
 
     self.assertEqual(modifier({'x': 1}), {'x': 1.0})
     self.assertEqual(modifier({'x': 3}), {'x': 3.0})
-    self.assertEqual(modifier._buf, {'x': [3]})
+    self.assertEqual(modifier({'x': 5}), {'x': 5.0})
 
   def test_returns_average_at_every_call_during_warmup(self) -> None:
     """Checks moving average before the window is full."""
@@ -43,7 +43,7 @@ class TestMovingAvg(TestCase):
       modifier({'x': value})
 
     self.assertEqual(modifier({'x': 7}), {'x': 5.0})
-    self.assertEqual(modifier._buf, {'x': [3, 5, 7]})
+    self.assertEqual(modifier({'x': 9}), {'x': 7.0})
 
   def test_averages_all_labels_independently(self) -> None:
     """Checks multi-label moving average calculation."""

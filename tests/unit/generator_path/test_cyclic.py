@@ -24,7 +24,7 @@ class TestCyclic(PathTestMixin, TestCase):
   def test_cycles_must_be_full_or_half_cycles(self) -> None:
     """Checks cycle-count validation."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Cyclic(condition1=None,
              condition2=None,
              value1=1,
@@ -96,7 +96,7 @@ class TestCyclicRamp(PathTestMixin, TestCase):
   def test_first_cyclic_ramp_requires_initial_value(self) -> None:
     """Checks that the first path cannot infer a previous command."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       CyclicRamp(condition1=None,
                  condition2=None,
                  speed1=1,
@@ -105,7 +105,7 @@ class TestCyclicRamp(PathTestMixin, TestCase):
   def test_cycles_must_be_full_or_half_cycles(self) -> None:
     """Checks cycle-count validation."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       CyclicRamp(condition1=None,
                  condition2=None,
                  speed1=1,

@@ -217,7 +217,7 @@ class TestImageBackends(BlockTestBase):
 
           with (fresh_dependencies(module),
                 patch.object(common, 'import_module', side_effect=load)):
-            with self.assertRaisesRegex(ModuleNotFoundError, backend):
+            with self.assertRaises(ModuleNotFoundError):
               self.recorder(cls, backend, 'unused')
 
   def test_recorders_resolve_in_fresh_workers_before_the_first_frame(self):

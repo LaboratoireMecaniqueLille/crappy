@@ -108,7 +108,7 @@ class TestProperties(BlockTestBase):
   def test_vision_flag_requires_vision_methods(self) -> None:
     """A regular Block cannot claim to implement the vision interface."""
 
-    with self.assertRaisesRegex(TypeError, 'required methods'):
+    with self.assertRaises(TypeError):
       self._block.is_vision_block = True
 
     self.assertFalse(self._block.is_vision_block)

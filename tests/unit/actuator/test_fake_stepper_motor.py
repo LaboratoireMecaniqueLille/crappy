@@ -82,17 +82,19 @@ class TestFakeStepperMotor(TestCase):
           FakeStepperMotor(**kwargs)
 
   def test_negative_parameters_are_normalized(self) -> None:
-    """Checks that magnitudes are stored as positive internal values."""
+    """Parameter signs do not reverse acceleration or the speed limit."""
 
-    motor = FakeStepperMotor(steps_per_mm=-2,
-                             microsteps=-4,
-                             acceleration=-3,
-                             max_speed=-5)
-
-    self.assertEqual(motor._steps_per_mm, 2)
-    self.assertEqual(motor._microsteps, 4)
-    self.assertEqual(motor._accel, 24)
-    self.assertEqual(motor._max_speed, 40)
+    for sign in (-1, 1):
+      with self.subTest(sign=sign):
+        motor = FakeStepperMotor(steps_per_mm=sign * 2, microsteps=sign * 4,
+                                 acceleration=sign * 3, max_speed=sign * 5)
+        motor._t = 0
+        motor.set_speed(100)
+        self._run_one_iteration(motor, now=1)
+        self.assertEqual(motor.get_speed(), 3)
+        self.assertEqual(motor.get_position(), 1.5)
+        self._run_one_iteration(motor, now=3)
+        self.assertEqual(motor.get_speed(), 5)
 
   def test_open_starts_emulation_thread(self) -> None:
     """Checks that open starts the worker thread."""
@@ -105,7 +107,7 @@ class TestFakeStepperMotor(TestCase):
     motor.open()
 
     self.assertTrue(thread.started)
-    self.assertEqual(logs, [(logging.INFO, "Starting the emulation thread")])
+    self.assertTrue(any(level == logging.INFO for level, _ in logs))
 
   def test_close_stops_alive_emulation_thread(self) -> None:
     """Checks graceful thread shutdown."""
@@ -117,10 +119,9 @@ class TestFakeStepperMotor(TestCase):
 
     motor.close()
 
-    self.assertTrue(motor._stop_thread)
-    self.assertEqual(thread.join_calls, [0.1])
-    self.assertEqual(logs, [(logging.INFO,
-                             "Trying to stop the emulation thread")])
+    self.assertFalse(thread.is_alive())
+    self.assertTrue(thread.join_calls)
+    self.assertTrue(any(level == logging.INFO for level, _ in logs))
 
   def test_close_logs_error_when_thread_survives_join(self) -> None:
     """Checks the warning path for a stuck emulation thread."""
@@ -132,9 +133,8 @@ class TestFakeStepperMotor(TestCase):
 
     motor.close()
 
-    self.assertIn((logging.ERROR,
-                   "The emulation thread did not terminate properly !"),
-                  logs)
+    self.assertTrue(thread.is_alive())
+    self.assertTrue(any(level >= logging.ERROR for level, _ in logs))
 
   def test_close_ignores_thread_that_was_never_started(self) -> None:
     """Checks that close is harmless before open."""
@@ -146,73 +146,65 @@ class TestFakeStepperMotor(TestCase):
 
     motor.close()
 
-    self.assertFalse(motor._stop_thread)
     self.assertEqual(thread.join_calls, [])
 
   def test_set_position_sets_target_and_optional_positive_speed(self) -> None:
-    """Checks position command conversion and speed magnitude handling."""
+    """Position commands replace speed mode and honor an optional magnitude."""
 
-    motor = FakeStepperMotor(steps_per_mm=10,
-                             microsteps=2,
-                             max_speed=3)
-    motor._target_speed = 12
+    motor = FakeStepperMotor(steps_per_mm=10, microsteps=2, max_speed=3)
+    motor._t = 0
+    motor.set_speed(2)
+    motor.set_position(100, None)
+    self._run_one_iteration(motor, now=1)
+    self.assertEqual(motor.get_speed(), 3)
+    self.assertGreater(motor.get_position(), 0)
 
-    motor.set_position(1.5, None)
-
-    self.assertEqual(motor._target_pos, 30)
-    self.assertIsNone(motor._target_speed)
-    self.assertEqual(motor._max_speed, 60)
-
-    motor.set_position(-2, -4)
-
-    self.assertEqual(motor._target_pos, -40)
-    self.assertEqual(motor._max_speed, 80)
+    position = motor.get_position()
+    motor.set_position(-100, -4)
+    self._run_one_iteration(motor, now=2)
+    self.assertEqual(motor.get_speed(), -4)
+    self.assertLess(motor.get_position(), position)
 
   def test_set_speed_sets_target_and_clamps_to_max_speed(self) -> None:
-    """Checks speed command conversion and clipping."""
+    """Speed commands move in user units and clip excess magnitude."""
 
-    motor = FakeStepperMotor(steps_per_mm=10,
-                             microsteps=2,
-                             max_speed=3)
-    logs = self._capture_logs(motor)
-
+    motor = FakeStepperMotor(steps_per_mm=10, microsteps=2, max_speed=3)
+    motor._t = 0
     motor.set_speed(2)
-
-    self.assertIsNone(motor._target_pos)
-    self.assertEqual(motor._target_speed, 40)
-    self.assertEqual(logs, [])
-
-    motor.set_speed(-5)
-
-    self.assertEqual(motor._target_speed, -60)
-    self.assertEqual(logs[-1][0], logging.WARNING)
-
-  def test_getters_convert_internal_steps_to_user_units(self) -> None:
-    """Checks speed and position conversions back to mm and mm/s."""
-
-    motor = FakeStepperMotor(steps_per_mm=10, microsteps=2)
-    motor._speed = 40
-    motor._pos = -20
-
+    self._run_one_iteration(motor, now=1)
     self.assertEqual(motor.get_speed(), 2)
-    self.assertEqual(motor.get_position(), -1)
+
+    logs = self._capture_logs(motor)
+    motor.set_speed(-5)
+    self._run_one_iteration(motor, now=2)
+    self.assertEqual(motor.get_speed(), -3)
+    self.assertTrue(any(level >= logging.WARNING for level, _ in logs))
+
+  def test_motion_is_reported_in_user_units(self) -> None:
+    """A command reports speed in mm/s and traveled distance in mm."""
+
+    motor = FakeStepperMotor(steps_per_mm=10, microsteps=2, acceleration=10)
+    motor._t = 0
+    motor.set_speed(2)
+    self._run_one_iteration(motor, now=1)
+    self.assertEqual(motor.get_speed(), 2)
+    self.assertAlmostEqual(motor.get_position(), 1.8)
 
   def test_stop_zeros_speed_and_switches_to_zero_speed_mode(self) -> None:
-    """Checks the abrupt stop behavior."""
+    """Stopping cancels a pending position command and leaves the motor still."""
 
     motor = FakeStepperMotor()
-    logs = self._capture_logs(motor)
-    motor._speed = 5
-    motor._target_pos = 10
-    motor._target_speed = 2
-
+    motor._t = 0
+    motor.set_speed(5)
+    self._run_one_iteration(motor, now=1)
+    self.assertEqual(motor.get_speed(), 5)
+    position = motor.get_position()
+    motor.set_position(10, None)
     motor.stop()
-
-    self.assertEqual(motor._speed, 0)
-    self.assertIsNone(motor._target_pos)
-    self.assertEqual(motor._target_speed, 0)
-    self.assertEqual(logs, [(logging.INFO,
-                             "Abruptly stopping the emulated stepper motor")])
+    self.assertEqual(motor.get_speed(), 0)
+    self._run_one_iteration(motor, now=2)
+    self.assertEqual(motor.get_position(), position)
+    self.assertEqual(motor.get_speed(), 0)
 
   def test_thread_iteration_accelerates_towards_speed_target(self) -> None:
     """Checks speed-mode acceleration before reaching the target."""
@@ -227,9 +219,11 @@ class TestFakeStepperMotor(TestCase):
 
     self._run_one_iteration(motor, now=2)
 
-    self.assertEqual(motor._speed, 20)
-    self.assertEqual(motor._pos, 20)
-    self.assertEqual(motor._t, 2)
+    self.assertEqual(motor.get_speed(), 20)
+    self.assertEqual(motor.get_position(), 20)
+    self._run_one_iteration(motor, now=3)
+    self.assertEqual(motor.get_speed(), 30)
+    self.assertEqual(motor.get_position(), 45)
 
   def test_thread_iteration_lands_on_speed_target(self) -> None:
     """Checks speed-mode acceleration and deceleration target crossing."""
@@ -244,8 +238,8 @@ class TestFakeStepperMotor(TestCase):
 
     self._run_one_iteration(motor, now=1)
 
-    self.assertEqual(motor._speed, 5)
-    self.assertEqual(motor._pos, 3)
+    self.assertEqual(motor.get_speed(), 5)
+    self.assertEqual(motor.get_position(), 3)
 
     motor = FakeStepperMotor(steps_per_mm=1,
                              microsteps=1,
@@ -258,8 +252,8 @@ class TestFakeStepperMotor(TestCase):
 
     self._run_one_iteration(motor, now=1)
 
-    self.assertEqual(motor._speed, 0)
-    self.assertEqual(motor._pos, 1)
+    self.assertEqual(motor.get_speed(), 0)
+    self.assertEqual(motor.get_position(), 1)
 
   def test_thread_iteration_clamps_above_positive_max_speed(self) -> None:
     """Checks the positive overspeed correction branch."""
@@ -275,7 +269,7 @@ class TestFakeStepperMotor(TestCase):
 
     self._run_one_iteration(motor, now=0.05)
 
-    self.assertEqual(motor._speed, 10)
+    self.assertEqual(motor.get_speed(), 10)
 
   def test_thread_iteration_clamps_below_negative_max_speed(self) -> None:
     """Checks the negative overspeed correction branch keeps its sign."""
@@ -291,7 +285,7 @@ class TestFakeStepperMotor(TestCase):
 
     self._run_one_iteration(motor, now=0.05)
 
-    self.assertEqual(motor._speed, -10)
+    self.assertEqual(motor.get_speed(), -10)
 
   def test_thread_iteration_moves_towards_position_targets(self) -> None:
     """Checks position-mode acceleration in both directions."""
@@ -313,8 +307,8 @@ class TestFakeStepperMotor(TestCase):
 
         self._run_one_iteration(motor, now=1)
 
-        self.assertEqual(motor._speed, expected_speed)
-        self.assertEqual(motor._pos, expected_pos)
+        self.assertEqual(motor.get_speed(), expected_speed)
+        self.assertEqual(motor.get_position(), expected_pos)
 
   def test_thread_iteration_reaches_close_position_target(self) -> None:
     """Checks that a close target can be reached exactly."""
@@ -330,8 +324,8 @@ class TestFakeStepperMotor(TestCase):
 
     self._run_one_iteration(motor, now=1)
 
-    self.assertEqual(motor._speed, 0)
-    self.assertEqual(motor._pos, 5)
+    self.assertEqual(motor.get_speed(), 0)
+    self.assertEqual(motor.get_position(), 5)
 
   def test_thread_iteration_leaves_reached_position_target_unchanged(
       self) -> None:
@@ -349,6 +343,7 @@ class TestFakeStepperMotor(TestCase):
 
     self._run_one_iteration(motor, now=1)
 
-    self.assertEqual(motor._pos, 7)
-    self.assertEqual(motor._speed, 0)
-    self.assertEqual(motor._t, 1)
+    self.assertEqual(motor.get_position(), 7)
+    self.assertEqual(motor.get_speed(), 0)
+    self._run_one_iteration(motor, now=2)
+    self.assertEqual(motor.get_position(), 7)

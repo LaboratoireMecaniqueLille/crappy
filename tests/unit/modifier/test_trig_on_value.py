@@ -14,7 +14,6 @@ class TestTrigOnValue(TestCase):
     modifier = TrigOnValue('state', 'ok')
     accepted = {'state': 'ok'}
 
-    self.assertEqual(modifier._values, ('ok',))
     self.assertIs(modifier(accepted), accepted)
     self.assertIsNone(modifier({'state': 'o'}))
 
@@ -24,7 +23,6 @@ class TestTrigOnValue(TestCase):
     modifier = TrigOnValue('state', 1)
     accepted = {'state': 1}
 
-    self.assertEqual(modifier._values, (1,))
     self.assertIs(modifier(accepted), accepted)
     self.assertIsNone(modifier({'state': 2}))
 
@@ -35,7 +33,6 @@ class TestTrigOnValue(TestCase):
     first = {'state': 1}
     second = {'state': 3}
 
-    self.assertEqual(modifier._values, (1, 3))
     self.assertIs(modifier(first), first)
     self.assertIsNone(modifier({'state': 2}))
     self.assertIs(modifier(second), second)

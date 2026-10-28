@@ -9,7 +9,7 @@ class TestDiff(TestCase):
   """Unit tests for the Diff Modifier."""
 
   def test_first_point_initializes_state_and_returns_zero(self) -> None:
-    """Checks first derivative output and stored state."""
+    """The first sample produces zero and anchors the following derivative."""
 
     modifier = Diff('x')
     data = {'t(s)': 1, 'x': 3}
@@ -18,8 +18,7 @@ class TestDiff(TestCase):
 
     self.assertIs(returned, data)
     self.assertEqual(returned, {'t(s)': 1, 'x': 3, 'd_x': 0})
-    self.assertEqual(modifier._last_t, 1)
-    self.assertEqual(modifier._last_val, 3)
+    self.assertEqual(modifier({'t(s)': 3, 'x': 9})['d_x'], 3)
 
   def test_following_points_return_derivative(self) -> None:
     """Checks derivative calculation with default labels."""
@@ -30,8 +29,7 @@ class TestDiff(TestCase):
     returned = modifier({'t(s)': 3, 'x': 9})
 
     self.assertEqual(returned, {'t(s)': 3, 'x': 9, 'd_x': 3})
-    self.assertEqual(modifier._last_t, 3)
-    self.assertEqual(modifier._last_val, 9)
+    self.assertEqual(modifier({'t(s)': 4, 'x': 11})['d_x'], 2)
 
   def test_custom_time_and_output_labels_are_supported(self) -> None:
     """Checks derivative calculation with custom labels."""
@@ -50,8 +48,6 @@ class TestDiff(TestCase):
     modifier({'t(s)': 1, 'x': 3})
 
     self.assertIsNone(modifier({'t(s)': 1, 'x': 9}))
-    self.assertEqual(modifier._last_t, 1)
-    self.assertEqual(modifier._last_val, 3)
 
     returned = modifier({'t(s)': 3, 'x': 11})
 

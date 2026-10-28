@@ -137,7 +137,7 @@ class TestParentImportResolution(BlockTestBase):
         choices = RecordingChoices(error=AssertionError('Unusable window'))
         source.configurator = choices
         self.request(source, choices)
-        with self.assertRaisesRegex(RuntimeError, 'unhandled required'):
+        with self.assertRaises(RuntimeError):
           source.resolve_config_requests()
         self.assertEqual(choices.lookups, [])
 

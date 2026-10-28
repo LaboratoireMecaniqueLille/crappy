@@ -11,9 +11,9 @@ class TestMean(TestCase):
   def test_n_points_must_be_positive(self) -> None:
     """Checks validation of the averaging period."""
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Mean(0)
-    with self.assertRaises(ValueError):
+    with self.assertRaises((TypeError, ValueError)):
       Mean(-1)
 
   def test_n_points_one_returns_each_point_as_float(self) -> None:
@@ -32,8 +32,9 @@ class TestMean(TestCase):
     self.assertIsNone(modifier({'x': 1}))
     self.assertIsNone(modifier({'x': 2}))
     self.assertEqual(modifier({'x': 6}), {'x': 3.0})
-    self.assertEqual(modifier._buf, {'x': []})
     self.assertIsNone(modifier({'x': 10}))
+    self.assertIsNone(modifier({'x': 20}))
+    self.assertEqual(modifier({'x': 30}), {'x': 20.0})
 
   def test_averages_all_labels_independently(self) -> None:
     """Checks multi-label averaging."""

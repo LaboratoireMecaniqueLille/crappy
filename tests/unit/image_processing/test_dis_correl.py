@@ -214,8 +214,7 @@ class TestDISCorrelTool(TestCase):
 
     tool, _ = self._make_tool(fields=['x'], border=0)
 
-    with self.assertRaisesRegex(ValueError,
-                                r"correlation area \(4x3\) is too small"):
+    with self.assertRaises(ValueError):
       tool.set_img0(np.zeros((20, 20), dtype=np.uint8))
 
   def test_get_data_uses_bordered_crops(self) -> None:

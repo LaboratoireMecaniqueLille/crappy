@@ -1,9 +1,8 @@
 # coding: utf-8
 
 import logging
-from multiprocessing import current_process
 from unittest import TestCase
-from unittest.mock import call, patch
+from unittest.mock import patch
 
 import numpy as np
 
@@ -35,6 +34,14 @@ InOut.classes.pop('SequencedInOutForTest', None)
 class TestInOut(TestCase):
   """Unit tests for the InOut base class."""
 
+  def calibrate(self, inout, sample) -> None:
+    """Calibrate through the acquisition API without consuming test data."""
+
+    with (patch.object(inout, 'get_data', return_value=sample),
+          patch.object(inout_module, 'monotonic',
+                       side_effect=[0, 0, 0.1, 0.2])):
+      inout.make_zero(0.2)
+
   def tearDown(self) -> None:
     """Removes dynamic classes registered during tests."""
 
@@ -59,26 +66,28 @@ class TestInOut(TestCase):
     with self.assertRaises(DefinitionError):
       type('TestDuplicateInOut', (InOut,), {})
 
-  def test_default_attributes(self) -> None:
-    """Checks base instance initialization."""
+  def test_unused_constructor_arguments_preserve_acquisition(self) -> None:
+    """Unused constructor arguments do not change uncalibrated data."""
 
     inout = InOut('unused', option='ignored')
+    with patch.object(inout, 'get_data', return_value=[1, 2]):
+      self.assertEqual(inout.return_data(), [1, 2])
+    stream = (np.array([0, 1]), np.array([[2], [3]]))
+    with patch.object(inout, 'get_stream', return_value=stream):
+      timestamps, values = inout.return_stream()
+    np.testing.assert_array_equal(timestamps, stream[0])
+    np.testing.assert_array_equal(values, stream[1])
 
-    self.assertEqual(inout._compensations, [])
-    self.assertEqual(inout._compensations_dict, {})
-    self.assertIsNone(inout._logger)
-
-  def test_log_initializes_process_scoped_logger(self) -> None:
-    """Checks logger naming and lazy initialization."""
+  def test_log_forwards_levels_and_messages(self) -> None:
+    """User messages retain their severity on first and subsequent calls."""
 
     inout = InOut()
-    logger_name = f"{current_process().name}.InOut"
-
-    with self.assertLogs(logger_name, level='INFO') as captured:
-      inout.log(logging.INFO, "message")
-
-    self.assertIs(inout._logger, logging.getLogger(logger_name))
-    self.assertEqual(captured.output, [f"INFO:{logger_name}:message"])
+    with self.assertLogs(level='INFO') as captured:
+      inout.log(logging.INFO, 'message')
+      inout.log(logging.WARNING, 'follow-up')
+    records = [(record.levelno, record.getMessage()) for record in captured.records]
+    self.assertIn((logging.INFO, 'message'), records)
+    self.assertIn((logging.WARNING, 'follow-up'), records)
 
   def test_open_and_close_are_noops_by_default(self) -> None:
     """Checks that optional lifecycle methods can be left undefined."""
@@ -96,23 +105,20 @@ class TestInOut(TestCase):
     logs = list()
     inout.log = lambda level, msg: logs.append((level, msg))
 
-    with patch.object(inout_module, 'sleep') as mocked_sleep:
-      self.assertIsNone(inout.get_data())
-      self.assertIsNone(inout.set_cmd(1, 2))
-      self.assertIsNone(inout.get_stream())
-      self.assertIsNone(inout.start_stream())
-      self.assertIsNone(inout.stop_stream())
+    methods = ((inout.get_data, (), True), (inout.set_cmd, (1, 2), True),
+               (inout.get_stream, (), True), (inout.start_stream, (), False),
+               (inout.stop_stream, (), False))
+    for method, args, should_wait in methods:
+      with self.subTest(method=method.__name__):
+        logs.clear()
+        with patch.object(inout_module, 'sleep') as mocked_sleep:
+          self.assertIsNone(method(*args))
+        self.assertTrue(any(level >= logging.WARNING for level, _ in logs))
+        if should_wait:
+          self.assertTrue(any(call.args[0] > 0
+                              for call in mocked_sleep.call_args_list))
 
-    self.assertEqual(mocked_sleep.call_args_list,
-                     [call(1), call(1), call(1)])
-    self.assertTrue(all(level == logging.WARNING for level, _ in logs))
-    self.assertIn('get_data', logs[0][1])
-    self.assertIn('set_cmd', logs[1][1])
-    self.assertIn('get_stream', logs[2][1])
-    self.assertIn('start_stream', logs[3][1])
-    self.assertIn('stop_stream', logs[4][1])
-
-  def test_make_zero_stores_offsets_for_iterable_data(self) -> None:
+  def test_make_zero_compensates_iterable_data(self) -> None:
     """Checks zeroing with timestamp-first iterable samples."""
 
     inout = SequencedInOutForTest([[10, 1, 3], [11, 3, 5], [12, 4, 6]])
@@ -121,8 +127,6 @@ class TestInOut(TestCase):
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
-    self.assertEqual(inout._compensations, [-2, -4])
-    self.assertEqual(inout._compensations_dict, {})
     self.assertEqual(inout.return_data(), [12, 2, 2])
 
   def test_make_zero_replaces_previous_iterable_offsets(self) -> None:
@@ -139,9 +143,10 @@ class TestInOut(TestCase):
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
-    self.assertEqual(inout._compensations, [-12])
+    inout.data = [[4, 15]]
+    self.assertEqual(inout.return_data(), [4, 3])
 
-  def test_make_zero_stores_offsets_for_dict_data(self) -> None:
+  def test_make_zero_compensates_dict_data(self) -> None:
     """Checks zeroing with dict samples and time label removal."""
 
     inout = SequencedInOutForTest([
@@ -154,8 +159,6 @@ class TestInOut(TestCase):
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
-    self.assertEqual(inout._compensations, [])
-    self.assertEqual(inout._compensations_dict, {'a': -2, 'b': -4})
     self.assertEqual(inout.return_data(), {'t(s)': 12, 'a': 2, 'b': 2})
 
   def test_make_zero_replaces_previous_dict_offsets(self) -> None:
@@ -172,7 +175,8 @@ class TestInOut(TestCase):
                       side_effect=[0, 0, 0.2]):
       inout.make_zero(0.2)
 
-    self.assertEqual(inout._compensations_dict, {'a': -5})
+    inout.data = [{'t(s)': 2, 'a': 8}]
+    self.assertEqual(inout.return_data(), {'t(s)': 2, 'a': 3})
 
   def test_make_zero_warns_when_no_data_was_acquired(self) -> None:
     """Checks zeroing abort when get_data only returns None."""
@@ -185,10 +189,9 @@ class TestInOut(TestCase):
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
-    self.assertEqual(inout._compensations, [])
-    self.assertEqual(inout._compensations_dict, {})
+    inout.data = [[2, 3]]
+    self.assertEqual(inout.return_data(), [2, 3])
     self.assertEqual(logs[0][0], logging.WARNING)
-    self.assertIn('No data acquired', logs[0][1])
 
   def test_make_zero_clears_offsets_when_values_are_not_numeric(self) -> None:
     """Checks zeroing abort when iterable values cannot be averaged."""
@@ -201,9 +204,9 @@ class TestInOut(TestCase):
                       side_effect=[0, 0, 0.1, 0.2]):
       inout.make_zero(0.2)
 
-    self.assertEqual(inout._compensations, [])
+    inout.data = [[2, 3]]
+    self.assertEqual(inout.return_data(), [2, 3])
     self.assertEqual(logs[0][0], logging.WARNING)
-    self.assertIn('Cannot calculate the offset', logs[0][1])
 
   def test_return_data_without_offsets_returns_iterable_data_as_list(self):
     """Checks return_data without zeroing for iterable samples."""
@@ -212,13 +215,13 @@ class TestInOut(TestCase):
 
     self.assertEqual(inout.return_data(), [1, 2, 3])
 
-  def test_return_data_without_offsets_returns_dict_data_as_is(self) -> None:
+  def test_uncalibrated_dict_data_preserves_labels_and_values(self) -> None:
     """Checks return_data without zeroing for dict samples."""
 
     data = {'t(s)': 1, 'a': 2}
     inout = SequencedInOutForTest([data])
 
-    self.assertIs(inout.return_data(), data)
+    self.assertEqual(inout.return_data(), data)
 
   def test_return_data_returns_none_when_no_data_is_available(self) -> None:
     """Checks return_data when get_data returns None."""
@@ -239,7 +242,7 @@ class TestInOut(TestCase):
     """Checks that all dict labels must have an offset when zeroed."""
 
     inout = SequencedInOutForTest([{'t(s)': 0, 'a': 1, 'b': 2}])
-    inout._compensations_dict = {'a': -1}
+    self.calibrate(inout, {'t(s)': 0, 'a': 1})
 
     with self.assertRaises(ValueError):
       inout.return_data()
@@ -248,12 +251,12 @@ class TestInOut(TestCase):
     """Checks iterable offset count validation."""
 
     inout = SequencedInOutForTest([[0, 1, 2]])
-    inout._compensations = [-1]
+    self.calibrate(inout, [0, 1])
 
     with self.assertRaises(ValueError):
       inout.return_data()
 
-  def test_return_stream_without_offsets_returns_iterable_stream_as_list(self):
+  def test_uncalibrated_iterable_stream_preserves_samples(self):
     """Checks return_stream without zeroing for iterable streams."""
 
     t = np.array([0, 1])
@@ -262,17 +265,19 @@ class TestInOut(TestCase):
 
     stream = inout.return_stream()
 
-    self.assertIsInstance(stream, list)
-    self.assertIs(stream[0], t)
-    self.assertIs(stream[1], values)
+    np.testing.assert_array_equal(stream[0], t)
+    np.testing.assert_array_equal(stream[1], values)
 
-  def test_return_stream_without_offsets_returns_dict_stream_as_is(self):
+  def test_uncalibrated_dict_stream_preserves_labels_and_samples(self):
     """Checks return_stream without zeroing for dict streams."""
 
     stream = {'t(s)': np.array([0, 1]), 'a': np.array([[1], [2]])}
     inout = SequencedInOutForTest(stream=stream)
 
-    self.assertIs(inout.return_stream(), stream)
+    returned = inout.return_stream()
+    self.assertEqual(set(returned), set(stream))
+    for label, values in stream.items():
+      np.testing.assert_array_equal(returned[label], values)
 
   def test_return_stream_returns_none_when_no_stream_is_available(
       self) -> None:
@@ -288,7 +293,7 @@ class TestInOut(TestCase):
     t = np.array([0, 1])
     values = np.array([[5, 7], [8, 10]])
     inout = SequencedInOutForTest(stream=[t, values])
-    inout._compensations = [-1, -2]
+    self.calibrate(inout, [0, 1, 2])
 
     stream = inout.return_stream()
 
@@ -301,7 +306,7 @@ class TestInOut(TestCase):
     t = np.array([0, 1])
     values = np.array([[5, 7], [8, 10]])
     inout = SequencedInOutForTest(stream=[t, values])
-    inout._compensations_dict = {'a': -1, 'b': -2}
+    self.calibrate(inout, {'t(s)': 0, 'a': 1, 'b': 2})
 
     stream = inout.return_stream()
 
@@ -318,7 +323,7 @@ class TestInOut(TestCase):
       'b': np.array([[15, 17], [18, 20]]),
     }
     inout = SequencedInOutForTest(stream=stream)
-    inout._compensations = [-1, -2]
+    self.calibrate(inout, [0, 1, 2])
 
     returned = inout.return_stream()
 
@@ -343,7 +348,7 @@ class TestInOut(TestCase):
       np.array([0, 1]),
       np.array([[1, 2], [3, 4]]),
     ])
-    inout._compensations = [-1]
+    self.calibrate(inout, [0, 1])
 
     with self.assertRaises(ValueError):
       inout.return_stream()

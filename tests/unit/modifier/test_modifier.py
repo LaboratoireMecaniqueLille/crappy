@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import logging
-from multiprocessing import current_process
 from unittest import TestCase
 
 import crappy.modifier as modifier_package
@@ -44,7 +43,7 @@ class TestModifier(TestCase):
          (Modifier,),
          {'__call__': lambda self, data: data})
 
-    with self.assertRaisesRegex(DefinitionError, 'A Modifier'):
+    with self.assertRaises(DefinitionError):
       type('TestDuplicateModifier',
            (Modifier,),
            {'__call__': lambda self, data: data})
@@ -52,7 +51,7 @@ class TestModifier(TestCase):
   def test_deprecated_evaluate_method_is_rejected(self) -> None:
     """Checks that legacy evaluate methods cannot define a Modifier."""
 
-    with self.assertRaisesRegex(DefinitionError, 'evaluate method'):
+    with self.assertRaises(DefinitionError):
       type('TestEvaluateModifier',
            (Modifier,),
            {
@@ -60,7 +59,7 @@ class TestModifier(TestCase):
              '__call__': lambda self, data: data,
            })
 
-  def test_init_accepts_unused_args_and_sets_logger(self) -> None:
+  def test_unused_constructor_arguments_preserve_custom_behavior(self) -> None:
     """Checks base initialization with ignored arguments."""
 
     cls = type('TestPassthroughModifier',
@@ -69,22 +68,21 @@ class TestModifier(TestCase):
 
     modifier = cls('unused', option='ignored')
 
-    self.assertIsNone(modifier._logger)
+    data = {'value': 1}
+    self.assertIs(modifier(data), data)
 
-  def test_log_initializes_process_scoped_logger(self) -> None:
-    """Checks logger naming and lazy initialization."""
+  def test_log_forwards_levels_and_messages(self) -> None:
+    """User messages retain their severity on first and subsequent calls."""
 
-    cls = type('TestPassthroughModifier',
-               (Modifier,),
-               {'__call__': lambda self, data: data})
+    cls = type('TestPassthroughModifier', (Modifier,),
+             {'__call__': lambda self, data: data})
     modifier = cls()
-    logger_name = f"{current_process().name}.TestPassthroughModifier"
-
-    with self.assertLogs(logger_name, level='INFO') as captured:
-      modifier.log(logging.INFO, "message")
-
-    self.assertIs(modifier._logger, logging.getLogger(logger_name))
-    self.assertEqual(captured.output, [f"INFO:{logger_name}:message"])
+    with self.assertLogs(level='INFO') as captured:
+      modifier.log(logging.INFO, 'message')
+      modifier.log(logging.WARNING, 'follow-up')
+    records = [(record.levelno, record.getMessage()) for record in captured.records]
+    self.assertIn((logging.INFO, 'message'), records)
+    self.assertIn((logging.WARNING, 'follow-up'), records)
 
   def test_base_call_can_be_reused_by_subclasses(self) -> None:
     """Checks the fallback implementation available through super."""

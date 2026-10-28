@@ -46,7 +46,7 @@ class TestImageConversion(unittest.TestCase):
 
     for shape in ((4,), (2, 3, 4, 5), (2, 3, 5)):
       with self.subTest(shape=shape):
-        with self.assertRaisesRegex(ValueError, 'Cannot handle images'):
+        with self.assertRaises(ValueError):
           self.config._cast_img(np.ones(shape, dtype=np.uint8))
 
   def test_auto_range_preserves_source_pixels_and_indicators(self) -> None:

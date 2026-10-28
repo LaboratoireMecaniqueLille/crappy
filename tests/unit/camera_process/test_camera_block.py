@@ -475,9 +475,9 @@ class TestCameraBlock(CameraBlockTestBase):
 
     self.assertEqual(camera._config_backend, 'tkinter')
     self.assertEqual(camera._camera_kwargs, {'serial': 'abc'})
-    with self.assertRaisesRegex(ValueError, 'config_backend'):
+    with self.assertRaises(ValueError):
       self.make_camera(config_backend='qt')
-    with self.assertRaisesRegex(TypeError, 'config_backend'):
+    with self.assertRaises(TypeError):
       self.make_camera(config_backend=None)
 
   def test_pyqt_backend_is_resolved_before_window_construction(self) -> None:

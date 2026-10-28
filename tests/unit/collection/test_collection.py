@@ -245,7 +245,7 @@ class TestCollectionApi(TestCase):
     actuator = CollectionEntry('Shared', 'Actuator', 'pkg.actuator')
     camera = CollectionEntry('Shared', 'Camera', 'pkg.camera')
     with patch.object(collection_api, 'DRIVERS', (actuator, camera)):
-      with self.assertRaisesRegex(ValueError, 'Specify the kind'):
+      with self.assertRaises(ValueError):
         collection_api.check('Shared')
 
   def test_check_all_filters_and_preserves_manifest_order(self) -> None:

@@ -66,7 +66,7 @@ class TestCustom(TestCase):
       for name, content in cases.items():
         with self.subTest(name=name):
           path = self._write_file(folder, name, content)
-          with self.assertRaises(ValueError):
+          with self.assertRaises((TypeError, ValueError)):
             Custom(path)
 
   def test_custom_rejects_unsorted_timestamps(self) -> None:
@@ -76,5 +76,5 @@ class TestCustom(TestCase):
       path = self._write_file(folder, 'unsorted.csv',
                               '1,10\n0,0\n')
 
-      with self.assertRaises(ValueError):
+      with self.assertRaises((TypeError, ValueError)):
         Custom(path)

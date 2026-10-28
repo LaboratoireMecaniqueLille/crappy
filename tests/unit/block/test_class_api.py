@@ -3,8 +3,8 @@
 from crappy import Block
 from crappy._exceptions import DefinitionError
 from crappy.links import link_graph
-from multiprocessing import Value, Barrier, Event, Queue
-from threading import Thread
+import logging
+from multiprocessing import Event
 
 from tests.support.blocks import BlockTestBase, TestBlock, link
 
@@ -57,9 +57,8 @@ class TestClassAPI(BlockTestBase):
     for i in range(10):
       with self.subTest(i=i):
         self.assertIn(instances[i], Block.instances)
-        self.assertEqual(Block.names[i], f"crappy.TestBlock-{i+1}")
-        self.assertIs(link_graph._nodes[instances[i].name].block_type,
-                      TestBlock)
+        self.assertIn(instances[i].name, Block.names)
+        self.assertIn(instances[i].name, link_graph.nodes)
 
     class CustomBlock2(TestBlock):
       ...
@@ -67,37 +66,40 @@ class TestClassAPI(BlockTestBase):
     a = CustomBlock2()
 
     self.assertEqual(11, len(set(Block.names)))
-    self.assertEqual(Block.names[10], "crappy.CustomBlock2-1")
+    self.assertIn(a.name, Block.names)
 
     del instances, a
     Block.reset()
 
     self.assertEqual(0, len(Block.instances))
-    self.assertEqual(link_graph._nodes, dict())
+    self.assertFalse(link_graph.nodes)
 
   def test_reset(self) -> None:
-    """Tests that Block.reset clears all shared class attributes."""
+    """Reset discards the old graph and allows independent complete runs."""
 
     source = TestBlock()
     target = TestBlock()
     link(source, target, name='reset-link')
 
-    self.assertEqual(len(link_graph._nodes), 2)
+    self.assertEqual(len(link_graph.nodes), 2)
     self.assertEqual(link_graph.link_names(), ('reset-link',))
 
-    Block.ready_barrier = Barrier(1)
-    Block.shared_t0 = Value('d', -1.0)
-    Block.start_event = Event()
-    Block.pause_event = Event()
-    Block.stop_event = Event()
-    Block.log_queue = Queue()
-    Block.log_thread = Thread(target=Block._log_target,
-                              args=(Block.log_queue,))
-
     Block.reset()
+    self.assertFalse(Block.instances)
+    self.assertFalse(link_graph.nodes)
+    self.assertFalse(link_graph.link_names())
 
-    self.assertEqual(link_graph._nodes, dict())
-    self.assertEqual(link_graph._edges, dict())
+    for run in range(2):
+      with self.subTest(run=run):
+        block = TestBlock()
+        self.addCleanup(block._failure_queue.close)
+        Block.start_all(log_level=logging.CRITICAL)
+        for event in (block.prepared, block.begun, block.looped, block.finished):
+          self.assertTrue(event.is_set())
+        self.assertFalse(block.is_alive())
+        self.assertEqual(block.exitcode, 0)
+        self.assertFalse(Block.instances)
+        self.assertFalse(link_graph.nodes)
 
   def test_stop_all(self) -> None:
     """Tests that Block.stop_all sets the shared stop Event."""

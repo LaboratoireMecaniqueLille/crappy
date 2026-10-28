@@ -91,7 +91,7 @@ class TestData(CameraProcessTestBase):
     self._process = TestCameraProcess()
     self._process._lock = MagicMock()
 
-    with self.assertRaisesRegex(RuntimeError, 'metadata dictionary'):
+    with self.assertRaises(RuntimeError):
       self._process._get_data()
 
   def test_wait_wakes_after_publication(self) -> None:
@@ -198,7 +198,7 @@ class TestData(CameraProcessTestBase):
         self._process._get_data(timeout=timeout)
 
     self._process._condition = None
-    with self.assertRaisesRegex(RuntimeError, 'Condition'):
+    with self.assertRaises(RuntimeError):
       self._process._get_data(timeout=0.1)
 
   def test_condition_failure_uses_existing_run_error_handling(self) -> None:

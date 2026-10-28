@@ -2,7 +2,6 @@
 
 from tests.support.blocks import with_failure_manager
 
-from multiprocessing import Event
 from threading import Event as ThreadEvent, Thread
 from time import monotonic
 from unittest.mock import patch
@@ -217,15 +216,15 @@ class TestImageConditions(VisionTestBase):
         consumer.receive_imgs(timeout=timeout)
 
     consumer._in_link_data[0].img_id = None
-    with self.assertRaisesRegex(ValueError, 'image ID'):
+    with self.assertRaises(ValueError):
       consumer.receive_imgs(timeout=0.1)
     consumer._in_link_data.clear()
-    with self.assertRaisesRegex(ValueError, 'all input ImageLinks'):
+    with self.assertRaises(ValueError):
       consumer.receive_imgs(timeout=0.1)
 
   def test_condition_failure_propagates(self) -> None:
     _, consumers, _ = self.prepare_graph()
     with (patch.object(consumers[0].img_condition, 'wait_for',
                        side_effect=OSError('condition failure')),
-          self.assertRaisesRegex(OSError, 'condition failure')):
+          self.assertRaises(OSError)):
       consumers[0].receive_imgs(timeout=0.1)

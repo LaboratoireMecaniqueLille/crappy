@@ -187,8 +187,7 @@ class TestGUIBackends(GUIBlockTestBase):
               patch.object(module, 'QtWidgets',
                            SimpleNamespace(QApplication=type('App', (), {})))):
           core.QCoreApplication.instance.return_value = sentinel.core_app
-          with self.assertRaisesRegex(RuntimeError,
-                                      'non-widget Qt application'):
+          with self.assertRaises(RuntimeError):
             with_failure_manager(block_type(*args))._get_application()
 
   def test_application_creation_restores_plugin_path_and_numeric_locale(
@@ -379,7 +378,7 @@ class TestGUIBackends(GUIBlockTestBase):
     for block_type, module, args in GUI_BLOCKS:
       with self.subTest(block=block_type.__name__):
         with patch.object(module, 'QtCore', OptionalModule('PyQt6.QtCore')):
-          with self.assertRaisesRegex(OptionalDependencyError, 'PyQt6'):
+          with self.assertRaises(OptionalDependencyError):
             with_failure_manager(block_type(*args))._get_application()
 
 

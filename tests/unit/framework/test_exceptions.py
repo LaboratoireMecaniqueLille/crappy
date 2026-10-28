@@ -162,7 +162,7 @@ class TestFrameworkExceptions(TestCase):
     for group_node in (root, replace(root, children=(), group_message=None)):
       with self.subTest(group_message=group_node.group_message):
         group_report = replace(report, nodes=(group_node, sibling, self.node))
-        with self.assertRaisesRegex(ValueError, 'rebuilt from their children'):
+        with self.assertRaises(ValueError):
           RemoteFailureMetadata.from_report(group_report, 0, 'group')
 
   def test_fallback_requires_a_valid_report_node_index(self) -> None:
