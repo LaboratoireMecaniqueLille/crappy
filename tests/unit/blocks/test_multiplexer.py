@@ -5,7 +5,8 @@ from numbers import Real
 from typing import Any
 from crappy.blocks.multiplexer import Multiplexer
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 class TestMultiplexer(BlockTestBase):

@@ -9,7 +9,9 @@ from crappy import Block
 from crappy.blocks.meta_block import block as block_module
 from crappy.links import GraphStructureError, link_graph
 
-from tests.support.blocks import BlockTestBase, TestBlock, link, exception_leaves
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
+from tests.support.assertions import exception_leaves
 
 
 class TestRunParticipants(BlockTestBase):
@@ -18,9 +20,9 @@ class TestRunParticipants(BlockTestBase):
   def test_missing_blocks_rejected_before_startup(self) -> None:
     """Lost ordinary Blocks, linked or isolated, must prevent startup."""
 
-    self._block = TestBlock()
-    linked = TestBlock()
-    isolated = TestBlock()
+    self._block = TestBlock(retain=False)
+    linked = TestBlock(retain=False)
+    isolated = TestBlock(retain=False)
     link(self._block, linked)
     missing_names = sorted((linked.name, isolated.name))
     linked_ref, isolated_ref = ref(linked), ref(isolated)
@@ -48,7 +50,7 @@ class TestRunParticipants(BlockTestBase):
   def test_all_blocks_lost_is_not_an_empty_experiment(self) -> None:
     """Validation must also run when the WeakSet is completely empty."""
 
-    block = TestBlock()
+    block = TestBlock(retain=False)
     name, block_ref = block.name, ref(block)
     del block
     collect()
@@ -66,7 +68,7 @@ class TestRunParticipants(BlockTestBase):
   def test_live_block_absent_from_graph_is_rejected(self) -> None:
     """A registry/graph mismatch in either direction is invalid."""
 
-    self._block = TestBlock()
+    self._block = TestBlock(retain=False)
     link_graph.nodes.pop(self._block.name)
 
     with self.assertRaises(ExceptionGroup) as raised:
@@ -80,7 +82,7 @@ class TestRunParticipants(BlockTestBase):
   def test_snapshot_retains_blocks_until_reset(self) -> None:
     """Dropping caller references during preparation cannot lose a Block."""
 
-    holder = [TestBlock()]
+    holder = [TestBlock(retain=False)]
     block_ref = ref(holder[0])
     set_logger = Block._set_logger
 
@@ -111,7 +113,7 @@ class TestRunParticipants(BlockTestBase):
   def test_early_setup_failure_releases_snapshot(self) -> None:
     """A failure before resources are allocated must not retain Blocks."""
 
-    holder = [TestBlock()]
+    holder = [TestBlock(retain=False)]
     block_ref = ref(holder[0])
 
     def fail_setup() -> None:
@@ -131,7 +133,7 @@ class TestRunParticipants(BlockTestBase):
   def test_process_start_failure_resets_snapshot(self) -> None:
     """Startup errors must release the snapshot through normal cleanup."""
 
-    self._block = TestBlock()
+    self._block = TestBlock(retain=False)
     with patch.object(TestBlock, 'start',
                       side_effect=RuntimeError('Process start failed')):
       with self.assertRaises(ExceptionGroup):
@@ -144,7 +146,7 @@ class TestRunParticipants(BlockTestBase):
   def test_launch_uses_prepared_snapshot(self) -> None:
     """Watchdog, exit waiting and cleanup share the original participants."""
 
-    self._block = TestBlock()
+    self._block = TestBlock(retain=False)
     Block.prepare_all(log_level=logging.CRITICAL)
     self.assertTrue(self._block.prepared.wait(3.0))
     blocks = Block._run_blocks

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from tests.support.blocks import with_failure_manager
+from tests.support.assertions import with_failure_manager
 
 from multiprocessing import Barrier, Event, Pipe
 from unittest.mock import Mock, call, patch
@@ -11,7 +11,7 @@ from crappy.blocks.vision.block import ConfigRequest
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
 from tests.support.vision import StubVisionBlock, VisionTestBase
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 
 
 class TestVisionBlockConfiguration(VisionTestBase):

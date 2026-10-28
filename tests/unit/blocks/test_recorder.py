@@ -8,7 +8,8 @@ from typing import Any
 from unittest.mock import patch
 from crappy.blocks.recorder import Recorder
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 class TestRecorder(BlockTestBase):

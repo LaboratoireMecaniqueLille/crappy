@@ -11,7 +11,9 @@ from crappy import Block
 from crappy.blocks.meta_block import block as block_module
 from crappy.links import Link
 
-from tests.support.blocks import BlockTestBase, TestBlock, exception_leaves
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
+from tests.support.assertions import exception_leaves
 
 
 class TestCleanup(BlockTestBase):

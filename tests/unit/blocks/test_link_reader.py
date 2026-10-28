@@ -3,7 +3,8 @@
 import logging
 from crappy.blocks.link_reader import LinkReader
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 class TestLinkReader(BlockTestBase):

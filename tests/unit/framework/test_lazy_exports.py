@@ -2,8 +2,7 @@
 
 """Public lazy exports, isolated imports, and string-based driver selection."""
 
-import subprocess
-import sys
+from tests.support.processes import run_python
 import textwrap
 from unittest import TestCase
 
@@ -25,8 +24,7 @@ def resolve_driver_in_worker(category, name, queue):
 
 class TestLazyExports(TestCase):
   def _run_script(self, script: str) -> None:
-    result = subprocess.run([sys.executable, '-B', '-c', textwrap.dedent(script)],
-                            capture_output=True, text=True, timeout=45)
+    result = run_python(['-B', '-c', textwrap.dedent(script)], timeout=45)
     if result.returncode == 77:
       self.skipTest('OpenCV is required for bundled resource wildcard exports')
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -355,7 +353,6 @@ class TestLazyExports(TestCase):
           for relative, _ in module._DRIVERS.values():
             assert importlib.util.resolve_name(relative, module.__name__) not in sys.modules
         ''')
-
 
   def test_driver_resolution_in_fresh_workers(self):
     self._run_script('''

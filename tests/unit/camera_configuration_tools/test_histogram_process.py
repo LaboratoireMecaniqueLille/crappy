@@ -2,6 +2,7 @@
 
 """The histogram worker is GUI-independent and belongs with the config tools."""
 
+from tests.support.processes import run_python
 import logging
 from inspect import signature, Parameter
 from multiprocessing import Event, Queue
@@ -192,7 +193,7 @@ class TestHistogramReporting(unittest.TestCase):
     self.assertIsNone(self.lifecycle._receiver)
 
   def test_calculation_failure_reaches_configuration_without_duplicate_exit(self):
-    from tests.support.blocks import exception_leaves
+    from tests.support.assertions import exception_leaves
 
     self.start_worker()
     self.img_in.put(('invalid request',))
@@ -214,7 +215,7 @@ class TestHistogramReporting(unittest.TestCase):
 
   def test_hard_exit_is_synthesized_after_draining(self):
     from crappy._exceptions import ProcessExitError
-    from tests.support.blocks import exception_leaves
+    from tests.support.assertions import exception_leaves
 
     self.start_worker(hard_exit=True)
     name, pid = self.worker.name, self.worker.pid
@@ -231,7 +232,7 @@ class TestHistogramReporting(unittest.TestCase):
     self.assertEqual(len(self.manager.snapshot()), 1)
 
   def test_large_cleanup_report_is_flushed_before_receiver_shutdown(self):
-    from tests.support.blocks import exception_leaves
+    from tests.support.assertions import exception_leaves
 
     self.start_worker(large_cleanup=True)
     self.img_in.put(('invalid request',))
@@ -256,8 +257,7 @@ class TestHistogramReporting(unittest.TestCase):
         script = ('from tests.unit.camera_configuration_tools.test_histogram_process '
                   'import exercise_histogram_context; '
                   f'exercise_histogram_context({method!r})')
-        result = subprocess.run([sys.executable, '-c', script], text=True,
-                                capture_output=True, timeout=45)
+        result = run_python(['-c', script], timeout=45)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 

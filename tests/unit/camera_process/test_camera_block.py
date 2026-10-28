@@ -14,8 +14,9 @@ from crappy._exceptions import StopRequested, ShutdownTimeoutError
 from crappy.blocks.camera import Camera
 import crappy.blocks.camera as camera_module
 
-from tests.support.camera_processes import CameraProcessTestBase, TestCameraProcess, TestLink
-from tests.support.blocks import exception_leaves, with_failure_manager
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestCameraProcess, TestLink
+from tests.support.assertions import exception_leaves, with_failure_manager
 
 
 class SlowFinishingCameraProcess(TestCameraProcess):

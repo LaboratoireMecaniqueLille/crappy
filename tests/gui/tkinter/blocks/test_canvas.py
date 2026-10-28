@@ -5,7 +5,7 @@ require_gui_group('tkinter')
 from tkinter import TclError
 from unittest.mock import patch
 import crappy.blocks.canvas as canvas_module
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
 
 from tests.gui._support.canvas import CanvasTests
 

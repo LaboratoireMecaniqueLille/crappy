@@ -6,7 +6,7 @@ from unittest.mock import patch
 from crappy.blocks.fake_machine import FakeMachine
 import crappy.blocks.fake_machine as fake_machine_module
 
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
 
 
 class TestFakeMachine(BlockTestBase):

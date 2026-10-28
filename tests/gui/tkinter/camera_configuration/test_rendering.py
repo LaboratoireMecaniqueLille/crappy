@@ -9,7 +9,8 @@ require_gui_group('tkinter')
 from re import fullmatch
 import numpy as np
 
-from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase, FakeTestCameraSimple
+from tests.support.cameras import FakeTestCameraSimple
+from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase
 
 
 class TestImageRendering(TkinterConfigTestCase):

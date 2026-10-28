@@ -1,9 +1,10 @@
-from tests.support.blocks import with_failure_manager
+from tests.support.assertions import with_failure_manager
 from unittest.mock import patch
 from matplotlib import pyplot as mpl_plt
 from crappy.blocks.grapher import Grapher
 import crappy.blocks.grapher as grapher_module
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 mpl_plt.switch_backend('Agg')
 
@@ -15,18 +16,8 @@ class GrapherTestBase(BlockTestBase):
     super().setUp()
     self._warning_patcher = patch.object(grapher_module, 'warn')
     self._warning_patcher.start()
+    self.addCleanup(self._warning_patcher.stop)
     self._graphers: list[Grapher] = list()
-    grapher_module.plt.close('all')
-
-  def tearDown(self) -> None:
-    """Closes plotting windows before resetting the Block class state."""
-
-    for grapher in self._graphers:
-      grapher.finish()
-    grapher_module.plt.close('all')
-    self._warning_patcher.stop()
-
-    super().tearDown()
 
   def _prepare_grapher(self,
                        *labels: tuple[str, str],
@@ -37,6 +28,7 @@ class GrapherTestBase(BlockTestBase):
 
     source = TestBlock()
     grapher = with_failure_manager(Grapher(*labels, **kwargs))
+    self.addCleanup(grapher.finish)
     link(source, grapher)
 
     with (patch.object(mpl_plt, 'show'),
@@ -55,6 +47,7 @@ class GrapherTestBase(BlockTestBase):
 
     source = TestBlock()
     grapher = with_failure_manager(Grapher(*labels, **kwargs))
+    self.addCleanup(grapher.finish)
     link(source, grapher)
     grapher.prepare()
 

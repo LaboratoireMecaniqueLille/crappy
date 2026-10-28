@@ -2,11 +2,10 @@
 
 """Automatic Block capture, phase tracking, and independent finalization."""
 
+from tests.support.processes import run_python
 import logging
 from multiprocessing import Barrier, Event, get_all_start_methods
 from queue import Queue
-import subprocess
-import sys
 from threading import Thread
 from time import monotonic, sleep
 from unittest.mock import Mock, patch
@@ -17,7 +16,8 @@ from crappy._exceptions import (GeneratorStop, LinkDataError,
                                 StartTimeout, StopRequested, T0NotSetError)
 from crappy._failure import FailureManager
 
-from tests.support.blocks import BlockTestBase, TestBlock
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
 
 
 class TestBlockHookFailure(TestBlock):
@@ -419,6 +419,5 @@ class TestPhaseCapture(BlockTestBase):
         script = ('from tests.unit.block.test_phase_capture import '
                   '_exercise_phase_context; '
                   f'_exercise_phase_context({method!r})')
-        result = subprocess.run([sys.executable, '-c', script],
-                                capture_output=True, text=True, timeout=45)
+        result = run_python(['-c', script], timeout=45)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

@@ -5,7 +5,8 @@ from crappy._exceptions import T0NotSetError
 from multiprocessing import Barrier, Event, Value, Queue
 import logging
 
-from tests.support.blocks import BlockTestBase, TestBlock
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
 
 
 class TestBlockT0(TestBlock):

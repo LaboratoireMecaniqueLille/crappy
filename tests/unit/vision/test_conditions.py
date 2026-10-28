@@ -1,6 +1,8 @@
 # coding: utf-8
 
-from tests.support.blocks import with_failure_manager
+from tests.support.processes import stop_thread
+from tests.support.resources import run_cleanups
+from tests.support.assertions import with_failure_manager
 
 from threading import Event as ThreadEvent, Thread
 from time import monotonic
@@ -19,18 +21,17 @@ class TestImageConditions(VisionTestBase):
   def setUp(self) -> None:
     super().setUp()
     self._receivers = list()
+    self.addCleanup(self._stop_receivers)
 
-  def tearDown(self) -> None:
-    # Stop test threads before the shared-memory buffers are released.
-    try:
-      for block, thread in self._receivers:
+  def _stop_receivers(self):
+    def stop(block, thread):
+      def request():
         block._stop_event.set()
         with block.img_condition:
           block.img_condition.notify_all()
-        thread.join(timeout=1.0)
-        self.assertFalse(thread.is_alive())
-    finally:
-      super().tearDown()
+      stop_thread(thread, request)
+    run_cleanups(*(lambda owner=owner, thread=thread: stop(owner, thread)
+                   for owner, thread in self._receivers))
 
   def prepare_graph(self, source_count=1, consumer_count=1):
     """Prepares real shared buffers for a small fan-in/fan-out graph."""

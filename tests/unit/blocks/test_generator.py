@@ -11,7 +11,7 @@ from crappy._exceptions import GeneratorStop
 from crappy.blocks.generator import Generator
 from crappy.blocks.generator_path.meta_path import Path
 
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
 
 
 Path.classes.pop('GeneratorUnitPath', None)

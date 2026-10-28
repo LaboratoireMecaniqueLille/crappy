@@ -1,12 +1,11 @@
 # coding: utf-8
 
+from tests.support.processes import run_python
 import logging
 from io import StringIO
 from multiprocessing import Event, Queue, get_all_start_methods
 from pathlib import Path
 from queue import Empty, Queue as LocalQueue
-import subprocess
-import sys
 from tempfile import TemporaryDirectory, TemporaryFile
 from threading import Event as ThreadEvent, Thread
 from types import SimpleNamespace
@@ -19,7 +18,8 @@ from crappy.blocks.camera_processes.camera_process import CameraProcess
 from crappy.tool.camera_config.config_tools.histogram_process import HistogramProcess
 from crappy.tool.image_processing.video_extenso.tracker import Tracker
 
-from tests.support.blocks import BlockTestBase, TestBlock
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
 
 
 class TestBlockLoggingProducer(TestBlock):
@@ -662,6 +662,5 @@ class TestLoggingLifecycle(BlockTestBase):
         script = ('from tests.unit.block.test_logging_lifecycle import '
                   '_exercise_logging_context; '
                   f'_exercise_logging_context({method!r})')
-        result = subprocess.run([sys.executable, '-c', script],
-                                capture_output=True, text=True, timeout=40)
+        result = run_python(['-c', script], timeout=40)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

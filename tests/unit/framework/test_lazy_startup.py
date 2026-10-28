@@ -1,12 +1,11 @@
 """Selection completes before spawning; process-owned setup stays in workers."""
 
+from tests.support.processes import run_python
 import importlib
 import logging
 import multiprocessing as mp
 import os
 import pickle
-import subprocess
-import sys
 import textwrap
 import warnings
 from collections.abc import Mapping
@@ -21,7 +20,9 @@ from crappy.blocks.vision.block import ConfigRequest
 from crappy._exceptions import OptionalDependencyError
 from crappy._global import OptionalModule
 from crappy.tool.camera_config import resolve_configurator
-from tests.support.blocks import BlockTestBase, TestBlock, exception_leaves
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
+from tests.support.assertions import exception_leaves
 from tests.unit.framework.lazy_startup_fixtures import StartupActuator, StartupCamera, StartupConfig, StartupConsumer, StartupInOut, StartupProcess
 
 
@@ -328,9 +329,7 @@ class TestWorkerImportResolution(TestCase):
           with self.subTest(method=method, legacy=legacy, collection=collection):
             script = ('from tests.unit.framework.lazy_startup_fixtures import run_pipeline; '
                       f'run_pipeline({method!r}, {legacy!r}, {collection!r})')
-            result = subprocess.run([sys.executable, '-B', '-c', script],
-                                    capture_output=True, text=True, timeout=45,
-                                    env=dict(os.environ, QT_QPA_PLATFORM='offscreen'))
+            result = run_python(['-B', '-c', script], timeout=45, env=dict(os.environ, QT_QPA_PLATFORM='offscreen'))
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_scalar_driver_owners_under_all_supported_start_methods(self):
@@ -339,8 +338,7 @@ class TestWorkerImportResolution(TestCase):
         with self.subTest(method=method, collection=collection):
           script = ('from tests.unit.framework.lazy_startup_fixtures import run_scalar_owners; '
                     f'run_scalar_owners({method!r}, {collection!r})')
-          result = subprocess.run([sys.executable, '-B', '-c', script],
-                                  capture_output=True, text=True, timeout=45)
+          result = run_python(['-B', '-c', script], timeout=45)
           self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_disabled_sources_do_not_resolve_configuration_dependencies(self):
@@ -363,8 +361,7 @@ class TestWorkerImportResolution(TestCase):
         if isinstance(block, CameraSource):
           block.resolve_config_requests()
     '''
-    result = subprocess.run([sys.executable, '-B', '-c', textwrap.dedent(script)],
-                            capture_output=True, text=True, timeout=20)
+    result = run_python(['-B', '-c', textwrap.dedent(script)], timeout=20)
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_nested_backend_failure_aborts_before_readiness_or_frame_receive(self):
@@ -422,9 +419,7 @@ class TestWorkerImportResolution(TestCase):
             import tkinter
             assert tkinter._default_root is None
         '''
-        result = subprocess.run([sys.executable, '-B', '-c', textwrap.dedent(script)],
-                                capture_output=True, text=True, timeout=25,
-                                env=dict(os.environ, QT_QPA_PLATFORM='offscreen'))
+        result = run_python(['-B', '-c', textwrap.dedent(script)], timeout=25, env=dict(os.environ, QT_QPA_PLATFORM='offscreen'))
         if result.returncode == 77:
           self.skipTest('The selected optional configuration toolkit is unavailable')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -450,10 +445,9 @@ class TestWorkerImportResolution(TestCase):
         self.assertIsInstance(error, OptionalDependencyError)
         self.assertIs(error.__cause__, missing)
 
-
   def test_grapher_sets_binding_before_import_and_restores_opencv_plugin_path(self):
     module = importlib.import_module('crappy.blocks.grapher')
-    from tests.support.blocks import with_failure_manager
+    from tests.support.assertions import with_failure_manager
     graph = with_failure_manager(module.Grapher(('t', 'x'), backend='PyQt6'))
     graph.inputs.append(Mock())
     backend = Mock()

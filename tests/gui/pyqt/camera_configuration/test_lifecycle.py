@@ -9,7 +9,7 @@ require_gui_group('pyqt')
 from unittest.mock import Mock, patch
 from crappy._exceptions import StopRequested
 from crappy._failure import FailureManager
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 from tests.support.cameras import assert_failure
 
 from multiprocessing import Event, Queue

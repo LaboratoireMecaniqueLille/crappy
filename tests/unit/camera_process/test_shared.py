@@ -5,7 +5,8 @@ from inspect import signature, Parameter
 from unittest.mock import MagicMock
 import numpy as np
 
-from tests.support.camera_processes import CameraProcessTestBase, TestLink, TestCameraProcess
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestLink, TestCameraProcess
 
 
 class TestSharedObjects(CameraProcessTestBase):

@@ -4,7 +4,7 @@ require_gui_group('tkinter')
 
 from tkinter import TclError
 from unittest.mock import patch
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
 
 from tests.gui._support.button import ButtonTests
 

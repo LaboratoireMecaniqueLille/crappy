@@ -8,8 +8,8 @@ import crappy.blocks.camera_processes.dis_correl as dis_correl_module
 from crappy.blocks.camera_processes.dis_correl import DISCorrelProcess
 from crappy.tool.camera_config import Box, SpotsBoxes
 
-from tests.support.camera_processes import (CameraProcessTestBase,
-                                                           TestLink)
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestLink
 
 
 class DummyDISCorrelTool:

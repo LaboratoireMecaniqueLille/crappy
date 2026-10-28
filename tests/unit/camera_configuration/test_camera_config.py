@@ -6,7 +6,7 @@ import unittest
 import logging
 from multiprocessing import current_process
 from inspect import signature, Parameter
-from unittest.mock import patch, sentinel, Mock
+from unittest.mock import sentinel, Mock
 
 import numpy as np
 
@@ -15,7 +15,7 @@ from crappy.camera.meta_camera import Camera
 from crappy._failure import FailureManager
 from crappy.tool.camera_config.base import CameraConfig
 from crappy.tool.camera_config.factory import create_configurator
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 from tests.support.cameras import DummyCamera
 from tests.unit.camera_configuration._fixtures import RecordingCore
 

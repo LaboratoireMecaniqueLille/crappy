@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from tests.support.processes import run_python
 from tests.support.gui import require_gui_group
 
 require_gui_group('display')
@@ -8,10 +9,7 @@ from tests.support.paths import PROJECT_ROOT
 
 import logging
 import os
-from pathlib import Path
 from platform import system
-import subprocess
-import sys
 import textwrap
 import unittest
 from unittest.mock import Mock, patch
@@ -511,12 +509,7 @@ class TestImageDisplayer(VisionTestBase):
           displayer._finish_mpl()
           assert figure.number not in module.plt.get_fignums()
     ''')
-    result = subprocess.run([sys.executable, '-c', code],
-                            cwd=PROJECT_ROOT,
-                            env=os.environ.copy(),
-                            capture_output=True,
-                            text=True,
-                            timeout=20)
+    result = run_python(['-c', code], cwd=PROJECT_ROOT, env=os.environ.copy(), timeout=20)
     self.assertEqual(result.returncode, 0,
                      f'----- stdout -----\n{result.stdout}\n'
                      f'----- stderr -----\n{result.stderr}')

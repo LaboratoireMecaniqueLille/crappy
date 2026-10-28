@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from tests.support.processes import run_python
 from dataclasses import dataclass
 from inspect import signature, Parameter
 from multiprocessing import Event
@@ -10,7 +11,7 @@ import numpy as np
 
 from crappy._failure import FailureManager
 from crappy._exceptions import ProcessExitError, ShutdownTimeoutError
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 
 import crappy.tool.image_processing.video_extenso.tracker as tracker_module
 import crappy.tool.image_processing.video_extenso.video_extenso as ve_module
@@ -864,8 +865,7 @@ class TestTrackerReporting(TestCase):
       with self.subTest(method=method):
         script = ('from tests.unit.image_processing.test_video_extenso import '
                   f'exercise_tracker_context; exercise_tracker_context({method!r})')
-        result = subprocess.run([sys.executable, '-c', script], text=True,
-                                capture_output=True, timeout=45)
+        result = run_python(['-c', script], timeout=45)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 

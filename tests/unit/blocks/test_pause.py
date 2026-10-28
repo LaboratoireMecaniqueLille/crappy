@@ -8,7 +8,8 @@ from unittest.mock import Mock, call, patch
 from crappy.blocks.pause import Pause
 import crappy.blocks.pause as pause_module
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 class TestPause(BlockTestBase):

@@ -14,7 +14,7 @@ from crappy.links import Link
 from crappy.links import link_graph
 
 from tests.unit.blocks.test_gui_backends import GUI_BLOCKS, GUIBlockTestBase
-from tests.support.blocks import exception_leaves, with_failure_manager
+from tests.support.assertions import exception_leaves, with_failure_manager
 from tests.support.blocks import TestBlock
 
 
@@ -129,7 +129,6 @@ class TestSoftwareCleanup(GUIBlockTestBase):
     process._thread_target()
     self.assertTrue(process._stop_thread)
 
-
   def test_displayer_joins_thread_after_window_failure(self) -> None:
     """A failing display backend cannot skip overlay-thread cleanup."""
 
@@ -167,7 +166,6 @@ class TestSoftwareCleanup(GUIBlockTestBase):
         process.init()
     process.finish()
     thread.join.assert_not_called()
-
 
   def test_link_closes_both_endpoints_and_retries_only_failures(self) -> None:
     """Links release both endpoints without repeating a successful close."""

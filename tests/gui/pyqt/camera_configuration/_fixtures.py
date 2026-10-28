@@ -16,6 +16,7 @@ import numpy as np
 from crappy.tool.camera_config.pyqt import PyQtCameraConfig
 from crappy._failure import FailureManager
 from tests.support.cameras import DummyCamera
+from tests.support.resources import close_queue
 
 
 class PreviewCamera(DummyCamera):
@@ -39,7 +40,6 @@ class PyQtConfigTestCase(unittest.TestCase):
     self.log_queue = Queue()
     self.addCleanup(self._close_log_queue)
     self.configs = []
-    self.addCleanup(self._close_configurations)
 
   def make_config(self, configurator=PyQtCameraConfig, *args,
                   histogram_process: bool = False):
@@ -48,6 +48,7 @@ class PyQtConfigTestCase(unittest.TestCase):
     manager = FailureManager('test configuration', 'configuration')
     config = configurator(self.camera, self.log_queue, None, 30, None,
                           manager, *args)
+    self.addCleanup(config.stop)
     if not histogram_process:
       # Only the end-to-end histogram test needs to spawn an actual worker
       # Spec the class to avoid reading an unstarted process's sentinel property
@@ -58,14 +59,5 @@ class PyQtConfigTestCase(unittest.TestCase):
     self.configs.append(config)
     return config
 
-  def _close_configurations(self) -> None:
-    """Close windows even when a test or its setup fails."""
-
-    for config in reversed(self.configs):
-      config.stop()
-
-  def _close_log_queue(self) -> None:
-    """Release the logging queue without waiting for its feeder thread."""
-
-    self.log_queue.cancel_join_thread()
-    self.log_queue.close()
+  def _close_log_queue(self):
+    close_queue(self.log_queue)

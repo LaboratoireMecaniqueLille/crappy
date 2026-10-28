@@ -3,7 +3,8 @@
 from crappy._exceptions import LinkDataError
 from crappy.tool.camera_config import Box
 
-from tests.support.camera_processes import CameraProcessTestBase, TestLink, TestCameraProcess
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestLink, TestCameraProcess
 
 
 class TestLinks(CameraProcessTestBase):

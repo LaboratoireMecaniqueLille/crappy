@@ -1,10 +1,11 @@
 # coding: utf-8
 
 from typing import Any
-import numpy as np
 from crappy.blocks.camera import Camera
 
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
+from tests.support.images import zero_frame
+from tests.support.resources import preserve_mapping
 
 
 class CameraWrapperTestBase(BlockTestBase):
@@ -14,24 +15,17 @@ class CameraWrapperTestBase(BlockTestBase):
   def camera_kwargs(config: bool = False) -> dict[str, Any]:
     """Returns deterministic Camera arguments without requiring hardware."""
 
-    def image_generator(_, __) -> np.ndarray:
-      """Returns a small deterministic greyscale image."""
-
-      return np.zeros((12, 16), dtype=np.uint8)
-
     return {
       'camera': 'unused',
       'config': config,
-      'image_generator': image_generator,
+      'image_generator': zero_frame,
       'img_shape': (12, 16),
       'img_dtype': 'uint8',
     }
 
-  def tearDown(self) -> None:
-    """Clears Camera-specific state in addition to common Block state."""
-
-    Camera.cam_count.clear()
-    super().tearDown()
+  def setUp(self):
+    super().setUp()
+    preserve_mapping(self, Camera.cam_count)
 
 
 class RecordingProcess:

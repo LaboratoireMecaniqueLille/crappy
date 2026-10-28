@@ -3,7 +3,6 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import csv
-import unittest
 from time import monotonic
 
 import numpy as np
@@ -11,8 +10,8 @@ import numpy as np
 import crappy.blocks.camera_processes.record as record_module
 from crappy.blocks.camera_processes.record import ImageSaver
 
-from tests.support.camera_processes import (CameraProcessTestBase,
-                                                           TestLink)
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestLink
 
 
 class TestImageSaver(CameraProcessTestBase):

@@ -6,7 +6,8 @@ from crappy.links import link_graph
 import logging
 from multiprocessing import Event
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 class TestClassAPI(BlockTestBase):

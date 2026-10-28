@@ -2,10 +2,9 @@
 
 """Truthful optional-dependency diagnostics and their reporting transport."""
 
+from tests.support.processes import run_python
 from multiprocessing import get_all_start_methods, get_context
 import pickle
-import subprocess
-import sys
 import textwrap
 from types import ModuleType, SimpleNamespace
 from unittest import TestCase
@@ -15,7 +14,7 @@ from crappy._collection import CollectionEntry, load_collection_class
 from crappy._exceptions import OptionalDependencyError
 from crappy._failure import FailureManager, FailureReport
 from crappy._global import OptionalModule
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 
 
 def failing_import(_):
@@ -324,8 +323,7 @@ class TestOptionalModule(TestCase):
         else:
           raise AssertionError('Unavailable dependency was silently accepted')
     ''')
-    result = subprocess.run([sys.executable, '-c', script], text=True,
-                            capture_output=True, timeout=30)
+    result = run_python(['-c', script], timeout=30)
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_import_causes_and_tracebacks_cross_process_boundaries(self):
@@ -335,8 +333,7 @@ class TestOptionalModule(TestCase):
             'from tests.unit.framework.test_optional_dependencies '
             'import TestOptionalModule; '
             f'TestOptionalModule()._check_import_context({method!r})')
-        result = subprocess.run([sys.executable, '-c', script], text=True,
-                                capture_output=True, timeout=40)
+        result = run_python(['-c', script], timeout=40)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def _check_import_context(self, method):

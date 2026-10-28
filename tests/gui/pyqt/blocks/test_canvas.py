@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch, sentinel
 from crappy.blocks.canvas import Canvas
 import crappy.blocks.canvas as canvas_module
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
 
 from tests.gui._support.canvas import CanvasTests
 

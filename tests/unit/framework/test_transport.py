@@ -2,13 +2,12 @@
 
 """Queue transfer and source-only reporting, without hardware dependencies."""
 
+from tests.support.processes import run_python
 from dataclasses import replace
 from io import StringIO
 from multiprocessing import get_all_start_methods, get_context
 import pickle
 from queue import Queue
-import subprocess
-import sys
 from threading import Event, Thread
 from time import monotonic, sleep
 from unittest import TestCase
@@ -334,8 +333,7 @@ class TestFailureTransport(TestCase):
               '_exercise_context; _exercise_context(sys.argv[1])')
     for method in get_all_start_methods():
       with self.subTest(method=method):
-        result = subprocess.run([sys.executable, '-c', script, method],
-                                capture_output=True, text=True, timeout=40)
+        result = run_python(['-c', script, method], timeout=40)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_killed_writer_shutdown_in_available_start_methods(self):
@@ -343,6 +341,5 @@ class TestFailureTransport(TestCase):
               '_exercise_killed_writer; _exercise_killed_writer(sys.argv[1])')
     for method in get_all_start_methods():
       with self.subTest(method=method):
-        result = subprocess.run([sys.executable, '-c', script, method],
-                                capture_output=True, text=True, timeout=25)
+        result = run_python(['-c', script, method], timeout=25)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

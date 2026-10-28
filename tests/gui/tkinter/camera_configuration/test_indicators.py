@@ -11,7 +11,8 @@ from math import log2, ceil
 from platform import system
 from unittest.mock import patch
 
-from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase, FakeTestCameraSimple
+from tests.support.cameras import FakeTestCameraSimple
+from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase
 import crappy.tool.camera_config.tkinter.camera_config as camera_config_module
 
 

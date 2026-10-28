@@ -4,7 +4,8 @@ from multiprocessing import current_process
 from platform import system
 from crappy.blocks.camera_processes.camera_process import CameraProcess
 
-from tests.support.camera_processes import CameraProcessTestBase, TestCameraProcess
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestCameraProcess
 
 
 class TestClassAPI(CameraProcessTestBase):

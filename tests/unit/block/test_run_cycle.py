@@ -4,7 +4,8 @@ from crappy import Block
 from crappy._exceptions import SchedulerStop
 from multiprocessing import Barrier, Event, Value, Queue, Pipe
 
-from tests.support.blocks import BlockTestBase, TestBlock
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
 
 
 class TestBlockRaisePrepare(TestBlock):

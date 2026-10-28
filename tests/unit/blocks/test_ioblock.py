@@ -10,8 +10,9 @@ import crappy.blocks.ioblock as ioblock_module
 from crappy.blocks.ioblock import IOBlock
 from crappy.inout.meta_inout import InOut
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
-from tests.support.blocks import exception_leaves, with_failure_manager
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
+from tests.support.assertions import exception_leaves, with_failure_manager
 
 
 InOut.classes.pop('IOBlockTestInOut', None)

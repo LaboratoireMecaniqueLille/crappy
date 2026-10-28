@@ -4,7 +4,8 @@
 
 from time import time
 from contextlib import contextmanager
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
+from tests.support.images import gradient_image, spots_image
 from typing import Any
 import numpy as np
 
@@ -47,10 +48,7 @@ class FakeTestCameraSimple(Camera):
     """Generates a grey-level image containing a gradient from the specified
     minimum to the specified maximum."""
 
-    x, y = np.mgrid[0:240, 0:320]
-    ret = (self._min + (x + y) / np.max(x + y) *
-           (self._max - self._min)).astype(np.uint8)
-    return time(), ret
+    return time(), gradient_image(self._min, self._max)
 
 
 class FakeTestCameraSpots(Camera):
@@ -64,13 +62,7 @@ class FakeTestCameraSpots(Camera):
   def get_image(self) -> tuple[float, np.ndarray]:
     """Generates a white image with four round black spots."""
 
-    ret = np.full((240, 320), 255, dtype=np.uint8)
-    y, x = np.ogrid[:ret.shape[0], :ret.shape[1]]
-    for x_center, y_center in ((80, 80), (80, 160),
-                               (160, 80), (160, 160)):
-      ret[(x - x_center) ** 2 + (y - y_center) ** 2 <= 20 ** 2] = 0
-
-    return time(), ret
+    return time(), spots_image()
 
 
 class FakeTestCameraParams(Camera):

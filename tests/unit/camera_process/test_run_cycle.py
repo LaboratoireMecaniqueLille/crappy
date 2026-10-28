@@ -5,7 +5,8 @@ from unittest.mock import Mock, patch
 
 import crappy.blocks.camera_processes.camera_process as camera_process_module
 
-from tests.support.camera_processes import CameraProcessTestBase, TestCameraProcess
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestCameraProcess
 
 
 class TestRunCycle(CameraProcessTestBase):

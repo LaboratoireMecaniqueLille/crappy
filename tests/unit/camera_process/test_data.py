@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.support.processes import stop_thread
+from tests.support.resources import run_cleanups
 import numpy as np
 from threading import Event as ThreadEvent, Thread
 from time import monotonic
@@ -7,7 +9,8 @@ from unittest.mock import MagicMock, patch
 
 from crappy._exceptions import StopRequested
 
-from tests.support.camera_processes import CameraProcessTestBase, TestCameraProcess
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestCameraProcess
 
 
 class TestData(CameraProcessTestBase):
@@ -16,17 +19,17 @@ class TestData(CameraProcessTestBase):
   def setUp(self) -> None:
     super().setUp()
     self._receivers = list()
+    self.addCleanup(self._stop_receivers)
 
-  def tearDown(self) -> None:
-    try:
-      for process, thread in self._receivers:
+  def _stop_receivers(self):
+    def stop(process, thread):
+      def request():
         process._stop_event.set()
         with process._condition:
           process._condition.notify_all()
-        thread.join(timeout=1.0)
-        self.assertFalse(thread.is_alive())
-    finally:
-      super().tearDown()
+      stop_thread(thread, request)
+    run_cleanups(*(lambda owner=owner, thread=thread: stop(owner, thread)
+                   for owner, thread in self._receivers))
 
   def start_receive(self, timeout=5.0):
     """Signals entry into a real timed Condition wait in a test thread."""

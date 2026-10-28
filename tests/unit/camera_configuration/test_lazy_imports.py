@@ -2,10 +2,9 @@
 
 """Lazy exports and backend selection without constructing GUI windows."""
 
+from tests.support.processes import run_python
 from collections.abc import Mapping
 import pickle
-import subprocess
-import sys
 import textwrap
 from types import SimpleNamespace
 import unittest
@@ -109,8 +108,7 @@ class TestLazyConfiguratorMapping(unittest.TestCase):
 
 class TestLazyConfigurationImports(unittest.TestCase):
   def run_script(self, script):
-    result = subprocess.run([sys.executable, '-B', '-c', textwrap.dedent(script)],
-                            capture_output=True, text=True, timeout=30)
+    result = run_python(['-B', '-c', textwrap.dedent(script)], timeout=30)
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_root_and_geometry_access_do_not_import_configuration_features(self):

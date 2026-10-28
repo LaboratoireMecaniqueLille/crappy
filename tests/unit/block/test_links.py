@@ -7,7 +7,9 @@ from crappy.links import GraphStructureError, ImageLink, link_graph
 from itertools import chain
 from multiprocessing import Barrier, Event, Value, Queue
 
-from tests.support.blocks import BlockTestBase, TestBlock, exception_leaves, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
+from tests.support.assertions import exception_leaves
 
 
 class TestBlockLink(TestBlock):

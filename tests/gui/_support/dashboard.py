@@ -1,4 +1,4 @@
-from tests.support.blocks import with_failure_manager
+from tests.support.assertions import with_failure_manager
 from unittest.mock import patch
 import numpy as np
 import logging
@@ -19,14 +19,6 @@ class DashboardTests:
     self.addCleanup(patcher.stop)
     self._dashboards: list[Dashboard] = list()
 
-  def tearDown(self) -> None:
-    """Closes windows before resetting the Block class state."""
-
-    for dashboard in self._dashboards:
-      dashboard.finish()
-
-    super().tearDown()
-
   def _prepare_dashboard(self, labels, **kwargs) -> tuple[Dashboard,
                                                           TestBlock]:
     """Creates a linked Dashboard and prepares its GUI."""
@@ -34,6 +26,7 @@ class DashboardTests:
     kwargs.setdefault('backend', self._backend)
     source = TestBlock()
     dashboard = with_failure_manager(Dashboard(labels, **kwargs))
+    self.addCleanup(dashboard.finish)
     link(source, dashboard)
 
     self._dashboards.append(dashboard)
@@ -79,6 +72,7 @@ class DashboardTests:
     """Checks that a Dashboard without input Links fails early."""
 
     dashboard = with_failure_manager(Dashboard('a'))
+    self.addCleanup(dashboard.finish)
 
     with self.assertRaises(IOError):
       dashboard.prepare()

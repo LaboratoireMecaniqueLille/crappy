@@ -7,8 +7,9 @@ from unittest.mock import patch
 from crappy.blocks.machine import ActuatorInstance, Machine
 import crappy.blocks.machine as machine_module
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
-from tests.support.blocks import exception_leaves, with_failure_manager
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
+from tests.support.assertions import exception_leaves, with_failure_manager
 
 
 class TrackingActuator:

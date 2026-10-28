@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from tests.support.blocks import with_failure_manager
+from tests.support.assertions import with_failure_manager
 
 from multiprocessing import Event, RLock, Value
 from multiprocessing.shared_memory import SharedMemory
@@ -14,7 +14,7 @@ import crappy.blocks.vision.block as block_module
 from crappy.links import ImageLink
 
 from tests.support.vision import StubVisionBlock, VisionTestBase
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 
 
 class TestVisionBlockSharedMemory(VisionTestBase):

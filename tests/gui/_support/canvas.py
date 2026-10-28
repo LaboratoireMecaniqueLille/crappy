@@ -1,4 +1,4 @@
-from tests.support.blocks import with_failure_manager
+from tests.support.assertions import with_failure_manager
 from multiprocessing import Value
 from unittest.mock import patch
 import crappy
@@ -29,13 +29,6 @@ class CanvasTests:
     self._canvases: list[Canvas] = list()
     self._image = crappy.resources.paths['pad']
 
-  def tearDown(self) -> None:
-    """Close both native and Matplotlib-backed windows before Block.reset."""
-
-    for canvas in self._canvases:
-      canvas.finish()
-    super().tearDown()
-
   def _prepare_canvas(self, **kwargs) -> tuple[Canvas, TestBlock]:
     """Create a linked Canvas using the backend selected by the test class."""
 
@@ -43,6 +36,7 @@ class CanvasTests:
     kwargs.setdefault('backend', self._backend)
     source = TestBlock()
     canvas = with_failure_manager(Canvas(**kwargs))
+    self.addCleanup(canvas.finish)
     canvas._instance_t0 = Value('d', self._t0)
     link(source, canvas)
     self._canvases.append(canvas)

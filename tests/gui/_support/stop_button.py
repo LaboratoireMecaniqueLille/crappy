@@ -1,4 +1,4 @@
-from tests.support.blocks import with_failure_manager
+from tests.support.assertions import with_failure_manager
 import logging
 from multiprocessing import Event
 from unittest.mock import patch
@@ -18,19 +18,12 @@ class StopButtonTests:
     self.addCleanup(patcher.stop)
     self._buttons: list[StopButton] = list()
 
-  def tearDown(self) -> None:
-    """Closes windows before resetting the Block class state."""
-
-    for button in self._buttons:
-      button.finish()
-
-    super().tearDown()
-
   def _prepare_stop_button(self, **kwargs) -> StopButton:
     """Creates a StopButton and prepares its GUI."""
 
     kwargs.setdefault('backend', self._backend)
     button = with_failure_manager(StopButton(**kwargs))
+    self.addCleanup(button.finish)
     self._buttons.append(button)
     button.prepare()
     if self._backend == 'tkinter':
@@ -61,6 +54,7 @@ class StopButtonTests:
     """Checks StopButton-specific initialization."""
 
     button = with_failure_manager(StopButton(freq=None, display_freq=True, debug=True))
+    self.addCleanup(button.finish)
 
     self.assertIsNone(button.freq)
     self.assertTrue(button.display_freq)
@@ -137,6 +131,7 @@ class StopButtonTests:
     """Checks that finish accepts a StopButton without a window."""
 
     button = with_failure_manager(StopButton())
+    self.addCleanup(button.finish)
 
     button.finish()
 

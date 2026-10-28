@@ -2,10 +2,10 @@ from tests.support.gui import require_gui_group
 
 require_gui_group('pyqt')
 
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 from unittest.mock import patch
 import crappy.blocks.button as button_module
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
 
 from tests.gui._support.button import ButtonTests
 

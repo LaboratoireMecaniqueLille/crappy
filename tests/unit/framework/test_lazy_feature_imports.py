@@ -2,10 +2,9 @@
 
 """Optional rendering and GUI dependencies load only for selected features."""
 
+from tests.support.processes import run_python
 import os
 import multiprocessing as mp
-import subprocess
-import sys
 import textwrap
 from unittest import TestCase
 
@@ -13,9 +12,7 @@ from unittest import TestCase
 class TestLazyFeatureImports(TestCase):
   def _run_script(self, script: str) -> None:
     environment = dict(os.environ, QT_QPA_PLATFORM='offscreen')
-    result = subprocess.run([sys.executable, '-B', '-c', textwrap.dedent(script)],
-                            capture_output=True, text=True, timeout=45,
-                            env=environment)
+    result = run_python(['-B', '-c', textwrap.dedent(script)], timeout=45, env=environment)
     if result.returncode == 77:
       self.skipTest('The selected optional backend is unavailable')
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -51,9 +48,7 @@ class TestLazyFeatureImports(TestCase):
   def test_numeric_and_numpy_recording_pipelines_need_no_optional_stack(self):
     for method in mp.get_all_start_methods():
       with self.subTest(method=method):
-        result = subprocess.run(
-          [sys.executable, '-B', '-m', 'tests.unit.framework.lazy_numeric_pipeline', method],
-          capture_output=True, text=True, timeout=45)
+        result = run_python(['-B', '-m', 'tests.unit.framework.lazy_numeric_pipeline', method], timeout=45)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_graph_rendering_resolves_once_and_preserves_output(self):

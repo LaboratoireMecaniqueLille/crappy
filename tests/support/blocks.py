@@ -1,35 +1,11 @@
-# coding: utf-8
+"""Observable Block and Link doubles; fixture ownership lives separately."""
+
+from collections.abc import Sequence
+from multiprocessing import Event, Queue, Value
+from typing import Any
 
 from crappy import Block
-from crappy.links import link_graph
 from crappy.links.link import Link, ModifierType
-from typing import Any
-from collections.abc import Sequence
-import logging
-from time import monotonic, sleep
-from typing import Callable
-import unittest
-from multiprocessing import Event, Value, Queue
-from unittest.mock import Mock
-
-from crappy._failure import FailureManager
-
-
-def with_failure_manager(component: Any) -> Any:
-  """Installs run-owned state for tests that call lifecycle hooks directly."""
-
-  component._failure_manager = FailureManager(component.name, 'main')
-  component._failure_manager._logger = Mock()
-  return component
-
-
-def exception_leaves(error: BaseException) -> tuple[BaseException, ...]:
-  """Returns group leaves for assertions without traversing causes."""
-
-  if isinstance(error, BaseExceptionGroup):
-    return tuple(leaf for member in error.exceptions
-                 for leaf in exception_leaves(member))
-  return (error,)
 
 
 class TestLink(Link):
@@ -135,11 +111,16 @@ class TestBlock(Block):
   like at that moment.
   """
 
-  def __init__(self, stop: bool = True) -> None:
+  test_instances = []
+  test_queues = []
+
+  def __init__(self, stop: bool = True, *, retain: bool = True) -> None:
     """Initializes the monitoring attributes.
 
     Args:
       stop: If :obj:`True`, the Block stops itself during the first loop.
+      retain: Keep a fixture-owned reference until cleanup. Disable only when
+        testing garbage collection or production ownership of a Block.
     """
 
     super().__init__()
@@ -157,7 +138,11 @@ class TestBlock(Block):
     self.n_loops = Value('i', 0)
     # Standalone run-cycle tests also need the flag normally set by prepare_all.
     self._main_entered = Value('b', 0, lock=False)
-    self._failure_queue = Queue()
+    self.test_failure_queue = Queue()
+    self._failure_queue = self.test_failure_queue
+    TestBlock.test_queues.append(self.test_failure_queue)
+    if retain:
+      TestBlock.test_instances.append(self)
 
     self.loops = Value('i', 0)
 
@@ -203,128 +188,3 @@ class TestBlock(Block):
     self.n_loops.value = self._n_loops
 
     self.finished.set()
-
-
-class BlockTestBase(unittest.TestCase):
-  """Base test class shared by the Block unit tests.
-
-  It mainly ensures that no stray Block process survives a test and that the
-  class-level state of Block is fully reset after each run.
-  """
-
-  def __init__(self, *args, **kwargs) -> None:
-    """Initializes the parent test case and the tracked Block reference."""
-
-    super().__init__(*args, **kwargs)
-
-    self._block: TestBlock | None = None
-
-  def setUp(self) -> None:
-    """Give every test an isolated, quiet Crappy logger."""
-
-    logger = logging.getLogger('crappy')
-    original_state = (list(logger.handlers), logger.level, logger.disabled,
-                      logger.propagate, Block.logger,
-                      Block.log_level,
-                      logging.root.manager.disable)
-
-    logger.handlers = list()
-    logger.setLevel(logging.CRITICAL)
-    logger.disabled = False
-    logger.propagate = False
-    Block.logger = None
-    Block.log_level = logging.CRITICAL
-
-    def restore_logging() -> None:
-      (original_handlers, level, disabled, propagate, block_logger,
-       block_log_level, disable) = original_state
-      for handler in logger.handlers:
-        if handler not in original_handlers:
-          handler.close()
-      logger.handlers = original_handlers
-      logger.setLevel(level)
-      logger.disabled = disabled
-      logger.propagate = propagate
-      Block.logger = block_logger
-      Block.log_level = block_log_level
-      logging.disable(disable)
-
-    self.addCleanup(restore_logging)
-    self._received_failures = dict()
-
-  def failures(self, block: TestBlock) -> tuple[BaseException, ...]:
-    """Receives standalone child reports instead of consulting legacy flags."""
-
-    if block.pid is not None:
-      manager = self._received_failures.setdefault(
-          block, FailureManager('main', 'main'))
-      manager._logger = Mock()
-      manager.receive((block._failure_queue,))
-    else:
-      manager = block._failure_manager
-    try:
-      manager.raise_if_failed('test failures')
-    except BaseExceptionGroup as errors:
-      return exception_leaves(errors)
-    return ()
-
-  def wait_until(self,
-                 predicate: Callable[[], bool],
-                 timeout: float = 3.0) -> bool:
-    """Poll a cross-process condition up to a deadline."""
-
-    deadline = monotonic() + timeout
-    while monotonic() < deadline:
-      if predicate():
-        return True
-      sleep(0.005)
-    return predicate()
-
-  def wait_until_stable(self,
-                        value_getter: Callable[[], int],
-                        stable_for: float = 0.05,
-                        timeout: float = 3.0) -> int:
-    """Return once a shared counter has stopped changing for a short period."""
-
-    deadline = monotonic() + timeout
-    last_value = value_getter()
-    unchanged_since = monotonic()
-
-    while monotonic() < deadline:
-      value = value_getter()
-      now = monotonic()
-      if value != last_value:
-        last_value = value
-        unchanged_since = now
-      elif now - unchanged_since >= stable_for:
-        return value
-      sleep(0.005)
-
-    self.fail("shared value did not stabilize before the deadline")
-
-  def tearDown(self) -> None:
-    """Kills the test Blocks if needed and checks that Block was reset."""
-
-    # Make sure all Blocks are truly gone before leaving the test case.
-    try:
-      for inst in Block.instances:
-        if inst.is_alive():
-          inst.kill()
-          inst.join(3.0)
-          if inst.is_alive():
-            inst.terminate()
-            inst.join(1.0)
-
-      self.assertFalse(any(inst.is_alive() for inst in Block.instances))
-
-    finally:
-      if self._block is not None and self._block._failure_queue is not None:
-        self._block._failure_queue.close()
-      Block.reset()
-
-    # Resource and restart behavior is covered by the lifecycle tests. The
-    # shared fixture checks the public graph is empty, without prescribing
-    # every class attribute or the graph's internal indexes.
-    self.assertFalse(Block.instances)
-    self.assertFalse(link_graph.nodes)
-    self.assertFalse(link_graph.link_names())

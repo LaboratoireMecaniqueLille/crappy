@@ -18,7 +18,7 @@ from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
 from crappy._failure import FailureManager
 from crappy._exceptions import ShutdownTimeoutError
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 
 
 class _Queue:
@@ -423,7 +423,6 @@ class TestConfigurationLifecycle(unittest.TestCase):
     lifecycle.close_resources()
     lifecycle.close_resources()
     self.assertEqual(queues[1].close_calls, 1)
-
 
   def test_multiple_callbacks_and_close_failures_are_retained_once(self):
     lifecycle, _, _, messages = self.make_lifecycle(_Process())

@@ -8,7 +8,8 @@ from types import SimpleNamespace
 import logging
 from unittest.mock import Mock, patch
 
-from tests.support.blocks import BlockTestBase, TestBlock
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
 
 
 class TestBlockStopInBegin(TestBlock):

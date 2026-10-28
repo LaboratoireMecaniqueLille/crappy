@@ -2,13 +2,12 @@
 
 """Headless contracts shared by the native Qt and legacy Tk GUI Blocks."""
 
+from tests.support.processes import run_python
 from multiprocessing import Value
 from types import SimpleNamespace
 from unittest.mock import Mock, patch, sentinel
 import locale
 import os
-import subprocess
-import sys
 import textwrap
 
 import crappy.blocks.button as button_module
@@ -19,8 +18,9 @@ from crappy._global import OptionalModule
 from crappy._exceptions import OptionalDependencyError
 from crappy._failure import FailureManager
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
-from tests.support.blocks import exception_leaves, with_failure_manager
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
+from tests.support.assertions import exception_leaves, with_failure_manager
 
 
 GUI_BLOCKS = (
@@ -363,13 +363,12 @@ class TestGUIBackends(GUIBlockTestBase):
             assert 'PyQt6' in str(error), error
           else:
             raise AssertionError('Missing PyQt6 was not reported')
-          from tests.support.blocks import with_failure_manager
+          from tests.support.assertions import with_failure_manager
           with_failure_manager(qt).finish()
         assert not any(name.startswith(('PyQt6', 'matplotlib', 'pyqtgraph'))
                        for name in sys.modules)
     ''')
-    result = subprocess.run([sys.executable, '-c', script],
-                            capture_output=True, text=True, timeout=30)
+    result = run_python(['-c', script], timeout=30)
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_missing_qt_placeholder_has_a_clear_error(self) -> None:

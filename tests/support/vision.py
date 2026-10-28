@@ -8,7 +8,10 @@ from multiprocessing.shared_memory import SharedMemory
 from crappy import Block
 from crappy.blocks.vision import CameraSource, VisionBlock
 
-from tests.support.blocks import BlockTestBase, with_failure_manager
+from tests.support.block_test_case import BlockTestBase
+from tests.support.assertions import with_failure_manager
+from tests.support.processes import stop_process
+from tests.support.resources import preserve_mapping, run_cleanups
 
 
 class StubVisionBlock(VisionBlock):
@@ -38,6 +41,9 @@ class VisionTestBase(BlockTestBase):
     self._managers: list[SyncManager] = list()
     self._connections: list[Connection] = list()
     self._vision_blocks: list[VisionBlock] = list()
+    self._first_stub = len(StubVisionBlock.test_instances)
+    preserve_mapping(self, CameraSource.cam_count)
+    self.addCleanup(self._cleanup_vision)
 
   def track_block(self, block: VisionBlock) -> VisionBlock:
     """Keeps a strong reference to a concrete VisionBlock until cleanup."""
@@ -70,54 +76,49 @@ class VisionTestBase(BlockTestBase):
 
   @staticmethod
   def _release_block_memory(block: VisionBlock) -> None:
-    """Best-effort cleanup for shared-memory handles left by a test."""
+    """Release independent handles without hiding a failed close."""
 
-    for data in getattr(block, '_in_link_data', tuple()):
+    def release(data, owner):
       data.npy_buffer = None
-      # Fault-injection doubles do not own a real shared-memory handle
-      if isinstance(data.img_buffer, SharedMemory):
-        try:
-          data.img_buffer.close()
-        except (BufferError, OSError):
-          pass
-      data.img_buffer = None
+      handle = data.img_buffer
+      try:
+        # Fault-injection doubles do not own real shared-memory handles.
+        if isinstance(handle, SharedMemory):
+          def unlink():
+            try:
+              handle.unlink()
+            except FileNotFoundError:
+              pass  # Production shutdown may already have unlinked it.
+          run_cleanups(handle.close, *([unlink] if owner else []))
+      finally:
+        data.img_buffer = None
 
-    data = getattr(block, '_out_link_data', None)
-    if data is not None and data.img_buffer is not None:
-      data.npy_buffer = None
-      if isinstance(data.img_buffer, SharedMemory):
-        try:
-          data.img_buffer.close()
-        except (BufferError, OSError):
-          pass
-        try:
-          data.img_buffer.unlink()
-        except (FileNotFoundError, OSError):
-          pass
-      data.img_buffer = None
+    inputs = getattr(block, '_in_link_data', ())
+    output = getattr(block, '_out_link_data', None)
+    run_cleanups(*(lambda data=data: release(data, False) for data in inputs),
+                 *([lambda: release(output, True)] if output is not None else []))
 
-  def tearDown(self) -> None:
+  def _cleanup_vision(self) -> None:
     """Releases shared memory, Pipe endpoints, and Manager processes."""
 
     try:
       blocks = [*tuple(Block.instances),
-                *StubVisionBlock.test_instances,
+                *StubVisionBlock.test_instances[self._first_stub:],
                 *self._vision_blocks]
-      for block in dict.fromkeys(blocks):
-        if isinstance(block, VisionBlock):
-          self._release_block_memory(block)
+      blocks = [block for block in dict.fromkeys(blocks)
+                if isinstance(block, VisionBlock)]
 
-      StubVisionBlock.test_instances.clear()
-      CameraSource.cam_count.clear()
+      def stop(block):
+        def request():
+          if block._stop_event is not None:
+            block._stop_event.set()
+        stop_process(block, request)
 
-      for connection in self._connections:
-        try:
-          connection.close()
-        except OSError:
-          pass
-
-      for manager in self._managers:
-        manager.shutdown()
+      run_cleanups(*(lambda block=block: stop(block) for block in blocks),
+                   *(lambda block=block: self._release_block_memory(block)
+                     for block in blocks),
+                   *(connection.close for connection in self._connections),
+                   *(manager.shutdown for manager in self._managers))
 
     finally:
-      super().tearDown()
+      del StubVisionBlock.test_instances[self._first_stub:]

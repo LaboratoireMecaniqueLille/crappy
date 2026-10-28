@@ -8,7 +8,8 @@ require_gui_group('tkinter')
 
 import locale
 
-from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase, FakeTestCameraParams
+from tests.support.cameras import FakeTestCameraParams
+from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase
 from crappy.camera.meta_camera.camera_setting import CameraScaleSetting
 
 

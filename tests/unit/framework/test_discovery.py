@@ -1,8 +1,7 @@
 """Collection stays complete, selective, and independent of GUI dependencies."""
 
+from tests.support.processes import run_python
 import os
-import subprocess
-import sys
 import textwrap
 import unittest
 
@@ -13,10 +12,7 @@ class TestDiscovery(unittest.TestCase):
   def run_script(self, script: str) -> None:
     environment = dict(os.environ, MPLBACKEND='Agg')
     environment.pop('CRAPPY_TEST_GUI', None)
-    result = subprocess.run(
-      [sys.executable, '-c', textwrap.dedent(script)],
-      cwd=PROJECT_ROOT, env=environment, capture_output=True, text=True,
-      timeout=45)
+    result = run_python(['-c', textwrap.dedent(script)], cwd=PROJECT_ROOT, env=environment, timeout=45)
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_unselected_gui_groups_do_not_import_optional_dependencies(self):

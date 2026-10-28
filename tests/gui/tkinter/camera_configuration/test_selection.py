@@ -13,7 +13,8 @@ from unittest.mock import patch
 
 from crappy._failure import FailureManager
 
-from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase, FakeTestCameraSimple, FakeTestCameraSpots
+from tests.support.cameras import FakeTestCameraSimple, FakeTestCameraSpots
+from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase
 from crappy.tool.camera_config.tkinter import (TkinterCameraConfigBoxes,
                                                 TkinterDICVEConfig,
                                                 TkinterDISCorrelConfig,

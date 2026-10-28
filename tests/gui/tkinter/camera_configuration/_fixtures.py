@@ -9,9 +9,9 @@ require_gui_group('tkinter')
 import gc
 import logging
 from crappy._failure import FailureManager
-from collections.abc import Callable
 from multiprocessing import Queue, current_process
-from time import monotonic, sleep
+from multiprocessing.process import BaseProcess
+from time import monotonic
 import unittest
 from unittest.mock import Mock, patch
 
@@ -30,7 +30,9 @@ except (ImportError, ModuleNotFoundError) as exc:
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 from crappy.camera.meta_camera import Camera
 import crappy.tool.camera_config.tkinter.camera_config as camera_config_module
-from tests.support.cameras import DummyCamera, FakeTestCameraSimple, FakeTestCameraSpots, FakeTestCameraParams
+from tests.support.resources import close_queue
+from tests.support.processes import wait_until
+from tests.support.cameras import DummyCamera
 
 
 class TkinterConfigTestCase(unittest.TestCase):
@@ -133,21 +135,18 @@ class TkinterConfigTestCase(unittest.TestCase):
       return
 
     try:
+      worker = self._config._histogram_process
       self._config.stop()
-      self.assertTrue(self._config._lifecycle._process_closed)
+      if issubclass(type(worker), BaseProcess):
+        # A closed multiprocessing Process rejects queries of its live state.
+        with self.assertRaises(ValueError):
+          worker.is_alive()
     finally:
       self._config = None
       gc.collect()
 
-  def _close_log_queue(self) -> None:
-    """Release the logging queue without waiting for its feeder thread."""
-
-    if self._log_queue is not None:
-      try:
-        self._log_queue.cancel_join_thread()
-        self._log_queue.close()
-      except (OSError, ValueError):
-        pass
+  def _close_log_queue(self):
+    close_queue(self._log_queue)
 
   def run_config_cycle(self, elapsed: float = 0.05) -> None:
     """Run one deterministic acquisition/update cycle."""
@@ -162,14 +161,4 @@ class TkinterConfigTestCase(unittest.TestCase):
 
     return self._config._setting_controls[self._camera.settings[name]]
 
-  def wait_until(self,
-                 predicate: Callable[[], bool],
-                 timeout: float = 3.0) -> bool:
-    """Poll a condition with a deadline instead of sleeping a fixed duration."""
-
-    deadline = monotonic() + timeout
-    while monotonic() < deadline:
-      if predicate():
-        return True
-      sleep(0.01)
-    return predicate()
+  wait_until = staticmethod(wait_until)

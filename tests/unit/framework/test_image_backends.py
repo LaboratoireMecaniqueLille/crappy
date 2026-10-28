@@ -2,10 +2,9 @@
 
 """Backend import boundaries, exercised without hardware or GUI windows."""
 
+from tests.support.processes import run_python
 from contextlib import contextmanager, ExitStack
 from pathlib import Path
-import subprocess
-import sys
 from tempfile import TemporaryDirectory
 import textwrap
 from types import ModuleType
@@ -23,7 +22,7 @@ from crappy.blocks.camera import Camera
 from crappy._exceptions import OptionalDependencyError
 from crappy._global import OptionalModule
 
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
 
 
 RECORDERS = ((saver_module, saver_module.ImageSaver),
@@ -157,8 +156,7 @@ class TestImageBackends(BlockTestBase):
           assert dependency._lazy, (name, attribute)
           assert dependency._module is None, (name, attribute)
     '''
-    result = subprocess.run([sys.executable, '-B', '-c', textwrap.dedent(script)],
-                            capture_output=True, text=True, timeout=30)
+    result = run_python(['-B', '-c', textwrap.dedent(script)], timeout=30)
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_explicit_recorders_probe_only_the_requested_backend(self):

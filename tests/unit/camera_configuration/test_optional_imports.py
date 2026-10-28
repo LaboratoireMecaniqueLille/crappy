@@ -2,8 +2,7 @@
 
 """The shared classes and Tk backend must remain usable without PyQt6."""
 
-import subprocess
-import sys
+from tests.support.processes import run_python
 import textwrap
 import unittest
 
@@ -57,6 +56,5 @@ class TestOptionalImports(unittest.TestCase):
         else:
           raise AssertionError('Missing PyQt6 should be reported on use')
     ''')
-    result = subprocess.run([sys.executable, '-c', script],
-                            capture_output=True, text=True, timeout=20)
+    result = run_python(['-c', script], timeout=20)
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

@@ -2,10 +2,10 @@
 
 """Exception graph transport, per-node fallback and remote diagnostics."""
 
+from tests.support.processes import run_python
 from dataclasses import replace
 from io import StringIO
 import pickle
-import subprocess
 import sys
 from threading import Lock
 from typing import Any
@@ -569,8 +569,7 @@ with patch.object(manager, '_logger'):
                            [ValueError('good'), error, SystemExit(7)]))
 sys.stdout.buffer.write(pickle.dumps(report.to_wire()))
 """
-    child = subprocess.run([sys.executable, '-c', probe], capture_output=True,
-                           check=True, timeout=20)
+    child = run_python(['-c', probe], check=True, timeout=20, text=False)
     report = FailureReport.from_wire(pickle.loads(child.stdout))
     self.assertNotEqual(report.pid, self.parent.pid)
     self.parent.forward(report)

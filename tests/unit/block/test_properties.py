@@ -4,7 +4,8 @@ from crappy import Block
 from crappy.links import link_graph
 from unittest.mock import patch
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 class TestProperties(BlockTestBase):

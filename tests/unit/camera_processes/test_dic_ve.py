@@ -9,8 +9,8 @@ from crappy.blocks.camera_processes.dic_ve import DICVEProcess
 from crappy.tool.camera_config import SpotsBoxes
 from crappy.tool.image_processing import LostPatchError
 
-from tests.support.camera_processes import (CameraProcessTestBase,
-                                                           TestLink)
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestLink
 
 
 class DummyDICVETool:

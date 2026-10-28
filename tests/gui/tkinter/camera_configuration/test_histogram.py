@@ -12,7 +12,8 @@ import numpy as np
 
 from crappy._failure import FailureManager
 
-from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase, FakeTestCameraSimple
+from tests.support.cameras import FakeTestCameraSimple
+from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase
 from crappy.tool.camera_config.tkinter import TkinterCameraConfig
 
 

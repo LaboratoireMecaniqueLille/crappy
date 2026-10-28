@@ -8,7 +8,8 @@ from unittest.mock import patch
 from crappy.blocks.stop_block import StopBlock
 import crappy.blocks.stop_block as stop_block_module
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 class TestStopBlock(BlockTestBase):

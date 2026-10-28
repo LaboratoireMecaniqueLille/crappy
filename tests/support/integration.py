@@ -7,15 +7,11 @@ import json
 import os
 from pathlib import Path
 import subprocess
-import sys
 from tempfile import TemporaryDirectory
 from typing import Iterator
 import unittest
 
-try:
-  import psutil
-except (ImportError, ModuleNotFoundError):
-  psutil = None
+from tests.support.processes import run_python
 
 
 class IntegrationTestBase(unittest.TestCase):
@@ -116,67 +112,18 @@ class IntegrationTestBase(unittest.TestCase):
                             timeout: float,
                             start_method: str | None = None
                             ) -> tuple[int, str, str]:
-    """Starts a scenario subprocess and enforces its hard timeout."""
-
-    env = os.environ.copy()
-    env['PYTHONUNBUFFERED'] = '1'
-    command = [sys.executable, '-m', 'tests.integration.run_scenario',
-               scenario, str(output_dir)]
+    """Run with captured diagnostics and bounded cleanup of the child tree."""
+    env = dict(os.environ, PYTHONUNBUFFERED='1')
+    arguments = ['-m', 'tests.integration.run_scenario', scenario, str(output_dir)]
     if start_method is not None:
-      command.extend(('--start-method', start_method))
-    process = subprocess.Popen(
-      command,
-      cwd=self._project_root,
-      env=env,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      text=True)
-
+      arguments.extend(('--start-method', start_method))
     try:
-      stdout, stderr = process.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
-      self._terminate_process_tree(process)
-      stdout, stderr = process.communicate()
+      result = run_python(arguments, timeout=timeout, env=env, cwd=self._project_root)
+    except subprocess.TimeoutExpired as error:
       self.fail(self._failure_message(
-        scenario,
-        stdout,
-        stderr,
+        scenario, error.stdout, error.stderr,
         f'The scenario exceeded its {timeout:g}s timeout.'))
-
-    if process.returncode is None:
-      raise RuntimeError("The completed scenario has no return code")
-
-    return process.returncode, stdout, stderr
-
-  @staticmethod
-  def _terminate_process_tree(process: subprocess.Popen) -> None:
-    """Terminates a timed-out scenario and all its child processes."""
-
-    if psutil is None:
-      process.kill()
-      return
-
-    try:
-      parent = psutil.Process(process.pid)
-      processes = parent.children(recursive=True)
-      processes.append(parent)
-    except psutil.NoSuchProcess:
-      return
-
-    for child in processes:
-      try:
-        child.terminate()
-      except psutil.NoSuchProcess:
-        pass
-
-    _, alive = psutil.wait_procs(processes, timeout=2.0)
-    for child in alive:
-      try:
-        child.kill()
-      except psutil.NoSuchProcess:
-        pass
-
-    psutil.wait_procs(alive, timeout=2.0)
+    return result.returncode, result.stdout, result.stderr
 
   @staticmethod
   def _failure_message(scenario: str,

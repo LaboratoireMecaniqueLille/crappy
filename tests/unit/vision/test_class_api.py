@@ -1,11 +1,10 @@
 # coding: utf-8
 
-from tests.support.blocks import with_failure_manager
+from tests.support.assertions import with_failure_manager
 
 from unittest.mock import Mock, patch
 import logging
 
-import numpy as np
 
 import crappy
 from crappy.blocks.meta_block.block import VisionBlockType

@@ -2,13 +2,12 @@
 
 """Base Block ownership of reporting Queues and monitoring Threads."""
 
+from tests.support.processes import run_python
 import gc
 from inspect import signature
 import logging
 from multiprocessing import Event
 from queue import Empty, Queue
-import subprocess
-import sys
 from threading import Event as ThreadEvent, Thread, current_thread
 from time import monotonic, sleep, time
 from unittest.mock import Mock, patch
@@ -19,7 +18,9 @@ from crappy._exceptions import ShutdownTimeoutError
 from crappy._failure import FailureManager
 from crappy.blocks.meta_block import block as block_module
 
-from tests.support.blocks import BlockTestBase, TestBlock, exception_leaves
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
+from tests.support.assertions import exception_leaves
 
 
 class TestBlockFailureProducer(TestBlock):
@@ -400,6 +401,5 @@ class TestFailureLifecycle(BlockTestBase):
               '_exercise_block_context; _exercise_block_context(sys.argv[1])')
     for method in get_all_start_methods():
       with self.subTest(method=method):
-        result = subprocess.run([sys.executable, '-c', script, method],
-                                capture_output=True, text=True, timeout=30)
+        result = run_python(['-c', script, method], timeout=30)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

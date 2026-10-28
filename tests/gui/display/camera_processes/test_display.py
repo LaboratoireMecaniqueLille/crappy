@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from tests.support.processes import run_python
 from tests.support.gui import require_gui_group
 
 require_gui_group('display')
@@ -7,10 +8,7 @@ require_gui_group('display')
 from tests.support.paths import PROJECT_ROOT
 
 import os
-from pathlib import Path
 from platform import system
-import subprocess
-import sys
 from time import sleep, monotonic
 from unittest.mock import patch
 import unittest
@@ -22,7 +20,7 @@ from crappy.blocks.camera_processes.display import Displayer
 from crappy._exceptions import OptionalDependencyError
 from crappy._global import OptionalModule
 
-from tests.support.camera_processes import CameraProcessTestBase
+from tests.support.camera_process_test_case import CameraProcessTestBase
 
 
 class RecordingOverlay:
@@ -203,14 +201,7 @@ class TestDisplayer(CameraProcessTestBase):
       env = os.environ.copy()
       env['CRAPPY_TEST_DISPLAY_BACKEND'] = 'mpl'
       project_root = PROJECT_ROOT
-      result = subprocess.run(
-        [sys.executable, '-m', 'unittest', '-v',
-         f'{__name__}.{type(self).__name__}.{self._testMethodName}'],
-        cwd=project_root,
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=15)
+      result = run_python(['-m', 'unittest', '-v', f'{__name__}.{type(self).__name__}.{self._testMethodName}'], cwd=project_root, env=env, timeout=15)
       self.assertEqual(result.returncode, 0,
                        f'----- stdout -----\n{result.stdout}\n'
                        f'----- stderr -----\n{result.stderr}')

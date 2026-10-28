@@ -2,7 +2,7 @@ from tests.support.gui import require_gui_group
 
 require_gui_group('pyqt')
 
-from tests.support.blocks import with_failure_manager
+from tests.support.assertions import with_failure_manager
 from unittest.mock import patch
 from crappy.blocks.grapher import Grapher
 import crappy.blocks.grapher as grapher_module

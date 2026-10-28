@@ -10,7 +10,8 @@ from itertools import product
 from platform import system
 from types import SimpleNamespace
 
-from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase, FakeTestCameraSimple
+from tests.support.cameras import FakeTestCameraSimple
+from tests.gui.tkinter.camera_configuration._fixtures import TkinterConfigTestCase
 
 
 class TestZoom(TkinterConfigTestCase):

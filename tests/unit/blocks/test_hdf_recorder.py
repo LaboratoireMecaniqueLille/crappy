@@ -13,7 +13,8 @@ from crappy._global import OptionalModule
 from crappy.blocks.hdf_recorder import HDFRecorder
 import crappy.blocks.hdf_recorder as hdf_module
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 @unittest.skipIf(isinstance(hdf_module.tables, OptionalModule),

@@ -2,9 +2,9 @@
 
 """Camera-owned failure delivery, including real workers and hard exits."""
 
+from tests.support.processes import run_python
 from multiprocessing import Event, Queue, get_all_start_methods
 import os
-import subprocess
 import sys
 import numpy as np
 from threading import Thread
@@ -21,9 +21,10 @@ from crappy.links import ImageLink
 from crappy.tool.camera_config import CameraConfig
 import crappy.blocks.camera as camera_module
 
-from tests.support.camera_processes import CameraProcessTestBase, TestCameraProcess
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestCameraProcess
 from tests.unit.camera_process.test_camera_block import CameraBlockTestBase, TrackingCameraProcess
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 from tests.support.vision import StubVisionBlock
 
 
@@ -345,8 +346,7 @@ class TestCameraReporting(CameraBlockTestBase):
       with self.subTest(method=method):
         script = ('from tests.unit.camera_process.test_reporting import '
                   f'_exercise_context; _exercise_context({method!r})')
-        result = subprocess.run([sys.executable, '-c', script],
-                                capture_output=True, text=True, timeout=60)
+        result = run_python(['-c', script], timeout=60)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def test_public_camera_and_vision_runs_in_all_start_methods(self) -> None:
@@ -357,10 +357,8 @@ class TestCameraReporting(CameraBlockTestBase):
                         '(bpo-33725)')
         script = ('from tests.unit.camera_process.test_reporting import '
                   f'_exercise_public_context; _exercise_public_context({method!r})')
-        result = subprocess.run([sys.executable, '-c', script],
-                                capture_output=True, text=True, timeout=60)
+        result = run_python(['-c', script], timeout=60)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-
 
   def test_nested_configuration_and_trackers_reach_public_boundary(self):
     for method in get_all_start_methods():
@@ -370,8 +368,7 @@ class TestCameraReporting(CameraBlockTestBase):
                         '(bpo-33725)')
         script = ('from tests.unit.camera_process.test_reporting import '
                   f'_exercise_nested_context; _exercise_nested_context({method!r})')
-        result = subprocess.run([sys.executable, '-c', script], text=True,
-                                capture_output=True, timeout=60)
+        result = run_python(['-c', script], timeout=60)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 

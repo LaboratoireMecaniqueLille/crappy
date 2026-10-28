@@ -27,7 +27,8 @@ from crappy.modifier import (Demux, Diff, DownSampler, Integrate, Mean,
                              TrigOnChange, TrigOnValue)
 from crappy.tool import ApplyStrainToImage
 from crappy.tool.camera_config import Box, SpotsBoxes, Zoom
-from tests.support.blocks import BlockTestBase, TestBlock
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
 
 
 class TestPublicArgumentGuards(BlockTestBase):
@@ -318,7 +319,6 @@ class TestPublicArgumentGuards(BlockTestBase):
     strain = ApplyStrainToImage(np.ones((2, 2, 1), dtype=np.uint8))
     with self.assertRaises((TypeError, ValueError)):
       strain(-100, 0)
-
 
   def test_file_outputs_reject_empty_or_nonfinite_data(self):
     with TemporaryDirectory() as folder:

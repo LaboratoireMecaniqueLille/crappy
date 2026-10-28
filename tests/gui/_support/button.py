@@ -1,4 +1,4 @@
-from tests.support.blocks import with_failure_manager
+from tests.support.assertions import with_failure_manager
 from multiprocessing import Value
 from unittest.mock import patch
 from crappy.blocks.button import Button
@@ -20,19 +20,12 @@ class ButtonTests:
     self.addCleanup(patcher.stop)
     self._buttons: list[Button] = list()
 
-  def tearDown(self) -> None:
-    """Closes windows before resetting the Block class state."""
-
-    for button in self._buttons:
-      button.finish()
-
-    super().tearDown()
-
   def _prepare_button(self, **kwargs) -> tuple[Button, TestBlock]:
     """Creates a linked Button and prepares its GUI."""
 
     kwargs.setdefault('backend', self._backend)
     button = with_failure_manager(Button(**kwargs))
+    self.addCleanup(button.finish)
     button._instance_t0 = Value('d', self._t0)
     sink = TestBlock()
     link(button, sink)
@@ -76,6 +69,7 @@ class ButtonTests:
     """Checks that a Button without output Links fails early."""
 
     button = with_failure_manager(Button())
+    self.addCleanup(button.finish)
 
     with self.assertRaises(IOError):
       button.prepare()

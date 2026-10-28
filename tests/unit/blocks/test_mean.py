@@ -6,7 +6,8 @@ from typing import Any
 from unittest.mock import patch
 from crappy.blocks.mean import MeanBlock
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 class TestMeanBlock(BlockTestBase):

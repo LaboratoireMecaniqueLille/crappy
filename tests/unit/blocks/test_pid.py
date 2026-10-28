@@ -7,7 +7,8 @@ from unittest.mock import patch
 from crappy.blocks.pid import PID
 import crappy.blocks.pid as pid_module
 
-from tests.support.blocks import BlockTestBase, TestBlock, link
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock, link
 
 
 class TestPID(BlockTestBase):

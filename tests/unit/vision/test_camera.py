@@ -17,7 +17,7 @@ from crappy.camera import Camera as BaseCamera
 from crappy.tool.camera_config import CameraConfig
 
 from tests.support.vision import VisionTestBase
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 
 
 class RecordingVisionCamera(BaseCamera):

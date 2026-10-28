@@ -5,7 +5,7 @@ import logging
 
 import numpy as np
 
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 
 import crappy.blocks.vision.video_extenso as video_extenso_module
 from crappy.blocks.vision import VideoExtensoProcessor

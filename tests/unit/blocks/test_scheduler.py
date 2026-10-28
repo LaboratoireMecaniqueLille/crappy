@@ -11,7 +11,7 @@ from crappy.blocks.schedulers.conditions import (AllCondition, AllLabel,
                                                  AnyCondition, Delay)
 from crappy.blocks.schedulers.outputs import Constant
 
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
 
 
 class ProbeOutput:

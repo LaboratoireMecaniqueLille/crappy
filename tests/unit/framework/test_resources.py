@@ -2,8 +2,7 @@
 
 """Lazy access to bundled images and compatibility resource aliases."""
 
-import subprocess
-import sys
+from tests.support.processes import run_python
 import textwrap
 from unittest import TestCase
 
@@ -12,8 +11,7 @@ class TestResources(TestCase):
   def _run_script(self, script: str) -> None:
     """Checks resource imports in a fresh interpreter."""
 
-    result = subprocess.run([sys.executable, '-B', '-c', textwrap.dedent(script)],
-                            capture_output=True, text=True, timeout=30)
+    result = run_python(['-B', '-c', textwrap.dedent(script)], timeout=30)
     if result.returncode == 77:
       self.skipTest('OpenCV is unavailable for decoding resources')
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

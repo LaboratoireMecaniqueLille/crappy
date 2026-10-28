@@ -14,7 +14,8 @@ import signal
 from unittest.mock import Mock, patch, call
 from weakref import WeakSet
 
-from tests.support.blocks import BlockTestBase, TestBlock
+from tests.support.block_test_case import BlockTestBase
+from tests.support.blocks import TestBlock
 
 
 class TestBlockNoResponse(TestBlock):

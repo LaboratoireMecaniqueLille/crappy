@@ -4,7 +4,7 @@ require_gui_group('pyqt')
 
 from unittest.mock import patch
 import crappy.blocks.dashboard as dashboard_module
-from tests.support.blocks import BlockTestBase
+from tests.support.block_test_case import BlockTestBase
 
 from tests.gui._support.dashboard import DashboardTests
 

@@ -6,15 +6,15 @@ import logging
 
 import numpy as np
 
-from tests.support.blocks import exception_leaves
+from tests.support.assertions import exception_leaves
 
 import crappy.blocks.camera_processes.video_extenso as video_extenso_module
 from crappy.blocks.camera_processes.video_extenso import VideoExtensoProcess
 from crappy.tool.camera_config import SpotsBoxes
 from crappy.tool.image_processing import LostSpotError
 
-from tests.support.camera_processes import (CameraProcessTestBase,
-                                                           TestLink)
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestLink
 
 
 class DummyVideoExtensoTool:

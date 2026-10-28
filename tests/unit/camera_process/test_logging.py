@@ -4,7 +4,8 @@ from multiprocessing import get_start_method
 import logging
 import logging.handlers
 
-from tests.support.camera_processes import CameraProcessTestBase, TestCameraProcess
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestCameraProcess
 
 
 class TestLogging(CameraProcessTestBase):
