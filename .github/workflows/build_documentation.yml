@@ -41,9 +41,7 @@ jobs:
           --skip='*.py,*.cu'
           --ignore-words=docs/spelling_wordlist.txt
       - name: Run documentation tests
-        env:
-          MPLBACKEND: Agg
-        run: python -m unittest discover -s tests/documentation -t . -v
+        run: python -m tests.run tests/documentation
       - name: Report API coverage
         run: |
           make -C docs api-coverage
