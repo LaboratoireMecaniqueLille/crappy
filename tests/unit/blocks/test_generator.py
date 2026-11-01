@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from multiprocessing import Value
+from multiprocessing import Event, Value
 from typing import Any
 from unittest.mock import patch
 
@@ -266,7 +266,7 @@ class TestGenerator(BlockTestBase):
     self.assertEqual(sent, [[2.0, 3, 0]])
 
   def test_path_transition_restarts_loop_with_latest_data(self) -> None:
-    """Checks recursive transition behavior between Paths."""
+    """Checks that transitions read fresh data for the next Path."""
 
     generator = self._make_generator([
       {'type': 'GeneratorUnitPath', 'commands': ['stop']},
@@ -285,6 +285,44 @@ class TestGenerator(BlockTestBase):
 
     self.assertEqual(recv_calls, [None, None])
     self.assertEqual(sent, [[2.0, 2, 1]])
+
+  def test_many_immediate_transitions_reach_the_next_command(self) -> None:
+    """Completed Paths do not consume the Python call stack."""
+
+    generator = self._make_generator([
+      *[{'type': 'GeneratorUnitPath', 'commands': ['stop']}
+        for _ in range(1500)],
+      {'type': 'GeneratorUnitPath', 'commands': [7]},
+    ])
+    generator.begin()
+    sent = self._capture_send(generator)
+    recv_calls = self._set_received_batches(generator, [{}] * 1501)
+
+    with patch.object(generator_module, 'time', return_value=12):
+      generator.loop()
+
+    self.assertEqual(len(recv_calls), 1501)
+    self.assertEqual(sent, [[2.0, 7, 1500]])
+
+  def test_repeating_immediate_paths_observe_a_stop_request(self) -> None:
+    """A repeat sequence with no command can still shut down."""
+
+    generator = self._make_generator([
+      {'type': 'GeneratorUnitPath', 'commands': ['stop']},
+    ], repeat=True)
+    generator.begin()
+    generator._stop_event = Event()
+    sent = self._capture_send(generator)
+
+    def receive_and_stop() -> dict[str, list]:
+      generator._stop_event.set()
+      return {}
+
+    generator.recv_all_data = receive_and_stop
+    generator.loop()
+
+    self.assertEqual(sent, [])
+    self.assertEqual(generator._path_id, 1)
 
   def test_exhaustion_with_end_delay_raises_generator_stop(self) -> None:
     """Exhaustion waits for the requested delay before stopping."""
