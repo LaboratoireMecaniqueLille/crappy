@@ -385,7 +385,7 @@ class XiAPI(Camera):
     # Framerate parameters
     if self._model in FRAMERATE_MODES:
       self.add_choice_setting('framerate_mode',
-                              FRAMERATE_MODES[self._model].values(),
+                              tuple(FRAMERATE_MODES[self._model].values()),
                               self._get_framerate_mode,
                               self._set_framerate_mode,
                               self._get_framerate_mode())
@@ -400,7 +400,7 @@ class XiAPI(Camera):
     # Downsampling parameter
     if self._model in DOWNSAMPLING_MODES:
       self.add_choice_setting('downsampling_mode',
-                              DOWNSAMPLING_MODES[self._model].values(),
+                              tuple(DOWNSAMPLING_MODES[self._model].values()),
                               self._get_downsampling_mode,
                               self._set_downsampling_mode,
                               self._get_downsampling_mode())

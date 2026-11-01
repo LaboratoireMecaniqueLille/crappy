@@ -414,7 +414,7 @@ class RaspberryPiCamera2(Camera):
     # Focus related parameters
     if 'AfMode' in available_controls:
       self.add_choice_setting('auto_focus',
-                              AUTO_FOCUS_MODE.values(),
+                              tuple(AUTO_FOCUS_MODE.values()),
                               None,
                               self._set_auto_focus,
                               'Manual')
