@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from pathlib import Path
+from tests.support.paths import PROJECT_ROOT
+
 from re import findall
 from runpy import run_path
 import unittest
@@ -10,7 +11,7 @@ from urllib.parse import urlparse
 class TestAiDiscovery(unittest.TestCase):
   """Keeps the hand-reviewed AI entry point published and internally valid."""
 
-  _source_dir = (Path(__file__).resolve().parents[2] / 'docs' / 'source')
+  _source_dir = (PROJECT_ROOT / 'docs' / 'source')
   _llms_path = _source_dir / 'llms.txt'
 
   def test_llms_file_is_published(self) -> None:
@@ -42,10 +43,12 @@ class TestAiDiscovery(unittest.TestCase):
         page = self._source_dir / f'{relative[:-5]}.rst'
         self.assertTrue(page.is_file())
 
-  def test_llms_file_states_the_supported_image_architectures(self) -> None:
-    """Protects the architectural guidance required from text-only readers."""
+  def test_llms_file_links_to_supported_image_architectures(self) -> None:
+    """Readers can reach the supported image architecture comparison."""
 
     source = self._llms_path.read_text(encoding='utf-8')
-    self.assertIn('VisionBlocks connected by ImageLinks are recommended',
-                  source)
-    self.assertIn('all-in-one Camera Blocks remain supported', source)
+    links = findall(r'\[[^]]+\]\(([^)]+)\)', source)
+    target = 'concepts/image_pipelines.html'
+    self.assertTrue(any(urlparse(link).path.endswith('/' + target)
+                        for link in links))
+    self.assertTrue((self._source_dir / 'concepts' / 'image_pipelines.rst').is_file())

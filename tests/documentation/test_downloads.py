@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.support.paths import PROJECT_ROOT
+
 from pathlib import Path
 from runpy import run_path
 import unittest
@@ -11,7 +13,7 @@ import crappy
 class TestDownloadablePythonFiles(unittest.TestCase):
   """Checks every Python file offered as a documentation download."""
 
-  _download_dir = (Path(__file__).resolve().parents[2] / 'docs' / 'source' /
+  _download_dir = (PROJECT_ROOT / 'docs' / 'source' /
                    'downloads')
 
   def test_all_downloads_compile(self) -> None:

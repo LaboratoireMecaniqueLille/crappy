@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.support.paths import PROJECT_ROOT
+
 from pathlib import Path
 import unittest
 
@@ -7,7 +9,7 @@ import unittest
 class TestAdvancedTutorialDownloads(unittest.TestCase):
   """Checks that the downloadable advanced examples remain safe to import."""
 
-  _download_dir = (Path(__file__).resolve().parents[2] / 'docs' / 'source' /
+  _download_dir = (PROJECT_ROOT / 'docs' / 'source' /
                    'downloads' / 'more_complexity')
   _examples = {
     'feedback_loop.py': 'feedback-loop',

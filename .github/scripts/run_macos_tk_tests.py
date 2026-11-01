@@ -10,8 +10,8 @@ import sys
 _retained_interpreters = []
 
 
-def main() -> None:
-  """Keep the first interpreter alive and pass CLI arguments to unittest."""
+def retain_first_tcl_interpreter() -> None:
+  """Keep macOS's cached interpreter alive until its process exits."""
 
   import tkinter as tk
 
@@ -27,6 +27,12 @@ def main() -> None:
   # Cocoa caches the first Tcl interpreter for native menu callbacks. Keep it
   # alive until process exit, even after its window has been destroyed
   tk.Tk.__init__ = retain_first_interpreter
+
+
+def main() -> None:
+  """Keep the first interpreter alive and pass CLI arguments to unittest."""
+
+  retain_first_tcl_interpreter()
 
   # Script execution puts .github/scripts, rather than the repository root,
   # on sys.path. Make the repository's tests importable, as with python -m

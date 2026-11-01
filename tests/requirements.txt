@@ -1,9 +1,11 @@
+numpy>=2.0.0
 opencv-python
 Pillow
+SimpleITK
 scikit-image
 tables
-pyserial
 psutil
+graphviz
 matplotlib
 pyqtgraph
 PyQt6

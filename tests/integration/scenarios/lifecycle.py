@@ -2,7 +2,10 @@
 
 import json
 from pathlib import Path
-from time import time
+from time import monotonic, time
+from multiprocessing import Value
+from crappy.blocks.generator_path.meta_path import Path as GeneratorPath
+from tests.support.processes import wait_until_stable
 
 import crappy
 from crappy.blocks import Block
@@ -29,47 +32,66 @@ class CoordinateSource(Block):
 
 
 class ScriptedControlSource(Block):
-  """Drives deterministic pause, resume, and stop transitions."""
+  """Drive pause/resume/stop after observed progress, with a hard deadline."""
 
-  def __init__(self) -> None:
-    """Sets the source labels and keeps it active during pauses."""
-
+  def __init__(self, counter, path):
     super().__init__()
     self.labels = ['t(s)', 'pause', 'stop']
-    self.freq = 200
-    self.pausable = False
+    self.freq, self.pausable = 200, False
+    self._counter, self._path = counter, path
+    self._stage = 0
+    self._observations = {}
 
-  def loop(self) -> None:
-    """Sends a pause pulse followed later by a stop pulse."""
+  def begin(self):
+    self._deadline = monotonic() + 10
 
-    elapsed = time() - self.t0
-    pause = int(0.2 <= elapsed < 0.5)
-    stop = int(elapsed >= 0.8)
-    self.send([elapsed, pause, stop])
+  def loop(self):
+    if monotonic() > self._deadline:
+      raise RuntimeError('pause/resume control did not make progress')
+    if self._stage == 0:
+      if self._counter.value < 2:
+        return
+      self._observations['before_pause'] = self._counter.value
+      self._stage = 1
+    if self._stage == 1:
+      self.send([time() - self.t0, 1, 0])
+      if not self._pause_event.is_set():
+        return
+      self._observations['pause_observed'] = True
+      settled = wait_until_stable(lambda: self._counter.value, timeout=3)
+      self._observations['paused_start'] = settled
+      self._stop_event.wait(0.15)
+      self._observations['paused_end'] = self._counter.value
+      self._stage = 2
+    if self._stage == 2:
+      self.send([time() - self.t0, 0, 0])
+      if self._pause_event.is_set() or self._counter.value < self._observations['paused_end'] + 2:
+        return
+      self._observations['resumed'] = self._counter.value
+      self._stage = 3
+    self.send([time() - self.t0, 0, 1])
+
+  def finish(self):
+    self._path.write_text(json.dumps(self._observations), encoding='utf-8')
 
 
 class LifecycleProbe(Block):
-  """Records its active loop timestamps to a JSON artifact."""
+  """Record user loop progress and finalization to a test-owned artifact."""
 
-  def __init__(self, path: Path) -> None:
-    """Stores the artifact path and initializes the timestamp buffer."""
-
+  def __init__(self, path, counter):
     super().__init__()
     self.freq = 50
-    self._path = path
-    self._loop_times: list[float] = list()
+    self._path, self._counter = path, counter
+    self._loop_times = []
 
-  def loop(self) -> None:
-    """Records one timestamp whenever the probe is not paused."""
-
+  def loop(self):
     self._loop_times.append(time() - self.t0)
+    with self._counter.get_lock():
+      self._counter.value += 1
 
-  def finish(self) -> None:
-    """Writes the collected timestamps after the shared stop event."""
-
-    with self._path.open('w', encoding='utf-8') as file:
-      json.dump({'loop_times': self._loop_times,
-                 'finish_called': True}, file)
+  def finish(self):
+    self._path.write_text(json.dumps({'loop_times': self._loop_times,
+                                     'finish_called': True}), encoding='utf-8')
 
 
 def build_auto_drive_recorder(output_dir: Path) -> tuple[Block, ...]:
@@ -102,10 +124,11 @@ def build_auto_drive_recorder(output_dir: Path) -> tuple[Block, ...]:
 def build_pause_stop_probe(output_dir: Path) -> tuple[Block, ...]:
   """Builds a scripted source -> Pause/StopBlock script with a probe."""
 
-  source = ScriptedControlSource()
+  counter = Value('i', 0)
+  source = ScriptedControlSource(counter, output_dir / 'pause_controls.json')
   pause = crappy.blocks.Pause('pause > 0.5', freq=20)
   stop = crappy.blocks.StopBlock('stop > 0.5', freq=50)
-  probe = LifecycleProbe(output_dir / 'pause_probe.json')
+  probe = LifecycleProbe(output_dir / 'pause_probe.json', counter)
 
   crappy.link(source, pause)
   crappy.link(source, stop)
@@ -145,3 +168,44 @@ def build_generator_link_reader(_: Path) -> tuple[Block, ...]:
   crappy.link(generator, reader)
 
   return generator, reader
+
+
+class RepeatingIntegrationPath(GeneratorPath):
+  """A finite Path whose completion depends on samples, not scheduling speed."""
+
+  def __init__(self):
+    super().__init__()
+    self.remaining = 2
+
+  def get_cmd(self, data):
+    if not self.remaining:
+      raise StopIteration
+    self.remaining -= 1
+    return 3
+
+
+class PhaseRecorder(Block):
+  def __init__(self, path):
+    super().__init__()
+    self.freq = 100
+    self.path, self.rows = path, []
+
+  def loop(self):
+    data = self.recv_all_data()
+    if data:
+      self.rows.extend(zip(data['t(s)'], data['cmd'], data['phase']))
+
+  def finish(self):
+    self.loop()
+    self.path.write_text(json.dumps(self.rows), encoding='utf-8')
+
+
+def build_repeating_generator(output_dir):
+  generator = crappy.blocks.Generator(
+    ({'type': 'RepeatingIntegrationPath'},), repeat=True, end_delay=None,
+    cmd_label='cmd', path_index_label='phase', freq=100)
+  recorder = PhaseRecorder(output_dir / 'repeat.json')
+  stop = crappy.blocks.StopBlock('phase > 1.5', freq=200)
+  crappy.link(generator, recorder)
+  crappy.link(generator, stop)
+  return generator, recorder, stop

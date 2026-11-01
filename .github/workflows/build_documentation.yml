@@ -25,7 +25,9 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: docs/source/requirements.txt
+          cache-dependency-path: |
+            docs/source/requirements.txt
+            tests/requirements.txt
       - name: Install Graphviz
         run: |
           sudo apt-get update
@@ -34,16 +36,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r docs/source/requirements.txt
+          python -m pip install -r tests/requirements.txt
           python -m pip install .
+          python -m pip check
       - name: Check documentation spelling
         run: >-
           codespell docs/source docs/README.md
           --skip='*.py,*.cu'
           --ignore-words=docs/spelling_wordlist.txt
       - name: Run documentation tests
-        env:
-          MPLBACKEND: Agg
-        run: python -m unittest -v tests.documentation
+        run: python -m tests.run tests/documentation
       - name: Report API coverage
         run: |
           make -C docs api-coverage

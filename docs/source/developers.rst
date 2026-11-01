@@ -40,39 +40,39 @@ example:
 
 .. code-block:: console
 
-   $ python -m unittest -v tests.modifier.test_mean
-   $ python -m unittest -v tests.modifier
+   $ python -m unittest -v tests.unit.modifier.test_mean
+   $ python -m unittest discover -s tests/unit/modifier -t . -v
 
-Run the complete suite before submitting a change that affects several parts
-of Crappy:
+Run the headless suite before submitting a change that affects several parts
+of Crappy, followed by the relevant graphical groups:
 
 .. code-block:: console
 
-   $ python -m unittest -v tests
+   $ python -m unittest discover -s tests -t . -v
 
 The standard test suite does not require physical hardware. Hardware APIs are
-tested with simulated devices, test doubles, or patched dependencies. New
-hardware-driver tests should remain runnable on an ordinary development
-machine and in continuous integration.
+tested with simulated devices or patched dependencies. New tests should remain
+runnable on an ordinary development machine and in continuous integration.
 
 The shared camera-configuration tests in
-``tests.camera_configuration.base`` run without a display. Their backend
-integration suites (``tests.camera_configuration.tkinter`` and
-``tests.camera_configuration.pyqt``), are separate. The ``blocks_gui``,
-camera-configuration backend suites, ``camera_processes_gui``, and
-``vision_gui`` suites open graphical windows and require Tk, Qt, and a display.
-On a headless Linux system, run a graphical suite through Xvfb:
+``tests/unit/camera_configuration`` run without a display. Graphical Blocks and
+camera-configuration tests are separated into ``tests/gui/tkinter`` and
+``tests/gui/pyqt``. CameraProcess and VisionBlock image-display tests are in
+``tests/gui/display``. These groups open graphical windows and require a
+display. Headless discovery skips graphical modules unless their group is
+explicitly selected with ``CRAPPY_TEST_GUI``. Run each group in a separate
+interpreter. On headless Linux, use Xvfb:
 
 .. code-block:: console
 
-   $ xvfb-run --auto-servernum python -m unittest -v tests.vision_gui
+   $ CRAPPY_TEST_GUI=display MPLBACKEND=TkAgg xvfb-run --auto-servernum python -m unittest discover -s tests/gui/display/vision -t . -v
 
 Set the Matplotlib backend to ``Agg`` when running non-graphical suites in a
 headless environment. Documentation changes have their own checks:
 
 .. code-block:: console
 
-   $ python -m unittest -v tests.documentation
+   $ python -m unittest discover -s tests/documentation -t . -v
    $ make -C docs clean html
 
 Continuous integration runs the non-graphical and graphical suites on every
