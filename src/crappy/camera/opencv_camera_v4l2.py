@@ -168,12 +168,12 @@ class CameraOpencv(Camera, V4L2Helper):
   def _get_width(self) -> int:
     """Returns the current image width."""
 
-    return self._cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    return int(self._cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
   def _get_height(self) -> int:
     """Returns the current image height."""
 
-    return self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    return int(self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
   def _set_width(self, width: int) -> None:
     """Tries to set the image width."""
