@@ -4,6 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import csv
 from time import monotonic
+from unittest.mock import Mock, patch
 
 import numpy as np
 
@@ -17,6 +18,18 @@ from tests.support.camera_processes import TestLink
 
 class TestImageSaver(CameraProcessTestBase):
   """Unit tests for the ImageSaver CameraProcess."""
+
+  def make_saver(self, folder: str, backend: str = 'npy') -> ImageSaver:
+    """Creates a saver for file-integrity checks and tracks its resources."""
+
+    saver = ImageSaver(save_folder=folder, save_backend=backend,
+                       save_period=3, send_msg=True)
+    self._process = saver
+    self.set_test_logger(saver)
+    saver.send = Mock()
+    saver.img = np.ones((2, 3), dtype=np.uint8)
+    saver.init()
+    return saver
 
   def test_init_creates_folder_and_suffixes_existing_recording(self) -> None:
     """Checks save-folder creation and collision avoidance."""
@@ -154,6 +167,97 @@ class TestImageSaver(CameraProcessTestBase):
         'img_index': 5,
         'meta': saver.metadata,
       })
+
+  def test_opencv_false_result_does_not_create_metadata_or_notify(self) -> None:
+    """An unsuccessful first write cannot leave a successful-looking record."""
+
+    with TemporaryDirectory() as tmp:
+      backend = Mock()
+      backend.imwrite.return_value = False
+      with patch.object(record_module, 'cv2', backend):
+        saver = self.make_saver(tmp, 'cv2')
+        saver.metadata = {'ImageUniqueID': 1, 't(s)': 0.25}
+        with self.assertRaisesRegex(OSError, 'OpenCV could not write image'):
+          saver.loop()
+
+      self.assertFalse((Path(tmp) / 'metadata.csv').exists())
+      saver.send.assert_not_called()
+
+  def test_failed_later_opencv_write_keeps_previous_metadata_intact(self) -> None:
+    """A failed later frame adds neither a row nor a saved-frame message."""
+
+    with TemporaryDirectory() as tmp:
+      backend = Mock()
+      backend.imwrite.side_effect = [True, False]
+      with patch.object(record_module, 'cv2', backend):
+        saver = self.make_saver(tmp, 'cv2')
+        saver.metadata = {'ImageUniqueID': 1, 't(s)': 0.25}
+        saver.loop()
+        previous = (Path(tmp) / 'metadata.csv').read_bytes()
+        saver.metadata = {'ImageUniqueID': 2, 't(s)': 0.5}
+        with self.assertRaises(OSError):
+          saver.loop()
+
+      self.assertEqual((Path(tmp) / 'metadata.csv').read_bytes(), previous)
+      self.assertEqual(saver.send.call_count, 1)
+
+  def test_backend_exception_does_not_record_success_and_frame_can_be_retried(self) -> None:
+    """Exceptions leave no metadata row or saved-frame message."""
+
+    with TemporaryDirectory() as tmp:
+      saver = self.make_saver(tmp)
+      saver.metadata = {'ImageUniqueID': 1, 't(s)': 0.25}
+      with patch.object(record_module.np, 'save', side_effect=OSError('disk full')):
+        with self.assertRaisesRegex(OSError, 'disk full'):
+          saver.loop()
+      self.assertFalse((Path(tmp) / 'metadata.csv').exists())
+      saver.send.assert_not_called()
+
+      saver.loop()
+
+      self.assertTrue((Path(tmp) / '000001_0.250.npy').exists())
+      with open(Path(tmp) / 'metadata.csv', newline='') as stream:
+        self.assertEqual(list(csv.DictReader(stream)),
+                         [{'ImageUniqueID': '1', 't(s)': '0.25'}])
+      saver.send.assert_called_once()
+
+  def test_metadata_columns_survive_reordering_and_missing_optional_fields(self) -> None:
+    """Values keep their header columns and absent optional values are blank."""
+
+    frames = ({'ImageUniqueID': 1, 't(s)': 0.25, 'gain': 20},
+              {'gain': 30, 't(s)': 0.5, 'ImageUniqueID': 2},
+              {'t(s)': 0.75, 'ImageUniqueID': 3})
+    with TemporaryDirectory() as tmp:
+      saver = self.make_saver(tmp)
+      for metadata in frames:
+        saver.metadata = metadata
+        saver.loop()
+
+      with open(Path(tmp) / 'metadata.csv', newline='') as stream:
+        self.assertEqual(list(csv.DictReader(stream)), [
+            {'ImageUniqueID': '1', 't(s)': '0.25', 'gain': '20'},
+            {'ImageUniqueID': '2', 't(s)': '0.5', 'gain': '30'},
+            {'ImageUniqueID': '3', 't(s)': '0.75', 'gain': ''}])
+      raw = (Path(tmp) / 'metadata.csv').read_bytes()
+      self.assertTrue(raw.startswith(b'ImageUniqueID,t(s),gain\r\n'))
+      self.assertNotIn(b'\r\r\n', raw)
+
+  def test_new_metadata_fields_are_rejected_before_writing_an_image(self) -> None:
+    """A changed schema is reported without silently dropping new metadata."""
+
+    with TemporaryDirectory() as tmp:
+      saver = self.make_saver(tmp)
+      saver.metadata = {'ImageUniqueID': 1, 't(s)': 0.25}
+      saver.loop()
+      previous = (Path(tmp) / 'metadata.csv').read_bytes()
+      saver.metadata = {'ImageUniqueID': 2, 't(s)': 0.5, 'gain': 20}
+
+      with self.assertRaisesRegex(ValueError, 'New metadata fields.*gain'):
+        saver.loop()
+
+      self.assertFalse((Path(tmp) / '000002_0.500.npy').exists())
+      self.assertEqual((Path(tmp) / 'metadata.csv').read_bytes(), previous)
+      self.assertEqual(saver.send.call_count, 1)
 
   def test_loop_saves_pil_images_with_exif_metadata(self) -> None:
     """Checks PIL saving for common formats and EXIF object generation."""

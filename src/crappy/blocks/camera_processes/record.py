@@ -104,6 +104,7 @@ class ImageSaver(CameraProcess):
 
     self._csv_created = False
     self._csv_path = None
+    self._metadata_fields: tuple[str, ...] | None = None
     self._metadata_name = 'metadata.csv'
     self._pil_tags_inv: dict[str, int] = dict()
 
@@ -173,25 +174,11 @@ class ImageSaver(CameraProcess):
     populated using the metadata of the frame.
     """
 
-    # Creating the .csv containing the metadata on the first received frame
-    if not self._csv_created:
-      self._csv_path = (self._save_folder / self._metadata_name)
-
-      self.log(logging.INFO, f"Creating file for saving the metadata: "
-                             f"{self._csv_path}")
-
-      # Also writing the header of the .csv file when creating it
-      with open(self._csv_path, 'w') as csvfile:
-        writer = DictWriter(csvfile, fieldnames=self.metadata.keys())
-        writer.writeheader()
-
-      self._csv_created = True
-
-    # Saving the received metadata to the .csv file
-    self.log(logging.DEBUG, f"Saving metadata: {self.metadata}")
-    with open(self._csv_path, 'a') as csvfile:
-      writer = DictWriter(csvfile, fieldnames=self.metadata.keys())
-      writer.writerow({**self.metadata, 't(s)': self.metadata['t(s)']})
+    fields = (tuple(self.metadata) if self._metadata_fields is None
+              else self._metadata_fields)
+    if extra := set(self.metadata).difference(fields):
+      raise ValueError(f"New metadata fields after the first saved frame: "
+                       f"{', '.join(sorted(extra))}")
 
     # Only include the extension for the image file if applicable
     if self._img_extension:
@@ -223,6 +210,18 @@ class ImageSaver(CameraProcess):
 
     elif self._save_backend == 'npy':
       np.save(path, self.img)
+
+    # Only successful image writes are added to the metadata file
+    self._csv_path = self._save_folder / self._metadata_name
+    self.log(logging.DEBUG, f"Saving metadata: {self.metadata}")
+    with open(self._csv_path, 'a' if self._csv_created else 'w',
+              newline='') as csvfile:
+      writer = DictWriter(csvfile, fieldnames=fields)
+      if not self._csv_created:
+        writer.writeheader()
+      writer.writerow(self.metadata)
+    self._metadata_fields = fields
+    self._csv_created = True
 
     # Sending the results to the downstream Blocks
     if self._send_msg:
