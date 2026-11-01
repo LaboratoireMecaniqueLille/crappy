@@ -315,7 +315,8 @@ class ImageRecorder(VisionBlock):
         Image.fromarray(img).save(path, exif=self._pil_exif(metadata))
 
     elif self._save_backend == 'cv2':
-      cv2.imwrite(path, img)
+      if not cv2.imwrite(path, img):
+        raise IOError(f"OpenCV could not write image to {path}")
 
     elif self._save_backend == 'npy':
       np.save(path, img)
