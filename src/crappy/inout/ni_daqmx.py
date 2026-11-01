@@ -133,9 +133,10 @@ class NIDAQmx(InOut):
           :meth:`~nidaqmx.task.collections.DIChannelCollection.add_di_chan` for
           digital input channels. Refer to :mod:`nidaqmx` documentation for the
           possible arguments and values. Note that for the `'thrmcpl'` analog
-          input channel type, the `'thermocouple_type'` argument must be given
-          as a letter, same for the `'units'` argument. They will be parsed
-          internally. Also note that for the analog output channels and the
+          input channel type, the `'thermocouple_type'` argument can be given
+          as a letter, same for the `'units'` argument. They will be converted
+          to :mod:`nidaqmx` enums internally. Native enum values are also
+          accepted. Also note that for the analog output channels and the
           analog input channels of type `'voltage'`, the `'min_val'` and
           `'max_val'` arguments are internally set by default to `0` and `5`.
     """
@@ -158,6 +159,9 @@ class NIDAQmx(InOut):
     self._task_do = None
     self._stream_do = None
     self._stream_started = False
+    self._stream_t0: float = 0
+    self._stream_rate: float = sample_rate
+    self._n_points: int = 0
     # For analog inputs a dict is needed as each type is handled separately
     self._tasks_ai = dict()
     self._stream_ai = dict()
@@ -209,32 +213,35 @@ class NIDAQmx(InOut):
     output, and each type of analog input channels."""
 
     # Creating one task for each type of analog input channel
-    self._tasks_ai = {type_: nidaqmx.Task() for type_ in self._analog_in}
+    for type_ in self._analog_in:
+      self._tasks_ai[type_] = nidaqmx.Task()
 
     # Iterating over all the analog input channels
     for type_, channels in self._analog_in.items():
       for chan in channels:
+        kwargs = chan.kwargs.copy()
 
         # Setting the min and max voltage for the voltage analog input channels
         if type_ == 'voltage':
-          chan.kwargs['max_val'] = chan.kwargs.get('max_val', 5)
-          chan.kwargs['min_val'] = chan.kwargs.get('min_val', 0)
+          kwargs['max_val'] = kwargs.get('max_val', 5)
+          kwargs['min_val'] = kwargs.get('min_val', 0)
 
         # Parsing the thermocouple related arguments
-        if 'thermocouple_type' in chan.kwargs:
-          chan.kwargs['thermocouple_type'] = thcp_map[
-            chan.kwargs['thermocouple_type']]
-          # Included in the if as 'units' is an arg for other types of channels
-          if 'units' in chan.kwargs:
-            chan.kwargs['units'] = thcp_map[chan.kwargs['units']]
+        if type_ == 'thrmcpl':
+          if isinstance(kwargs.get('thermocouple_type'), str):
+            kwargs['thermocouple_type'] = (nidaqmx.constants.ThermocoupleType(
+                thcp_map[kwargs['thermocouple_type']]))
+          if isinstance(kwargs.get('units'), str):
+            kwargs['units'] = nidaqmx.constants.TemperatureUnits(
+                unit_map[kwargs['units']])
 
         # Adding the channel to the task with the given kwargs
         try:
           func = getattr(self._tasks_ai[type_].ai_channels,
                          f'add_ai_{type_}_chan')
-          func(chan.name, **chan.kwargs)
         except AttributeError:
           raise ValueError(f"Invalid channel type : {type_}")
+        func(chan.name, **kwargs)
 
     # Opening a stream for each analog input task
     self.log(logging.INFO, "Opening the streams for the analog input channels")
@@ -298,7 +305,11 @@ class NIDAQmx(InOut):
       task.timing.cfg_samp_clk_timing(
         self._sample_rate,
         sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS)
+      self._stream_rate = task.timing.samp_clk_rate
+      self._stream_t0 = time()
+      task.start()
 
+    self._n_points = 0
     self._stream_started = True
 
   def get_data(self) -> list[float]:
@@ -335,7 +346,9 @@ class NIDAQmx(InOut):
     array holding the timestamps.
 
     Only data from analog input channels can be read, this method cannot read
-    stream data from digital input channels.
+    stream data from digital input channels. The data array has shape
+    ``(samples, channels)``. Timestamps follow the hardware sample clock from
+    the start of the stream, independently of delays between reads.
     """
 
     if not self._stream_started:
@@ -344,13 +357,15 @@ class NIDAQmx(InOut):
     # Creating the container for the data
     data = np.empty((len(list(chain(*self._analog_in.values()))),
                      self._n_samples))
-    # # Creating the array holding the timestamps
-    t = time() + np.arange(0, self._n_samples) / self._sample_rate
-    # Actually reading the data from the device
-    for type_, stream in self._stream_ai.items():
-      stream.read_many_sample(data, self._n_samples)
+    # There is exactly one analog input type when streaming
+    stream, = self._stream_ai.values()
+    n_samples = stream.read_many_sample(data, self._n_samples)
+    t = (self._stream_t0 +
+         np.arange(self._n_points, self._n_points + n_samples) /
+         self._stream_rate)
+    self._n_points += n_samples
 
-    return [t, data]
+    return [t, data[:, :n_samples].T]
 
   def set_cmd(self, *cmd: float) -> None:
     """Sets the analog and digital output channels according to the given
@@ -386,28 +401,39 @@ class NIDAQmx(InOut):
 
   def close(self) -> None:
     """Stops all the acquisition tasks, and closes the connections to the
-    device."""
+    device.
 
-    if self._analog_in:
-      self.log(logging.INFO, "Closing the streams for the analog input "
-                             "channels")
-      for task in self._tasks_ai.values():
-        task.stop()
+    Clearing a task stops acquisition and releases reserved device resources.
+    All tasks are attempted even if one fails.
 
-    if self._analog_out:
-      self.log(logging.INFO, "Closing the streams for the analog output "
-                             "channels")
-      self._task_ao.stop()
+    Raises:
+      ExceptionGroup: If any task could not be closed.
+    """
 
-    if self._stream_started:
-      self.stop_stream()
+    errors = list()
+    for type_, task in tuple(self._tasks_ai.items()):
+      try:
+        task.close()
+      except Exception as error:
+        error.add_note(f"Closing NIDAQmx analog input task {type_!r}")
+        errors.append(error)
+      else:
+        del self._tasks_ai[type_]
+        self._stream_ai.pop(type_, None)
 
-    if self._digital_in:
-      self.log(logging.INFO, "Closing the streams for the digital input "
-                             "channels")
-      self._task_di.close()
+    for kind in ('ao', 'di', 'do'):
+      task = getattr(self, f'_task_{kind}')
+      if task is None:
+        continue
+      try:
+        task.close()
+      except Exception as error:
+        error.add_note(f"Closing NIDAQmx {kind!r} task")
+        errors.append(error)
+      else:
+        setattr(self, f'_task_{kind}', None)
+        setattr(self, f'_stream_{kind}', None)
 
-    if self._digital_out:
-      self.log(logging.INFO, "Closing the streams for the digital output "
-                             "channels")
-      self._task_do.close()
+    self._stream_started = False
+    if errors:
+      raise ExceptionGroup("Failed to close NIDAQmx tasks", errors)
