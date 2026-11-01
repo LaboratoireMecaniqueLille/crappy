@@ -29,6 +29,14 @@ class TestOffset(TestCase):
     self.assertEqual(modifier({'x': 5, 'y': 9, 'z': 2}),
                      {'x': 2, 'y': 11, 'z': 2})
 
+  def test_single_multicharacter_label_is_not_split(self) -> None:
+    """A string names one signal regardless of its length."""
+
+    modifier = Offset('force(N)', 0)
+
+    self.assertEqual(modifier({'force(N)': 12}), {'force(N)': 0})
+    self.assertEqual(modifier({'force(N)': 15}), {'force(N)': 3})
+
   def test_mismatched_label_and_offset_counts_are_rejected(self) -> None:
     """Checks constructor validation."""
 

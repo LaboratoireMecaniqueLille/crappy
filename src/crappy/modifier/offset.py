@@ -42,7 +42,9 @@ class Offset(Modifier):
     super().__init__()
 
     # Handling the case when only one label needs to be offset
-    if not isinstance(labels, str):
+    if isinstance(labels, str):
+      labels = (labels,)
+    else:
       check.instance(labels, 'labels', Iterable)
       labels = tuple(labels)
     check.labels(labels, 'labels')
