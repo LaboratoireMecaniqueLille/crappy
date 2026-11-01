@@ -738,7 +738,8 @@ class GPUCorrelTool:
     self._stages[0].set_orig(img)
     for prev_stage, stage, height, width in zip(self._stages[:-1],
                                                 self._stages[1:],
-                                                self._heights, self._widths):
+                                                self._heights[1:],
+                                                self._widths[1:]):
       prev_stage.resample_orig(height, width, stage.dev_orig)
       stage.update_orig()
 
