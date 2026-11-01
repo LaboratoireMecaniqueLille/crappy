@@ -10,9 +10,14 @@ python -m pip install .
 python -m pip install -r tests/requirements.txt
 ```
 
-The existing test requirements include the CPU image/file-processing and PyQt6
-dependencies. Tkinter also needs Tk, which may require a separate system 
-package on Linux. GUI groups require a working display or Xvfb.
+`tests/requirements.txt` is the complete dependency file for all tests, 
+including CPU image processing, codecs, HDF files, graph generation and
+PyQt6.
+
+Tkinter and Tcl/Tk come from Python or the operating system. Linux also needs
+native Qt/OpenCV window libraries and a display or Xvfb with xauth. The package
+workflow lists the Ubuntu runtime packages. Windows and macOS graphical runs 
+need a native desktop session and a Python installation with working Tcl/Tk.
 
 The suite uses software devices, synthetic images, and test extensions. It does
 not test hardware drivers, GPU objects, MQTT services, or serial protocols.
@@ -42,6 +47,14 @@ Graphical modules are intentionally skipped unless their group is explicitly
 selected. An available display does not automatically enable them. In a
 headless environment, set `MPLBACKEND=Agg` before starting Python.
 
+CI runs the same directory discovery through a capability wrapper:
+
+```bash
+python -m tests.run tests/unit
+python -m tests.run tests/integration
+python -m tests.run tests/documentation
+```
+
 You can run a test level, feature, module, class, or method directly:
 
 ```bash
@@ -68,21 +81,22 @@ discover the corresponding directory in a fresh interpreter. Set
 For a native display, these Bash examples run each group separately:
 
 ```bash
-CRAPPY_TEST_GUI=tkinter MPLBACKEND=TkAgg python -m unittest discover -s tests/gui/tkinter -t . -v
-CRAPPY_TEST_GUI=pyqt MPLBACKEND=TkAgg python -m unittest discover -s tests/gui/pyqt -t . -v
-CRAPPY_TEST_GUI=display MPLBACKEND=TkAgg python -m unittest discover -s tests/gui/display/camera_processes -t . -v
-CRAPPY_TEST_GUI=display MPLBACKEND=TkAgg python -m unittest discover -s tests/gui/display/vision -t . -v
+CRAPPY_TEST_GUI=tkinter python -m tests.run tests/gui/tkinter
+CRAPPY_TEST_GUI=pyqt python -m tests.run tests/gui/pyqt
+CRAPPY_TEST_GUI=display python -m tests.run tests/gui/display/camera_processes
+CRAPPY_TEST_GUI=display python -m tests.run tests/gui/display/vision
 ```
 
 On Windows PowerShell, set the environment before the corresponding command,
-for example `$env:CRAPPY_TEST_GUI = 'pyqt'` and `$env:MPLBACKEND = 'TkAgg'`.
+for example `$env:CRAPPY_TEST_GUI = 'pyqt'`, then run
+`python -m tests.run tests/gui/pyqt`.
 Use a fresh Python process for each group. Do not collect Tk and Qt tests in
 the same interpreter.
 
 On headless Linux, prefix each GUI command with Xvfb:
 
 ```bash
-CRAPPY_TEST_GUI=tkinter MPLBACKEND=TkAgg xvfb-run --auto-servernum python -m unittest discover -s tests/gui/tkinter -t . -v
+CRAPPY_TEST_GUI=tkinter xvfb-run --auto-servernum python -m tests.run tests/gui/tkinter
 ```
 
 On macOS, Tk and image-display groups use the existing Tcl-lifetime wrapper:
