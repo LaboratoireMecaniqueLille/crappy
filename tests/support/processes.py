@@ -129,13 +129,26 @@ def _owned_processes(process, known):
   return [child for child in known.values() if _live(child)]
 
 
+def _signal_process_group(process, known, sig):
+  """Signal surviving processes without failing on an already exited group."""
+
+  if process.poll() is not None and not _owned_processes(process, known):
+    return
+  try:
+    os.killpg(process.pid, sig)
+  except ProcessLookupError:
+    pass
+  except PermissionError:
+    # Darwin may return EPERM for a group containing only zombies. Recheck
+    # after signaling, since the last live member can exit during the call.
+    if process.poll() is None or _owned_processes(process, known):
+      raise
+
+
 def _terminate_tree(process, known):
   children = _owned_processes(process, known)
   if os.name == 'posix':
-    try:
-      os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-      pass
+    _signal_process_group(process, known, signal.SIGTERM)
   else:
     for child in reversed(children):
       try:
@@ -153,10 +166,7 @@ def _terminate_tree(process, known):
         pass
   if os.name == 'posix':
     # Include descendants created while a SIGTERM handler was running.
-    try:
-      os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
-      pass
+    _signal_process_group(process, known, signal.SIGKILL)
   if process.poll() is None:
     process.kill()
   process.wait(timeout=2.0)

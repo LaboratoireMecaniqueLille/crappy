@@ -2,12 +2,16 @@
 
 import json
 import logging
+from contextlib import nullcontext
 from multiprocessing import get_context
 from multiprocessing.shared_memory import SharedMemory
+import os
 from pathlib import Path
+import signal
 import subprocess
 from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import Mock, patch
 
 import psutil
 
@@ -17,7 +21,8 @@ from tests.support.assertions import with_failure_manager
 from tests.support.block_test_case import BlockTestBase
 from tests.support.blocks import TestBlock
 from tests.support.camera_process_test_case import CameraProcessTestBase
-from tests.support.processes import run_python, stop_process, wait_until
+from tests.support.processes import (
+    _signal_process_group, run_python, stop_process, wait_until)
 from tests.support.vision import StubVisionBlock, VisionTestBase
 
 
@@ -119,15 +124,18 @@ class TestTestSupport(unittest.TestCase):
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import time
+if sys.argv[2] == 'stubborn':
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
 child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 Path(sys.argv[1]).write_text(json.dumps([os.getpid(), child.pid]))
 print('parent output', flush=True)
 print('parent diagnostic', file=sys.stderr, flush=True)
-if sys.argv[2] == 'timeout':
+if sys.argv[2] != 'leak':
     time.sleep(30)
 '''
     def gone(pid):
@@ -137,13 +145,28 @@ if sys.argv[2] == 'timeout':
       except psutil.NoSuchProcess:
         return True
 
-    for mode, error_type in (('timeout', subprocess.TimeoutExpired),
-                              ('leak', AssertionError)):
-      with self.subTest(mode=mode), TemporaryDirectory() as folder:
+    cases = [('timeout', subprocess.TimeoutExpired, False),
+             ('leak', AssertionError, False)]
+    if os.name == 'posix':
+      cases.append(('timeout', subprocess.TimeoutExpired, True))
+      cases.append(('stubborn', subprocess.TimeoutExpired, False))
+
+    for mode, error_type, denied_sigkill in cases:
+      with self.subTest(mode=mode, denied_sigkill=denied_sigkill), \
+           TemporaryDirectory() as folder:
         record = Path(folder) / 'pids.json'
-        with self.assertRaises(error_type) as caught:
+        killpg = getattr(os, 'killpg', None)
+
+        def reject_sigkill(group, sig):
+          if sig == signal.SIGKILL:
+            raise PermissionError('process group can no longer be signaled')
+          return killpg(group, sig)
+
+        signaling = (patch('tests.support.processes.os.killpg', reject_sigkill)
+                     if denied_sigkill else nullcontext())
+        with signaling, self.assertRaises(error_type) as caught:
           run_python(['-c', script, str(record), mode], timeout=3.0)
-        if mode == 'timeout':
+        if error_type is subprocess.TimeoutExpired:
           self.assertIn('parent output', caught.exception.stdout)
           self.assertIn('parent diagnostic', caught.exception.stderr)
         else:
@@ -151,3 +174,22 @@ if sys.argv[2] == 'timeout':
           self.assertIn('parent diagnostic', str(caught.exception))
         pids = json.loads(record.read_text())
         self.assertTrue(wait_until(lambda: all(gone(pid) for pid in pids)))
+
+  def test_group_permission_errors_require_completed_shutdown(self):
+    for parent_exited, live_child in ((True, False), (False, False),
+                                       (True, True)):
+      with self.subTest(parent_exited=parent_exited, live_child=live_child):
+        process = Mock(pid=12345)
+        process.poll.side_effect = [None, 0 if parent_exited else None]
+        children = [Mock()] if live_child else []
+        permission = PermissionError('process group cannot be signaled')
+        with patch('tests.support.processes._owned_processes',
+                   return_value=children), \
+             patch('tests.support.processes.os.killpg',
+                   side_effect=permission, create=True):
+          if parent_exited and not live_child:
+            _signal_process_group(process, {}, signal.SIGTERM)
+          else:
+            with self.assertRaises(PermissionError) as caught:
+              _signal_process_group(process, {}, signal.SIGTERM)
+            self.assertIs(caught.exception, permission)
