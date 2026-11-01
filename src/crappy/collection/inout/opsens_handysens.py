@@ -58,7 +58,7 @@ class HandySens(InOut):
     """Wrapper for sending a command and returning the received answer."""
 
     self.log(logging.DEBUG, f"Writing b'{cmd}\\n' to port {self._addr}")
-    self._dev.write(cmd + '\n')
+    self._dev.write((cmd + '\n').encode('ascii'))
     ret = self._dev.read_until(b'\x04\n').decode()
     self.log(logging.DEBUG, f"Read {ret} on port {self._addr}")
     return ret
