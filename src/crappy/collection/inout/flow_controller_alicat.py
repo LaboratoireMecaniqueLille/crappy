@@ -2,9 +2,7 @@
 
 import logging
 import time
-from pymodbus.client.serial import ModbusSerialClient
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
+from pymodbus.client import ModbusSerialClient
 
 from ...inout.meta_inout import InOut
 
@@ -18,6 +16,8 @@ SETPOINT_REGISTER: int = 1009
 
 class FlowControllerAlicat(InOut):
   """Driver for Alicat mass flow controllers over Modbus RTU.
+
+  Requires PyModbus 3.10 or newer.
 
   .. versionadded:: 2.0.9
   """
@@ -46,7 +46,7 @@ class FlowControllerAlicat(InOut):
   def open(self) -> None:
     """Open the serial Modbus RTU connection."""
 
-    self._client = ModbusSerialClient(method="rtu", port=self._port,
+    self._client = ModbusSerialClient(port=self._port,
                                       baudrate=9600, bytesize=8, parity='N',
                                       stopbits=1, timeout=self._timeout)
 
@@ -60,18 +60,16 @@ class FlowControllerAlicat(InOut):
 
     data: list[float] = [now]
 
-    for addr, count in REGISTERS:
-      resp = self._client.read_holding_registers(address=addr,count=count,
-                                                     slave=self._address)
+    for addr, count in REGISTERS.values():
+      resp = self._client.read_holding_registers(address=addr, count=count,
+                                                 device_id=self._address)
 
       if resp is None or resp.isError() or not hasattr(resp, "registers"):
         self.log(logging.WARNING, f"Failed to read at address {addr}")
         return None
 
-      decoder = BinaryPayloadDecoder.fromRegisters(resp.registers,
-                                                   byteorder=Endian.BIG,
-                                                   wordorder=Endian.BIG)
-      value = float(decoder.decode_32bit_float())
+      value = float(self._client.convert_from_registers(
+          resp.registers, self._client.DATATYPE.FLOAT32, word_order='big'))
 
       data.append(value)
 
@@ -80,12 +78,11 @@ class FlowControllerAlicat(InOut):
   def set_cmd(self, cmd: float | int) -> None:
     """Write the mass flow setpoint (32-bit float)."""
 
-    builder = BinaryPayloadBuilder(byteorder=Endian.BIG, wordorder=Endian.BIG)
-    builder.add_32bit_float(float(cmd))
-
-    registers = builder.to_registers()
+    registers = self._client.convert_to_registers(
+        float(cmd), self._client.DATATYPE.FLOAT32, word_order='big')
     resp = self._client.write_registers(address=SETPOINT_REGISTER,
-                                        values=registers, slave=self._address)
+                                        values=registers,
+                                        device_id=self._address)
 
     if resp is None or resp.isError():
       raise IOError(f"Alicat write error: {resp}")
