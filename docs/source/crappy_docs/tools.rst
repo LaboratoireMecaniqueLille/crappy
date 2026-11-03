@@ -236,8 +236,17 @@ Fields Tools
 .. autofunction:: crappy.tool.image_processing.fields.get_field
 .. autofunction:: crappy.tool.image_processing.fields.get_res
 
+.. _gpu-compatibility:
+
 GPU Correl Tool
 +++++++++++++++
+
+GPUCorrel and GPUVE use legacy CUDA texture references in both their resampling
+code and their correlation kernels. CUDA 12 removed support for these
+references. The current implementation therefore requires a CUDA toolkit
+older than 12 and a PyCUDA build compatible with that toolkit. CUDA 11.8 is
+the last CUDA 11 toolkit.
+
 .. autoclass:: crappy.tool.image_processing.GPUCorrelTool
    :members: set_img_size, set_orig, prepare, get_disp, get_data_display,
              get_res, clean
