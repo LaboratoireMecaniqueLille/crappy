@@ -97,7 +97,7 @@ Other common optional dependencies include:
 - ``SimpleITK`` for an additional image-reading and writing backend
 - ``tables`` for HDF5 streaming-data recording
 - ``pyserial`` for serial devices
-- ``paho-mqtt`` and a Mosquitto broker for ClientServer communication
+- ``paho-mqtt>=2.0`` and a Mosquitto broker for ClientServer communication
 - ``pyusb`` for drivers that communicate directly over USB
 - ``PyCUDA`` and a compatible CUDA installation for GPU image processing
 
