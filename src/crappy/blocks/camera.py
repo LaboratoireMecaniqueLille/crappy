@@ -14,7 +14,6 @@ from multiprocessing import managers, synchronize, connection, queues
 from threading import (BrokenBarrierError, Thread, Event as ThreadEvent,
                        current_thread)
 import logging
-from warnings import warn
 
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
@@ -296,13 +295,6 @@ class Camera(Block):
 
     self._logger: logging.Logger | None = None
     self._camera_class: type[BaseCam] | None = None
-
-    warn("\nThe default backend for camera configuration was changed from "
-         "'tkinter' to 'pyqt' without prior notice.\nThis change was "
-         "implemented nevertheless because it significantly increases "
-         "performance\nSet config_backend='tkinter' to switch back to the "
-         "previous behavior.\nInstall PyQt6 to use the new, lighter and "
-         "faster camera configuration window.\n", UserWarning, stacklevel=2)
 
     self._save_proc: ImageSaver | None = None
     self._display_proc: Displayer | None = None

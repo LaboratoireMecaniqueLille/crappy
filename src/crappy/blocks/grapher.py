@@ -8,7 +8,6 @@ from sys import modules
 from typing import TYPE_CHECKING, Literal
 import numpy as np
 import os
-from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
@@ -168,14 +167,6 @@ class Grapher(Block):
 
       will plot a dynamic graph displaying the last 30 data points.
     """
-
-    warn("\nThe new 'plotter' and 'upd_freq' arguments were added to the "
-         "Grapher Block without prior notice, and the defaults for 'freq' and "
-         "'backend' were also changed.\nThese changes we implemented "
-         "nevertheless because they significantly increase performance\nSet "
-         "plotter='mpl' and backend='TkAgg' to use the previous display "
-         "settings.\nInstall pyqtgraph and PyQt6 to use the new, lighter and "
-         "faster default Grapher mode.\n", UserWarning, stacklevel=2)
 
     self._figure: Figure | None = None
     self._qt_app: QApplication | None = None

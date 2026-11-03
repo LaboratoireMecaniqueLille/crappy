@@ -1,9 +1,7 @@
 from tests.support.assertions import with_failure_manager
 import logging
 from multiprocessing import Event
-from unittest.mock import patch
 from crappy.blocks.stop_button import StopButton
-import crappy.blocks.stop_button as stop_button_module
 
 
 class StopButtonTests:
@@ -13,9 +11,6 @@ class StopButtonTests:
     """Tracks StopButton Blocks for cleanup, even after failed preparation."""
 
     super().setUp()
-    patcher = patch.object(stop_button_module, 'warn')
-    patcher.start()
-    self.addCleanup(patcher.stop)
     self._buttons: list[StopButton] = list()
 
   def _prepare_stop_button(self, **kwargs) -> StopButton:

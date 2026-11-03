@@ -11,12 +11,9 @@ mpl_plt.switch_backend('Agg')
 
 class GrapherTestBase(BlockTestBase):
   def setUp(self) -> None:
-    """Tracks Graphers, suppresses notices, and closes stale figures."""
+    """Tracks Graphers for cleanup."""
 
     super().setUp()
-    self._warning_patcher = patch.object(grapher_module, 'warn')
-    self._warning_patcher.start()
-    self.addCleanup(self._warning_patcher.stop)
     self._graphers: list[Grapher] = list()
 
   def _prepare_grapher(self,
