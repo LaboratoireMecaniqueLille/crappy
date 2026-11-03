@@ -131,7 +131,7 @@ class PiJuice(InOut):
       data = self._read_i2c(pijuice_commands['status'], 2)
       status['battery'] = pijuice_battery_status[data[0] & 0x0C]
       status['USB'] = pijuice_power_status[data[0] & 0x30]
-      status['GPIO'] = pijuice_power_status[data[0] & 0xC0]
+      status['GPIO'] = pijuice_power_status[(data[0] & 0xC0) >> 2]
 
     elif self._backend == 'pijuice':
       stat = self._pijuice.status.GetStatus()

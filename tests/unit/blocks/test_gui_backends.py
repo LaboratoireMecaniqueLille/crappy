@@ -32,14 +32,7 @@ GUI_BLOCKS = (
 
 
 class GUIBlockTestBase(BlockTestBase):
-  """Suppress migration notices while retaining the normal Block harness."""
-
-  def setUp(self) -> None:
-    super().setUp()
-    for _, module, _ in GUI_BLOCKS:
-      patcher = patch.object(module, 'warn')
-      patcher.start()
-      self.addCleanup(patcher.stop)
+  """Share GUI topology setup while retaining the normal Block harness."""
 
   @staticmethod
   def _connect(block) -> None:

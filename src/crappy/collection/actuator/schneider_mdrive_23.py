@@ -55,7 +55,7 @@ class SchneiderMDrive23(Actuator):
     if abs(speed) < 1000000:
       self.log(logging.DEBUG, f"Writing b'SL {int(speed)}\\r' to port "
                               f"{self._port}")
-      self._ser.write(f'SL {int(speed)}\r')
+      self._ser.write(f'SL {int(speed)}\r'.encode('ascii'))
       self._ser.read(self._ser.inWaiting())
     else:
       self.log(logging.WARNING, "Maximum speed exceeded, not setting speed")
@@ -79,7 +79,7 @@ class SchneiderMDrive23(Actuator):
     # Sending the position command
     self.log(logging.DEBUG, f"Writing b'MR {int(position)}\\r' to port "
                             f"{self._port}")
-    self._ser.write(f'MR {int(position)}\r')
+    self._ser.write(f'MR {int(position)}\r'.encode('ascii'))
     self._ser.readline()
 
   def get_position(self) -> float:
@@ -94,7 +94,7 @@ class SchneiderMDrive23(Actuator):
 
     # Asking for a position reading
     self.log(logging.DEBUG, f"Writing b'PR P \\r' to port {self._port}")
-    self._ser.write('PR P \r')
+    self._ser.write(b'PR P \r')
     pfb = self._ser.readline()
     self.log(logging.DEBUG, f"Read {pfb} from port {self._port}")
     pfb1 = self._ser.readline()
@@ -111,7 +111,7 @@ class SchneiderMDrive23(Actuator):
       self._ser.open()
 
       self.log(logging.DEBUG, f"Writing b'SL 0\\r' to port {self._port}")
-      self._ser.write('SL 0\r')
+      self._ser.write(b'SL 0\r')
 
   def close(self) -> None:
     """Close the serial connection."""

@@ -119,9 +119,10 @@ class ServoStar300(Actuator):
     self._ser.flushInput()
     self.log(logging.DEBUG, f"Writing b'ORDER 0 {int(pos)} {speed} 8192 200 "
                             f"200 0 0 0 0\\r\\n' to port {self._port}")
-    self._ser.write(f"ORDER 0 {int(pos)} {speed} 8192 200 200 0 0 0 0\r\n")
+    self._ser.write(f"ORDER 0 {int(pos)} {speed} "
+                    f"8192 200 200 0 0 0 0\r\n".encode('ascii'))
     self.log(logging.DEBUG, f"Writing b'MOVE 0\\r\\n' to port {self._port}")
-    self._ser.write("MOVE 0\r\n")
+    self._ser.write(b"MOVE 0\r\n")
 
     # Saving the last command
     self._last_pos = pos
@@ -135,21 +136,22 @@ class ServoStar300(Actuator):
     # Requesting a position reading
     self._ser.flushInput()
     self.log(logging.DEBUG, f"Writing b'PFB\\r\\n' to port {self._port}")
-    self._ser.write("PFB\r\n")
+    self._ser.write(b"PFB\r\n")
 
     # Reading until getting the stop sequence, or the actuator stops responding
-    r = ''
-    while r != "PFB\r\n":
+    r = b''
+    while r != b"PFB\r\n":
       # Keeping only the last 5 received characters
       if len(r) == 5:
         r = r[1:]
       # Reading the next character
-      r += self._ser.read()
+      character = self._ser.read()
       # Aborting if no new character could be read
-      if not r:
+      if not character:
         self.log(logging.ERROR, "Timeout error ! Make sure the servostar is "
                                 "on !")
         return
+      r += character
 
     # The next reading should give the position
     ret = self._ser.readline()
@@ -161,7 +163,7 @@ class ServoStar300(Actuator):
 
     if self._ser is not None:
       self.log(logging.DEBUG, f"Writing b'DIS\\r\\n' to port {self._port}")
-      self._ser.write("DIS\r\n")
+      self._ser.write(b"DIS\r\n")
       self._ser.flushInput()
 
   def close(self) -> None:
@@ -176,7 +178,7 @@ class ServoStar300(Actuator):
 
     self._ser.flushInput()
     self.log(logging.DEBUG, f"Writing b'OPMODE 8\\r\\n' to port {self._port}")
-    self._ser.write('OPMODE 8\r\n')
+    self._ser.write(b'OPMODE 8\r\n')
     self._mode = "serial"
 
   def _set_mode_analog(self) -> None:
@@ -185,5 +187,5 @@ class ServoStar300(Actuator):
     self._last_pos = None
     self._ser.flushInput()
     self.log(logging.DEBUG, f"Writing b'OPMODE A\\r\\n' to port {self._port}")
-    self._ser.write('OPMODE 1\r\n')
+    self._ser.write(b'OPMODE 1\r\n')
     self._mode = "analog"

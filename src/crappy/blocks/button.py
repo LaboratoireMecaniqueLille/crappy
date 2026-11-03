@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Literal
 import logging
 import locale
 import os
-from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
@@ -85,13 +84,6 @@ class Button(Block):
 
         .. versionadded:: 2.0.0
     """
-
-    warn("\nThe default backend for the Button Block was changed from "
-         "'tkinter' to 'pyqt' without prior notice.\nThis change was "
-         "implemented nevertheless because it is part of a larger migration "
-         "to PyQt\nSet backend='tkinter' to switch back to the "
-         "previous behavior.\nInstall PyQt6 to use the new Button "
-         "interface.\n", UserWarning, stacklevel=2)
 
     self._root: tk.Tk | None = None
     self._qt_app: QtWidgets.QApplication | None = None

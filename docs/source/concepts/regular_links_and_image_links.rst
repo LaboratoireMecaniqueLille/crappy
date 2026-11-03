@@ -32,7 +32,7 @@ Choosing the Link type
      - Only the newest published image remains in the shared buffer.
    * - What can a slow consumer miss?
      - A consumer can deliberately discard older values. On Linux, new values
-       are also discarded if the pipe is full.
+       are also discarded if the pipe is not writable.
      - Any intermediate image overwritten before the consumer copies it.
    * - How is it created?
      - :func:`crappy.link`
@@ -77,11 +77,16 @@ If no data is available, these methods return an empty dictionary instead of
 waiting. A Block should therefore treat an empty result as “no new data” and
 continue according to its task.
 
-Regular Links are buffered but not lossless storage. On Linux, a dictionary
-being sent when the pipe is full is discarded and Crappy periodically logs a
-warning. On other operating systems, the send operation can wait until buffer
-space becomes available. A Recorder or another storage Block should receive
-any values that must be preserved.
+Regular Links are buffered but not lossless storage. On Linux, Crappy checks
+whether the pipe is writable before sending. If it is not, the dictionary is
+discarded and Crappy periodically logs a warning. On other operating systems,
+sending can also wait for buffer space without this preliminary check.
+
+Regular Links therefore do not guarantee non-blocking sends on any platform.
+Keep messages small, limit the size of arrays and stream chunks sent through
+them, and ensure downstream Blocks read regularly. A Recorder or another
+storage Block should receive values that must be preserved, but it still needs
+to keep up with the incoming data.
 
 ImageLink latest-frame delivery
 -------------------------------

@@ -7,6 +7,16 @@ Search the documentation and existing reports before opening a new one. The
 The :doc:`hardware` page records the drivers distributed with Crappy and their
 known platforms and backends.
 
+.. _maintenance-policy:
+
+Maintenance after 2.2.0
+-----------------------
+
+Version 2.2.0 is expected to be the last release with major feature updates.
+The current maintainer may continue to provide bug fixes and compatibility
+updates for new Python versions, as availability permits. There is currently no
+successor maintainer. Reports and focused contributions remain welcome.
+
 Choose the right channel
 ------------------------
 

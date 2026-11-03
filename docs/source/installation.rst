@@ -97,9 +97,10 @@ Other common optional dependencies include:
 - ``SimpleITK`` for an additional image-reading and writing backend
 - ``tables`` for HDF5 streaming-data recording
 - ``pyserial`` for serial devices
-- ``paho-mqtt`` and a Mosquitto broker for ClientServer communication
+- ``paho-mqtt>=2.0`` and a Mosquitto broker for ClientServer communication
 - ``pyusb`` for drivers that communicate directly over USB
-- ``PyCUDA`` and a compatible CUDA installation for GPU image processing
+- ``PyCUDA`` and a CUDA toolkit older than 12 for GPU image processing. See
+  :ref:`gpu-compatibility` for the toolchain limits
 
 Driver-specific dependencies and backend choices are listed in :doc:`hardware`
 and in each driver's :doc:`API entry <api>`.

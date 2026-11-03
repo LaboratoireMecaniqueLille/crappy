@@ -434,7 +434,7 @@ videoconvert ! autovideosink
     try:
       format_name, img_size, fps = findall(r"(\w+)\s(\w+)\s\((\d+.\d+) fps\)",
                                            img_format)[0]
-    except ValueError:
+    except (IndexError, ValueError):
       format_name, img_size, fps = img_format, None, None
 
     # Default color is BGR in most cases

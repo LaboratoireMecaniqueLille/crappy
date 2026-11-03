@@ -96,8 +96,8 @@ class TestSoftwareCleanup(GUIBlockTestBase):
   def test_grapher_closes_matplotlib_after_qt_failure(self) -> None:
     """A Qt close cannot skip event processing or Matplotlib cleanup."""
 
-    with patch.object(grapher_module, 'warn'):
-      block = with_failure_manager(Grapher(('x', 'y'), plotter='mpl', backend='TkAgg'))
+    block = with_failure_manager(Grapher(('x', 'y'), plotter='mpl',
+                                         backend='TkAgg'))
     window, app, figure = Mock(), Mock(), Mock()
     block._qt_plot, block._qt_app, block._figure = window, app, figure
     error = RuntimeError('Qt close')

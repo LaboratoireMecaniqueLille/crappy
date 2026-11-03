@@ -136,6 +136,8 @@ Generator
 GPU Correl
 ----------
 
+See :ref:`gpu-compatibility` for the CUDA toolkit requirements.
+
 .. autoclass:: crappy.blocks.GPUCorrel
    :members: prepare
    :special-members: __init__
@@ -144,6 +146,8 @@ GPU Correl
 
 GPU VE
 ------
+
+See :ref:`gpu-compatibility` for the CUDA toolkit requirements.
 
 .. autoclass:: crappy.blocks.GPUVE
    :members: prepare

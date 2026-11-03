@@ -197,25 +197,31 @@ class Generator(Block):
                                 "starting safely")
         return
 
-    # Getting the data from upstream blocks
-    data = self.recv_all_data()
-    try:
-      # Getting the next command to send
-      self._last_t_gen = time()
-      cmd = self._current_path.get_cmd(data)
-      self.log(logging.DEBUG, f"Returned command: {cmd}")
-    except StopIteration:
+    # Use a while loop to avoid infinite recursion for Paths whose stop
+    # condition is immediately satisfied
+    while True:
+      if self._stop_event is not None and self._stop_event.is_set():
+        return
+
+      # Getting fresh data from upstream blocks for each path
+      data = self.recv_all_data()
       try:
-        # Switching to the next path if we reached the end of one
-        self._update_path()
-        self.loop()
-        return
-      except GeneratorNoStop:
-        self.log(logging.WARNING, f"Generator path exhausted, staying idle "
-                                  f"until the script ends")
-        # Case when the Generator shouldn't raise CrappyStop after it ended
-        self._ended_no_raise = True
-        return
+        # Getting the next command to send
+        self._last_t_gen = time()
+        cmd = self._current_path.get_cmd(data)
+        self.log(logging.DEBUG, f"Returned command: {cmd}")
+      except StopIteration:
+        try:
+          # Switching to the next path if we reached the end of one
+          self._update_path()
+        except GeneratorNoStop:
+          self.log(logging.WARNING, "Generator path exhausted, staying idle "
+                                    "until the script ends")
+          # Case when the Generator shouldn't raise CrappyStop after it ended
+          self._ended_no_raise = True
+          return
+      else:
+        break
 
     # Not sending if no command was output by the get_cmd method
     if cmd is None:

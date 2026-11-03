@@ -164,6 +164,7 @@ class ImageRecorder(VisionBlock):
     # Other attributes that will be useful later
     self._csv_created = False
     self._csv_path = None
+    self._metadata_fields: tuple[str, ...] | None = None
     self._metadata_name = 'metadata.csv'
     self._last_processed_idx: int = -1
     self._pil_tags_inv: dict[str, int] = dict()
@@ -250,6 +251,7 @@ class ImageRecorder(VisionBlock):
     Raises:
       RuntimeError: If copied image metadata is unavailable.
       KeyError: If metadata lacks ``'t(s)'`` or ``'ImageUniqueID'``.
+      ValueError: If metadata introduces fields absent from the first frame.
       OSError: If metadata or image files cannot be written.
     """
 
@@ -274,9 +276,6 @@ class ImageRecorder(VisionBlock):
       if self.display_freq:
         self._print_freq(img_handled=False)
       return
-    # Storing the latest index
-    self._last_processed_idx = img_idx
-
     # Defined for convenience
     metadata = self.last_received[upd_link].metadata
     if metadata is None:
@@ -284,25 +283,11 @@ class ImageRecorder(VisionBlock):
                          "empty")
     img = self.last_received[upd_link].img
 
-    # Creating the .csv containing the metadata on the first received frame
-    if not self._csv_created:
-      self._csv_path = (self._save_folder / self._metadata_name)
-
-      self.log(logging.INFO, f"Creating file for saving the metadata: "
-                             f"{self._csv_path}")
-
-      # Also writing the header of the .csv file when creating it
-      with open(self._csv_path, 'w') as csvfile:
-        writer = DictWriter(csvfile, fieldnames=metadata.keys())
-        writer.writeheader()
-
-      self._csv_created = True
-
-    # Saving the received metadata to the .csv file
-    self.log(logging.DEBUG, f"Saving metadata: {metadata}")
-    with open(self._csv_path, 'a') as csvfile:
-      writer = DictWriter(csvfile, fieldnames=metadata.keys())
-      writer.writerow({**metadata, 't(s)': metadata['t(s)']})
+    fields = (tuple(metadata) if self._metadata_fields is None
+              else self._metadata_fields)
+    if extra := set(metadata).difference(fields):
+      raise ValueError(f"New metadata fields after the first saved frame: "
+                       f"{', '.join(sorted(extra))}")
 
     # Only include the extension for the image file if applicable
     if self._img_extension:
@@ -330,10 +315,25 @@ class ImageRecorder(VisionBlock):
         Image.fromarray(img).save(path, exif=self._pil_exif(metadata))
 
     elif self._save_backend == 'cv2':
-      cv2.imwrite(path, img)
+      if not cv2.imwrite(path, img):
+        raise IOError(f"OpenCV could not write image to {path}")
 
     elif self._save_backend == 'npy':
       np.save(path, img)
+
+    # Only successful image writes are added to the metadata file
+    self._csv_path = self._save_folder / self._metadata_name
+    self.log(logging.DEBUG, f"Saving metadata: {metadata}")
+    with open(self._csv_path, 'a' if self._csv_created else 'w',
+              newline='') as csvfile:
+      writer = DictWriter(csvfile, fieldnames=fields)
+      if not self._csv_created:
+        writer.writeheader()
+      writer.writerow(metadata)
+
+    self._metadata_fields = fields
+    self._csv_created = True
+    self._last_processed_idx = img_idx
 
     # Sending information on the image through regular Links
     self.send({'t(s)': metadata['t(s)'],

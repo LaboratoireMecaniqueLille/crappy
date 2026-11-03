@@ -828,12 +828,12 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     """Stops the motor, joins the threads and deenergizes the motor."""
 
     self._close = True
-    if self._rct_on:
+    if self._rct_on and self._thrd_rct.ident is not None:
       self.log(logging.INFO, "Stopping the thread managing the command "
                              "timeouts")
       self._thrd_rct.join()
-    if self._t_shutoff > 0:
-      self.log(logging.INFO, "Starting the thread managing the auto shutoff")
+    if self._t_shutoff > 0 and self._thrd_shutoff.ident is not None:
+      self.log(logging.INFO, "Stopping the thread managing the auto shutoff")
       self._thrd_shutoff.join()
     self._enter_safe_start()
     self._deenergize()

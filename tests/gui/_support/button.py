@@ -15,9 +15,6 @@ class ButtonTests:
     """Tracks the GUI Blocks to destroy them during teardown."""
 
     super().setUp()
-    patcher = patch.object(button_module, 'warn')
-    patcher.start()
-    self.addCleanup(patcher.stop)
     self._buttons: list[Button] = list()
 
   def _prepare_button(self, **kwargs) -> tuple[Button, TestBlock]:

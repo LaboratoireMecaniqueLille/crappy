@@ -4,7 +4,6 @@ from time import time, strftime, gmtime
 from typing import Any, Literal
 import numpy as np
 import logging
-from warnings import warn
 
 from .meta_camera import Camera
 from .._global import OptionalModule
@@ -69,7 +68,6 @@ class XiAPI(Camera):
 
     super().__init__()
 
-    self._cam = None
     self._started: bool = False
     self._model: str | None = None
     self._timeout: int | None = None
@@ -83,9 +81,13 @@ class XiAPI(Camera):
   def open(self,
            serial_number: str | None = None,
            timeout: int | None = None,
-           trigger: Literal['Free run', 'Hdw after config', 'Hardware'] = None,
-           data_format: Literal['Mono (8 bits)', 'Mono (16 bits)',
-                                'Raw (8 bits)', 'Raw (16 bits)'] = None,
+           trigger: Literal['Free run',
+                            'Hdw after config',
+                            'Hardware'] | None = None,
+           data_format: Literal['Mono (8 bits)',
+                                'Mono (16 bits)',
+                                'Raw (8 bits)',
+                                'Raw (16 bits)'] | None = None,
            exposure_time_us: int | None = None,
            gain: float | None = None,
            auto_exposure_auto_gain: bool | None = None,
@@ -97,16 +99,9 @@ class XiAPI(Camera):
            x_offset: int | None = None,
            y_offset: int | None = None,
            framerate_mode: Literal['Free run', 'Framerate target',
-                                   'Framerate limit'] = None,
+                                   'Framerate limit'] | None = None,
            framerate: float | None = None,
-           downsampling_mode: Literal['1x1', '2x2'] = None,
-           width: int | None = None,
-           height: int | None = None,
-           xoffset: int | None = None,
-           yoffset: int | None = None,
-           exposure: float | None = None,
-           AEAG: bool | None = None,
-           external_trig: bool | None = None) -> None:
+           downsampling_mode: Literal['1x1', '2x2'] | None = None) -> None:
     """Opens the connection to the camera, instantiates the available settings
     and starts the acquisition.
 
@@ -230,45 +225,11 @@ class XiAPI(Camera):
         implement in on other models.
         
         .. versionadded:: 2.0.2
-        
-      width: .. deprecated:: 2.0.2 Use ``image_width`` instead.
-      height: .. deprecated:: 2.0.2 Use ``image_height`` instead.
-      xoffset: .. deprecated:: 2.0.2 Use ``x_offset`` instead.
-      yoffset: .. deprecated:: 2.0.2 Use ``y_offset`` instead.
-      exposure: .. deprecated:: 2.0.2 Use ``exposure_time_us`` instead.
-      AEAG: .. deprecated:: 2.0.2 Use ``auto_exposure_auto_gain`` instead.
-      external_trig: .. deprecated:: 2.0.0 Use ``trigger`` instead.
-    """
 
-    # Managing the deprecated arguments
-    if width is not None:
-      warn("The width argument is deprecated for the XiAPI camera, use "
-           "image_width instead !", FutureWarning)
-      image_width = width
-    if height is not None:
-      warn("The height argument is deprecated for the XiAPI camera, use "
-           "image_height instead !", FutureWarning)
-      image_height = height
-    if xoffset is not None:
-      warn("The xoffset argument is deprecated for the XiAPI camera, use "
-           "x_offset instead !", FutureWarning)
-      x_offset = xoffset
-    if yoffset is not None:
-      warn("The yoffset argument is deprecated for the XiAPI camera, use "
-           "y_offset instead !", FutureWarning)
-      y_offset = yoffset
-    if exposure is not None:
-      warn("The exposure argument is deprecated for the XiAPI camera, use "
-           "exposure_time_us instead !", FutureWarning)
-      exposure_time_us = exposure
-    if AEAG is not None:
-      warn("The AEAG argument is deprecated for the XiAPI camera, use "
-           "auto_exposure_auto_gain instead !", FutureWarning)
-      auto_exposure_auto_gain = AEAG
-    if external_trig is not None:
-      warn("The external_trig argument is deprecated for the XiAPI camera, use"
-           " trigger instead !", FutureWarning)
-      trigger = 'Hdw after config'
+    .. versionremoved:: 2.2.0
+       *width*, *height*, *xoffset*, *yoffset*, *exposure*, *AEAG* and
+       *external_trig* arguments
+    """
 
     self._timeout = timeout
 
@@ -385,7 +346,7 @@ class XiAPI(Camera):
     # Framerate parameters
     if self._model in FRAMERATE_MODES:
       self.add_choice_setting('framerate_mode',
-                              FRAMERATE_MODES[self._model].values(),
+                              tuple(FRAMERATE_MODES[self._model].values()),
                               self._get_framerate_mode,
                               self._set_framerate_mode,
                               self._get_framerate_mode())
@@ -400,7 +361,7 @@ class XiAPI(Camera):
     # Downsampling parameter
     if self._model in DOWNSAMPLING_MODES:
       self.add_choice_setting('downsampling_mode',
-                              DOWNSAMPLING_MODES[self._model].values(),
+                              tuple(DOWNSAMPLING_MODES[self._model].values()),
                               self._get_downsampling_mode,
                               self._set_downsampling_mode,
                               self._get_downsampling_mode())

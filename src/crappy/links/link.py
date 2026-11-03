@@ -180,8 +180,13 @@ class Link:
   def send(self, value: dict[str, Any]) -> None:
     """Sends a value from the upstream Block to the downstream Block.
 
-    Before sending, applies the given Modifiers and makes sure there's room in
-    the Pipe for sending the data (Linux only).
+    Before sending, applies the given Modifiers. On Linux, discards the value
+    if the Pipe is not writable.
+
+    This check does not guarantee that the complete serialized dictionary fits
+    in the Pipe. Sending a large dictionary, including arrays or stream chunks,
+    can still block until the downstream Block reads data. Sending can block
+    on any platform, keep messages small and ensure consumers read regularly.
     """
 
     # Applying the modifiers to the value to send

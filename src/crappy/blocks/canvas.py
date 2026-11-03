@@ -10,7 +10,6 @@ import logging
 import locale
 import os
 from pathlib import Path
-from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
@@ -310,14 +309,6 @@ class Canvas(Block):
           the data to display. It will try to retrieve this data in the
           incoming Links. The ``text`` will then be updated with this data.
     """
-
-    warn("\nThe meaning of the backend argument for the Canvas Block was "
-         "changed from Matplotlib backend selection to selection between"
-         "'tkinter' and 'pyqt', without prior notice.\nThis change was "
-         "implemented nevertheless because it is part of a larger migration "
-         "to PyQt\nSet backend='tkinter' to switch back to the "
-         "previous behavior.\nInstall PyQt6 to use the new Canvas "
-         "interface.\n", UserWarning, stacklevel=2)
 
     self._root: tk.Tk | None = None
     self._qt_app: QtWidgets.QApplication | None = None

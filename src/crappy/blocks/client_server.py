@@ -40,6 +40,8 @@ class ClientServer(Block):
   microcontrollers) acquiring data in enclosed areas or rotating parts, data
   transfer between machines to delegate processing, communication with other
   programs on a same machine, etc.
+
+  Requires ``paho-mqtt>=2.0`` and uses callback API version 2.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Client_server* to *ClientServer*
@@ -335,7 +337,9 @@ class ClientServer(Block):
 
     # Instantiating the client here as it cannot be set during __init__ in
     # spawn multiprocessing mode
-    self._client = mqtt.Client(client_id=str(time()))
+    self._client = mqtt.Client(
+        callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+        client_id=str(time()))
     self._client.on_connect = self._on_connect
     self._client.on_message = self._on_message
     self._client.reconnect_delay_set(max_delay=10)
@@ -588,7 +592,8 @@ class ClientServer(Block):
     except BaseException as error:
       self._record_callback_failure(error)
 
-  def _on_connect(self, _: Any, __: Any, ___: Any, rc: Any) -> None:
+  def _on_connect(self, _: Any, __: Any, ___: Any,
+                  reason_code: Any, properties: Any) -> None:
     """Subscribes to the requested MQTT topics after connecting.
 
     A refused connection is reported as a failure and requests the test to
@@ -598,14 +603,16 @@ class ClientServer(Block):
       _: MQTT client supplied by the library.
       __: User data supplied by the library.
       ___: Connection flags supplied by the library.
-      rc: Connection result code. Zero means the connection succeeded.
+      reason_code: Connection result code. Zero means the connection succeeded.
+      properties: Connection properties supplied by callback API version 2.
     """
 
     try:
-      if rc != 0:
+      if reason_code != 0:
         raise ConnectionRefusedError(f"MQTT connection refused (return code "
-                                     f"{rc})")
-      self.log(logging.INFO, f"Connected to the broker with return code {rc}")
+                                     f"{reason_code})")
+      self.log(logging.INFO, f"Connected to the broker with return code "
+                             f"{reason_code}")
 
       # Subscribing on connect, so that it automatically resubscribes when
       # reconnecting after a connection loss

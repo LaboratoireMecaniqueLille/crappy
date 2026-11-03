@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Literal
 import logging
 import locale
 import os
-from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
@@ -61,13 +60,6 @@ class StopButton(Block):
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
         disables logging for this Block.
     """
-
-    warn("\nThe default backend for the StopButton Block was changed from "
-         "'tkinter' to 'pyqt' without prior notice.\nThis change was "
-         "implemented nevertheless because it is part of a larger migration "
-         "to PyQt\nSet backend='tkinter' to switch back to the "
-         "previous behavior.\nInstall PyQt6 to use the new StopButton "
-         "interface.\n", UserWarning, stacklevel=2)
 
     self._root: tk.Tk | None = None
     self._qt_app: QtWidgets.QApplication | None = None

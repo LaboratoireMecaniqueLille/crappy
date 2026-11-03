@@ -23,9 +23,6 @@ class CanvasTests:
     """Track windows before preparation so failures also get cleaned up."""
 
     super().setUp()
-    patcher = patch.object(canvas_module, 'warn')
-    patcher.start()
-    self.addCleanup(patcher.stop)
     self._canvases: list[Canvas] = list()
     self._image = crappy.resources.paths['pad']
 

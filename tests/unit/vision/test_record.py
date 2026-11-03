@@ -373,6 +373,109 @@ class TestImageRecorder(VisionTestBase):
       self.assertEqual(path, str(Path(tmp) / '000003_0.750.png'))
       np.testing.assert_array_equal(written, image)
 
+  def test_opencv_false_result_does_not_create_metadata_or_notify(self) -> None:
+    """An unsuccessful first write cannot leave a successful-looking record."""
+
+    with TemporaryDirectory() as tmp:
+      backend = Mock()
+      backend.imwrite.return_value = False
+      with patch.object(record_module, 'cv2', backend):
+        recorder = self.make_recorder(save_folder=tmp, save_backend='cv2')
+        recorder.send = Mock()
+        self.feed_image(recorder, np.ones((2, 3), dtype=np.uint8),
+                        {'ImageUniqueID': 1, 't(s)': 0.25}, 0)
+        with self.assertRaisesRegex(OSError, 'OpenCV could not write image'):
+          recorder.loop()
+
+      self.assertFalse((Path(tmp) / 'metadata.csv').exists())
+      recorder.send.assert_not_called()
+
+  def test_failed_later_opencv_write_keeps_previous_metadata_intact(self) -> None:
+    """A failed later frame adds neither a row nor a saved-frame message."""
+
+    with TemporaryDirectory() as tmp:
+      backend = Mock()
+      backend.imwrite.side_effect = [True, False]
+      image = np.ones((2, 3), dtype=np.uint8)
+      with patch.object(record_module, 'cv2', backend):
+        recorder = self.make_recorder(save_folder=tmp, save_backend='cv2',
+                                      save_period=3)
+        recorder.send = Mock()
+        self.feed_image(recorder, image, {'ImageUniqueID': 1, 't(s)': 0.25}, 0)
+        recorder.loop()
+        previous = (Path(tmp) / 'metadata.csv').read_bytes()
+        self.feed_image(recorder, image, {'ImageUniqueID': 2, 't(s)': 0.5}, 3)
+        with self.assertRaises(OSError):
+          recorder.loop()
+
+      self.assertEqual((Path(tmp) / 'metadata.csv').read_bytes(), previous)
+      self.assertEqual(recorder.send.call_count, 1)
+
+  def test_backend_exception_does_not_record_success_and_frame_can_be_retried(self) -> None:
+    """Exceptions also leave no row or consumed save-period slot."""
+
+    with TemporaryDirectory() as tmp:
+      recorder = self.make_recorder(save_folder=tmp, save_period=3)
+      recorder.send = Mock()
+      self.feed_image(recorder, np.ones((2, 3), dtype=np.uint8),
+                      {'ImageUniqueID': 1, 't(s)': 0.25}, 0)
+      with patch.object(record_module.np, 'save', side_effect=OSError('disk full')):
+        with self.assertRaisesRegex(OSError, 'disk full'):
+          recorder.loop()
+      self.assertFalse((Path(tmp) / 'metadata.csv').exists())
+      recorder.send.assert_not_called()
+
+      recorder.loop()
+
+      self.assertTrue((Path(tmp) / '000001_0.250.npy').exists())
+      with open(Path(tmp) / 'metadata.csv', newline='') as stream:
+        self.assertEqual(list(csv.DictReader(stream)),
+                         [{'ImageUniqueID': '1', 't(s)': '0.25'}])
+      recorder.send.assert_called_once()
+
+  def test_metadata_columns_survive_reordering_and_missing_optional_fields(self) -> None:
+    """Values keep their header columns and absent optional values are blank."""
+
+    frames = ({'ImageUniqueID': 1, 't(s)': 0.25, 'gain': 20},
+              {'gain': 30, 't(s)': 0.5, 'ImageUniqueID': 2},
+              {'t(s)': 0.75, 'ImageUniqueID': 3})
+    with TemporaryDirectory() as tmp:
+      recorder = self.make_recorder(save_folder=tmp, save_period=3)
+      recorder.send = Mock()
+      image = np.ones((2, 3), dtype=np.uint8)
+      for index, metadata in enumerate(frames):
+        self.feed_image(recorder, image, metadata, 3 * index)
+        recorder.loop()
+
+      with open(Path(tmp) / 'metadata.csv', newline='') as stream:
+        self.assertEqual(list(csv.DictReader(stream)), [
+            {'ImageUniqueID': '1', 't(s)': '0.25', 'gain': '20'},
+            {'ImageUniqueID': '2', 't(s)': '0.5', 'gain': '30'},
+            {'ImageUniqueID': '3', 't(s)': '0.75', 'gain': ''}])
+      raw = (Path(tmp) / 'metadata.csv').read_bytes()
+      self.assertTrue(raw.startswith(b'ImageUniqueID,t(s),gain\r\n'))
+      self.assertNotIn(b'\r\r\n', raw)
+
+  def test_new_metadata_fields_are_rejected_before_writing_an_image(self) -> None:
+    """A changed schema is reported without silently dropping new metadata."""
+
+    with TemporaryDirectory() as tmp:
+      recorder = self.make_recorder(save_folder=tmp, save_period=3)
+      recorder.send = Mock()
+      image = np.ones((2, 3), dtype=np.uint8)
+      self.feed_image(recorder, image, {'ImageUniqueID': 1, 't(s)': 0.25}, 0)
+      recorder.loop()
+      previous = (Path(tmp) / 'metadata.csv').read_bytes()
+      self.feed_image(recorder, image,
+                      {'ImageUniqueID': 2, 't(s)': 0.5, 'gain': 20}, 3)
+
+      with self.assertRaisesRegex(ValueError, 'New metadata fields.*gain'):
+        recorder.loop()
+
+      self.assertFalse((Path(tmp) / '000002_0.500.npy').exists())
+      self.assertEqual((Path(tmp) / 'metadata.csv').read_bytes(), previous)
+      self.assertEqual(recorder.send.call_count, 1)
+
   def test_pil_exif_converts_numpy_scalars_and_skips_unknown_keys(self) -> None:
     """Checks EXIF construction for normal Camera metadata values."""
 

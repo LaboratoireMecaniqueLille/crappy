@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the ClientServer Block for sending data to
 an MQTT broker. It requires the Mosquitto MQTT broker to be installed on the
-computer, along with the paho-mqtt and PyQt6 Python packages. It also requires
+computer, along with paho-mqtt>=2.0 and PyQt6 Python packages. It also requires
 the client.py script to be started before starting this one. See
 https://mosquitto.org/ for installing Mosquitto.
 

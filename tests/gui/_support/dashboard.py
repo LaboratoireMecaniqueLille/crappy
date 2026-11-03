@@ -1,9 +1,7 @@
 from tests.support.assertions import with_failure_manager
-from unittest.mock import patch
 import numpy as np
 import logging
 from crappy.blocks.dashboard import Dashboard
-import crappy.blocks.dashboard as dashboard_module
 from tests.support.blocks import TestBlock, link
 
 
@@ -14,9 +12,6 @@ class DashboardTests:
     """Tracks Dashboard Blocks for cleanup, even if prepare fails."""
 
     super().setUp()
-    patcher = patch.object(dashboard_module, 'warn')
-    patcher.start()
-    self.addCleanup(patcher.stop)
     self._dashboards: list[Dashboard] = list()
 
   def _prepare_dashboard(self, labels, **kwargs) -> tuple[Dashboard,

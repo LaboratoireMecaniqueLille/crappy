@@ -10,8 +10,8 @@ from .._global import OptionalModule
 
 try:
   from smbus2 import SMBus
-except (ModuleNotFoundError, ImportError):
-  smbus2 = OptionalModule("smbus2")
+except (ModuleNotFoundError, ImportError) as error:
+  SMBus = OptionalModule("smbus2", cause=error)
 
 try:
   import RPi.GPIO as GPIO
@@ -31,11 +31,15 @@ except (ModuleNotFoundError, ImportError):
 try:
   import adafruit_ads1x15.ads1115 as ads
   from adafruit_ads1x15.analog_in import AnalogIn
-except (ModuleNotFoundError, ImportError):
-  ADS = OptionalModule('adafruit_ads1x15',
-                       'Blinka is necessary to use the I2C bus')
-  AnalogIn = OptionalModule('AnalogIn',
-                            'Blinka is necessary to use the I2C bus')
+except (ModuleNotFoundError, ImportError) as error:
+  ads = OptionalModule('adafruit_ads1x15.ads1115',
+                       'Required for the ADS1115 blinka backend',
+                       cause=error,
+                       install_name='adafruit-circuitpython-ads1x15')
+  AnalogIn = OptionalModule('adafruit_ads1x15.analog_in',
+                            'Required for the ADS1115 blinka backend',
+                            cause=error,
+                            install_name='adafruit-circuitpython-ads1x15')
 
 # Register and other configuration values:
 Ads1115_pointer_conversion = 0x00
