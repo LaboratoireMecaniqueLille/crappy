@@ -149,8 +149,13 @@ class GPUCorrelProcess(CameraProcess):
     self._calc_res = calc_res
 
   def init(self) -> None:
-    """Initializes the GPUCorrelTool, and set its reference image if a
-    ``img_ref`` argument was provided."""
+    """Initializes CUDA before readiness, then sets a supplied reference
+    image."""
+
+    shape = self._img_ref.shape if self._img_ref is not None else self._shape
+    if shape is None:
+      raise RuntimeError("The image shape must be set before initializing "
+                         "GPUCorrel")
 
     # Instantiating the GPUCorrelTool
     self.log(logging.INFO, "Instantiating the GPUCorrel tool")
@@ -166,11 +171,13 @@ class GPUCorrelProcess(CameraProcess):
                                  mask=self._mask,
                                  mul=self._mul)
 
+    # Allocate the CUDA context
+    self._correl.set_img_size(shape)
+
     # Setting the reference image if it was given as an argument
     if self._img_ref is not None:
       self.log(logging.INFO, "Initializing the GPUCorrel tool with the "
                              "given reference image")
-      self._correl.set_img_size(self._img_ref.shape)
       self._correl.set_orig(self._img_ref.astype(np.float32))
       self.log(logging.INFO, "Preparing the GPUCorrel tool")
       self._correl.prepare()
@@ -191,7 +198,6 @@ class GPUCorrelProcess(CameraProcess):
     # given as an argument
     if not self._img0_set:
       self.log(logging.INFO, "Setting the reference image")
-      self._correl.set_img_size(self.img.shape)
       self._correl.set_orig(self.img.astype(np.float32))
       self._correl.prepare()
       self._img0_set = True

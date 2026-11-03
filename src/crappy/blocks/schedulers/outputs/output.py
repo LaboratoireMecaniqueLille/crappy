@@ -5,6 +5,8 @@ from multiprocessing import current_process
 from abc import ABC, abstractmethod
 import logging
 
+from .... import _validation as check
+
 
 class Output(ABC):
   """Base class for output functions used by a
@@ -55,6 +57,9 @@ class Output(ABC):
       level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
     """
+
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._logger = logging.getLogger(

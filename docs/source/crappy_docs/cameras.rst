@@ -101,7 +101,7 @@ Camera Bool Setting
 Camera Choice Setting
 """""""""""""""""""""
 .. autoclass:: crappy.camera.meta_camera.camera_setting.CameraChoiceSetting
-   :members: reload
+   :members: value, reload
    :special-members: __init__
 
 Camera Scale Setting
@@ -109,3 +109,10 @@ Camera Scale Setting
 .. autoclass:: crappy.camera.meta_camera.camera_setting.CameraScaleSetting
    :members: value, reload
    :special-members: __init__
+
+Internal selection helpers
+--------------------------
+
+.. autofunction:: crappy.camera.camera_names
+.. autofunction:: crappy.camera.resolve_camera
+.. autofunction:: crappy.camera.is_reserved

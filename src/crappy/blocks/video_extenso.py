@@ -1,15 +1,18 @@
 # coding: utf-8
 
-from typing import Literal
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from collections.abc import Callable, Sequence
 import numpy as np
 from pathlib import Path
 
 from .camera_processes import VideoExtensoProcess
 from .camera import Camera
-from ..tool.camera_config import CameraConfig, create_configurator
-from ..tool.camera_config.tkinter import TkinterVideoExtensoConfig
-from ..tool.camera_config.pyqt import PyQtVideoExtensoConfig
+from ..tool.camera_config.factory import LazyConfiguratorMapping
+from .. import _validation as check
+
+if TYPE_CHECKING:
+  from ..tool.camera_config import CameraConfig
 
 
 class VideoExtenso(Camera):
@@ -59,8 +62,9 @@ VideoExtensoConfig` window owns the
      tracking helpers to their owning configuration and processing layers
   """
 
-  configurator = {'tkinter': TkinterVideoExtensoConfig,
-                  'pyqt': PyQtVideoExtensoConfig}
+  configurator = LazyConfiguratorMapping({
+    'tkinter': ('.tkinter', 'TkinterVideoExtensoConfig'),
+    'pyqt': ('.pyqt', 'PyQtVideoExtensoConfig')})
 
   def __init__(self,
                camera: str,
@@ -357,25 +361,28 @@ VideoExtensoConfig` window is displayed before the test starts. There, the user
     self.labels = _labels
 
     # Checking the validity of the provided arguments
-    if not isinstance(raise_on_lost_spot, bool):
-      raise TypeError("raise_on_lost_spot must be a boolean")
-    if not isinstance(white_spots, bool):
-      raise TypeError("white_spots must be a boolean")
-    if (num_spots is not None and
-        (not isinstance(num_spots, int) or not 0 < num_spots < 5)):
-      raise ValueError("When provided, num_spots must be an integer between "
-                       "1 and 4")
-    if not isinstance(min_area, int) or min_area < 0:
-      raise ValueError("min_area must be a positive integer")
-    if (blur is not None and
-        (not isinstance(blur, int) or blur < 1 or not blur % 2)):
+    check.boolean(raise_on_lost_spot, 'raise_on_lost_spot')
+    check.boolean(white_spots, 'white_spots')
+    try:
+      check.integer(int(num_spots) if isinstance(num_spots, bool)
+                    else num_spots, 'num_spots', optional=True,
+                    minimum=1, maximum=4)
+      check.integer(int(min_area) if isinstance(min_area, bool) else min_area,
+                    'min_area', minimum=0)
+      check.integer(int(blur) if isinstance(blur, bool) else blur,
+                    'blur', optional=True, minimum=1)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if blur is not None and not blur % 2:
       raise ValueError("When provided, blur must be a positive odd integer")
-    if not isinstance(update_thresh, bool):
-      raise TypeError("update_thresh must be a boolean")
-    if not isinstance(safe_mode, bool):
-      raise TypeError("safe_mode must be a boolean")
-    if not isinstance(border, int) or border < 0:
-      raise ValueError("border must be a positive integer")
+
+    check.boolean(update_thresh, 'update_thresh')
+    check.boolean(safe_mode, 'safe_mode')
+    try:
+      check.integer(int(border) if isinstance(border, bool) else border,
+                    'border', minimum=0)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
     self._raise_on_lost_spot: bool = raise_on_lost_spot
 
@@ -435,17 +442,17 @@ VideoExtensoConfig.get_config` exports only the selected spots and detection
       raise RuntimeError("At that point the log_queue should be set but it "
                          "isn't")
 
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform,
-                               white_spots=self._white_spots,
-                               num_spots=self._num_spots,
-                               min_area=self._min_area,
-                               blur=self._blur,
-                               update_thresh=self._update_thresh,
-                               safe_mode=self._safe_mode,
-                               border=self._border)
+    assert self._failure_manager is not None
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager,
+                             white_spots=self._white_spots,
+                             num_spots=self._num_spots,
+                             min_area=self._min_area,
+                             blur=self._blur,
+                             update_thresh=self._update_thresh,
+                             safe_mode=self._safe_mode,
+                             border=self._border)

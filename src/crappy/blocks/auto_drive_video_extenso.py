@@ -5,7 +5,10 @@ from typing import Any, Literal
 import logging
 
 from .meta_block import Block
-from ..actuator import actuator_dict, Actuator
+from ..actuator import actuator_dict, Actuator, moved_to_collection
+from ..actuator import resolve_actuator, actuator_names
+from .._collection import collection_registry, load_collection_class
+from .. import _validation as check
 
 
 class AutoDriveVideoExtenso(Block):
@@ -57,10 +60,11 @@ class AutoDriveVideoExtenso(Block):
         inversion depends on whether a positive speed will bring the spots
         closer or farther.
       pixel_range: The size of the image (in pixels) along the chosen axis.
+        Must be a strictly positive integer.
 
         .. versionchanged:: 1.5.10 renamed from *range* to *pixel_range*
       max_speed: The absolute maximum speed value that can be sent to the
-        Actuator.
+        Actuator. Must be strictly positive and finite.
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -78,6 +82,8 @@ class AutoDriveVideoExtenso(Block):
     """
 
     self._device: Actuator | None = None
+    self._device_opened: bool = False
+    self._device_stopped: bool = False
 
     super().__init__()
     self.labels = ['t(s)', 'diff(pix)']
@@ -85,29 +91,48 @@ class AutoDriveVideoExtenso(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    # Checking that the 'type' key is given
+    check.instance(actuator, 'actuator', dict)
+    check.mapping(actuator, 'actuator')
     if 'type' not in actuator:
       raise ValueError("The 'type' key must be provided for instantiating the "
                        "Actuator !")
-    self._actuator = actuator
+    check.string(actuator['type'], "actuator['type']")
+    name = actuator['type']
 
-    # Checking that the direction is valid
-    if direction not in ('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+'):
-      raise ValueError("Direction should be in "
-                       "('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+')")
+    if name in actuator_names():
+      resolve_actuator(name)
+    entry = collection_registry.get('Actuator', name)
+    if name not in actuator_dict:
+      if entry is not None:
+        load_collection_class(entry, actuator_dict)
+      elif name in moved_to_collection:
+        raise NotImplementedError(f"The Actuator {name} was "
+                                  f"moved to crappy.collection. To use it, "
+                                  f"add import crappy.collection at the "
+                                  f"beginning of your script")
+      else:
+        raise ValueError(f"Unknown actuator name: {name}!")
 
-    # Checking that the pixel_range is valid
-    if pixel_range <= 0:
-      raise ValueError("Pixel range should be greater than 0")
+    self._actuator_class: type[Actuator] = actuator_dict[name]
 
-    # Checking that the max_speed is valid
-    if max_speed <= 0:
-      raise ValueError("max_speed should be greater than 0")
+    self._actuator_kwargs: dict[str, Any] = {key: value for key, value
+                                             in actuator.items()
+                                             if key != 'type'}
 
-    self._gain = -gain if '-' in direction else gain
-    self._direction = direction
-    self._pixel_range = pixel_range
-    self._max_speed = max_speed
+    check.choice(direction, 'direction',
+                 ('X-', 'X+', 'Y-', 'Y+', 'x-', 'x+', 'y-', 'y+'))
+    self._direction: str = direction
+
+    check.real(int(gain) if isinstance(gain, bool) else gain,
+               'gain')
+    self._gain: float = float(-gain if '-' in direction else gain)
+
+    check.integer(pixel_range, 'pixel_range', minimum=1)
+    self._pixel_range: int = pixel_range
+
+    check.real(int(max_speed) if isinstance(max_speed, bool) else max_speed,
+               'max_speed', minimum=0, strict=True)
+    self._max_speed: float = float(max_speed)
 
   def prepare(self) -> None:
     """Checks the consistency of the linking and initializes the 
@@ -121,12 +146,16 @@ class AutoDriveVideoExtenso(Block):
       raise IOError("The AutoDriveVideoExtenso Block can only have one input "
                     "Link !")
 
-    # Opening and initializing the actuator to drive
-    actuator_name = self._actuator.pop('type')
-    self._device = actuator_dict[actuator_name](**self._actuator)
+    # Instantiate the Actuator to drive
+    self._device = self._actuator_class(**self._actuator_kwargs)
+    self._device_opened = False
+    self._device_stopped = False
+
+    assert self._device is not None
     self.log(logging.INFO, f"Opening the {type(self._device).__name__} "
                            f"actuator")
     self._device.open()
+    self._device_opened = True
     self._device.set_speed(0)
 
   def loop(self) -> None:
@@ -164,10 +193,24 @@ class AutoDriveVideoExtenso(Block):
     """Stops the :class:`~crappy.actuator.meta_actuator.actuator.Actuator` and
     closes it."""
 
-    if self._device is not None:
-      self.log(logging.INFO, f"Stopping the {type(self._device).__name__} "
-                             f"actuator")
-      self._device.stop()
-      self.log(logging.INFO, f"Closing the {type(self._device).__name__} "
-                             f"actuator")
-      self._device.close()
+    if self._device is None:
+      return
+
+    name = type(self._device).__name__
+    manager = self._failure_manager
+
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('AutoDriveVideoExtenso cleanup'):
+      if self._device_opened and not self._device_stopped:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, f"Stopping the {name} actuator")
+        with manager.step(f'stop {name}'):
+          self._device.stop()
+          self._device_stopped = True
+
+      with manager.step('cleanup diagnostic'):
+        self.log(logging.INFO, f"Closing the {name} actuator")
+      with manager.step(f'close {name}'):
+        self._device.close()
+        self._device = None
+        self._device_opened = False

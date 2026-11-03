@@ -2,9 +2,10 @@
 
 from typing import Any
 from numbers import Real
-from math import isfinite, sin, pi
+from math import sin, pi
 
 from .output import Output
+from .... import _validation as check
 
 
 class Sine(Output):
@@ -31,49 +32,24 @@ class Sine(Output):
     
     super().__init__()
     
-    match label:
-      case str() if label.strip():
-        self._label: str = label
-      case str():
-        raise ValueError("The provided label must be a non-empty string")
-      case _:
-        raise TypeError("The provided label must be a non-empty string")
+    check.string(label, 'label')
+    self._label: str = label
     
-    match amplitude:
-      case Real() if isfinite(amplitude) and float(amplitude) > 0:
-        self._amplitude: float = float(amplitude)
-      case Real():
-        raise ValueError("The amplitude must be a finite, strictly positive "
-                         "real number")
-      case _:
-        raise TypeError("The amplitude must be a finite, strictly positive "
-                        "real number")
+    check.real(int(amplitude) if isinstance(amplitude, bool) else amplitude,
+               'amplitude', minimum=0, strict=True)
+    self._amplitude: float = float(amplitude)
 
-    match frequency:
-      case Real() if isfinite(frequency) and float(frequency) > 0:
-        self._frequency: float = float(frequency)
-      case Real():
-        raise ValueError("The frequency must be a finite, strictly positive "
-                         "real number")
-      case _:
-        raise TypeError("The frequency must be a finite, strictly positive "
-                        "real number")
+    check.real(int(frequency) if isinstance(frequency, bool) else frequency,
+               'frequency', minimum=0, strict=True)
+    self._frequency: float = float(frequency)
 
-    match offset:
-      case Real() if isfinite(offset):
-        self._offset: float = float(offset)
-      case Real():
-        raise ValueError("The offset must be a finite real number")
-      case _:
-        raise TypeError("The offset must be a finite real number")
+    check.real(int(offset) if isinstance(offset, bool) else offset,
+               'offset')
+    self._offset: float = float(offset)
 
-    match phase:
-      case Real() if isfinite(phase):
-        self._phase: float = float(phase)
-      case Real():
-        raise ValueError("The phase must be a finite real number")
-      case _:
-        raise TypeError("The phase must be a finite real number")
+    check.real(int(phase) if isinstance(phase, bool) else phase,
+               'phase')
+    self._phase: float = float(phase)
   
   def __call__(self,
                dt: float,

@@ -175,3 +175,10 @@ InOut
    :members: open, set_cmd, get_data, start_stream, get_stream, stop_stream,
              close, log, make_zero, return_data, return_stream
    :special-members: __init__
+
+Internal selection helpers
+--------------------------
+
+.. autofunction:: crappy.inout.inout_names
+.. autofunction:: crappy.inout.resolve_inout
+.. autofunction:: crappy.inout.is_reserved

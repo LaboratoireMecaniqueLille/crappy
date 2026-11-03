@@ -4,6 +4,7 @@ from time import time
 import numpy as np
 import logging
 
+from .. import _validation as check
 from .meta_camera import Camera
 
 
@@ -50,6 +51,11 @@ class FakeCamera(Camera):
     .. versionadded:: 2.0.0
        *width*, *height*, *speed* and *fps* arguments explicitly listed
     """
+
+    check.integer(width, 'width', minimum=1)
+    check.integer(height, 'height', minimum=1)
+    check.real(speed, 'speed')
+    check.real(fps, 'fps', minimum=0, strict=True)
 
     self.set_all(width=width, height=height, speed=speed, fps=fps)
 

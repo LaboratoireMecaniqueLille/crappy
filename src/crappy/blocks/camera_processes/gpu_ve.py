@@ -7,14 +7,15 @@ import logging.handlers
 
 from .camera_process import CameraProcess
 from ...tool.image_processing import GPUCorrelTool
+from ...tool.image_processing.gpu_correl import _check_cuda_toolkit
 from ...tool.camera_config import SpotsBoxes
 from ..._global import OptionalModule
 
 try:
   import pycuda.tools
   import pycuda.driver
-except (ModuleNotFoundError, ImportError):
-  pycuda = OptionalModule("pycuda")
+except (ModuleNotFoundError, ImportError) as error:
+  pycuda = OptionalModule("pycuda", cause=error)
 
 
 class GPUVEProcess(CameraProcess):
@@ -103,6 +104,8 @@ class GPUVEProcess(CameraProcess):
   def init(self) -> None:
     """Initializes the GPUCorrelTool instances, and set their reference image
     if a ``img_ref`` argument was provided."""
+
+    _check_cuda_toolkit()
 
     # Making a CUDA context common to all the patches
     pycuda.driver.init()

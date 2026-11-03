@@ -6,17 +6,13 @@ from pathlib import Path
 from re import fullmatch
 import logging
 
+from .. import _validation as check
 from .meta_camera import Camera
-from .._global import OptionalModule, ReaderStop
+from .._exceptions import ReaderStop
+from .._global import OptionalModule
 
-try:
-  import SimpleITK as Sitk
-except (ModuleNotFoundError, ImportError):
-  Sitk = OptionalModule("SimpleITK")
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+Sitk = OptionalModule('SimpleITK', lazy_import=True)
+cv2 = OptionalModule('cv2', install_name='opencv-python', lazy_import=True)
 
 
 class FileReader(Camera):
@@ -56,8 +52,7 @@ class FileReader(Camera):
            reader_folder: Path | str,
            reader_backend: str | None = None,
            stop_at_end: bool = True) -> None:
-    """Sets the reader backend and retrieves the images to read, sorted by
-    their timestamp.
+    """Resolves the reader backend and retrieves images sorted by timestamp.
 
     Args:
       reader_folder: The path to the folder containing the images to read.
@@ -70,6 +65,8 @@ class FileReader(Camera):
           'sitk' or 'cv2'
 
         If not given, SimpleITK is preferred over OpenCV if available.
+        Only the selected backend, or automatic candidates up to the first
+        usable one, are imported before reading begins.
 
         .. versionadded:: 1.5.10
       stop_at_end: If :obj:`True` (the default), stops the Crappy script once
@@ -82,36 +79,49 @@ class FileReader(Camera):
        1.5.10 *pattern*, *start_delay* and *modifier* arguments
     """
 
-    # Selecting an  available backend between first sitk and then cv2
+    match reader_folder:
+      case Path() if str(reader_folder).strip():
+        folder: Path = reader_folder
+      case Path():
+        raise ValueError("reader_folder must contain a directory path")
+      case str() if reader_folder.strip():
+        folder: Path = Path(reader_folder)
+      case str():
+        raise ValueError("reader_folder must be non-empty when provided as a "
+                         "str")
+      case _:
+        raise TypeError("reader_folder must be provided as a non-empty string "
+                        "or a Path")
+
+    check.boolean(stop_at_end, 'stop_at_end')
+    if reader_backend is not None and reader_backend not in ('sitk', 'cv2'):
+      raise ValueError("The backend argument should be either 'sitk' or "
+                       "'cv2' !")
+
+    if not folder.is_dir():
+      raise FileNotFoundError(f"The {folder} folder does not exist or is not "
+                              f"a folder !")
+
+    # Selecting an available backend between first sitk and then cv2
     if reader_backend is None:
-      if not isinstance(Sitk, OptionalModule):
+      if Sitk.is_available():
         self._backend = 'sitk'
-      elif not isinstance(cv2, OptionalModule):
+      elif cv2.is_available():
         self._backend = 'cv2'
       else:
         raise ModuleNotFoundError("Neither SimpleITK nor opencv-python could "
                                   "be imported, no backend found for reading "
                                   "the images")
     # Setting the backend requested by the user
-    elif reader_backend in ('sitk', 'cv2'):
-      if reader_backend == 'sitk' and isinstance(Sitk, OptionalModule):
+    else:
+      if reader_backend == 'sitk' and not Sitk.is_available():
         raise ModuleNotFoundError("Backend 'sitk' requested but could not "
                                   "be imported")
-      elif reader_backend == 'cv2' and isinstance(cv2, OptionalModule):
+      elif reader_backend == 'cv2' and not cv2.is_available():
         raise ModuleNotFoundError("Backend 'cv2' requested but could not "
                                   "be imported")
       self._backend = reader_backend
-    else:
-      raise ValueError("The backend argument should be either 'sitk' or "
-                       "'cv2' !")
-
     self._stop_at_end = stop_at_end
-
-    # Making sure that the given folder is valid
-    folder = Path(reader_folder)
-    if not folder.exists() or not folder.is_dir():
-      raise FileNotFoundError(f"The {folder} folder does not exist or is not "
-                              f"a folder !")
 
     # Retrieving all the images in the given folder that match the name pattern
     images = (path for path in folder.glob('*') if

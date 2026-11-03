@@ -96,6 +96,11 @@ resources in ``prepare()``. Make ``finish()`` tolerate a partially completed
 setup. Avoid calls in ``loop()`` that can wait forever, the method must return
 regularly so the test can stop cleanly.
 
+If ``finish()`` must try several independent closes, use
+:meth:`~crappy._failure.FailureManager.collect` and
+:meth:`~crappy._failure.FailureManager.step` on ``self._failure_manager``.
+See :ref:`concepts-lifecycle-shutdown` for handling failures in the main script.
+
 Use a Modifier instead when the task is only a quick transformation of each
 dictionary on one Link. Use a VisionBlock when receiving or publishing images.
 The :doc:`../concepts/choosing_custom_object_type` guide covers this choice,

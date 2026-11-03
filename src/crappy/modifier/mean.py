@@ -4,6 +4,7 @@ import numpy as np
 import logging
 
 from .meta_modifier import Modifier, T
+from .. import _validation as check
 
 
 class Mean(Modifier):
@@ -27,8 +28,7 @@ class Mean(Modifier):
 
     super().__init__()
 
-    if n_points < 1:
-      raise ValueError("n_points should be greater than 0")
+    check.integer(n_points, 'n_points', minimum=1)
 
     self._n_points = n_points
     self._buf = None

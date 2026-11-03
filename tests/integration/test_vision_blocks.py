@@ -11,18 +11,13 @@ import unittest
 
 import numpy as np
 
-try:
-  import cv2  # noqa: F401
-except (ImportError, ModuleNotFoundError):
-  cv2 = None
+from tests.support.dependencies import optional_import
 
-try:
-  import skimage  # noqa: F401
-except (ImportError, ModuleNotFoundError):
-  skimage = None
+cv2 = optional_import('cv2')
+skimage = optional_import('skimage')
 
-from .integration_test_base import IntegrationTestBase
-from .scenarios.vision_blocks import generate_vision_test_image
+from tests.support.integration import IntegrationTestBase
+from tests.integration.scenarios.vision_blocks import generate_vision_test_image
 
 
 class TestVisionBlocksIntegration(IntegrationTestBase):

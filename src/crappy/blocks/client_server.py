@@ -12,20 +12,23 @@ from socket import timeout, gaierror
 from itertools import chain
 import logging
 
+from .._exceptions import ProcessExitError, StopRequested, ShutdownTimeoutError
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
 try:
   import paho.mqtt.client as mqtt
-except (ModuleNotFoundError, ImportError):
-  mqtt = OptionalModule("paho-mqtt")
+except (ModuleNotFoundError, ImportError) as error:
+  mqtt = OptionalModule("paho.mqtt.client", install_name="paho-mqtt",
+                        cause=error)
 
 TopicsType = Sequence[str | Sequence[str]]
 
 
 class ClientServer(Block):
   """This Block can exchange data on a local network using the MQTT protocol.
-  
+
   It communicates with an MQTT broker, from which it can receive data by
   subscribing to topics, and to which it can send data by publishing in topics.
   This Block can also manage the execution of a Mosquitto broker, so that the
@@ -37,6 +40,8 @@ class ClientServer(Block):
   microcontrollers) acquiring data in enclosed areas or rotating parts, data
   transfer between machines to delegate processing, communication with other
   programs on a same machine, etc.
+
+  Requires ``paho-mqtt>=2.0`` and uses callback API version 2.
   
   .. versionadded:: 1.4.0
   .. versionchanged:: 2.0.0 renamed from *Client_server* to *ClientServer*
@@ -151,7 +156,6 @@ class ClientServer(Block):
           cmd_labels=['cmd1', 'cmd2']
           labels_to_send=['cmd1', 'cmd2']
 
-
     Examples:
       - ``topics``:
         If
@@ -171,7 +175,6 @@ class ClientServer(Block):
           't1', 'cmd1'
           'sign'
 
-
       - ``cmd_labels``:
         If
         ::
@@ -189,7 +192,6 @@ class ClientServer(Block):
 
            ('t1', 'cmd1')
            ('sign',)
-
 
       - ``labels_to_send``:
         If
@@ -219,9 +221,37 @@ class ClientServer(Block):
           ('sign',)
     """
 
+    check.boolean(broker, 'broker')
+    check.boolean(spam, 'spam')
+    check.string(address, 'address')
+    check.integer(port, 'port', minimum=1, maximum=65535)
+    check.mapping(init_output, 'init_output', optional=True)
+    for value, name in ((topics, 'topics'),
+                        (cmd_labels, 'cmd_labels'),
+                        (labels_to_send, 'labels_to_send')):
+      check.sequence(value, name, optional=True)
+      if value is not None:
+        for topic in value:
+          check.labels(topic, name)
+    if labels_to_send is not None:
+      if cmd_labels is None or len(labels_to_send) != len(cmd_labels):
+        raise ValueError("labels_to_send must have the same structure as "
+                         "cmd_labels")
+      for commands, renamed in zip(cmd_labels, labels_to_send):
+        if ((1 if isinstance(commands, str) else len(commands)) !=
+            (1 if isinstance(renamed, str) else len(renamed))):
+          raise ValueError("Each renamed topic must have as many labels as "
+                           "its command topic")
+
     self._client: mqtt.Client | None = None
     self._reader: Thread | None = None
     self._proc: Popen | None = None
+    self._reader_started: bool = False
+    self._client_loop_started: bool = False
+    self._client_disconnected: bool = False
+    self._broker_stopped: bool = False
+    self._broker_stdout_closed: bool = False
+    self._stop_mosquitto: bool = False
 
     super().__init__()
     self.niceness = -10
@@ -236,8 +266,6 @@ class ClientServer(Block):
     self._spam = spam
     self._init_output = init_output if init_output is not None else dict()
 
-    self._stop_mosquitto = False
-    
     # These attributes may be set later
     self._topics: list[tuple[str, ...]] | None = None
     self._last_out_val: dict[str, Any] = dict()
@@ -300,15 +328,18 @@ class ClientServer(Block):
                              f"{self._port}")
       self._launch_mosquitto()
       # Creating and starting a Thread reading the stdout of the broker
-      self._reader = Thread(target=self._output_reader)
+      self._reader = Thread(target=self._output_reader, daemon=True)
       self._reader.start()
+      self._reader_started = True
       sleep(2)
       self.log(logging.INFO, "Waiting for Mosquitto to start")
       sleep(2)
 
     # Instantiating the client here as it cannot be set during __init__ in
     # spawn multiprocessing mode
-    self._client = mqtt.Client(client_id=str(time()))
+    self._client = mqtt.Client(
+        callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+        client_id=str(time()))
     self._client.on_connect = self._on_connect
     self._client.on_message = self._on_message
     self._client.reconnect_delay_set(max_delay=10)
@@ -335,6 +366,7 @@ class ClientServer(Block):
 
     self.log(logging.INFO, "Starting the client loop")
     self._client.loop_start()
+    self._client_loop_started = True
 
   def loop(self) -> None:
     """Receives data from the broker and/or sends data to the broker.
@@ -402,33 +434,81 @@ class ClientServer(Block):
             break
 
   def finish(self) -> None:
-    """Disconnects from the broker and stops it."""
+    """Disconnects the client, reaps the broker, and joins its stdout reader.
 
-    # Disconnecting from the broker
-    if self._client is not None:
-      self.log(logging.INFO, "Stopping the client loop")
-      self._client.loop_stop()
-      self.log(logging.INFO, "Disconnecting from the broker")
-      self._client.disconnect()
+    Cleanup also works after partial preparation.
+    """
 
-    # Stopping the broker
-    if self._broker and self._proc is not None:
-      try:
-        self.log(logging.INFO, "Stopping the Mosquitto broker")
-        self._proc.terminate()
-        self._proc.wait(timeout=15)
-        self.log(logging.INFO, f"Mosquitto terminated with return code "
-                               f"{self._proc.returncode}")
-        self._stop_mosquitto = True
-        if self._reader is not None:
-          self._reader.join(0.2)
-          if self._reader.is_alive():
-            self.log(logging.WARNING, "Reader thread failed to stop !")
+    manager = self._failure_manager
 
-      except TimeoutExpired:
-        self.log(logging.WARNING, "Mosquitto did not terminate in time, "
-                                  "killing it")
-        self._proc.kill()
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('ClientServer cleanup'):
+      self._stop_mosquitto = True
+
+      if self._client is not None:
+        # Disconnect first so loop_stop does not wait on an active connection
+        if not self._client_disconnected:
+          with manager.step('disconnect MQTT client'):
+            self._client.disconnect()
+            self._client_disconnected = True
+
+        # Stop the client loop
+        if self._client_loop_started:
+          with manager.step('stop MQTT loop'):
+            self._client.loop_stop()
+            self._client_loop_started = False
+        if self._client_disconnected and not self._client_loop_started:
+          self._client = None
+
+      # An existing broker process belongs to this Block, even after failed
+      # setup
+      if self._proc is not None and not self._broker_stopped:
+        with manager.step('terminate broker'):
+          self._proc.terminate()
+        # Wait for the subprocess to terminate
+        with manager.step('wait for broker'):
+          try:
+            self._proc.wait(timeout=2.0)
+          except TimeoutExpired:
+            pass
+          else:
+            self._broker_stopped = True
+
+        # Kill the subprocess if it is still alive
+        if not self._broker_stopped:
+          with manager.step('kill broker'):
+            self._proc.kill()
+          # Give some time for the subprocess to die
+          with manager.step('reap killed broker'):
+            self._proc.wait(timeout=0.5)
+            self._broker_stopped = True
+
+      if self._reader is not None:
+        if self._reader_started:
+          # give some time for the reader thread to stop
+          with manager.step('join broker reader'):
+            self._reader.join(0.5)
+          # Report the reader thread failing to stop
+          with manager.step('check broker reader'):
+            if self._reader.is_alive():
+              raise ShutdownTimeoutError("The broker reader thread did not "
+                                         "stop",
+                                         phase='monitoring',
+                                         timeout=0.5)
+            self._reader = None
+            self._reader_started = False
+        else:
+          self._reader = None
+
+      # Closing stdout while its reader holds the stream lock could block
+      if self._proc is not None and self._reader is None:
+        if not self._broker_stdout_closed:
+          with manager.step('close broker stdout'):
+            if self._proc.stdout is not None:
+              self._proc.stdout.close()
+            self._broker_stdout_closed = True
+        if self._broker_stopped and self._broker_stdout_closed:
+          self._proc = None
 
   def _launch_mosquitto(self) -> None:
     """Starts Mosquitto in a subprocess."""
@@ -443,40 +523,105 @@ class ClientServer(Block):
   def _output_reader(self) -> None:
     """Reads the output strings from Mosquitto's subprocess."""
 
-    while not self._stop_mosquitto:
-      for line in iter(self._proc.stdout.readline, b''):
-        self.log(logging.INFO, f"[Mosquitto] {line.decode()}")
-        if 'Error: Address already in use' in line.decode():
-          self.log(logging.WARNING, "Mosquitto is already running on this "
-                                    "port !")
-      sleep(0.1)
+    manager = self._failure_manager
+    process = self._proc
+    stop = self._stop_event
 
-  def _on_message(self, _, __, message) -> None:
-    """Buffers the received data.
+    # Guard Exceptions with the FailureManager
+    with manager.collect('Broker output reception', raise_on_exit=False):
+      with manager.step('read broker output'):
+        if process is None or process.stdout is None:
+          raise RuntimeError("The broker output stream is unavailable")
+        # Read the output strings from the subprocess
+        while (not self._stop_mosquitto and
+               (stop is None or not stop.is_set())):
+          try:
+            line = process.stdout.readline()
+          except (EOFError, OSError):
+            if self._stop_mosquitto or (stop is not None and stop.is_set()):
+              raise StopRequested from None
+            raise
+          # Stop when told to
+          if not line:
+            if self._stop_mosquitto or (stop is not None and stop.is_set()):
+              break
+            # If the subprocess exited with an error code, report it
+            code = process.poll()
+            raise ProcessExitError(f"Mosquitto broker exited unexpectedly "
+                                   f"({code})",
+                                   process_name='Mosquitto',
+                                   pid=process.pid,
+                                   phase='main',
+                                   exitcode=code)
+          text = line.decode()
+          self.log(logging.INFO, f"[Mosquitto] {text}")
+          if 'Error: Address already in use' in text:
+            self.log(logging.WARNING, "Mosquitto is already running on this "
+                                      "port")
+      # Stop as soon as an error report is received
+      if manager.snapshot():
+        with manager.step('request broker failure shutdown'):
+          if stop is not None:
+            stop.set()
+        with manager.step('abort broker preparation'):
+          if (self._ready_barrier is not None and
+              (self._start_event is None or not self._start_event.is_set())):
+            self._ready_barrier.abort()
 
-    The received message consists in a list of lists of values. Data is placed
-    in the right buffer according to the topic, in the form of lists of values.
+  def _on_message(self, _: Any, __: Any, message: Any) -> None:
+    """Stores incoming MQTT data in the matching topic's buffer.
+
+    Invalid pickle data produces a warning and is ignored. Unexpected failures
+    are reported and request the test to stop.
+
+    Args:
+      _: MQTT client supplied by the library.
+      __: User data supplied by the library.
+      message: MQTT message with a topic and a pickled payload.
     """
 
     try:
-      self.log(logging.DEBUG, f"Received message from the broker: {message}")
-      for data_points in zip(*loads(message.payload)):
-        self._buffer_output[literal_eval(message.topic)].put_nowait(
-          list(data_points))
-    except UnpicklingError:
-      self.log(logging.WARNING, f"Received message caused UnpicklingError, "
-                                f"ignoring it: {message}")
+      try:
+        self.log(logging.DEBUG, f"Received message from the broker: {message}")
+        for data_points in zip(*loads(message.payload)):
+          self._buffer_output[literal_eval(message.topic)].put_nowait(
+            list(data_points))
+      except UnpicklingError:
+        self.log(logging.WARNING, f"Received message caused UnpicklingError, "
+                                  f"ignoring it: {message}")
+    except BaseException as error:
+      self._record_callback_failure(error)
 
-  def _on_connect(self, _, __, ___, rc: Any) -> None:
-    """Automatically subscribes to the topics when connecting to the broker."""
+  def _on_connect(self, _: Any, __: Any, ___: Any,
+                  reason_code: Any, properties: Any) -> None:
+    """Subscribes to the requested MQTT topics after connecting.
 
-    self.log(logging.INFO, f"Connected to the broker with return code {rc}")
+    A refused connection is reported as a failure and requests the test to
+    stop.
 
-    # Subscribing on connect, so that it automatically resubscribes when
-    # reconnecting after a connection loss
-    if self._topics is not None:
-      for topic in self._topics:
-        self._client.subscribe(topic=str(topic), qos=0)
-        self.log(logging.INFO, f"Subscribed to topic {topic}")
+    Args:
+      _: MQTT client supplied by the library.
+      __: User data supplied by the library.
+      ___: Connection flags supplied by the library.
+      reason_code: Connection result code. Zero means the connection succeeded.
+      properties: Connection properties supplied by callback API version 2.
+    """
 
-    self._client.loop_start()
+    try:
+      if reason_code != 0:
+        raise ConnectionRefusedError(f"MQTT connection refused (return code "
+                                     f"{reason_code})")
+      self.log(logging.INFO, f"Connected to the broker with return code "
+                             f"{reason_code}")
+
+      # Subscribing on connect, so that it automatically resubscribes when
+      # reconnecting after a connection loss
+      if self._topics is not None:
+        for topic in self._topics:
+          self._client.subscribe(topic=str(topic), qos=0)
+          self.log(logging.INFO, f"Subscribed to topic {topic}")
+
+      self._client.loop_start()
+      self._client_loop_started = True
+    except BaseException as error:
+      self._record_callback_failure(error)

@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import Any
 
 from .camera_setting import CameraSetting
+from .... import _validation as check
 
 
 class CameraBoolSetting(CameraSetting):
@@ -42,8 +43,7 @@ class CameraBoolSetting(CameraSetting):
 
   @value.setter
   def value(self, val: Any) -> None:
-    if not isinstance(val, bool):
-      raise TypeError(f"Only bool values are allowed for setting {self.name}")
+    check.boolean(val, 'value')
 
     self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
     self.was_set = True

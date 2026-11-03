@@ -198,10 +198,10 @@ class V4L2Helper:
           command = ['v4l2-ctl', '-d', str(device), '--set-ctrl',
                      f'{name}={value}']
         else:
-          command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value[0])}']
+          command = ['v4l2-ctl', '--set-ctrl', f'{name}={int(value)}']
         self.log(logging.DEBUG, f"Running the command {' '.join(command)}")
         run(command, capture_output=True, text=True)
-        self.log(logging.DEBUG, f"Set {name} to {int(value[0])}")
+        self.log(logging.DEBUG, f"Set {name} to {int(value)}")
       else:
         if device is not None:
           command = ['v4l2-ctl', '-d', str(device), '--set-ctrl',

@@ -414,7 +414,7 @@ class RaspberryPiCamera2(Camera):
     # Focus related parameters
     if 'AfMode' in available_controls:
       self.add_choice_setting('auto_focus',
-                              AUTO_FOCUS_MODE.values(),
+                              tuple(AUTO_FOCUS_MODE.values()),
                               None,
                               self._set_auto_focus,
                               'Manual')
@@ -463,7 +463,8 @@ class RaspberryPiCamera2(Camera):
   
   def get_image(self) -> tuple[dict[str, Any], np.ndarray] | None:
     """Grabs the latest image from the shared buffer, converts it to RGB and
-    grey level if necessary, and returns it along with its metadata."""
+    grey level if necessary, applies the software ROI, and returns it along
+    with its metadata."""
 
     # Accessing data using a lock to avoid simultaneous access
     with self._lock:
@@ -488,7 +489,7 @@ class RaspberryPiCamera2(Camera):
         if self.settings['grey_level_images'].value:
           img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         
-        return self._shared['metadata'], img
+        return self._shared['metadata'], self.apply_soft_roi(img)
   
   def close(self) -> None:
     """Stops the image acquisition and closes the connection to the camera."""

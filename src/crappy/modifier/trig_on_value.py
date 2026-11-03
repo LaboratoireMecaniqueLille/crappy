@@ -5,6 +5,7 @@ from collections.abc import Iterable
 import logging
 
 from .meta_modifier import Modifier, T
+from .. import _validation as check
 
 
 class TrigOnValue(Modifier):
@@ -33,6 +34,7 @@ class TrigOnValue(Modifier):
 
     super().__init__()
 
+    check.string(label, 'label')
     self._label = label
 
     if isinstance(values, str):

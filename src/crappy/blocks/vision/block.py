@@ -1,23 +1,28 @@
 # coding: utf-8
 
+from __future__ import annotations
 from abc import ABC
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import (synchronize, managers, RLock, Event, Value,
-                             sharedctypes, connection as mp_connection)
+                             Condition, sharedctypes,
+                             connection as mp_connection)
 import numpy as np
 import logging
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from base64 import urlsafe_b64encode
 from uuid import uuid4
 from math import prod
-from time import time
+from time import monotonic
 
 from ..meta_block import Block
 from ...links import ImageLink
-from ..._global import LinkDataError, PrepareError
-from ...tool.camera_config import CameraConfig
+from ..._exceptions import LinkDataError, StopRequested
+from ... import _validation as check
+
+if TYPE_CHECKING:
+  from ...tool.camera_config import CameraConfig
 
 
 @dataclass
@@ -57,14 +62,20 @@ class ConfigRequest:
   connection: mp_connection.Connection | None = None
   completed: bool = False
   required: bool = True
+  connection_closed: bool = field(default=False, init=False, repr=False)
 
   def __post_init__(self) -> None:
     """Validates the types of the mutable fields."""
 
-    if not isinstance(self.completed, bool):
-      raise TypeError("completed must be a boolean")
-    if not isinstance(self.required, bool):
-      raise TypeError("required must be a boolean")
+    check.string(self.requester, 'requester')
+    check.sequence(self.args, 'args')
+    check.mapping(self.kwargs, 'kwargs')
+    if not isinstance(self.configurator, (type, Mapping)):
+      raise TypeError("configurator must be a class or a mapping of backends "
+                      "to classes")
+
+    check.boolean(self.completed, 'completed')
+    check.boolean(self.required, 'required')
 
 
 @dataclass
@@ -81,6 +92,8 @@ class ImgLinkData:
     img_id: Shared counter identifying the current buffer contents.
     img_buffer: Shared-memory handle owned or attached by this Block.
     npy_buffer: :mod:`numpy` view over ``img_buffer``.
+    buffer_closed: Whether this Block successfully closed its memory handle.
+    buffer_unlinked: Whether the source-owned segment was removed.
 
   .. versionadded:: 2.1.0
   """
@@ -96,6 +109,8 @@ class ImgLinkData:
   # Available for both inputs and outputs, but not set at the same moment
   img_buffer: SharedMemory | None = None
   npy_buffer: np.ndarray | None = None
+  buffer_closed: bool = False
+  buffer_unlinked: bool = False
 
 
 @dataclass
@@ -188,6 +203,18 @@ class VisionBlock(Block, ABC):
         images, not the frequency of an upstream source.
     """
 
+    # List of configuration requests received from downstream Blocks
+    # Access it through the property, not this private attribute
+    self._config_requests_in: list[ConfigRequest] = list()
+    # List of configuration requests emitted by this Block
+    self._config_requests_out: list[ConfigRequest] = list()
+
+    # The list of ImgLinkData objects corresponding to the input ImageLinks
+    self._in_link_data: list[ImgLinkData] = list()
+    # Objects for sharing images with downstream Blocks if needed
+    self._out_link_data = ImgLinkData()
+    self._out_img_conditions: list[synchronize.Condition] = list()
+
     super().__init__()
 
     # Set Block-level arguments
@@ -200,40 +227,29 @@ class VisionBlock(Block, ABC):
     self.img_outputs: list[ImageLink] = list()
     self.img_inputs: list[ImageLink] = list()
 
-    # List of configuration requests received from downstream Blocks
-    # Access it through the property, not this private attribute
-    self._config_requests_in: list[ConfigRequest] = list()
-    # List of configuration requests emitted by this Block
-    self._config_requests_out: list[ConfigRequest] = list()
-
     # If provided, the shape and dtype must be valid
-    if img_shape is not None and not isinstance(img_shape, tuple):
-      raise TypeError("When provided, img_shape must be a tuple of 2 or 3 "
-                      "strictly positive integers")
-    if img_shape is not None and not 1 < len(img_shape) < 4:
-      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
-                       "strictly positive integers")
-    if (img_shape is not None and
-        not all(isinstance(el, int) and el > 0 for el in img_shape)):
-      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
-                       "strictly positive integers")
-    if (img_dtype is not None and
-        (not isinstance(img_dtype, str) or not img_dtype)):
-      raise ValueError("When provided, img_dtype must be a non-empty string")
-    if img_dtype is not None:
-      np.dtype(img_dtype)
+    check.instance(img_shape, 'img_shape', tuple, optional=True)
+    if img_shape is not None:
+      if len(img_shape) not in (2, 3):
+        raise ValueError("img_shape must contain 2 or 3 dimensions")
+      try:
+        for size in img_shape:
+          check.integer(int(size) if isinstance(size, bool) else size,
+                        'img_shape dimension', minimum=1)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
+
+    check.dtype(img_dtype, optional=True)
 
     # Information on the output images
     self._img_shape: tuple[int, int] | tuple[int, int, int] | None = img_shape
     self._img_dtype: str | None = img_dtype
 
-    # The list of ImgLinkData objects corresponding to the input ImageLinks
-    self._in_link_data: list[ImgLinkData] = list()
     # The objects containing for each ImageLink the last received image
     self.last_received: dict[str, ImgData] = dict()
 
-    # Objects for sharing images with downstream Blocks if needed
-    self._out_link_data = ImgLinkData()
+    # All upstream image sources notify the same Condition for this consumer
+    self.img_condition = Condition()
 
     # Counter keeping track of the number of images that were sent
     self._sent_img_counter: int = 0
@@ -241,7 +257,7 @@ class VisionBlock(Block, ABC):
     # Attributes for displaying the FPS counter
     self._loop_count = 0
     self._fps_count = 0
-    self._last_fps_img = time()
+    self._last_fps_img = monotonic()
 
   def prepare(self) -> None:
     """Creates outgoing image buffers and attaches to incoming ones.
@@ -261,7 +277,7 @@ class VisionBlock(Block, ABC):
         ImageLink has no shared-buffer information.
       ValueError: If output shape or dtype information is missing or invalid,
         or if shared synchronization and buffer objects are inconsistent.
-      PrepareError: If another Block fails while this Block waits for an
+      StopRequested: If another Block fails while this Block waits for an
         upstream image buffer.
     """
 
@@ -310,10 +326,7 @@ class VisionBlock(Block, ABC):
                          "dictionary was not set")
 
       # Should block until CameraConfig exits, or Crappy crashes
-      (data.img_buffer,
-       data.npy_buffer) = self._get_image_buffer(data.memory_name,
-                                                 data.buffer_ready,
-                                                 data.img_info_dict)
+      data.img_buffer, data.npy_buffer = self._get_image_buffer(data)
       self.log(logging.INFO, f"Received shared image buffer "
                              f"{data.memory_name!r} from ImageLink "
                              f"{link.name}")
@@ -328,31 +341,73 @@ class VisionBlock(Block, ABC):
   def begin(self) -> None:
     """Starts handled-image frequency measurement when the test begins."""
 
-    self._last_fps_img = time()
+    self._last_fps_img = monotonic()
 
   def finish(self) -> None:
     """Releases shared-memory resources owned or attached by this Block.
 
     Incoming shared-memory handles are closed without unlinking their
     source-owned segments. The output segment, when present, is both closed and
-    unlinked by its owning Block.
+    unlinked by its owning Block. Unused configuration Pipe endpoints are also
+    closed. Failures are reported only after every cleanup has been attempted.
     """
 
-    # Close the SharedMemory objects of incoming ImageLinks
-    if hasattr(self, '_in_link_data'):
-      for data in self._in_link_data:
-        if data.img_buffer is not None:
-          data.img_buffer.close()
-      self.log(logging.INFO, "Closed shared image buffers from upstream "
-                             "Blocks")
+    manager = self._failure_manager
 
-    # Same for the downstream ImageLinks, except we also have to unlink()
-    if hasattr(self, '_out_link_data'):
-      if self._out_link_data.img_buffer is not None:
-        self._out_link_data.img_buffer.close()
-        self._out_link_data.img_buffer.unlink()
-        self.log(logging.INFO, "Closed image buffer shared with downstream "
-                               "Blocks")
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('VisionBlock cleanup'):
+      # Close the SharedMemory objects of incoming ImageLinks
+      for data in self._in_link_data:
+        data.npy_buffer = None
+        if data.img_buffer is None or data.buffer_closed:
+          continue
+        with manager.step(f'close incoming buffer {data.memory_name!r}'):
+          data.img_buffer.close()
+          data.buffer_closed = True
+          data.img_buffer = None
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.INFO, f"Closed incoming shared image buffer "
+                                   f"{data.memory_name!r}")
+
+      # Same for the downstream ImageLinks, except we also have to unlink()
+      data = self._out_link_data
+      data.npy_buffer = None
+      if data.img_buffer is not None:
+        if not data.buffer_closed:
+          with manager.step(f'close outgoing buffer {data.memory_name!r}'):
+            data.img_buffer.close()
+            data.buffer_closed = True
+
+        # Unlink is independent of close and must still be attempted on error
+        if not data.buffer_unlinked:
+          with manager.step(f'unlink outgoing buffer {data.memory_name!r}'):
+            try:
+              data.img_buffer.unlink()
+            except FileNotFoundError:
+              pass
+            data.buffer_unlinked = True
+        # Case when closing succeeded
+        if data.buffer_closed and data.buffer_unlinked:
+          data.img_buffer = None
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.INFO, "Closed image buffer shared with "
+                                   "downstream Blocks")
+
+      # Wake downstream receivers so they can notice the shared stop/error
+      # flags
+      for index, condition in enumerate(self._out_img_conditions):
+        with manager.step(f'notify downstream condition {index + 1}'):
+          with condition:
+            condition.notify_all()
+      # Requests may remain unanswered when preparation failed early
+      requests = [*self._config_requests_in, *self._config_requests_out]
+      for request in requests:
+        if request.connection is None or request.connection_closed:
+          continue
+        with manager.step(f'close configuration Pipe from '
+                          f'{request.img_source!r} to {request.requester!r}'):
+          request.connection.close()
+          request.connection_closed = True
 
   def add_img_output(self, img_link) -> None:
     """Registers an ImageLink through which this Block sends images.
@@ -446,8 +501,13 @@ class VisionBlock(Block, ABC):
       # Sending the metadata dictionary
       self.log(logging.DEBUG, f"Writing metadata to shared dict with keys "
                               f"{', '.join(metadata.keys())}")
-      self._out_link_data.metadata_dict.clear()
-      self._out_link_data.metadata_dict.update(metadata)
+      try:
+        self._out_link_data.metadata_dict.clear()
+        self._out_link_data.metadata_dict.update(metadata)
+      except (EOFError, OSError):
+        if self._image_wait_should_stop():
+          raise StopRequested from None
+        raise
       # Sending the actual image
       self.log(logging.DEBUG, "Writing image to shared memory")
       np.copyto(self._out_link_data.npy_buffer, img)
@@ -456,7 +516,12 @@ class VisionBlock(Block, ABC):
       self._out_link_data.img_id.value = self._sent_img_counter
       self._sent_img_counter += 1
 
-  def receive_imgs(self) -> list[str]:
+    # Release the image lock before notifying downstream Blocks
+    for condition in self._out_img_conditions:
+      with condition:
+        condition.notify_all()
+
+  def receive_imgs(self, timeout: float = 0.0) -> list[str]:
     """Copies the newest frame available on each input ImageLink.
 
     Each source is checked under its shared lock. If its transport-level image
@@ -466,13 +531,42 @@ class VisionBlock(Block, ABC):
     without a new frame are ignored. Since an ImageLink owns only one shared
     buffer, intermediate frames may have been overwritten by the newest one.
 
+    Args:
+      timeout: Maximum notification wait in seconds, finite and non-negative.
+        By default, the call is nonblocking. A positive timeout waits for any
+        input to update, or for the shared stop/error flags to be set.
+
     Returns:
       Names of the ImageLinks from which a new image was copied.
 
     Raises:
       ValueError: If shared synchronization objects or buffers are unavailable,
-        or if local and shared image formats are inconsistent.
+        local and shared image formats are inconsistent, or the timeout is
+        negative or non-finite.
+      TypeError: If the timeout is not a number.
     """
+
+    check.real(timeout, 'timeout', minimum=0)
+
+    # Return early in case the Block should stop
+    if self._image_wait_should_stop():
+      return list()
+
+    # In case of a positive timeout, wait for the predicate to be True
+    if timeout > 0 and self.img_inputs:
+      # Check image buffer consistency
+      if len(self.img_inputs) != len(self._in_link_data):
+        raise ValueError("Image buffers have not been initialized for all "
+                         "input ImageLinks")
+
+      with self.img_condition:
+        if not self.img_condition.wait_for(self._image_available,
+                                           timeout=timeout):
+          return list()
+
+      # Return early in case the Block should stop
+      if self._image_wait_should_stop():
+        return list()
 
     updated: list[str] = list()
 
@@ -485,6 +579,10 @@ class VisionBlock(Block, ABC):
 
       # Guard reading and writing against race conditions
       with data_in.img_lock:
+
+        # Return early in case the Block should stop
+        if self._image_wait_should_stop():
+          return updated
 
         # Fail early in case of inconsistent state
         if data_in.img_id is None:
@@ -519,7 +617,13 @@ class VisionBlock(Block, ABC):
                            f"({self.last_received[link.name].img.shape})")
 
         # Retrieve all the information from the input buffer
-        self.last_received[link.name].metadata = data_in.metadata_dict.copy()
+        try:
+          metadata = data_in.metadata_dict.copy()
+        except (EOFError, OSError):
+          if self._image_wait_should_stop():
+            raise StopRequested from None
+          raise
+        self.last_received[link.name].metadata = metadata
         self.log(logging.DEBUG, f"Received metadata dict from link "
                                 f"{link.name}")
         np.copyto(self.last_received[link.name].img, data_in.npy_buffer)
@@ -533,6 +637,41 @@ class VisionBlock(Block, ABC):
     self.log(logging.DEBUG, f"Data received during this call from ImageLinks: "
                             f"{', '.join(updated)}")
     return updated
+
+  def _image_available(self) -> bool:
+    """Predicate watched by the image Condition.
+
+    .. versionadded:: 2.2.0
+    """
+
+    if self._image_wait_should_stop():
+      return True
+    for link, data in zip(self.img_inputs, self._in_link_data):
+      if data.img_id is None:
+        raise ValueError("No image ID counter set for this ImageLink!")
+      if data.img_id.value != self.last_received[link.name].id:
+        return True
+    return False
+
+  def _image_wait_should_stop(self) -> bool:
+    """Checks the existing lifecycle flags without holding an image lock.
+
+    .. versionadded:: 2.2.0
+    """
+
+    return ((self._stop_event is not None and self._stop_event.is_set()) or
+            (self._ready_barrier is not None and self._ready_barrier.broken))
+
+  def resolve_config_requests(self) -> None:
+    """Finalizes source configurator choices.
+
+    Called after collecting all downstream requests for an image source, before
+    starting Managers or Blocks.
+
+    .. versionadded:: 2.2.0
+    """
+
+    ...
 
   def request_config(self, source: str) -> ConfigRequest | None:
     """Returns this Block's configuration request for an image source.
@@ -565,8 +704,7 @@ class VisionBlock(Block, ABC):
       RuntimeError: If no Pipe endpoint was assigned to the request.
     """
 
-    if not isinstance(request, ConfigRequest):
-      raise TypeError("The request should be a ConfigRequest")
+    check.instance(request, 'request', ConfigRequest)
     if request.connection is None:
       raise RuntimeError("The ConfigRequest is expected to have its "
                          "Connection set")
@@ -592,32 +730,32 @@ class VisionBlock(Block, ABC):
         request was declined or no configuration can be provided.
 
     Raises:
-      RuntimeError: If the request has no Pipe endpoint or a required request
-        is answered with :obj:`None`.
+      ExceptionGroup: If the request is invalid, sending fails, or the Pipe
+        cannot be closed.
     """
 
-    try:
-      if request.connection is None:
-        raise RuntimeError("The ConfigRequest is expected to have its "
-                           "Connection set")
-      # Checking if a required request was properly handled
-      if request.required and config is None:
-        raise RuntimeError(f"The request from Block {request.requester} is "
-                           f"flagged as required, yet {request.img_source} "
-                           f"answered with None")
+    manager = self._failure_manager
 
-      request.connection.send(config)
-      self.log(logging.INFO, f"Sent "
-                             f"{'config' if config is not None else 'None'} "
-                             f"back to Block {request.requester}")
-      request.completed = True
-    except (Exception,):
-      self.log(logging.ERROR, "Couldn't send the config info via the "
-                              "Connection!")
-      raise
-    finally:
-      if request.connection is not None:
-        request.connection.close()
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Vision configuration response'):
+      with manager.step('send response'):
+        if request.connection is None:
+          raise RuntimeError("The ConfigRequest is expected to have its "
+                             "Connection set")
+        if request.required and config is None:
+          raise RuntimeError(f"The request from Block {request.requester} is "
+                             f"flagged as required, yet {request.img_source} "
+                             f"answered with None")
+        request.connection.send(config)
+        request.completed = True
+        with manager.step('response diagnostic'):
+          self.log(logging.INFO,
+                   f"Sent {'config' if config is not None else 'None'} back "
+                   f"to Block {request.requester}")
+      with manager.step('close response Pipe'):
+        if request.connection is not None:
+          request.connection.close()
+          request.connection_closed = True
 
   def add_config_request_out(self, request: ConfigRequest) -> None:
     """Registers a configuration request sent to an upstream image source.
@@ -632,8 +770,7 @@ class VisionBlock(Block, ABC):
       RuntimeError: If no Pipe endpoint was assigned to the request.
     """
 
-    if not isinstance(request, ConfigRequest):
-      raise TypeError("The request should be a ConfigRequest")
+    check.instance(request, 'request', ConfigRequest)
     if request.connection is None:
       raise RuntimeError("The ConfigRequest is expected to have its "
                          "Connection set")
@@ -654,8 +791,7 @@ class VisionBlock(Block, ABC):
     Raises:
       ValueError: If the preparation synchronization objects are unavailable.
       RuntimeError: If a request has no Pipe endpoint.
-      PrepareError: If another Block fails, the test stops, or the source Pipe
-        closes without providing a response.
+      ExceptionGroup: If receiving or closing a request fails.
     """
 
     if self._ready_barrier is None:
@@ -664,32 +800,41 @@ class VisionBlock(Block, ABC):
       raise ValueError("The stop Event should be initialized at this point")
 
     configs: dict[str, tuple[Any, ...] | None] = dict()
+    manager = self._failure_manager
 
     # For each request, wait for the configuration information to arrive
     for request in self._config_requests_out:
       if request.connection is None:
         raise RuntimeError("The ConfigRequest is expected to have a "
                            "Connection set")
-      try:
-        # Wait until config information is received
-        while not request.connection.poll(timeout=0.5):
-          self.log(logging.DEBUG, f"Config from Block {request.img_source} "
-                                  f"not ready yet")
-          # Check if we should give up on waiting for the config
-          if self._ready_barrier.broken or self._stop_event.is_set():
-            raise PrepareError("An exception occurred in another Block, "
-                               "aborting")
+      received = False
+      # Guard cleanup steps with the FailureManager
+      with manager.collect('Vision configuration receive'):
+        with manager.step('receive response'):
+          try:
+            if self._ready_barrier.broken or self._stop_event.is_set():
+              raise StopRequested
+            while not request.connection.poll(timeout=0.5):
+              self.log(logging.DEBUG,
+                       f"Config from Block {request.img_source} not ready yet")
+              if self._ready_barrier.broken or self._stop_event.is_set():
+                raise StopRequested
+            if self._ready_barrier.broken or self._stop_event.is_set():
+              raise StopRequested
+            config = request.connection.recv()
+            received = True
+            self.log(logging.DEBUG, f"Received config information from Block "
+                                    f"{request.img_source}")
+          except (EOFError, OSError):
+            if self._ready_barrier.broken or self._stop_event.is_set():
+              raise StopRequested from None
+            raise
+        with manager.step('close request Pipe'):
+          request.connection.close()
+          request.connection_closed = True
 
-        # Receive the configuration information
-        config = request.connection.recv()
-        self.log(logging.DEBUG, f"Received config information from Block "
-                                f"{request.img_source}")
-      # Can happen if the other end of the Pipe is broken
-      except (EOFError, OSError):
-        raise PrepareError("The other end of the Pipe seems to be broken")
-
-      finally:
-        request.connection.close()
+      if not received:
+        raise StopRequested
 
       # Just store the received configuration
       configs[request.img_source] = config
@@ -728,6 +873,10 @@ class VisionBlock(Block, ABC):
       raise ValueError("The base Manager hasn't been initialized yet!")
     self._out_link_data.img_id = Value('l')
     self._out_link_data.img_id.value = -1
+
+    # Gather all the Conditions to notify when an image is ready
+    self._out_img_conditions = [link.img_condition for link
+                                in self.img_outputs]
 
     # Share the buffer objects with the provided downstream ImageLinks
     for img_link in self.img_outputs:
@@ -792,6 +941,8 @@ class VisionBlock(Block, ABC):
         name=self._out_link_data.memory_name,
         create=True,
         size=prod(img_shape) * np.dtype(dtype).itemsize)
+    self._out_link_data.buffer_closed = False
+    self._out_link_data.buffer_unlinked = False
     links = ', '.join(link.name for link in self.img_outputs)
     self.log(logging.DEBUG, f"Initialized SharedMemory object "
                             f"{self._out_link_data.memory_name!r} for "
@@ -825,10 +976,7 @@ class VisionBlock(Block, ABC):
     self._out_link_data.buffer_ready.set()
     self.log(logging.DEBUG, "Set the buffer_ready Event")
 
-  def _get_image_buffer(self,
-                        name: str,
-                        buffer_ready: synchronize.Event,
-                        img_info_dict: managers.DictProxy
+  def _get_image_buffer(self, data: ImgLinkData
                         ) -> tuple[SharedMemory, np.ndarray]:
     """Attaches to an upstream shared image buffer.
 
@@ -837,10 +985,8 @@ class VisionBlock(Block, ABC):
     named shared-memory segment and creates a :mod:`numpy` view over it.
 
     Args:
-      name: Name of the upstream shared-memory segment.
-      buffer_ready: Event indicating that the source buffer is ready.
-      img_info_dict: Shared dictionary containing image ``'shape'`` and
-        ``'dtype'`` entries.
+      data: Input ImageLink state, including the buffer name, readiness Event,
+        and shared shape/dtype information.
 
     Returns:
       The attached shared-memory handle and its :mod:`numpy` array view.
@@ -848,7 +994,7 @@ class VisionBlock(Block, ABC):
     Raises:
       ValueError: If preparation synchronization objects or image format
         entries are unavailable.
-      PrepareError: If another Block fails or the test stops while waiting for
+      StopRequested: If another Block fails or the test stops while waiting for
         the source buffer.
     """
 
@@ -856,27 +1002,46 @@ class VisionBlock(Block, ABC):
       raise ValueError("The ready Barrier should be set at this point")
     if self._stop_event is None:
       raise ValueError("The stop Event should be initialized at this point")
+    if data.memory_name is None:
+      raise ValueError("The incoming shared memory name must be set")
+    if data.buffer_ready is None or data.img_info_dict is None:
+      raise ValueError("The incoming buffer synchronization objects must be "
+                       "set")
+
+    name = data.memory_name
+    buffer_ready = data.buffer_ready
+    img_info_dict = data.img_info_dict
 
     # Periodically checks if Crappy has crashed, otherwise waits for the
     # upstream buffer to be available
     while not buffer_ready.wait(0.5):
       self.log(logging.DEBUG, f"Buffers with name {name} not ready yet")
       if self._ready_barrier.broken or self._stop_event.is_set():
-        raise PrepareError("An exception occurred in another Block, aborting")
+        raise StopRequested
+    if self._ready_barrier.broken or self._stop_event.is_set():
+      raise StopRequested
     self.log(logging.DEBUG, f"Buffer with name {name} ready to be shared")
 
-    if 'shape' not in img_info_dict or 'dtype' not in img_info_dict:
-      raise ValueError("The shared dict containing image information should "
-                       "expose the 'shape' and 'dtype' keys")
+    try:
+      if 'shape' not in img_info_dict or 'dtype' not in img_info_dict:
+        raise ValueError("The shared dict containing image information should "
+                         "expose the 'shape' and 'dtype' keys")
 
-    # Retrieve the shape and dtype from shared information
-    shape, dtype = img_info_dict['shape'], img_info_dict['dtype']
+      # Retrieve the shape and dtype from shared information
+      shape, dtype = img_info_dict['shape'], img_info_dict['dtype']
 
-    # Instantiate the shared memory and the convenience Numpy array buffers
-    img_buffer = SharedMemory(name=name, create=False)
+      # Instantiate the shared memory and the convenience Numpy array buffers
+      img_buffer = SharedMemory(name=name, create=False)
+    except (EOFError, OSError):
+      if self._ready_barrier.broken or self._stop_event.is_set():
+        raise StopRequested from None
+      raise
+    data.img_buffer = img_buffer
+    data.buffer_closed = False
     npy_buffer = np.ndarray(shape,
                             dtype=np.dtype(dtype),
                             buffer=img_buffer.buf)
+    data.npy_buffer = npy_buffer
 
     return img_buffer, npy_buffer
 
@@ -891,7 +1056,7 @@ class VisionBlock(Block, ABC):
     """
 
     self._fps_count += int(img_handled)
-    t = time()
+    t = monotonic()
     if t - self._last_fps_img > 2:
       self.log(logging.INFO, f"Frames handled per second: "
                              f"{self._fps_count / (t - self._last_fps_img)}")

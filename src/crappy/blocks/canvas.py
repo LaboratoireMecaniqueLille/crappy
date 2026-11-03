@@ -2,21 +2,20 @@
 
 from __future__ import annotations
 from datetime import timedelta
-from math import isfinite, isnan
-from numbers import Real
+from math import isnan
 from time import time
 from typing import Any, TYPE_CHECKING, Literal
 from collections.abc import Sequence
 import logging
 import locale
 import os
-import tkinter as tk
 from pathlib import Path
-from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
+tk = OptionalModule('tkinter', lazy_import=True)
 mpl = OptionalModule('matplotlib', lazy_import=True)
 mpl_figure = OptionalModule('matplotlib.figure', lazy_import=True)
 mpl_image = OptionalModule('matplotlib.image', lazy_import=True)
@@ -28,6 +27,7 @@ QtGui = OptionalModule('PyQt6.QtGui', lazy_import=True)
 QtWidgets = OptionalModule('PyQt6.QtWidgets', lazy_import=True)
 
 if TYPE_CHECKING:
+  import tkinter as tk
   from matplotlib import figure as mpl_figure
   from matplotlib import patches as mpl_patches
   from matplotlib import text as mpl_text
@@ -310,13 +310,10 @@ class Canvas(Block):
           incoming Links. The ``text`` will then be updated with this data.
     """
 
-    warn("\nThe meaning of the backend argument for the Canvas Block was "
-         "changed from Matplotlib backend selection to selection between"
-         "'tkinter' and 'pyqt', without prior notice.\nThis change was "
-         "implemented nevertheless because it is part of a larger migration "
-         "to PyQt\nSet backend='tkinter' to switch back to the "
-         "previous behavior.\nInstall PyQt6 to use the new Canvas "
-         "interface.\n", UserWarning, stacklevel=2)
+    self._root: tk.Tk | None = None
+    self._qt_app: QtWidgets.QApplication | None = None
+    self._qt_window: QtWidgets.QMainWindow | None = None
+    self._qt_events_processed: bool = False
 
     super().__init__()
     self.freq = freq
@@ -338,54 +335,35 @@ class Canvas(Block):
         raise TypeError("image_path must be provided as a non-empty string or "
                         "a Path")
 
-    match draw:
-      case None:
-        self._draw: list[dict[str, Any]] = list()
-      case Sequence() if not isinstance(draw, (str, bytes)):
-        self._draw: list[dict[str, Any]] = list()
-        for element in draw:
-          self._validate_element(element)
-          self._draw.append(element.copy())
-      case _:
-        raise TypeError("draw must be a sequence of dictionaries or None")
+    check.sequence(draw, 'draw', optional=True)
+    self._draw: list[dict[str, Any]] = list()
+    for element in (() if draw is None else draw):
+      self._validate_element(element)
+      self._draw.append(element.copy())
 
-    match color_range:
-      case (Real() as low, Real() as high) if isinstance(color_range, tuple):
-        if not isfinite(low) or not isfinite(high):
-          raise ValueError("color_range must contain two finite numbers")
-        if low == high:
-          raise ValueError("The two values of color_range cannot be equal")
-        self.color_range: tuple[float, float] = (min(low, high),
-                                                 max(low, high))
-      case _:
-        raise TypeError("color_range must be a tuple of two finite numbers")
+    check.instance(color_range, 'color_range', tuple)
+    check.sequence(color_range, 'color_range', length=2)
+    low, high = color_range
+    for bound in color_range:
+      check.real(int(bound) if isinstance(bound, bool) else bound,
+                 'color_range')
+    if low == high:
+      raise ValueError("The two values of color_range cannot be equal")
+    self.color_range: tuple[float, float] = (min(low, high), max(low, high))
 
-    match title:
-      case str() if title.strip():
-        self._title: str = title
-      case str():
-        raise ValueError("title must be a non-empty string")
-      case _:
-        raise TypeError("title must be a non-empty string")
+    check.string(title, 'title')
+    self._title: str = title
 
-    match window_size:
-      case (Real() as width, Real() as height) if isinstance(window_size,
-                                                             tuple):
-        if (not isfinite(width) or not isfinite(height) or
-            width <= 0 or height <= 0):
-          raise ValueError("window_size must contain two finite positive "
-                           "numbers")
-        self._window_size: tuple[float, float] = (float(width), float(height))
-      case _:
-        raise TypeError("window_size must be a tuple of two positive numbers")
+    check.instance(window_size, 'window_size', tuple)
+    check.sequence(window_size, 'window_size', length=2)
+    width, height = window_size
+    for size in window_size:
+      check.real(int(size) if isinstance(size, bool) else size,
+                 'window_size', minimum=0, strict=True)
+    self._window_size: tuple[float, float] = (float(width), float(height))
 
-    match backend:
-      case str() if backend in ('tkinter', 'pyqt'):
-        self.backend: Literal['tkinter', 'pyqt'] = backend
-      case str():
-        raise ValueError("The backend must be either 'tkinter' or 'pyqt'")
-      case _:
-        raise TypeError("The backend must be either 'tkinter' or 'pyqt'")
+    check.choice(backend, 'backend', ('tkinter', 'pyqt'))
+    self.backend: Literal['tkinter', 'pyqt'] = backend
 
     # Drawing elements use the selected backend's text and dot objects
     self._drawing_elements: list[Text | DotText | Time] = list()
@@ -393,13 +371,11 @@ class Canvas(Block):
     # Attributes related to tkinter
     self._fig: mpl_figure.Figure | None = None
     self.ax: Axes | None = None
-    self._root: tk.Tk | None = None
     self._tk_canvas: backend_tkagg.FigureCanvasTkAgg | None = None
 
     # Attributes related to PyQt6
-    self._qt_app: QtWidgets.QApplication | None = None
-    self._qt_window: QtWidgets.QMainWindow | None = None
     self.qt_scene: QtWidgets.QGraphicsScene | None = None
+    self._qt_background: QtWidgets.QGraphicsPixmapItem | None = None
     self._qt_view: QtWidgets.QGraphicsView | None = None
     self._qt_view_size: QtCore.QSize | None = None
 
@@ -460,48 +436,51 @@ class Canvas(Block):
     An existing Qt application is left available for its other windows.
     """
 
-    self.log(logging.INFO, "Closing the drawing window")
-    if getattr(self, '_qt_window', None) is not None:
-      assert self._qt_window is not None
-      self._qt_window.close()
-    if getattr(self, '_qt_app', None) is not None:
-      assert self._qt_app is not None
-      self._qt_app.processEvents()
-    try:
-      if getattr(self, '_root', None) is not None:
-        assert self._root is not None
-        self._root.destroy()
-    except tk.TclError:
-      pass
+    manager = self._failure_manager
+
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Canvas cleanup'):
+      with manager.step('cleanup diagnostic'):
+        self.log(logging.INFO, "Closing the GUI")
+
+      # Destroy the Tk window
+      if self._root is not None:
+        with manager.step('destroy Tk window'):
+          try:
+            self._root.destroy()
+          except tk.TclError:
+            pass
+          self._root = None
+
+      # Close the Qt window
+      if self._qt_window is not None:
+        self._qt_events_processed = False
+        with manager.step('close Qt window'):
+          if not self._qt_window.close():
+            raise RuntimeError("The Canvas Qt window refused to close")
+          self._qt_window = None
+
+      # Process the last Qt events
+      if self._qt_app is not None and not self._qt_events_processed:
+        with manager.step('process Qt close events'):
+          self._qt_app.processEvents()
+          self._qt_events_processed = True
 
   @staticmethod
   def _validate_element(element: dict[str, Any]) -> None:
     """Checks the type, coordinates, and required fields of an overlay."""
 
-    match element:
-      case dict() if 'type' in element and 'coord' in element:
-        pass
-      case dict():
-        raise ValueError("All draw dictionaries must contain 'type' and "
-                         "'coord' keys")
-      case _:
-        raise TypeError("All draw elements must be dictionaries")
+    check.instance(element, 'draw element', dict)
+    if 'type' not in element or 'coord' not in element:
+      raise ValueError("All draw dictionaries must contain 'type' and "
+                       "'coord' keys")
 
-    match element['type']:
-      case str() if element['type'] in ('text', 'dot_text', 'time'):
-        pass
-      case str():
-        raise ValueError("The 'type' key must be either 'text', 'dot_text', "
-                         "or 'time'")
-      case _:
-        raise TypeError("The 'type' key must be a string")
+    check.choice(element['type'], 'draw type', ('text', 'dot_text', 'time'))
 
-    match element['coord']:
-      case (Real() as x, Real() as y) if isinstance(element['coord'], tuple):
-        if not isfinite(x) or not isfinite(y):
-          raise ValueError("The coordinates must contain two finite numbers")
-      case _:
-        raise TypeError("The coordinates must be a tuple of two numbers")
+    check.instance(element['coord'], 'coord', tuple)
+    check.sequence(element['coord'], 'coord', length=2)
+    for coord in element['coord']:
+      check.real(int(coord) if isinstance(coord, bool) else coord, 'coord')
 
     if element['type'] == 'time':
       return
@@ -509,24 +488,16 @@ class Canvas(Block):
       raise ValueError("Text and dot_text elements must contain 'text' and "
                        "'label' keys")
 
-    match element['text']:
-      case str():
-        pass
-      case _:
-        raise TypeError("The text must be a string")
+    check.string(element['text'], 'text', empty=True)
 
-    match element['label']:
-      case str() if element['label'].strip():
-        pass
-      case str():
-        raise ValueError("The label must be a non-empty string")
-      case _:
-        raise TypeError("The label must be a non-empty string")
+    check.string(element['label'], 'label')
 
   def _prepare_tkinter(self) -> None:
     """Creates the Tkinter drawing window."""
 
+    tk.resolve()
     self._root = tk.Tk()
+    self._root.report_callback_exception = self._report_tk_callback_exception
     assert self._root is not None
     self._root.title(self._title)
 
@@ -562,9 +533,9 @@ class Canvas(Block):
     self.qt_scene = QtWidgets.QGraphicsScene(self._qt_window)
     assert self.qt_scene is not None
     self.qt_scene.setSceneRect(QtCore.QRectF(image.rect()))
-    background = self.qt_scene.addPixmap(QtGui.QPixmap.fromImage(image))
-    assert background is not None
-    background.setTransformationMode(
+    self._qt_background = self.qt_scene.addPixmap(QtGui.QPixmap.fromImage(image))
+    assert self._qt_background is not None
+    self._qt_background.setTransformationMode(
         QtCore.Qt.TransformationMode.SmoothTransformation)
 
     panel = QtWidgets.QWidget(self._qt_window)
@@ -648,10 +619,12 @@ class Canvas(Block):
                           QtGui.QColor(*color))
     pixmap = QtGui.QPixmap(256, 16)
     painter = QtGui.QPainter(pixmap)
-    try:
-      painter.fillRect(pixmap.rect(), QtGui.QBrush(gradient))
-    finally:
-      painter.end()
+    manager = self._failure_manager
+    with manager.collect('Canvas color bar'):
+      with manager.step('paint gradient'):
+        painter.fillRect(pixmap.rect(), QtGui.QBrush(gradient))
+      with manager.step('end painter'):
+        painter.end()
 
     bar = QtWidgets.QLabel()
     bar.setPixmap(pixmap)
@@ -695,8 +668,7 @@ class Canvas(Block):
                             QtCore.Qt.AspectRatioMode.KeepAspectRatio)
     self._qt_view_size = self._qt_view.viewport().size()
 
-  @staticmethod
-  def _get_application() -> QtWidgets.QApplication:
+  def _get_application(self) -> QtWidgets.QApplication:
     """Reuses a Qt widget application or creates one for this Block.
 
     OpenCV's bundled Qt plugin path is excluded during application creation,
@@ -709,22 +681,28 @@ class Canvas(Block):
         raise RuntimeError("A non-widget Qt application already exists")
       return app
 
+    manager = self._failure_manager
     original = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH')
-    if original is not None:
-      paths = original.split(os.pathsep)
-      filtered = [path for path in paths if
-                  tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
-                  ('cv2', 'qt', 'plugins')]
-      if filtered != paths:
-        if filtered:
-          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.pathsep.join(filtered)
-        else:
-          os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
-
-    numeric_locale = locale.setlocale(locale.LC_NUMERIC)
-    try:
-      return QtWidgets.QApplication([])
-    finally:
-      locale.setlocale(locale.LC_NUMERIC, numeric_locale)
-      if original is not None:
-        os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+    numeric_locale = None
+    with manager.collect('Qt application setup'):
+      with manager.step('create application'):
+        numeric_locale = locale.setlocale(locale.LC_NUMERIC)
+        if original is not None:
+          paths = original.split(os.pathsep)
+          filtered = [path for path in paths if
+                      tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
+                      ('cv2', 'qt', 'plugins')]
+          if filtered != paths:
+            if filtered:
+              os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = (
+                  os.pathsep.join(filtered))
+            else:
+              os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
+        app = QtWidgets.QApplication([])
+      with manager.step('restore numeric locale'):
+        if numeric_locale is not None:
+          locale.setlocale(locale.LC_NUMERIC, numeric_locale)
+      with manager.step('restore Qt plugin path'):
+        if original is not None:
+          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+    return app

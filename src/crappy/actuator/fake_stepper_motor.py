@@ -1,10 +1,11 @@
 # coding: utf-8
 
-from time import time, sleep
+from time import monotonic, sleep
 from math import sqrt, copysign
 from threading import Thread, RLock
 import logging
 
+from .. import _validation as check
 from .meta_actuator import Actuator
 
 
@@ -44,6 +45,12 @@ class FakeStepperMotor(Actuator):
       max_speed: The maximum achievable speed of the motor, in mm/s.
     """
 
+    for value, name in ((steps_per_mm, 'steps_per_mm'),
+                        (acceleration, 'acceleration'),
+                        (max_speed, 'max_speed')):
+      check.real(value, name)
+    check.integer(microsteps, 'microsteps')
+
     super().__init__()
 
     if not acceleration:
@@ -64,7 +71,7 @@ class FakeStepperMotor(Actuator):
     self._pos: float = 0
     self._target_pos: float | None = 0
     self._target_speed: float | None = None
-    self._t: float = time()
+    self._t: float = monotonic()
 
     # Attributes managing the Thread emulating the motor
     self._stop_thread: bool = False
@@ -90,6 +97,9 @@ class FakeStepperMotor(Actuator):
         close, the motor might not reach this position during its movement.
     """
 
+    check.real(position, 'position')
+    check.real(speed, 'speed', optional=True)
+
     with self._lock:
       self._target_speed = None
       self._target_pos = position * self._steps_per_mm * self._microsteps
@@ -107,6 +117,8 @@ class FakeStepperMotor(Actuator):
     Args:
       speed: The target speed of the motor, in mm/s. Can be negative.
     """
+
+    check.real(speed, 'speed')
 
     with self._lock:
       self._target_pos = None
@@ -172,7 +184,7 @@ class FakeStepperMotor(Actuator):
         c1 = self._max_speed ** 2 / self._accel
 
         # Updating the last timestamp
-        t = time()
+        t = monotonic()
         delta_t = t - self._t
         self._t = t
 

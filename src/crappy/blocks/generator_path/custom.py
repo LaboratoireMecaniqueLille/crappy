@@ -6,6 +6,7 @@ import pathlib
 import logging
 
 from .meta_path import Path
+from ... import _validation as check
 
 
 class Custom(Path):
@@ -41,16 +42,40 @@ class Custom(Path):
 
     super().__init__()
 
-    self.log(logging.DEBUG, f"Extracting data from file {file_name}")
-    array = np.loadtxt(pathlib.Path(file_name), delimiter=delimiter)
+    match file_name:
+      case pathlib.Path() if file_name.name.strip():
+        pass
+      case pathlib.Path():
+        raise ValueError("file_name must contain a file name, not a directory")
+      case str() if file_name.strip() and pathlib.Path(file_name).name.strip():
+        file_name = pathlib.Path(file_name)
+      case str():
+        raise ValueError("file_name must be non-empty when provided as a str, "
+                         "and correspond to a file not to a directory")
+      case _:
+        raise TypeError("file_name must be provided as a non-empty string or "
+                        "a Path")
+    if file_name.is_dir():
+      raise IsADirectoryError(f"file_name points to a directory: {file_name}")
 
-    if len(array.shape) < 2 or len(array.shape) > 3:
+    check.string(delimiter, 'delimiter', empty=True)
+    if len(delimiter) != 1 or delimiter in ('\n', '\r'):
+      raise ValueError("delimiter must be a single character other than "
+                       "a newline")
+
+    self.log(logging.DEBUG, f"Extracting data from file {file_name}")
+    array = np.loadtxt(file_name, delimiter=delimiter, ndmin=2)
+
+    if array.ndim != 2 or array.shape[0] < 2:
       raise ValueError(f"The file {file_name} should contain a 2D array with "
                        f"two columns")
 
     if array.shape[1] != 2:
       raise ValueError(f'The file {file_name} should contain exactly two'
                        f'columns !')
+
+    if not np.all(np.isfinite(array)):
+      raise ValueError("The file must contain only finite values")
 
     self._timestamps = array[:, 0]
     self._values = array[:, 1]

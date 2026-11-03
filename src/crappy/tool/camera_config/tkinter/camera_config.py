@@ -6,7 +6,7 @@ from tkinter.messagebox import showerror
 from platform import system
 from math import ceil
 import numpy as np
-from time import monotonic, time
+from time import monotonic
 import logging
 import locale
 from dataclasses import dataclass
@@ -14,23 +14,26 @@ from multiprocessing import Event, Queue, synchronize
 from multiprocessing.queues import Queue as MPQueue
 from queue import Empty
 from types import TracebackType
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from collections.abc import Callable, Iterable
 
 from ..base import CameraConfig, ConfigurationLifecycle
 from ..config_tools import HistogramProcess
 from ....camera.meta_camera.camera_setting import (
-  CameraSetting, CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
-from ....camera.meta_camera import Camera
+  CameraBoolSetting, CameraChoiceSetting, CameraScaleSetting)
 from ...._global import OptionalModule
+from ...._exceptions import StopRequested
 
 try:
   from PIL import ImageTk, Image
-except (ModuleNotFoundError, ImportError):
-  ImageTk = OptionalModule("pillow")
-  Image = OptionalModule("pillow")
+except (ModuleNotFoundError, ImportError) as error:
+  ImageTk = OptionalModule("PIL", install_name="Pillow", cause=error)
+  Image = OptionalModule("PIL", install_name="Pillow", cause=error)
 
 if TYPE_CHECKING:
+  from ....camera.meta_camera import Camera
+  from ....camera.meta_camera.camera_setting import CameraSetting
+  from ...._failure import FailureManager
   from PIL import Image, ImageTk
 
 
@@ -92,8 +95,9 @@ TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
                log_level: int | None,
                max_freq: float | None,
                transform: Callable[[np.ndarray], np.ndarray] | None,
-               *_,
-               **__) -> None:
+               failure_manager: FailureManager,
+               *_: Any,
+               **__: Any) -> None:
     """Builds the window and histogram resources without starting acquisition.
 
     Args:
@@ -116,7 +120,21 @@ TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
         leave them unchanged.
 
         .. versionadded:: 2.1.0
+      failure_manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+
+        .. versionadded:: 2.2.0
+      *_: Additional positional arguments, unused by this base window.
+      **__: Additional keyword arguments, unused by this base window.
     """
+
+    # Attributes for handling lifecycle and Exception reports
+    self._failure_manager: FailureManager = failure_manager
+    self._cancelled = False
+    self._running = False
+    self._window_created = False
+    self._window_closed = False
+    self._window_destroyed = False
 
     self._hist_width: int = 0
     self._hist_height: int = 0
@@ -125,56 +143,66 @@ TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
     # A Qt application created elsewhere may already have changed this locale
     locale.setlocale(locale.LC_NUMERIC, 'C')
 
-    # Abort early in case an exception is caught while instantiating settings
+    # Abort early if the configuration window cannot be initialized
     try:
-      super().__init__(camera, log_queue, log_level, max_freq, transform)
-    except BaseException:
-      try:
-        self.destroy()
-      except (Exception,):
-        pass
-      raise
+      super().__init__(camera, log_queue, log_level, max_freq, transform,
+                       self._failure_manager)
+    except BaseException as error:
+      with self._failure_manager.collect('Configuration initialization'):
+        self._failure_manager.record_context_exception(error,
+                                                       'initialize settings')
+        if self._window_created:
+          with self._failure_manager.step('close partial window'):
+            try:
+              self.destroy()
+            except tk.TclError:
+              pass
 
-    self._window_closed: bool = False
-    self._stop_event: synchronize.Event = Event()
-    self._processing_event: synchronize.Event = Event()
-    # A constructor failure must close queues
+    # A constructor failure must close any queues that were already created
     created_queues: list[MPQueue] = list()
+    histogram_process: HistogramProcess | None = None
     try:
+      self._stop_event: synchronize.Event = Event()
+      self._processing_event: synchronize.Event = Event()
       self._img_in: MPQueue = Queue(maxsize=0)
       created_queues.append(self._img_in)
       self._img_out: MPQueue = Queue(maxsize=0)
       created_queues.append(self._img_out)
+      self._failure_queue: MPQueue = Queue()
+      created_queues.append(self._failure_queue)
       self._histogram_process: HistogramProcess = HistogramProcess(
           stop_event=self._stop_event,
           processing_event=self._processing_event,
           img_in=self._img_in,
           img_out=self._img_out,
           log_level=self._log_level,
-          log_queue=self._log_queue)
+          log_queue=self._log_queue,
+          failure_queue=self._failure_queue,
+          block_name=self._failure_manager.block_name,
+          owner_path=f'{self._failure_manager.owner_path}.'
+                     f'{type(self).__name__}.HistogramProcess')
+      histogram_process = self._histogram_process
       self._lifecycle: ConfigurationLifecycle = ConfigurationLifecycle(
           self._stop_event, self._histogram_process,
-          (self._img_in, self._img_out), self.log)
-    except BaseException:
-      for queue in created_queues:
-        try:
-          queue.cancel_join_thread()
-        except Exception as cleanup_error:
-          self.log(logging.ERROR, "Could not cancel histogram queue thread "
-                                  "join",
-                   exc_info=(type(cleanup_error), cleanup_error,
-                             cleanup_error.__traceback__))
-        try:
-          queue.close()
-        except Exception as cleanup_error:
-          self.log(logging.ERROR, "Could not close histogram queue",
-                   exc_info=(type(cleanup_error), cleanup_error,
-                             cleanup_error.__traceback__))
-      try:
-        self.destroy()
-      except tk.TclError:
-        pass
-      raise
+          (self._img_in, self._img_out), self._failure_manager,
+          self._failure_queue)
+    except BaseException as error:
+      manager = self._failure_manager
+      with manager.collect('Configuration initialization'):
+        manager.record_context_exception(error, 'initialize histogram')
+        if histogram_process is not None:
+          with manager.step('close unstarted histogram'):
+            histogram_process.close()
+        for index, queue in enumerate(created_queues):
+          with manager.step(f'cancel Queue {index + 1} feeder join'):
+            queue.cancel_join_thread()
+          with manager.step(f'close Queue {index + 1}'):
+            queue.close()
+        with manager.step('close partial window'):
+          try:
+            self.destroy()
+          except tk.TclError:
+            pass
 
     # Attributes containing the several images and histograms
     self._pil_img: Image.Image | None = None
@@ -205,14 +233,12 @@ TkinterCameraConfig.stop>` and :class:`~crappy.blocks.meta_block.block.Block`
       self._set_bindings()
       self._add_settings()
       self.update_idletasks()
-    except BaseException:
-      try:
-        self.stop()
-      except Exception as cleanup_error:
-        self.log(logging.ERROR, "Could not clean up partial configuration",
-                 exc_info=(type(cleanup_error), cleanup_error,
-                           cleanup_error.__traceback__))
-      raise
+    except BaseException as error:
+      with self._failure_manager.collect('Configuration initialization'):
+        self._failure_manager.record_context_exception(error,
+                                                       'build interface')
+        with self._failure_manager.step('stop partial configuration'):
+          self.stop()
 
     # Attribute used only for unit testing, do not use otherwise
     self._testing: bool = False
@@ -245,11 +271,13 @@ TkinterCameraConfig.start>`. The window can be started only once. A closed
     self._lifecycle.mark_histogram_started()
 
     self._n_loops = 0
-    self._last_upd_t = time()
+    self._last_upd_t = monotonic()
     self._next_acq_t = -float('inf')
 
     # Let Tk's event loop handle the first frame and the first FPS update
     if not self._testing:
+      if self._shutdown_sched_obj is None:
+        self._shutdown_sched_obj = self.after(25, self._check_shutdown)
       self._img_acq_sched_obj = self.after(0, self._img_acq_sched)
       self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
@@ -265,32 +293,32 @@ TkinterCameraConfig.watch_shutdown>` bypasses selection validation.
 
     Raises:
       RuntimeError: If the window has already been closed.
-      KeyboardInterrupt: After cleanup, without an error dialog or error log.
+      BaseExceptionGroup: Retained failures after cleanup.
+      StopRequested: If the parent Block cancelled configuration.
     """
 
-    try:
-      # Catch failures at constructor-time
-      self._lifecycle.raise_if_failed()
-      if self._window_closed:
-        raise RuntimeError("Cannot run a closed configuration window")
-      self._check_shutdown()
-      if not self._window_closed:
-        self.start()
-        self.wait_window(self)
-    except BaseException as error:
-      try:
-        self.stop()
-      except Exception as cleanup_error:
-        self.log(logging.ERROR, "Could not clean up configuration window",
-                 exc_info=(type(cleanup_error), cleanup_error,
-                           cleanup_error.__traceback__))
-      if not isinstance(error, KeyboardInterrupt):
-        self._lifecycle.raise_if_failed()
-      raise
+    manager = self._failure_manager
+    self._running = True
+    with manager.collect('Configuration run', raise_on_exit=False):
+      with manager.step('run event loop'):
+        # Stop as soon as an error is reported
+        if manager.snapshot():
+          raise StopRequested
+        if self._window_closed:
+          raise RuntimeError("Cannot run a closed configuration window")
+        self._check_shutdown()
+        # The main run path
+        if not self._window_closed:
+          self.start()
+          self.wait_window(self)
+      self._running = False
 
-    # Normal termination path
-    self.stop()
-    self._lifecycle.raise_if_failed()
+      # Once we're done running, stop the window and raise any Exception
+      with manager.step('stop configuration'):
+        self.stop()
+    manager.raise_if_failed('Configuration failures')
+    if self._cancelled:
+      raise StopRequested
 
   def watch_shutdown(self, requested: Callable[[], bool]) -> None:
     """Registers a shutdown condition, regularly checked by the tkinter event
@@ -315,10 +343,14 @@ TkinterCameraConfig.watch_shutdown>` bypasses selection validation.
 
     self._shutdown_sched_obj = None
 
-    if self._window_closed or self._shutdown_requested is None:
+    if self._window_closed:
       return
 
-    if self._shutdown_requested():
+    if self._lifecycle.failed:
+      self.stop()
+    elif (self._shutdown_requested is not None and
+          self._shutdown_requested()):
+      self._cancelled = True
       self.log(logging.DEBUG, "Closing configuration after Block shutdown "
                               "request")
       self.stop()
@@ -329,23 +361,31 @@ TkinterCameraConfig.watch_shutdown>` bypasses selection validation.
                                 exc: type[BaseException],
                                 val: BaseException,
                                 tb: TracebackType | None) -> None:
-    """Retain a Tk callback failure, show it, and close the window safely.
+    """Reports a callback failure and closes the configuration window.
 
-    Keyboard interrupts close silently and are re-raised by :meth:`run`.
+    The failure is raised after the window closes. Interruptions do not open
+    an error dialog.
+
+    Args:
+      exc: Class of the exception supplied by Tk.
+      val: Exception raised by the callback.
+      tb: Original traceback, or :obj:`None` if unavailable.
 
     .. versionadded:: 2.0.0
     """
 
-    self._lifecycle.record_callback_failure(val, tb)
-    try:
-      if not isinstance(val, KeyboardInterrupt):
-        showerror("Error!", message=f"{exc.__name__}\n{val}")
-    except Exception as dialog_error:
-      self.log(logging.ERROR, "Could not display configuration error",
-               exc_info=(type(dialog_error), dialog_error,
-                         dialog_error.__traceback__))
-    finally:
-      self._lifecycle.request_close(self.stop)
+    with self._failure_manager.collect('Configuration callback',
+                                       raise_on_exit=False):
+      self._failure_manager.record_context_exception(val.with_traceback(tb),
+                                                     'callback')
+      with self._failure_manager.step('show error'):
+        if (not self._window_destroyed and
+            not any(isinstance(member, KeyboardInterrupt)
+                    for member in
+                    self._failure_manager.iter_exception_members(val))):
+          showerror("Error!", message=f"{exc.__name__}\n{val}")
+      with self._failure_manager.step('close configuration'):
+        self.stop()
 
   def finish(self) -> None:
     """Validates and finalizes a user-requested close.
@@ -365,6 +405,7 @@ TkinterCameraConfig.stop>`. Pending
 
     # Finish earlier in case the windows is forcibly closed by parent Block
     if self._shutdown_requested is not None and self._shutdown_requested():
+      self._cancelled = True
       self.stop()
       return
 
@@ -390,39 +431,41 @@ TkinterCameraConfig.stop>`. Pending
     .. versionadded:: 2.0.0
     """
 
-    # If the window is already closed, making sure the resources are released
-    if self._window_closed:
-      self._lifecycle.close_resources()
-      return
+    manager = self._failure_manager
+    with manager.collect('Configuration window cleanup'):
+      self._window_closed = True
+      # Cancel every callback independently
+      for scheduled in (self._img_acq_sched_obj, self._upd_var_sched_obj,
+                        self._shutdown_sched_obj):
+        if scheduled is None:
+          continue
+        with manager.step(f'cancel {scheduled}'):
+          try:
+            self.after_cancel(scheduled)
+          except tk.TclError:
+            pass
+          if self._img_acq_sched_obj == scheduled:
+            self._img_acq_sched_obj = None
+          if self._upd_var_sched_obj == scheduled:
+            self._upd_var_sched_obj = None
+          if self._shutdown_sched_obj == scheduled:
+            self._shutdown_sched_obj = None
 
-    self._window_closed = True
-    self.log(logging.DEBUG, "Closing camera configuration and releasing "
-                            "histogram resources")
-    try:
-      if self._img_acq_sched_obj is not None:
-        try:
-          self.after_cancel(self._img_acq_sched_obj)
-        except tk.TclError:
-          pass
-      if self._upd_var_sched_obj is not None:
-        try:
-          self.after_cancel(self._upd_var_sched_obj)
-        except tk.TclError:
-          pass
-      if self._shutdown_sched_obj is not None:
-        try:
-          self.after_cancel(self._shutdown_sched_obj)
-        except tk.TclError:
-          pass
+      # Close the window and report any failure
+      if not self._window_destroyed:
+        with manager.step('close window'):
+          try:
+            self.destroy()
+          except tk.TclError:
+            self._window_destroyed = True
+            raise
+          else:
+            self._window_destroyed = True
 
-    finally:
-      try:
-        self.destroy()
-      except tk.TclError as error:
-        self.log(logging.ERROR, "Cannot destroy the configuration window",
-                 exc_info=(type(error), error, error.__traceback__))
-      finally:
-        self._lifecycle.close_resources()
+      # Release the histogram process resources
+      if not self._running:
+        with manager.step('release histogram'):
+          self._lifecycle.close_resources()
 
   def _img_acq_sched(self) -> None:
     """Acquire a frame when due, then schedule the next acquisition."""
@@ -451,10 +494,10 @@ TkinterCameraConfig.stop>`. Pending
       self._upd_var_sched_obj = self.after(500, self._upd_var_sched)
 
     # Updating the indicators in the GUI
-    elapsed = time() - self._last_upd_t
+    elapsed = monotonic() - self._last_upd_t
     self._display_state.fps = self._n_loops / elapsed if elapsed > 0 else 0.0
     self._n_loops = 0
-    self._last_upd_t = time()
+    self._last_upd_t = monotonic()
     self._sync_indicator_labels()
 
   def _set_layout(self) -> None:

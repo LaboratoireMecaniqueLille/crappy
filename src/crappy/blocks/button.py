@@ -6,16 +6,17 @@ from typing import TYPE_CHECKING, Literal
 import logging
 import locale
 import os
-import tkinter as tk
-from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
+tk = OptionalModule('tkinter', lazy_import=True)
 QtCore = OptionalModule('PyQt6.QtCore', lazy_import=True)
 QtWidgets = OptionalModule('PyQt6.QtWidgets', lazy_import=True)
 
 if TYPE_CHECKING:
+  import tkinter as tk
   from PyQt6 import QtWidgets, QtCore
 
 
@@ -84,56 +85,24 @@ class Button(Block):
         .. versionadded:: 2.0.0
     """
 
-    warn("\nThe default backend for the Button Block was changed from "
-         "'tkinter' to 'pyqt' without prior notice.\nThis change was "
-         "implemented nevertheless because it is part of a larger migration "
-         "to PyQt\nSet backend='tkinter' to switch back to the "
-         "previous behavior.\nInstall PyQt6 to use the new Button "
-         "interface.\n", UserWarning, stacklevel=2)
+    self._root: tk.Tk | None = None
+    self._qt_app: QtWidgets.QApplication | None = None
+    self._qt_window: QtWidgets.QWidget | None = None
+    self._qt_events_processed: bool = False
 
     super().__init__()
     self.freq = freq
     self.display_freq = display_freq
     self.debug = debug
 
-    match send_0:
-      case bool():
-        self._send_0: bool = send_0
-      case _:
-        raise TypeError("send_0 mut be provided as a boolean")
+    check.boolean(send_0, 'send_0')
+    self._send_0: bool = send_0
 
-    match label:
-      case str() if label.strip():
-        pass
-      case str():
-        raise ValueError("The label must be provided as a non-empty string")
-      case _:
-        raise TypeError("The label must be provided as a non-empty string")
+    check.choice(backend, 'backend', ('tkinter', 'pyqt'))
+    self._backend: Literal['tkinter', 'pyqt'] = backend
 
-    match time_label:
-      case str() if time_label.strip():
-        if time_label == label:
-          raise ValueError("The time_label and the label must be different")
-      case str():
-        raise ValueError("the time_label must be provided as a non-empty "
-                         "string")
-      case _:
-        raise TypeError("the time_label must be provided as a non-empty "
-                        "string")
-
-    match backend:
-      case str() if label.strip() and backend in ('tkinter', 'pyqt'):
-        self._backend: Literal['tkinter', 'pyqt'] = backend
-      case str():
-        raise ValueError("The backend must be either 'tkinter' or 'pyqt'")
-      case _:
-        raise TypeError("The backend must be either 'tkinter' or 'pyqt'")
-
-    match spam:
-      case bool():
-        self._spam: bool = spam
-      case _:
-        raise TypeError("spam mut be provided as a boolean")
+    check.boolean(spam, 'spam')
+    self._spam: bool = spam
 
     self.labels = [time_label, label]
 
@@ -141,17 +110,13 @@ class Button(Block):
     self._step: int = 0
 
     # Attributes related to tkinter
-    self._root: tk.Tk | None = None
     self._text: tk.StringVar | None = None
     self._label: tk.Label | None = None
     self._button: tk.Button | None = None
 
     # Attributes related to PyQt6
-    self._qt_app: QtWidgets.QApplication | None = None
-    self._qt_window: QtWidgets.QWidget | None = None
     self._qt_label: QtWidgets.QLabel | None = None
     self._qt_button: QtWidgets.QPushButton | None = None
-    self._callback_error: BaseException | None = None
 
   def prepare(self) -> None:
     """Creates the graphical interface and sets its layout and callbacks."""
@@ -188,9 +153,8 @@ class Button(Block):
     else:
       assert self._qt_app is not None
       self._qt_app.processEvents()
-      if self._callback_error is not None:
-        raise self._callback_error
 
+    self._failure_manager.raise_if_failed('GUI callback failures')
     self.log(logging.DEBUG, "GUI updated")
 
     if self._spam:
@@ -202,25 +166,42 @@ class Button(Block):
     An existing Qt application is left available for its other windows.
     """
 
-    self.log(logging.INFO, "Closing the GUI")
-    try:
-      if getattr(self, '_root', None) is not None:
-        assert self._root is not None
-        self._root.destroy()
-    except tk.TclError:
-      pass
+    manager = self._failure_manager
 
-    if getattr(self, '_qt_window', None) is not None:
-      assert self._qt_window is not None
-      self._qt_window.close()
-    if getattr(self, '_qt_app', None) is not None:
-      assert self._qt_app is not None
-      self._qt_app.processEvents()
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Button cleanup'):
+      with manager.step('cleanup diagnostic'):
+        self.log(logging.INFO, "Closing the GUI")
+
+      # Destroy the Tk window
+      if self._root is not None:
+        with manager.step('destroy Tk window'):
+          try:
+            self._root.destroy()
+          except tk.TclError:
+            pass
+          self._root = None
+
+      # Close the Qt window
+      if self._qt_window is not None:
+        self._qt_events_processed = False
+        with manager.step('close Qt window'):
+          if not self._qt_window.close():
+            raise RuntimeError("The Button Qt window refused to close")
+          self._qt_window = None
+
+      # Process the last Qt events
+      if self._qt_app is not None and not self._qt_events_processed:
+        with manager.step('process Qt close events'):
+          self._qt_app.processEvents()
+          self._qt_events_processed = True
 
   def _prepare_tkinter(self) -> None:
     """Creates the tkinter window with a counter above the step button."""
 
+    tk.resolve()
     self._root = tk.Tk()
+    self._root.report_callback_exception = self._report_tk_callback_exception
     assert self._root is not None
     self._root.title("Button block")
     self._root.resizable(False, False)
@@ -276,11 +257,8 @@ class Button(Block):
     self._qt_window.show()
     assert self._qt_app is not None
     self._qt_app.processEvents()
-    if self._callback_error is not None:
-      raise self._callback_error
 
-  @staticmethod
-  def _get_application() -> QtWidgets.QApplication:
+  def _get_application(self) -> QtWidgets.QApplication:
     """Reuses a Qt widget application or creates one for this Block.
 
     OpenCV's bundled Qt plugin path is excluded during application creation,
@@ -293,25 +271,31 @@ class Button(Block):
         raise RuntimeError("A non-widget Qt application already exists")
       return app
 
+    manager = self._failure_manager
     original = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH')
-    if original is not None:
-      paths = original.split(os.pathsep)
-      filtered = [path for path in paths if
-                  tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
-                  ('cv2', 'qt', 'plugins')]
-      if filtered != paths:
-        if filtered:
-          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.pathsep.join(filtered)
-        else:
-          os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
-
-    numeric_locale = locale.setlocale(locale.LC_NUMERIC)
-    try:
-      return QtWidgets.QApplication([])
-    finally:
-      locale.setlocale(locale.LC_NUMERIC, numeric_locale)
-      if original is not None:
-        os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+    numeric_locale = None
+    with manager.collect('Qt application setup'):
+      with manager.step('create application'):
+        numeric_locale = locale.setlocale(locale.LC_NUMERIC)
+        if original is not None:
+          paths = original.split(os.pathsep)
+          filtered = [path for path in paths if
+                      tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
+                      ('cv2', 'qt', 'plugins')]
+          if filtered != paths:
+            if filtered:
+              os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = (
+                  os.pathsep.join(filtered))
+            else:
+              os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
+        app = QtWidgets.QApplication([])
+      with manager.step('restore numeric locale'):
+        if numeric_locale is not None:
+          locale.setlocale(locale.LC_NUMERIC, numeric_locale)
+      with manager.step('restore Qt plugin path'):
+        if original is not None:
+          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+    return app
 
   def _update_text(self) -> None:
     """Updates the displayed counter for the selected backend."""
@@ -325,7 +309,7 @@ class Button(Block):
       self._qt_label.setText(text)
 
   def _next_step_pyqt(self, _checked: bool = False) -> None:
-    """Retains Qt callback failures for the Block's loop to raise.
+    """Reports Qt callback failures through the Block's manager.
 
     Letting an exception escape a Qt signal callback can abort the process.
     """
@@ -333,9 +317,12 @@ class Button(Block):
     try:
       self._next_step()
     except BaseException as error:
-      self._callback_error = error
-      assert self._qt_button is not None
-      self._qt_button.setEnabled(False)
+      self._record_callback_failure(error)
+      with self._failure_manager.collect('GUI callback cleanup',
+                                         raise_on_exit=False):
+        with self._failure_manager.step('disable button'):
+          if self._qt_button is not None:
+            self._qt_button.setEnabled(False)
 
   def _next_step(self) -> None:
     """Increments the step counter and sends the corresponding signal."""

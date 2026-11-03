@@ -10,12 +10,14 @@ from collections.abc import Iterable, Sequence
 import logging
 import logging.handlers
 from select import select
-from time import time, sleep
+from time import monotonic
 from platform import system
 from abc import ABC, abstractmethod
 
+from ... import _validation as check
 from ...links import Link
-from ..._global import LinkDataError
+from ..._exceptions import LinkDataError, StopRequested
+from ..._failure import FailureManager
 from ...tool.camera_config import Overlay
 
 
@@ -63,6 +65,7 @@ class CameraProcess(Process, ABC):
     self._img_array: sharedctypes.SynchronizedArray | None = None
     self._data_dict: managers.DictProxy | None = None
     self._lock: synchronize.RLock | None = None
+    self._condition: synchronize.Condition | None = None
     self._cam_barrier: synchronize.Barrier | None = None
     self._stop_event: synchronize.Event | None = None
     self._shape: tuple[int, int] | tuple[int, int, int] | None = None
@@ -75,15 +78,19 @@ class CameraProcess(Process, ABC):
     self._img0_set = False
 
     # Other attribute for internal use
-    self._last_warn = time()
+    self._last_warn = monotonic()
     self.fps_count = 0
     self._display_freq: bool | None = None
-    self._last_fps = time()
+    self._last_fps = monotonic()
+    self._failure_queue: queues.Queue
+    self._failure_manager: FailureManager
+    self._block_name: str
 
   def set_shared(self,
                  array: sharedctypes.SynchronizedArray,
                  data_dict: managers.DictProxy,
                  lock: synchronize.RLock,
+                 condition: synchronize.Condition,
                  barrier: synchronize.Barrier,
                  event: synchronize.Event,
                  shape: tuple[int, int] | tuple[int, int, int],
@@ -92,6 +99,8 @@ class CameraProcess(Process, ABC):
                  outputs: list[Link],
                  labels: Sequence[str] | None,
                  log_queue: queues.Queue,
+                 failure_queue: queues.Queue,
+                 block_name: str,
                  log_level: int | None = 20,
                  display_freq: bool = False) -> None:
     """Method allowing the :class:`~crappy.blocks.Camera` Block to share
@@ -105,6 +114,8 @@ class CameraProcess(Process, ABC):
       lock: A :obj:`~multiprocessing.RLock` ensuring that the CameraProcess and
         the Camera Block do not try to access the shared array at the same
         time.
+      condition: A :obj:`~multiprocessing.Condition` using ``lock``, notified
+        after an image is available or shutdown is requested.
       barrier: A :obj:`~multiprocessing.Barrier` ensuring that all the
         CameraProcesses wait for a start signal from the Camera Block before
         starting to run.
@@ -129,11 +140,19 @@ class CameraProcess(Process, ABC):
         :obj:`int`.
       display_freq: If :obj:`True`, the looping frequency of this class will be
         displayed while running.
+      failure_queue: :obj:`~multiprocessing.Queue` for reporting failures to
+        the owning Camera Block.
+
+        .. versionadded:: 2.2.0
+      block_name: Name of the parent Camera Block, shown in failure reports.
+
+        .. versionadded:: 2.2.0
     """
 
     self._img_array = array
     self._data_dict = data_dict
     self._lock = lock
+    self._condition = condition
     self._cam_barrier = barrier
     self._stop_event = event
     self._shape = shape
@@ -146,6 +165,8 @@ class CameraProcess(Process, ABC):
     self._log_queue = log_queue
     self._log_level = log_level
     self._display_freq = display_freq
+    self._failure_queue = failure_queue
+    self._block_name = block_name
 
     self.img = np.empty(shape=shape, dtype=dtype)
 
@@ -164,112 +185,95 @@ class CameraProcess(Process, ABC):
     simpler.
     """
 
-    try:
-      # First thing, setting the Logger
-      self._set_logger()
-      self.log(logging.INFO, "Logger configured")
+    # Make sure a FailureManager is available and has a logger
+    self._failure_manager = FailureManager(self._block_name,
+                                           'bootstrap',
+                                           owner_path=self.name)
+    manager = self._failure_manager
 
-      # Initializing the CameraProcess, and breaking the Barrier to warn the
-      # other CameraProcesses in case something goes wrong
-      try:
-        self.init()
-      except (Exception,):
-        if self._cam_barrier is None:
-          self.log(logging.ERROR, "The camera Barrier should be aborted but "
-                                  "it doesn't exist!")
-        else:
-          self._cam_barrier.abort()
-          self.log(logging.ERROR, "Breaking the barrier due to caught "
-                                  "exception while preparing")
-        raise
-
-      # Waiting for all other CameraProcess to be ready
-      if self._cam_barrier is None:
-        raise RuntimeError("Cannot wait for the camera Barrier because it "
-                           "doesn't exist")
-      self.log(logging.INFO, "Waiting for the other Camera processes to be "
-                             "ready")
-      self._cam_barrier.wait()
-      self.log(logging.INFO, "All Camera processes ready now")
-
-      self._last_fps = time()
-
-      # Looping forever until told to stop or an exception is raised
-      if self._stop_event is None:
-        raise RuntimeError("Trying to read the stop Event but it doesn't "
-                           "exist")
-      while not self._stop_event.is_set():
-        # Only looping if a new image is available
-        if self._get_data():
-          self.log(logging.DEBUG, "Running the loop method")
-          self.loop()
-          self.fps_count += 1
-        else:
-          sleep(0.001)
-
-        # Displaying the looping frequency is required
-        if self._display_freq:
-          t = time()
-          if t - self._last_fps > 2:
-            self.log(logging.INFO, f"Images processed /s: "
-                                   f"{self.fps_count / (t - self._last_fps)}")
-            self._last_fps = t
-            self.fps_count = 0
-
-      self.log(logging.INFO, "Stop event set, stopping the processing")
-
-    # Case when CTRL+C was pressed
-    except KeyboardInterrupt:
-      if self._stop_event is None:
-        self.log(logging.ERROR, "Trying to set the stop Event but it doesn't "
-                                "exist")
-      else:
-        self.log(logging.INFO, "KeyboardInterrupt caught, stopping the "
-                               "processing")
-        self._stop_event.set()
-
-    # Case when another CameraProcess raised an exception while initializing
-    except BrokenBarrierError:
-      self.log(logging.WARNING,
-               "Exception raised in another Camera process while waiting "
-               "for all Camera processes to be ready, stopping")
-
-    # Handling any other unexpected exception
-    except (Exception,) as exc:
-      if self._logger is not None:
-        self._logger.exception("Exception caught wile running !", exc_info=exc)
-      if self._stop_event is None:
-        self.log(logging.ERROR, "Trying to set the stop Event but it doesn't "
-                                "exist")
-      else:
-        self.log(logging.ERROR, "Setting the stop event to stop the other "
-                                "Camera processes")
-        self._stop_event.set()
-      raise
-
-    # Always calling finish in the end
-    finally:
-      try:
-        self.finish()
-      except KeyboardInterrupt:
-        self.log(logging.WARNING, "KeyboardInterrupt caught while finishing, "
-                                  "ignoring it")
-        if self._stop_event is None:
-          self.log(logging.ERROR, "Trying to set the stop Event but it doesn't"
-                                  " exist")
-        else:
-          self._stop_event.set()
-      except (Exception,) as exc:
+    # Guard run steps with the FailureManager
+    with manager.collect('CameraProcess lifecycle', raise_on_exit=False):
+      with manager.step('execution'):
+        # Make sure that the FailureManager and the logger are configured
+        manager.set_queue(self._failure_queue)
+        self._set_logger()
         if self._logger is not None:
-          self._logger.exception("Exception caught while finishing !",
-                                 exc_info=exc)
+          manager._logger = self._logger
+        self.log(logging.INFO, "Logger configured")
+
+        # Initialize the Process
+        manager.phase = 'init'
+        self.init()
+
+        # Synchronize the Process with the other ones using a Barrier
+        manager.phase = 'synchronize'
+        if self._cam_barrier is None:
+          raise RuntimeError("The camera Barrier isn't initialized")
         if self._stop_event is None:
-          self.log(logging.ERROR, "Trying to set the stop Event but it doesn't"
-                                  " exist")
-        else:
-          self.log(logging.ERROR, "Setting the stop event to stop the other "
-                                  "Camera processes")
+          raise RuntimeError("The camera stop Event isn't initialized")
+        if self._stop_event.is_set() or manager.snapshot():
+          raise StopRequested
+        self.log(logging.INFO, "Waiting for the other Camera processes")
+        try:
+          self._cam_barrier.wait()
+        except BrokenBarrierError:
+          raise StopRequested from None
+        if self._cam_barrier.broken or self._stop_event.is_set():
+          raise StopRequested
+        self.log(logging.INFO, "All Camera processes ready now")
+
+        # Run the main loop
+        manager.phase = 'main'
+        self._last_fps = monotonic()
+        while not self._stop_event.is_set():
+          if self._get_data(timeout=0.1):
+            self.log(logging.DEBUG, "Running the loop method")
+            self.loop()
+            self.fps_count += 1
+
+          if self._display_freq:
+            t = monotonic()
+            if t - self._last_fps > 2:
+              self.log(logging.INFO, f"Images processed /s: "
+                                     f"{self.fps_count / (t - self._last_fps)}")
+              self._last_fps = t
+              self.fps_count = 0
+
+      execution_phase = manager.phase
+      manager.phase = 'framework cleanup'
+
+      # Will be executed if an Exception occurs in the previous step
+      with manager.step('request stop'):
+        if self._stop_event is not None:
           self._stop_event.set()
+      with manager.step('abort preparation'):
+        if (execution_phase in ('bootstrap', 'init', 'synchronize') and
+            self._cam_barrier is not None):
+          self._cam_barrier.abort()
+
+      # Call the finish method
+      manager.phase = 'finish'
+      with manager.step('finish'):
+        self.finish()
+
+      # Close the opened connections
+      manager.phase = 'framework cleanup'
+      with manager.step('close overlay Pipe'):
+        if self._to_draw_conn is not None:
+          self._to_draw_conn.close()
+          self._to_draw_conn = None
+      with manager.step('request stop after cleanup'):
+        if self._stop_event is not None and manager.snapshot():
+          self._stop_event.set()
+
+      # Close the opened Queues
+      manager.phase = 'failure Queue shutdown'
+      with manager.step('disconnect'):
+        manager.set_queue(None)
+      with manager.step('close'):
+        self._failure_queue.close()
+      with manager.step('flush'):
+        self._failure_queue.join_thread()
 
   def init(self) -> None:
     """This method should perform any action required for initializing the
@@ -301,14 +305,18 @@ class CameraProcess(Process, ABC):
     ...
 
   def finish(self) -> None:
-    """This method should perform any action required for properly exiting the
-    CameraProcess.
+    """Closes resources used by this image-processing worker.
 
-    It is meant to be overwritten by children classes, at is otherwise does not
-    perform any action.
+    Override this method when processing opens resources that need closing.
+    Allow for :meth:`init` having failed partway through. Crappy reports
+    failures from this method alongside earlier processing failures.
 
-    It is the last method called before the :obj:`~multiprocessing.Process`
-    ends, and at that point no more images are being acquired.
+    For several independent cleanup operations, use
+    :meth:`~crappy._failure.FailureManager.collect` and
+    :meth:`~crappy._failure.FailureManager.step` on ``self._failure_manager``.
+
+    .. versionchanged:: 2.2.0
+       Cleanup failures are reported through the owning Camera Block.
     """
 
     ...
@@ -370,9 +378,9 @@ class CameraProcess(Process, ABC):
       if select([], [self._to_draw_conn], [], 0)[1]:
         # Can only check on Linux if a pipe is full
         self._to_draw_conn.send(to_draw)
-      elif time() - self._last_warn > 1:
+      elif monotonic() - self._last_warn > 1:
         # Warning in case the pipe is full
-        self._last_warn = time()
+        self._last_warn = monotonic()
         self.log(logging.WARNING, f"Cannot send the overlay to draw to the "
                                   f"Displayer process, the Pipe is full !")
     else:
@@ -405,37 +413,55 @@ get_config`. The received values should normally be stored for use by
       msg: The message to log, as a :obj:`str`.
     """
 
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
+
     if self._logger is None:
       return
     self._logger.log(level, msg)
 
-  def _get_data(self) -> bool:
+  def _get_data(self, timeout: float = 0.0) -> bool:
     """This method allows to grab the latest available frame.
 
-    It first acquired the :obj:`~multiprocessing.RLock` protecting the shared
+    It first acquires the :obj:`~multiprocessing.RLock` protecting the shared
     :obj:`~multiprocessing.Array` containing the image, then copies the image
     locally and releases the Lock. It also copies the metadata associated to
     the image.
+
+    Args:
+      timeout: Finite, non-negative notification timeout in seconds. A positive
+        value waits for a new frame, stop request, or broken preparation
+        barrier.
 
     Returns:
       :obj:`True` in case a frame was acquired and needs to be handled, or
       :obj:`False` if no frame was grabbed and nothing should be done.
     """
 
-    # Acquiring the Lock to avoid conflicts with other CameraProcesses
+    check.real(timeout, 'timeout', minimum=0)
+
+    if self._data_dict is None:
+      raise RuntimeError("The shared metadata dictionary wasn't initialized")
     if self._lock is None:
       raise RuntimeError("Trying to acquire the Lock but is doesn't exist")
-    with self._lock:
+    if self._condition is None:
+      raise RuntimeError("The image notification Condition wasn't initialized")
+    if self._stop_event is None:
+      raise RuntimeError("The camera stop Event wasn't initialized")
 
-      if self._data_dict is None:
-        raise RuntimeError("The shared metadata dictionary wasn't initialized")
-
-      # In case there's no frame grabbed yet
-      if 'ImageUniqueID' not in self._data_dict:
+    # This Condition uses the reader's existing image lock
+    with self._condition:
+      if timeout > 0:
+        if not self._condition.wait_for(self._image_available,
+                                        timeout=timeout):
+          return False
+      if self._stop_event.is_set():
         return False
+      if self._cam_barrier is not None and self._cam_barrier.broken:
+        raise StopRequested
 
-      # In case the frame in buffer was already handled during a previous loop
-      if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID']:
+      # A successful wait already checked readiness
+      if timeout == 0 and not self._has_new_image():
         return False
 
       # Copying the metadata
@@ -457,6 +483,26 @@ get_config`. The received values should normally be stored for use by
 
     return True
 
+  def _image_available(self) -> bool:
+    """Predicate watched by the image Condition.
+
+    .. versionadded:: 2.2.0
+    """
+
+    return (self._stop_event.is_set() or
+            (self._cam_barrier is not None and self._cam_barrier.broken) or
+            self._has_new_image())
+
+  def _has_new_image(self) -> bool:
+    """Tests image availability under the image Condition's lock.
+
+    .. versionadded:: 2.2.0
+    """
+
+    assert self._data_dict is not None
+    image_id = self._data_dict.get('ImageUniqueID')
+    return image_id is not None and image_id != self.metadata['ImageUniqueID']
+
   def _set_logger(self) -> None:
     """Initializes the :obj:`~logging.Logger` for the CameraProcess.
 
@@ -468,10 +514,9 @@ get_config`. The received values should normally be stored for use by
     logger = logging.getLogger(self.name)
 
     # Disabling logging if requested
+    logger.disabled = self._log_level is None
     if self._log_level is not None:
       logger.setLevel(self._log_level)
-    else:
-      logging.disable()
 
     if self._log_queue is None:
       raise RuntimeError("The logging Queue isn't initialized")

@@ -1,23 +1,22 @@
 # coding: utf-8
 
 from threading import Thread
-from math import log2, ceil
+from math import log2, ceil, isfinite
 import numpy as np
 from collections.abc import Iterable
-from time import time, sleep
+from time import sleep, monotonic
 import logging
 import logging.handlers
 
+from ... import _validation as check
+from ..._exceptions import OptionalDependencyError, StopRequested
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
 from ...tool.camera_config import Overlay
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+cv2 = OptionalModule('cv2', install_name='opencv-python', lazy_import=True)
 
 
 class Displayer(CameraProcess):
@@ -58,47 +57,44 @@ class Displayer(CameraProcess):
 
     # The thread must be initialized later for compatibility with Windows
     self._overlay_thread: Thread | None = None
+    self._overlay_started: bool = False
+    self._window_opened: bool = False
+    self._ax = None
+    self._fig = None
     self._overlay: Iterable[Overlay | None] = list()
     self._stop_thread = False
 
     super().__init__()
-
-    if not framerate > 0:
-      raise ValueError("framerate must be strictly positive")
+    check.string(title, 'title')
 
     self._title = title
     self._framerate = framerate
 
     # Selecting the backend if no backend was specified
     if backend is None:
-      if not isinstance(cv2, OptionalModule):
+      if cv2.is_available():
         self._backend = 'cv2'
       else:
         try:
-          _ = plt.Figure
+          plt.resolve()
           self._backend = 'mpl'
-        except RuntimeError:
+        except OptionalDependencyError as error:
           raise ModuleNotFoundError("Neither opencv-python nor matplotlib "
                                     "could be imported, no backend found for "
-                                    "displaying the images")
+                                    "displaying the images") from error
 
-    elif backend in ('cv2', 'mpl'):
-      self._backend = backend
     else:
-      raise ValueError("The backend argument should be either 'cv2' or "
-                       "'mpl' !")
+      self._backend = backend
 
     # Setting other instance attributes
-    self._ax = None
-    self._fig = None
-    self._last_upd = time()
+    self._last_upd = monotonic()
 
   def __del__(self) -> None:
     """On exit, ensuring that the :obj:`~threading.Thread` in charge of
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay` to
     display has stopped, otherwise stopping it."""
 
-    if self._overlay_thread is not None and self._overlay_thread.is_alive():
+    if self._overlay_thread is not None and self._overlay_started:
       self._stop_thread = True
       try:
         self._overlay_thread.join(0.05)
@@ -110,13 +106,20 @@ class Displayer(CameraProcess):
     :class:`~crappy.tool.camera_config.config_tools.Overlay` to display, and
     initializes the Displayer window."""
 
+    # Fail before starting helper threads if the selected backend cannot load
+    if self._backend == 'cv2':
+      cv2.resolve()
+    else:
+      plt.resolve()
+
     # Instantiating and starting the Thread for grabbing the Overlays
     self.log(logging.INFO, "Instantiating the thread for getting the Overlays"
                            " to display")
-    self._overlay_thread = Thread(target=self._thread_target)
+    self._overlay_thread = Thread(target=self._thread_target, daemon=True)
     self.log(logging.INFO, "Starting the thread for getting the Overlays to "
                            "display")
     self._overlay_thread.start()
+    self._overlay_started = True
 
     # Preparing the Displayer window
     self.log(logging.INFO, f"Opening the displayer window with the backend "
@@ -126,7 +129,7 @@ class Displayer(CameraProcess):
     elif self._backend == 'mpl':
       self._prepare_mpl()
 
-  def _get_data(self) -> bool:
+  def _get_data(self, timeout: float = 0.0) -> bool:
     """Method similar to the one of the parent class, except it also ensures 
     that the achieved framerate stays within the limit specified by the user.
     
@@ -135,32 +138,30 @@ class Displayer(CameraProcess):
       :obj:`False` if no frame was grabbed and nothing should be done.
     """
 
-    # Acquiring the Lock to avoid conflicts with other CameraProcesses
-    with self._lock:
+    if not isinstance(timeout, (int, float)):
+      raise TypeError("The image receive timeout must be a number")
+    if not isfinite(timeout) or timeout < 0:
+      raise ValueError("The image receive timeout must be finite and "
+                       "non-negative")
 
-      # In case there's no frame grabbed yet
-      if 'ImageUniqueID' not in self._data_dict:
-        return False
+    # Wake at the next display deadline even if no further image is available
+    if timeout > 0:
+      remaining = 1 / self._framerate - (monotonic() - self._last_upd)
+      if remaining > 0:
+        timeout = min(timeout, remaining)
+    received = super()._get_data(timeout=timeout)
+    if received:
+      self._last_upd = monotonic()
+    return received
 
-      # In case the frame in buffer was already handled during a previous loop,
-      # or it's too early to grab a new frame because of the target framerate
-      if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID'] \
-          or time() - self._last_upd < 1 / self._framerate:
-        return False
+  def _has_new_image(self) -> bool:
+    """Includes the display rate limit in the Condition's predicate.
 
-      # Copying the metadata
-      self.metadata = self._data_dict.copy()
-      self._last_upd = time()
+    .. versionadded:: 2.2.0
+    """
 
-      self.log(logging.DEBUG, f"Got new image to process with id "
-                              f"{self.metadata['ImageUniqueID']}")
-
-      # Copying the frame
-      np.copyto(self.img,
-                np.frombuffer(self._img_array.get_obj(),
-                              dtype=self._dtype).reshape(self._shape))
-
-    return True
+    return (super()._has_new_image() and
+            monotonic() - self._last_upd >= 1 / self._framerate)
 
   def loop(self) -> None:
     """This method grabs the latest frame, casts it to 8 bits if necessary,
@@ -200,21 +201,38 @@ class Displayer(CameraProcess):
     """Closes the Displayer window and stops the :obj:`~threading.Thread`
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay`"""
 
-    # Closing the Displayer window
-    self.log(logging.INFO, "Closing the displayer window")
-    if self._backend == 'cv2':
-      self._finish_cv2()
-    elif self._backend == 'mpl':
-      self._finish_mpl()
+    manager = self._failure_manager
 
-    # Stooping the Thread grabbing the Overlay to draw
-    if self._overlay_thread is not None and self._overlay_thread.is_alive():
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Displayer cleanup'):
       self._stop_thread = True
-      try:
-        self._overlay_thread.join(0.05)
-      except RuntimeError:
-        self.log(logging.WARNING, "Thread for receiving the Overlay did not "
-                                  "stop as expected")
+
+      # Close the display window
+      if self._window_opened:
+        with manager.step('close display window'):
+          if self._backend == 'cv2':
+            self._finish_cv2()
+          elif self._backend == 'mpl':
+            self._finish_mpl()
+          self._window_opened = False
+          self._fig = None
+          self._ax = None
+
+      if self._overlay_thread is not None:
+        if self._overlay_started:
+
+          # Give some time for the overlay thread to finish
+          with manager.step('join overlay thread'):
+            self._overlay_thread.join(0.5)
+          # Check if the overlay thread is still alive and report it if so
+          with manager.step('check overlay thread'):
+            alive = self._overlay_thread.is_alive()
+            if alive:
+              raise RuntimeError("The overlay thread did not stop in time")
+            self._overlay_thread = None
+            self._overlay_started = False
+        else:
+          self._overlay_thread = None
 
   def _thread_target(self) -> None:
     """This method is the target to the :obj:`~threading.Thread` in charge of
@@ -226,25 +244,49 @@ class Displayer(CameraProcess):
     Overlays.
     """
 
-    # Looping until the entire CameraProcess is told to stop, or the 
-    # _stop_thread flag is raised
-    while not self._stop_event.is_set() and not self._stop_thread:
+    manager = self._failure_manager
 
-      # Receiving the latest Overlay to draw
-      overlay = None
-      while self._to_draw_conn.poll():
-        overlay = self._to_draw_conn.recv()
+    # Keep reference to the original objects in case reset() is called
+    connection = self._to_draw_conn
+    stop = self._stop_event
+    barrier = self._cam_barrier
 
-      # Saving the received Overlay
-      if overlay is not None:
-        self.log(logging.DEBUG, f"Received overlay to display: {overlay}")
-        self._overlay = overlay
+    # Guard run steps with the FailureManager
+    with manager.collect('Overlay reception', raise_on_exit=False):
+      with manager.step('receive overlays'):
+        if connection is None or stop is None:
+          raise RuntimeError("Overlay reception requires a Pipe and stop "
+                             "Event")
+        while not stop.is_set() and not self._stop_thread:
+          # Receiving the latest Overlay to draw
+          overlay = None
+          try:
+            while (not self._stop_thread and not stop.is_set() and
+                   connection.poll()):
+              overlay = connection.recv()
+          except (EOFError, OSError):
+            # The owning process may close its Pipe during shutdown
+            if self._stop_thread or stop.is_set():
+              raise StopRequested from None
+            raise
+          if overlay is not None:
+            self.log(logging.DEBUG, f"Received overlay to display: {overlay}")
+            self._overlay = overlay
 
-      # To avoid spamming the CPU in vain
-      else:
-        sleep(0.001)
+          # To avoid spamming the CPU in vain
+          else:
+            sleep(0.001)
 
-    self.log(logging.INFO, "Thread for receiving the Overlays ended")
+      # Set the error and stop flags
+      self._stop_thread = True
+      with manager.step('request worker stop'):
+        if stop is not None:
+          stop.set()
+      with manager.step('abort worker readiness'):
+        if barrier is not None:
+          barrier.abort()
+      with manager.step('overlay diagnostic'):
+        self.log(logging.INFO, "Thread for receiving the Overlays ended")
 
   def _prepare_cv2(self) -> None:
     """Instantiates the display window of ``cv2``."""
@@ -254,12 +296,14 @@ class Displayer(CameraProcess):
     except AttributeError:
       flags = cv2.WINDOW_NORMAL
     cv2.namedWindow(self._title, flags)
+    self._window_opened = True
 
   def _prepare_mpl(self) -> None:
     """Creates a :mod:`matplotlib` Figure."""
 
     plt.ion()
     self._fig, self._ax = plt.subplots()
+    self._window_opened = True
 
   def _update_cv2(self, img: np.ndarray) -> None:
     """Reshapes the image to a maximum shape of 640x480 and displays it in 

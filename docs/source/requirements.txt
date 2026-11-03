@@ -1,11 +1,13 @@
-# Sphinx 8.1 is the newest feature line that supports Python 3.10
-Sphinx>=8.1,<8.2
+# Sphinx 9.0 is the newest feature line that supports Python 3.11
+Sphinx>=9.0,<9.1
 
 # Other direct documentation extensions
 # The runtime dependencies (currently only NumPy) are resolved from
 # pyproject.toml when Crappy is installed.
 sphinx_copybutton==0.5.2
 furo==2025.12.19
+sphinx-design==0.7.0
+sphinxext-opengraph==0.13.0
 
 # Documentation quality checks
 codespell==2.4.3

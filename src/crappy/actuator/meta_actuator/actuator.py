@@ -4,7 +4,8 @@ from time import sleep
 import logging
 from multiprocessing import current_process
 
-from ..._global import DefinitionError
+from ... import _validation as check
+from ..._exceptions import DefinitionError
 
 
 class Actuator:
@@ -21,13 +22,15 @@ class Actuator:
   .. versionchanged:: 2.1.0 removed the *ft232h* class attribute
   """
 
+  # Actually loaded subclasses
   classes = dict()
 
   def __init_subclass__(cls, **kwargs) -> None:
     """Used for checking that two subclasses don't share the same name."""
 
     super().__init_subclass__()
-    if cls.__name__ in cls.classes:
+    from .. import is_reserved
+    if cls.__name__ in cls.classes or is_reserved(cls):
       raise DefinitionError(f"An Actuator with the name {cls.__name__} is "
                             f"already defined !")
     cls.classes[cls.__name__] = cls
@@ -48,6 +51,9 @@ class Actuator:
 
     .. versionadded:: 2.0.0
     """
+
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._logger = logging.getLogger(

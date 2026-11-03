@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from multiprocessing import Pipe
-from time import time
+from time import monotonic
 from copy import deepcopy
 from typing import Any
 from collections.abc import Callable, Sequence
@@ -12,7 +12,9 @@ from multiprocessing import current_process
 import logging
 
 from .link_graph import link_graph
-from .._global import LinkDataError
+from .._exceptions import LinkDataError
+from .._failure import FailureManager
+from .. import _validation as check
 
 ModifierType = Callable[[dict[str, Any]], [dict[str, Any] | None]]
 
@@ -74,21 +76,25 @@ class Link:
     .. versionremoved:: 2.0.0 *conditions*, *timeout* and *action* arguments
     """
 
+    check.string(name, 'name', optional=True)
+    check.boolean(allow_parallel, 'allow_parallel')
+    check.sequence(modifiers, 'modifiers', optional=True)
+
     if modifiers is None:
       modifiers = list()
 
     # Checking that all the given modifiers are callable
-    if modifiers and not all(callable(mod) for mod in modifiers):
-      not_callable = [mod for mod in modifiers if not callable(mod)]
-      raise TypeError(f"The following objects passed as modifiers are not "
-                      f"callable : {not_callable} !")
+    for modifier in modifiers:
+      check.callable_(modifier, 'modifiers')
 
     self.name = name if name is not None else f'link{self._get_count()}'
 
-    self._last_warn = time()
+    self._last_warn = monotonic()
     self._logger: logging.Logger | None = None
     self._system = system()
     self._modifiers = modifiers
+    self._in_closed: bool = False
+    self._out_closed: bool = False
 
     # Create the Pipe before registering the edge, so a resource allocation
     # failure cannot leave a stale edge in the graph.
@@ -98,14 +104,39 @@ class Link:
     try:
       link_graph.add_edge(self.name, input_block.name, output_block.name,
                           kind='link', allow_parallel=allow_parallel)
-    except Exception:
-      self._in.close()
-      self._out.close()
-      raise
+    except (BaseException,) as error:
+      manager = FailureManager(self.name, 'initialization')
+      with manager.collect('Link initialization'):
+        manager.record_context_exception(error, 'register edge')
+        with manager.step('close unregistered Link'):
+          self.close(manager=manager)
 
     # Associating the link to the input and output blocks
     input_block.add_output(self)
     output_block.add_input(self)
+
+  def close(self, manager: FailureManager) -> None:
+    """Closes both Pipe endpoints, including when one close fails.
+
+    Successful closes are remembered so repeated cleanup only retries failures.
+    The framework calls this after the Blocks have finished.
+
+    Args:
+      manager: FailureManager of the owning Process.
+
+    .. versionadded:: 2.2.0
+    """
+
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Link cleanup'):
+      if not self._in_closed:
+        with manager.step(f'close input of {self.name!r}'):
+          self._in.close()
+          self._in_closed = True
+      if not self._out_closed:
+        with manager.step(f'close output of {self.name!r}'):
+          self._out.close()
+          self._out_closed = True
 
   def __new__(cls, *args, **kwargs):
     """When instantiating a new Link, increments the Link counter."""
@@ -129,6 +160,9 @@ class Link:
     .. versionadded:: 2.0.0
     """
 
+    check.log_level(log_level, 'log_level')
+    check.string(msg, 'msg', empty=True)
+
     if self._logger is None:
       self._logger = logging.getLogger(
         f"{current_process().name}.{self.name}")
@@ -146,8 +180,13 @@ class Link:
   def send(self, value: dict[str, Any]) -> None:
     """Sends a value from the upstream Block to the downstream Block.
 
-    Before sending, applies the given Modifiers and makes sure there's room in
-    the Pipe for sending the data (Linux only).
+    Before sending, applies the given Modifiers. On Linux, discards the value
+    if the Pipe is not writable.
+
+    This check does not guarantee that the complete serialized dictionary fits
+    in the Pipe. Sending a large dictionary, including arrays or stream chunks,
+    can still block until the downstream Block reads data. Sending can block
+    on any platform, keep messages small and ensure consumers read regularly.
     """
 
     # Applying the modifiers to the value to send
@@ -168,8 +207,8 @@ class Link:
       if select([], [self._out], [], 0)[1]:
         self._out.send(value)
       # Warning in case the pipe is full
-      elif time() - self._last_warn > 1:
-          self._last_warn = time()
+      elif monotonic() - self._last_warn > 1:
+          self._last_warn = monotonic()
           self.log(logging.WARNING, f"Cannot send the values, the Link is "
                                     f"full !")
     else:

@@ -92,6 +92,21 @@ unrelated responsibilities in one class. The
 :doc:`concepts/choosing_custom_object_type` guide explains which custom object
 type matches a device or task.
 
+Import boundaries
+-----------------
+
+Expensive package exports use module ``__getattr__``, ``__all__``, and
+``TYPE_CHECKING`` imports to expose objects without eagerly importing them.
+They are cached on their first access. Use :func:`~crappy.camera.camera_names`,
+:func:`~crappy.actuator.actuator_names`, and :func:`~crappy.inout.inout_names`
+for enumerating the available Cameras, Actuators and InOuts without importing
+them.
+
+Optional dependencies are handled using :class:`~crappy.OptionalModule`, with
+an option for lazily loading expensive dependencies.
+:meth:`~crappy.OptionalModule.is_available` checks importability
+and :meth:`~crappy.OptionalModule.resolve` returns the module.
+
 Construction and graph registration
 -----------------------------------
 
@@ -108,7 +123,7 @@ Block registry and graph together so that their state cannot diverge between
 tests.
 
 A regular Link creates its pipe during construction. An ImageLink initially
-stores only its graph relationship and placeholders for shared image state.
+stores its graph relationship and placeholders for shared image state.
 The image transport is completed during preparation, once Crappy knows the
 entire graph.
 
@@ -116,8 +131,8 @@ Startup coordination
 --------------------
 
 :meth:`~crappy.blocks.meta_block.block.Block.start_all`, exposed as
-:ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`, calls these class
-methods in order:
+:ref:`crappy.start() <crappy_docs/aliases:crappy.start()>`, performs these
+phases in order:
 
 1. :meth:`~crappy.blocks.meta_block.block.Block.prepare_all`
 2. :meth:`~crappy.blocks.meta_block.block.Block.renice_all`
@@ -136,17 +151,19 @@ objects shared with all Blocks. These currently include:
 
 - a readiness barrier with one participant per Block plus the main process
 - a shared floating-point value initialized to ``-1`` for the common ``t0``
-- events for start, pause, stop, runtime exceptions, and keyboard interruption
-- a logging queue and its coordinating thread
+- events for start, pause and stop
+- failure reporting for each Block and a receiver in the main process
+- logging resources for the selected process start method
 
 References to these objects are assigned to every Block before the processes
 start. Block-specific logging levels are also reconciled with the global
 logging level at this point.
 
-If at least one VisionBlock is present, preparation also validates that the
-Block registry and LinkGraph contain the same names. It walks the ImageLink
-graph to route downstream configuration requests to their CameraSource. Each
-accepted request receives a dedicated one-way configuration pipe.
+Preparation validates that the Block registry and LinkGraph contain the same
+names for all Blocks. If at least one VisionBlock is present, it walks the
+ImageLink graph to route downstream configuration requests to their
+CameraSource. Each accepted request receives a dedicated one-way configuration
+pipe.
 
 Crappy then creates the manager-backed dictionaries used for image metadata
 and image-format information. Each image producer creates the buffer name,
@@ -170,10 +187,13 @@ nothing there.
 ``launch_all``
 +++++++++++++++
 
-The main process waits on the readiness barrier with the Blocks. After every
-participant arrives, it records the current time in the shared ``t0`` value
-and sets the start event. It then waits for a Block to finish. Normal completion
-of any Block begins the coordinated shutdown of the remaining graph.
+The main process waits on the readiness barrier with the Blocks. A temporary
+watchdog thread monitors Block process sentinels during this wait, aborts the
+barrier if a Block exits, and stops before the start event is set. After every
+participant arrives, the main process records the current time in the shared
+``t0`` value and sets the start event. It then waits for a Block to finish.
+Normal completion of any Block begins the coordinated shutdown of the remaining
+graph.
 
 Block process sequence
 ----------------------
@@ -190,8 +210,9 @@ lifecycle. It performs these steps:
 6. Enter :meth:`~crappy.blocks.meta_block.block.Block.main`, which calls
    :meth:`~crappy.blocks.meta_block.block.Block.loop` repeatedly until the stop
    event is set.
-7. Set the shared stop event and call
-   :meth:`~crappy.blocks.meta_block.block.Block.finish` in a ``finally`` block.
+7. Request stop and attempt
+   :meth:`~crappy.blocks.meta_block.block.Block.finish`, followed by resource
+   cleanup, whether execution succeeded or failed.
 
 ``main`` also applies the Block's target frequency and pause behavior. A
 paused Block continues frequency regulation but does not call ``loop`` while
@@ -207,24 +228,27 @@ leave a consumer waiting indefinitely.
 Error propagation and cleanup
 -----------------------------
 
-A Block that fails during ``prepare`` aborts the readiness barrier. Other
-participants receive the broken-barrier state instead of waiting forever. A
-runtime exception sets the shared exception state. Keyboard interruption has a
-separate shared state so that it can be reported as such after cleanup.
+Each process uses a :class:`~crappy._failure.FailureManager` to record and
+report its failures. Child workers report through their parent component:
+for example, a video-extensometry spot tracker reports through its
+image-processing worker and Camera Block. Parents keep the original failure
+details without logging them again.
 
-The ``finally`` section of ``Block.run`` sets the shared stop event and attempts
-to call ``finish``. An error in ``finish`` is logged and recorded as another
-runtime failure. A process that must be terminated externally cannot complete
-this path, which is why hardware safety cannot depend only on ``finish``.
+A failure requests coordinated shutdown. A preparation failure also releases
+the readiness barrier so other Blocks do not wait indefinitely. Expected
+cancellation is not added to the failure summary.
 
-The main cleanup routine sets the stop event and gives the Blocks a limited
-time to exit. The current timeout is three seconds. It terminates processes
-that remain alive, then shuts down the optional image manager and logging
-thread. Finally, :meth:`~crappy.blocks.meta_block.block.Block.reset` clears the
-registries, graph, shared-object references, and lifecycle flags.
+Each resource owner attempts its cleanup operations independently, keeping
+cleanup failures alongside the original error. Children are given time to stop
+before their parent finishes. Processes that miss their shutdown allowance
+are terminated, then killed if necessary. A blocked thread cannot be stopped
+safely and may have to be left behind.
 
-Unless ``no_raise`` was selected, the main process raises after cleanup when a
-runtime exception, keyboard interruption, or incomplete shutdown was recorded.
+The main process waits for reporting and cleanup, resets the graph, and raises
+the recorded failures together. See :ref:`concepts-lifecycle-shutdown` for
+exception handling and the exact :ref:`lifecycle-no-raise` rule. Reporting
+requires the main process to survive, abrupt termination can lose reports
+that have not yet arrived.
 
 Regular Link internals
 ----------------------
@@ -259,6 +283,10 @@ replaces the metadata, copies the NumPy array, and increments the transport
 counter before releasing the lock. Each consumer keeps the last counter value
 it copied. ``receive_imgs`` acquires the same lock and copies both metadata and
 image only when that value changed.
+
+Each receiver also owns a Condition notified by all its image sources. A
+positive ``receive_imgs(timeout=...)`` waits for a new frame on any input or a
+shared stop/error flag.
 
 The counter is a transport implementation detail. It is distinct from the
 public ``ImageUniqueID`` stored in image metadata. A consumer must use the
@@ -386,11 +414,12 @@ acquisition. Depending on its options and subclass, it can create internal
 display, and recording. These children are processes but are not Blocks or
 nodes in the public LinkGraph.
 
-The Camera Block creates a shared image array, metadata dictionary, lock,
-readiness barrier, and stop event for these workers. Acquisition replaces the
-latest shared frame. Each worker checks for a new image and runs at its own
-rate. The Camera Block starts, monitors, and stops the workers as part of its
-own Block lifecycle.
+The Camera Block creates a shared image array, metadata dictionary, a separate
+lock and Condition per worker, readiness barrier, and stop event. Acquisition
+replaces the latest shared frame and notifies the workers, which use timed
+Condition waits for new images or shutdown and run at their own rate. The
+Camera Block starts, monitors, and stops the workers as part of its own Block
+lifecycle.
 
 The Camera configuration window runs before these workers start. A processing
 CameraProcess can receive explicit configuration values through the paired

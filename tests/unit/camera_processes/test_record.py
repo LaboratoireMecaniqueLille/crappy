@@ -1,0 +1,328 @@
+# coding: utf-8
+
+from pathlib import Path
+from tempfile import TemporaryDirectory
+import csv
+from time import monotonic
+from unittest.mock import Mock, patch
+
+import numpy as np
+
+import crappy.blocks.camera_processes.record as record_module
+from crappy.blocks.camera_processes.record import ImageSaver
+
+from tests.support.dependencies import optional_import
+from tests.support.camera_process_test_case import CameraProcessTestBase
+from tests.support.camera_processes import TestLink
+
+
+class TestImageSaver(CameraProcessTestBase):
+  """Unit tests for the ImageSaver CameraProcess."""
+
+  def make_saver(self, folder: str, backend: str = 'npy') -> ImageSaver:
+    """Creates a saver for file-integrity checks and tracks its resources."""
+
+    saver = ImageSaver(save_folder=folder, save_backend=backend,
+                       save_period=3, send_msg=True)
+    self._process = saver
+    self.set_test_logger(saver)
+    saver.send = Mock()
+    saver.img = np.ones((2, 3), dtype=np.uint8)
+    saver.init()
+    return saver
+
+  def test_init_creates_folder_and_suffixes_existing_recording(self) -> None:
+    """Checks save-folder creation and collision avoidance."""
+
+    with TemporaryDirectory() as tmp:
+      folder = Path(tmp) / 'images'
+      saver = ImageSaver(save_folder=folder, save_backend='npy')
+      saver.init()
+
+      self.assertEqual(saver._save_folder, folder)
+      self.assertTrue(folder.exists())
+
+      (folder / 'metadata.csv').write_text('already used\n')
+      saver = ImageSaver(save_folder=folder, save_backend='npy')
+      saver.init()
+
+      self.assertEqual(saver._save_folder, Path(tmp) / 'images_00001')
+      self.assertTrue(saver._save_folder.exists())
+
+  def test_get_data_respects_save_period(self) -> None:
+    """Checks frame skipping and copied data for periodic recording."""
+
+    self._process = ImageSaver(save_period=3, save_backend='npy')
+    shared = self.make_shared(process=self._process,
+                              shape=(2, 2),
+                              dtype=np.uint16)
+
+    img0 = np.arange(4, dtype=np.uint16).reshape(2, 2)
+    self.write_image(shared, img0, {'ImageUniqueID': 0, 't(s)': 0.0})
+
+    self.assertTrue(self._process._get_data())
+    self.assertEqual(self._process.metadata['ImageUniqueID'], 0)
+    np.testing.assert_array_equal(self._process.img, img0)
+
+    img1 = img0 + 10
+    self.write_image(shared, img1, {'ImageUniqueID': 1, 't(s)': 0.1})
+
+    self.assertFalse(self._process._get_data())
+    self.assertEqual(self._process.metadata['ImageUniqueID'], 0)
+    np.testing.assert_array_equal(self._process.img, img0)
+
+    img3 = img0 + 30
+    self.write_image(shared, img3, {'ImageUniqueID': 3, 't(s)': 0.3})
+
+    self.assertTrue(self._process._get_data())
+    self.assertEqual(self._process.metadata['ImageUniqueID'], 3)
+    np.testing.assert_array_equal(self._process.img, img3)
+
+  def test_condition_wait_ignores_frames_before_save_period(self) -> None:
+    """An ineligible frame must not turn the receive loop into busy polling."""
+
+    self._process = ImageSaver(save_period=3, save_backend='npy')
+    shared = self.make_shared(process=self._process, shape=(2, 2))
+    image = np.ones((2, 2), dtype=np.uint8)
+    self.write_image(shared, image, {'ImageUniqueID': 0, 't(s)': 0.0})
+    self.assertTrue(self._process._get_data(timeout=0.1))
+    self.write_image(shared, image + 1, {'ImageUniqueID': 1, 't(s)': 0.1})
+    started = monotonic()
+
+    self.assertFalse(self._process._get_data(timeout=0.03))
+
+    self.assertGreaterEqual(monotonic() - started, 0.02)
+    self.assertEqual(self._process.metadata['ImageUniqueID'], 0)
+    np.testing.assert_array_equal(self._process.img, image)
+    self.write_image(shared, image + 3, {'ImageUniqueID': 3, 't(s)': 0.3})
+    self.assertTrue(self._process._get_data(timeout=0.1))
+    self.assertEqual(self._process.metadata['ImageUniqueID'], 3)
+
+  def test_real_saver_receives_condition_notifications(self) -> None:
+    """Exercise the timed run loop, publication and save-period predicate."""
+
+    with TemporaryDirectory() as tmp:
+      saved = TestLink()
+      self._process = ImageSaver(save_folder=tmp, save_period=2,
+                                 save_backend='npy', send_msg=True)
+      shared = self.make_shared(process=self._process, shape=(2, 2),
+                                outputs=[saved], barrier_parties=2)
+      self._process.start()
+      shared.barrier.wait(timeout=3.0)
+      image = np.ones((2, 2), dtype=np.uint8)
+
+      try:
+        self.write_image(shared, image, {'ImageUniqueID': 0, 't(s)': 0.0})
+        self.assertTrue(saved.sent.wait(timeout=3.0))
+        saved.sent.clear()
+        self.write_image(shared, image + 1, {'ImageUniqueID': 1, 't(s)': 0.1})
+        self.assertFalse(saved.sent.wait(timeout=0.1))
+        self.write_image(shared, image + 2, {'ImageUniqueID': 2, 't(s)': 0.2})
+        self.assertTrue(saved.sent.wait(timeout=3.0))
+      finally:
+        shared.stop_event.set()
+        with shared.condition:
+          shared.condition.notify_all()
+        self._process.join(timeout=3.0)
+
+      self.assertEqual(self._process.exitcode, 0)
+      self.assertEqual(len(list(Path(tmp).glob('*.npy'))), 2)
+
+  def test_loop_saves_npy_metadata_and_optional_message(self) -> None:
+    """Checks npy file writing, metadata CSV, and downstream message."""
+
+    with TemporaryDirectory() as tmp:
+      link = TestLink()
+      saver = ImageSaver(save_folder=tmp,
+                         save_backend='npy',
+                         send_msg=True)
+      self._process = saver
+      self.set_test_logger(saver)
+      saver._outputs = [link]
+      saver.init()
+      saver.metadata = {
+        'ImageUniqueID': 5,
+        't(s)': 1.234,
+        'DateTimeOriginal': '2020:01:01 00:00:00',
+      }
+      saver.img = np.arange(6, dtype=np.uint8).reshape(2, 3)
+
+      saver.loop()
+
+      saved = Path(tmp) / '000005_1.234.npy'
+      self.assertTrue(saved.exists())
+      np.testing.assert_array_equal(np.load(saved), saver.img)
+
+      with open(Path(tmp) / 'metadata.csv', newline='') as csv_file:
+        rows = list(csv.DictReader(csv_file))
+
+      self.assertEqual(len(rows), 1)
+      self.assertEqual(rows[0]['ImageUniqueID'], '5')
+      self.assertEqual(rows[0]['t(s)'], '1.234')
+      self.assertEqual(rows[0]['DateTimeOriginal'], '2020:01:01 00:00:00')
+
+      self.assertTrue(link.sent.is_set())
+      self.assertEqual(link.sent_values[-1], {
+        't(s)': 1.234,
+        'img_index': 5,
+        'meta': saver.metadata,
+      })
+
+  def test_opencv_false_result_does_not_create_metadata_or_notify(self) -> None:
+    """An unsuccessful first write cannot leave a successful-looking record."""
+
+    with TemporaryDirectory() as tmp:
+      backend = Mock()
+      backend.imwrite.return_value = False
+      with patch.object(record_module, 'cv2', backend):
+        saver = self.make_saver(tmp, 'cv2')
+        saver.metadata = {'ImageUniqueID': 1, 't(s)': 0.25}
+        with self.assertRaisesRegex(OSError, 'OpenCV could not write image'):
+          saver.loop()
+
+      self.assertFalse((Path(tmp) / 'metadata.csv').exists())
+      saver.send.assert_not_called()
+
+  def test_failed_later_opencv_write_keeps_previous_metadata_intact(self) -> None:
+    """A failed later frame adds neither a row nor a saved-frame message."""
+
+    with TemporaryDirectory() as tmp:
+      backend = Mock()
+      backend.imwrite.side_effect = [True, False]
+      with patch.object(record_module, 'cv2', backend):
+        saver = self.make_saver(tmp, 'cv2')
+        saver.metadata = {'ImageUniqueID': 1, 't(s)': 0.25}
+        saver.loop()
+        previous = (Path(tmp) / 'metadata.csv').read_bytes()
+        saver.metadata = {'ImageUniqueID': 2, 't(s)': 0.5}
+        with self.assertRaises(OSError):
+          saver.loop()
+
+      self.assertEqual((Path(tmp) / 'metadata.csv').read_bytes(), previous)
+      self.assertEqual(saver.send.call_count, 1)
+
+  def test_backend_exception_does_not_record_success_and_frame_can_be_retried(self) -> None:
+    """Exceptions leave no metadata row or saved-frame message."""
+
+    with TemporaryDirectory() as tmp:
+      saver = self.make_saver(tmp)
+      saver.metadata = {'ImageUniqueID': 1, 't(s)': 0.25}
+      with patch.object(record_module.np, 'save', side_effect=OSError('disk full')):
+        with self.assertRaisesRegex(OSError, 'disk full'):
+          saver.loop()
+      self.assertFalse((Path(tmp) / 'metadata.csv').exists())
+      saver.send.assert_not_called()
+
+      saver.loop()
+
+      self.assertTrue((Path(tmp) / '000001_0.250.npy').exists())
+      with open(Path(tmp) / 'metadata.csv', newline='') as stream:
+        self.assertEqual(list(csv.DictReader(stream)),
+                         [{'ImageUniqueID': '1', 't(s)': '0.25'}])
+      saver.send.assert_called_once()
+
+  def test_metadata_columns_survive_reordering_and_missing_optional_fields(self) -> None:
+    """Values keep their header columns and absent optional values are blank."""
+
+    frames = ({'ImageUniqueID': 1, 't(s)': 0.25, 'gain': 20},
+              {'gain': 30, 't(s)': 0.5, 'ImageUniqueID': 2},
+              {'t(s)': 0.75, 'ImageUniqueID': 3})
+    with TemporaryDirectory() as tmp:
+      saver = self.make_saver(tmp)
+      for metadata in frames:
+        saver.metadata = metadata
+        saver.loop()
+
+      with open(Path(tmp) / 'metadata.csv', newline='') as stream:
+        self.assertEqual(list(csv.DictReader(stream)), [
+            {'ImageUniqueID': '1', 't(s)': '0.25', 'gain': '20'},
+            {'ImageUniqueID': '2', 't(s)': '0.5', 'gain': '30'},
+            {'ImageUniqueID': '3', 't(s)': '0.75', 'gain': ''}])
+      raw = (Path(tmp) / 'metadata.csv').read_bytes()
+      self.assertTrue(raw.startswith(b'ImageUniqueID,t(s),gain\r\n'))
+      self.assertNotIn(b'\r\r\n', raw)
+
+  def test_new_metadata_fields_are_rejected_before_writing_an_image(self) -> None:
+    """A changed schema is reported without silently dropping new metadata."""
+
+    with TemporaryDirectory() as tmp:
+      saver = self.make_saver(tmp)
+      saver.metadata = {'ImageUniqueID': 1, 't(s)': 0.25}
+      saver.loop()
+      previous = (Path(tmp) / 'metadata.csv').read_bytes()
+      saver.metadata = {'ImageUniqueID': 2, 't(s)': 0.5, 'gain': 20}
+
+      with self.assertRaisesRegex(ValueError, 'New metadata fields.*gain'):
+        saver.loop()
+
+      self.assertFalse((Path(tmp) / '000002_0.500.npy').exists())
+      self.assertEqual((Path(tmp) / 'metadata.csv').read_bytes(), previous)
+      self.assertEqual(saver.send.call_count, 1)
+
+  def test_loop_saves_pil_images_with_exif_metadata(self) -> None:
+    """Checks PIL saving for common formats and EXIF object generation."""
+
+    if (optional_import('PIL.Image') is None or
+        optional_import('PIL.ExifTags') is None):
+      self.skipTest('Pillow is not available')
+    tags_inv = {val: key for key, val in record_module.ExifTags.TAGS.items()}
+
+    metadata = {
+      'ImageUniqueID': np.uint16(7),
+      't(s)': np.float64(1.234),
+      'DateTimeOriginal': '2020:01:01 00:00:00',
+      'SubsecTimeOriginal': np.float64(0.234567),
+      'UnknownField': object(),
+    }
+
+    with TemporaryDirectory() as tmp:
+      for extension in ('png', 'jpg', 'tiff'):
+        with self.subTest(extension=extension):
+          folder = Path(tmp) / extension
+          saver = ImageSaver(img_extension=extension,
+                             save_folder=folder,
+                             save_backend='pil')
+          saver.init()
+          saver.metadata = metadata.copy()
+          saver.img = np.arange(12, dtype=np.uint8).reshape(3, 4)
+
+          saver.loop()
+
+          saved = folder / f'000007_1.234.{extension}'
+          self.assertTrue(saved.exists())
+
+          with record_module.Image.open(saved) as img:
+            exif = img.getexif()
+          self.assertEqual(exif.get(tags_inv['DateTimeOriginal']),
+                           '2020:01:01 00:00:00')
+          self.assertEqual(exif.get(tags_inv['SubsecTimeOriginal']),
+                           '0.234567')
+          self.assertEqual(exif.get(tags_inv['ImageUniqueID']), '7')
+
+  def test_pil_exif_converts_numpy_scalars_and_skips_unknown_keys(self) -> None:
+    """Checks EXIF construction for normal Crappy metadata values."""
+
+    if (optional_import('PIL.Image') is None or
+        optional_import('PIL.ExifTags') is None):
+      self.skipTest('Pillow is not available')
+    tags_inv = {val: key for key, val in record_module.ExifTags.TAGS.items()}
+    tmp = TemporaryDirectory()
+    self.addCleanup(tmp.cleanup)
+    saver = ImageSaver(save_backend='pil', save_folder=tmp.name)
+    self._process = saver
+    self.set_test_logger(saver)
+    saver.init()
+    saver.metadata = {
+      'DateTimeOriginal': '2020:01:01 00:00:00',
+      'ImageUniqueID': np.uint16(7),
+      'SubsecTimeOriginal': np.float64(0.234567),
+      'UnknownField': 'ignored',
+      't(s)': 1.0,
+    }
+
+    exif = saver._pil_exif()
+
+    self.assertEqual(exif.get(tags_inv['DateTimeOriginal']),
+                     '2020:01:01 00:00:00')
+    self.assertEqual(exif.get(tags_inv['ImageUniqueID']), '7')
+    self.assertEqual(exif.get(tags_inv['SubsecTimeOriginal']), '0.234567')

@@ -8,24 +8,13 @@ from csv import DictWriter
 
 from .block import VisionBlock
 from ..._global import OptionalModule
+from ... import _validation as check
 
-try:
-  import SimpleITK as Sitk
-except (ModuleNotFoundError, ImportError):
-  Sitk = OptionalModule("SimpleITK")
-
-try:
-  import PIL
-  from PIL.ExifTags import TAGS
-  TAGS_INV = {val: key for key, val in TAGS.items()}
-except (ModuleNotFoundError, ImportError):
-  PIL = OptionalModule("Pillow")
-  TAGS = TAGS_INV = OptionalModule("Pillow")
-
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+Sitk = OptionalModule('SimpleITK', lazy_import=True)
+Image = OptionalModule('PIL.Image', install_name='Pillow', lazy_import=True)
+ExifTags = OptionalModule('PIL.ExifTags', install_name='Pillow',
+                          lazy_import=True)
+cv2 = OptionalModule('cv2', install_name='opencv-python', lazy_import=True)
 
 
 class ImageRecorder(VisionBlock):
@@ -96,6 +85,9 @@ class ImageRecorder(VisionBlock):
         :mod:`numpy`. If omitted, they are tried in that order and the first
         installed backend is selected. Requesting an unavailable optional
         backend raises :exc:`ModuleNotFoundError`.
+        Only the requested backend or automatic candidates up to the first
+        usable one are imported. The selected backend is initialized during
+        :meth:`prepare`, before any frames are saved.
       display_freq: If :obj:`True`, periodically reports the achieved image
         recording frequency.
       debug: If :obj:`True`, displays all log messages, including
@@ -113,47 +105,49 @@ class ImageRecorder(VisionBlock):
                      debug=debug,
                      freq=freq)
 
-    # Validate arguments before setting them
-    if not img_extension and (save_backend is None or save_backend != 'npy'):
-      raise ValueError("img_extension must be a non-empty string")
-    if (save_folder is not None and
-        ((not isinstance(save_folder, str) or not save_folder)
-         and not isinstance(save_folder, Path))):
-      raise ValueError("When provided, save_folder must be a non-empty string "
-                       "or a Path")
-    if not isinstance(save_period, int) or save_period < 1:
-      raise ValueError("save_period must be a strictly positive integer")
-    if save_backend is not None and save_backend not in ('sitk', 'pil',
-                                                         'cv2', 'npy'):
-      raise ValueError("When provided, save_backend must be one of 'sitk', "
-                       "'pil', 'cv2', 'npy'")
+    # Validate arguments before checking optional backends or creating folders
+    try:
+      check.string(img_extension, 'img_extension', empty=save_backend == 'npy')
+      match save_folder:
+        case None:
+          pass
+        case Path() if str(save_folder).strip():
+          pass
+        case Path():
+          raise ValueError("save_folder must contain a directory path")
+        case str() if save_folder.strip():
+          save_folder = Path(save_folder)
+        case str():
+          raise ValueError("save_folder must be non-empty when provided as a "
+                           "str")
+        case _:
+          raise TypeError("save_folder must be a string, a Path or None")
+      check.integer(save_period, 'save_period', minimum=1)
+      check.choice(save_backend, 'save_backend', ('sitk', 'pil', 'cv2', 'npy'),
+                   optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if (save_folder is not None and save_folder.exists()
+        and not save_folder.is_dir()):
+      raise NotADirectoryError(f"save_folder points to an existing file: "
+                               f"{save_folder}")
 
-    # Trying the different possible backends and checking if the given one
-    # is correct
+    # Probe only the requested backend, or stop at the first available one
+    backends = {'sitk': Sitk.is_available,
+                'pil': lambda: (Image.is_available() and
+                                ExifTags.is_available()),
+                'cv2': cv2.is_available,
+                'npy': lambda: True}
     if save_backend is None:
-      if not isinstance(Sitk, OptionalModule):
-        self._save_backend: str = 'sitk'
-      elif not isinstance(PIL, OptionalModule):
-        self._save_backend: str = 'pil'
-      elif not isinstance(cv2, OptionalModule):
-        self._save_backend: str = 'cv2'
-      else:
-        self._save_backend: str = 'npy'
-    elif save_backend in ('sitk', 'pil', 'cv2', 'npy'):
-      if save_backend == 'sitk' and isinstance(Sitk, OptionalModule):
-        raise ModuleNotFoundError("Backend 'sitk' requested but could not "
-                                  "be imported")
-      elif save_backend == 'pil' and isinstance(PIL, OptionalModule):
-        raise ModuleNotFoundError("Backend 'pil' requested but could not "
-                                  "be imported")
-      elif save_backend == 'cv2' and isinstance(cv2, OptionalModule):
-        raise ModuleNotFoundError("Backend 'cv2' requested but could not "
-                                  "be imported")
-
-      self._save_backend: str = save_backend
+      for name, is_available in backends.items():
+        if is_available():
+          self._save_backend: str = name
+          break
     else:
-      raise ValueError("The save_backend argument should be either 'sitk', "
-                       "'pil', 'cv2' or 'npy'!")
+      if not backends[save_backend]():
+        raise ModuleNotFoundError(f"Backend {save_backend!r} requested but "
+                                  "could not be imported")
+      self._save_backend = save_backend
 
     # The image extension cannot be chosen when the Numpy backend is used
     self._img_extension: str = (img_extension if self._save_backend != 'npy'
@@ -163,18 +157,20 @@ class ImageRecorder(VisionBlock):
     if save_folder is None:
       self._save_folder: Path = Path.cwd() / 'Crappy_images'
     else:
-      self._save_folder: Path = Path(save_folder)
+      self._save_folder: Path = save_folder
 
     self._save_period: int = save_period
 
     # Other attributes that will be useful later
     self._csv_created = False
     self._csv_path = None
+    self._metadata_fields: tuple[str, ...] | None = None
     self._metadata_name = 'metadata.csv'
     self._last_processed_idx: int = -1
+    self._pil_tags_inv: dict[str, int] = dict()
 
   def prepare(self) -> None:
-    """Validates the topology and prepares the recording directory.
+    """Validates topology, resolves the backend, and prepares the directory.
 
     The Block requires exactly one input ImageLink, accepts no regular input
     Link, and supports no output ImageLink. If the target directory already
@@ -196,6 +192,16 @@ class ImageRecorder(VisionBlock):
       raise IOError("This VisionBlock is useless without an input ImageLink")
     if len(self.img_inputs) != 1:
       raise IOError("This VisionBlock requires exactly one input ImageLink")
+
+    # Fresh workers must finish importing before handling their first frame
+    if self._save_backend == 'sitk':
+      Sitk.resolve()
+    elif self._save_backend == 'pil':
+      Image.resolve().init()
+      self._pil_tags_inv = {
+        val: key for key, val in ExifTags.resolve().TAGS.items()}
+    elif self._save_backend == 'cv2':
+      cv2.resolve()
 
     # If the save folder already exists, checking if it contains images by
     # checking if a metadata file is present
@@ -245,11 +251,12 @@ class ImageRecorder(VisionBlock):
     Raises:
       RuntimeError: If copied image metadata is unavailable.
       KeyError: If metadata lacks ``'t(s)'`` or ``'ImageUniqueID'``.
+      ValueError: If metadata introduces fields absent from the first frame.
       OSError: If metadata or image files cannot be written.
     """
 
     # Nothing to do if no new image was received
-    if not (upd_links := self.receive_imgs()):
+    if not (upd_links := self.receive_imgs(timeout=0.1)):
       self.log(logging.DEBUG, "No new image received during this loop")
       # If requested, displays the FPS of the image display
       if self.display_freq:
@@ -269,9 +276,6 @@ class ImageRecorder(VisionBlock):
       if self.display_freq:
         self._print_freq(img_handled=False)
       return
-    # Storing the latest index
-    self._last_processed_idx = img_idx
-
     # Defined for convenience
     metadata = self.last_received[upd_link].metadata
     if metadata is None:
@@ -279,25 +283,11 @@ class ImageRecorder(VisionBlock):
                          "empty")
     img = self.last_received[upd_link].img
 
-    # Creating the .csv containing the metadata on the first received frame
-    if not self._csv_created:
-      self._csv_path = (self._save_folder / self._metadata_name)
-
-      self.log(logging.INFO, f"Creating file for saving the metadata: "
-                             f"{self._csv_path}")
-
-      # Also writing the header of the .csv file when creating it
-      with open(self._csv_path, 'w') as csvfile:
-        writer = DictWriter(csvfile, fieldnames=metadata.keys())
-        writer.writeheader()
-
-      self._csv_created = True
-
-    # Saving the received metadata to the .csv file
-    self.log(logging.DEBUG, f"Saving metadata: {metadata}")
-    with open(self._csv_path, 'a') as csvfile:
-      writer = DictWriter(csvfile, fieldnames=metadata.keys())
-      writer.writerow({**metadata, 't(s)': metadata['t(s)']})
+    fields = (tuple(metadata) if self._metadata_fields is None
+              else self._metadata_fields)
+    if extra := set(metadata).difference(fields):
+      raise ValueError(f"New metadata fields after the first saved frame: "
+                       f"{', '.join(sorted(extra))}")
 
     # Only include the extension for the image file if applicable
     if self._img_extension:
@@ -319,26 +309,33 @@ class ImageRecorder(VisionBlock):
 
     elif self._save_backend == 'pil':
       if len(img.shape) == 3:
-        PIL.Image.fromarray(img[:, :, ::-1]).save(
+        Image.fromarray(img[:, :, ::-1]).save(
             path, exif=self._pil_exif(metadata))
       else:
-        PIL.Image.fromarray(img).save(path, exif=self._pil_exif(metadata))
+        Image.fromarray(img).save(path, exif=self._pil_exif(metadata))
 
     elif self._save_backend == 'cv2':
-      cv2.imwrite(path, img)
+      if not cv2.imwrite(path, img):
+        raise IOError(f"OpenCV could not write image to {path}")
 
     elif self._save_backend == 'npy':
       np.save(path, img)
 
+    # Only successful image writes are added to the metadata file
+    self._csv_path = self._save_folder / self._metadata_name
+    self.log(logging.DEBUG, f"Saving metadata: {metadata}")
+    with open(self._csv_path, 'a' if self._csv_created else 'w',
+              newline='') as csvfile:
+      writer = DictWriter(csvfile, fieldnames=fields)
+      if not self._csv_created:
+        writer.writeheader()
+      writer.writerow(metadata)
+
+    self._metadata_fields = fields
+    self._csv_created = True
+    self._last_processed_idx = img_idx
+
     # Sending information on the image through regular Links
-    if self.last_received[upd_link].metadata is None:
-      raise RuntimeError("At that point, the image metadata should not be "
-                         "empty")
-    if ('t(s)' not in self.last_received[upd_link].metadata
-        and 'ImageUniqueID' not in self.last_received[upd_link].metadata):
-      raise RuntimeError(
-        "At that point, 't(s)' and 'ImageUniqueID' should be "
-        "in the metadata dictionary")
     self.send({'t(s)': metadata['t(s)'],
                'img_index': metadata['ImageUniqueID'],
                'meta': metadata})
@@ -361,10 +358,10 @@ class ImageRecorder(VisionBlock):
       A :class:`PIL.Image.Exif` object containing encodable known fields.
     """
 
-    exif = PIL.Image.Exif()
+    exif = Image.Exif()
 
     for key, value in metadata.items():
-      if key not in TAGS_INV:
+      if key not in self._pil_tags_inv:
         continue
 
       # Convert Numpy scalars to Python object
@@ -376,7 +373,7 @@ class ImageRecorder(VisionBlock):
         value = str(value)
 
       try:
-        exif[TAGS_INV[key]] = value
+        exif[self._pil_tags_inv[key]] = value
       except (TypeError, ValueError):
         self.log(logging.DEBUG, f"Could not encode metadata field "
                                 f"{key} as EXIF")

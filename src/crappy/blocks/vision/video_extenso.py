@@ -1,14 +1,18 @@
 # coding: utf-8
 
+from __future__ import annotations
 from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING
 import logging
 
 from .block import VisionBlock, ConfigRequest
 from ...tool.image_processing import VideoExtensoTool, LostSpotError
 from ...tool.camera_config.config_tools import SpotsBoxes
-from ...tool.camera_config import CameraConfig
-from ...tool.camera_config.tkinter import TkinterVideoExtensoConfig
-from ...tool.camera_config.pyqt import PyQtVideoExtensoConfig
+from ...tool.camera_config.factory import LazyConfiguratorMapping
+from ... import _validation as check
+
+if TYPE_CHECKING:
+  from ...tool.camera_config import CameraConfig
 
 
 class VideoExtensoProcessor(VisionBlock):
@@ -57,9 +61,9 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
   """
 
   configurator: (type[CameraConfig] |
-                 Mapping[str, type[CameraConfig]]) = {
-                   'tkinter': TkinterVideoExtensoConfig,
-                   'pyqt': PyQtVideoExtensoConfig}
+                 Mapping[str, type[CameraConfig]]) = LazyConfiguratorMapping({
+                   'tkinter': ('.tkinter', 'TkinterVideoExtensoConfig'),
+                   'pyqt': ('.pyqt', 'PyQtVideoExtensoConfig')})
 
   def __init__(self,
                labels: str | Sequence[str] | None = None,
@@ -150,25 +154,28 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
     self.labels = _labels
 
     # Checking the validity of the provided arguments
-    if not isinstance(raise_on_lost_spot, bool):
-      raise TypeError("raise_on_lost_spot must be a boolean")
-    if not isinstance(white_spots, bool):
-      raise TypeError("white_spots must be a boolean")
-    if (num_spots is not None and
-        (not isinstance(num_spots, int) or not 0 < num_spots < 5)):
-      raise ValueError("When provided, num_spots must be an integer between "
-                       "1 and 4")
-    if not isinstance(min_area, int) or min_area < 0:
-      raise ValueError("min_area must be a positive integer")
-    if (blur is not None and
-        (not isinstance(blur, int) or blur < 1 or not blur % 2)):
+    check.boolean(raise_on_lost_spot, 'raise_on_lost_spot')
+    check.boolean(white_spots, 'white_spots')
+    try:
+      check.integer(int(num_spots) if isinstance(num_spots, bool)
+                    else num_spots, 'num_spots', optional=True,
+                    minimum=1, maximum=4)
+      check.integer(int(min_area) if isinstance(min_area, bool) else min_area,
+                    'min_area', minimum=0)
+      check.integer(int(blur) if isinstance(blur, bool) else blur,
+                    'blur', optional=True, minimum=1)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if blur is not None and not blur % 2:
       raise ValueError("When provided, blur must be a positive odd integer")
-    if not isinstance(update_thresh, bool):
-      raise TypeError("update_thresh must be a boolean")
-    if not isinstance(safe_mode, bool):
-      raise TypeError("safe_mode must be a boolean")
-    if not isinstance(border, int) or border < 0:
-      raise ValueError("border must be a positive integer")
+
+    check.boolean(update_thresh, 'update_thresh')
+    check.boolean(safe_mode, 'safe_mode')
+    try:
+      check.integer(int(border) if isinstance(border, bool) else border,
+                    'border', minimum=0)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
     self._raise_on_lost_spot: bool = raise_on_lost_spot
 
@@ -201,6 +208,10 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
 
     Raises:
       IOError: If the Block's Link topology is unsupported.
+      TypeError: If the configuration is not a pair containing a SpotsBoxes
+        collection and an integer threshold.
+      ValueError: If the configuration does not contain exactly two values
+        or its threshold is outside the range from ``0`` to ``255``.
       RuntimeError: If no usable configuration was received or required
         startup objects are unavailable.
       NotImplementedError: If more than one source returns configuration data.
@@ -246,7 +257,11 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
       raise RuntimeError("At that point the threshold should be set but it is "
                          "not")
 
+    check.instance(self._spots, 'spots', SpotsBoxes)
+    check.integer(self._thresh, 'thresh', minimum=0, maximum=255)
+
     self.log(logging.INFO, "Instantiating the VideoExtenso tool")
+    assert self._stop_event is not None
     self._ve = VideoExtensoTool(spots=self._spots,
                                 thresh=self._thresh,
                                 log_level=self._log_level,
@@ -255,7 +270,10 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
                                 update_thresh=self._update_thresh,
                                 safe_mode=self._safe_mode,
                                 border=self._border,
-                                blur=self._blur)
+                                blur=self._blur,
+                                failure_manager=self._failure_manager,
+                                stop_event=self._stop_event,
+                                raise_on_lost_spot=self._raise_on_lost_spot)
 
     # Mandatory otherwise the Block won't run
     super().prepare()
@@ -287,7 +305,7 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
       return
 
     # Nothing to do if no new image was received
-    if not (upd_links := self.receive_imgs()):
+    if not (upd_links := self.receive_imgs(timeout=0.1)):
       self.log(logging.DEBUG, "No new image received during this loop")
       # If requested, displays the FPS of the image display
       if self.display_freq:
@@ -311,35 +329,33 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
         raise RuntimeError("The VideoExtensoTool isn't initialized")
 
       # Sending the results to the downstream Blocks, including the overlay
-      if (data := self._ve.get_data(img)) is not None:
+      data = self._ve.get_data(img)
+      if isinstance(data, str):
+        raise LostSpotError(data)
+      if data is not None:
         self.send([metadata['t(s)'], metadata, *data, self._ve.spots])
 
         # Save the last data points for the case when spots are lost
         self._last_data = data
 
     # In case the spots were just lost
-    except LostSpotError:
-      if self._ve is None:
-        self.log(logging.ERROR, "Trying to stop the spot Trackers but they "
-                                "are not initialized")
-      else:
-        self.log(logging.INFO, "Spots lost, stopping the spot trackers")
-        self._ve.stop_tracking()
-      # Raising if specified by the user
-      if self._raise_on_lost_spot:
-        self.log(logging.ERROR, "Spots lost, stopping the VideoExtenso "
-                                "process")
-        raise
+    except LostSpotError as error:
+      manager = self._failure_manager
+      with manager.collect('Lost spot shutdown'):
+        if self._raise_on_lost_spot:
+          manager.record_context_exception(error, 'lost spot')
+        with manager.step('stop spot trackers'):
+          if self._ve is not None:
+            self._ve.stop_tracking()
       # Otherwise, simply setting a flag so that no additional
       # processing is performed
-      else:
-        self._lost_spots = True
-        self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
-                                  "idle until the test ends")
-        # Send a message with the last data points and no overlay for stopping
-        # the display of the overlay
-        if self._last_data is not None:
-          self.send([metadata['t(s)'], metadata, *self._last_data, list()])
+      self._lost_spots = True
+      self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
+                                "idle until the test ends")
+      # Send a message with the last data points and no overlay for stopping
+      # the display of the overlay
+      if self._last_data is not None:
+        self.send([metadata['t(s)'], metadata, *self._last_data, list()])
 
     # If requested, displays the FPS of the image display
     if self.display_freq:
@@ -348,12 +364,19 @@ VideoExtensoConfig` window. This window lets the user adjust the Camera
   def finish(self) -> None:
     """Stops the spot trackers and releases inherited image resources."""
 
-    try:
+    manager = self._failure_manager
+
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('VideoExtenso cleanup'):
       if self._ve is not None:
-        self.log(logging.INFO, "Stopping the spot trackers before returning")
-        self._ve.stop_tracking()
-    finally:
-      super().finish()
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, "Stopping the spot trackers before returning")
+        with manager.step('stop spot trackers'):
+          self._ve.stop_tracking()
+          self._ve = None
+
+      with manager.step('release shared image buffers'):
+        super().finish()
 
   def request_config(self, source: str) -> ConfigRequest:
     """Builds the VideoExtenso configuration request for an image source.

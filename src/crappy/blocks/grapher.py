@@ -2,19 +2,16 @@
 
 from __future__ import annotations
 from collections import deque
-from itertools import chain
 import logging
-from math import isfinite
-from numbers import Real
 from time import monotonic
-from tkinter import TclError
+from sys import modules
 from typing import TYPE_CHECKING, Literal
 import numpy as np
 import os
-from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 pg = OptionalModule('pyqtgraph', lazy_import=True)
@@ -32,6 +29,17 @@ if TYPE_CHECKING:
 MPL_BACKENDS = ('QtAgg', 'ipympl', 'GTK3Agg', 'GTK4Agg', 'macosx', 'TkAgg',
                 'nbAgg', 'WebAgg', 'GTK3Cairo', 'GTK4Cairo', 'wxAgg')
 PYQT_BACKENDS = ('PyQt6', 'PySide6', 'PyQt5', 'PySide2')
+
+
+def _tkinter_errors() -> tuple[type[Exception], ...]:
+  """Recognizes Tk errors only if a GUI backend has already loaded Tkinter.
+
+  Matplotlib backends that do not use Tk must not acquire that dependency
+  just to check an exception type.
+  """
+
+  error_type = getattr(modules.get('tkinter'), 'TclError', None)
+  return (error_type,) if error_type is not None else tuple()
 
 
 class Grapher(Block):
@@ -160,13 +168,10 @@ class Grapher(Block):
       will plot a dynamic graph displaying the last 30 data points.
     """
 
-    warn("\nThe new 'plotter' and 'upd_freq' arguments were added to the "
-         "Grapher Block without prior notice, and the defaults for 'freq' and "
-         "'backend' were also changed.\nThese changes we implemented "
-         "nevertheless because they significantly increase performance\nSet "
-         "plotter='mpl' and backend='TkAgg' to use the previous display "
-         "settings.\nInstall pyqtgraph and PyQt6 to use the new, lighter and "
-         "faster default Grapher mode.\n", UserWarning, stacklevel=2)
+    self._figure: Figure | None = None
+    self._qt_app: QApplication | None = None
+    self._qt_plot: PlotWidget | None = None
+    self._qt_events_processed: bool = False
 
     super().__init__()
     self.niceness = 10
@@ -175,56 +180,36 @@ class Grapher(Block):
     self.debug = debug
 
     # Checking the validity of the provided arguments
-    match plotter:
-      case _ if plotter in ('mpl', 'pyqt'):
-        self._plotter: Literal['mpl', 'pyqt'] = plotter
-      case _:
-        raise ValueError("The plotter must be either 'mpl' or 'pyqt'")
+    try:
+      check.choice(plotter, 'plotter', ('mpl', 'pyqt'))
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    self._plotter: Literal['mpl', 'pyqt'] = plotter
 
-    match upd_freq:
-      case None:
-        self._upd_freq: float | None = None
-      case Real() if not isfinite(upd_freq) or upd_freq <= 0:
-        raise ValueError("upd_freq must be a finite strictly positive float "
-                         "or None")
-      case Real() if self.freq is not None and upd_freq > self.freq:
-        raise ValueError("upd_freq cannot exceed the target freq")
-      case Real():
-        self._upd_freq: float | None = float(upd_freq)
-      case _:
-        raise TypeError("upd_freq must be a strictly positive float or None")
+    check.real(int(upd_freq) if isinstance(upd_freq, bool) else upd_freq,
+               'upd_freq', optional=True, minimum=0, strict=True)
+    if upd_freq is not None and self.freq is not None and upd_freq > self.freq:
+      raise ValueError("upd_freq cannot exceed the target freq")
+    self._upd_freq: float | None = (
+      None if upd_freq is None else float(upd_freq))
 
-    match labels:
-      case ():
-        raise ValueError("No labels to plot were provided")
-      case (*items,) if (all(isinstance(item, tuple) for item in items) and
-                         all(len(item) == 2 for item in items) and
-                         all((isinstance(label, str) and label)
-                             for label in chain.from_iterable(labels))):
-        self._graph_labels: tuple[tuple[str, str], ...] = labels
-      case _:
-        raise ValueError("The labels to plot must be given as tuples of "
-                         "exactly two non-empty strings")
+    try:
+      check.sequence(labels, 'labels', minimum=1)
+      for pair in labels:
+        check.instance(pair, 'label pair', tuple)
+        check.sequence(pair, 'label pair', length=2)
+        check.labels(pair, 'label pair', single=False, unique=False)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    self._graph_labels: tuple[tuple[str, str], ...] = labels
 
-    match length:
-      case None:
-        self._length: int | None = None
-      case int() if length > 0:
-        self._length: int | None = length
-      case int():
-        raise ValueError("length must be a strictly positive integer or None")
-      case _:
-        raise TypeError("length must be a strictly positive integer or None")
+    check.integer(int(length) if isinstance(length, bool) else length,
+                  'length', optional=True, minimum=1)
+    self._length: int | None = length
 
-    match max_pt:
-      case None:
-        self._max_pt: int | None = None
-      case int() if max_pt > 0:
-        self._max_pt: int | None = max_pt
-      case int():
-        raise ValueError("max_pt must be a strictly positive integer or None")
-      case _:
-        raise TypeError("max_pt must be a strictly positive integer or None")
+    check.integer(int(max_pt) if isinstance(max_pt, bool) else max_pt,
+                  'max_pt', optional=True, minimum=1)
+    self._max_pt: int | None = max_pt
 
     match self._length, self._max_pt:
       case (None, _) | (_, None):
@@ -232,50 +217,38 @@ class Grapher(Block):
       case _:
         raise ValueError("Only one of length and max_pt can be set at a time")
 
-    match window_size:
-      case (Real() as width,
-            Real() as height) if (isinstance(window_size, tuple) and
-                                  isfinite(width) and isfinite(height)
-                                  and width > 0 and height > 0):
-        self._window_size: tuple[float, float] = (float(width), float(height))
-      case (Real(), Real()):
-        raise ValueError("window_size must contain two finite positive "
-                         "numbers")
-      case _:
-        raise TypeError("window_size must be a tuple of two positive numbers")
+    check.instance(window_size, 'window_size', tuple)
+    check.sequence(window_size, 'window_size', length=2)
+    width, height = window_size
+    for size in window_size:
+      check.real(int(size) if isinstance(size, bool) else size,
+                 'window_size', minimum=0, strict=True)
+    self._window_size: tuple[float, float] = (float(width), float(height))
 
-    match window_pos:
-      case None:
-        self._window_pos: tuple[int, int] | None = None
-      case (int(), int()):
-        self._window_pos: tuple[int, int] | None = window_pos
-      case _:
-        raise TypeError("window_pos must be a tuple of two integers or None")
+    if window_pos is not None:
+      try:
+        check.sequence(window_pos, 'window_pos', length=2)
+        for position in window_pos:
+          check.integer(int(position) if isinstance(position, bool)
+                        else position, 'window_pos')
+      except ValueError as error:
+        raise TypeError(str(error)) from error
+    self._window_pos: tuple[int, int] | None = window_pos
 
-    match interp:
-      case bool():
-        self._interp: bool = interp
-      case _:
-        raise TypeError("interp must be a boolean")
+    check.boolean(interp, 'interp')
+    self._interp: bool = interp
 
-    match backend:
-      case None:
-        self._backend: str | None = backend
-      case _ if plotter == 'mpl' and backend in MPL_BACKENDS:
-        self._backend: str | None = backend
-      case _ if plotter == 'pyqt' and backend in PYQT_BACKENDS:
-        self._backend: str | None = backend
-      case _ if plotter == 'mpl':
-        raise ValueError(f"The possible backends with plotter='mpl' are "
-                         f"{MPL_BACKENDS}")
-      case _ if plotter == 'pyqt':
-        raise ValueError(f"The possible backends with plotter='pyqt' are "
-                         f"{PYQT_BACKENDS}")
+    try:
+      check.choice(backend, 'backend',
+                   MPL_BACKENDS if plotter == 'mpl' else PYQT_BACKENDS,
+                   optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    self._backend: str | None = backend
 
     # Attributes related to Matplotlib
     self._ax: Axes | None = None
     self._canvas: FigureCanvasBase | None = None
-    self._figure: Figure | None = None
     self._lines: list[Line2D] = list()
 
     # Attributes related to buffered graph data
@@ -288,8 +261,6 @@ class Grapher(Block):
     self._last_refresh_rate: float = monotonic()
 
     # Attributes related to pyqtgraph
-    self._qt_app: QApplication | None = None
-    self._qt_plot: PlotWidget | None = None
     self._qt_curves: list[PlotDataItem] = list()
     self._qt_clear_shortcut: QShortcut | None = None
 
@@ -405,7 +376,7 @@ class Grapher(Block):
       try:
         self._canvas.draw()
         self._canvas.flush_events()
-      except TclError:
+      except _tkinter_errors():
         pass
 
     # Update the last update time
@@ -418,15 +389,33 @@ class Grapher(Block):
   def finish(self) -> None:
     """Closes the plotting window owned by this Block."""
 
-    if self._qt_plot is not None:
-      self.log(logging.INFO, "Closing the pyqtgraph window")
-      self._qt_plot.close()
-    if self._qt_app is not None:
-      self._qt_app.processEvents()
+    manager = self._failure_manager
 
-    if self._figure is not None:
-      self.log(logging.INFO, "Closing the matplotlib window")
-      plt.close(self._figure)
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Grapher cleanup'):
+      # Close the Qt window
+      if self._qt_plot is not None:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, "Closing the pyqtgraph window")
+        self._qt_events_processed = False
+        with manager.step('close Qt plot'):
+          if self._qt_plot.close() is False:
+            raise RuntimeError("The Grapher Qt window refused to close")
+          self._qt_plot = None
+
+      # Process the last Qt events
+      if self._qt_app is not None and not self._qt_events_processed:
+        with manager.step('process Qt close events'):
+          self._qt_app.processEvents()
+          self._qt_events_processed = True
+
+      # Close the matplotlib figure
+      if self._figure is not None:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, "Closing the matplotlib window")
+        with manager.step('close Matplotlib figure'):
+          plt.close(self._figure)
+          self._figure = None
 
   def _prepare_mpl(self) -> None:
     """The path ``prepare`` follows when the selected plotter is Matplotlib"""
@@ -439,6 +428,7 @@ class Grapher(Block):
     # Create the figure and the subplot
     self._figure = plt.figure(figsize=self._window_size)
     self._canvas = self._figure.canvas
+    self._canvas.callbacks.exception_handler = self._record_callback_failure
     self._ax = self._figure.add_subplot(111)
     self._canvas.mpl_connect('key_press_event', self._on_press_mpl)
     self._ax.set_title('(Press c to clear the graph)',
@@ -575,13 +565,16 @@ class Grapher(Block):
         else:
           os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
 
-    try:
-      # Qt selects and loads its platform plugin while creating the app
-      self._qt_app = pg.mkQApp("Crappy Grapher")
-    finally:
-      # Restore the process environment even if Qt initialization fails
-      if saved_qt_plugin_path is not None:
-        os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = saved_qt_plugin_path
+    manager = self._failure_manager
+
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Grapher Qt setup'):
+      with manager.step('create application'):
+        # Qt selects and loads its platform plugin while creating the app
+        self._qt_app = pg.mkQApp("Crappy Grapher")
+      with manager.step('restore Qt plugin path'):
+        if saved_qt_plugin_path is not None:
+          os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = saved_qt_plugin_path
 
   def _on_press_mpl(self, event) -> None:
     """Callback catching the keyboard press events.
@@ -602,7 +595,7 @@ class Grapher(Block):
       if self._canvas is not None:
         try:
           self._canvas.draw_idle()
-        except TclError:
+        except _tkinter_errors():
           pass
 
       self.log(logging.INFO, "Cleared the matplotlib window")
@@ -613,18 +606,21 @@ class Grapher(Block):
     When called, resets the display by emptying the data buffers.
     """
 
-    for curve in self._qt_curves:
-      curve.clear()
-    self._data = [[deque(maxlen=self._length), deque(maxlen=self._length)]
-                  for _ in self._graph_labels]
-    self._buf = [[[], []] for _ in self._graph_labels]
-    self._factor = [1 for _ in self._graph_labels]
-    self._counter = [0 for _ in self._graph_labels]
+    try:
+      for curve in self._qt_curves:
+        curve.clear()
+      self._data = [[deque(maxlen=self._length), deque(maxlen=self._length)]
+                    for _ in self._graph_labels]
+      self._buf = [[[], []] for _ in self._graph_labels]
+      self._factor = [1 for _ in self._graph_labels]
+      self._counter = [0 for _ in self._graph_labels]
 
-    # Request a new rendering of the plot
-    self._qt_app.processEvents()
+      # Request a new rendering of the plot
+      self._qt_app.processEvents()
 
-    self.log(logging.INFO, "Cleared the pyqtgraph window")
+      self.log(logging.INFO, "Cleared the pyqtgraph window")
+    except BaseException as error:
+      self._record_callback_failure(error)
 
   def _print_freq(self, refreshed: bool) -> None:
     """Periodically logs the achieved refresh frequency.

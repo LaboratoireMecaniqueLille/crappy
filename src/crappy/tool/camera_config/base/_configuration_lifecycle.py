@@ -2,26 +2,28 @@
 
 """GUI-independent resources and failures for camera configuration sessions."""
 
-from collections.abc import Callable, Iterable
-import logging
 from multiprocessing import synchronize
 from multiprocessing.process import BaseProcess
 from multiprocessing.queues import Queue
-from types import TracebackType
+from threading import Thread, Event as ThreadEvent
 
-ExceptionInfo = tuple[type[BaseException], BaseException, TracebackType | None]
+from ...._failure import FailureManager
+from ...._exceptions import ProcessExitError, ShutdownTimeoutError
 
 
 class ConfigurationLifecycle:
   """Owns GUI-independent resources and failures for a camera configuration
   session.
+
+  .. versionadded:: 2.2.0
   """
 
   def __init__(self,
                stop_event: synchronize.Event,
                histogram_process: BaseProcess,
-               queues: Iterable[Queue],
-               log: Callable[..., None]) -> None:
+               queues: tuple[Queue, Queue],
+               manager: FailureManager,
+               failure_queue: Queue) -> None:
     """Initializes the resources and state for one configuration session.
 
     Args:
@@ -33,115 +35,192 @@ class ConfigurationLifecycle:
         window.
       queues: Queues communicating with the histogram process and that need to
         be closed when exiting the configuration window.
-      log: Method to use for logging information.
+      manager: The :class:`~crappy._failure.FailureManager` to use for
+        reporting caught exceptions.
+      failure_queue: Dedicated Queue for histogram failures.
     """
 
+    # Objects shared by all configuration backends
+    self.manager: FailureManager = manager
     self._stop_event: synchronize.Event = stop_event
     self._histogram_process: BaseProcess = histogram_process
-    self._queues: tuple[Queue] = tuple(queues)
-    self._log: Callable[..., None] = log
+    self._queues: tuple[Queue, Queue] = queues
+    self._failure_queue: Queue = failure_queue
+    self._receiver: Thread | None = None
+    self._receiver_stop: ThreadEvent = ThreadEvent()
+    self._unexpected_exit: tuple[str, int | None, int] | None = None
     self._histogram_started: bool = False
+    self._process_closed: bool = False
+    self._stop_requested: bool = False
+    self._cancelled_queues: list[Queue] = list()
+    self._closed_queues: list[Queue] = list()
     self._closed: bool = False
-    self._failure: BaseException | None = None
-    self._failure_traceback: TracebackType | None = None
 
   @property
   def closed(self) -> bool:
-    """Whether resource cleanup has already begun."""
+    """Whether cleanup of the configuration window has begun.
+
+    Returns:
+      :obj:`True` after cleanup has been requested.
+    """
 
     return self._closed
 
+  @property
+  def failed(self) -> bool:
+    """Whether a failure requires the configuration window to close.
+
+    Returns:
+      :obj:`True` if a failure was reported or the histogram exited
+      unexpectedly.
+    """
+
+    # Only check Process state from the main Thread
+    if (self._histogram_started and not self._closed and
+        self._unexpected_exit is None):
+      process = self._histogram_process
+      code = process.exitcode
+      if isinstance(code, int):
+        self._unexpected_exit = (process.name, process.pid, code)
+    return bool(self.manager.snapshot() or self._unexpected_exit is not None)
+
   def mark_histogram_started(self) -> None:
-    """Called to indicated that the histogram process has started, and that it
-    can therefore be joined if needed."""
+    """Starts histogram reception after the histogram Process has successfully
+    started."""
 
     self._histogram_started = True
+    # Create and start the Thread for receiving failures from the Worker
+    self._receiver = Thread(target=self._receive_failures,
+                            name='histogram.failure-reader',
+                            daemon=True)
+    self._receiver.start()
 
-  def record_callback_failure(self,
-                              error: BaseException,
-                              traceback: TracebackType | None) -> None:
-    """Retains the first callback error for re-raising after the GUI closes.
+  def _receive_failures(self) -> None:
+    """Receives histogram failures for the configuration window."""
 
-    Keyboard interrupts are retained without an error log.
+    # Guard Exceptions with a FailureManager
+    manager = self.manager
+    queue = self._failure_queue
+    stop = self._receiver_stop
 
-    Args:
-      error: Exception raised by a toolkit callback.
-      traceback: Original callback traceback, or :obj:`None` if unavailable.
-    """
-
-    if self._failure is None:
-      self._failure = error
-      self._failure_traceback = traceback
-
-    if not isinstance(error, KeyboardInterrupt):
-      self._log(logging.ERROR, "Configuration callback failed",
-                exc_info=(type(error), error, traceback))
-
-  def raise_if_failed(self) -> None:
-    """Re-raises a callback failure hidden by the GUI toolkit's event loop."""
-
-    if self._failure is not None:
-      raise self._failure.with_traceback(self._failure_traceback)
-
-  def request_close(self, close: Callable[[], None]) -> None:
-    """Asks a GUI backend to close after retaining a callback failure.
-
-    Errors from closing are logged without replacing the original failure.
-
-    Args:
-      close: Backend method that closes the window without validation.
-    """
-
-    try:
-      close()
-    except Exception as exc:
-      self._log(logging.ERROR, "Could not close configuration window",
-                exc_info=(type(exc), exc, exc.__traceback__))
+    # Guard Exceptions with a FailureManager
+    with manager.collect('Histogram reception', raise_on_exit=False):
+      with manager.step('receive reports'):
+        # Receive reports from the Worker
+        while True:
+          received = manager.receive((queue,))
+          # Only stop once there are no more reports to receive
+          if stop.is_set() and not received:
+            break
+          if not received:
+            stop.wait(0.05)
 
   def close_resources(self) -> None:
-    """Stops the histogram process and queues once, including before start.
+    """Stops the histogram and drains its reports before releasing Queues."""
 
-    Requests graceful worker shutdown, then terminates or kills the process if
-    it remains alive. Queue cleanup is attempted even if process cleanup fails.
-    """
+    manager = self.manager
+    with manager.collect('Configuration cleanup'):
+      self._closed = True
+      if not self._stop_requested:
+        # Start by requesting everyone to stop
+        with manager.step('request histogram stop'):
+          self._stop_event.set()
+          self._stop_requested = True
 
-    # Nothing to do if the window was already closed
-    if self._closed:
-      return
-
-    # Request the histogram to stop
-    self._closed = True
-    self._stop_event.set()
-
-    try:
+      # Check if the histogram Process is still running
       process = self._histogram_process
-      # First, check if the histogram process stopped on its own
-      if self._histogram_started or process.is_alive():
-        process.join(1.0)
-        # If not, try to terminate it
-        if process.is_alive():
-          self._log(logging.WARNING, "The histogram process did not stop "
-                                     "within the timeout, terminating it")
-          process.terminate()
-          process.join(1.0)
-        # If still alive, now try to kill it
-        if process.is_alive():
-          self._log(logging.WARNING, "The histogram process did not terminate "
-                                     "within the timeout, killing it")
-          process.kill()
-          process.join()
+      terminated = False
+      exit_info = self._unexpected_exit
+      if not self._process_closed:
+        if self._histogram_started:
+          # Give the histogram process two seconds to stop
+          with manager.step('join histogram'):
+            process.join(2.0)
+          alive = True
+          # Check if the histogram Process stopped as expected
+          with manager.step('check histogram'):
+            alive = process.is_alive()
+          if alive:
+            # If it didn't, record the failure
+            with manager.step('histogram shutdown deadline'):
+              raise ShutdownTimeoutError("Histogram worker did not stop "
+                                         "within 2 seconds",
+                                         process_name=process.name,
+                                         pid=process.pid,
+                                         phase='configuration cleanup',
+                                         timeout=2.0)
+            # Still try to terminate the histogram Process
+            with manager.step('terminate histogram'):
+              process.terminate()
+              terminated = True
+            # Give the histogram Process half a second to terminate
+            with manager.step('join terminated histogram'):
+              process.join(0.5)
+            alive = True
+            # Check if the histogram Process is still alive after termination
+            with manager.step('check terminated histogram'):
+              alive = process.is_alive()
+            if alive:
+              # Still try to kill the histogram Process
+              with manager.step('kill histogram'):
+                process.kill()
+                terminated = True
+              # Give the histogram Process half a second to be killed
+              with manager.step('join killed histogram'):
+                process.join(0.5)
+          # Report any unexpected exit code from the histogram Process
+          with manager.step('observe histogram exit'):
+            code = process.exitcode
+            if isinstance(code, int) and code != 0 and exit_info is None:
+              exit_info = (process.name, process.pid, code)
+        # In all cases, close the histogram Process
+        with manager.step('close histogram process'):
+          process.close()
+          self._process_closed = True
 
-    # Unconditionally clean up the queue resources
-    finally:
-      for queue in self._queues:
-        try:
-          queue.cancel_join_thread()
-        except Exception as exc:
-          self._log(logging.ERROR, "Could not cancel histogram queue thread "
-                                   "join",
-                    exc_info=(type(exc), exc, exc.__traceback__))
-        try:
-          queue.close()
-        except Exception as exc:
-          self._log(logging.ERROR, "Could not close histogram queue",
-                    exc_info=(type(exc), exc, exc.__traceback__))
+      # Stop the Thread receiving Exceptions from the histogram Process
+      with manager.step('stop histogram receiver'):
+        self._receiver_stop.set()
+      # Give the Thread half a second to stop
+      with manager.step('join histogram receiver'):
+        if self._receiver is not None and self._receiver.ident is not None:
+          self._receiver.join(0.5)
+          # Report it if the Thread is still alive
+          if self._receiver.is_alive():
+            raise ShutdownTimeoutError("Histogram failure receiver did not "
+                                       "stop", phase='monitoring', timeout=0.5)
+          self._receiver = None
+
+      # Close the Queue carrying Exceptions
+      if self._failure_queue not in self._closed_queues:
+        with manager.step('close histogram failure Queue'):
+          self._failure_queue.close()
+          self._closed_queues.append(self._failure_queue)
+
+      # Record and report an unexpected exit code
+      if exit_info is not None and not terminated:
+        name, pid, code = exit_info
+        reported = {(report.process_name, report.pid)
+                    for report, _ in manager.snapshot()}
+        reported.update((error.process_name, error.pid)
+                        for _, error in manager.snapshot()
+                        if isinstance(error, ProcessExitError))
+        with manager.step('verify histogram exit'):
+          if (name, pid) not in reported:
+            raise ProcessExitError(f"Histogram worker {name} exited "
+                                   f"unexpectedly ({code})",
+                                   process_name=name,
+                                   pid=pid,
+                                   phase='configuration',
+                                   exitcode=code)
+
+      # Close the various Queues that were opened
+      for index, queue in enumerate(self._queues):
+        if queue not in self._cancelled_queues:
+          with manager.step(f'cancel preview Queue {index + 1} feeder join'):
+            queue.cancel_join_thread()
+            self._cancelled_queues.append(queue)
+        if queue not in self._closed_queues:
+          with manager.step(f'close preview Queue {index + 1}'):
+            queue.close()
+            self._closed_queues.append(queue)

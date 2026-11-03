@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from pathlib import Path
+from time import sleep
 
 import numpy as np
 
@@ -20,6 +21,34 @@ def _make_speckle() -> np.ndarray:
 
   rng = np.random.default_rng(12345)
   return rng.integers(0, 256, size=(128, 128), dtype=np.uint8)
+
+
+class CorrelationRecorder(crappy.blocks.Recorder):
+  """Stops a correlation scenario once at least two rows are saved."""
+
+  def __init__(self, file_name: Path, **kwargs) -> None:
+    """Initializes the Recorder and its count of successfully written rows."""
+
+    super().__init__(file_name, **kwargs)
+    self._rows_written = 0
+
+  def _write_file(self) -> None:
+    """Writes the pending rows before deciding whether the scenario is done."""
+
+    super()._write_file()
+    self._rows_written += len(self._data_buf.get('t(s)', ()))
+    if self._rows_written >= 2:
+      self.stop()
+
+
+class DelayedDISCorrel(crappy.blocks.DISCorrel):
+  """Delays acquisition beyond the former Generator shutdown deadline."""
+
+  def begin(self) -> None:
+    """Simulates a slow camera before acquiring the first reference frame."""
+
+    super().begin()
+    sleep(1.5)
 
 
 def build_camera_image_saver(output_dir: Path) -> tuple[Block, ...]:
@@ -53,7 +82,9 @@ def build_dicve_recorder(output_dir: Path) -> tuple[Block, ...]:
       'init_value': 0},),
     cmd_label='Exx(%)',
     spam=True,
-    end_delay=0.2,
+    # The Recorder stops the scenario after results reach the CSV. The parent
+    # test's subprocess timeout bounds the wait if correlation produces none.
+    end_delay=None,
     freq=20)
 
   dicve = crappy.blocks.DICVE(
@@ -71,7 +102,7 @@ def build_dicve_recorder(output_dir: Path) -> tuple[Block, ...]:
     follow=False,
     raise_on_patch_exit=False)
 
-  recorder = crappy.blocks.Recorder(
+  recorder = CorrelationRecorder(
     output_dir / 'dicve.csv',
     labels=('t(s)', 'Eyy(%)', 'Exx(%)'),
     delay=0.1,
@@ -83,7 +114,10 @@ def build_dicve_recorder(output_dir: Path) -> tuple[Block, ...]:
   return generator, dicve, recorder
 
 
-def build_dis_correl_recorder(output_dir: Path) -> tuple[Block, ...]:
+def build_dis_correl_recorder(
+    output_dir: Path,
+    dis_correl_type: type[crappy.blocks.DISCorrel] = crappy.blocks.DISCorrel
+    ) -> tuple[Block, ...]:
   """Builds a Generator -> DISCorrel -> Recorder script."""
 
   generator = crappy.blocks.Generator(
@@ -93,10 +127,11 @@ def build_dis_correl_recorder(output_dir: Path) -> tuple[Block, ...]:
       'init_value': 0},),
     cmd_label='Exx(%)',
     spam=True,
-    end_delay=0.2,
+    # Keep acquiring images until the Recorder has saved correlation results.
+    end_delay=None,
     freq=20)
 
-  dis_correl = crappy.blocks.DISCorrel(
+  dis_correl = dis_correl_type(
     '',
     config=False,
     display_images=False,
@@ -112,7 +147,7 @@ def build_dis_correl_recorder(output_dir: Path) -> tuple[Block, ...]:
     iterations=1,
     gradient_iterations=5)
 
-  recorder = crappy.blocks.Recorder(
+  recorder = CorrelationRecorder(
     output_dir / 'dis_correl.csv',
     labels=('t(s)', 'Exx(%)', 'Eyy(%)'),
     delay=0.1,
@@ -122,3 +157,9 @@ def build_dis_correl_recorder(output_dir: Path) -> tuple[Block, ...]:
   crappy.link(dis_correl, recorder)
 
   return generator, dis_correl, recorder
+
+
+def build_delayed_dis_correl_recorder(output_dir: Path) -> tuple[Block, ...]:
+  """Builds the DISCorrel pipeline with deliberately delayed acquisition."""
+
+  return build_dis_correl_recorder(output_dir, DelayedDISCorrel)

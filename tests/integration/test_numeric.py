@@ -7,12 +7,11 @@ import unittest
 
 import numpy as np
 
-try:
-  import tables
-except (ImportError, ModuleNotFoundError):
-  tables = None
+from tests.support.dependencies import optional_import
 
-from .integration_test_base import IntegrationTestBase
+tables = optional_import('tables')
+
+from tests.support.integration import IntegrationTestBase
 
 
 class TestNumericIntegration(IntegrationTestBase):

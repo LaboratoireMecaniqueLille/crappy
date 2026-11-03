@@ -9,7 +9,8 @@ import logging
 
 from .meta_block import Block
 from .generator_path.meta_path import paths_dict, Path
-from .._global import GeneratorStop
+from .._exceptions import GeneratorStop
+from .. import _validation as check
 
 
 class GeneratorNoStop(Exception):
@@ -101,6 +102,18 @@ class Generator(Block):
         .. versionadded:: 2.0.0
     """
 
+    check.string(cmd_label, 'cmd_label')
+    check.string(path_index_label, 'path_index_label')
+    check.boolean(repeat, 'repeat')
+    check.boolean(spam, 'spam')
+    check.boolean(safe_start, 'safe_start')
+    check.real(end_delay, 'end_delay', optional=True, minimum=0)
+    match path:
+      case str() | bytes() | dict():
+        raise TypeError("path must be an iterable of Path dictionaries")
+      case _:
+        check.interface(path, 'path', ('__iter__',))
+
     super().__init__()
 
     # Instantiating a few attributes based on the arguments
@@ -120,11 +133,15 @@ class Generator(Block):
     path = list(path)
     if not path:
       raise ValueError("Empty Generator Path provided")
-    if not all(isinstance(dic, dict) for dic in path):
-      raise TypeError("The Generator Path should contain dictionaries only")
+    for entry in path:
+      check.instance(entry, 'path entry', dict)
     if not all('type' in dic for dic in path):
       raise ValueError("All Generator Path dictionaries should contain the "
                        "'type' key")
+
+    for entry in path:
+      check.mapping(entry, 'path entry')
+      check.string(entry['type'], "path entry 'type'")
 
     # The path is an iterable object
     self._raw_path: list[dict[str, Any]] = path
@@ -180,25 +197,31 @@ class Generator(Block):
                                 "starting safely")
         return
 
-    # Getting the data from upstream blocks
-    data = self.recv_all_data()
-    try:
-      # Getting the next command to send
-      self._last_t_gen = time()
-      cmd = self._current_path.get_cmd(data)
-      self.log(logging.DEBUG, f"Returned command: {cmd}")
-    except StopIteration:
+    # Use a while loop to avoid infinite recursion for Paths whose stop
+    # condition is immediately satisfied
+    while True:
+      if self._stop_event is not None and self._stop_event.is_set():
+        return
+
+      # Getting fresh data from upstream blocks for each path
+      data = self.recv_all_data()
       try:
-        # Switching to the next path if we reached the end of one
-        self._update_path()
-        self.loop()
-        return
-      except GeneratorNoStop:
-        self.log(logging.WARNING, f"Generator path exhausted, staying idle "
-                                  f"until the script ends")
-        # Case when the Generator shouldn't raise CrappyStop after it ended
-        self._ended_no_raise = True
-        return
+        # Getting the next command to send
+        self._last_t_gen = time()
+        cmd = self._current_path.get_cmd(data)
+        self.log(logging.DEBUG, f"Returned command: {cmd}")
+      except StopIteration:
+        try:
+          # Switching to the next path if we reached the end of one
+          self._update_path()
+        except GeneratorNoStop:
+          self.log(logging.WARNING, "Generator path exhausted, staying idle "
+                                    "until the script ends")
+          # Case when the Generator shouldn't raise CrappyStop after it ended
+          self._ended_no_raise = True
+          return
+      else:
+        break
 
     # Not sending if no command was output by the get_cmd method
     if cmd is None:

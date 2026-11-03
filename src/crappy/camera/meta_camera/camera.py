@@ -8,9 +8,10 @@ from multiprocessing import current_process
 import logging
 from abc import ABC, abstractmethod
 
-from ..._global import DefinitionError
 from .camera_setting import (CameraSetting, CameraBoolSetting,
                              CameraScaleSetting, CameraChoiceSetting)
+from ... import _validation as check
+from ..._exceptions import DefinitionError
 
 NbrType = int | float
 
@@ -27,13 +28,15 @@ class Camera(ABC):
      __init_subclass__
   """
 
+  # Actually loaded subclasses
   classes = dict()
 
   def __init_subclass__(cls, **kwargs) -> None:
     """Used for checking that two subclasses don't share the same name."""
 
     super().__init_subclass__()
-    if cls.__name__ in cls.classes:
+    from .. import is_reserved
+    if cls.__name__ in cls.classes or is_reserved(cls):
       raise DefinitionError(f"A Camera with the name {cls.__name__} is "
                             f"already defined !")
     cls.classes[cls.__name__] = cls
@@ -80,13 +83,16 @@ class Camera(ABC):
     .. versionadded:: 2.0.0
     """
 
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
+
     if self._logger is None:
       self._logger = logging.getLogger(
         f"{current_process().name}.{type(self).__name__}")
 
     self._logger.log(level, msg)
 
-  def open(self, **kwargs) -> None:
+  def open(self, *args, **kwargs) -> None:
     """This method should initialize the connection to the camera, configure
     the camera, and start the image acquisition.
 
@@ -202,6 +208,12 @@ class Camera(ABC):
     .. versionadded:: 1.5.10
     """
 
+    check.callable_(getter, 'getter', optional=True)
+    check.callable_(setter, 'setter', optional=True)
+    check.boolean(default, 'default')
+
+    check.string(name, 'name')
+
     # Checking if the given name is valid
     if name in self._reserved:
       raise ValueError(f"The name {name} is reserved for a different type of "
@@ -257,6 +269,17 @@ class Camera(ABC):
     .. versionadded:: 1.5.10
     """
 
+    check.callable_(getter, 'getter', optional=True)
+    check.callable_(setter, 'setter', optional=True)
+    check.real(lowest, 'lowest')
+    check.real(highest, 'highest')
+    check.real(default, 'default', optional=True)
+    check.real(step, 'step', optional=True, minimum=0, strict=True)
+    if lowest == highest:
+      raise ValueError(f"The two given bounds are equal for setting {name}!")
+
+    check.string(name, 'name')
+
     # Checking if the given name is valid
     if name in self._reserved:
       raise ValueError(f"The name {name} is reserved for a different type of "
@@ -302,6 +325,13 @@ class Camera(ABC):
 
     .. versionadded:: 1.5.10
     """
+
+    check.callable_(getter, 'getter', optional=True)
+    check.callable_(setter, 'setter', optional=True)
+    check.labels(choices, 'choices', single=False)
+    check.string(default, 'default', optional=True)
+
+    check.string(name, 'name')
 
     # Checking if the given name is valid
     if name in self._reserved:
@@ -359,6 +389,9 @@ class Camera(ABC):
     .. versionadded:: 2.0.0
     """
 
+    check.callable_(getter, 'getter', optional=True)
+    check.callable_(setter, 'setter', optional=True)
+
     if self.trigger_name in self.settings:
       raise ValueError("There can only be one trigger setting per camera !")
 
@@ -408,6 +441,9 @@ class Camera(ABC):
     .. versionadded:: 2.0.0
     """
 
+    check.integer(width, 'width', minimum=1)
+    check.integer(height, 'height', minimum=1)
+
     # Checking that the software ROI setting does not already exist
     if self._soft_roi_set:
       raise ValueError("There can only be one set of software settings per "
@@ -448,6 +484,9 @@ class Camera(ABC):
     
     .. versionadded:: 2.0.0
     """
+
+    check.integer(width, 'width', minimum=1)
+    check.integer(height, 'height', minimum=1)
 
     if self._soft_roi_set:
       self.log(logging.DEBUG, "Reloading the software ROI settings")

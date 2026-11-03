@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from typing import Literal
-from time import time
+from time import monotonic
 import numpy as np
 import logging
 from math import ceil, log2
@@ -11,13 +11,12 @@ from collections.abc import Sequence
 from .block import VisionBlock
 from ..._global import OptionalModule
 from ...tool.camera_config import Overlay
+from ..._exceptions import OptionalDependencyError
+from ... import _validation as check
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+cv2 = OptionalModule('cv2', install_name='opencv-python', lazy_import=True)
 
 
 class ImageDisplayer(VisionBlock):
@@ -84,6 +83,10 @@ class ImageDisplayer(VisionBlock):
       freq: Target frequency for checking overlays and images. If :obj:`None`,
         loops as fast as possible. It bounds how often the requested display
         framerate can be reached.
+
+    Raises:
+      ValueError: If the title, framerate, or backend is invalid, or the
+        framerate exceeds ``freq``.
     """
 
     super().__init__(img_shape=None,
@@ -92,20 +95,20 @@ class ImageDisplayer(VisionBlock):
                      debug=debug,
                      freq=freq)
 
-    # Validate title before setting it
-    if title is not None:
-      if not isinstance(title, str) or not title:
-        raise ValueError("The provided Displayer title must be a non-empty "
-                         "string")
-      self._title: str = title
-    else:
-      self._title: str = f"Displayer {self._count}"
+    try:
+      check.string(title, 'title', optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    self._title: str = f"Displayer {self._count}" if title is None else title
+    try:
+      check.choice(backend, 'backend', ('cv2', 'mpl'), optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
 
-    # Validate framerate before setting it
-    if ((not isinstance(framerate, int) and
-        not isinstance(framerate, float))
-        or framerate <= 0):
-      raise ValueError("framerate must be a strictly positive float or int")
+    try:
+      check.real(framerate, 'framerate', minimum=0, strict=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
     if freq is not None and framerate > freq:
       raise ValueError("The displayer framerate is by nature inferior to the "
                        "freq!")
@@ -113,24 +116,23 @@ class ImageDisplayer(VisionBlock):
 
     # Validate backend before setting it
     if backend is None:
-      if not isinstance(cv2, OptionalModule):
+      if cv2.is_available():
         self._backend: str = 'cv2'
       else:
         try:
-          _ = plt.Figure
+          plt.resolve()
           self._backend: str = 'mpl'
-        except RuntimeError:
+        except OptionalDependencyError as error:
           raise ModuleNotFoundError("Neither opencv-python nor matplotlib "
                                     "could be imported, no backend found for "
-                                    "displaying the images")
-    elif backend in ('cv2', 'mpl'):
-      self._backend: str = backend
+                                    "displaying the images") from error
     else:
-      raise ValueError("The backend argument should be either 'cv2' or 'mpl'!")
+      self._backend: str = backend
 
     # Setting other attributes
     self._ax = None
     self._fig = None
+    self._window_opened: bool = False
     self._last_upd: float = float('-inf')
     self._overlay_buffer: dict[str, Sequence[Overlay | None]] = dict()
     self._last_warn: float = -float('inf')
@@ -159,6 +161,11 @@ class ImageDisplayer(VisionBlock):
       raise IOError("This VisionBlock is useless without an input ImageLink")
     if len(self.img_inputs) != 1:
       raise IOError("This VisionBlock requires exactly one input ImageLink")
+
+    if self._backend == 'cv2':
+      cv2.resolve()
+    else:
+      plt.resolve()
 
     # Preparing the Displayer window
     if self._backend == 'cv2':
@@ -194,37 +201,34 @@ class ImageDisplayer(VisionBlock):
         try:
           overlays = tuple(data['overlay'])
         except (Exception,):
-          if time() - self._last_warn > 2:
+          if monotonic() - self._last_warn > 2:
             self.log(logging.WARNING, f"Ignoring invalid overlay data received"
                                       f" from Link {link.name}: expected an "
                                       f"iterable of Overlay objects")
-            self._last_warn = time()
+            self._last_warn = monotonic()
           continue
 
         if not all(overlay is None or isinstance(overlay, Overlay)
                    for overlay in overlays):
-          if time() - self._last_warn > 2:
+          if monotonic() - self._last_warn > 2:
             self.log(logging.WARNING, f"Ignoring invalid overlay data received"
                                       f" from Link {link.name}: expected only "
                                       f"Overlay objects or None placeholders")
-            self._last_warn = time()
+            self._last_warn = monotonic()
           continue
 
         self._overlay_buffer[link.name] = overlays
 
     # Enforce framerate by skipping loops
-    if time() - self._last_upd < 1 / self._framerate:
+    if monotonic() - self._last_upd < 1 / self._framerate:
       self.log(logging.DEBUG, "Too early to loop, to achieve the desired "
                               "framerate")
       # If requested, displays the FPS of the image display
       if self.display_freq:
         self._print_freq(img_handled=False)
       return
-    # Update last received time
-    self._last_upd = time()
-
     # Nothing to do if no new image was received
-    if not (upd_links := self.receive_imgs()):
+    if not (upd_links := self.receive_imgs(timeout=0.1)):
       self.log(logging.DEBUG, "No new image received during this loop")
       # If requested, displays the FPS of the image display
       if self.display_freq:
@@ -232,6 +236,9 @@ class ImageDisplayer(VisionBlock):
       return
     # Get the ImageLink name
     upd_link, = upd_links
+
+    # Record the processing start
+    self._last_upd = monotonic()
 
     # Handles to the received data
     metadata = self.last_received[upd_link].metadata
@@ -280,14 +287,25 @@ class ImageDisplayer(VisionBlock):
   def finish(self) -> None:
     """Closes the display window and releases the input image buffer."""
 
-    # Closing the Displayer window
-    self.log(logging.INFO, "Closing the displayer window")
-    if self._backend == 'cv2':
-      self._finish_cv2()
-    elif self._backend == 'mpl':
-      self._finish_mpl()
+    manager = self._failure_manager
 
-    super().finish()
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('ImageDisplayer cleanup'):
+      # Release the parent resources first
+      with manager.step('release shared image buffers'):
+        super().finish()
+
+      if self._window_opened:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, "Closing the displayer window")
+        with manager.step(f'close {self._backend} window {self._title!r}'):
+          if self._backend == 'cv2':
+            self._finish_cv2()
+          elif self._backend == 'mpl':
+            self._finish_mpl()
+          self._window_opened = False
+          self._fig = None
+          self._ax = None
 
   def _prepare_cv2(self) -> None:
     """Creates a resizable OpenCV display window."""
@@ -297,12 +315,14 @@ class ImageDisplayer(VisionBlock):
     except AttributeError:
       flags = cv2.WINDOW_NORMAL
     cv2.namedWindow(self._title, flags)
+    self._window_opened = True
 
   def _prepare_mpl(self) -> None:
     """Enables interactive Matplotlib mode and creates a Figure."""
 
     plt.ion()
     self._fig, self._ax = plt.subplots()
+    self._window_opened = True
 
   def _update_cv2(self, img: np.ndarray) -> None:
     """Downscales an image when needed and displays it with OpenCV.

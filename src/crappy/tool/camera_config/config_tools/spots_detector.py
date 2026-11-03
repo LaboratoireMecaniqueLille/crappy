@@ -11,15 +11,14 @@ from ...._global import OptionalModule
 
 try:
   import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+except (ModuleNotFoundError, ImportError) as error:
+  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
 try:
   from skimage.filters import threshold_otsu
   from skimage.morphology import label
   from skimage.measure import regionprops, perimeter_crofton
-except (ModuleNotFoundError, ImportError):
-  label = OptionalModule("skimage", "Please install scikit-image to use"
-                         "Video-extenso")
+except (ModuleNotFoundError, ImportError) as error:
+  label = OptionalModule("skimage", install_name="scikit-image", cause=error)
   threshold_otsu = regionprops = perimeter_crofton = label
 
 
@@ -101,8 +100,6 @@ class SpotsDetector:
     self._logger = logging.getLogger(f"{current_process().name}."
                                      f"{type(self).__name__}")
 
-    if num_spots is not None and num_spots not in range(1, 5):
-      raise ValueError("num_spots should be either None, 1, 2, 3 or 4 !")
     self.num_spots = num_spots
 
     self.spots = SpotsBoxes()

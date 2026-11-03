@@ -196,10 +196,7 @@ class DICVEProcess(CameraProcess):
             use_displacements=not self._follow))
 
       # If the patches are lost, deciding whether to raise exception or not
-      except LostPatchError as exc:
-        if self._logger is not None:
-          self._logger.exception("Caught exception while processing patches!",
-                                 exc_info=exc)
+      except LostPatchError:
         self.log(logging.WARNING, "No longer processing data.\nThis may be "
                                   "due to a patch exiting the ROI")
         self._lost_patch = True

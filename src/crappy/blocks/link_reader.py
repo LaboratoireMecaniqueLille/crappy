@@ -3,6 +3,7 @@
 import logging
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 class LinkReader(Block):
@@ -58,6 +59,8 @@ class LinkReader(Block):
     self.freq = freq
     self.display_freq = display_freq
     self.debug = debug
+
+    check.string(name, 'name', optional=True)
 
     self._reader_name = name if name is not None else f'LinkReader ' \
                                                       f'{self._get_index()}'

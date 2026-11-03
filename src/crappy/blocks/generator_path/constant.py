@@ -3,6 +3,7 @@
 import logging
 
 from .meta_path import Path, ConditionType
+from ... import _validation as check
 
 
 class Constant(Path):
@@ -28,6 +29,8 @@ class Constant(Path):
     .. versionremoved:: 1.5.10 *send_one* argument
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
+
+    check.real(value, 'value', optional=True)
 
     super().__init__()
 

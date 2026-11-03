@@ -13,8 +13,10 @@ loss behavior is explained in :doc:`../concepts/regular_links_and_image_links`.
 .. currentmodule:: crappy.links.link
 
 .. autoclass:: Link
-   :members: poll, send, recv, recv_last, recv_chunk, log
+   :members: poll, send, recv, recv_last, recv_chunk, log, close
    :special-members: __init__
+
+.. autofunction:: crappy.links.link.link
 
 Image Link
 ----------
@@ -30,6 +32,8 @@ and frame-skipping semantics.
 .. autoclass:: ImageLink
    :members: set_buffers, get_buffers, log
    :special-members: __init__
+
+.. autofunction:: crappy.links.img_link.img_link
 
 The buffer methods above are called by Crappy while preparing the Blocks. Most
 user scripts only need :func:`crappy.img_link`. Custom VisionBlocks exchange

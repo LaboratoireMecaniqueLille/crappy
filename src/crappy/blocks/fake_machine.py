@@ -1,16 +1,21 @@
 # coding: utf-8
 
-from time import time
+from time import time, monotonic
 import numpy as np
 from typing import Literal
 from collections.abc import Callable
 import logging
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 def plastic(v: float, yield_strain: float = .005, rate: float = .02) -> float:
   """A basic plastic law given as an example."""
+
+  check.real(v, 'v')
+  check.real(yield_strain, 'yield_strain', minimum=0)
+  check.real(rate, 'rate', minimum=0, strict=True)
 
   if v > yield_strain:
     return rate * ((((v - yield_strain) / rate) ** 2 + 1) ** .5 - 1)
@@ -91,6 +96,19 @@ class FakeMachine(Block):
         .. versionadded:: 2.0.0
     """
 
+    check.real(rigidity, 'rigidity', minimum=0, strict=True)
+    check.real(l0, 'l0', minimum=0, strict=True)
+    check.real(max_strain, 'max_strain', minimum=0, strict=True)
+    check.real(nu, 'nu')
+    check.real(max_speed, 'max_speed', minimum=0)
+    check.callable_(plastic_law, 'plastic_law')
+    check.choice(mode, 'mode', ('speed', 'position'))
+    check.string(cmd_label, 'cmd_label')
+    check.mapping(sigma, 'sigma', optional=True)
+    if sigma is not None:
+      for deviation in sigma.values():
+        check.real(deviation, 'sigma values', minimum=0)
+
     super().__init__()
     self.freq = freq
     self.display_freq = display_freq
@@ -115,14 +133,14 @@ class FakeMachine(Block):
     # Creating the mechanical variables
     self._current_pos = 0
     self._prev_t = None
-    self._prev_broke_t = time()
+    self._prev_broke_t = monotonic()
     self._plastic_elongation = 0
     self._max_recorded_strain = 0
 
   def begin(self) -> None:
     """Sends a first value that should be 0, plus or minus the noise."""
 
-    self._prev_t = self.t0
+    self._prev_t = monotonic()
     self._send_values()
 
   def loop(self) -> None:
@@ -131,7 +149,7 @@ class FakeMachine(Block):
     is, and finally returns the data."""
 
     # Avoid potential zero division later
-    t = time()
+    t = monotonic()
     delta_t = t - self._prev_t
     if not delta_t > 0:
       return
@@ -159,8 +177,8 @@ class FakeMachine(Block):
 
     # If the max strain is reached, consider that the sample broke
     if self._current_pos / self._l0 > self._max_strain:
-      if time() - self._prev_broke_t > 1:
-        self._prev_broke_t = time()
+      if monotonic() - self._prev_broke_t > 1:
+        self._prev_broke_t = monotonic()
         self.log(logging.WARNING, "Sample broke !")
       self._rigidity = 0
 

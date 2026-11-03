@@ -2,11 +2,11 @@
 
 from typing import Any, Literal
 from numbers import Real
-from math import isfinite
 import logging
 import operator
 
 from .condition import Condition
+from .... import _validation as check
 
 
 class Crossing(Condition):
@@ -37,29 +37,15 @@ class Crossing(Condition):
 
     super().__init__()
 
-    match label:
-      case str() if label.strip():
-        self._label: str = label
-      case str():
-        raise ValueError("The provided label must be a non-empty string")
-      case _:
-        raise TypeError("The provided label must be a non-empty string")
+    check.string(label, 'label')
+    self._label: str = label
 
-    match threshold:
-      case Real() if isfinite(threshold):
-        self._threshold: float = float(threshold)
-      case Real():
-        raise ValueError("The threshold must be a finite real number")
-      case _:
-        raise TypeError("The threshold must be a finite real number")
+    check.real(int(threshold) if isinstance(threshold, bool) else threshold,
+               'threshold')
+    self._threshold: float = float(threshold)
 
-    match direction:
-      case str() if direction in ('rising', 'falling'):
-        self._direction: Literal['rising', 'falling'] = direction
-      case str():
-        raise ValueError("direction must be either 'rising' or 'falling'")
-      case _:
-        raise TypeError("direction must be either 'rising' or 'falling'")
+    check.choice(direction, 'direction', ('rising', 'falling'))
+    self._direction: Literal['rising', 'falling'] = direction
 
     # Whether there was once a value read on the right side of the threshold
     # for detecting a crossing (e.g. True if reading value 5 for threshold 6

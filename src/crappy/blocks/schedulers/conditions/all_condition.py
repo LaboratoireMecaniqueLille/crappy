@@ -4,6 +4,7 @@ from collections.abc import Callable
 from typing import Any
 
 from .condition import Condition
+from .... import _validation as check
 
 
 class AllCondition(Condition):
@@ -29,17 +30,12 @@ class AllCondition(Condition):
 
     super().__init__()
 
-    match conditions:
-      case ():
-        raise ValueError("At least one condition must be provided")
-      case (*conditions,) if all(isinstance(cond, Condition) or callable(cond)
-                                 for cond in conditions):
-        self._conditions: tuple[
-          Condition | Callable[[float,  dict[str, list[Any]]],
-                               bool], ...] = tuple(conditions)
-      case _:
-        raise TypeError("conditions must be instances of Condition or "
-                        "callables")
+    check.sequence(conditions, 'conditions', minimum=1)
+    for condition in conditions:
+      check.callable_(condition, 'conditions')
+    self._conditions: tuple[
+      Condition | Callable[[float, dict[str, list[Any]]], bool],
+      ...] = tuple(conditions)
 
   def __call__(self,
                dt: float,

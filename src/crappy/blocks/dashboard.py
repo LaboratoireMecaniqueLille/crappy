@@ -3,68 +3,25 @@
 from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal
-import tkinter as tk
 import logging
 import locale
 import numbers
 import os
-from warnings import warn
 
 from .meta_block import Block
 from .._global import OptionalModule
+from .. import _validation as check
 
+tk = OptionalModule('tkinter', lazy_import=True)
 QtCore = OptionalModule('PyQt6.QtCore', lazy_import=True)
 QtWidgets = OptionalModule('PyQt6.QtWidgets', lazy_import=True)
 
+__all__ = ('Dashboard', 'DashboardWindow')
+
 if TYPE_CHECKING:
+  import tkinter as tk
   from PyQt6 import QtWidgets, QtCore
-
-
-class DashboardWindow(tk.Tk):
-  """The Tkinter GUI for displaying the label values.
-  
-  .. versionadded:: 1.5.7
-  .. versionchanged:: 2.0.0
-     renamed from *Dashboard_window* to *DashboardWindow*
-  """
-
-  def __init__(self, labels: list[str]) -> None:
-    """Initializes the GUI and sets the layout."""
-
-    super().__init__()
-    self.title('Dashboard')
-    self.resizable(False, False)
-
-    self._labels: list[str] = labels
-
-    # Attributes storing the tkinter objects
-    self._tk_labels: dict[str, tk.Label] = dict()
-    self._tk_values: dict[str, tk.Label] = dict()
-    self.tk_var: dict[str, tk.StringVar] = dict()
-
-    # Setting the GUI
-    self._set_variables()
-    self._set_layout()
-
-  def _set_variables(self) -> None:
-    """Attributes one StringVar per label."""
-
-    for label in self._labels:
-      self.tk_var[label] = tk.StringVar(self, value='')
-
-  def _set_layout(self) -> None:
-    """Creates the Labels and places them on the GUI."""
-
-    for row, label in enumerate(self._labels):
-      # The name of the labels on the left
-      self._tk_labels[label] = tk.Label(self, text=f'{label}:', borderwidth=15,
-                                        font=("Courier bold", 48))
-      self._tk_labels[label].grid(row=row, column=0)
-      # Their values on the right
-      self._tk_values[label] = tk.Label(self, borderwidth=15,
-                                        textvariable=self.tk_var[label],
-                                        font=("Courier bold", 48))
-      self._tk_values[label].grid(row=row, column=1)
+  from ._dashboard_tkinter import DashboardWindow
 
 
 class Dashboard(Block):
@@ -128,62 +85,33 @@ class Dashboard(Block):
         .. versionadded:: 2.0.0
     """
 
-    warn("\nThe default backend for the Dashboard Block was changed from "
-         "'tkinter' to 'pyqt' without prior notice.\nThis change was "
-         "implemented nevertheless because it is part of a larger migration "
-         "to PyQt\nSet backend='tkinter' to switch back to the "
-         "previous behavior.\nInstall PyQt6 to use the new Dashboard "
-         "interface.\n", UserWarning, stacklevel=2)
+    self._dashboard: DashboardWindow | None = None
+    self._qt_app: QtWidgets.QApplication | None = None
+    self._qt_window: QtWidgets.QWidget | None = None
+    self._qt_events_processed: bool = False
 
     super().__init__()
     self.freq = freq
     self.display_freq = display_freq
     self.debug = debug
 
-    match labels:
-      case str() if labels.strip():
-        self._dash_labels: list[str] = [labels]
-      case str():
-        raise ValueError("labels must contain non-empty strings")
-      case Iterable() if not isinstance(labels, (bytes, bytearray)):
-        self._dash_labels: list[str] = list(labels)
-        if not self._dash_labels:
-          raise ValueError("At least one label must be provided")
-        for label in self._dash_labels:
-          match label:
-            case str() if label.strip():
-              pass
-            case str():
-              raise ValueError("labels must contain non-empty strings")
-            case _:
-              raise TypeError("labels must contain non-empty strings")
-      case _:
+    if isinstance(labels, str):
+      labels = [labels]
+    else:
+      check.instance(labels, 'labels', Iterable)
+      if isinstance(labels, (bytes, bytearray)):
         raise TypeError("labels must be a string or an iterable of strings")
+      labels = list(labels)
+    check.labels(labels, 'labels', single=False, unique=False)
+    self._dash_labels: list[str] = labels
 
-    match nb_digits:
-      case bool():
-        raise TypeError("nb_digits must be a non-negative integer")
-      case int() if nb_digits >= 0:
-        self._nb_digits: int = nb_digits
-      case int():
-        raise ValueError("nb_digits must be a non-negative integer")
-      case _:
-        raise TypeError("nb_digits must be a non-negative integer")
+    check.integer(nb_digits, 'nb_digits', minimum=0)
+    self._nb_digits: int = nb_digits
 
-    match backend:
-      case str() if backend in ('tkinter', 'pyqt'):
-        self._backend: Literal['tkinter', 'pyqt'] = backend
-      case str():
-        raise ValueError("The backend must be either 'tkinter' or 'pyqt'")
-      case _:
-        raise TypeError("The backend must be either 'tkinter' or 'pyqt'")
-
-    # Attributes related to tkinter
-    self._dashboard: DashboardWindow | None = None
+    check.choice(backend, 'backend', ('tkinter', 'pyqt'))
+    self._backend: Literal['tkinter', 'pyqt'] = backend
 
     # Attributes related to PyQt6
-    self._qt_app: QtWidgets.QApplication | None = None
-    self._qt_window: QtWidgets.QWidget | None = None
     self._qt_labels: dict[str, QtWidgets.QLabel] = dict()
     self._qt_values: dict[str, QtWidgets.QLabel] = dict()
 
@@ -255,26 +183,46 @@ class Dashboard(Block):
     .. versionadded:: 1.5.7
     """
 
-    self.log(logging.INFO, "Closing the dashboard window")
-    try:
-      if getattr(self, '_dashboard', None) is not None:
-        assert self._dashboard is not None
-        self._dashboard.destroy()
-    except tk.TclError:
-      pass
+    manager = self._failure_manager
 
-    if getattr(self, '_qt_window', None) is not None:
-      assert self._qt_window is not None
-      self._qt_window.close()
-    if getattr(self, '_qt_app', None) is not None:
-      assert self._qt_app is not None
-      self._qt_app.processEvents()
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Dashboard cleanup'):
+      with manager.step('cleanup diagnostic'):
+        self.log(logging.INFO, "Closing the GUI")
+
+      # Destroy the Tk window
+      if self._dashboard is not None:
+        with manager.step('destroy Tk window'):
+          try:
+            self._dashboard.destroy()
+          except tk.TclError:
+            pass
+          self._dashboard = None
+
+      # Close the Qt window
+      if self._qt_window is not None:
+        self._qt_events_processed = False
+        with manager.step('close Qt window'):
+          if not self._qt_window.close():
+            raise RuntimeError("The Dashboard Qt window refused to close")
+          self._qt_window = None
+
+      # Process the last Qt events
+      if self._qt_app is not None and not self._qt_events_processed:
+        with manager.step('process Qt close events'):
+          self._qt_app.processEvents()
+          self._qt_events_processed = True
 
   def _prepare_tkinter(self) -> None:
     """Creates the Tkinter window with label names and their latest values."""
 
+    tk.resolve()
+    from ._dashboard_tkinter import DashboardWindow
+
     self._dashboard = DashboardWindow(self._dash_labels)
     assert self._dashboard is not None
+    self._dashboard.report_callback_exception = (
+      self._report_tk_callback_exception)
     self._dashboard.update()
 
   def _prepare_pyqt(self) -> None:
@@ -316,8 +264,7 @@ class Dashboard(Block):
     assert self._qt_app is not None
     self._qt_app.processEvents()
 
-  @staticmethod
-  def _get_application() -> QtWidgets.QApplication:
+  def _get_application(self) -> QtWidgets.QApplication:
     """Reuses a Qt widget application or creates one for this Block.
 
     OpenCV's bundled Qt plugin path is excluded during application creation,
@@ -330,22 +277,52 @@ class Dashboard(Block):
         raise RuntimeError("A non-widget Qt application already exists")
       return app
 
+    manager = self._failure_manager
     original = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH')
-    if original is not None:
-      paths = original.split(os.pathsep)
-      filtered = [path for path in paths if
-                  tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
-                  ('cv2', 'qt', 'plugins')]
-      if filtered != paths:
-        if filtered:
-          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.pathsep.join(filtered)
-        else:
-          os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
+    numeric_locale = None
+    with manager.collect('Qt application setup'):
+      with manager.step('create application'):
+        numeric_locale = locale.setlocale(locale.LC_NUMERIC)
+        if original is not None:
+          paths = original.split(os.pathsep)
+          filtered = [path for path in paths if
+                      tuple(os.path.normpath(path).split(os.sep)[-3:]) !=
+                      ('cv2', 'qt', 'plugins')]
+          if filtered != paths:
+            if filtered:
+              os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = (
+                  os.pathsep.join(filtered))
+            else:
+              os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None)
+        app = QtWidgets.QApplication([])
+      with manager.step('restore numeric locale'):
+        if numeric_locale is not None:
+          locale.setlocale(locale.LC_NUMERIC, numeric_locale)
+      with manager.step('restore Qt plugin path'):
+        if original is not None:
+          os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+    return app
 
-    numeric_locale = locale.setlocale(locale.LC_NUMERIC)
-    try:
-      return QtWidgets.QApplication([])
-    finally:
-      locale.setlocale(locale.LC_NUMERIC, numeric_locale)
-      if original is not None:
-        os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = original
+
+def __getattr__(name: str) -> type:
+  """Preserves the public Tk window alias without loading it for Qt users.
+
+  .. versionadded:: 2.2.0
+  """
+
+  if name != 'DashboardWindow':
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+  from ._dashboard_tkinter import DashboardWindow
+
+  globals()[name] = DashboardWindow
+  return DashboardWindow
+
+
+def __dir__() -> list[str]:
+  """Includes the deferred Tk window class in attribute discovery.
+
+  .. versionadded:: 2.2.0
+  """
+
+  return sorted(set(globals()) | set(__all__))

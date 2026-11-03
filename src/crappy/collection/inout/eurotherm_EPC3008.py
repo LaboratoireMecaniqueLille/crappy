@@ -2,7 +2,7 @@
 
 import logging
 import time
-from pymodbus.client.serial import ModbusSerialClient
+from pymodbus.client import ModbusSerialClient
 
 from ...inout.meta_inout import InOut
 
@@ -12,6 +12,8 @@ REGISTERS: dict[str, tuple[int, int]] = {"process_value": (1, 1),
 
 class EurothermEPC3008(InOut):
   """Driver for Eurotherm EPC3008 over Modbus RTU (serial).
+
+  Requires PyModbus 3.10 or newer.
 
   .. versionadded:: 2.0.9
   """
@@ -42,7 +44,7 @@ class EurothermEPC3008(InOut):
 
     self._client = ModbusSerialClient(port=self._port, baudrate=9600,
                                       bytesize=8, parity='N', stopbits=1,
-                                      timeout=self._timeout, method="rtu")
+                                      timeout=self._timeout)
     self.log(logging.INFO, f"Eurotherm EPC3008 connected on {self._port}")
 
   def get_data(self) -> tuple[float, float, float] | None:
@@ -54,9 +56,9 @@ class EurothermEPC3008(InOut):
     sp_addr, sp_len = REGISTERS["setpoint"]
 
     pv_resp = self._client.read_holding_registers(
-        address=pv_addr, count=pv_len, slave=self._address)
+        address=pv_addr, count=pv_len, device_id=self._address)
     sp_resp = self._client.read_holding_registers(
-        address=sp_addr, count=sp_len, slave=self._address)
+        address=sp_addr, count=sp_len, device_id=self._address)
 
     if (pv_resp.isError()
         or sp_resp.isError()
@@ -77,7 +79,8 @@ class EurothermEPC3008(InOut):
     value = int(cmd) & 0xFFFF
 
     resp = self._client.write_register(address=reg_addr,
-                                       value=value, slave=self._address)
+                                       value=value,
+                                       device_id=self._address)
 
     if resp.isError():
       raise IOError(f"Eurotherm EPC3008 write error: {resp}")

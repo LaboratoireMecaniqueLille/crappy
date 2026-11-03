@@ -1,10 +1,17 @@
 # coding:utf-8
 
-from typing import NoReturn, Any
+from typing import NoReturn, Any, TYPE_CHECKING as _TYPE_CHECKING
+from types import ModuleType
 from importlib import import_module
 import webbrowser
-import importlib.resources
-from numpy import frombuffer, uint8
+
+from . import _exceptions
+from . import _validation as check
+
+if _TYPE_CHECKING:
+  from ._resources import resources
+
+__all__ = ('OptionalModule', 'docs', 'resources')
 
 
 # Quick access to documentation
@@ -21,198 +28,166 @@ def docs():
 
 
 class OptionalModule:
-  """Placeholder for optional dependencies that are not installed.
+  """Placeholder for an unavailable or lazily imported optional dependency.
 
-  Will display a message and raise an error when trying to use them.
-  
+  Reports an import failure only when the dependency is used. It retains the
+  original exception as its cause when available.
+
   .. versionadded:: 1.4.0
   """
 
   def __init__(self,
                module_name: str,
                message: str | None = None,
-               lazy_import: bool = False) -> None:
-    """Sets the arguments.
+               lazy_import: bool = False,
+               cause: ImportError | None = None,
+               install_name: str | None = None) -> None:
+    """Describes an optional dependency and how it should be loaded.
 
     Args:
-      module_name: The name of the module s a :obj:`str`, preferably the one
-        invoked with `pip install`.
-      message: Optionally, the message to display in case the module is
-        missing (as a :obj:`str`). If not provided, a generic message will be
-        displayed.
-      lazy_import: If :obj:`True`, the module won't be imported directly even
-        if it is installed. Instead, it will be imported only when necessary.
-        Allows reducing the import time, especially on Window.
+      module_name: Python import name, such as ``cv2`` or ``PIL``.
+      message: Extra guidance shown if the dependency cannot load. :obj:`None`
+        adds no extra message.
+      lazy_import: If :obj:`True`, try to load the dependency when it is first
+        used. If :obj:`False`, using this placeholder reports the dependency
+        as unavailable.
 
         .. versionadded:: 2.0.0
+      cause: Original import error, or :obj:`None` if unavailable.
+      install_name: Installation package name, such as ``opencv-python`` or
+        ``Pillow``. :obj:`None` uses the first part of ``module_name``.
+
+    .. versionchanged:: 2.2.0
     """
 
-    self._name = module_name
+    check.string(module_name, 'module_name')
+    check.string(message, 'message', optional=True, empty=True)
+    check.string(install_name, 'install_name', optional=True)
+    check.boolean(lazy_import, 'lazy_import')
+    check.instance(cause, 'cause', ImportError, optional=True)
 
-    # Setting a default message if none was provided
-    if message is not None:
-      self._msg = message
-    else:
-      self._msg = f"The module {self._name} is necessary to use this " \
-                  f"functionality. Please install it and try again !"
+    self._name: str = module_name
+    self._msg: str | None = message
+    self._cause: ImportError | None = cause
+    self._install_name: str = install_name or module_name.split('.')[0]
+    self._lazy: bool = lazy_import
+    self._module: ModuleType | None = None
 
-    self._lazy = lazy_import
-    self._module = None
+  def is_available(self) -> bool:
+    """Checks whether the dependency can be loaded.
+
+    Lazy dependencies are imported and successful imports are cached. Import
+    failures return :obj:`False` and can be retried on a later check or use.
+    Other initialization errors and interruptions propagate unchanged.
+    Non-lazy placeholders return :obj:`False` without importing anything.
+
+    Returns:
+      Whether the dependency could be loaded.
+
+    .. versionadded:: 2.2.0
+    """
+
+    try:
+      self.resolve()
+    except _exceptions.OptionalDependencyError:
+      return False
+    return True
+
+  def resolve(self) -> ModuleType:
+    """Loads the dependency and returns the cached module.
+
+    Failed lazy imports can be retried by a later call. Non-lazy placeholders
+    report the dependency as unavailable without trying to import it.
+
+    Returns:
+      Imported module.
+
+    Raises:
+      ~crappy._exceptions.OptionalDependencyError: The dependency is
+        unavailable. Its original import error is retained as the cause.
+
+    .. versionadded:: 2.2.0
+    """
+
+    # A non-lazy OptionalModule must fail when resolved
+    if not self._lazy:
+      self._raise_unavailable()
+
+    # Trying to import the module
+    if self._module is None:
+      try:
+        self._module = import_module(self._name)
+      except ImportError as error:
+        self._cause = error
+        self._raise_unavailable()
+      self._cause = None
+
+    # If import succeeded, just return the module
+    return self._module
+
+  def _raise_unavailable(self) -> NoReturn:
+    """Raises an OptionalDependencyError while preserving the context.
+
+    .. versionadded:: 2.2.0
+    """
+
+    raise _exceptions.OptionalDependencyError(self._name,
+                                              self._install_name,
+                                              self._msg) from self._cause
 
   def __getattr__(self, attr: str) -> Any:
-    """Method normally raising an exception indicating that the module is
-    missing.
+    """Returns an attribute from a lazily loaded dependency.
 
-    In case the ``lazy_import`` argument was set to :obj:`True`, still tries to
-    get the desired attribute and raises the exception only if the module is
-    missing.
+    Args:
+      attr: Name of the requested attribute.
+
+    Returns:
+      Attribute from the imported module.
+
+    Raises:
+      ~crappy._exceptions.OptionalDependencyError: The dependency is
+        unavailable.
+      AttributeError: The loaded module has no such attribute.
     """
 
-    # The module has to be imported only when called because it's too heavy
-    if self._lazy:
-      raise_ = False
+    return getattr(self.resolve(), attr)
 
-      # Trying to import the module
-      if self._module is None:
-        try:
-          self._module = import_module(self._name)
-        except (ImportError, ModuleNotFoundError):
-          raise_ = True
+  def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    """Calls the loaded dependency if it is callable.
 
-      # The module could be imported, returning the desired attribute
-      if not raise_:
-        return getattr(self._module, attr)
+    Args:
+      *args: Positional arguments passed to the callable.
+      **kwargs: Keyword arguments passed to the callable.
 
-    # The module could not be imported
-    raise RuntimeError(f"Missing module: {self._name}\n{self._msg}")
+    Returns:
+      Object returned by the callable.
 
-  def __call__(self, *_, **__) -> NoReturn:
-    """Method raising an exception indicating that the module is missing."""
+    Raises:
+      ~crappy._exceptions.OptionalDependencyError: The dependency is
+        unavailable.
+      TypeError: The loaded dependency is not callable.
+    """
 
-    raise RuntimeError(f"Missing module: {self._name}\n{self._msg}")
+    return self.resolve()(*args, **kwargs)
 
 
-# Data aliases
-class resources:
-  """This class defines aliases for quick access to the resources in the
-  `tool/data/` folder.
+def __getattr__(name: str) -> Any:
+  """Loads the resource namespace on first access.
 
-  These aliases are then used in the examples provided on the GitHub
-  repository, but could also be used in custom user scripts.
-
-  .. versionadded:: 1.5.3
+  .. versionadded:: 2.2.0
   """
 
-  try:
-    # Defining aliases to the images themselves
-    from cv2 import imdecode
-    speckle_path = importlib.resources.files('crappy').joinpath(
-        'tool/data/speckle.png')
-    speckle = imdecode(frombuffer(speckle_path.read_bytes(), uint8),
-                       flags=0)
+  if name == 'resources':
+    from ._resources import resources
+    globals()[name] = resources
+    return resources
 
-    ve_markers_path = importlib.resources.files('crappy').joinpath(
-        'tool/data/ve_markers.tif')
-    ve_markers = imdecode(frombuffer(ve_markers_path.read_bytes(), uint8),
-                          flags=0)
-
-    pad_path = importlib.resources.files('crappy').joinpath(
-        'tool/data/pad.png')
-    pad = imdecode(frombuffer(pad_path.read_bytes(), uint8),
-                   flags=0)
-
-  # In case the module opencv-python is missing
-  except (ModuleNotFoundError, ImportError):
-    speckle = OptionalModule('opencv-python')
-    ve_markers = OptionalModule('opencv-python')
-    pad = OptionalModule('opencv-python')
-
-  # Also getting the paths to the images
-  ref_pad = (importlib.resources.files('crappy') / 'tool' / 'data' /
-             'pad.png')
-  ref_speckle = (importlib.resources.files('crappy') / 'tool' / 'data' /
-                 'speckle.png')
-  ref_ve = (importlib.resources.files('crappy') / 'tool' / 'data' /
-            've_markers.tif')
-  with (importlib.resources.as_file(ref_pad) as path_pad,
-        importlib.resources.as_file(ref_speckle) as path_speckle,
-        importlib.resources.as_file(ref_ve) as path_ve):
-    paths = {'pad': path_pad, 'speckle': path_speckle, 've_markers': path_ve}
+  raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
-class LinkDataError(ValueError):
-  """Exception raised when trying to send a wrong data type through a
-  :class:`~crappy.links.link.Link`."""
+def __dir__() -> list[str]:
+  """Includes lazy exports without loading them.
 
+  .. versionadded:: 2.2.0"""
 
-class StartTimeout(TimeoutError):
-  """Exception raised when the start event takes too long to be set."""
-
-
-class PrepareError(IOError):
-  """Error raised in a :class:`~crappy.blocks.meta_block.block.Block` when
-  waiting for all Blocks to be ready but another Block fails to prepare."""
-
-
-class CameraConfigError(RuntimeError):
-  """Error raised by a :class:`~crappy.tool.camera_config.base.camera_config.\
-CameraConfig` window when encountering an exception."""
-
-
-class CameraPrepareError(RuntimeError):
-  """Error raised by a :class:`~crappy.blocks.Camera` when one of its children
-  processes crashes while preparing."""
-
-
-class CameraRuntimeError(RuntimeError):
-  """Error raised by a :class:`~crappy.blocks.Camera` when one of its children
-  processes crashes while running."""
-
-
-class T0NotSetError(ValueError):
-  """Exception raised when requesting the t0 value when it is not set."""
-
-
-class DefinitionError(NameError):
-    """Exception raised when trying to define an object with the same name as
-    an already-defined one."""
-
-    def __init__(self, msg: str) -> None:
-      """Sets the msg attribute.
-
-      Args:
-        msg: The message to display along with the exception.
-      """
-
-      super().__init__()
-      self._msg = msg
-
-    def __str__(self) -> str:
-      return self._msg
-
-
-class GeneratorStop(Exception):
-  """Exception raised when a :class:`~crappy.blocks.Generator` Block reaches
-  the end of its :class:`~crappy.blocks.generator_path.meta_path.path.Path`."""
-
-
-class SchedulerStop(Exception):
-  """Exception raised when a :class:`~crappy.blocks.Scheduler` Block reaches
-  its end State."""
-
-
-class ReaderStop(Exception):
-  """Exception raised when a :class:`~crappy.camera.FileReader` Camera has
-  exhausted all the images to read."""
-
-
-class CrappyFail(Exception):
-  """Exception raised when an unexpected Exception is caught in Crappy. Also
-  raised when all the Blocks do not terminate gracefully."""
-
-  def __init__(self) -> None:
-    """Only defined here to set the message to display when raised."""
-
-    super().__init__("This Exception means that an error occurred while "
-                     "running Crappy. Check the Traceback in the terminal for "
-                     "more information")
+  return sorted(set(globals()) | set(__all__))

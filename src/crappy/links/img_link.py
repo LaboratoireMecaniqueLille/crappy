@@ -5,6 +5,7 @@ from multiprocessing import (synchronize, current_process, managers,
 import logging
 
 from .link_graph import link_graph
+from .. import _validation as check
 
 
 class ImageLink:
@@ -43,6 +44,8 @@ class ImageLink:
         unique across both ImageLinks and regular Links.
     """
 
+    check.string(name, 'name', optional=True)
+
     self.name = self._get_name(name)
     self._img_buffer_name: str | None = None
     self._img_lock: synchronize.RLock | None = None
@@ -61,6 +64,9 @@ class ImageLink:
                                 f"handle images, impossible to link it with "
                                 f"crappy.img_link()")
 
+    # Keep a reference to the shared notification object
+    self._img_condition: synchronize.Condition = output_block.img_condition
+
     # Registering the ImageLink in the global graph
     link_graph.add_edge(self.name, input_block.name, output_block.name,
                         kind='image')
@@ -70,6 +76,16 @@ class ImageLink:
     output_block.add_img_input(self)
 
     self._logger: logging.Logger | None = None
+
+  @property
+  def img_condition(self) -> synchronize.Condition:
+    """Condition notified by this ImageLink's source when it has a new
+    image.
+
+    .. versionadded:: 2.2.0
+    """
+
+    return self._img_condition
 
   def __new__(cls, *args, **kwargs):
     """When instantiating a new ImageLink, increments the ImageLink counter."""
@@ -89,11 +105,6 @@ class ImageLink:
       The name generated or validated for this ImageLink, as a :obj:`str`.
     """
 
-    if name is not None and not isinstance(name, str):
-      raise TypeError("The ImageLink's name must be a string or None")
-    if name == '':
-      raise ValueError("The ImageLink's name must be a non-empty string")
-
     return name if name is not None else f'image_link{cls._count}'
 
   def log(self, log_level: int, msg: str) -> None:
@@ -104,12 +115,14 @@ class ImageLink:
       msg: The message to log, as a :obj:`str`.
     """
 
+    check.log_level(log_level, 'log_level')
+    check.string(msg, 'msg', empty=True)
+
     if self._logger is None:
       self._logger = logging.getLogger(
           f"{current_process().name}.{self.name}")
 
-    if self._logger is not None:
-      self._logger.log(log_level, msg)
+    self._logger.log(log_level, msg)
 
   def set_buffers(self,
                   name: str,

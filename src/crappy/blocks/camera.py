@@ -1,29 +1,33 @@
 # coding: utf-8
 
-from typing import Literal
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from collections.abc import Callable, Mapping
 from pathlib import Path
 import numpy as np
-from time import time, sleep, strftime, gmtime
+from time import time, strftime, gmtime, monotonic
 from types import MethodType
 from typing import Any
 from multiprocessing import (Array, Manager, Event, RLock, Pipe, Barrier,
-                             sharedctypes)
-from multiprocessing import managers, synchronize, connection
-from threading import BrokenBarrierError
+                             Condition, Queue, sharedctypes)
+from multiprocessing import managers, synchronize, connection, queues
+from threading import (BrokenBarrierError, Thread, Event as ThreadEvent,
+                       current_thread)
 import logging
-from warnings import warn
 
 from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam, moved_to_collection
-from ..tool.camera_config import CameraConfig, create_configurator
-from ..tool.camera_config.tkinter import TkinterCameraConfig
-from ..tool.camera_config.pyqt import PyQtCameraConfig
-from .._collection import (CollectionEntry, collection_registry,
-                           load_collection_class)
-from .._global import (CameraPrepareError, CameraRuntimeError,
-                       CameraConfigError, PrepareError)
+from ..camera import resolve_camera, camera_names
+from ..tool.camera_config import resolve_configurator
+from ..tool.camera_config.factory import LazyConfiguratorMapping
+from .._collection import collection_registry, load_collection_class
+from .._exceptions import (StopRequested, ProcessExitError,
+                           ShutdownTimeoutError)
+from .. import _validation as check
+
+if TYPE_CHECKING:
+  from ..tool.camera_config import CameraConfig
 
 
 class DummyCam(BaseCam):
@@ -86,9 +90,9 @@ class Camera(Block):
   """
 
   cam_count: dict[str, int] = dict()
-  configurator: Mapping[str, type[CameraConfig]] = {
-                   'tkinter': TkinterCameraConfig,
-                   'pyqt': PyQtCameraConfig}
+  configurator: Mapping[str, type[CameraConfig]] = LazyConfiguratorMapping({
+    'tkinter': ('.tkinter', 'TkinterCameraConfig'),
+    'pyqt': ('.pyqt', 'PyQtCameraConfig')})
 
   def __init__(self,
                camera: str,
@@ -289,19 +293,39 @@ class Camera(Block):
     .. versionremoved:: 2.0.0 *img_name* argument
     """
 
-    warn("\nThe default backend for camera configuration was changed from "
-         "'tkinter' to 'pyqt' without prior notice.\nThis change was "
-         "implemented nevertheless because it significantly increases "
-         "performance\nSet config_backend='tkinter' to switch back to the "
-         "previous behavior.\nInstall PyQt6 to use the new, lighter and "
-         "faster camera configuration window.\n", UserWarning, stacklevel=2)
+    self._logger: logging.Logger | None = None
+    self._camera_class: type[BaseCam] | None = None
 
     self._save_proc: ImageSaver | None = None
     self._display_proc: Displayer | None = None
     self.process_proc: CameraProcess | None = None
     self._manager: managers.SyncManager | None = None
+    self._started_processes: list[CameraProcess] = list()
+    self._stop_requested: bool = False
+    # Attributes for monitoring the Exceptions from managed Processes
+    self._worker_failure_queues: dict[CameraProcess, queues.Queue] = dict()
+    self._worker_failure_thread: Thread | None = None
+    self._worker_failure_thread_stop: ThreadEvent | None = None
+    self._workers_ready: ThreadEvent | None = None
+    self._worker_early_exits: dict[CameraProcess, str] = dict()
 
     self._camera: BaseCam | None = None
+    self._camera_opened: bool = False
+
+    # These must exist even if argument validation interrupts construction
+    self._stop_event_cam: synchronize.Event | None = None
+    self._cam_barrier: synchronize.Barrier | None = None
+    self._overlay_conn_in: connection.Connection | None = None
+    self._overlay_conn_out: connection.Connection | None = None
+    self._save_condition: synchronize.Condition | None = None
+    self._disp_condition: synchronize.Condition | None = None
+    self._proc_condition: synchronize.Condition | None = None
+    self._img_array: sharedctypes.SynchronizedArray | None = None
+    self._img: np.ndarray | None = None
+    self._metadata: managers.DictProxy | None = None
+    self._save_lock: synchronize.RLock | None = None
+    self._disp_lock: synchronize.RLock | None = None
+    self._proc_lock: synchronize.RLock | None = None
 
     super().__init__()
 
@@ -310,25 +334,20 @@ class Camera(Block):
     self.niceness: int = -10
     self.debug: bool | None = debug
 
-    if not isinstance(camera, str):
-      raise TypeError("camera must be a string")
-    if not camera and image_generator is None:
-      raise ValueError("camera must be a non-empty string")
-
-    # None means that this is an ordinary core or user-defined Camera
-    self._collection_entry: CollectionEntry | None = None
+    check.string(camera, 'camera', empty=image_generator is not None)
 
     # Checking if the requested Camera exists in Crappy
     if image_generator is None:
+      if camera in camera_names():
+        resolve_camera(camera)
       # Check if the requested Camera is part of crappy.collection
       entry = collection_registry.get("Camera", camera)
       # Cannot find the Camera in the list of available ones
       if camera not in camera_dict:
         # First option, the Camera should be loaded from crappy.collection
-        if (entry := collection_registry.get("Camera", camera)) is not None:
+        if entry is not None:
           # This call raises early if the module cannot be loaded
           load_collection_class(entry, camera_dict)
-          self._collection_entry = entry
         # Second case, the Camera was moved to crappy.collection but this
         # module was not imported
         elif camera in moved_to_collection:
@@ -338,14 +357,10 @@ class Camera(Block):
                                     f"beginning of your script")
         # The name of the Camera simply cannot be found anywhere
         else:
-          possible = ', '.join(sorted(camera_dict.keys()))
+          possible = ', '.join(sorted(camera_names()))
           raise ValueError(f"Unknown Camera name : {camera}! "
                            f"The currently available ones are: {possible}")
-      # Case when the Camera was already loaded in a separate Block
-      elif (entry is not None
-            and camera_dict[camera].__module__ == entry.module):
-        self._collection_entry = entry
-
+      self._camera_class = camera_dict[camera]
       self._camera_name: str = camera
     else:
       self._camera_name: str = 'Image Generator'
@@ -357,58 +372,64 @@ class Camera(Block):
       Camera.cam_count[self._camera_name] += 1
 
     # Checking the validity of the provided arguments
-    if transform is not None and not callable(transform):
-      raise TypeError("When provided, transform must be a callable")
-    if not isinstance(config, bool):
-      raise TypeError("config must be a boolean")
-    if not isinstance(config_backend, str):
-      raise TypeError("config_backend must be a string")
-    if config_backend not in ('tkinter', 'pyqt'):
-      raise ValueError("config_backend must be either 'tkinter' or 'pyqt'")
-    if not isinstance(display_images, bool):
-      raise TypeError("display_images must be a boolean")
-    if (displayer_backend is not None 
-        and displayer_backend not in ('cv2', 'mpl')):
-      raise ValueError("displayer_backend must be one of 'cv2' or 'mpl'")
-    if (not isinstance(displayer_framerate, float) and 
-        not isinstance(displayer_framerate, int)) or displayer_framerate <= 0:
-      raise ValueError("displayer_framerate must be a strictly positive float")
-    if (software_trig_label is not None and 
-        (not isinstance(software_trig_label, str) or not software_trig_label)):
-      raise ValueError("When provided, software_trig_label must be a "
-                       "non-empty string")
-    if not isinstance(save_images, bool):
-      raise TypeError("save_images must be a boolean")
-    if not isinstance(img_extension, str):
-      raise TypeError("img_extension must be a string")
-    if not img_extension and (save_backend is None or save_backend != 'npy'):
-      raise ValueError("img_extension must be a non-empty string")
-    if (save_folder is not None and 
-        ((not isinstance(save_folder, str) or not save_folder) 
-         and not isinstance(save_folder, Path))):
-      raise ValueError("When provided, save_folder must be a non-empty string "
-                       "or a Path")
-    if not isinstance(save_period, int) or save_period < 1:
-      raise ValueError("save_period must be a strictly positive integer")
-    if save_backend is not None and save_backend not in ('sitk', 'pil', 
-                                                         'cv2', 'npy'):
-      raise ValueError("When provided, save_backend must be one of 'sitk', "
-                       "'pil', 'cv2', 'npy'")
-    if image_generator is not None and not callable(image_generator):
-      raise TypeError("When provided, image_generator must be a callable")
-    if img_shape is not None and not isinstance(img_shape, tuple):
-      raise TypeError("When provided, img_shape must be a tuple of 2 or 3 "
-                      "strictly positive integers")
-    if img_shape is not None and not 1 < len(img_shape) < 4:
-      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
-                       "strictly positive integers")
-    if (img_shape is not None and 
-        not all(isinstance(el, int) for el in img_shape)):
-      raise ValueError("When provided, img_shape must be a tuple of 2 or 3 "
-                       "strictly positive integers")
-    if (img_dtype is not None and 
-        (not isinstance(img_dtype, str) or not img_dtype)):
-      raise ValueError("When provided, img_dtype must be a non-empty string")
+    check.callable_(transform, 'transform', optional=True)
+    check.boolean(config, 'config')
+    check.choice(config_backend, 'config_backend', ('tkinter', 'pyqt'))
+
+    check.boolean(display_images, 'display_images')
+    try:
+      check.choice(displayer_backend, 'displayer_backend', ('cv2', 'mpl'),
+                   optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    try:
+      check.real(displayer_framerate, 'displayer_framerate', minimum=0,
+                 strict=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    try:
+      check.string(software_trig_label, 'software_trig_label', optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    check.boolean(save_images, 'save_images')
+    check.string(img_extension, 'img_extension', empty=save_backend == 'npy')
+    try:
+      match save_folder:
+        case None:
+          pass
+        case Path() if str(save_folder).strip():
+          pass
+        case Path():
+          raise ValueError("save_folder must contain a directory path")
+        case str() if save_folder.strip():
+          save_folder = Path(save_folder)
+        case str():
+          raise ValueError("save_folder must be non-empty when provided as a "
+                           "str")
+        case _:
+          raise TypeError("save_folder must be a string, a Path or None")
+      check.integer(save_period, 'save_period', minimum=1)
+      check.choice(save_backend, 'save_backend', ('sitk', 'pil', 'cv2', 'npy'),
+                   optional=True)
+    except TypeError as error:
+      raise ValueError(str(error)) from error
+    if (save_folder is not None and save_folder.exists()
+        and not save_folder.is_dir()):
+      raise NotADirectoryError(f"save_folder points to an existing file: "
+                               f"{save_folder}")
+    check.callable_(image_generator, 'image_generator', optional=True)
+    check.instance(img_shape, 'img_shape', tuple, optional=True)
+    if img_shape is not None:
+      if len(img_shape) not in (2, 3):
+        raise ValueError("img_shape must contain 2 or 3 dimensions")
+      try:
+        for size in img_shape:
+          check.integer(int(size) if isinstance(size, bool) else size,
+                        'img_shape dimension', minimum=1)
+      except TypeError as error:
+        raise ValueError(str(error)) from error
+
+    check.dtype(img_dtype, optional=True)
 
     # Setting the other attributes
     self._trig_label: str | None = software_trig_label
@@ -421,26 +442,14 @@ class Camera(Block):
     self._img_dtype: str | None = img_dtype
     self._camera_kwargs: dict[str, Any] = kwargs
 
-    # The synchronization objects are initialized later
-    self._img_array: sharedctypes.SynchronizedArray | None = None
-    self._img: np.ndarray | None = None
-    self._metadata: managers.DictProxy | None = None
-    self._cam_barrier: synchronize.Barrier | None = None
-    self._stop_event_cam: synchronize.Event | None = None
-    self._overlay_conn_in: connection.Connection | None = None
-    self._overlay_conn_out: connection.Connection | None = None
-    self._save_lock: synchronize.RLock | None = None
-    self._disp_lock: synchronize.RLock | None = None
-    self._proc_lock: synchronize.RLock | None = None
-
     self._loop_count: int = 0
     self._fps_count: int = 0
-    self._last_cam_fps: float = time()
+    self._last_cam_fps: float = monotonic()
 
     # Instantiating the ImageSaver if requested
     self._save_images: bool = save_images
     self._img_extension: str = img_extension
-    self._save_folder: str | Path | None = save_folder
+    self._save_folder: Path | None = save_folder
     self._save_period: int = save_period
     self._save_backend: str | None = save_backend
 
@@ -451,6 +460,11 @@ class Camera(Block):
     self._framerate: float = displayer_framerate
     self._displayer_backend: Literal['cv2', 'mpl'] | None = displayer_backend
 
+    # Store the reference to the configuration window to use
+    if self._config_cam:
+      self.configurator = resolve_configurator(self.configurator,
+                                               self._config_backend)
+
   def __del__(self) -> None:
     """Safety method called when deleting the
     :class:`~crappy.blocks.meta_block.block.Block` and ensuring that all the
@@ -460,17 +474,11 @@ class Camera(Block):
     If they did not stop in time, just terminates them.
     """
 
-    if self.process_proc is not None and self.process_proc.is_alive():
-      self.process_proc.terminate()
-
-    if self._save_proc is not None and self._save_proc.is_alive():
-      self._save_proc.terminate()
-
-    if self._display_proc is not None and self._display_proc.is_alive():
-      self._display_proc.terminate()
-
-    if self._manager is not None:
-      self._manager.shutdown()
+    try:
+      Camera.finish(self)
+    # finish() already reported failures
+    except (BaseException,):
+      pass
 
   def prepare(self) -> None:
     """Preparing the save folder, opening the camera and displaying the
@@ -479,6 +487,8 @@ class Camera(Block):
     This method calls the :meth:`crappy.camera.meta_camera.camera.Camera.open`
     method of the :class:`~crappy.camera.meta_camera.camera.Camera` object.
     """
+
+    self._workers_ready = ThreadEvent()
 
     # Instantiating the synchronization objects
     self.log(logging.DEBUG, "Instantiating the multiprocessing "
@@ -492,6 +502,9 @@ class Camera(Block):
     self._save_lock = RLock()
     self._disp_lock = RLock()
     self._proc_lock = RLock()
+    self._save_condition = Condition(self._save_lock)
+    self._disp_condition = Condition(self._disp_lock)
+    self._proc_condition = Condition(self._proc_lock)
 
     # Instantiating the ImageSaver CameraProcess
     if self._save_images:
@@ -545,16 +558,12 @@ class Camera(Block):
 
     # Instantiating the Camera object for acquiring the images
     else:
-      # Under the spawn multiprocessing start method, it is necessary to
-      # re-load the modules from crappy.collection
-      if self._collection_entry is not None:
-        load_collection_class(self._collection_entry, camera_dict)
-
-      self._camera = camera_dict[self._camera_name]()
+      self._camera = self._camera_class()
       if self._camera is None:
         raise RuntimeError("The Camera wasn't set whereas it should be")
       self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
       self._camera.open(**self._camera_kwargs)
+      self._camera_opened = True
       self.log(logging.INFO, f"Opened the {self._camera_name} Camera")
 
     # Fail early in case of inconsistent state
@@ -563,8 +572,7 @@ class Camera(Block):
     if self._stop_event is None:
       raise ValueError("The stop Event should be initialized at this point")
     if self._ready_barrier.broken or self._stop_event.is_set():
-      raise PrepareError("An exception occurred in another Block, "
-                         "aborting")
+      raise StopRequested("Camera preparation cancelled")
 
     # Displaying the configuration window if required
     if self._config_cam:
@@ -601,6 +609,11 @@ class Camera(Block):
     self._img = np.frombuffer(self._img_array.get_obj(),
                               dtype=self._img_dtype).reshape(self._img_shape)
 
+    # Assign each managed Process a Queue for reporting Exceptions
+    for process in (self.process_proc, self._save_proc, self._display_proc):
+      if process is not None:
+        self._worker_failure_queues[process] = Queue()
+
     # Starting the CameraProcess for image processing if it was instantiated
     if self.process_proc is not None:
       self.log(logging.DEBUG, "Sharing the synchronization objects with the "
@@ -623,9 +636,11 @@ class Camera(Block):
       if self._log_queue is None:
         raise RuntimeError("The logging Queue isn't initialized when it "
                            "should be")
+      failure_queue = self._worker_failure_queues[self.process_proc]
       self.process_proc.set_shared(array=self._img_array,
                                    data_dict=self._metadata,
                                    lock=self._proc_lock,
+                                   condition=self._proc_condition,
                                    barrier=self._cam_barrier,
                                    event=self._stop_event_cam,
                                    shape=self._img_shape,
@@ -635,9 +650,12 @@ class Camera(Block):
                                    labels=labels,
                                    log_queue=self._log_queue,
                                    log_level=self._log_level,
-                                   display_freq=self.display_freq)
+                                   display_freq=self.display_freq,
+                                   failure_queue=failure_queue,
+                                   block_name=self.name)
       self.log(logging.INFO, "Starting the image processing process")
       self.process_proc.start()
+      self._started_processes.append(self.process_proc)
 
     # Starting the ImageSaver CameraProcess if it was instantiated
     if self._save_proc is not None:
@@ -658,9 +676,11 @@ class Camera(Block):
       if self._log_queue is None:
         raise RuntimeError("The logging Queue isn't initialized when it "
                            "should be")
+      failure_queue = self._worker_failure_queues[self._save_proc]
       self._save_proc.set_shared(array=self._img_array,
                                  data_dict=self._metadata,
                                  lock=self._save_lock,
+                                 condition=self._save_condition,
                                  barrier=self._cam_barrier,
                                  event=self._stop_event_cam,
                                  shape=self._img_shape,
@@ -670,9 +690,12 @@ class Camera(Block):
                                  labels=list(),
                                  log_queue=self._log_queue,
                                  log_level=self._log_level,
-                                 display_freq=self.display_freq)
+                                 display_freq=self.display_freq,
+                                 failure_queue=failure_queue,
+                                 block_name=self.name)
       self.log(logging.INFO, "Starting the image saver process")
       self._save_proc.start()
+      self._started_processes.append(self._save_proc)
 
     # Starting the Displayer CameraProcess if it was instantiated
     if self._display_proc is not None:
@@ -693,9 +716,11 @@ class Camera(Block):
       if self._log_queue is None:
         raise RuntimeError("The logging Queue isn't initialized when it "
                            "should be")
+      failure_queue = self._worker_failure_queues[self._display_proc]
       self._display_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._disp_lock,
+                                    condition=self._disp_condition,
                                     barrier=self._cam_barrier,
                                     event=self._stop_event_cam,
                                     shape=self._img_shape,
@@ -705,9 +730,20 @@ class Camera(Block):
                                     labels=list(),
                                     log_queue=self._log_queue,
                                     log_level=self._log_level,
-                                    display_freq=self.display_freq)
+                                    display_freq=self.display_freq,
+                                    failure_queue=failure_queue,
+                                    block_name=self.name)
       self.log(logging.INFO, "Starting the image displayer process")
       self._display_proc.start()
+      self._started_processes.append(self._display_proc)
+
+    # Start a Thread for monitoring the received Exceptions
+    if self._worker_failure_queues:
+      self._worker_failure_thread_stop = ThreadEvent()
+      self._worker_failure_thread = Thread(target=self._worker_failure_target,
+                                           name=f'{self.name}.failure-reader',
+                                           daemon=True)
+      self._worker_failure_thread.start()
 
     # Waiting for all the Processes to be ready
     try:
@@ -716,9 +752,81 @@ class Camera(Block):
                            "exist!")
       self.log(logging.INFO, "Waiting for all Camera processes to be ready")
       self._cam_barrier.wait()
+      # To avoid race condition between passing the Barrier and setting stop
+      if self._cam_barrier.broken or self._stop_event_cam.is_set():
+        raise StopRequested
+      self._workers_ready.set()
       self.log(logging.INFO, "All Camera processes ready now")
     except BrokenBarrierError:
-      raise CameraPrepareError
+      raise StopRequested from None
+
+  def _worker_failure_target(self) -> None:
+    """Receives worker failures and requests Camera shutdown.
+
+    .. versionadded:: 2.2.0
+    """
+
+    # Keep reference to the original objects in case reset() is called
+    manager = self._failure_manager
+    incoming = tuple(self._worker_failure_queues.values())
+    workers = tuple(self._started_processes)
+    early_exits = self._worker_early_exits
+    ready = self._workers_ready
+    stop = self._worker_failure_thread_stop
+    camera_stop = self._stop_event_cam
+    block_stop = self._stop_event
+    camera_barrier = self._cam_barrier
+    block_barrier = self._ready_barrier
+    start = self._start_event
+    if (stop is None or camera_stop is None or
+        self._worker_failure_thread is not current_thread()):
+      return
+
+    with manager.collect('Camera worker reception', raise_on_exit=False):
+      # Receive incoming failure reports from the FailureManager
+      with manager.step('receive reports'):
+        while not stop.is_set():
+          received = manager.receive(incoming)
+          if not camera_stop.is_set():
+            # check if any Process exited abruptly
+            for process in workers:
+              try:
+                code = process.exitcode
+              except ValueError:
+                if camera_stop.is_set():
+                  break
+                raise
+              if isinstance(code, int):
+                early_exits[process] = ('main' if ready is not None and
+                                        ready.is_set() else 'init')
+          # As soon as at least one Exception is received, we have to stop
+          if early_exits or manager.snapshot():
+            break
+          if not received:
+            stop.wait(0.05)
+
+      # After an Exception is caught, raise the various stop and error flags
+      with manager.step('request worker stop'):
+        camera_stop.set()
+      with manager.step('request Block stop'):
+        if block_stop is not None:
+          block_stop.set()
+      with manager.step('abort worker readiness'):
+        if camera_barrier is not None and (ready is None or
+                                           not ready.is_set()):
+          camera_barrier.abort()
+      with manager.step('abort Block readiness'):
+        if block_barrier is not None and (start is None or not start.is_set()):
+          block_barrier.abort()
+
+       # Only stop when there are no further Exceptions to collect
+      with manager.step('drain worker reports'):
+        while True:
+          received = manager.receive(incoming)
+          if stop.is_set() and not received:
+            break
+          if not received:
+            stop.wait(0.05)
 
   def begin(self) -> None:
     """Finishes startup before image acquisition begins.
@@ -728,7 +836,7 @@ class Camera(Block):
     receive the global start time.
     """
 
-    self._last_cam_fps = time()
+    self._last_cam_fps = monotonic()
 
   def loop(self) -> None:
     """This method receives data from upstream
@@ -754,7 +862,7 @@ class Camera(Block):
       raise RuntimeError("Trying to set the Camera stop Event but it doesn't "
                          "exist")
     if self._stop_event_cam.is_set():
-      raise CameraRuntimeError
+      raise StopRequested
 
     # Receiving the data from upstream Blocks
     data = self.recv_last_data(fill_missing=False)
@@ -812,6 +920,11 @@ class Camera(Block):
     if self._proc_lock is None:
       raise RuntimeError("The processing Lock isn't initialized when it "
                          "should be")
+    conditions = (self._save_condition, self._disp_condition,
+                  self._proc_condition)
+    if any(condition is None for condition in conditions):
+      raise RuntimeError("The image notification Conditions aren't "
+                         "initialized")
     with self._save_lock, self._disp_lock, self._proc_lock:
       if self._metadata is None:
         raise RuntimeError("The shared metadata dictionary isn't initialized")
@@ -824,12 +937,18 @@ class Camera(Block):
       self.log(logging.DEBUG, "Writing image to shared array")
       np.copyto(self._img, img)
 
+      # Notify the consumers that a new image is available for reading
+      for condition in conditions:
+        assert condition is not None
+        # No need to use `with condition` since the Locks are already acquired
+        condition.notify_all()
+
     self._loop_count += 1
 
     # If requested, displays the FPS of the image acquisition
     if self.display_freq:
       self._fps_count += 1
-      t = time()
+      t = monotonic()
       if t - self._last_cam_fps > 2:
         self.log(logging.INFO, f"Acquisition FPS: "
                                f"{self._fps_count / (t - self._last_cam_fps)}")
@@ -848,37 +967,215 @@ class Camera(Block):
     :meth:`~crappy.camera.meta_camera.camera.Camera.close` method is called.
     """
 
-    # Closing the Camera object
-    if self._image_generator is None and self._camera is not None:
-      self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
-      self._camera.close()
-      self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
+    manager = self._failure_manager
+    
+    # Guard cleanup steps with the FailureManager
+    with manager.collect('Camera cleanup'):
+      # Make sure that a receiver Thread is running for cleanup
+      with manager.step('start worker receiver'):
+        if (self._worker_failure_queues and
+            (self._worker_failure_thread is None or
+             self._worker_failure_thread.ident is None)):
+          self._failure_manager = manager
+          self._worker_failure_thread_stop = ThreadEvent()
+          self._worker_failure_thread = Thread(
+              target=self._worker_failure_target,
+              name=f'{self.name}.failure-reader', daemon=True)
+          self._worker_failure_thread.start()
 
-    # Setting the stop event to signal all CameraProcesses to stop
-    if self._stop_event_cam is not None:
-      self.log(logging.DEBUG, "Asking all the children processes to stop")
-      self._stop_event_cam.set()
-      sleep(0.2)
+      # Setting the stop event to signal all CameraProcesses to stop
+      if self._stop_event_cam is not None and not self._stop_requested:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.DEBUG, "Asking all the children processes to stop")
+        with manager.step('request child process shutdown'):
+          self._stop_event_cam.set()
+          self._stop_requested = True
 
-    # If the processing CameraProcess is not done, terminating it
-    if self.process_proc is not None and self.process_proc.is_alive():
-      self.log(logging.WARNING, "Image processing process not stopped, "
-                                "killing it !")
-      self.process_proc.terminate()
-    # If the ImageSaver CameraProcess is not done, terminating it
-    if self._save_proc is not None and self._save_proc.is_alive():
-      self.log(logging.WARNING, "Image saver process not stopped, "
-                                "killing it !")
-      self._save_proc.terminate()
-    # If the Displayer CameraProcess is not done, terminating it
-    if self._display_proc is not None and self._display_proc.is_alive():
-      self.log(logging.WARNING, "Image displayer process not stopped, "
-                                "killing it !")
-      self._display_proc.terminate()
+      # Also release children still waiting at the preparation barrier
+      if self._cam_barrier is not None:
+        with manager.step('abort child preparation barrier'):
+          self._cam_barrier.abort()
+          self._cam_barrier = None
 
-    # Closing the Manager handling the metadata
-    if self._manager is not None:
-      self._manager.shutdown()
+      # Wake any children waiting for a Condition to be True
+      if self._save_condition is not None:
+        with manager.step('notify _save_condition'):
+          with self._save_condition:
+            self._save_condition.notify_all()
+          self._save_condition = None
+      if self._disp_condition is not None:
+        with manager.step('notify _disp_condition'):
+          with self._disp_condition:
+            self._disp_condition.notify_all()
+          self._disp_condition = None
+      if self._proc_condition is not None:
+        with manager.step('notify _proc_condition'):
+          with self._proc_condition:
+            self._proc_condition.notify_all()
+          self._proc_condition = None
+
+      processes = tuple(process for process in
+                        (self.process_proc, self._save_proc, self._display_proc)
+                        if process is not None)
+      started = [process for process in processes
+                 if process in self._started_processes]
+      forced = set()
+      exits = list()
+
+      # The deadline covers termination of all the Processes together
+      deadline = monotonic() + 5.0
+      for process in started:
+        with manager.step(f'join {process.name}'):
+          process.join(timeout=max(0.0, deadline - monotonic()))
+
+      # Check which Processes are still alive after 3 seconds
+      survivors = list()
+      for process in started:
+        name = process.name
+        alive = True
+        with manager.step(f'check whether {name} stopped'):
+          alive = process.is_alive()
+        if alive:
+          with manager.step(f'shutdown deadline for {name}'):
+            raise ShutdownTimeoutError(f"Camera worker {name} did not "
+                                       f"finish within 5 seconds",
+                                       process_name=name,
+                                       pid=process.pid,
+                                       phase='framework cleanup',
+                                       timeout=5.0)
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.WARNING, f"Camera process {name} not stopped, "
+                                      f"terminating it")
+          with manager.step(f'terminate {name}'):
+            process.terminate()
+            forced.add(process)
+          survivors.append(process)
+
+      # Give all survivors 0.5 seconds to terminate, and kill survivors
+      deadline = monotonic() + 0.5
+      killed = list()
+      for process in survivors:
+        name = process.name
+        with manager.step(f'join terminated {name}'):
+          process.join(timeout=max(0.0, deadline - monotonic()))
+        alive = True
+        with manager.step(f'check terminated {name}'):
+          alive = process.is_alive()
+        if alive:
+          with manager.step(f'kill {name}'):
+            process.kill()
+            forced.add(process)
+          killed.append(process)
+
+      # Give all surviving Processes 0.5 seconds to get killed
+      deadline = monotonic() + 0.5
+      for process in killed:
+        with manager.step(f'join killed {process.name}'):
+          process.join(timeout=max(0.0, deadline - monotonic()))
+
+      # Close handles only after every process has had its shutdown attempt.
+      for process in processes:
+        name = process.name
+        # Detect Processes that hard-crashed
+        with manager.step(f'observe exit of {name}'):
+          code = process.exitcode
+          if isinstance(code, int):
+            exits.append((name, process.pid, code,
+                          self._worker_early_exits.get(process),
+                          process in forced))
+
+        # Closing a never-started Process is valid
+        with manager.step(f'close process {name}'):
+          process.close()
+          if process in self._started_processes:
+            self._started_processes.remove(process)
+          if self.process_proc is process:
+            self.process_proc = None
+          if self._save_proc is process:
+            self._save_proc = None
+          if self._display_proc is process:
+            self._display_proc = None
+
+      # The shared image array must outlive the processes that use it
+      if not self._started_processes:
+        self._img = None
+        self._img_array = None
+        if self._stop_requested:
+          self._stop_event_cam = None
+        if self._save_condition is None:
+          self._save_lock = None
+        if self._disp_condition is None:
+          self._disp_lock = None
+        if self._proc_condition is None:
+          self._proc_lock = None
+
+      # Close the Camera acquiring the images
+      if self._camera is not None and self._image_generator is None:
+        with manager.step('cleanup diagnostic'):
+          self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
+        with manager.step(f'close {self._camera_name} Camera'):
+          self._camera.close()
+          self._camera = None
+          self._camera_opened = False
+          with manager.step('cleanup diagnostic'):
+            self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
+      elif self._camera is not None:
+        self._camera = None
+
+      # Close the overlay connections
+      if self._overlay_conn_out is not None:
+        with manager.step('close _overlay_conn_out'):
+          self._overlay_conn_out.close()
+          self._overlay_conn_out = None
+      if self._overlay_conn_in is not None:
+        with manager.step('close _overlay_conn_in'):
+          self._overlay_conn_in.close()
+          self._overlay_conn_in = None
+
+      # Closing the Manager handling the metadata
+      if self._manager is not None:
+        with manager.step('shut down metadata Manager'):
+          self._manager.shutdown()
+          self._manager = None
+          self._metadata = None
+
+      # Stop the receiver Thread and double-check that it did stop
+      with manager.step('request worker receiver stop'):
+        if self._worker_failure_thread_stop is not None:
+          self._worker_failure_thread_stop.set()
+      with manager.step('join worker receiver'):
+        if (self._worker_failure_thread is not None and
+            self._worker_failure_thread.ident is not None):
+          self._worker_failure_thread.join(timeout=0.5)
+          if self._worker_failure_thread.is_alive():
+            raise ShutdownTimeoutError("The camera failure receiver did not "
+                                       "stop", phase='monitoring', timeout=0.5)
+          self._worker_failure_thread = None
+
+      # Close the Queues carrying the Exceptions between Processes
+      for process, queue in tuple(self._worker_failure_queues.items()):
+        with manager.step(f'close failure Queue of {process.name}'):
+          queue.close()
+          del self._worker_failure_queues[process]
+          if hasattr(process, '_failure_queue'):
+            del process._failure_queue
+
+      # Double-check that the Processes stopped and report ones that didn't
+      reported = {(report.process_name, report.pid)
+                  for report, _ in manager.snapshot()}
+      reported.update((error.process_name, error.pid)
+                      for _, error in manager.snapshot()
+                      if isinstance(error, ProcessExitError))
+      for name, pid, code, early_phase, terminated in exits:
+        with manager.step(f'verify exit of {name}'):
+          if ((name, pid) not in reported and not terminated and
+              (code != 0 or early_phase is not None)):
+            raise ProcessExitError(f"Camera worker {name} exited unexpectedly "
+                                   f"(exit code {code})",
+                                   process_name=name,
+                                   pid=pid,
+                                   phase=early_phase or 'main',
+                                   exitcode=code)
 
   def configure(self) -> None:
     """Runs the configuration workflow shared by camera-related
@@ -897,13 +1194,10 @@ get_config` is unpacked into
     handoff occurs before the
     :class:`~crappy.blocks.camera_processes.CameraProcess` starts.
 
-    Exceptions raised by the configuration window are converted to
-    :exc:`~crappy._global.CameraConfigError` after the window is stopped. A
-    :exc:`KeyboardInterrupt` is instead propagated unchanged after cleanup.
     If another :class:`~crappy.blocks.meta_block.block.Block` fails during
     preparation or a stop is requested, the window closes without validating or
-    exporting an incomplete selection and :exc:`~crappy._global.PrepareError`
-    is propagated.
+    exporting an incomplete selection and
+    :exc:`~crappy._exceptions.StopRequested` is propagated.
 
     It is common to camera-related
     :class:`Blocks <crappy.blocks.meta_block.block.Block>` that open a
@@ -927,54 +1221,29 @@ get_config` is unpacked into
                self._ready_barrier.broken) or
               (self._stop_event is not None and self._stop_event.is_set()))
 
-    # Instantiating and starting the configuration window
-    try:
-      config = self._configure()
-      assert config is not None
-      config.watch_shutdown(shutdown_requested)
-      config.run()
-      if shutdown_requested():
-        raise PrepareError("Camera configuration stopped during preparation")
-      configured_shape = config.shape
-      configured_dtype = config.dtype
-      # Get the configuration output if there's a processing Process
-      if self.process_proc is not None:
-        processing_config = config.get_config()
+    manager = self._failure_manager
+    configured = False
 
-    # A peer failed during preparation, or the test was asked to stop
-    except PrepareError:
-      if config is not None:
-        try:
+    # Guard configuration steps with the FailureManager
+    with manager.collect('Camera configuration'):
+      with manager.step('run configuration window'):
+        config = self._configure()
+        assert config is not None
+        config.watch_shutdown(shutdown_requested)
+        config.run()
+        if shutdown_requested():
+          raise StopRequested("Camera configuration cancelled")
+        configured_shape = config.shape
+        configured_dtype = config.dtype
+        # Get the configuration output if there's a processing Process
+        if self.process_proc is not None:
+          processing_config = config.get_config()
+        configured = True
+      if config is not None and not configured:
+        with manager.step('stop configuration window'):
           config.stop()
-        except (Exception,) as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not stop the configuration window",
-                                   exc_info=cleanup_error)
-      raise
-    # If an exception is raised in the config window, closing it before raising
-    except (Exception,) as exc:
-      # Not much we can do if there's no logger set to report Exception
-      if self._logger is not None:
-        self._logger.exception("Caught exception in the configuration "
-                               "window!", exc_info=exc)
-      if config is not None:
-        try:
-          config.stop()
-        except (Exception,) as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not stop the configuration window",
-                                   exc_info=cleanup_error)
-      raise CameraConfigError("Camera configuration failed") from exc
-    # Special case of KeyboardInterrupt because it's a non-local exception
-    except KeyboardInterrupt:
-      if config is not None:
-        try:
-          config.stop()
-        except (Exception,) as cleanup_error:
-          if self._logger is not None:
-            self._logger.exception("Could not stop the configuration window",
-                                   exc_info=cleanup_error)
-      raise
+    if not configured:
+      raise StopRequested
 
     # Getting the image dtype and shape for setting the shared Array
     if configured_shape is not None:
@@ -990,7 +1259,6 @@ get_config` is unpacked into
     """Creates the :class:`~crappy.blocks.meta_block.block.Block`-specific
     camera configuration window.
 
-    Override ``configurator`` to select a custom concrete class or mapping.
     Override this method when construction needs additional arguments. The
     returned configurator implements the shared ``run()``, ``stop()``,
     ``watch_shutdown()``, and ``get_config()`` contract. The configurator's
@@ -1005,10 +1273,9 @@ get_config` output must match the processing
     if self._log_queue is None:
       raise RuntimeError("The logging Queue was never initialized")
 
-    return create_configurator(self.configurator,
-                               self._camera,
-                               self._config_backend,
-                               self._log_queue,
-                               self._log_level,
-                               self.freq,
-                               self._transform)
+    return self.configurator(self._camera,
+                             self._log_queue,
+                             self._log_level,
+                             self.freq,
+                             self._transform,
+                             self._failure_manager)

@@ -8,6 +8,7 @@ from typing import Any, Literal
 from pathlib import Path
 from itertools import chain
 import logging
+from re import search
 
 from .fields import get_field
 from ..._global import OptionalModule
@@ -17,11 +18,30 @@ try:
   import pycuda.compiler
   import pycuda.gpuarray as gpuarray
   import pycuda.reduction
-except (ImportError, ModuleNotFoundError):
-  pycuda = OptionalModule("pycuda",
-                          "PyCUDA and CUDA are necessary to use GPUCorrel")
-  gpuarray = OptionalModule("pycuda",
-                            "PyCUDA and CUDA are necessary to use GPUCorrel")
+except (ImportError, ModuleNotFoundError) as error:
+  pycuda = OptionalModule("pycuda", cause=error)
+  gpuarray = OptionalModule("pycuda", cause=error)
+
+
+def _check_cuda_toolkit() -> None:
+  """Rejects toolkits that cannot compile the legacy texture references.
+
+  .. versionadded:: 2.2.0
+  """
+
+  version = pycuda.compiler.get_nvcc_version('nvcc')
+  match = search(r'\brelease\s+(\d+)\.(\d+)', version)
+  if match is None:
+    raise RuntimeError("Cannot determine the CUDA toolkit version from nvcc. "
+                       "GPUCorrel and GPUVE require a CUDA toolkit older than "
+                       "12 because their kernels use legacy texture "
+                       "references.")
+  if int(match.group(1)) >= 12:
+    raise RuntimeError(f"CUDA toolkit {match.group(1)}.{match.group(2)} is "
+                       "unsupported by GPUCorrel and GPUVE: their kernels use "
+                       "legacy texture references removed in CUDA 12. Use a "
+                       "CUDA toolkit older than 12 and a compatible PyCUDA "
+                       "build, or use CPU image processing.")
 
 
 def interp_nearest(arr: np.ndarray, ny: int, nx: int) -> np.ndarray:
@@ -108,6 +128,7 @@ class CorrelStage:
     .. versionremoved:: 1.5.10 *show_diff*, *img*, *mask* and *fields* arguments
     """
 
+    _check_cuda_toolkit()
     self._logger: logging.Logger | None = None
     self._logger_name = logger_name
 
@@ -649,6 +670,7 @@ class GPUCorrelTool:
     """Sets the image shape, and calls the methods that need this information
     for running."""
 
+    _check_cuda_toolkit()
     self._debug(1, f"Setting master resolution: {img_size},")
 
     # Initializing the pycuda context
@@ -740,7 +762,8 @@ class GPUCorrelTool:
     self._stages[0].set_orig(img)
     for prev_stage, stage, height, width in zip(self._stages[:-1],
                                                 self._stages[1:],
-                                                self._heights, self._widths):
+                                                self._heights[1:],
+                                                self._widths[1:]):
       prev_stage.resample_orig(height, width, stage.dev_orig)
       stage.update_orig()
 

@@ -86,3 +86,10 @@ Actuator
    :members: open, get_speed, get_position, set_speed, set_position, stop,
              close, log
    :special-members: __init__
+
+Internal selection helpers
+--------------------------
+
+.. autofunction:: crappy.actuator.actuator_names
+.. autofunction:: crappy.actuator.resolve_actuator
+.. autofunction:: crappy.actuator.is_reserved

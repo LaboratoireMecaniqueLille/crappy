@@ -28,7 +28,7 @@ CameraProcess extension base
    :members: set_shared, run, init, loop, finish, send, send_to_draw,
              set_config, log
    :special-members: __init__
-   :private-members: _get_data
+   :private-members: _get_data, _get_wait_timeout
 
 .. _crappy_docs/blocks:dic ve process:
 
@@ -56,6 +56,7 @@ Displayer Process
 .. autoclass:: crappy.blocks.camera_processes.Displayer
    :members: init, loop, finish
    :special-members: __init__, __del__
+   :private-members: _get_wait_timeout
 
 .. _crappy_docs/blocks:gpu correl process:
 

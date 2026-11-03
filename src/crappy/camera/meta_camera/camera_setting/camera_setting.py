@@ -5,6 +5,8 @@ from collections.abc import Callable
 from multiprocessing import current_process
 import logging
 
+from .... import _validation as check
+
 NbrType = int | float
 
 
@@ -66,6 +68,9 @@ class CameraSetting:
 
     .. versionadded:: 2.0.0
     """
+
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._logger = logging.getLogger(

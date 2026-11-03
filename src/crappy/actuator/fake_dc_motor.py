@@ -1,7 +1,8 @@
 # coding: utf-8
 
-from time import time
+from time import monotonic
 
+from .. import _validation as check
 from .meta_actuator import Actuator
 
 
@@ -41,6 +42,16 @@ class FakeDCMotor(Actuator):
       initial_pos: The initial position of the motor, in turns.
     """
 
+    for value, name in ((inertia, 'inertia'),
+                        (torque, 'torque'),
+                        (kv, 'kv'),
+                        (rv, 'rv'),
+                        (fv, 'fv'),
+                        (initial_speed, 'initial_speed'),
+                        (initial_pos, 'initial_pos')):
+      check.real(value, name)
+    check.real(simulation_speed, 'simulation_speed', minimum=0, strict=True)
+
     super().__init__()
 
     if not inertia:
@@ -58,7 +69,7 @@ class FakeDCMotor(Actuator):
     self._rpm = 0
     self._pos = 0
     self._volt = 0
-    self._t = time()
+    self._t = monotonic()
 
   def open(self) -> None:
     """Sets the variables describing the state of the motor."""
@@ -66,7 +77,7 @@ class FakeDCMotor(Actuator):
     self._rpm = self._initial_speed
     self._pos = self._initial_pos
     self._volt = 0
-    self._t = time() * self._simulation_speed
+    self._t = monotonic() * self._simulation_speed
 
   def get_speed(self) -> float:
     """Return the speed of the motor, in RPM."""
@@ -86,6 +97,8 @@ class FakeDCMotor(Actuator):
   def set_speed(self, volt: float) -> None:
     """Sets the command of the motor, in volts."""
 
+    check.real(volt, 'volt')
+
     self._update()
     self._volt = volt
 
@@ -96,7 +109,7 @@ class FakeDCMotor(Actuator):
     It supposes that the voltage has been constant since the last update.
     """
 
-    t1 = time() * self._simulation_speed
+    t1 = monotonic() * self._simulation_speed
     dt = (t1 - self._t)
     self._t = t1
 

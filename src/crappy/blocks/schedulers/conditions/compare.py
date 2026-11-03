@@ -8,6 +8,7 @@ import logging
 import operator
 
 from .condition import Condition
+from .... import _validation as check
 
 
 class Compare(Condition):
@@ -44,42 +45,20 @@ class Compare(Condition):
 
     super().__init__()
 
-    match label_1:
-      case str() if label_1.strip():
-        self._label_1: str = label_1
-      case str():
-        raise ValueError("The provided label_1 must be a non-empty string")
-      case _:
-        raise TypeError("The provided label_1 must be a non-empty string")
+    if isinstance(value, Real):
+      check.real(float(value), 'value')
 
-    match operation:
-      case str() if operation in ('<', '>', '<=', '>=', '!=', '==', 'in',
-                                  'not in'):
-        pass
-      case str():
-        raise ValueError("operation must be either '<', '>', '<=', '>=', "
-                         "'!=', '==', 'in', or 'not in'")
-      case _:
-        raise TypeError("operation must be either '<', '>', '<=', '>=', '!=', "
-                        "'==', 'in', or 'not in'")
+    check.string(label_1, 'label_1')
+    self._label_1: str = label_1
 
-    match label_2:
-      case None:
-        self._label_2: str | None = label_2
-      case str() if label_2.strip():
-        self._label_2: str | None = label_2
-      case str():
-        raise ValueError("The provided label_2 must be a non-empty string")
-      case _:
-        raise TypeError("The provided label_2 must be a non-empty string")
+    check.choice(operation, 'operation',
+                 ('<', '>', '<=', '>=', '!=', '==', 'in', 'not in'))
 
-    match mode:
-      case str() if mode in ('any', 'all', 'last'):
-        self._mode: Literal['any', 'all', 'last'] = mode
-      case str():
-        raise ValueError("mode must be either 'any', 'all', or 'last'")
-      case _:
-        raise TypeError("mode must be either 'any', 'all', or 'last'")
+    check.string(label_2, 'label_2', optional=True)
+    self._label_2: str | None = label_2
+
+    check.choice(mode, 'mode', ('any', 'all', 'last'))
+    self._mode: Literal['any', 'all', 'last'] = mode
 
     # Check the possible combinations
     if value is None and label_2 is None:

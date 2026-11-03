@@ -155,18 +155,18 @@ class DAQmx(InOut):
     if out_offset is None:
       out_offset = [0 for _ in out_channels]
 
-      # Creating the channel objects
-      self._channels = [_Channel(name=chan, range_num=r_num, gain=g,
-                                 offset=off, make_zero=make_z)
-                        for chan, r_num, g, off, make_z in
-                        zip(channels, ranges, gain, offset, make_zero)]
-      self.log(logging.DEBUG, f"Input channels: {self._channels}")
+    # Creating the channel objects
+    self._channels = [_Channel(name=chan, range_num=r_num, gain=g,
+                               offset=off, make_zero=make_z)
+                      for chan, r_num, g, off, make_z in
+                      zip(channels, ranges, gain, offset, make_zero)]
+    self.log(logging.DEBUG, f"Input channels: {self._channels}")
 
-      self._out_channels = [_Channel(name=chan, range_num=r_num, gain=g,
-                                     offset=off) for chan, r_num, g, off in
-                            zip(out_channels, out_ranges,
-                                out_gain, out_offset)]
-      self.log(logging.DEBUG, f"Output channels: {self._out_channels}")
+    self._out_channels = [_Channel(name=chan, range_num=r_num, gain=g,
+                                   offset=off) for chan, r_num, g, off in
+                          zip(out_channels, out_ranges,
+                              out_gain, out_offset)]
+    self.log(logging.DEBUG, f"Output channels: {self._out_channels}")
 
     self._handle, self._out_handle = None, None
     self._n_reads = PyDAQmx.int32()

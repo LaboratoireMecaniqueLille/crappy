@@ -128,8 +128,8 @@ class SpectrumM2I4711(InOut):
     timestamps."""
 
     # Generating the array of timestamps
-    start = self._stream_t0 + self._dt * self._n_points
-    t = np.arange(start, start + (self._chunk_size - 1) * self._dt, self._dt)
+    t = (self._stream_t0 +
+         (self._n_points + np.arange(self._chunk_size)) * self._dt)
 
     # Waiting until data is available
     spc.dw_set_param(self._spectrum, spc.SPC_M2CMD, spc.M2CMD_DATA_WAITDMA)

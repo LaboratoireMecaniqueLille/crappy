@@ -4,11 +4,12 @@ from typing import Literal
 import numpy as np
 
 from ..._global import OptionalModule
+from ... import _validation as check
 
 try:
   import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+except (ModuleNotFoundError, ImportError) as error:
+  cv2 = OptionalModule("cv2", install_name="opencv-python", cause=error)
 
 allowed_fields = ('x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z')
 
@@ -34,6 +35,9 @@ def get_field(field_string: Literal['x', 'y', 'r', 'exx', 'eyy',
   
   .. versionadded:: 1.4.0
   """
+
+  check.integer(h, 'h', minimum=1)
+  check.integer(w, 'w', minimum=1)
 
   if field_string == 'x':
     return (np.ones((h, w), dtype=np.float32),

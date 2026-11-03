@@ -18,6 +18,14 @@ Crappy is developed at [LaMCube](https://lamcube.univ-lille.fr/), a mechanical
 research laboratory in Lille, France, where it is used mainly for materials
 testing.
 
+> [!IMPORTANT]
+> Version 2.2.0 is expected to be Crappy's last release with major feature
+> updates. Planned maintenance is limited to bug fixes and compatibility with
+> new Python versions. There is currently no successor maintainer after me 
+> (@WeisLeDocto), Users are still encouraged to report bugs, request features,
+> or open pull requests; these will be addressed as maintainer's availability 
+> permits.
+
 ## Why use Crappy?
 
 As experimental setups grow, coordinating instruments from different vendors,
@@ -45,7 +53,7 @@ write the underlying software.
 
 ## Installation
 
-Crappy requires Python 3.10 or newer and NumPy 2.0 or newer. Install it from
+Crappy requires Python 3.11 or newer and NumPy 2.0 or newer. Install it from
 PyPI with:
 
 ```shell

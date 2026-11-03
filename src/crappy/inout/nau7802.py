@@ -279,10 +279,10 @@ class NAU7802(InOut):
         break
       # If an I2C error is caught, retrying to get the value or raising
       except OSError:
+        i += 1
         if i == self._retries:
           self.log(logging.ERROR, "Retries count exhausted !")
           raise
-        i += 1
         continue
 
     self.log(logging.DEBUG,

@@ -4,6 +4,7 @@ from time import time
 import logging
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 class PID(Block):
@@ -119,6 +120,27 @@ class PID(Block):
     self.labels = ['t(s)', 'pid'] if labels is None else list(labels)
     if send_terms:
       self.labels.extend(['p_term', 'i_term', 'd_term'])
+
+    for value, name in ((kp, 'kp'), (ki, 'ki'), (kd, 'kd')):
+      check.real(value, name)
+    for value, name in ((out_min, 'out_min'), (out_max, 'out_max')):
+      check.real(value, name, finite=False)
+    check.sequence(i_limit, 'i_limit', length=2)
+    for value in i_limit:
+      check.real(value, 'i_limit', finite=False)
+    for value, name in ((setpoint_label, 'setpoint_label'),
+                        (input_label, 'input_label'),
+                        (time_label, 'time_label'),
+                        (kp_label, 'kp_label'),
+                        (ki_label, 'ki_label'),
+                        (kd_label, 'kd_label')):
+      check.string(value, name)
+    if isinstance(labels, str):
+      raise TypeError("labels must be a sequence of strings or None")
+    if labels is not None and len(labels) != 2:
+      raise ValueError("labels must contain the time and PID output labels")
+    check.boolean(reverse, 'reverse')
+    check.boolean(send_terms, 'send_terms')
 
     # Setting the gains
     sign = -1 if reverse else 1

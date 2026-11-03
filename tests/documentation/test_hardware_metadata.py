@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from tests.support.paths import PROJECT_ROOT
+
 from datetime import date
 from pathlib import Path
 from re import findall, MULTILINE
@@ -10,7 +12,7 @@ import unittest
 class TestHardwareMetadata(unittest.TestCase):
   """Keeps the hardware inventory complete and internally consistent."""
 
-  _repository = Path(__file__).resolve().parents[2]
+  _repository = PROJECT_ROOT
   _metadata_path = (_repository / 'docs' / 'source' / '_data' /
                     'hardware.py')
   _hardware_page_path = (_repository / 'docs' / 'source' / 'hardware.rst')

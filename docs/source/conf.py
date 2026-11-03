@@ -24,7 +24,7 @@ version = ".".join(release.split(".")[:2])
 
 # Extensions and source files
 
-needs_sphinx = "8.1"
+needs_sphinx = "9.0"
 extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.autosummary",
               "sphinx.ext.coverage",
@@ -36,6 +36,8 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.mathjax",
               "sphinx.ext.graphviz",
               "sphinx_copybutton",
+              "sphinx_design",
+              "sphinxext.opengraph",
               "_ext.hardware_matrix"]
 
 source_suffix = {".rst": "restructuredtext"}
@@ -50,6 +52,7 @@ nitpicky = True
 nitpick_ignore = {
     # Python's inventory deliberately does not document these implementations
     ("py:class", "multiprocessing.synchronize.RLock"),
+    ("py:class", "multiprocessing.synchronize.Condition"),
     ("py:class", "multiprocessing.sharedctypes.Synchronized"),
     ("py:class", "multiprocessing.sharedctypes.SynchronizedArray"),
     ("py:class", "multiprocessing.managers.DictProxy"),
@@ -129,6 +132,12 @@ html_baseurl = environ.get(
 html_static_path = ["_static"]
 html_css_files = ["accessibility.css"]
 
+# Link previews share the documentation's canonical base and existing artwork
+ogp_site_url = html_baseurl + "/"
+ogp_site_name = "Crappy documentation"
+ogp_image = "_static/branding/banner_1024.png"
+ogp_image_alt = "Crappy logo and wordmark"
+
 # Hand-reviewed files copied to the root of the generated documentation
 html_extra_path = ["llms.txt"]
 
@@ -151,3 +160,28 @@ linkcheck_request_headers = (
 linkcheck_retries = 2
 linkcheck_timeout = 30
 linkcheck_report_timeouts_as_broken = False
+
+
+def _qualify_annotation_references(app, doctree):
+    """Link postponed annotation aliases without importing type-only
+    objects."""
+    from sphinx import addnodes
+
+    targets = {
+        "Camera": "crappy.camera.meta_camera.camera.Camera",
+        "BaseCam": "crappy.camera.meta_camera.camera.Camera",
+        "Queue": "multiprocessing.queues.Queue",
+        "MPQueue": "multiprocessing.queues.Queue",
+        "np.ndarray": "numpy.ndarray",
+        "mp_connection.Connection": "multiprocessing.connection.Connection",
+    }
+
+    for signature in doctree.findall(addnodes.desc_signature):
+        for reference in signature.findall(addnodes.pending_xref):
+            target = reference.get("reftarget")
+            if reference.get("refdomain") == "py" and target in targets:
+                reference["reftarget"] = targets[target]
+
+
+def setup(app):
+    app.connect("doctree-read", _qualify_annotation_references)

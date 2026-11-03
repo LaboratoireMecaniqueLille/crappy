@@ -5,11 +5,13 @@
 Backends provide requested values and render the effective results.
 """
 
+from __future__ import annotations
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from collections.abc import Mapping
 
-from ....camera.meta_camera.camera_setting import CameraSetting
+if TYPE_CHECKING:
+  from ....camera.meta_camera.camera_setting import CameraSetting
 
 
 @dataclass(frozen=True)

@@ -6,6 +6,7 @@ from collections import defaultdict
 import logging
 
 from .meta_block import Block
+from .. import _validation as check
 
 
 class Synchronizer(Block):
@@ -66,6 +67,10 @@ class Synchronizer(Block):
     self.freq = freq
     self.display_freq = display_freq
     self.debug = debug
+
+    check.string(reference_label, 'reference_label')
+    check.string(time_label, 'time_label')
+    check.labels(labels_to_sync, 'labels_to_sync', optional=True)
 
     # Initializing the attributes
     self._ref_label = reference_label

@@ -5,6 +5,8 @@ import logging
 from multiprocessing import current_process
 from abc import ABC, abstractmethod
 
+from .... import _validation as check
+
 
 class Overlay(ABC):
   """Abstract overlay that draws into a display image in place.
@@ -48,6 +50,9 @@ class Overlay(ABC):
       log_level: An :obj:`int` indicating the logging level of the message.
       msg: The message to log, as a :obj:`str`.
     """
+
+    check.log_level(log_level, 'log_level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._logger = logging.getLogger(f"{current_process().name}."

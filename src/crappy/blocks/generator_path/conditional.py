@@ -3,6 +3,7 @@
 import logging
 
 from .meta_path import Path, ConditionType
+from ... import _validation as check
 
 
 class Conditional(Path):
@@ -46,6 +47,10 @@ class Conditional(Path):
     .. versionremoved:: 1.5.10 *verbose* argument
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
+
+    check.real(value0, 'value0')
+    check.real(value1, 'value1')
+    check.real(value2, 'value2')
 
     super().__init__()
 

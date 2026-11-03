@@ -139,6 +139,11 @@ PyQt6 configurations
 Configurator selection
 ++++++++++++++++++++++
 
+.. autoclass:: crappy.tool.camera_config.factory.LazyConfiguratorMapping
+   :special-members: __init__
+
+.. autofunction:: crappy.tool.camera_config.factory.resolve_configurator
+
 .. autofunction:: crappy.tool.camera_config.factory.create_configurator
 
 Configurator Tools
@@ -231,8 +236,17 @@ Fields Tools
 .. autofunction:: crappy.tool.image_processing.fields.get_field
 .. autofunction:: crappy.tool.image_processing.fields.get_res
 
+.. _gpu-compatibility:
+
 GPU Correl Tool
 +++++++++++++++
+
+GPUCorrel and GPUVE use legacy CUDA texture references in both their resampling
+code and their correlation kernels. CUDA 12 removed support for these
+references. The current implementation therefore requires a CUDA toolkit
+older than 12 and a PyCUDA build compatible with that toolkit. CUDA 11.8 is
+the last CUDA 11 toolkit.
+
 .. autoclass:: crappy.tool.image_processing.GPUCorrelTool
    :members: set_img_size, set_orig, prepare, get_disp, get_data_display,
              get_res, clean
@@ -258,3 +272,23 @@ Video Extenso Tracker
 .. autoclass:: crappy.tool.image_processing.video_extenso.tracker.Tracker
    :members: run
    :special-members: __init__
+
+Argument Validation
+-------------------
+
+.. automodule:: crappy._validation
+
+.. autofunction:: crappy._validation.boolean
+.. autofunction:: crappy._validation.real
+.. autofunction:: crappy._validation.integer
+.. autofunction:: crappy._validation.string
+.. autofunction:: crappy._validation.choice
+.. autofunction:: crappy._validation.callable_
+.. autofunction:: crappy._validation.sequence
+.. autofunction:: crappy._validation.labels
+.. autofunction:: crappy._validation.mapping
+.. autofunction:: crappy._validation.log_level
+.. autofunction:: crappy._validation.instance
+.. autofunction:: crappy._validation.interface
+.. autofunction:: crappy._validation.dtype
+.. autofunction:: crappy._validation.image

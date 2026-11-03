@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from time import time, sleep
+from time import monotonic, sleep
 from typing import Any
 from collections.abc import Sequence
 import numpy as np
@@ -8,7 +8,8 @@ import logging
 from multiprocessing import current_process
 from collections import defaultdict
 
-from ..._global import DefinitionError
+from ... import _validation as check
+from ..._exceptions import DefinitionError
 
 
 class InOut:
@@ -24,13 +25,15 @@ class InOut:
   .. versionchanged:: 2.1.0 removed the *ft232h* class attribute
   """
 
+  # Actually loaded subclasses
   classes = dict()
 
   def __init_subclass__(cls, **kwargs) -> None:
     """Used for checking that two subclasses don't share the same name."""
 
     super().__init_subclass__()
-    if cls.__name__ in cls.classes:
+    from .. import is_reserved
+    if cls.__name__ in cls.classes or is_reserved(cls):
       raise DefinitionError(f"An InOut with the name {cls.__name__} is "
                             f"already defined !")
     cls.classes[cls.__name__] = cls
@@ -56,6 +59,9 @@ class InOut:
     
     .. versionadded:: 2.0.0
     """
+
+    check.log_level(level, 'level')
+    check.string(msg, 'msg', empty=True)
 
     if self._logger is None:
       self._logger = logging.getLogger(
@@ -238,12 +244,14 @@ class InOut:
     .. versionadded:: 1.5.10
     """
 
+    check.real(delay, 'delay', minimum=0)
+
     buf = []
     buf_dict = defaultdict(list)
-    t0 = time()
+    t0 = monotonic()
 
     # Acquiring data for a given delay
-    while time() < t0 + delay:
+    while monotonic() < t0 + delay:
       data = self.get_data()
       if data is not None:
 

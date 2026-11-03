@@ -4,6 +4,7 @@ from numpy import trapezoid
 import logging
 
 from .meta_path import Path, ConditionType
+from ... import _validation as check
 
 
 class Integrator(Path):
@@ -55,6 +56,11 @@ class Integrator(Path):
     .. versionremoved:: 1.5.10 *const* argument
     .. versionremoved:: 2.0.0 *_last_time* and *_last_cmd* arguments
     """
+
+    check.real(inertia, 'inertia')
+    check.real(init_value, 'init_value', optional=True)
+    check.string(func_label, 'func_label')
+    check.string(time_label, 'time_label')
 
     super().__init__()
 
