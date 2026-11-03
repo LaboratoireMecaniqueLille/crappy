@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from struct import pack_into
+from math import copysign
 from time import sleep
 from typing import Literal
 import logging
@@ -163,7 +164,7 @@ class DCMotorHat(Actuator):
       raise ValueError("The index of the motor to drive should be an integer "
                        "between 1 and 5")
 
-    volt_clamped = min(abs(volts) / motor_hat_max_volt, 1.0)
+    volt_clamped = copysign(min(abs(volts) / motor_hat_max_volt, 1.0), volts)
     self.log(logging.DEBUG, f"Setting motor {motor_nr} to {volt_clamped}V")
     self._set_motor(motor_nr, volt_clamped)
 
